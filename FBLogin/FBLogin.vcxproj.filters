@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Module">
+      <UniqueIdentifier>{3adbefa2-d8fe-42f9-b276-752e99d7860a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fb_login">
+      <UniqueIdentifier>{837cf71d-c00a-4384-8fbe-b29307a47f1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb">
+      <UniqueIdentifier>{1d4fe16b-7273-43ee-be1e-036209f212df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\acceptor">
+      <UniqueIdentifier>{7557e573-d17a-4bf3-b4fa-10c1ba3eadb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\cryptor">
+      <UniqueIdentifier>{17d8ddf3-62c7-445f-b179-567193cedf90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\stream">
+      <UniqueIdentifier>{70ab22ab-531b-4872-b702-1910c30cc276}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\socket">
+      <UniqueIdentifier>{3599787d-9cfb-4ef2-ba7e-83223bb6e247}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fb_login.cpp">
+      <Filter>Source Files\fb_login</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\acceptor.cpp">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\cryptor.cpp">
+      <Filter>Module\fb\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\socket.cpp">
+      <Filter>Module\fb\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\stream.cpp">
+      <Filter>Module\fb\stream</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fb_login.h">
+      <Filter>Source Files\fb_login</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\acceptor.h">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\acceptor.hpp">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\cryptor.h">
+      <Filter>Module\fb\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\socket.h">
+      <Filter>Module\fb\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\stream.h">
+      <Filter>Module\fb\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\leak.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

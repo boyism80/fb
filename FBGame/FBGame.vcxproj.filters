@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Module">
+      <UniqueIdentifier>{5ec2bef3-c8b6-45bb-a923-609c3c3c9da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fb_game">
+      <UniqueIdentifier>{6ca031dc-49e0-4ad8-b31b-8656d85aeeb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb">
+      <UniqueIdentifier>{f73c01c6-b686-4a85-9c81-650a95d444af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\acceptor">
+      <UniqueIdentifier>{e72ca7b8-9290-4b72-b6db-9dc7362a53f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\cryptor">
+      <UniqueIdentifier>{872dedb8-b343-43e4-a575-c29af1b6008e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\socket">
+      <UniqueIdentifier>{e9db8ca4-686b-4b58-89f0-2592a69ec5f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\stream">
+      <UniqueIdentifier>{6326e8d3-87e8-4318-ac14-f0157189332a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\map">
+      <UniqueIdentifier>{33a7a961-c741-4238-91c0-548909eab46d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mmo">
+      <UniqueIdentifier>{c5f700bf-779d-4df8-aec0-0557a8bf0d3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\item">
+      <UniqueIdentifier>{1184158f-8c42-461b-95b8-d854e9b57817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\object">
+      <UniqueIdentifier>{5b47e544-6f95-4326-999b-2a03d7c4a472}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\npc">
+      <UniqueIdentifier>{62a9fc95-aa6a-45fd-a274-d759b027442d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mob">
+      <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fb_game.cpp">
+      <Filter>Source Files\fb_game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\acceptor.cpp">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\cryptor.cpp">
+      <Filter>Module\fb\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\socket.cpp">
+      <Filter>Module\fb\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\stream.cpp">
+      <Filter>Module\fb\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="map.cpp">
+      <Filter>Source Files\map</Filter>
+    </ClCompile>
+    <ClCompile Include="item.cpp">
+      <Filter>Source Files\item</Filter>
+    </ClCompile>
+    <ClCompile Include="session.cpp">
+      <Filter>Source Files\mmo</Filter>
+    </ClCompile>
+    <ClCompile Include="object.cpp">
+      <Filter>Source Files\object</Filter>
+    </ClCompile>
+    <ClCompile Include="npc.cpp">
+      <Filter>Source Files\npc</Filter>
+    </ClCompile>
+    <ClCompile Include="mob.cpp">
+      <Filter>Source Files\mob</Filter>
+    </ClCompile>
+    <ClCompile Include="mmo.cpp">
+      <Filter>Source Files\mmo</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fb_game.h">
+      <Filter>Source Files\fb_game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\acceptor.h">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\acceptor.hpp">
+      <Filter>Module\fb\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\cryptor.h">
+      <Filter>Module\fb\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\socket.h">
+      <Filter>Module\fb\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\stream.h">
+      <Filter>Module\fb\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\leak.h">
+      <Filter>Module</Filter>
+    </ClInclude>
+    <ClInclude Include="map.h">
+      <Filter>Source Files\map</Filter>
+    </ClInclude>
+    <ClInclude Include="item.h">
+      <Filter>Source Files\item</Filter>
+    </ClInclude>
+    <ClInclude Include="session.h">
+      <Filter>Source Files\mmo</Filter>
+    </ClInclude>
+    <ClInclude Include="mmo.h">
+      <Filter>Source Files\mmo</Filter>
+    </ClInclude>
+    <ClInclude Include="object.h">
+      <Filter>Source Files\object</Filter>
+    </ClInclude>
+    <ClInclude Include="npc.h">
+      <Filter>Source Files\npc</Filter>
+    </ClInclude>
+    <ClInclude Include="mob.h">
+      <Filter>Source Files\mob</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
