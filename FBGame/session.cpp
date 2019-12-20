@@ -247,7 +247,7 @@ fb::ostream fb::game::trade_system::make_bundle_stream() const
 	return ostream;
 }
 
-fb::ostream fb::game::trade_system::make_cancel_stream(const std::string& message) const
+fb::ostream fb::game::trade_system::make_close_stream(const std::string& message) const
 {
 	fb::ostream             ostream;
 
