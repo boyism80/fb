@@ -13,6 +13,46 @@ namespace fb { namespace game {
 
 class map;
 class item;
+class session;
+
+class trade_system
+{
+private:
+	session*				_owner;
+	std::vector<item*>		_list;
+	item*					_selected;
+	uint32_t				_money;
+	bool					_locked;
+
+public:
+	trade_system(session& owner);
+	~trade_system();
+
+private:
+	uint8_t					contains_core(item* item) const;
+
+public:
+	item*					selected();
+	void					select(item* item);
+
+	uint8_t					add(item* item);
+	void					money(uint32_t value);
+	uint32_t				money() const;
+	std::vector<uint8_t>	restore();
+	void					flush(session& session, std::vector<uint8_t>& indices);
+	bool					flushable(session& session) const;
+
+	bool					lock() const;
+	void					lock(bool value);
+
+public:
+	fb::ostream				make_show_stream(bool mine, uint8_t index) const;
+	fb::ostream				make_money_stream(bool mine) const;
+	fb::ostream				make_dialog_stream() const;
+	fb::ostream				make_bundle_stream() const;
+	fb::ostream				make_cancel_stream(const std::string& message) const;
+	fb::ostream				make_lock_stream() const;
+};
 
 class session : public fb_session, public life
 {
@@ -42,8 +82,7 @@ private:
 	ring*					_rings[2];
 	auxiliary*				_auxiliaries[2];
 
-	bool					_trading;
-	std::vector<item*>		_trade_items;
+	trade_system			_trade_system;
 
 public:
 	session(SOCKET socket);
@@ -156,10 +195,7 @@ public:
 	fb::game::map*			map() const;
 	uint16_t				map(fb::game::map* map);
 
-	bool					trading() const;
-	void					trading(bool value);
-	bool					trade_item_add(uint16_t index);
-	std::vector<uint8_t>	trade_item_restore();
+	trade_system&			trade_system();
 
 public:
 	fb::ostream				make_id_stream() const;
@@ -180,8 +216,6 @@ public:
 	fb::ostream				make_external_info_stream() const;
 
 	fb::ostream				make_option_stream() const;
-	fb::ostream				make_trade_dialog_stream() const;
-	fb::ostream				make_trade_message_stream(const std::string& message, fb::game::trade_message_types type) const;
 };
 
 } }

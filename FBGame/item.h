@@ -104,6 +104,7 @@ public:
 
 public:
 	virtual const std::string		name_styled() const;
+	virtual const std::string		name_trade() const;
 	virtual attrs					attr() const;
 	virtual fb::game::item*			make() const;
 
@@ -149,7 +150,6 @@ public:
 
 public:
 	fb::ostream						make_tip_stream(uint16_t position);
-	virtual fb::ostream				make_trade_show_stream(bool own, uint16_t count = 1) const;
 
 public:
 	virtual bool					handle_acive(session& session) { return false; }
@@ -252,6 +252,7 @@ public:
 public:
 	virtual attrs					attr() const;
 	virtual fb::game::item*			make() const;
+	const std::string				name_trade() const;
 
 public:
 	uint16_t						dress() const;
@@ -312,7 +313,6 @@ public:
 protected:
 	virtual std::string				mid_message() const;
 	virtual std::string				tip_message() const;
-	virtual fb::ostream				make_trade_show_stream(bool own, uint16_t count = 1) const;
 };
 
 

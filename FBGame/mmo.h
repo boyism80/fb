@@ -16,12 +16,8 @@ enum action	   : uint8_t { ATTACK = 0x01, EMOTION = 0x0B, PICKUP = 0x04, PICKUP_
 
 enum message_types : uint8_t
 {
-	MESSAGE_STATE = 0x03
-};
-
-enum trade_message_types : uint8_t
-{
-	MESSAGE_CANCEL = 0x04,
+	MESSAGE_STATE = 0x03,
+	MESSAGE_TRADE = 0x08,
 };
 
 enum options : uint8_t

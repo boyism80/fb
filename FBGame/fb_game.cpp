@@ -1892,7 +1892,7 @@ bool acceptor::handle_connected(fb::game::session& session)
 	session.position(point16_t(6, 8));
 	session.look(0x61);
 	session.color(0x0A);
-	session.money(0xFFFFFFFD);
+	session.money(150);
 	session.sex(fb::game::sex::MAN);
 	session.legends_add(0x4A, 0x10, "갓승현 ㅋㅋ");
 	session.legends_add(0x4A, 0x10, "똥진영 ㅋㅋ");
@@ -2449,8 +2449,8 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 		
 		this->send_stream(session, session.make_state_stream(fb::game::state_level::LEVEL_MAX), scope::SELF);
 		this->send_stream(session, session.make_update_equipment_stream(slot), scope::SELF);
-		this->send_stream(session, session.make_visual_stream(true), scope::SELF);
-		this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_ON), scope::SELF);
+		this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+		this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_ON), scope::PIVOT);
 
 		std::stringstream sstream;
 		switch(slot)
@@ -2534,8 +2534,8 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 	// 마법 딜레이 스트림 필요
 	this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
 	this->send_stream(session, session.make_equipment_off_stream(slot), scope::SELF);
-	this->send_stream(session, session.make_visual_stream(true), scope::SELF);
-	this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_OFF), scope::SELF);
+	this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+	this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_OFF), scope::PIVOT);
 	this->send_stream(session, session.make_update_item_slot_stream(item_index), scope::SELF);
 
 	return true;
@@ -2852,17 +2852,17 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 	uint32_t fd = istream.read_u32();
 
 	fb::game::session* other = this->session(fd);
+	trade_system& ts_mine = session.trade_system();
+	trade_system& ts_your = other->trade_system();
+
 	if(other == NULL)
 		return true;
 
 	switch(action)
 	{
 	case 0:
-		session.trading(true);
-		this->send_stream(session, other->make_trade_dialog_stream(), scope::SELF);
-		
-		other->trading(true);
-		this->send_stream(*other, session.make_trade_dialog_stream(), scope::SELF);
+		this->send_stream(session, ts_your.make_dialog_stream(), scope::SELF);
+		this->send_stream(*other, ts_mine.make_dialog_stream(), scope::SELF);
 		break;
 
 	case 1: // 아이템 올릴때
@@ -2873,48 +2873,145 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 			return true;
 
 		if(item->trade() == false)
-			return true; // 교환할 수 없는거라고 메세지 보내줘야함
-
-		if(item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE)
 		{
-			// session에게 몇 개를 추가할건지에 물어보는 스트림을 보내줘야함
+			this->send_stream(session, this->make_message_stream("교환이 불가능한 아이템입니다.", message_types::MESSAGE_TRADE), scope::SELF);
+			break;
+		}
+
+		if((item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE) && (item->count() > 1))
+		{
+			ts_mine.select(item);
+			this->send_stream(session, ts_mine.make_bundle_stream(), scope::SELF);
 		}
 		else
 		{
-			if(session.trade_item_add(index) == false)
-				return true;
+			uint8_t trade_index = ts_mine.add(item);
+			if(trade_index == 0xFF)
+				return false;
 
+			session.item_remove(index);
 			this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
 
-			this->send_stream(session, item->make_trade_show_stream(true), scope::SELF);
-			this->send_stream(*other, item->make_trade_show_stream(false), scope::SELF);
+			this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
+			this->send_stream(*other, ts_mine.make_show_stream(false, trade_index), scope::SELF);
 		}
 	}
 		break;
 
 	case 2: // 아이템 갯수까지 해서 올릴 때
+	{
+		fb::game::item* selected = ts_mine.selected();
+		if(selected == NULL)
+			return false;
+
+		uint16_t count = istream.read_u16();
+		if(selected->count() < count)
+		{
+			this->send_stream(session, this->make_message_stream("개수가 올바르지 않습니다.", message_types::MESSAGE_TRADE), scope::SELF);
+			break;
+		}
+
+		uint8_t index = session.item2index(*selected);
+		if(selected->count() == count)
+		{
+			uint8_t trade_index = ts_mine.add(selected);
+			if(index != 0xFF)
+			{
+				session.item_remove(index);
+				this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
+
+				this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
+				this->send_stream(*other, ts_mine.make_show_stream(false, trade_index), scope::SELF);
+			}
+		}
+		else
+		{
+			selected->reduce(count);
+			fb::game::item* cloned = selected->make();
+			cloned->count(count);
+
+			uint8_t trade_index = ts_mine.add(cloned);
+
+			this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+
+			this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
+			this->send_stream(*other, ts_mine.make_show_stream(false, trade_index), scope::SELF);
+		}
 		break;
+	}
 
 	case 3: // 금전 올릴 때
+	{
+		uint32_t money = istream.read_u32();
+
+		uint32_t total = session.money() + ts_mine.money();
+		if(money > total)
+			money = total;
+
+		session.money(total - money);
+		ts_mine.money(money);
+
+		this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+		this->send_stream(session, ts_mine.make_money_stream(true), scope::SELF);
+		this->send_stream(*other, ts_mine.make_money_stream(false), scope::SELF);
 		break;
+	}
 
 	case 4:
 	{
 		std::vector<uint8_t> indices;
 
-		indices = session.trade_item_restore();
+		indices = ts_mine.restore();
+		this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 		for(auto i = indices.begin(); i != indices.end(); i++)
 			this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
-		session.trading(false);
-		this->send_stream(session, session.make_trade_message_stream("내가 교환을 취소했습니다.", trade_message_types::MESSAGE_CANCEL), scope::SELF);
+		this->send_stream(session, ts_mine.make_cancel_stream("내가 교환을 취소했습니다."), scope::SELF);
 
-		indices = other->trade_item_restore();
+
+		indices = ts_your.restore();
+		this->send_stream(*other, other->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 		for(auto i = indices.begin(); i != indices.end(); i++)
 			this->send_stream(*other, other->make_update_item_slot_stream(*i), scope::SELF);
-		other->trading(false);
-		this->send_stream(*other, other->make_trade_message_stream("상대방이 교환을 취소했습니다.", trade_message_types::MESSAGE_CANCEL), scope::SELF);
-	}
+		this->send_stream(*other, ts_your.make_cancel_stream("상대방이 교환을 취소했습니다."), scope::SELF);
 		break;
+	}
+
+	case 5:
+	{
+		this->send_stream(session, ts_mine.make_lock_stream(), scope::SELF);
+		ts_mine.lock(true);
+
+		if(ts_your.lock())
+		{
+			if(ts_mine.flushable(*other) == false || ts_your.flushable(session) == false)
+			{
+				this->send_stream(session, ts_mine.make_cancel_stream("교환에 실패했습니다."), scope::SELF);
+				this->send_stream(*other, ts_your.make_cancel_stream("교환에 실패했습니다."), scope::SELF);
+			}
+			else
+			{
+				std::vector<uint8_t> indices;
+				
+				ts_mine.flush(*other, indices);
+				for(auto i = indices.begin(); i != indices.end(); i++)
+					this->send_stream(*other, other->make_update_item_slot_stream(*i), scope::SELF);
+				this->send_stream(*other, other->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+
+				ts_your.flush(session, indices);
+				for(auto i = indices.begin(); i != indices.end(); i++)
+					this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
+				this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+
+				this->send_stream(session, ts_mine.make_cancel_stream("교환에 성공했습니다."), scope::SELF);
+				this->send_stream(*other, ts_your.make_cancel_stream("교환에 성공했습니다."), scope::SELF);
+			}
+		}
+		else
+		{
+			this->send_stream(*other, this->make_message_stream("상대방이 확인을 눌렀습니다.", message_types::MESSAGE_TRADE), scope::SELF);
+		}
+		break;
+	}
 	}
 
 	return true;

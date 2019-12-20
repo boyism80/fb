@@ -78,7 +78,7 @@ public:
 public:
 	virtual bool			handle_connected(T& base_session) { return true; }
 	virtual bool			handle_disconnected(T& base_session) { return true; }
-	virtual bool			handle_parse(T& base_session);
+	virtual bool			handle_parse(T& base_session) = 0;
 
 public:
 	T*						operator [] (uint32_t fd) const;
@@ -119,11 +119,9 @@ protected:
 public:
 	template <class fn>
 	bool					register_handle(uint8_t cmd, fn handle_login);
-
 	bool					change_server(T& base_session, uint32_t ip, uint16_t port);
-
-public:
 	bool					call_handle(T& session, uint8_t cmd);
+	virtual bool			handle_parse(T& base_session);
 
 public:
 	bool					send_stream(fb_session& session, const fb::ostream& stream, bool encrypt = true);

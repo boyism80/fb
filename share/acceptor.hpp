@@ -169,64 +169,6 @@ inline void fb::base_acceptor<T>::handle_receive(T& session)
 }
 
 template<class T>
-inline bool fb::base_acceptor<T>::handle_parse(T& base_session)
-{
-	static uint8_t		base_size = sizeof(uint8_t) + sizeof(uint16_t);
-	istream&			istream   = session.in_stream();
-	bool				success   = true;
-
-	while(true)
-	{
-		try
-		{
-			if(istream.readable_size() < base_size)
-				break;
-
-			// Read base head and check it is 0xAA
-			uint8_t				head = istream.read_u8();
-			if(head != 0xAA)
-				throw std::exception();
-
-
-			// Read data size and check it is greater than buffer size
-			uint16_t			size = istream.read_u16(buffer::endian::BIG);
-			if(size > istream.capacity())
-				throw std::exception();
-
-
-			// If data size is not enough to parse, do not anymore
-			if(istream.readable_size() < size)
-				break;
-
-
-			// Erase head and size data
-			istream.shift(base_size);
-
-			// If command byte is not 0x10, this data must be decrypted by session's encrypt key
-			uint8_t				cmd = istream.read_u8();
-			if(cmd != 0x00 && cmd != 0x10)
-				size = session.crt().decrypt(istream, istream.position(), size);
-
-			// Call function that matched by command byte
-			istream.reset();
-			if(this->call_handle(session, cmd) == false)
-				throw std::exception();
-
-			// Set data pointer to process next packet bytes
-			istream.shift(size);
-		}
-		catch(...)
-		{
-			success = false;
-			break;
-		}
-	}
-
-	istream.reset();
-	return success;
-}
-
-template<class T>
 inline T* fb::base_acceptor<T>::operator[](uint32_t fd) const
 {
 	return this->session(fd);
@@ -313,6 +255,64 @@ inline bool fb::fb_acceptor<T>::call_handle(T& session, uint8_t cmd)
 		return true;
 
 	return (this->*i->second)(session);
+}
+
+template<class T>
+inline bool fb::fb_acceptor<T>::handle_parse(T& session)
+{
+	static uint8_t		base_size = sizeof(uint8_t) + sizeof(uint16_t);
+	istream&			istream   = session.in_stream();
+	bool				success   = true;
+
+	while(true)
+	{
+		try
+		{
+			if(istream.readable_size() < base_size)
+				break;
+
+			// Read base head and check it is 0xAA
+			uint8_t				head = istream.read_u8();
+			if(head != 0xAA)
+				throw std::exception();
+
+
+			// Read data size and check it is greater than buffer size
+			uint16_t			size = istream.read_u16(buffer::endian::BIG);
+			if(size > istream.capacity())
+				throw std::exception();
+
+
+			// If data size is not enough to parse, do not anymore
+			if(istream.readable_size() < size)
+				break;
+
+
+			// Erase head and size data
+			istream.shift(base_size);
+
+			// If command byte is not 0x10, this data must be decrypted by session's encrypt key
+			uint8_t				cmd = istream.read_u8();
+			if(cmd != 0x00 && cmd != 0x10)
+				size = session.crt().decrypt(istream, istream.position(), size);
+
+			// Call function that matched by command byte
+			istream.reset();
+			if(this->call_handle(session, cmd) == false)
+				throw std::exception();
+
+			// Set data pointer to process next packet bytes
+			istream.shift(size);
+		}
+		catch(...)
+		{
+			success = false;
+			break;
+		}
+	}
+
+	istream.reset();
+	return success;
 }
 
 template<class T>

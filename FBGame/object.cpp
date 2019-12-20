@@ -310,10 +310,6 @@ bool fb::game::object::sight(const fb::game::object& object) const
 	if(this->_map != object.map())
 		return false;
 
-
-	if(object.alive() == false)
-		return false;
-
 	return this->sight(object.position());
 }
 

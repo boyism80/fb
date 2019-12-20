@@ -5,6 +5,277 @@
 using namespace fb::game;
 
 //
+// trade system
+//
+fb::game::trade_system::trade_system(session& owner) : 
+	_owner(&owner),
+	_selected(NULL),
+	_money(0),
+	_locked(false)
+{
+}
+
+fb::game::trade_system::~trade_system()
+{
+}
+
+uint8_t fb::game::trade_system::contains_core(fb::game::item* item) const
+{
+	for(int i = 0; i < this->_list.size(); i++)
+	{
+		if(this->_list[i]->core() == item->core())
+			return i;
+	}
+
+	return 0xFF;
+}
+
+item* fb::game::trade_system::selected()
+{
+	return this->_selected;
+}
+
+void fb::game::trade_system::select(fb::game::item* item)
+{
+	this->_selected = item;
+}
+
+uint8_t fb::game::trade_system::add(fb::game::item* item)
+{
+	if(item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE)
+	{
+		uint8_t exists = this->contains_core(item);
+		if(exists != 0xFF)
+		{
+			uint16_t count = this->_list[exists]->count() + item->count();
+			this->_list[exists]->count(count);
+			return exists;
+		}
+	}
+
+	this->_list.push_back(item);
+	return this->_list.size() - 1;
+}
+
+void fb::game::trade_system::money(uint32_t value)
+{
+	this->_money = value;
+}
+
+uint32_t fb::game::trade_system::money() const
+{
+	return this->_money;
+}
+
+std::vector<uint8_t> fb::game::trade_system::restore()
+{
+	std::vector<uint8_t> indices;
+	for(auto it = this->_list.begin(); it != this->_list.end(); it++)
+	{
+		fb::game::item* item = *it;
+
+		for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+		{
+			fb::game::item* own_item = this->_owner->item(i);
+			if(own_item == NULL)
+				continue;
+
+			if(!(own_item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
+				continue;
+
+			if(own_item->core() != item->core())
+				continue;
+
+			own_item->count(own_item->count() + item->count());
+			indices.push_back(i);
+
+			delete item;
+			item = NULL;
+			break;
+		}
+
+		if(item == NULL)
+			continue;
+
+		uint8_t index = this->_owner->item_add(item);
+		if(index != 0xFF)
+			indices.push_back(index);
+	}
+
+	this->_list.clear();
+
+	this->_owner->money_add(this->_money);
+	this->_money = 0;
+
+	this->_locked = false;
+	return indices;
+}
+
+void fb::game::trade_system::flush(session& session, std::vector<uint8_t>& indices)
+{
+	indices.clear();
+
+	for(auto i = this->_list.begin(); i != this->_list.end(); i++)
+	{
+		fb::game::item* item = *i;
+		indices.push_back(session.item_add(item));
+
+		if(item->empty())
+			delete item;
+	}
+	this->_list.clear();
+
+	session.money_add(this->_money);
+	this->_money = 0;
+
+	this->_locked = false;
+}
+
+bool fb::game::trade_system::flushable(session& session) const
+{
+	uint32_t before_money = session.money();
+	uint32_t remain = session.money_add(this->_money);
+	session.money(before_money);
+	
+	if(remain != 0)
+		return false;
+
+	uint8_t free_size = session.inventory_free_size();
+	for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+	{
+		fb::game::item* item = session.item(i);
+		if(item == NULL)
+			continue;
+
+		if(!(item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
+			continue;
+
+		uint8_t contains_core = this->contains_core(item);
+		if(contains_core == 0xFF)
+			continue;
+
+		if(item->free_space() < this->_list[contains_core]->count())
+			return false;
+
+		free_size++;
+	}
+
+	if(free_size < this->_list.size())
+		return false;
+
+	return true;
+}
+
+bool fb::game::trade_system::lock() const
+{
+	return this->_locked;
+}
+
+void fb::game::trade_system::lock(bool value)
+{
+	this->_locked = value;
+}
+
+fb::ostream fb::game::trade_system::make_show_stream(bool mine, uint8_t index) const
+{
+	try
+	{
+		fb::ostream				ostream;
+		fb::game::item*			item = this->_list[index];
+		const std::string		name = item->name_trade();
+
+		ostream.write_u8(0x42)
+			.write_u8(0x02)
+			.write_u8(mine ? 0x00 : 0x01)
+			.write_u8(index) // trade slot index
+			.write_u16(item->look())
+			.write_u8(item->color())
+			.write_u8(name.length())
+			.write(name.c_str(), name.length())
+			.write_u8(0x00);
+
+		return ostream;
+	}
+	catch(std::exception& e)
+	{
+		return fb::ostream();
+	}
+}
+
+fb::ostream fb::game::trade_system::make_money_stream(bool mine) const
+{
+	fb::ostream				ostream;
+
+	ostream.write_u8(0x42)
+		.write_u8(0x03)
+		.write_u8(mine ? 0x00 : 0x01)
+		.write_u32(this->_money)
+		.write_u8(0x00);
+
+	return ostream;
+}
+
+fb::ostream fb::game::trade_system::make_dialog_stream() const
+{
+	fb::ostream             ostream;
+	const std::string*		class_name = acceptor::instance()->class2name(this->_owner->cls(), this->_owner->promotion());
+	if(class_name == NULL)
+		return ostream;
+
+	std::stringstream sstream;
+	sstream << this->_owner->name() << '(' << class_name->c_str() << ')';
+	std::string your_name = sstream.str();
+
+	ostream.write_u8(0x42)
+		.write_u8(0x00)
+		.write_u32(this->_owner->id())
+		.write_u8(your_name.length())
+		.write(your_name.c_str(), your_name.length())
+		.write_u8(0x00);
+
+	return ostream;
+}
+
+fb::ostream fb::game::trade_system::make_bundle_stream() const
+{
+	fb::ostream				ostream;
+
+	ostream.write_u8(0x42)
+		.write_u8(0x01)
+		.write_u8(0x00);
+
+	return ostream;
+}
+
+fb::ostream fb::game::trade_system::make_cancel_stream(const std::string& message) const
+{
+	fb::ostream             ostream;
+
+	ostream.write_u8(0x42)
+		.write_u8(0x04)
+		.write_u16(message.length())
+		.write(message.c_str(), message.length())
+		.write_u8(0x00);
+
+	return ostream;
+}
+
+fb::ostream fb::game::trade_system::make_lock_stream() const
+{
+	fb::ostream				ostream;
+
+	ostream.write_u8(0x42)
+		.write_u8(0x05)
+		.write_u8(0x00);
+
+	return ostream;
+}
+
+
+
+
+
+//
 // class session
 //
 session::session(SOCKET socket) : 
@@ -17,7 +288,7 @@ session::session(SOCKET socket) :
 	_promotion(0),
 	_money(0),
 	_weapon(NULL), _armor(NULL), _helmet(NULL), _shield(NULL),
-	_trading(false)
+	_trade_system(*this)
 {
 	memset(this->_items, NULL, sizeof(this->_items));
 	memset(this->_rings, NULL, sizeof(this->_rings));
@@ -827,36 +1098,9 @@ uint16_t fb::game::session::map(fb::game::map* map)
 	return this->id();
 }
 
-bool fb::game::session::trading() const
+trade_system& fb::game::session::trade_system()
 {
-	return this->_trading;
-}
-
-void fb::game::session::trading(bool value)
-{
-	this->_trading = value;
-}
-
-bool fb::game::session::trade_item_add(uint16_t index)
-{
-	fb::game::item* item = this->item(index);
-	if(item == NULL)
-		return false;
-
-	this->_trade_items.push_back(item);
-	this->item_remove(index);
-	return true;
-}
-
-std::vector<uint8_t> fb::game::session::trade_item_restore()
-{
-	std::vector<uint8_t> indices;
-
-	for(auto i = this->_trade_items.begin(); i != this->_trade_items.end(); i++)
-		indices.push_back(this->item_add(*i));
-
-	this->_trade_items.clear();
-	return indices;
+	return this->_trade_system;
 }
 
 fb::game::map* fb::game::session::map() const
@@ -1350,39 +1594,6 @@ fb::ostream fb::game::session::make_option_stream() const
 		.write_u8(this->_options[options::ROAR_WORLDS]) // listen news
 		.write_u8(this->_options[options::FAST_MOVE]) // fast move
 		.write_u8(this->_options[options::EFFECT_SOUND]) // effect sound
-		.write_u8(0x00);
-
-	return ostream;
-}
-
-fb::ostream fb::game::session::make_trade_dialog_stream() const
-{
-	fb::ostream             ostream;
-	const std::string*		class_name = acceptor::instance()->class2name(this->_class, this->_promotion);
-	if(class_name == NULL)
-		return ostream;
-
-	std::stringstream sstream;
-	sstream << this->_name << '(' << class_name->c_str() << ')';
-
-	ostream.write_u8(0x42)
-		.write_u8(0x00)
-		.write_u32(this->_id)
-		.write_u8(class_name->length())
-		.write(class_name->c_str(), class_name->length())
-		.write_u8(0x00);
-
-	return ostream;
-}
-
-fb::ostream fb::game::session::make_trade_message_stream(const std::string& message, fb::game::trade_message_types type) const
-{
-	fb::ostream             ostream;
-
-	ostream.write_u8(0x42)
-		.write_u8(type)
-		.write_u16(message.length())
-		.write(message.c_str(), message.length())
 		.write_u8(0x00);
 
 	return ostream;

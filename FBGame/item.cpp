@@ -95,6 +95,11 @@ const std::string fb::game::item::name_styled() const
 	return sstream.str();
 }
 
+const std::string fb::game::item::name_trade() const
+{
+	return this->name_styled();
+}
+
 fb::game::item::attrs fb::game::item::attr() const
 {
 	item::attrs attr = item::attrs::ITEM_ATTR_NONE;
@@ -250,27 +255,6 @@ fb::ostream fb::game::item::make_tip_stream(uint16_t position)
 		.write_u16(position)
 		.write_u16(message.size())
 		.write(message.c_str(), message.size())
-		.write_u8(0x00);
-
-	return ostream;
-}
-
-fb::ostream fb::game::item::make_trade_show_stream(bool own, uint16_t count) const
-{
-	fb::ostream				ostream;
-	std::stringstream		sstream;
-
-	if(count > 1)
-		sstream << this->_name << ' ' << std::to_string(count) << "°³";
-
-	ostream.write_u8(0x42)
-		.write_u8(0x02)
-		.write_u8(own ? 0x00 : 0x01)
-		.write_u8(0x01)
-		.write_u16(this->_look)
-		.write_u8(this->_color)
-		.write_u8(sstream.str().length())
-		.write(sstream.str().c_str(), sstream.str().length())
 		.write_u8(0x00);
 
 	return ostream;
@@ -521,6 +505,15 @@ fb::game::item* fb::game::equipment::make() const
 	return new equipment(*this);
 }
 
+const std::string fb::game::equipment::name_trade() const
+{
+	std::stringstream sstream;
+	float					percentage = this->_durability.current / float(this->_durability.base) * 100;
+	sstream << this->_name << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
+
+	return sstream.str();
+}
+
 uint16_t fb::game::equipment::dress() const
 {
 	return this->_dress;
@@ -743,27 +736,6 @@ std::string fb::game::equipment::tip_message() const
 		sstream << std::endl << std::endl << desc;
 
 	return sstream.str();
-}
-
-fb::ostream fb::game::equipment::make_trade_show_stream(bool own, uint16_t count) const
-{
-	fb::ostream				ostream;
-	std::stringstream		sstream;
-	float					percentage = this->_durability.current / float(this->_durability.base) * 100;
-
-	sstream << this->_name << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
-
-	ostream.write_u8(0x42)
-		.write_u8(0x02)
-		.write_u8(own ? 0x00 : 0x01)
-		.write_u8(0x01)
-		.write_u16(this->_look)
-		.write_u8(this->_color)
-		.write_u8(sstream.str().length())
-		.write(sstream.str().c_str(), sstream.str().length())
-		.write_u8(0x00);
-
-	return ostream;
 }
 
 
