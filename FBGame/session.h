@@ -50,7 +50,7 @@ public:
 	fb::ostream				make_money_stream(bool mine) const;
 	fb::ostream				make_dialog_stream() const;
 	fb::ostream				make_bundle_stream() const;
-	fb::ostream				make_cancel_stream(const std::string& message) const;
+	fb::ostream				make_close_stream(const std::string& message) const;
 	fb::ostream				make_lock_stream() const;
 };
 

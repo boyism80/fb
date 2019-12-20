@@ -2847,13 +2847,13 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 {
 	fb::istream&				istream = session.in_stream();
 
-	uint8_t cmd = istream.read_u8();
-	uint8_t action = istream.read_u8(); // 0 : 교환걸기 4 : 교환취소
-	uint32_t fd = istream.read_u32();
+	uint8_t						cmd = istream.read_u8();
+	uint8_t						action = istream.read_u8(); // 0 : 교환걸기 4 : 교환취소
+	uint32_t					fd = istream.read_u32();
 
-	fb::game::session* other = this->session(fd);
-	trade_system& ts_mine = session.trade_system();
-	trade_system& ts_your = other->trade_system();
+	fb::game::session*			other = this->session(fd);
+	trade_system&				ts_mine = session.trade_system();
+	trade_system&				ts_your = other->trade_system();
 
 	if(other == NULL)
 		return true;
@@ -2965,14 +2965,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 		this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 		for(auto i = indices.begin(); i != indices.end(); i++)
 			this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
-		this->send_stream(session, ts_mine.make_cancel_stream("내가 교환을 취소했습니다."), scope::SELF);
+		this->send_stream(session, ts_mine.make_close_stream("내가 교환을 취소했습니다."), scope::SELF);
 
 
 		indices = ts_your.restore();
 		this->send_stream(*other, other->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 		for(auto i = indices.begin(); i != indices.end(); i++)
 			this->send_stream(*other, other->make_update_item_slot_stream(*i), scope::SELF);
-		this->send_stream(*other, ts_your.make_cancel_stream("상대방이 교환을 취소했습니다."), scope::SELF);
+		this->send_stream(*other, ts_your.make_close_stream("상대방이 교환을 취소했습니다."), scope::SELF);
 		break;
 	}
 
@@ -2985,8 +2985,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 		{
 			if(ts_mine.flushable(*other) == false || ts_your.flushable(session) == false)
 			{
-				this->send_stream(session, ts_mine.make_cancel_stream("교환에 실패했습니다."), scope::SELF);
-				this->send_stream(*other, ts_your.make_cancel_stream("교환에 실패했습니다."), scope::SELF);
+				this->send_stream(session, ts_mine.make_close_stream("교환에 실패했습니다."), scope::SELF);
+				this->send_stream(*other, ts_your.make_close_stream("교환에 실패했습니다."), scope::SELF);
 			}
 			else
 			{
@@ -3002,8 +3002,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 					this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
 				this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-				this->send_stream(session, ts_mine.make_cancel_stream("교환에 성공했습니다."), scope::SELF);
-				this->send_stream(*other, ts_your.make_cancel_stream("교환에 성공했습니다."), scope::SELF);
+				this->send_stream(session, ts_mine.make_close_stream("교환에 성공했습니다."), scope::SELF);
+				this->send_stream(*other, ts_your.make_close_stream("교환에 성공했습니다."), scope::SELF);
 			}
 		}
 		else
