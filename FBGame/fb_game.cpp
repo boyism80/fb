@@ -49,6 +49,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	this->register_handle(0x66, &acceptor::handle_item_info);
 	this->register_handle(0x6B, &acceptor::handle_itemmix);
 	this->register_handle(0x4A, &acceptor::handle_trade);
+	this->register_handle(0x2E, &acceptor::handle_group);
 
 	this->register_timer(100, &acceptor::handle_mob_action);
 	this->register_timer(1000, &acceptor::handle_mob_respawn);
@@ -2641,6 +2642,43 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 	std::stringstream       sstream;
 	switch(option)
 	{
+	case options::RIDE:
+	{
+		std::string message;
+		try
+		{
+			if(session.state_assert(message, state(state::GHOST | state::DISGUISE)) == false)
+				throw std::runtime_error(message);
+
+			object* horse = NULL;
+
+			if(session.state() == fb::game::state::RIDING)
+			{
+				message = "말에서 내렸습니다.";
+				session.state(fb::game::state::NORMAL);
+
+				
+			}
+			else
+			{
+				horse = session.forward_object(object::types::MOB);
+				//if(horse == NULL || static_cast<fb::game::mob*>(horse)->)
+				//	throw std::runtime_error("탈 것이 없습니다.");
+
+				message = "말에 탔습니다.";
+				session.state(fb::game::state::RIDING);
+			}
+
+			this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+			this->send_stream(session, this->make_message_stream(message, message_types::MESSAGE_STATE), scope::SELF);
+		}
+		catch(std::exception& e)
+		{
+			this->send_stream(session, this->make_message_stream(e.what(), message_types::MESSAGE_STATE), scope::SELF);
+		}
+		return true;
+	}
+
 	case options::WHISPER:
 		sstream << "귓속말듣기  ";
 		break;
@@ -2851,7 +2889,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 	uint8_t						action = istream.read_u8();
 	uint32_t					fd = istream.read_u32();
 
-	fb::game::session*			partner = this->session(fd);				// 파트너
+	fb::game::session*			partner = this->session(fd);			// 파트너
 	trade_system&				ts_mine = session.trade_system();		// 나의 거래시스템
 	trade_system&				ts_your = partner->trade_system();		// 상대방의 거래시스템
 
@@ -3102,6 +3140,25 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 	}
 	}
 
+	return true;
+}
+
+bool fb::game::acceptor::handle_group(fb::game::session& session)
+{
+	fb::istream&				istream = session.in_stream();
+
+	uint8_t						cmd = istream.read_u8();
+	uint8_t						name_size = istream.read_u8();
+	
+	char*						buffer = new char[name_size];
+	istream.read(buffer, name_size);
+	std::string					name(buffer);
+	delete[] buffer;
+
+
+	// 여기서 접속해있는 세션 전체 대상으로 루프를 돌 게 아니라
+	// DB에 접근해서 하는 방식이 나을 것 같다는 생각이 드는구만
+	
 	return true;
 }
 

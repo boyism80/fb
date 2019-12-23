@@ -312,6 +312,7 @@ session::session(SOCKET socket) :
 	life(socket, "", 0, 0),
 	_nation(fb::game::nation::GOGURYEO),
 	_creature(fb::game::creature::DRAGON),
+	_state(state::NORMAL),
 	_level(1),
 	_class(0),
 	_promotion(0),
@@ -447,6 +448,16 @@ fb::game::sex fb::game::session::sex() const
 void fb::game::session::sex(fb::game::sex value)
 {
 	this->_sex = value;
+}
+
+fb::game::state fb::game::session::state() const
+{
+	return this->_state;
+}
+
+void fb::game::session::state(fb::game::state value)
+{
+	this->_state = value;
 }
 
 uint32_t fb::game::session::base_hp() const
@@ -1132,6 +1143,52 @@ trade_system& fb::game::session::trade_system()
 	return this->_trade_system;
 }
 
+fb::game::group_system* fb::game::session::group_system() const
+{
+	return this->_group;
+}
+
+bool fb::game::session::group_enter(fb::game::group_system* gs)
+{
+	if(this->_group != NULL)
+		return false;
+
+	this->_group = gs;
+	return true;
+}
+
+bool fb::game::session::group_leave()
+{
+	if(this->_group == NULL)
+		return false;
+
+	this->_group = NULL;
+	return true;
+}
+
+bool fb::game::session::state_assert(std::string& message, fb::game::state flags) const
+{
+	if(flags & fb::game::state::GHOST && this->_state == fb::game::GHOST)
+	{
+		message = "귀신은 할 수 없습니다.";
+		return false;
+	}
+
+	if(flags & fb::game::state::RIDING && this->_state == fb::game::RIDING)
+	{
+		message = "말을 타고는 할 수 없습니다.";
+		return false;
+	}
+
+	if(flags & fb::game::state::DISGUISE && this->_state == fb::game::DISGUISE)
+	{
+		message = "변신 중에는 할 수 없습니다.";
+		return false;
+	}
+
+	return true;
+}
+
 fb::game::map* fb::game::session::map() const
 {
 	return __super::map();
@@ -1267,9 +1324,9 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
 	}
 
 	ostream.write_u32(this->id())
-		.write_u8(0x00) // 변신유무
+		.write_u8(this->_state == fb::game::state::DISGUISE) // 변신유무
 		.write_u8(this->_sex) // sex
-		.write_u8(0x00) // state
+		.write_u8(this->_state) // state
 		.write_u16(this->look()) // face
 		.write_u8(this->color()); // hair color
 
@@ -1626,4 +1683,36 @@ fb::ostream fb::game::session::make_option_stream() const
 		.write_u8(0x00);
 
 	return ostream;
+}
+
+fb::game::group_system::group_system(session& leader) : 
+	_leader(&leader)
+{
+	this->add(leader);
+}
+
+fb::game::group_system::~group_system()
+{
+	for(auto i = this->_members.begin(); i != this->_members.end(); i++)
+		(*i)->group_leave();
+}
+
+bool fb::game::group_system::add(session& session)
+{
+	if(this->_members.size() >= 8)
+		return false;
+
+	this->_members.push_back(&session);
+	return true;
+}
+
+bool fb::game::group_system::remove(session& session)
+{
+	auto i = std::find(this->_members.begin(), this->_members.end(), &session);
+	if(i == this->_members.end())
+		return false;
+
+	(*i)->group_leave();
+	this->_members.erase(i);
+	return true;
 }

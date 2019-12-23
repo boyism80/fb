@@ -61,6 +61,24 @@ public:
 	fb::ostream				make_lock_stream() const;
 };
 
+
+class group_system
+{
+private:
+	session*				_leader;
+	std::vector<session*>	_members;
+
+public:
+	group_system(session& leader);
+	~group_system();
+
+public:
+	bool					add(session& session);
+	bool					remove(session& session);
+};
+
+
+
 class session : public fb_session, public life
 {
 private:
@@ -72,6 +90,7 @@ private:
 	fb::game::nation		_nation;
 	fb::game::creature		_creature;
 	fb::game::sex			_sex;
+	fb::game::state			_state;
 	uint8_t					_level;
 	uint8_t					_class, _promotion;
 	uint32_t				_money;
@@ -90,6 +109,7 @@ private:
 	auxiliary*				_auxiliaries[2];
 
 	trade_system			_trade_system;
+	group_system*			_group;
 
 public:
 	session(SOCKET socket);
@@ -110,6 +130,9 @@ public:
 
 	fb::game::sex			sex() const;
 	void					sex(fb::game::sex value);
+
+	fb::game::state			state() const;
+	void					state(fb::game::state value);
 
 	uint32_t				base_hp() const;
 	void					base_hp(uint32_t value);
@@ -203,6 +226,12 @@ public:
 	uint16_t				map(fb::game::map* map);
 
 	trade_system&			trade_system();
+
+	fb::game::group_system*	group_system() const;
+	bool					group_enter(fb::game::group_system* gs);
+	bool					group_leave();
+
+	bool					state_assert(std::string& message, fb::game::state flags) const;
 
 public:
 	fb::ostream				make_id_stream() const;
