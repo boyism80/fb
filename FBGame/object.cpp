@@ -630,6 +630,17 @@ bool fb::game::object::alive() const
 	return true;
 }
 
+double fb::game::object::distance(const object& right) const
+{
+	return std::sqrt(this->distance_sqrt(right));
+}
+
+uint32_t fb::game::object::distance_sqrt(const object& right) const
+{
+	return std::pow(this->_position.x - right._position.x, 2) + 
+		std::pow(this->_position.y - right._position.y, 2);
+}
+
 fb::ostream fb::game::object::make_show_stream() const
 {
 	fb::ostream             ostream;

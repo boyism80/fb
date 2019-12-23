@@ -19,6 +19,7 @@ class trade_system
 {
 private:
 	session*				_owner;
+	session*				_partner;
 	std::vector<item*>		_list;
 	item*					_selected;
 	uint32_t				_money;
@@ -32,6 +33,12 @@ private:
 	uint8_t					contains_core(item* item) const;
 
 public:
+	session*				partner() const;
+
+	bool					begin(session* partner);
+	bool					end();
+	bool					trading() const;
+
 	item*					selected();
 	void					select(item* item);
 

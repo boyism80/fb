@@ -11,7 +11,8 @@ fb::game::trade_system::trade_system(session& owner) :
 	_owner(&owner),
 	_selected(NULL),
 	_money(0),
-	_locked(false)
+	_locked(false),
+	_partner(NULL)
 {
 }
 
@@ -28,6 +29,34 @@ uint8_t fb::game::trade_system::contains_core(fb::game::item* item) const
 	}
 
 	return 0xFF;
+}
+
+session* fb::game::trade_system::partner() const
+{
+	return this->_partner;
+}
+
+bool fb::game::trade_system::begin(session* partner)
+{
+	if(this->_partner != NULL)
+		return false;
+
+	this->_partner = partner;
+	return true;
+}
+
+bool fb::game::trade_system::end()
+{
+	if(this->_partner == NULL)
+		return false;
+
+	this->_partner = NULL;
+	return true;
+}
+
+bool fb::game::trade_system::trading() const
+{
+	return this->_partner != NULL;
 }
 
 item* fb::game::trade_system::selected()

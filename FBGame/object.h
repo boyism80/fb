@@ -91,6 +91,9 @@ public:
 
 	virtual bool				alive() const;
 
+	double						distance(const object& right) const;
+	uint32_t					distance_sqrt(const object& right) const;
+
 public:
 	fb::ostream					make_show_stream() const;
 	fb::ostream					make_hide_stream() const;
