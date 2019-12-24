@@ -24,7 +24,7 @@ uint8_t fb::game::trade_system::contains_core(fb::game::item* item) const
 {
 	for(int i = 0; i < this->_list.size(); i++)
 	{
-		if(this->_list[i]->core() == item->core())
+		if(this->_list[i]->based() == item->based())
 			return i;
 	}
 
@@ -112,7 +112,7 @@ std::vector<uint8_t> fb::game::trade_system::restore()
 			if(!(own_item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
 				continue;
 
-			if(own_item->core() != item->core())
+			if(own_item->based() != item->based())
 				continue;
 
 			own_item->count(own_item->count() + item->count());
@@ -303,13 +303,51 @@ fb::ostream fb::game::trade_system::make_lock_stream() const
 
 
 
+//
+// group system
+//
+fb::game::group_system::group_system(session& leader) : 
+	_leader(&leader)
+{
+	this->add(leader);
+}
+
+fb::game::group_system::~group_system()
+{
+	for(auto i = this->_members.begin(); i != this->_members.end(); i++)
+		(*i)->group_leave();
+}
+
+bool fb::game::group_system::add(session& session)
+{
+	if(this->_members.size() >= 8)
+		return false;
+
+	this->_members.push_back(&session);
+	return true;
+}
+
+bool fb::game::group_system::remove(session& session)
+{
+	auto i = std::find(this->_members.begin(), this->_members.end(), &session);
+	if(i == this->_members.end())
+		return false;
+
+	(*i)->group_leave();
+	this->_members.erase(i);
+	return true;
+}
+
+
+
 
 //
 // class session
 //
 session::session(SOCKET socket) : 
 	fb_session(socket),
-	life(socket, "", 0, 0),
+	life((life::core*)NULL, socket, 0, 0, 0),
+	life::core("fb", 0, 0, 0, 0),
 	_nation(fb::game::nation::GOGURYEO),
 	_creature(fb::game::creature::DRAGON),
 	_state(state::NORMAL),
@@ -357,6 +395,8 @@ session::~session()
 
 	if(this->_auxiliaries[1])
 		delete this->_auxiliaries[1];
+
+	delete this->_core;
 }
 
 //uint16_t fb::game::session::look() const
@@ -378,6 +418,106 @@ session::~session()
 //{
 //	this->_core->color(value);
 //}
+
+const std::string& fb::game::session::name() const
+{
+	return life::core::name();
+}
+
+void fb::game::session::name(const std::string& value)
+{
+	life::core::name(value);
+}
+
+uint16_t fb::game::session::look() const
+{
+	return life::core::look();
+}
+
+void fb::game::session::look(uint16_t value)
+{
+	life::core::look(value);
+}
+
+uint16_t fb::game::session::color() const
+{
+	return life::core::color();
+}
+
+void fb::game::session::color(uint16_t value)
+{
+	life::core::color(value);
+}
+
+uint32_t fb::game::session::defensive_physical() const
+{
+	return life::core::defensive_physical();
+}
+
+void fb::game::session::defensive_physical(uint8_t value)
+{
+	life::core::defensive_physical(value);
+}
+
+uint32_t fb::game::session::defensive_magical() const
+{
+	return life::core::defensive_magical();
+}
+
+void fb::game::session::defensive_magical(uint8_t value)
+{
+	life::core::defensive_magical(value);
+}
+
+void fb::game::session::base_hp_up(uint32_t value)
+{
+	life::core::_hp += value;
+}
+
+void fb::game::session::base_mp_up(uint32_t value)
+{
+	life::core::_mp += value;
+}
+
+void fb::game::session::base_hp(uint32_t value)
+{
+	life::core::_hp = value;
+}
+
+void fb::game::session::base_mp(uint32_t value)
+{
+	life::core::_mp = value;
+}
+
+uint32_t fb::game::session::base_hp() const
+{
+	return life::core::_hp;
+}
+
+uint32_t fb::game::session::base_mp() const
+{
+	return life::core::_mp;
+}
+
+void fb::game::session::hp(uint32_t value)
+{
+	life::_hp = value;
+}
+
+void fb::game::session::mp(uint32_t value)
+{
+	life::_mp = value;
+}
+
+uint32_t fb::game::session::hp() const
+{
+	return life::_hp;
+}
+
+uint32_t fb::game::session::mp() const
+{
+	return life::_mp;
+}
 
 uint32_t fb::game::session::id() const
 {
@@ -458,38 +598,6 @@ fb::game::state fb::game::session::state() const
 void fb::game::session::state(fb::game::state value)
 {
 	this->_state = value;
-}
-
-uint32_t fb::game::session::base_hp() const
-{
-	return fb::game::life::base_hp();
-}
-
-void fb::game::session::base_hp(uint32_t value)
-{
-	fb::game::life::base_hp(value);
-}
-
-void fb::game::session::base_hp_up(uint32_t value)
-{
-	uint32_t capacity = 0xFFFFFFFF - this->_base_hp;
-	this->_base_hp += std::min(capacity, value);
-}
-
-uint32_t fb::game::session::base_mp() const
-{
-	return this->_base_mp;
-}
-
-void fb::game::session::base_mp(uint32_t value)
-{
-	this->_base_mp = value;
-}
-
-void fb::game::session::base_mp_up(uint32_t value)
-{
-	uint32_t capacity = 0xFFFFFFFF - this->_base_mp;
-	this->_base_mp += std::min(capacity, value);
 }
 
 uint8_t fb::game::session::cls() const
@@ -780,7 +888,7 @@ uint8_t fb::game::session::item_add(fb::game::item* item)
 			if(this->_items[i] == NULL)
 				continue;
 
-			if(item->core() != this->_items[i]->core())
+			if(item->based() != this->_items[i]->based())
 				continue;
 
 
@@ -851,14 +959,14 @@ bool fb::game::session::item_active(uint8_t index, fb::game::item** activated, u
 	return item;
 }
 
-uint8_t fb::game::session::item2index(fb::game::item& item) const
+uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
 {
 	for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
 	{
 		if(this->_items[i] == NULL)
 			continue;
 
-		if(this->_items[i]->core() == item.core())
+		if(this->_items[i]->based<item::core>() == item)
 			return i;
 	}
 
@@ -1232,8 +1340,8 @@ fb::ostream fb::game::session::make_state_stream(fb::game::state_level level) co
 
 	if(level & state_level::HP_MP)
 	{
-		ostream.write_u32(this->base_hp())  // current hp
-			.write_u32(this->base_mp()); // current mp
+		ostream.write_u32(this->hp())  // current hp
+			.write_u32(this->mp()); // current mp
 	}
 
 	if(level & state_level::EXP_MONEY)
@@ -1683,36 +1791,4 @@ fb::ostream fb::game::session::make_option_stream() const
 		.write_u8(0x00);
 
 	return ostream;
-}
-
-fb::game::group_system::group_system(session& leader) : 
-	_leader(&leader)
-{
-	this->add(leader);
-}
-
-fb::game::group_system::~group_system()
-{
-	for(auto i = this->_members.begin(); i != this->_members.end(); i++)
-		(*i)->group_leave();
-}
-
-bool fb::game::group_system::add(session& session)
-{
-	if(this->_members.size() >= 8)
-		return false;
-
-	this->_members.push_back(&session);
-	return true;
-}
-
-bool fb::game::group_system::remove(session& session)
-{
-	auto i = std::find(this->_members.begin(), this->_members.end(), &session);
-	if(i == this->_members.end())
-		return false;
-
-	(*i)->group_leave();
-	this->_members.erase(i);
-	return true;
 }

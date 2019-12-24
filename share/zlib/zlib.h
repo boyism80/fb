@@ -732,7 +732,7 @@ ZEXTERN char * ZEXPORT gzgets OF((gzFile file, char *buf, int len));
       gzgets returns buf, or Z_NULL in case of error.
 */
 
-ZEXTERN int ZEXPORT    gzputc OF((gzFile file, int c));
+ZEXTERN int ZEXPORT    gzputc OF((gzFile file, int based));
 /*
       Writes c, converted to an unsigned char, into the compressed file.
    gzputc returns the value that was written, or -1 in case of error.

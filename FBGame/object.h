@@ -18,36 +18,65 @@ class object
 public:
 	enum types { UNKNOWN = 0x00, ITEM = 0x01, NPC = 0x02, MOB = 0x04 };
 
-protected:
-	uint32_t					_id;
-	std::string					_name;
-	uint16_t					_look;
-	uint8_t						_color;
+public:
+	class core
+	{
+	protected:
+		std::string					_name;
+		uint16_t					_look;
+		uint8_t						_color;
+
+	public:
+		friend class fb::game::object;
+
+	public:
+		core(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
+		virtual ~core();
+
+	public:
+		const std::string&			name() const;
+		void						name(const std::string& value);
+
+		uint16_t					look() const;
+		void						look(uint16_t value);
+
+		uint8_t						color() const;
+		void						color(uint8_t value);
+
+		virtual object*				make() const = 0;
+		template <typename T>
+		T*							make() const { return static_cast<T*>(this->make()); }
+	};
 
 protected:
+	const core*					_core;
+	
+
+protected:
+	uint32_t					_id;
 	point16_t					_position;
 	fb::game::direction			_direction;
 	fb::game::map*				_map;
 
 protected:
-	object(uint32_t id = 0xFFFFFFFF, const std::string& name = "", uint16_t look = 0, uint8_t color = 0, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = NULL);
+	object(const core* core, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = NULL);
 	object(const object& right);
 public:
 	virtual ~object();
 
 public:
+	const core*					based() const;
+	template <typename T>
+	const T*					based() const { return static_cast<const T*>(this->_core); }
+	template <typename T>
+	T*							clone() const { return static_cast<T*>(this->_core->make<T>()); }
+	
 	uint32_t					id() const;
 	void						id(uint32_t value);
 
 	const std::string&			name() const;
-	void						name(const std::string& value);
-
 	uint16_t					look() const;
-	void						look(uint16_t value);
-
 	uint8_t						color() const;
-	void						color(uint8_t value);
-
 	virtual object::types		type() const;
 
 
@@ -105,20 +134,51 @@ public:
 };
 
 
-
-
 class life : public object
 {
+public:
+	class core : public fb::game::object::core
+	{
+	protected:
+		fb::game::defensive		_defensive;
+		uint32_t				_hp, _mp;
+		uint32_t				_experience;
+
+	public:
+		friend class fb::game::life;
+
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+		core(const core& core, uint32_t hp, uint32_t mp);
+		core(const core& core);
+		virtual ~core();
+
+	public:
+		uint32_t				hp() const;
+		void					hp(uint32_t value);
+
+		uint32_t				mp() const;
+		void					mp(uint32_t value);
+
+		uint32_t				experience() const;
+		void					experience(uint32_t value);
+
+		uint32_t				defensive_physical() const;
+		void					defensive_physical(uint8_t value);
+
+		uint32_t				defensive_magical() const;
+		void					defensive_magical(uint8_t value);
+
+		object*					make() const;
+	};
+
 protected:
-	fb::game::defensive		_defensive;
-	uint32_t				_experience;
-	uint32_t				_base_hp, _base_mp;
 	uint32_t				_hp, _mp;
 	fb::game::condition		_condition;
 
 protected:
-	life();
-	life(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp = 0, uint32_t mp = 0, uint32_t exp = 0);
+	life(const core* core);
+	life(core* core, uint32_t id, uint32_t hp = 0, uint32_t mp = 0, uint32_t exp = 0);
 	life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp);
 	virtual ~life();
 
@@ -126,29 +186,25 @@ protected:
 	uint32_t				random_damage(uint32_t value, const fb::game::life& life) const;
 
 public:
-	uint32_t				hp() const;
-	void					hp(uint32_t value);
+	virtual uint32_t		hp() const;
+	virtual void			hp(uint32_t value);
 
-	uint32_t				mp() const;
-	void					mp(uint32_t value);
+	virtual uint32_t		mp() const;
+	virtual void			mp(uint32_t value);
 
-	uint32_t				base_hp() const;
-	void					base_hp(uint32_t value);
+	virtual uint32_t		base_hp() const;
+	virtual uint32_t		base_mp() const;
 
-	uint32_t				base_mp() const;
-	void					base_mp(uint32_t value);
+	virtual uint32_t		experience() const;
 
-	uint32_t				experience() const;
-	void					experience(uint32_t value);
+	virtual uint32_t		defensive_physical() const;
+	virtual uint32_t		defensive_magical() const;
 
-	uint32_t				defensive_physical() const;
-	void					defensive_physical(uint8_t value);
+	void					hp_up(uint32_t value);
+	void					hp_down(uint32_t value);
 
-	uint32_t				defensive_magical() const;
-	void					defensive_magical(uint8_t value);
-
-	void					hp_increase(uint32_t value);
-	void					hp_decrease(uint32_t value);
+	void					mp_up(uint32_t value);
+	void					mp_down(uint32_t value);
 
 	fb::game::condition		condition() const;
 	fb::game::condition		condition_add(fb::game::condition value);

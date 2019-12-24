@@ -27,11 +27,11 @@ public:
 	{
 	public:
 		float percentage;
-		const fb::game::item* item;
+		const fb::game::item::core* item;
 
 	public:
 		_drop() : percentage(0), item(NULL) {}
-		_drop(const fb::game::item* item, float percentage) : item(item), percentage(percentage) {}
+		_drop(const fb::game::item::core* item, float percentage) : item(item), percentage(percentage) {}
 		_drop(const _drop& right) : percentage(right.percentage), item(right.item) {}
 	} drop;
 
@@ -39,16 +39,56 @@ public:
 
 	enum sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
 
+public:
+	class core : public fb::game::life::core
+	{
+	private:
+		mob::damage				_damage;
+		offensive_type			_offensive_type;
+		sizes					_size;
+		uint32_t				_speed;
+		std::string				_script_attack, _script_die;
+		std::vector<drop>		_items;
+
+		friend class mob;
+
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+		core(const life::core& core);
+		~core();
+
+	public:
+		object::types			type() const { return fb::game::object::types::MOB; }
+		object*					make() const;
+
+	public:
+		uint16_t				damage_min() const;
+		void					damage_min(uint16_t value);
+
+		uint16_t				damage_max() const;
+		void					damage_max(uint16_t value);
+
+		mob::sizes				size() const;
+		void					size(mob::sizes value);
+
+		uint32_t				speed() const;
+		void					speed(uint32_t value);
+
+		const std::string&		script_attack() const;
+		void					script_attack(const std::string& value);
+
+		const std::string&		script_die() const;
+		void					script_die(const std::string& value);
+
+		offensive_type			offensive() const;
+		void					offensive(offensive_type value);
+
+		void					dropitem_add(const mob::drop& drop);
+		void					dropitem_add(const fb::game::item::core* item, float percentage);
+		const std::vector<drop>& items() const;
+	};
+
 private:
-	mob::damage				_damage;
-	offensive_type			_offensive_type;
-	sizes					_size;
-	uint32_t				_speed;
-	std::string				_script_attack, _script_die;
-	std::vector<drop>		_items;
-
-
-
 	point16_t				_spawn_point;
 	size16_t				_spawn_size;
 
@@ -59,34 +99,21 @@ private:
 	fb::game::session*		_target;
 	
 public:
-	mob(const std::string& name, uint16_t look, uint8_t color = 0);
+	mob(const mob::core* core);
 	mob(const mob& right);
 	~mob();
 
 public:
+	object::types			type() const;
 
 	uint16_t				damage_min() const;
-	void					damage_min(uint16_t value);
-
 	uint16_t				damage_max() const;
-	void					damage_max(uint16_t value);
-
 	mob::sizes				size() const;
-	void					size(mob::sizes value);
-
 	uint32_t				speed() const;
-	void					speed(uint32_t value);
-
+	
 	const std::string&		script_attack() const;
-	void					script_attack(const std::string& value);
-
 	const std::string&		script_die() const;
-	void					script_die(const std::string& value);
-
 	offensive_type			offensive() const;
-	void					offensive(offensive_type value);
-
-	fb::game::mob*			make() const;
 
 	uint32_t				random_damage(fb::game::life& life) const;
 
@@ -112,11 +139,6 @@ public:
 	fb::game::session*		target() const;
 	void					target(fb::game::session* value);
 	fb::game::session*		autoset_target();
-
-	object::types			type() const { return fb::game::object::types::MOB; }
-
-	void					dropitem_add(const mob::drop& drop);
-	void					dropitem_add(const fb::game::item* item, float percentage);
 
 	const std::vector<drop>& items() const;
 };

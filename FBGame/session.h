@@ -79,7 +79,7 @@ public:
 
 
 
-class session : public fb_session, public life
+class session : public fb_session, public life, public life::core
 {
 private:
 	uint8_t					_strength, _intelligence, _dexteritry;
@@ -116,6 +116,36 @@ public:
 	~session();
 
 public:
+	const std::string&		name() const;
+	void					name(const std::string& value);
+
+	uint16_t				look() const;
+	void					look(uint16_t value);
+
+	uint16_t				color() const;
+	void					color(uint16_t value);
+
+	uint32_t				defensive_physical() const;
+	void					defensive_physical(uint8_t value);
+
+	uint32_t				defensive_magical() const;
+	void					defensive_magical(uint8_t value);
+
+	void					base_hp_up(uint32_t value);
+	void					base_mp_up(uint32_t value);
+
+	void					base_hp(uint32_t value);
+	void					base_mp(uint32_t value);
+
+	uint32_t				base_hp() const;
+	uint32_t				base_mp() const;
+
+	void					hp(uint32_t value);
+	void					mp(uint32_t value);
+
+	uint32_t				hp() const;
+	uint32_t				mp() const;
+
 	uint32_t				id() const;
 	fb::game::nation		nation() const;
 	bool					nation(fb::game::nation value);
@@ -133,14 +163,6 @@ public:
 
 	fb::game::state			state() const;
 	void					state(fb::game::state value);
-
-	uint32_t				base_hp() const;
-	void					base_hp(uint32_t value);
-	void					base_hp_up(uint32_t value);
-
-	uint32_t				base_mp() const;
-	void					base_mp(uint32_t value);
-	void					base_mp_up(uint32_t value);
 
 	uint8_t					cls() const;
 	void					cls(uint8_t value);
@@ -197,7 +219,7 @@ public:
 	bool					item_remove(uint8_t index);
 	bool					item_reduce(uint8_t index, uint16_t count);
 	bool					item_active(uint8_t index, fb::game::item** activated, uint8_t* updated_index, fb::game::equipment::eq_slots& slot, std::string& message);
-	uint8_t					item2index(fb::game::item& item) const;
+	uint8_t					item2index(const fb::game::item::core* item) const;
 	bool					equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index, std::string& message);
 	uint8_t					equipment_off(fb::game::equipment::eq_slots slot, std::string& message);
 

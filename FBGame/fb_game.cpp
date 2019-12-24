@@ -29,30 +29,30 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	//this->convert_class_file();
 	this->load_class();
 
-	this->register_handle(0x10, &acceptor::handle_login);
-	this->register_handle(0x11, &acceptor::handle_direction);
-	this->register_handle(0x06, &acceptor::handle_update_move);
-	this->register_handle(0x32, &acceptor::handle_move);
-	this->register_handle(0x13, &acceptor::handle_attack);
-	this->register_handle(0x07, &acceptor::handle_pickup);
-	this->register_handle(0x1D, &acceptor::handle_emotion);
-	this->register_handle(0x05, &acceptor::handle_update_map);
-	this->register_handle(0x38, &acceptor::handle_refresh);
-	this->register_handle(0x1C, &acceptor::handle_active_item);
-	this->register_handle(0x1F, &acceptor::handle_inactive_item);
-	this->register_handle(0x08, &acceptor::handle_drop_item);
-	this->register_handle(0x24, &acceptor::handle_drop_cash);
-	this->register_handle(0x09, &acceptor::handle_front_info);
-	this->register_handle(0x2D, &acceptor::handle_self_info);
-	this->register_handle(0x1B, &acceptor::handle_option_changed);
-	this->register_handle(0x43, &acceptor::handle_click_object);
-	this->register_handle(0x66, &acceptor::handle_item_info);
-	this->register_handle(0x6B, &acceptor::handle_itemmix);
-	this->register_handle(0x4A, &acceptor::handle_trade);
-	this->register_handle(0x2E, &acceptor::handle_group);
+	this->register_handle(0x10, &acceptor::handle_login);				// 게임서버 접속 핸들러
+	this->register_handle(0x11, &acceptor::handle_direction);			// 방향전환 핸들러
+	this->register_handle(0x06, &acceptor::handle_update_move);			// 이동과 맵 데이터 업데이트 핸들러
+	this->register_handle(0x32, &acceptor::handle_move);				// 이동 핸들러
+	this->register_handle(0x13, &acceptor::handle_attack);				// 공격 핸들러
+	this->register_handle(0x07, &acceptor::handle_pickup);				// 아이템 줍기 핸들러
+	this->register_handle(0x1D, &acceptor::handle_emotion);				// 감정표현 핸들러
+	this->register_handle(0x05, &acceptor::handle_update_map);			// 맵 데이터 업데이트 핸들러
+	this->register_handle(0x38, &acceptor::handle_refresh);				// 새로고침 핸들러
+	this->register_handle(0x1C, &acceptor::handle_active_item);			// 아이템 사용 핸들러
+	this->register_handle(0x1F, &acceptor::handle_inactive_item);		// 아이템 장착 해제 핸들러
+	this->register_handle(0x08, &acceptor::handle_drop_item);			// 아이템 버리기 핸들러
+	this->register_handle(0x24, &acceptor::handle_drop_cash);			// 금전 버리기 핸들러
+	this->register_handle(0x09, &acceptor::handle_front_info);			// 앞방향 정보 핸들러
+	this->register_handle(0x2D, &acceptor::handle_self_info);			// 나 자신의 정보 핸들러
+	this->register_handle(0x1B, &acceptor::handle_option_changed);		// 옵션 설정 핸들러
+	this->register_handle(0x43, &acceptor::handle_click_object);		// 오브젝트 클릭 핸들러
+	this->register_handle(0x66, &acceptor::handle_item_info);			// 인벤토리 우클릭 핸들러
+	this->register_handle(0x6B, &acceptor::handle_itemmix);				// 아이템 조합 핸들러
+	this->register_handle(0x4A, &acceptor::handle_trade);				// 교환 핸들러
+	this->register_handle(0x2E, &acceptor::handle_group);				// 그룹 핸들러
 
-	this->register_timer(100, &acceptor::handle_mob_action);
-	this->register_timer(1000, &acceptor::handle_mob_respawn);
+	this->register_timer(100, &acceptor::handle_mob_action);			// 몹 행동 타이머
+	this->register_timer(1000, &acceptor::handle_mob_respawn);			// 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
@@ -597,7 +597,7 @@ bool fb::game::acceptor::convert_npc_spawn_file(const std::string& db_fname)
 			std::cout << "invalid npc id : " << id << std::endl;
 			continue;
 		}
-		npc* npc = this->_npcs[id];
+		npc::core* npc = this->_npcs[id];
 		json_value["npc"] = npc->name();
 
 		std::string map_id_str;
@@ -819,7 +819,7 @@ bool fb::game::acceptor::convert_mob_spawn_file(const std::string& db_fname)
 			std::cout << "invalid mob id : " << mob_id << std::endl;
 			continue;
 		}
-		fb::game::mob* mob_core = this->_mobs[mob_id];
+		fb::game::mob::core* mob_core = this->_mobs[mob_id];
 
 
 		std::string map_id_str;
@@ -1223,7 +1223,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 
 		uint32_t damage_small_min = 0, damage_small_max = 0;
 		uint32_t damage_large_min = 0, damage_large_max = 0;
-		uint8_t hit = 0, random_damage = 0;
+		uint8_t hit = 0, damage = 0;
 		uint8_t sound = 0;
 		uint8_t strength = 0, intelligence = 0, dexteritry = 0;
 		uint32_t base_hp = 0, base_mp = 0;
@@ -1251,7 +1251,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 			}
 
 			hit = json["equipment option"]["hit"].asInt();
-			random_damage = json["equipment option"]["damage"].asInt();
+			damage = json["equipment option"]["damage"].asInt();
 			strength = json["equipment option"]["strength"].asInt();
 			intelligence = json["equipment option"]["intelligence"].asInt();
 			base_hp = json["equipment option"]["hp"].asInt();
@@ -1270,13 +1270,13 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 		}
 		
 
-		fb::game::item*               item = NULL;
+		fb::game::item::core*               item = NULL;
 		if(types == "stuff")
 		{
 			bool            available       = json["available"].asBool();       // default인 경우 일반아이템, bundle인 경우 일반번들
 			std::string     bundle_type     = json["bundle type"].asString();
 
-			item = new fb::game::item(name, icon, color);
+			item = new fb::game::item::core(name, icon, color);
 			if(json.isMember("capacity"))
 				item->capacity(json["capacity"].asInt());
 
@@ -1288,37 +1288,37 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 			uint32_t        capacity        = json["capacity"].asInt();
 
 			if(bundle_type == "package")
-				item = new fb::game::pack(name, icon, color, capacity);
+				item = new fb::game::pack::core(name, icon, color, capacity);
 			else
-				item = new fb::game::consume(name, icon, color, std::max(capacity, uint32_t(1)));
+				item = new fb::game::consume::core(name, icon, color, std::max(capacity, uint32_t(1)));
 		}
 		else if(types == "weapon")
 		{
-			item = new fb::game::weapon(name, icon, look, color);
+			item = new fb::game::weapon::core(name, icon, look, color);
 		}
 		else if(types == "armor")
 		{
-			item = new fb::game::armor(name, icon, look, color);
+			item = new fb::game::armor::core(name, icon, look, color);
 		}
 		else if(types == "helmet")
 		{
-			item = new fb::game::helmet(name, icon, look, color);
+			item = new fb::game::helmet::core(name, icon, look, color);
 		}
 		else if(types == "shield")
 		{
-			item = new fb::game::shield(name, icon, look, color);
+			item = new fb::game::shield::core(name, icon, look, color);
 		}
 		else if(types == "ring")
 		{
-			item = new fb::game::ring(name, icon, look, color);
+			item = new fb::game::ring::core(name, icon, look, color);
 		}
 		else if(types == "auxiliary")
 		{
-			item = new fb::game::auxiliary(name, icon, look, color);
+			item = new fb::game::auxiliary::core(name, icon, look, color);
 		}
 		else if(types == "arrow")
 		{
-			item = new fb::game::arrow(name, icon, look, color);
+			item = new fb::game::arrow::core(name, icon, look, color);
 		}
 		else
 		{
@@ -1336,14 +1336,13 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 
 		if(item->attr() & item::attrs::ITEM_ATTR_EQUIPMENT)
 		{
-			fb::game::equipment* equipment = static_cast<fb::game::equipment*>(item);
-			equipment->durability_base(durability);
+			fb::game::equipment::core* equipment = static_cast<fb::game::equipment::core*>(item);
 			equipment->durability(durability);
 			equipment->repairable(repairable);
 			equipment->repair_price(repair_price);
 			equipment->rename_price(rename_price);
 			equipment->hit(hit);
-			equipment->random_damage(random_damage);
+			equipment->damage(damage);
 			equipment->strength(strength);
 			equipment->intelligence(intelligence);
 			equipment->dexteritry(dexteritry);
@@ -1358,7 +1357,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 
 		if(item->attr() & item::attrs::ITEM_ATTR_WEAPON)
 		{
-			weapon* weapon = static_cast<fb::game::weapon*>(item);
+			weapon::core* weapon = static_cast<fb::game::weapon::core*>(item);
 			weapon->damage_small(damage_small_min, damage_small_max);
 			weapon->damage_large(damage_large_min, damage_large_max);
 			weapon->sound(sound);
@@ -1394,7 +1393,7 @@ bool fb::game::acceptor::load_npc(const std::string& db_fname)
 		uint16_t            look = json["look"].asInt() + 0x7FFF;
 		uint8_t             color = json["color"].asInt();
 
-		this->_npcs.insert(std::make_pair(key, new npc(name, look, color)));
+		this->_npcs.insert(std::make_pair(key, new npc::core(name, look, color)));
 	}
 
 	return true;
@@ -1419,7 +1418,7 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 		Json::Value         json = *i;
 
 		std::string         npc_name = json["npc"].asString();
-		npc*				core = this->name2npc(npc_name);
+		npc::core*			core = this->name2npc(npc_name);
 		if(core == NULL)
 		{
 			std::cout << "존재하지 않는 NPC입니다. : " << npc_name << std::endl;
@@ -1454,7 +1453,7 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 		point16_t           position(json["position"]["x"].asInt(), json["position"]["y"].asInt());
 		std::string         script = json["script"].asString();
 
-		fb::game::npc*      cloned = core->make();
+		fb::game::npc*      cloned = new npc(core);
 		cloned->direction(direction);
 		cloned->map(map);
 		cloned->position(position);
@@ -1533,12 +1532,10 @@ bool fb::game::acceptor::load_mob(const std::string& db_fname)
 				script_die = json["script"]["die"].asString();
 		}
 
-		mob* mob = new fb::game::mob(name, look, color);
+		mob::core* mob = new fb::game::mob::core(name, look, color, base_hp, 0);
 		mob->defensive_physical(defensive_physical);
 		mob->defensive_magical(defensive_magical);
 		mob->experience(experience);
-		mob->base_hp(base_hp);
-		mob->base_mp(0);
 		mob->damage_min(damage_min);
 		mob->damage_max(damage_max);
 		mob->offensive(offensive_type);
@@ -1580,7 +1577,7 @@ bool fb::game::acceptor::load_mob_spawn(const std::string& db_fname)
 		{
 			Json::Value		spawn = *spawn_i;
 
-			fb::game::mob*	core = this->name2mob(spawn["name"].asString());
+			mob::core*		core = this->name2mob(spawn["name"].asString());
 			if(core == NULL)
 				continue;
 
@@ -1593,7 +1590,7 @@ bool fb::game::acceptor::load_mob_spawn(const std::string& db_fname)
 
 			for(int i = 0; i < count; i++)
 			{
-				fb::game::mob* mob = core->make();
+				mob*		mob = static_cast<fb::game::mob*>(core->make());
 				mob->spawn_point(x0, y0);
 				mob->spawn_size(x1, y1);
 				mob->respawn_time(rezen);
@@ -1757,7 +1754,7 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
 		Json::Value require = (*i1)["require"];
 		for(auto i2 = require.begin(); i2 != require.end(); i2++)
 		{
-			fb::game::item* item = this->name2item((*i2)["item"].asString());
+			item::core* item = this->name2item((*i2)["item"].asString());
 			uint32_t count = (*i2)["count"].asInt();
 			itemmix->require_add(item, count);
 		}
@@ -1765,7 +1762,7 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
 		Json::Value success = (*i1)["success"];
 		for(auto i2 = success.begin(); i2 != success.end(); i2++)
 		{
-			fb::game::item* item = this->name2item((*i2)["item"].asString());
+			item::core* item = this->name2item((*i2)["item"].asString());
 			uint32_t count = (*i2)["count"].asInt();
 			itemmix->success_add(item, count);
 		}
@@ -1773,7 +1770,7 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
 		Json::Value failed = (*i1)["failed"];
 		for(auto i2 = failed.begin(); i2 != failed.end(); i2++)
 		{
-			fb::game::item* item = this->name2item((*i2)["item"].asString());
+			item::core* item = this->name2item((*i2)["item"].asString());
 			uint32_t count = (*i2)["count"].asInt();
 			itemmix->failed_add(item, count);
 		}
@@ -1796,7 +1793,7 @@ fb::game::map* fb::game::acceptor::name2map(const std::string& name) const
 	return NULL;
 }
 
-fb::game::npc* fb::game::acceptor::name2npc(const std::string& name) const
+fb::game::npc::core* fb::game::acceptor::name2npc(const std::string& name) const
 {
 	for(auto i = this->_npcs.begin(); i != this->_npcs.end(); i++)
 	{
@@ -1807,7 +1804,7 @@ fb::game::npc* fb::game::acceptor::name2npc(const std::string& name) const
 	return NULL;
 }
 
-fb::game::mob* fb::game::acceptor::name2mob(const std::string& name) const
+fb::game::mob::core* fb::game::acceptor::name2mob(const std::string& name) const
 {
 	for (auto i = this->_mobs.begin(); i != this->_mobs.end(); i++)
 	{
@@ -1818,7 +1815,7 @@ fb::game::mob* fb::game::acceptor::name2mob(const std::string& name) const
 	return NULL;
 }
 
-fb::game::item* fb::game::acceptor::name2item(const std::string& name) const
+fb::game::item::core* fb::game::acceptor::name2item(const std::string& name) const
 {
 	for (auto i = this->_items.begin(); i != this->_items.end(); i++)
 	{
@@ -1901,11 +1898,11 @@ bool acceptor::handle_connected(fb::game::session& session)
 	session.hp(0xFFFFFFFF);
 	session.title("갓승현 타이틀");
 
-	session.item_add(*this->_items[1015]->make()); // 정화의방패
-	session.item_add(*this->_items[243]->make()); // 도씨검
-	session.item_add(*this->_items[698]->make()); // 기모노
-	session.item_add(*this->_items[3014]->make()); // 도토리
-	session.item_add(*this->_items[2200]->make()); // 동동주
+	session.item_add(static_cast<fb::game::item*>(this->_items[1015]->make())); // 정화의방패
+	session.item_add(static_cast<fb::game::item*>(this->_items[243]->make())); // 도씨검
+	session.item_add(static_cast<fb::game::item*>(this->_items[698]->make())); // 기모노
+	session.item_add(static_cast<fb::game::item*>(this->_items[3014]->make())); // 도토리
+	session.item_add(static_cast<fb::game::item*>(this->_items[2200]->make())); // 동동주
 
 	// 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
 	session.weapon(static_cast<fb::game::weapon*>(this->_items[15]->make())); // 초심자의 목도
@@ -1981,7 +1978,7 @@ fb::ostream fb::game::acceptor::make_dialog_stream(const std::string& message, b
 	return ostream;
 }
 
-void fb::game::acceptor::send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self, bool encrypt)
+void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
 	switch(scope)
 	{
@@ -2053,7 +2050,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 		map* map = mob.map();
 
 		// 몹 체력 깎고 체력게이지 표시
-		mob.hp_decrease(random_damage);
+		mob.hp_down(random_damage);
 		this->send_stream(mob, mob.make_show_hp_stream(random_damage, true), scope::PIVOT, true);
 
 		
@@ -2073,13 +2070,13 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 
 		// 드롭 아이템 떨구기
 		const std::vector<mob::drop>& items = mob.items();
-		std::vector<fb::game::object*> dropped_items;
+		std::vector<object*> dropped_items;
 		for(auto i = items.begin(); i != items.end(); i++)
 		{
 			if(std::rand() % 100 > (*i).percentage)
 				continue;
 
-			item* item = (*i).item->make();
+			item* item = static_cast<fb::game::item*>((*i).item->make());
 			item->map(map);
 			item->position(mob.position());
 
@@ -2231,7 +2228,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
 	if(session.position() != before)
 		this->send_stream(session, session.make_position_stream(), scope::SELF);
 
-	std::vector<fb::game::object*> show_objects, hide_objects;
+	std::vector<object*> show_objects, hide_objects;
 	std::vector<fb::game::session*> show_sessions, hide_sessions, shown_sessions, hidden_sessions;
 	if(session.movable_forward())
 	{
@@ -2254,7 +2251,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
 	}
 	
 	// 오브젝트 갱신
-	this->send_stream(session, fb::game::object::make_show_stream(show_objects), scope::SELF);
+	this->send_stream(session, object::make_show_stream(show_objects), scope::SELF);
 	for(auto i = hide_objects.begin(); i != hide_objects.end(); i++)
 		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
 
@@ -2306,7 +2303,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 		this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(0x015D)), scope::PIVOT);
 	}
 
-	fb::game::object*		front = session.forward_object(fb::game::object::types::MOB);
+	object*		front = session.forward_object(object::types::MOB);
 	if(front == NULL)
 		return true;
 
@@ -2344,18 +2341,18 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 
 	for(int i = objects.size()-1; i >= 0; i--)
 	{
-		fb::game::object* object = objects[i];
+		object*				object = objects[i];
 		if(object->position() != session.position())
 			continue;
 
-		if(object->type() != fb::game::object::types::ITEM)
+		if(object->type() != object::types::ITEM)
 			continue;
 
 		fb::game::item*     below = static_cast<fb::game::item*>(object);
 		bool                item_moved = false;
 		if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
 		{
-			fb::game::cash* cash = static_cast<fb::game::cash*>(below);
+			cash*			cash = static_cast<fb::game::cash*>(below);
 			uint32_t        remain = session.money_add(cash->chunk());
 			cash->chunk(remain); // 먹고 남은 돈으로 설정
 
@@ -2580,7 +2577,7 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 
 	uint8_t                 cmd = istream.read_u8();
 	uint32_t                chunk = std::min(session.money(), istream.read_u32());
-	fb::game::cash*         cash = new fb::game::cash(chunk);
+	cash*					cash = new fb::game::cash(chunk);
 	
 	session.money_reduce(chunk);
 
@@ -2606,11 +2603,11 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
 		this->send_stream(session, this->make_message_stream((*i)->name(), message_types::MESSAGE_STATE), scope::SELF);
 	}
 
-	std::vector<fb::game::object*> objects = session.forward_objects(fb::game::object::types::UNKNOWN);
+	std::vector<object*> objects = session.forward_objects(object::types::UNKNOWN);
 	for(auto i = objects.begin(); i != objects.end(); i++)
 	{
-		fb::game::object* object = *i;
-		if(object->type() == fb::game::object::types::ITEM)
+		object* object = *i;
+		if(object->type() == object::types::ITEM)
 		{
 			fb::game::item* item = static_cast<fb::game::item*>(object);
 			this->send_stream(session, this->make_message_stream(item->name_styled(), message_types::MESSAGE_STATE), scope::SELF);
@@ -2760,7 +2757,7 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 		return true;
 	}
 
-	fb::game::object* object = session.map()->object(fd);
+	object* object = session.map()->object(fd);
 	if(object != NULL) // object
 	{
 		return true;
@@ -2822,9 +2819,9 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
 		for(auto i = itemmix->require.begin(); i != itemmix->require.end(); i++)
 		{
-			fb::game::item* core = (*i).item;
+			item::core* core = (*i).item;
 			uint16_t count = (*i).count;
-			uint8_t index = session.item2index(*core);
+			uint8_t index = session.item2index(core);
 			if(index == 0xFF)
 				return true;
 
@@ -2849,7 +2846,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 		{
 			for(auto i = itemmix->success.begin(); i != itemmix->success.end(); i++)
 			{
-				fb::game::item* item = (*i).item->make();
+				item* item = static_cast<fb::game::item*>((*i).item->make());
 				item->count((*i).count);
 				uint8_t index = session.item_add(item);
 				this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
@@ -2861,7 +2858,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 		{
 			for(auto i = itemmix->failed.begin(); i != itemmix->failed.end(); i++)
 			{
-				fb::game::item* item = (*i).item->make();
+				item* item = static_cast<fb::game::item*>((*i).item->make());
 				item->count((*i).count);
 				uint8_t index = session.item_add(item);
 				this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
@@ -3016,7 +3013,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 			break;
 		}
 
-		uint8_t index = session.item2index(*selected);
+		uint8_t index = session.item2index(selected->based<item::core>());
 		if(selected->count() == count)
 		{
 			// 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.
@@ -3034,7 +3031,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 		{
 			// 일부만 올리는 경우, 기존의 것에서 갯수를 깎고 새로 복사된 아이템을 거래 리스트로 옮긴다.
 			selected->reduce(count);
-			fb::game::item* cloned = selected->make();
+			item* cloned = selected->clone<fb::game::item>();
 			cloned->count(count);
 
 			uint8_t trade_index = ts_mine.add(cloned);
@@ -3186,12 +3183,12 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 		}
 
 		uint32_t random_damage = mob->random_damage(*target);
-		target->hp_decrease(random_damage);
+		target->hp_down(random_damage);
 
 
 		// 공격하는 패킷 보낸다.
 		this->send_stream(*mob, mob->make_action_stream(fb::game::action::ATTACK, fb::game::duration::DURATION_ATTACK), scope::PIVOT, true);
-		this->send_stream(*target, target->make_show_hp_stream(random_damage, false), scope::PIVOT, true);
+		this->send_stream(*target, target->make_show_hp_stream(random_damage, false), scope::PIVOT);
 		this->send_stream(*target, target->make_state_stream(state_level::LEVEL_MIDDLE), scope::SELF);
 		return;
 	}
@@ -3248,12 +3245,12 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
 	for(auto map_i = this->_maps.begin(); map_i != this->_maps.end(); map_i++)
 	{
 		fb::game::map* map = map_i->second;
-		const std::vector<fb::game::object*>& objects = map->objects();
+		const std::vector<object*>& objects = map->objects();
 
 		for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
 		{
-			fb::game::object* object = (*obj_i);
-			if(object->type() != fb::game::object::types::MOB)
+			object* object = (*obj_i);
+			if(object->type() != object::types::MOB)
 				continue;
 
 			fb::game::mob* mob = static_cast<fb::game::mob*>(object);
@@ -3286,14 +3283,14 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
 void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 {
 	// 리젠된 전체 몹을 저장
-	std::vector<fb::game::object*> spawned_mobs;
+	std::vector<object*> spawned_mobs;
 	for(auto map_i = this->_maps.begin(); map_i != this->_maps.end(); map_i++)
 	{
 		fb::game::map* map = map_i->second;
-		const std::vector<fb::game::object*>& objects = map->objects();
+		const std::vector<object*>& objects = map->objects();
 		for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
 		{
-			if((*obj_i)->type() != fb::game::object::types::MOB)
+			if((*obj_i)->type() != object::types::MOB)
 				continue;
 
 			fb::game::mob* mob = static_cast<fb::game::mob*>(*obj_i);
@@ -3309,7 +3306,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 
 
 	// 화면에 보이는 몹만 갱신
-	std::vector<fb::game::object*> buffer;
+	std::vector<object*> buffer;
 	std::vector<fb::game::session*>& sessions = this->sessions();
 	for(auto i = sessions.begin(); i != sessions.end(); i++)
 	{
@@ -3327,7 +3324,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 			buffer.push_back(*obj_i);
 		}
 
-		this->send_stream(*session, fb::game::object::make_show_stream(buffer), scope::SELF);
+		this->send_stream(*session, object::make_show_stream(buffer), scope::SELF);
 	}
 }
 

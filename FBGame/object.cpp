@@ -2,13 +2,55 @@
 #include "map.h"
 #include "session.h"
 #include <iostream>
+#include "mob.h"
 
-// fb::game::object
-fb::game::object::object(uint32_t id, const std::string& name, uint16_t look, uint8_t color, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
-	_id(id),
+fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
 	_name(name),
 	_look(look),
-	_color(color),
+	_color(color)
+{
+}
+
+fb::game::object::core::~core()
+{
+}
+
+const std::string& fb::game::object::core::name() const
+{
+	return this->_name;
+}
+
+void fb::game::object::core::name(const std::string& value)
+{
+	this->_name = value;
+}
+
+uint16_t fb::game::object::core::look() const
+{
+	return this->_look;
+}
+
+void fb::game::object::core::look(uint16_t value)
+{
+	this->_look = value;
+}
+
+uint8_t fb::game::object::core::color() const
+{
+	return this->_color;
+}
+
+void fb::game::object::core::color(uint8_t value)
+{
+	this->_color = value;
+}
+
+
+
+// fb::game::object
+fb::game::object::object(const core* core, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
+	_core(core),
+	_id(id),
 	_position(position),
 	_direction(direction),
 	_map(map)
@@ -16,12 +58,17 @@ fb::game::object::object(uint32_t id, const std::string& name, uint16_t look, ui
 }
 
 fb::game::object::object(const object& right) :
-	object(right._id, right._name, right._look, right._color, right._position, right._direction, right._map)
+	object(right._core, right._id, right._position, right._direction, right._map)
 {
 }
 
 fb::game::object::~object()
 {}
+
+const fb::game::object::core* fb::game::object::based() const
+{
+	return this->_core;
+}
 
 uint32_t fb::game::object::id() const
 {
@@ -35,32 +82,17 @@ void fb::game::object::id(uint32_t value)
 
 const std::string& fb::game::object::name() const
 {
-	return this->_name;
-}
-
-void fb::game::object::name(const std::string& value)
-{
-	this->_name = value;
+	return this->_core->name();
 }
 
 uint16_t fb::game::object::look() const
 {
-	return this->_look;
-}
-
-void fb::game::object::look(uint16_t value)
-{
-	this->_look = value;
+	return this->_core->look();
 }
 
 uint8_t fb::game::object::color() const
 {
-	return this->_color;
-}
-
-void fb::game::object::color(uint8_t value)
-{
-	this->_color = value;
+	return this->_core->color();
 }
 
 fb::game::object::types fb::game::object::type() const
@@ -719,28 +751,107 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
 	return ostream;
 }
 
-fb::game::life::life() : 
-	_hp(0), _base_hp(0),
-	_mp(0), _base_mp(0),
-	_experience(0),
+fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+	object::core(name, look, color),
+	_hp(hp), _mp(mp),
+	_experience(0)
+{}
+
+
+fb::game::life::core::core(const core& core, uint32_t hp, uint32_t mp) : 
+	fb::game::object::core(core),
+	_hp(hp), _mp(mp),
+	_experience(0)
+{
+}
+
+fb::game::life::core::core(const core& right) : 
+	fb::game::object::core(right),
+	_hp(right._hp), _mp(right._mp),
+	_experience(right._experience)
+{
+}
+
+fb::game::life::core::~core()
+{
+}
+
+uint32_t fb::game::life::core::hp() const
+{
+	return this->_hp;
+}
+
+void fb::game::life::core::hp(uint32_t value)
+{
+	this->_hp = value;
+}
+
+uint32_t fb::game::life::core::mp() const
+{
+	return this->_mp;
+}
+
+void fb::game::life::core::mp(uint32_t value)
+{
+	this->_mp = value;
+}
+
+uint32_t fb::game::life::core::experience() const
+{
+	return this->_experience;
+}
+
+void fb::game::life::core::experience(uint32_t value)
+{
+	this->_experience = value;
+}
+
+uint32_t fb::game::life::core::defensive_physical() const
+{
+	return this->_defensive.physical;
+}
+
+void fb::game::life::core::defensive_physical(uint8_t value)
+{
+	this->_defensive.physical = value;
+}
+
+uint32_t fb::game::life::core::defensive_magical() const
+{
+	return this->_defensive.magical;
+}
+
+void fb::game::life::core::defensive_magical(uint8_t value)
+{
+	this->_defensive.magical = value;
+}
+
+fb::game::object* fb::game::life::core::make() const
+{
+	return new life(this);
+}
+
+
+fb::game::life::life(const core* core) : 
+	object(core),
+	_hp(0),
+	_mp(0),
 	_condition(fb::game::condition::NONE)
 {
 }
 
-fb::game::life::life(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp, uint32_t exp) : 
-	object(id, name, look, color),
-	_hp(hp), _base_hp(hp),
-	_mp(mp), _base_mp(mp),
-	_experience(exp),
+fb::game::life::life(core* core, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
+	object(core, id),
+	_hp(hp),
+	_mp(mp),
 	_condition(fb::game::condition::NONE)
 {
 }
 
 fb::game::life::life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp) : 
 	object(object),
-	_hp(hp), _base_hp(hp),
-	_mp(mp), _base_mp(mp),
-	_experience(exp),
+	_hp(hp),
+	_mp(mp),
 	_condition(fb::game::condition::NONE)
 {
 }
@@ -760,15 +871,26 @@ uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& lif
 	return random_damage * Xrate;
 }
 
-void fb::game::life::hp_increase(uint32_t value)
+void fb::game::life::hp_up(uint32_t value)
 {
-	uint32_t capacity = 0xFFFFFFFF - this->_base_hp;
+	uint32_t capacity = 0xFFFFFFFF - this->base_hp();
 	this->_hp += std::min(capacity, value);
 }
 
-void fb::game::life::hp_decrease(uint32_t value)
+void fb::game::life::hp_down(uint32_t value)
 {
 	this->_hp -= std::min(value, this->_hp);
+}
+
+void fb::game::life::mp_up(uint32_t value)
+{
+	uint32_t capacity = 0xFFFFFFFF - this->base_mp();
+	this->_mp += std::min(capacity, value);
+}
+
+void fb::game::life::mp_down(uint32_t value)
+{
+	this->_mp -= std::min(value, this->_mp);
 }
 
 uint32_t fb::game::life::hp() const
@@ -793,52 +915,27 @@ void fb::game::life::mp(uint32_t value)
 
 uint32_t fb::game::life::base_hp() const
 {
-	return this->_base_hp;
-}
-
-void fb::game::life::base_hp(uint32_t value)
-{
-	this->_base_hp = std::max(uint32_t(1), value);
+	return static_cast<const core*>(this->_core)->_hp;
 }
 
 uint32_t fb::game::life::base_mp() const
 {
-	return this->_base_mp;
-}
-
-void fb::game::life::base_mp(uint32_t value)
-{
-	this->_base_mp = std::max(uint32_t(1), value);
+	return static_cast<const core*>(this->_core)->_mp;
 }
 
 uint32_t fb::game::life::experience() const
 {
-	return this->_experience;
-}
-
-void fb::game::life::experience(uint32_t value)
-{
-	this->_experience = value;
+	return static_cast<const core*>(this->_core)->_experience;
 }
 
 uint32_t fb::game::life::defensive_physical() const
 {
-	return this->_defensive.physical;
-}
-
-void fb::game::life::defensive_physical(uint8_t value)
-{
-	this->_defensive.physical = value;
+ 	return static_cast<const core*>(this->_core)->_defensive.physical;
 }
 
 uint32_t fb::game::life::defensive_magical() const
 {
-	return this->_defensive.magical;
-}
-
-void fb::game::life::defensive_magical(uint8_t value)
-{
-	this->_defensive.magical = value;
+	return static_cast<const core*>(this->_core)->_defensive.magical;
 }
 
 fb::game::condition fb::game::life::condition() const
@@ -924,7 +1021,7 @@ fb::ostream fb::game::life::make_action_stream(fb::game::action action, fb::game
 fb::ostream fb::game::life::make_show_hp_stream(uint32_t random_damage, bool critical) const
 {
 	fb::ostream				ostream;
-	uint8_t					percentage = uint8_t((this->_hp / float(this->_base_hp)) * 100);
+	uint8_t					percentage = uint8_t((this->_hp / float(this->base_hp())) * 100);
 
 	ostream.write_u8(0x13)
 		.write_u32(this->_id)

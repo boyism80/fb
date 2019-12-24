@@ -151,10 +151,10 @@ public:
 typedef struct _mutable_uint8_t
 {
 public:
-	uint8_t base, current;
+	uint8_t core, current;
 
 public:
-	_mutable_uint8_t(uint8_t value) { this->base = this->current = value; }
+	_mutable_uint8_t(uint8_t value) { this->core = this->current = value; }
 
 } mutable_uint8_t;
 
@@ -162,11 +162,11 @@ public:
 typedef struct _mutable_uint16_t
 {
 public:
-	uint16_t base, current;
+	uint16_t core, current;
 
 public:
-	_mutable_uint16_t(uint16_t value) { this->base = this->current = value; }
-	_mutable_uint16_t(uint16_t base, uint16_t current) { this->base = base; this->current = current; }
+	_mutable_uint16_t(uint16_t value) { this->core = this->current = value; }
+	_mutable_uint16_t(uint16_t core, uint16_t current) { this->core = core; this->current = current; }
 
 } mutable_uint16_t;
 
@@ -174,11 +174,11 @@ public:
 typedef struct _mutable_uint32_t
 {
 public:
-	uint32_t base, current;
+	uint32_t core, current;
 
 public:
-	_mutable_uint32_t(uint32_t value) { this->base = this->current = value; }
-	_mutable_uint32_t(uint32_t base, uint32_t current) { this->base = base; this->current = current; }
+	_mutable_uint32_t(uint32_t value) { this->core = this->current = value; }
+	_mutable_uint32_t(uint32_t core, uint32_t current) { this->core = core; this->current = current; }
 
 } mutable_uint32_t;
 

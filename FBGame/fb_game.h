@@ -32,9 +32,9 @@ private:
 
 private:
 	std::map<uint16_t, map*>			_maps;
-	std::map<uint16_t, item*>			_items;
-	std::map<uint16_t, npc*>			_npcs;
-	std::map<uint16_t, mob*>			_mobs;
+	std::map<uint16_t, item::core*>		_items;
+	std::map<uint16_t, npc::core*>		_npcs;
+	std::map<uint16_t, mob::core*>		_mobs;
 	std::vector<class_data*>			_classes;
 	std::vector<itemmix*>				_itemmixes;
 
@@ -64,9 +64,9 @@ private:
 
 public:
 	fb::game::map*			name2map(const std::string& name) const;
-	fb::game::npc*			name2npc(const std::string& name) const;
-	fb::game::mob*			name2mob(const std::string& name) const;
-	fb::game::item*			name2item(const std::string& name) const;
+	fb::game::npc::core*	name2npc(const std::string& name) const;
+	fb::game::mob::core*	name2mob(const std::string& name) const;
+	fb::game::item::core*	name2item(const std::string& name) const;
 	const std::string*		class2name(uint8_t cls, uint8_t promotion) const;
 	bool					name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id) const;
 	itemmix*				find_itemmix(const std::vector<item*>& items);

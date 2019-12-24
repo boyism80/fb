@@ -4,117 +4,184 @@
 #include <sysinfoapi.h>
 #include <iostream>
 
-fb::game::mob::mob(const std::string& name, uint16_t look, uint8_t color) : 
-	life(0xFFFFFFFF, name, look, color),
+fb::game::mob::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+	fb::game::life::core(name, look, color, hp, mp),
 	_damage(0, 0),
 	_offensive_type(offensive_type::NONE),
 	_size(sizes::SMALL),
-	_speed(1000),
+	_speed(1000)
+{
+}
+
+fb::game::mob::core::core(const life::core& core) :
+	life::core(core),
+	_damage(0, 0),
+	_offensive_type(offensive_type::NONE),
+	_size(sizes::SMALL),
+	_speed(1000)
+{}
+
+fb::game::mob::core::~core()
+{}
+
+fb::game::object* fb::game::mob::core::make() const
+{
+	return new mob(this);
+}
+
+uint16_t fb::game::mob::core::damage_min() const
+{
+	return this->_damage.min;
+}
+
+void fb::game::mob::core::damage_min(uint16_t value)
+{
+	this->_damage.min = value;
+}
+
+uint16_t fb::game::mob::core::damage_max() const
+{
+	return this->_damage.max;
+}
+
+void fb::game::mob::core::damage_max(uint16_t value)
+{
+	this->_damage.max = value;
+}
+
+fb::game::mob::sizes fb::game::mob::core::size() const
+{
+	return this->_size;
+}
+
+void fb::game::mob::core::size(mob::sizes value)
+{
+	this->_size = value;
+}
+
+uint32_t fb::game::mob::core::speed() const
+{
+	return this->_speed;
+}
+
+void fb::game::mob::core::speed(uint32_t value)
+{
+	this->_speed = value;
+}
+
+const std::string& fb::game::mob::core::script_attack() const
+{
+	return this->_script_attack;
+}
+
+void fb::game::mob::core::script_attack(const std::string& value)
+{
+	this->_script_attack = value;
+}
+
+const std::string& fb::game::mob::core::script_die() const
+{
+	return this->_script_die;
+}
+
+void fb::game::mob::core::script_die(const std::string& value)
+{
+	this->_script_die = value;
+}
+
+fb::game::mob::offensive_type fb::game::mob::core::offensive() const
+{
+	return this->_offensive_type;
+}
+
+void fb::game::mob::core::offensive(offensive_type value)
+{
+	this->_offensive_type = value;
+}
+
+void fb::game::mob::core::dropitem_add(const mob::drop& drop)
+{
+	this->_items.push_back(drop);
+}
+
+void fb::game::mob::core::dropitem_add(const fb::game::item::core* item, float percentage)
+{
+	this->_items.push_back(drop(item, percentage));
+}
+
+const std::vector<fb::game::mob::drop>& fb::game::mob::core::items() const
+{
+	return this->_items;
+}
+
+
+
+
+fb::game::mob::mob(const mob::core* core) : 
+	life(core),
 	_action_time(0),
 	_dead_time(0),
 	_respawn_time(0),
 	_target(NULL)
 {}
 
-fb::game::mob::mob(const mob& right) : 
+fb::game::mob::mob(const mob& right) :
 	life(right),
-	_damage(right._damage),
-	_offensive_type(right._offensive_type),
-	_size(right._size),
-	_speed(right._speed),
-	_script_attack(right._script_attack),
-	_script_die(right._script_die),
 	_spawn_point(right._spawn_point),
 	_spawn_size(right._spawn_size),
 	_action_time(right._action_time),
 	_dead_time(right._dead_time),
 	_respawn_time(right._respawn_time),
-	_target(right._target),
-	_items(right._items.begin(), right._items.end())
+	_target(right._target)
 {}
 
 fb::game::mob::~mob()
 {}
 
-uint16_t fb::game::mob::damage_min() const
+fb::game::object::types fb::game::mob::type() const
 {
-	return this->_damage.min;
+	return static_cast<const core*>(this->_core)->type();
 }
 
-void fb::game::mob::damage_min(uint16_t value)
+uint16_t fb::game::mob::damage_min() const
 {
-	this->_damage.min = value;
+	return static_cast<const core*>(this->_core)->_damage.min;
 }
 
 uint16_t fb::game::mob::damage_max() const
 {
-	return this->_damage.max;
-}
-
-void fb::game::mob::damage_max(uint16_t value)
-{
-	this->_damage.max = value;
+	return static_cast<const core*>(this->_core)->_damage.max;
 }
 
 fb::game::mob::sizes fb::game::mob::size() const
 {
-	return this->_size;
-}
-
-void fb::game::mob::size(mob::sizes value)
-{
-	this->_size = value;
+	return static_cast<const core*>(this->_core)->_size;
 }
 
 uint32_t fb::game::mob::speed() const
 {
-	return this->_speed;
-}
-
-void fb::game::mob::speed(uint32_t value)
-{
-	this->_speed = value;
+	return static_cast<const core*>(this->_core)->_speed;
 }
 
 const std::string& fb::game::mob::script_attack() const
 {
-	return this->_script_attack;
-}
-
-void fb::game::mob::script_attack(const std::string& value)
-{
-	this->_script_attack = value;
+	return static_cast<const core*>(this->_core)->_script_attack;
 }
 
 const std::string& fb::game::mob::script_die() const
 {
-	return this->_script_die;
-}
-
-void fb::game::mob::script_die(const std::string& value)
-{
-	this->_script_die = value;
+	return static_cast<const core*>(this->_core)->_script_die;
 }
 
 fb::game::mob::offensive_type fb::game::mob::offensive() const
 {
-	return this->_offensive_type;
-}
-
-void fb::game::mob::offensive(offensive_type value)
-{
-	this->_offensive_type = value;
-}
-
-fb::game::mob* fb::game::mob::make() const
-{
-	return new fb::game::mob(*this);
+	return static_cast<const core*>(this->_core)->_offensive_type;
 }
 
 uint32_t fb::game::mob::random_damage(fb::game::life& life) const
 {
-	uint32_t difference = std::abs(this->_damage.max - this->_damage.min);
-	uint32_t random_damage = this->_damage.min + (std::rand() % difference);
+	uint32_t difference = std::abs(this->damage_max() - this->damage_min());
+	uint32_t random_damage = this->damage_min() + (std::rand() % difference);
 
 	return __super::random_damage(random_damage, life);
 }
@@ -245,17 +312,7 @@ fb::game::session* fb::game::mob::autoset_target()
 	return this->_target;
 }
 
-void fb::game::mob::dropitem_add(const mob::drop& drop)
-{
-	this->_items.push_back(drop);
-}
-
-void fb::game::mob::dropitem_add(const fb::game::item* item, float percentage)
-{
-	this->_items.push_back(drop(item, percentage));
-}
-
 const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
 {
-	return this->_items;
+	return static_cast<const core*>(this->_core)->items();
 }

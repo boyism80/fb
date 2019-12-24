@@ -14,6 +14,10 @@ namespace fb { namespace game {
 
 class session;
 
+//
+// class item
+// 일반 아이템
+//
 class item : public object
 {
 public:
@@ -83,59 +87,67 @@ public:
 	static const item_limit			DEFAULT_LIMIT;
 	static const uint32_t			MAX_ITEM_SLOT = 52;
 
+public:
+	class core : public fb::game::object::core
+	{
+	protected:
+		uint32_t						_price;
+		item_limit						_limit;
+		penalties						_penalty;
+		uint16_t						_capacity;
+		bool							_trade;
+		bool							_bundle;
+		uint32_t						_entrust;
+		std::string						_tooltip, _desc;
+		std::string						_active_script;
+
+		friend class fb::game::item;
+
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
+		core(const fb::game::object::core& core);
+		virtual ~core();
+
+	public:
+		uint32_t						price() const;
+		void							price(uint32_t value);
+
+		uint16_t						capacity() const;
+		void							capacity(uint16_t value);
+
+		bool							trade() const;
+		void							trade(bool value);
+
+		uint32_t						entrust() const;
+		void							entrust(uint32_t value);
+
+		const item_limit&				limit() const;
+		void							limit(const item::item_limit& value);
+
+		penalties						penalty() const;
+		void							penalty(penalties value);
+
+		const std::string&				desc() const;
+		void							desc(const std::string& value);
+
+		const std::string&				active_script() const;
+		void							active_script(const std::string& value);
+
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+	};
+
 protected:
-	const item*						_core;
-	uint32_t						_price;
-	item_limit						_limit;
-	penalties						_penalty;
-	uint16_t						_capacity;
 	uint16_t						_count;
-	bool							_trade;
-	bool							_bundle;
-	uint32_t						_entrust;
-	std::string						_tooltip, _desc;
-	std::string						_active_script;
 
 public:
-	item();
-	item(const std::string& name, uint16_t look, uint8_t color = 0);
+	item(const fb::game::item::core* core);
 	item(const item& right);
 	virtual ~item();
 
 public:
 	virtual const std::string		name_styled() const;
 	virtual const std::string		name_trade() const;
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
-
-public:
-	const item*						core() const;
-
-	uint32_t						price() const;
-	void							price(uint32_t value);
-
-	uint16_t						capacity() const;
-	void							capacity(uint16_t value);
-
-	bool							trade() const;
-	void							trade(bool value);
-
-	uint32_t						entrust() const;
-	void							entrust(uint32_t value);
-
-	const item_limit&				limit() const;
-	void							limit(const item::item_limit& value);
-
-	penalties						penalty() const;
-	void							penalty(penalties value);
-
-	const std::string&				desc() const;
-	void							desc(const std::string& value);
-
-	const std::string&				active_script() const;
-	void							active_script(const std::string& value);
-
-	object::types					type() const { return object::ITEM; }
 
 protected:
 	virtual std::string				tip_message() const;
@@ -149,6 +161,18 @@ public:
 	virtual bool					empty() const;
 
 public:
+	uint32_t						price() const;
+	uint16_t						capacity() const;
+	bool							trade() const;
+	uint32_t						entrust() const;
+	const item_limit&				limit() const;
+	penalties						penalty() const;
+	const std::string&				desc() const;
+	const std::string&				active_script() const;
+	object::types					type() const { return object::ITEM; }
+	attrs							attr() const;
+
+public:
 	fb::ostream						make_tip_stream(uint16_t position);
 
 public:
@@ -156,12 +180,26 @@ public:
 	virtual item*					handle_drop(object& owner, uint16_t count = 1);
 };
 
-
-
+//
+// class cash
+// 게임머니
+//
 class cash : public item
 {
 public:
-	static const fb::game::item		BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
+	class core : public fb::game::item::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+	};
+
+public:
+	static const core				BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
 
 private:
 	uint32_t						_chunk;
@@ -172,8 +210,6 @@ public:
 
 public:
 	virtual const std::string		name_styled() const;
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
 
 public:
 	uint32_t						chunk() const;
@@ -184,39 +220,71 @@ public:
 };
 
 
-
-
+//
+// class consume
+// 소비아이템
+//
 class consume : public item
 {
 public:
-	consume(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
-	consume(const consume& right);
-	~consume();
+	class core : public fb::game::item::core
+	{
+	public:
+		friend class consume;
+
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
+		~core();
+
+	public:
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	consume(const core* core);
+	consume(const consume& right);
+	~consume();
 
 public:
 	bool							handle_acive(session& session);
 };
 
 
-
-
+//
+// class pack
+// 묶음 아이템 (동동주 같은 아이템)
+//
 class pack : public item
 {
+public:
+	class core : public fb::game::item::core
+	{
+	private:
+		uint16_t						_durability;
+
+		friend class pack;
+
+	public:
+		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+		~core();
+
+	public:
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+	};
+
 private:
 	uint16_t						_durability;
 
 public:
-	pack(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+	pack(const core* core);
 	pack(const pack& right);
 	~pack();
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	uint16_t						durability() const;
+	uint16_t						base_durability() const;
 
 public:
 	const std::string				name_styled() const;
@@ -224,90 +292,136 @@ public:
 };
 
 
+//
+// class equipment
+// 장비
+//
 class equipment : public item
 {
 public:
 	enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 
-protected:
-	uint16_t						_dress;
-	mutable_uint16_t				_durability;
-	bool							_repairable;
-	uint32_t						_repair_price;
-	uint32_t						_rename_price;
-	std::string						_inactive_script;
+public:
+	class core : public fb::game::item::core
+	{
+	protected:
+		uint16_t						_dress;
+		uint16_t						_durability;
+		bool							_repairable;
+		uint32_t						_repair_price;
+		uint32_t						_rename_price;
+		std::string						_inactive_script;
 
-	uint8_t							_hit, _damage;
-	uint8_t							_strength, _intelligence, _dexteritry;
-	uint32_t						_base_hp, _base_mp;
-	float							_hp_percentage, _mp_percentage;
-	uint8_t							_healing_cycle;
-	defensive						_defensive;
+		uint8_t							_hit, _damage;
+		uint8_t							_strength, _intelligence, _dexteritry;
+		uint32_t						_base_hp, _base_mp;
+		float							_hp_percentage, _mp_percentage;
+		uint8_t							_healing_cycle;
+		defensive						_defensive;
+
+		friend class equipment;
+
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+		~core();
+
+	public:
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+
+	public:
+		uint16_t						dress() const;
+
+		uint16_t						durability() const;
+		void							durability(uint16_t value);
+
+		bool							repairable() const;
+		void							repairable(bool value);
+
+		uint32_t						repair_price() const;
+		void							repair_price(uint32_t value);
+
+		uint32_t						rename_price() const;
+		void							rename_price(uint32_t value);
+
+		int16_t							defensive_physical() const;
+		void							defensive_physical(int16_t value);
+
+		int16_t							defensive_magical() const;
+		void							defensive_magical(int16_t value);
+
+
+		uint8_t							hit() const;
+		void							hit(uint8_t value);
+
+		uint8_t							damage() const;
+		void							damage(uint8_t value);
+
+		uint8_t							strength() const;
+		void							strength(uint8_t value);
+
+		uint8_t							intelligence() const;
+		void							intelligence(uint8_t value);
+
+		uint8_t							dexteritry() const;
+		void							dexteritry(uint8_t value);
+
+		uint32_t						base_hp() const;
+		void							base_hp(uint32_t value);
+
+		uint32_t						base_mp() const;
+		void							base_mp(uint32_t value);
+
+		float							hp_percentage() const;
+		void							hp_percentage(float value);
+
+		float							mp_percentage() const;
+		void							mp_percentage(float value);
+
+		uint8_t							healing_cycle() const;
+		void							healing_cycle(uint8_t value);
+
+	};
+
+protected:
+	uint16_t						_durability;
 
 public:
-	equipment(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+	equipment(const equipment::core* core);
 	equipment(const equipment& right);
 	virtual ~equipment();
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
 	const std::string				name_trade() const;
 
 public:
 	uint16_t						dress() const;
 
 	uint16_t						durability() const;
-	void							durability(uint16_t value);
-
 	uint16_t						durability_base() const;
-	void							durability_base(uint16_t value);
 
 	bool							repairable() const;
-	void							repairable(bool value);
-
 	uint32_t						repair_price() const;
-	void							repair_price(uint32_t value);
-
 	uint32_t						rename_price() const;
-	void							rename_price(uint32_t value);
 
 	int16_t							defensive_physical() const;
-	void							defensive_physical(int16_t value);
-
 	int16_t							defensive_magical() const;
-	void							defensive_magical(int16_t value);
 
 
 	uint8_t							hit() const;
-	void							hit(uint8_t value);
-
-	uint8_t							random_damage() const;
-	void							random_damage(uint8_t value);
-
+	uint8_t							damage() const;
+	
 	uint8_t							strength() const;
-	void							strength(uint8_t value);
-
 	uint8_t							intelligence() const;
-	void							intelligence(uint8_t value);
-
 	uint8_t							dexteritry() const;
-	void							dexteritry(uint8_t value);
 
 	uint32_t						base_hp() const;
-	void							base_hp(uint32_t value);
-
 	uint32_t						base_mp() const;
-	void							base_mp(uint32_t value);
 
 	float							hp_percentage() const;
-	void							hp_percentage(float value);
-
 	float							mp_percentage() const;
-	void							mp_percentage(float value);
 
 	uint8_t							healing_cycle() const;
-	void							healing_cycle(uint8_t value);
 
 
 protected:
@@ -316,7 +430,10 @@ protected:
 };
 
 
-
+//
+// class weapon
+// 무기
+//
 class weapon : public equipment
 {
 public:
@@ -327,113 +444,213 @@ public:
 
 	public:
 		_damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) {}
-	} random_damage;
+	} damage_range;
 
 	
 	enum types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
 
+public:
+	class core : public equipment::core
+	{
+	private:
+		damage_range					_damage_range;
+		uint16_t						_sound;
+		std::string						_spell;
 
-protected:
-	random_damage					_damage_range;
-	uint16_t						_sound;
-	std::string						_spell;
+		friend class fb::game::weapon;
+
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
+		~core();
+
+	public:
+		virtual attrs					attr() const;
+		virtual object*					make() const;
+		weapon::types					weapon_type() const;
+
+		const range32_t&				damage_small() const;
+		void							damage_small(uint32_t min, uint32_t max);
+		const range32_t&				damage_large() const;
+		void							damage_large(uint32_t min, uint32_t max);
+
+		uint16_t						sound() const;
+		void							sound(uint16_t value);
+
+		const std::string&				spell() const;
+		void							spell(const std::string& value);
+
+	};
+
 
 public:
-	weapon(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+	weapon(const core* core);
 	weapon(const weapon& right);
 	~weapon();
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
 	weapon::types					weapon_type() const;
-
 	const range32_t&				damage_small() const;
-	void							damage_small(uint32_t min, uint32_t max);
 	const range32_t&				damage_large() const;
-	void							damage_large(uint32_t min, uint32_t max);
-
 	uint16_t						sound() const;
-	void							sound(uint16_t value);
-
 	const std::string&				spell() const;
-	void							spell(const std::string& value);
 
 protected:
 	std::string						mid_message() const;
 };
 
+
+//
+// class armor
+// 갑옷
+//
 class armor : public equipment
 {
 public:
-	armor(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	armor(const armor& right);
-	~armor();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	armor(const core* core);
+	armor(const armor& right);
+	~armor();
 };
 
+
+//
+// helmet
+// 투구
+//
 class helmet : public equipment
 {
 public:
-	helmet(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	helmet(const helmet& right);
-	~helmet();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	helmet(const core* core);
+	helmet(const helmet& right);
+	~helmet();
 };
 
+
+//
+// class shield
+// 방패
+//
 class shield : public equipment
 {
 public:
-	shield(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	shield(const shield& right);
-	~shield();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	shield(const core* core);
+	shield(const shield& right);
+	~shield();
 };
 
+
+//
+// class ring
+// 반지
+//
 class ring : public equipment
 {
 public:
-	ring(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	ring(const ring& right);
-	~ring();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	ring(const core* core);
+	ring(const ring& right);
+	~ring();
 };
 
+
+//
+// class auxilliary
+// 보조
+//
 class auxiliary : public equipment
 {
 public:
-	auxiliary(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	auxiliary(const auxiliary& right);
-	~auxiliary();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	auxiliary(const core* core);
+	auxiliary(const auxiliary& right);
+	~auxiliary();
 };
 
+
+//
+// class arrow
+// 화살
+//
 class arrow : public equipment
 {
 public:
-	arrow(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-	arrow(const arrow& right);
-	~arrow();
+	class core : public equipment::core
+	{
+	public:
+		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		~core();
+
+	public:
+		virtual attrs				attr() const;
+		virtual object*				make() const;
+	};
 
 public:
-	virtual attrs					attr() const;
-	virtual fb::game::item*			make() const;
+	arrow(const core* core);
+	arrow(const arrow& right);
+	~arrow();
 };
+
+
+
 
 typedef struct _itemmix
 {
@@ -441,18 +658,18 @@ private:
 	typedef struct _element
 	{
 	public:
-		item* item;
-		uint32_t count;
+		item::core*		item;		// 재료 아이템
+		uint32_t		count;		// 갯수
 
 	public:
-		_element(fb::game::item* item, uint32_t count) : item(item), count(count) {}
+		_element(fb::game::item::core* item, uint32_t count) : item(item), count(count) {}
 		_element(const _element& right) : item(right.item), count(right.count) {}
 	} element;
 
 public:
-	std::vector<element> require;
-	std::vector<element> success;
-	std::vector<element> failed;
+	std::vector<element> require;	// 재료 아이템
+	std::vector<element> success;	// 성공시 얻는 아이템
+	std::vector<element> failed;	// 실패시 얻는 아이템
 	float percentage;
 
 public:
@@ -468,9 +685,9 @@ private:
 	bool contains(const item* item) const;
 
 public:
-	void require_add(fb::game::item* item, uint32_t count);
-	void success_add(fb::game::item* item, uint32_t count);
-	void failed_add(fb::game::item* item, uint32_t count);
+	void require_add(fb::game::item::core* item, uint32_t count);
+	void success_add(fb::game::item::core* item, uint32_t count);
+	void failed_add(fb::game::item::core* item, uint32_t count);
 
 	bool matched(const std::vector<item*>& items) const;
 } itemmix;
