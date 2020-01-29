@@ -22,6 +22,7 @@ public:
 	class core
 	{
 	protected:
+		uint32_t					_id;
 		std::string					_name;
 		uint16_t					_look;
 		uint8_t						_color;
@@ -30,10 +31,12 @@ public:
 		friend class fb::game::object;
 
 	public:
-		core(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
+		core(uint32_t id, const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
 		virtual ~core();
 
 	public:
+		uint32_t					id() const;
+
 		const std::string&			name() const;
 		void						name(const std::string& value);
 
@@ -83,6 +86,7 @@ public:
 	point16_t					position() const;
 	bool						position(uint16_t x, uint16_t y);
 	bool						position(const point16_t position);
+	point16_t					forward() const;
 	bool						movable(fb::game::direction direction) const;
 	bool						movable_forward() const;
 	bool						move(fb::game::direction direction, std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
@@ -99,6 +103,7 @@ public:
 
 	fb::game::map*				map() const;
 	virtual uint16_t			map(fb::game::map* map);
+	virtual uint16_t			map(fb::game::map* map, const point16_t& position);
 
 	bool						sight(const point16_t& position) const;
 	bool						sight(const fb::game::object& object) const;
@@ -148,7 +153,7 @@ public:
 		friend class fb::game::life;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
 		core(const core& core, uint32_t hp, uint32_t mp);
 		core(const core& core);
 		virtual ~core();
@@ -188,6 +193,7 @@ protected:
 public:
 	virtual uint32_t		hp() const;
 	virtual void			hp(uint32_t value);
+	void					heal(uint32_t value = 0xFFFFFFFF);
 
 	virtual uint32_t		mp() const;
 	virtual void			mp(uint32_t value);
@@ -212,6 +218,7 @@ public:
 	bool					condition_contains(fb::game::condition value) const;
 
 	bool					alive() const;
+	void					kill();
 
 public:
 	fb::ostream				make_move_stream() const;

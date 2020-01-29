@@ -76,11 +76,11 @@ fb::game::map::~map()
 {
 	delete[] this->_tiles;
 	
-	for(auto i = this->_objects.begin(); i != this->_objects.end(); i++)
-		delete *i;
+	for(auto object : this->_objects)
+		delete object;
 
-	for(auto i = this->_warps.begin(); i != this->_warps.end(); i++)
-		delete *i;
+	for(auto warp : this->_warps)
+		delete warp;
 }
 
 uint16_t fb::game::map::empty_seq()
@@ -181,12 +181,12 @@ std::vector<fb::game::object*>& fb::game::map::objects()
 
 fb::game::object* fb::game::map::object(uint16_t id)
 {
-	for(auto i = this->_objects.begin(); i != this->_objects.end(); i++)
+	for(const auto object : this->_objects)
 	{
-		if((*i)->id() != id)
+		if(object->id() != id)
 			continue;
 
-		return *i;
+		return object;
 	}
 
 	return NULL;
@@ -227,10 +227,10 @@ uint16_t fb::game::map::object_add(fb::game::object* object, const point16_t pos
 
 fb::game::object* fb::game::map::object_exists(point16_t position) const
 {
-	for(auto i = this->_objects.begin(); i != this->_objects.end(); i++)
+	for(auto object : this->_objects)
 	{
-		if((*i)->position() == position)
-			return *i;
+		if(object->position() == position)
+			return object;
 	}
 
 	return NULL;
@@ -282,9 +282,8 @@ bool fb::game::map::movable(const point16_t position) const
 	if((*this)(position.x, position.y)->blocked)
 		return false;
 
-	for(auto i = this->_objects.begin(); i != this->_objects.end(); i++)
+	for(const auto object : this->_objects)
 	{
-		fb::game::object* object = (*i);
 		if(object->alive() == false)
 			continue;
 
@@ -295,9 +294,8 @@ bool fb::game::map::movable(const point16_t position) const
 			return false;
 	}
 
-	for(auto i = this->_sessions.begin(); i != this->_sessions.end(); i++)
+	for(const auto session : this->_sessions)
 	{
-		fb::game::session* session = (*i);
 		if(session->position() == position)
 			return false;
 	}
@@ -346,9 +344,8 @@ void fb::game::map::warp_add(map* map, const point16_t& before, const point16_t&
 
 const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) const
 {
-	for(auto i = this->_warps.begin(); i != this->_warps.end(); i++)
+	for(const auto warp : this->_warps)
 	{
-		map::warp* warp = (*i);
 		if(warp->before != position)
 			continue;
 

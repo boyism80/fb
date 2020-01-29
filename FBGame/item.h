@@ -104,7 +104,7 @@ public:
 		friend class fb::game::item;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
 		core(const fb::game::object::core& core);
 		virtual ~core();
 
@@ -190,7 +190,7 @@ public:
 	class core : public fb::game::item::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
 		~core();
 
 	public:
@@ -233,7 +233,7 @@ public:
 		friend class consume;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
 		~core();
 
 	public:
@@ -266,7 +266,7 @@ public:
 		friend class pack;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
 		~core();
 
 	public:
@@ -322,7 +322,7 @@ public:
 		friend class equipment;
 
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
 		~core();
 
 	public:
@@ -460,8 +460,8 @@ public:
 		friend class fb::game::weapon;
 
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
 		~core();
 
 	public:
@@ -510,7 +510,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:
@@ -535,7 +535,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:
@@ -560,7 +560,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:
@@ -585,7 +585,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:
@@ -610,7 +610,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:
@@ -635,7 +635,7 @@ public:
 	class core : public equipment::core
 	{
 	public:
-		core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
 		~core();
 
 	public:

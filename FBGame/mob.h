@@ -53,7 +53,7 @@ public:
 		friend class mob;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
 		core(const life::core& core);
 		~core();
 

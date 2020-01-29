@@ -106,6 +106,9 @@ public:
 	_size8() { width = height = 0; }
 	_size8(uint8_t width, uint8_t height) { this->width = width; this->height = height; }
 
+public:
+	bool empty() { return this->width == 0 || this->height == 0; }
+
 } size8_t;
 
 
@@ -118,6 +121,111 @@ public:
 public:
 	_point16() { x = y = 0; }
 	_point16(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
+
+public:
+	struct _point16& move(direction direction, uint16_t step = 1)
+	{
+		switch(direction)
+		{
+		case fb::game::direction::TOP:
+			this->y -= step;
+			break;
+
+		case fb::game::direction::BOTTOM:
+			this->y += step;
+			break;
+
+		case fb::game::direction::LEFT:
+			this->x -= step;
+			break;
+
+		case fb::game::direction::RIGHT:
+			this->x += step;
+			break;
+		}
+
+		return *this;
+	}
+
+	struct _point16& forward(direction direction, uint16_t step = 1)
+	{
+		return this->move(direction, step);
+	}
+
+	struct _point16& backward(direction direction, uint16_t step = 1)
+	{
+		auto newdir = direction;
+		switch(direction)
+		{
+		case fb::game::direction::TOP:
+			newdir = fb::game::direction::BOTTOM;
+			break;
+
+		case fb::game::direction::BOTTOM:
+			newdir = fb::game::direction::TOP;
+			break;
+
+		case fb::game::direction::LEFT:
+			newdir = fb::game::direction::RIGHT;
+			break;
+
+		case fb::game::direction::RIGHT:
+			newdir = fb::game::direction::LEFT;
+			break;
+		}
+
+		return this->move(newdir, step);
+	}
+
+	struct _point16& left(direction direction, uint16_t step = 1)
+	{
+		auto newdir = direction;
+		switch(direction)
+		{
+		case fb::game::direction::TOP:
+			newdir = fb::game::direction::LEFT;
+			break;
+
+		case fb::game::direction::BOTTOM:
+			newdir = fb::game::direction::RIGHT;
+			break;
+
+		case fb::game::direction::LEFT:
+			newdir = fb::game::direction::BOTTOM;
+			break;
+
+		case fb::game::direction::RIGHT:
+			newdir = fb::game::direction::TOP;
+			break;
+		}
+
+		return this->move(newdir, step);
+	}
+
+	struct _point16& right(direction direction, uint16_t step = 1)
+	{
+		auto newdir = direction;
+		switch(direction)
+		{
+		case fb::game::direction::TOP:
+			newdir = fb::game::direction::RIGHT;
+			break;
+
+		case fb::game::direction::BOTTOM:
+			newdir = fb::game::direction::LEFT;
+			break;
+
+		case fb::game::direction::LEFT:
+			newdir = fb::game::direction::TOP;
+			break;
+
+		case fb::game::direction::RIGHT:
+			newdir = fb::game::direction::BOTTOM;
+			break;
+		}
+
+		return this->move(newdir, step);
+	}
 
 public:
 	bool operator == (const struct _point16& right) const
@@ -143,6 +251,9 @@ public:
 public:
 	_size16() { width = height = 0; }
 	_size16(uint16_t width, uint16_t height) { this->width = width; this->height = height; }
+
+public:
+	bool empty() { return this->width == 0 || this->height == 0; }
 
 } size16_t;
 

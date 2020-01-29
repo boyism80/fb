@@ -13,7 +13,7 @@ public:
 		friend class npc;
 
 	public:
-		core(const std::string& name, uint16_t look, uint8_t color = 0);
+		core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
 		~core();
 
 	public:

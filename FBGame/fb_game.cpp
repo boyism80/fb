@@ -1129,7 +1129,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 	{
 		Json::Value         json            = *i;
 
-		uint16_t            code            = std::stoi(i.key().asString());
+		uint32_t            code            = std::stoi(i.key().asString());
 		std::string         name            = json["name"].asString();
 		std::string         types           = json["type"].asString();
 		
@@ -1278,7 +1278,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 			bool            available       = json["available"].asBool();       // default인 경우 일반아이템, bundle인 경우 일반번들
 			std::string     bundle_type     = json["bundle type"].asString();
 
-			item = new fb::game::item::core(name, icon, color);
+			item = new fb::game::item::core(code, name, icon, color);
 			if(json.isMember("capacity"))
 				item->capacity(json["capacity"].asInt());
 
@@ -1290,37 +1290,37 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 			uint32_t        capacity        = json["capacity"].asInt();
 
 			if(bundle_type == "package")
-				item = new fb::game::pack::core(name, icon, color, capacity);
+				item = new fb::game::pack::core(code, name, icon, color, capacity);
 			else
-				item = new fb::game::consume::core(name, icon, color, std::max(capacity, uint32_t(1)));
+				item = new fb::game::consume::core(code, name, icon, color, std::max(capacity, uint32_t(1)));
 		}
 		else if(types == "weapon")
 		{
-			item = new fb::game::weapon::core(name, icon, look, color);
+			item = new fb::game::weapon::core(code, name, icon, look, color);
 		}
 		else if(types == "armor")
 		{
-			item = new fb::game::armor::core(name, icon, look, color);
+			item = new fb::game::armor::core(code, name, icon, look, color);
 		}
 		else if(types == "helmet")
 		{
-			item = new fb::game::helmet::core(name, icon, look, color);
+			item = new fb::game::helmet::core(code, name, icon, look, color);
 		}
 		else if(types == "shield")
 		{
-			item = new fb::game::shield::core(name, icon, look, color);
+			item = new fb::game::shield::core(code, name, icon, look, color);
 		}
 		else if(types == "ring")
 		{
-			item = new fb::game::ring::core(name, icon, look, color);
+			item = new fb::game::ring::core(code, name, icon, look, color);
 		}
 		else if(types == "auxiliary")
 		{
-			item = new fb::game::auxiliary::core(name, icon, look, color);
+			item = new fb::game::auxiliary::core(code, name, icon, look, color);
 		}
 		else if(types == "arrow")
 		{
-			item = new fb::game::arrow::core(name, icon, look, color);
+			item = new fb::game::arrow::core(code, name, icon, look, color);
 		}
 		else
 		{
@@ -1385,17 +1385,16 @@ bool fb::game::acceptor::load_npc(const std::string& db_fname)
 		return false;
 	ifstream.close();
 
-
 	for(auto i = json_npc.begin(); i != json_npc.end(); i++)
 	{
-		uint16_t            key = std::stoi(i.key().asString());
+		uint32_t            key = std::stoi(i.key().asString());
 		Json::Value         json = *i;
 
 		std::string         name = json["name"].asString();
 		uint16_t            look = json["look"].asInt() + 0x7FFF;
 		uint8_t             color = json["color"].asInt();
 
-		this->_npcs.insert(std::make_pair(key, new npc::core(name, look, color)));
+		this->_npcs.insert(std::make_pair(key, new npc::core(key, name, look, color)));
 	}
 
 	return true;
@@ -1457,8 +1456,7 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 
 		fb::game::npc*      cloned = new npc(core);
 		cloned->direction(direction);
-		cloned->map(map);
-		cloned->position(position);
+		cloned->map(map, position);
 		cloned->script(script);
 	}
 	return true;
@@ -1534,7 +1532,7 @@ bool fb::game::acceptor::load_mob(const std::string& db_fname)
 				script_die = json["script"]["die"].asString();
 		}
 
-		mob::core* mob = new fb::game::mob::core(name, look, color, base_hp, 0);
+		mob::core* mob = new fb::game::mob::core(key, name, look, color, base_hp, 0);
 		mob->defensive_physical(defensive_physical);
 		mob->defensive_magical(defensive_magical);
 		mob->experience(experience);
@@ -1819,10 +1817,10 @@ fb::game::mob::core* fb::game::acceptor::name2mob(const std::string& name) const
 
 fb::game::item::core* fb::game::acceptor::name2item(const std::string& name) const
 {
-	for (auto i = this->_items.begin(); i != this->_items.end(); i++)
+	for(auto item : this->_items)
 	{
-		if (i->second->name() == name)
-			return i->second;
+		if(item.second->name() == name)
+			return item.second;
 	}
 
 	return NULL;
@@ -1887,9 +1885,8 @@ uint32_t fb::game::acceptor::required_exp(uint8_t class_id, uint8_t level)
 
 bool acceptor::handle_connected(fb::game::session& session)
 {
-	session.map(this->_maps[315]);
+	session.map(this->_maps[315], point16_t(6, 8));
 	session.name("채승현");
-	session.position(point16_t(6, 8));
 	session.look(0x61);
 	session.color(0x0A);
 	session.money(150);
@@ -2097,8 +2094,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 				continue;
 
 			item* item = static_cast<fb::game::item*>((*i).item->make());
-			item->map(map);
-			item->position(mob.position());
+			item->map(map, mob.position());
 
 			dropped_items.push_back(item);
 		}
@@ -2661,27 +2657,36 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 	{
 	case options::RIDE:
 	{
-		std::string message;
+		std::string			message;
+		static auto			horse = this->name2mob("말");
+		if(horse == NULL)
+			break;
+
 		try
 		{
 			if(session.state_assert(message, state(state::GHOST | state::DISGUISE)) == false)
 				throw std::runtime_error(message);
 
-			object* horse = NULL;
+			object*			forward = NULL;
 
 			if(session.state() == fb::game::state::RIDING)
 			{
 				message = "말에서 내렸습니다.";
 				session.state(fb::game::state::NORMAL);
 
-				
+				auto forward_horse = static_cast<fb::game::mob*>(horse->make());
+				forward_horse->map(session.map(), session.forward());
+				forward_horse->heal();
+				this->send_stream(*forward_horse, forward_horse->make_show_stream(), scope::PIVOT, true);
 			}
 			else
 			{
-				horse = session.forward_object(object::types::MOB);
-				//if(horse == NULL || static_cast<fb::game::mob*>(horse)->)
-				//	throw std::runtime_error("탈 것이 없습니다.");
+				forward = session.forward_object(object::types::MOB);
+				if(forward == NULL || forward->based() != horse)
+					throw std::runtime_error("탈 것이 없습니다.");
 
+				static_cast<fb::game::mob*>(forward)->kill();
+				this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
 				message = "말에 탔습니다.";
 				session.state(fb::game::state::RIDING);
 			}
@@ -2837,16 +2842,14 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 			throw std::runtime_error("인벤토리가 부족합니다.");
 
 
-		for(auto i = itemmix->require.begin(); i != itemmix->require.end(); i++)
+		for(auto require : itemmix->require)
 		{
-			item::core* core = (*i).item;
-			uint16_t count = (*i).count;
-			uint8_t index = session.item2index(core);
+			uint8_t index = session.item2index(require.item);
 			if(index == 0xFF)
 				return true;
 
 			fb::game::item* item = session.item(index);
-			item->reduce(count);
+			item->reduce(require.count);
 
 
 			if(item->empty())
@@ -3407,8 +3410,7 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
 	for(auto i = sessions.begin(); i != sessions.end(); i++)
 		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
 
-	session.map(warp->map);
-	session.position(warp->after);
+	session.map(warp->map, warp->after);
 
 	this->send_stream(session, session.make_id_stream(), scope::SELF);
 	this->send_stream(session, warp->map->make_config_stream(), scope::SELF);

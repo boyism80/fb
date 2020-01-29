@@ -4,8 +4,8 @@
 #include <sysinfoapi.h>
 #include <iostream>
 
-fb::game::mob::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-	fb::game::life::core(name, look, color, hp, mp),
+fb::game::mob::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+	fb::game::life::core(id, name, look, color, hp, mp),
 	_damage(0, 0),
 	_offensive_type(offensive_type::NONE),
 	_size(sizes::SMALL),
@@ -253,11 +253,14 @@ bool fb::game::mob::spawn(uint64_t now)
 	if(this->alive())
 		return false;
 
+	if(this->_spawn_size.empty())
+		return false;
+
 	if((now - this->_dead_time) / 1000 < this->_respawn_time)
 		return false;
 
 	this->direction(fb::game::direction(std::rand() % 4));
-	this->hp(this->base_hp());
+	this->heal();
 
 	while(true)
 	{

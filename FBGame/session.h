@@ -246,6 +246,7 @@ public:
 
 	fb::game::map*			map() const;
 	uint16_t				map(fb::game::map* map);
+	uint16_t				map(fb::game::map* map, const point16_t position);
 
 	trade_system&			trade_system();
 

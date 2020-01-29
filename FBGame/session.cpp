@@ -347,7 +347,7 @@ bool fb::game::group_system::remove(session& session)
 session::session(SOCKET socket) : 
 	fb_session(socket),
 	life((life::core*)NULL, socket, 0, 0, 0),
-	life::core("fb", 0, 0, 0, 0),
+	life::core(socket, "fb", 0, 0, 0, 0),
 	_nation(fb::game::nation::GOGURYEO),
 	_creature(fb::game::creature::DRAGON),
 	_state(state::NORMAL),
@@ -521,7 +521,7 @@ uint32_t fb::game::session::mp() const
 
 uint32_t fb::game::session::id() const
 {
-	return this->_id;
+	return life::id();
 }
 
 fb::game::nation fb::game::session::nation() const
@@ -1246,6 +1246,14 @@ uint16_t fb::game::session::map(fb::game::map* map)
 	return this->id();
 }
 
+uint16_t fb::game::session::map(fb::game::map* map, const point16_t position)
+{
+	uint16_t seq = this->map(map);
+	this->position(position);
+
+	return seq;
+}
+
 trade_system& fb::game::session::trade_system()
 {
 	return this->_trade_system;
@@ -1276,19 +1284,19 @@ bool fb::game::session::group_leave()
 
 bool fb::game::session::state_assert(std::string& message, fb::game::state flags) const
 {
-	if(flags & fb::game::state::GHOST && this->_state == fb::game::GHOST)
+	if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
 	{
 		message = "귀신은 할 수 없습니다.";
 		return false;
 	}
 
-	if(flags & fb::game::state::RIDING && this->_state == fb::game::RIDING)
+	if((flags & state::RIDING) == state::RIDING && this->_state == state::RIDING)
 	{
 		message = "말을 타고는 할 수 없습니다.";
 		return false;
 	}
 
-	if(flags & fb::game::state::DISGUISE && this->_state == fb::game::DISGUISE)
+	if((flags & state::DISGUISE) == state::DISGUISE && this->_state == state::DISGUISE)
 	{
 		message = "변신 중에는 할 수 없습니다.";
 		return false;
@@ -1804,7 +1812,7 @@ fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool
 
 	ostream.write_u8(0x0D)
 		.write_u8(shout)
-		.write_u32(this->_id)
+		.write_u32(this->id())
 		.write_u8(converted.size())
 		.write(converted.c_str(), converted.size() + 1);
 

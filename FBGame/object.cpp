@@ -4,7 +4,8 @@
 #include <iostream>
 #include "mob.h"
 
-fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
+fb::game::object::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
+	_id(id),
 	_name(name),
 	_look(look),
 	_color(color)
@@ -13,6 +14,11 @@ fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t col
 
 fb::game::object::core::~core()
 {
+}
+
+uint32_t fb::game::object::core::id() const
+{
+	return this->_id;
 }
 
 const std::string& fb::game::object::core::name() const
@@ -63,7 +69,10 @@ fb::game::object::object(const object& right) :
 }
 
 fb::game::object::~object()
-{}
+{
+	if(this->_map != NULL)
+		this->_map->object_delete(this);
+}
 
 const fb::game::object::core* fb::game::object::based() const
 {
@@ -123,6 +132,34 @@ bool fb::game::object::position(const point16_t position)
 	this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(position.x)));
 	this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(position.y)));
 	return true;
+}
+
+fb::game::point16_t fb::game::object::forward() const
+{
+	point16_t forward(this->_position);
+	forward.forward(this->_direction);
+	if(this->_map->movable(forward))
+		return forward;
+
+
+	point16_t backward(this->_position);
+	forward.backward(this->_direction);
+	if(this->_map->movable(backward))
+		return backward;
+
+
+	point16_t left(this->_position);
+	forward.left(this->_direction);
+	if(this->_map->movable(left))
+		return left;
+
+
+	point16_t right(this->_position);
+	forward.right(this->_direction);
+	if(this->_map->movable(right))
+		return right;
+
+	return this->_position;
 }
 
 uint16_t fb::game::object::x() const
@@ -327,6 +364,14 @@ uint16_t fb::game::object::map(fb::game::map* map)
 
 	this->_map = map;
 	return this->_map->object_add(this);
+}
+
+uint16_t fb::game::object::map(fb::game::map* map, const point16_t& position)
+{
+	uint16_t seq = this->map(map);
+	this->position(position);
+
+	return seq;
 }
 
 bool fb::game::object::sight(const point16_t& position) const
@@ -751,8 +796,8 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
 	return ostream;
 }
 
-fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-	object::core(name, look, color),
+fb::game::life::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+	object::core(id, name, look, color),
 	_hp(hp), _mp(mp),
 	_experience(0)
 {}
@@ -903,6 +948,12 @@ void fb::game::life::hp(uint32_t value)
 	this->_hp = value;
 }
 
+void fb::game::life::heal(uint32_t value)
+{
+	uint32_t space = this->base_hp() - this->_hp;
+	this->_hp += std::min(value, space);
+}
+
 uint32_t fb::game::life::mp() const
 {
 	return this->_mp;
@@ -963,6 +1014,11 @@ bool fb::game::life::condition_contains(fb::game::condition value) const
 bool fb::game::life::alive() const
 {
 	return this->_hp != 0;
+}
+
+void fb::game::life::kill()
+{
+	this->_hp = 0;
 }
 
 fb::ostream fb::game::life::make_move_stream() const
