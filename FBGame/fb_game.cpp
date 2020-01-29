@@ -50,6 +50,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	this->register_handle(0x6B, &acceptor::handle_itemmix);				// 아이템 조합 핸들러
 	this->register_handle(0x4A, &acceptor::handle_trade);				// 교환 핸들러
 	this->register_handle(0x2E, &acceptor::handle_group);				// 그룹 핸들러
+	this->register_handle(0x18, &acceptor::handle_user_list);			// 유저 리스트 핸들러
 
 	this->register_timer(100, &acceptor::handle_mob_action);			// 몹 행동 타이머
 	this->register_timer(1000, &acceptor::handle_mob_respawn);			// 몹 리젠 타이머
@@ -3156,6 +3157,36 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
 	// 여기서 접속해있는 세션 전체 대상으로 루프를 돌 게 아니라
 	// DB에 접근해서 하는 방식이 나을 것 같다는 생각이 드는구만
 	
+	return true;
+}
+
+bool fb::game::acceptor::handle_user_list(fb::game::session& session)
+{
+	fb::istream&				istream = session.in_stream();
+	uint8_t						cmd = istream.read_u8();
+	uint8_t						unknown = istream.read_u8();
+
+
+	fb::ostream					ostream;
+	auto&						sessions = this->sessions();
+	ostream.write_u8(0x36)
+		.write_u16(sessions.size())
+		.write_u16(sessions.size())
+		.write_u8(0x00);
+
+	for(const auto& session : sessions)
+	{
+		const auto& name = session->name();
+
+		ostream.write_u8(0x10 * session->nation())
+			.write_u8(0x10 * session->promotion())
+			.write_u8(0x0F)
+			.write_u8(name.size())
+			.write(name.c_str(), name.size());
+	}
+
+	this->send_stream(session, ostream, scope::SELF);
+
 	return true;
 }
 

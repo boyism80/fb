@@ -114,6 +114,7 @@ public:
 	bool					handle_itemmix(fb::game::session& session);
 	bool					handle_trade(fb::game::session& session);
 	bool					handle_group(fb::game::session& session);
+	bool					handle_user_list(fb::game::session& session);
 
 private:
 	void					handle_counter_mob_action(fb::game::mob* mob);
