@@ -1792,3 +1792,21 @@ fb::ostream fb::game::session::make_option_stream() const
 
 	return ostream;
 }
+
+fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool shout) const
+{
+	fb::ostream				ostream;
+	
+	std::stringstream		sstream;
+	sstream << this->_name << ": " << message;
+
+	std::string				converted = sstream.str();
+
+	ostream.write_u8(0x0D)
+		.write_u8(shout)
+		.write_u32(this->_id)
+		.write_u8(converted.size())
+		.write(converted.c_str(), converted.size() + 1);
+
+	return ostream;
+}

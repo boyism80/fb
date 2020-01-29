@@ -51,6 +51,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	this->register_handle(0x4A, &acceptor::handle_trade);				// 교환 핸들러
 	this->register_handle(0x2E, &acceptor::handle_group);				// 그룹 핸들러
 	this->register_handle(0x18, &acceptor::handle_user_list);			// 유저 리스트 핸들러
+	this->register_handle(0x0E, &acceptor::handle_chat);				// 유저 채팅 핸들러
 
 	this->register_timer(100, &acceptor::handle_mob_action);			// 몹 행동 타이머
 	this->register_timer(1000, &acceptor::handle_mob_respawn);			// 몹 리젠 타이머
@@ -1989,14 +1990,32 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
 
 	case acceptor::scope::PIVOT:
 	{
-		std::vector<fb::game::session*> sessions = object.looking_sessions();
+		const auto sessions = object.looking_sessions();
 		if(!exclude_self)
 			__super::send_stream(static_cast<fb::game::session&>(object), stream, encrypt);
 
-		for(auto i = sessions.begin(); i != sessions.end(); i++)
-			__super::send_stream(**i, stream, encrypt);
-	}
+		for(const auto session : sessions)
+			__super::send_stream(*session, stream, encrypt);
 		break;
+	}
+
+	case acceptor::scope::MAP:
+	{
+		const auto& sessions = this->sessions();
+		for(const auto session : sessions)
+		{
+			if(session->map() != object.map())
+				continue;
+
+			if(exclude_self && session == &object)
+				continue;
+
+			__super::send_stream(*session, stream, encrypt);
+		}
+
+		break;
+	}
+
 	}
 }
 
@@ -3186,6 +3205,22 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 	}
 
 	this->send_stream(session, ostream, scope::SELF);
+
+	return true;
+}
+
+bool fb::game::acceptor::handle_chat(fb::game::session& session)
+{
+	fb::istream&				istream = session.in_stream();
+	uint8_t						cmd = istream.read_u8();
+	
+	uint8_t						shout = istream.read_u8();
+	uint8_t						length = istream.read_u8();
+	static char					message[0xFF];
+	istream.read(message, length);
+	message[length] = 0;
+
+	this->send_stream(session, session.make_chat_stream(message, shout), shout ? scope::MAP : scope::PIVOT);
 
 	return true;
 }
