@@ -31,18 +31,6 @@ fb::game::item::_limit::_limit(uint16_t level, uint16_t strength, uint16_t dexte
 {
 }
 
-/*
-uint32_t						_price;
-item_limit						_limit;
-penalties						_penalty;
-uint16_t						_capacity;
-bool							_trade;
-bool							_bundle;
-uint32_t						_entrust;
-std::string						_tooltip, _desc;
-std::string						_active_script;
-*/
-
 fb::game::item::core::core(const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
 	fb::game::object::core(name, look, color),
 	_price(0),
