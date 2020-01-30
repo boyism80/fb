@@ -16,40 +16,40 @@
 
 using namespace fb::login;
 
-acceptor*		acceptor_login;
+acceptor*       acceptor_login;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
-	switch(signal)
-	{
-	case CTRL_C_EVENT:
-		acceptor_login->exit();
-		puts("Please wait to exit acceptor.");
-		break;
-	}
+    switch(signal)
+    {
+    case CTRL_C_EVENT:
+        acceptor_login->exit();
+        puts("Please wait to exit acceptor.");
+        break;
+    }
 
-	return true;
+    return true;
 }
 
 int main(int argc, const char** argv)
 {
-	::SetConsoleCtrlHandler(handle_console, true);
+    ::SetConsoleCtrlHandler(handle_console, true);
 
-	// Initialization
-	WSADATA					wsa;
-	if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		return 0;
+    // Initialization
+    WSADATA                 wsa;
+    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 0;
 
 
-	// Execute acceptor
-	acceptor_login = new acceptor(2001);
-	acceptor_login->execute(true);
+    // Execute acceptor
+    acceptor_login = new acceptor(2001);
+    acceptor_login->execute(true);
 
-	fgetchar();
+    fgetchar();
 
-	// Clean up
-	delete acceptor_login;
-	WSACleanup();
+    // Clean up
+    delete acceptor_login;
+    WSACleanup();
 
-	return 0;
+    return 0;
 }

@@ -20,15 +20,15 @@ fb_session::~fb_session()
 
 fb::cryptor& fb_session::crt()
 {
-	return this->_cryptor;
+    return this->_cryptor;
 }
 
 void fb_session::crt(const cryptor& cryptor)
 {
-	this->_cryptor = cryptor;
+    this->_cryptor = cryptor;
 }
 
 void fb_session::crt(uint8_t types, uint8_t* key)
 {
-	this->_cryptor = cryptor(types, key);
+    this->_cryptor = cryptor(types, key);
 }

@@ -22,216 +22,216 @@ fb::cryptor::cryptor() : cryptor(0, (uint8_t*)"NexonInc.")
 
 fb::cryptor::cryptor(uint8_t types, uint8_t* key) : _key(NULL), _sequence(0), _type(types)
 {
-	this->_key = new uint8_t[0x09 * 4];
-	for(int i = 0; i < 4; i++)
-		memcpy(this->_key + 0x09 * i, key, 0x09);
+    this->_key = new uint8_t[0x09 * 4];
+    for(int i = 0; i < 4; i++)
+        memcpy(this->_key + 0x09 * i, key, 0x09);
 }
 
 fb::cryptor::cryptor(const cryptor& crt) : _sequence(0)
 {
-	this->operator=(crt);
+    this->operator=(crt);
 }
 
 fb::cryptor::~cryptor()
 {
-	delete[] this->_key;
+    delete[] this->_key;
 }
 
 void fb::cryptor::internal_crypt(const uint8_t* core, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize)
 {
-	uint8_t*				dest_offset = dest;
-	const uint8_t*			src_offset  = core;
-	uint32_t				num_loop    = size / 4;
+    uint8_t*                dest_offset = dest;
+    const uint8_t*          src_offset  = core;
+    uint32_t                num_loop    = size / 4;
 
 
-	for(uint32_t i = 0; i < num_loop; i++)
-	{
-		unsigned int*		cvtint_dest = (unsigned int*)dest_offset;
-		unsigned int*		cvtint_src  = (unsigned int*)src_offset;
-		unsigned int*		cvtint_key  = (unsigned int*)key + (i % ksize);
+    for(uint32_t i = 0; i < num_loop; i++)
+    {
+        unsigned int*       cvtint_dest = (unsigned int*)dest_offset;
+        unsigned int*       cvtint_src  = (unsigned int*)src_offset;
+        unsigned int*       cvtint_key  = (unsigned int*)key + (i % ksize);
 
-		*cvtint_dest = *cvtint_src ^ *cvtint_key;
+        *cvtint_dest = *cvtint_src ^ *cvtint_key;
 
-		src_offset  += 4;
-		dest_offset += 4;
-	}
+        src_offset  += 4;
+        dest_offset += 4;
+    }
 
-	uint32_t				matched = size & 3;
-	if(matched == 0)
-		return;
+    uint32_t                matched = size & 3;
+    if(matched == 0)
+        return;
 
-	uint32_t				result     = matched - 1;
-	uint32_t*				cvtint_key = (unsigned int*)key + (num_loop % ksize);
-	uint32_t				cvtint_val = *cvtint_key;
+    uint32_t                result     = matched - 1;
+    uint32_t*               cvtint_key = (unsigned int*)key + (num_loop % ksize);
+    uint32_t                cvtint_val = *cvtint_key;
 
-	switch(matched)
-	{
-	case 1:
-		*dest_offset = cvtint_val ^ *src_offset;
-		break;
+    switch(matched)
+    {
+    case 1:
+        *dest_offset = cvtint_val ^ *src_offset;
+        break;
 
-	case 2:
-		result = cvtint_val ^ *(unsigned short *)src_offset;
-		*(uint16_t*)dest_offset = result;
-		break;
+    case 2:
+        result = cvtint_val ^ *(unsigned short *)src_offset;
+        *(uint16_t*)dest_offset = result;
+        break;
 
-	case 3:
-		*(uint16_t*)dest_offset = cvtint_val ^ *(unsigned short *)src_offset;
-		result = src_offset[2];
-		dest_offset[2] = result ^ (cvtint_val >> 16);
-		break;
-	}
+    case 3:
+        *(uint16_t*)dest_offset = cvtint_val ^ *(unsigned short *)src_offset;
+        result = src_offset[2];
+        dest_offset[2] = result ^ (cvtint_val >> 16);
+        break;
+    }
 }
 
 uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 {
-	const uint8_t*			data_c   = data.data() + offset;
-	uint8_t*				buffer   = new uint8_t[size + 0x100];
-	uint8_t					key_size = 0x09;
+    const uint8_t*          data_c   = data.data() + offset;
+    uint8_t*                buffer   = new uint8_t[size + 0x100];
+    uint8_t                 key_size = 0x09;
 
-	try
-	{
-		buffer[0] = data_c[0];
-		buffer[1] = this->_sequence;
+    try
+    {
+        buffer[0] = data_c[0];
+        buffer[1] = this->_sequence;
 
-		if(size - 1 <= 0)
-			throw;
+        if(size - 1 <= 0)
+            throw;
 
-		this->internal_crypt(data_c + 1, buffer + 2, size - 1, this->_key, key_size);
+        this->internal_crypt(data_c + 1, buffer + 2, size - 1, this->_key, key_size);
 
-		uint32_t			num_loop = (size - 2) / key_size + 1;
-		if(num_loop > 0)
-		{
-			uint8_t*		offset = buffer + 2;
-			for(uint32_t i = 0; i < num_loop; i++)
-			{
-				if(i != this->_sequence)
-					this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+        uint32_t            num_loop = (size - 2) / key_size + 1;
+        if(num_loop > 0)
+        {
+            uint8_t*        offset = buffer + 2;
+            for(uint32_t i = 0; i < num_loop; i++)
+            {
+                if(i != this->_sequence)
+                    this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
-				offset += key_size;
-			}
-		}
-		this->internal_crypt(buffer + 2, buffer + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
-	}
-	catch(...)
-	{
-		// DO NOTHING
-	}
+                offset += key_size;
+            }
+        }
+        this->internal_crypt(buffer + 2, buffer + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
+    }
+    catch(...)
+    {
+        // DO NOTHING
+    }
 
-	uint32_t					new_size = size + 1;
+    uint32_t                    new_size = size + 1;
 
-	buffer[new_size] = 0;
-	data.erase(data.begin() + offset, data.begin() + offset + size);
-	data.insert(data.begin() + offset, buffer, buffer + new_size);
-	delete[] buffer;
+    buffer[new_size] = 0;
+    data.erase(data.begin() + offset, data.begin() + offset + size);
+    data.insert(data.begin() + offset, buffer, buffer + new_size);
+    delete[] buffer;
 
-	this->_sequence++;
+    this->_sequence++;
 
-	return new_size;
+    return new_size;
 }
 
 uint32_t fb::cryptor::encrypt(fb::buffer& data)
 {
-	return this->encrypt(data, 0, data.size());
+    return this->encrypt(data, 0, data.size());
 }
 
 uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 {
-	const uint8_t*			data_c   = data.data() + offset;
-	uint8_t*				buffer   = new uint8_t[size + 0x100];
-	uint8_t					key_size = 0x09;
+    const uint8_t*          data_c   = data.data() + offset;
+    uint8_t*                buffer   = new uint8_t[size + 0x100];
+    uint8_t                 key_size = 0x09;
 
-	try
-	{
-		buffer[0] = data_c[0];
-		uint8_t				sequence = data_c[1];
+    try
+    {
+        buffer[0] = data_c[0];
+        uint8_t             sequence = data_c[1];
 
-		if(size < 1)
-			throw;
+        if(size < 1)
+            throw;
 
-		this->internal_crypt(data_c + 2, buffer + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
-		int num_subenc = (size - 3) / key_size + 1;
-		if(num_subenc > 0)
-		{
-			uint8_t*		offset = buffer + 1;
-			for(int i = 0; i < num_subenc; i++)
-			{
-				if(sequence != i)
-					this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+        this->internal_crypt(data_c + 2, buffer + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
+        int num_subenc = (size - 3) / key_size + 1;
+        if(num_subenc > 0)
+        {
+            uint8_t*        offset = buffer + 1;
+            for(int i = 0; i < num_subenc; i++)
+            {
+                if(sequence != i)
+                    this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
-				offset += key_size;
-			}
-		}
+                offset += key_size;
+            }
+        }
 
-		this->internal_crypt(buffer + 1, buffer + 1, size - 2, this->_key, key_size);
+        this->internal_crypt(buffer + 1, buffer + 1, size - 2, this->_key, key_size);
 
-	}
-	catch(...)
-	{
-	}
+    }
+    catch(...)
+    {
+    }
 
-	uint32_t				new_size = size - 1;
+    uint32_t                new_size = size - 1;
 
-	buffer[new_size] = 0;
-	data.erase(data.begin() + offset, data.begin() + offset + size);
-	data.insert(data.begin() + offset, buffer, buffer + new_size);
-	delete[] buffer;
+    buffer[new_size] = 0;
+    data.erase(data.begin() + offset, data.begin() + offset + size);
+    data.insert(data.begin() + offset, buffer, buffer + new_size);
+    delete[] buffer;
 
-	return new_size;
+    return new_size;
 }
 
 uint32_t fb::cryptor::decrypt(fb::buffer& data)
 {
-	return this->decrypt(data, 0, data.size());
+    return this->decrypt(data, 0, data.size());
 }
 
 uint32_t fb::cryptor::wrap(fb::buffer& data, uint32_t offset)
 {
-	uint16_t			size = (uint16_t)data.size() - offset;
-	if(size == 0)
-		return -1;
+    uint16_t            size = (uint16_t)data.size() - offset;
+    if(size == 0)
+        return -1;
 
-	const uint8_t		header[] = {0xAA, uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
-	data.insert(data.begin() + offset, header, header + sizeof(header));
+    const uint8_t       header[] = {0xAA, uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
+    data.insert(data.begin() + offset, header, header + sizeof(header));
 
-	return size + sizeof(header);
+    return size + sizeof(header);
 }
 
 uint32_t fb::cryptor::wrap(fb::buffer& data)
 {
-	return this->wrap(data, 0);
+    return this->wrap(data, 0);
 }
 
 uint32_t fb::cryptor::unwrap(fb::buffer& data, uint32_t offset)
 {
-	uint16_t			size = uint16_t(data.size() - offset);
-	if(size < 3)
-		return -1;
+    uint16_t            size = uint16_t(data.size() - offset);
+    if(size < 3)
+        return -1;
 
-	data.erase(data.begin() + offset, data.begin() + offset + 3);
-	return size - 3;
+    data.erase(data.begin() + offset, data.begin() + offset + 3);
+    return size - 3;
 }
 
 uint32_t fb::cryptor::unwrap(fb::buffer& data)
 {
-	return this->unwrap(data, 0);
+    return this->unwrap(data, 0);
 }
 
 uint8_t fb::cryptor::types() const
 {
-	return this->_type;
+    return this->_type;
 }
 
 uint8_t* fb::cryptor::key() const
 {
-	return this->_key;
+    return this->_key;
 }
 
 fb::cryptor& fb::cryptor::operator=(const cryptor& crt)
 {
-	for(int i = 0; i < 4; i++)
-		memcpy(this->_key + 0x09 * i, (const void*)crt._key, 0x09);
-	this->_type = crt._type;
+    for(int i = 0; i < 4; i++)
+        memcpy(this->_key + 0x09 * i, (const void*)crt._key, 0x09);
+    this->_type = crt._type;
 
-	return *this;
+    return *this;
 }

@@ -16,39 +16,39 @@ using namespace fb::game;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
-	acceptor*		acceptor = fb::game::acceptor::instance();
+    acceptor*       acceptor = fb::game::acceptor::instance();
 
-	switch(signal)
-	{
-	case CTRL_C_EVENT:
-		acceptor->exit();
-		puts("Please wait to exit acceptor.");
-		break;
-	}
+    switch(signal)
+    {
+    case CTRL_C_EVENT:
+        acceptor->exit();
+        puts("Please wait to exit acceptor.");
+        break;
+    }
 
-	return true;
+    return true;
 }
 
 int main(int argc, const char** argv)
 {
-	::SetConsoleCtrlHandler(handle_console, true);
+    ::SetConsoleCtrlHandler(handle_console, true);
 
-	// Initialization
-	WSADATA					wsa;
-	if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		return 0;
-
-
-	// Execute acceptor
-	acceptor*		acceptor = fb::game::acceptor::instance();
-	acceptor->execute(true);
+    // Initialization
+    WSADATA                 wsa;
+    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return 0;
 
 
-	_fgetchar();
+    // Execute acceptor
+    acceptor*       acceptor = fb::game::acceptor::instance();
+    acceptor->execute(true);
 
-	// Clean up
-	WSACleanup();
-	fb::game::acceptor::release();
 
-	return 0;
+    _fgetchar();
+
+    // Clean up
+    WSACleanup();
+    fb::game::acceptor::release();
+
+    return 0;
 }
