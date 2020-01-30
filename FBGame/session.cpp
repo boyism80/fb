@@ -22,9 +22,9 @@ fb::game::trade_system::~trade_system()
 
 uint8_t fb::game::trade_system::contains_core(fb::game::item* item) const
 {
-	for(int i = 0; i < this->_list.size(); i++)
+	for(int i = 0; i < this->_items.size(); i++)
 	{
-		if(this->_list[i]->based() == item->based())
+		if(this->_items[i]->based() == item->based())
 			return i;
 	}
 
@@ -76,14 +76,14 @@ uint8_t fb::game::trade_system::add(fb::game::item* item)
 		uint8_t exists = this->contains_core(item);
 		if(exists != 0xFF)
 		{
-			uint16_t count = this->_list[exists]->count() + item->count();
-			this->_list[exists]->count(count);
+			uint16_t count = this->_items[exists]->count() + item->count();
+			this->_items[exists]->count(count);
 			return exists;
 		}
 	}
 
-	this->_list.push_back(item);
-	return this->_list.size() - 1;
+	this->_items.push_back(item);
+	return this->_items.size() - 1;
 }
 
 void fb::game::trade_system::money(uint32_t value)
@@ -99,7 +99,7 @@ uint32_t fb::game::trade_system::money() const
 std::vector<uint8_t> fb::game::trade_system::restore()
 {
 	std::vector<uint8_t> indices;
-	for(auto it = this->_list.begin(); it != this->_list.end(); it++)
+	for(auto it = this->_items.begin(); it != this->_items.end(); it++)
 	{
 		fb::game::item* item = *it;
 
@@ -131,7 +131,7 @@ std::vector<uint8_t> fb::game::trade_system::restore()
 			indices.push_back(index);
 	}
 
-	this->_list.clear();
+	this->_items.clear();
 
 	this->_owner->money_add(this->_money);
 	this->_money = 0;
@@ -144,14 +144,14 @@ void fb::game::trade_system::flush(session& session, std::vector<uint8_t>& indic
 {
 	indices.clear();
 
-	for(auto item : this->_list)
+	for(auto item : this->_items)
 	{
 		indices.push_back(session.item_add(item));
 
 		if(item->empty())
 			delete item;
 	}
-	this->_list.clear();
+	this->_items.clear();
 
 	session.money_add(this->_money);
 	this->_money = 0;
@@ -182,13 +182,13 @@ bool fb::game::trade_system::flushable(session& session) const
 		if(contains_core == 0xFF)
 			continue;
 
-		if(item->free_space() < this->_list[contains_core]->count())
+		if(item->free_space() < this->_items[contains_core]->count())
 			return false;
 
 		free_size++;
 	}
 
-	if(free_size < this->_list.size())
+	if(free_size < this->_items.size())
 		return false;
 
 	return true;
@@ -209,7 +209,7 @@ fb::ostream fb::game::trade_system::make_show_stream(bool mine, uint8_t index) c
 	try
 	{
 		fb::ostream				ostream;
-		fb::game::item*			item = this->_list[index];
+		fb::game::item*			item = this->_items[index];
 		const std::string		name = item->name_trade();
 
 		ostream.write_u8(0x42)
