@@ -13,6 +13,7 @@
 #include "item.h"
 #include "npc.h"
 #include "mob.h"
+#include "board.h"
 
 namespace fb { namespace game {
 
@@ -37,6 +38,7 @@ private:
 	std::map<uint16_t, mob::core*>		_mobs;
 	std::vector<class_data*>			_classes;
 	std::vector<itemmix*>				_itemmixes;
+	board								_board;
 
 public:
 	acceptor(uint16_t port);
@@ -79,8 +81,6 @@ private:
 	fb::ostream				make_dialog_stream(const std::string& message, bool enabled_prev, bool enabled_next);
 
 public:
-	//void					send_stream(const fb::game::map* map, const fb::ostream& stream, bool encrypt = true);
-	//void					send_stream(const fb::game::map* map, const fb::ostream& stream, const point16_t& position, bool encrypt = true, fb::game::session* except = NULL);
 	void					send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
 
 public:
@@ -116,6 +116,7 @@ public:
 	bool					handle_group(fb::game::session& session);
 	bool					handle_user_list(fb::game::session& session);
 	bool					handle_chat(fb::game::session& session);
+	bool					handle_board(fb::game::session& session);
 
 private:
 	void					handle_counter_mob_action(fb::game::mob* mob);

@@ -29,6 +29,17 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	//this->convert_class_file();
 	this->load_class();
 
+	this->_board.add("공지사항");
+	auto section = this->_board.add("갓승현의 역사");
+	
+	for(int i = 0; i < 100; i++)
+	{
+		std::stringstream sstream;
+		sstream << "갓승현 연대기 - " << std::to_string(i);
+
+		section->add(i+1, sstream.str(), sstream.str(), "갓승현");
+	}
+
 	this->register_handle(0x10, &acceptor::handle_login);				// 게임서버 접속 핸들러
 	this->register_handle(0x11, &acceptor::handle_direction);			// 방향전환 핸들러
 	this->register_handle(0x06, &acceptor::handle_update_move);			// 이동과 맵 데이터 업데이트 핸들러
@@ -52,6 +63,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	this->register_handle(0x2E, &acceptor::handle_group);				// 그룹 핸들러
 	this->register_handle(0x18, &acceptor::handle_user_list);			// 유저 리스트 핸들러
 	this->register_handle(0x0E, &acceptor::handle_chat);				// 유저 채팅 핸들러
+	this->register_handle(0x3B, &acceptor::handle_board);				// 게시판 섹션 리스트 핸들러
 
 	this->register_timer(100, &acceptor::handle_mob_action);			// 몹 행동 타이머
 	this->register_timer(1000, &acceptor::handle_mob_respawn);			// 몹 리젠 타이머
@@ -3219,6 +3231,34 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session)
 	message[length] = 0;
 
 	this->send_stream(session, session.make_chat_stream(message, shout), shout ? scope::MAP : scope::PIVOT);
+
+	return true;
+}
+
+bool fb::game::acceptor::handle_board(fb::game::session& session)
+{
+	auto&						istream = session.in_stream();
+	uint8_t						cmd = istream.read_u8();
+	uint8_t						action = istream.read_u8();
+
+	switch(action)
+	{
+	case 0x01: // section list
+	{
+		this->send_stream(session, this->_board.make_sections_stream(), scope::SELF);
+		break;
+	}
+
+	case 0x02: // article list
+	{
+		uint16_t				section_id = istream.read_u16();
+		uint16_t				offset = istream.read_u16();
+
+		this->send_stream(session, this->_board.make_articles_stream(section_id, offset), scope::SELF);
+		break;
+	}
+
+	}
 
 	return true;
 }

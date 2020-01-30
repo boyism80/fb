@@ -155,6 +155,7 @@
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
+    <ClCompile Include="board.cpp" />
     <ClCompile Include="fb_game.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\stream.h" />
+    <ClInclude Include="board.h" />
     <ClInclude Include="fb_game.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="map.h" />

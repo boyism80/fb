@@ -44,6 +44,9 @@
     <Filter Include="Source Files\mob">
       <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\board">
+      <UniqueIdentifier>{46047bcc-bb53-4846-bec8-55613aea27b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="mmo.cpp">
       <Filter>Source Files\mmo</Filter>
+    </ClCompile>
+    <ClCompile Include="board.cpp">
+      <Filter>Source Files\board</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="mob.h">
       <Filter>Source Files\mob</Filter>
+    </ClInclude>
+    <ClInclude Include="board.h">
+      <Filter>Source Files\board</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
