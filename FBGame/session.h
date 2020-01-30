@@ -20,7 +20,7 @@ class trade_system
 private:
 	session*				_owner;
 	session*				_partner;
-	std::vector<item*>		_list;
+	std::vector<item*>		_items;
 	item*					_selected;
 	uint32_t				_money;
 	bool					_locked;
