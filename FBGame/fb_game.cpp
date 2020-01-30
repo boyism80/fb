@@ -611,7 +611,7 @@ bool fb::game::acceptor::convert_npc_spawn_file(const std::string& db_fname)
 			std::cout << "invalid npc id : " << id << std::endl;
 			continue;
 		}
-		npc::core* npc = this->_npcs[id];
+		auto npc = this->_npcs[id];
 		json_value["npc"] = npc->name();
 
 		std::string map_id_str;
@@ -833,7 +833,7 @@ bool fb::game::acceptor::convert_mob_spawn_file(const std::string& db_fname)
 			std::cout << "invalid mob id : " << mob_id << std::endl;
 			continue;
 		}
-		fb::game::mob::core* mob_core = this->_mobs[mob_id];
+		auto mob_core = this->_mobs[mob_id];
 
 
 		std::string map_id_str;
@@ -845,7 +845,7 @@ bool fb::game::acceptor::convert_mob_spawn_file(const std::string& db_fname)
 			std::cout << "invalid map id : " << map_id << std::endl;
 			continue;
 		}
-		fb::game::map* map = this->_maps[map_id];
+		auto map = this->_maps[map_id];
 
 		std::string x0_str;
 		std::getline(sstream, x0_str, '\t');
@@ -1350,7 +1350,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 
 		if(item->attr() & item::attrs::ITEM_ATTR_EQUIPMENT)
 		{
-			fb::game::equipment::core* equipment = static_cast<fb::game::equipment::core*>(item);
+			auto equipment = static_cast<fb::game::equipment::core*>(item);
 			equipment->durability(durability);
 			equipment->repairable(repairable);
 			equipment->repair_price(repair_price);
@@ -1371,7 +1371,7 @@ bool fb::game::acceptor::load_items(const std::string& db_fname)
 
 		if(item->attr() & item::attrs::ITEM_ATTR_WEAPON)
 		{
-			weapon::core* weapon = static_cast<fb::game::weapon::core*>(item);
+			auto weapon = static_cast<fb::game::weapon::core*>(item);
 			weapon->damage_small(damage_small_min, damage_small_max);
 			weapon->damage_large(damage_large_min, damage_large_max);
 			weapon->sound(sound);
@@ -1428,10 +1428,9 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 
 	for(auto i = json_npc.begin(); i != json_npc.end(); i++)
 	{
-		Json::Value         json = *i;
-
-		std::string         npc_name = json["npc"].asString();
-		npc::core*			core = this->name2npc(npc_name);
+		auto				json = *i;
+		auto				npc_name = json["npc"].asString();
+		auto				core = this->name2npc(npc_name);
 		if(core == NULL)
 		{
 			std::cout << "존재하지 않는 NPC입니다. : " << npc_name << std::endl;
@@ -1439,16 +1438,16 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 		}
 
 
-		std::string         map_name = json["map"].asString();
-		map*                map = this->name2map(map_name);
+		auto				map_name = json["map"].asString();
+		auto                map = this->name2map(map_name);
 		if(map == NULL)
 		{
 			std::cout << "존재하지 않는 맵입니다. : " << map_name << std::endl;
 			continue;
 		}
 
-		std::string         direction_str = json["direction"].asString();
-		fb::game::direction direction = fb::game::direction::BOTTOM;
+		auto				direction_str = json["direction"].asString();
+		auto				direction = fb::game::direction::BOTTOM;
 		if(direction_str == "top")
 			direction = fb::game::direction::TOP;
 		else if(direction_str == "right")
@@ -1464,9 +1463,9 @@ bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
 		}
 
 		point16_t           position(json["position"]["x"].asInt(), json["position"]["y"].asInt());
-		std::string         script = json["script"].asString();
+		auto				script = json["script"].asString();
 
-		fb::game::npc*      cloned = new npc(core);
+		auto				cloned = new npc(core);
 		cloned->direction(direction);
 		cloned->map(map, position);
 		cloned->script(script);
@@ -1544,7 +1543,7 @@ bool fb::game::acceptor::load_mob(const std::string& db_fname)
 				script_die = json["script"]["die"].asString();
 		}
 
-		mob::core* mob = new fb::game::mob::core(key, name, look, color, base_hp, 0);
+		auto mob = new fb::game::mob::core(key, name, look, color, base_hp, 0);
 		mob->defensive_physical(defensive_physical);
 		mob->defensive_magical(defensive_magical);
 		mob->experience(experience);
@@ -1589,7 +1588,7 @@ bool fb::game::acceptor::load_mob_spawn(const std::string& db_fname)
 		{
 			Json::Value		spawn = *spawn_i;
 
-			mob::core*		core = this->name2mob(spawn["name"].asString());
+			auto			core = this->name2mob(spawn["name"].asString());
 			if(core == NULL)
 				continue;
 
@@ -1760,30 +1759,30 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
 	for(auto i1 = db.begin(); i1 != db.end(); i1++)
 	{
 		
-		float percentage = (*i1)["percentage"].asDouble();
-		itemmix* itemmix = new fb::game::itemmix(percentage);
+		float			percentage = (*i1)["percentage"].asDouble();
+		auto			itemmix = new fb::game::itemmix(percentage);
 
-		Json::Value require = (*i1)["require"];
+		auto require = (*i1)["require"];
 		for(auto i2 = require.begin(); i2 != require.end(); i2++)
 		{
-			item::core* item = this->name2item((*i2)["item"].asString());
-			uint32_t count = (*i2)["count"].asInt();
+			auto		item = this->name2item((*i2)["item"].asString());
+			uint32_t	count = (*i2)["count"].asInt();
 			itemmix->require_add(item, count);
 		}
 
-		Json::Value success = (*i1)["success"];
+		auto success = (*i1)["success"];
 		for(auto i2 = success.begin(); i2 != success.end(); i2++)
 		{
-			item::core* item = this->name2item((*i2)["item"].asString());
-			uint32_t count = (*i2)["count"].asInt();
+			auto		item = this->name2item((*i2)["item"].asString());
+			uint32_t	count = (*i2)["count"].asInt();
 			itemmix->success_add(item, count);
 		}
 
-		Json::Value failed = (*i1)["failed"];
+		auto failed = (*i1)["failed"];
 		for(auto i2 = failed.begin(); i2 != failed.end(); i2++)
 		{
-			item::core* item = this->name2item((*i2)["item"].asString());
-			uint32_t count = (*i2)["count"].asInt();
+			auto		item = this->name2item((*i2)["item"].asString());
+			uint32_t	count = (*i2)["count"].asInt();
 			itemmix->failed_add(item, count);
 		}
 
