@@ -297,11 +297,8 @@ fb::game::session* fb::game::mob::autoset_target()
 		return NULL;
 
 	uint32_t min_distance_sqrt = 0xFFFFFFFF;
-	fb::game::session* near_session = NULL;
-	std::vector<fb::game::session*>& sessions = map->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto session : map->sessions())
 	{
-		fb::game::session* session = *i;
 		if(session->sight(*this) == false)
 			continue;
 

@@ -17,8 +17,8 @@ fb::game::class_data::class_data()
 
 fb::game::class_data::~class_data()
 {
-	for(auto i = this->level_abilities.begin(); i != this->level_abilities.end(); i++)
-		delete *i;
+	for(auto i : this->level_abilities)
+		delete i;
 }
 
 void fb::game::class_data::add_level_ability(level_ability* data)

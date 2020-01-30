@@ -59,23 +59,23 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 
 acceptor::~acceptor()
 {
-	for(auto i = this->_maps.begin(); i != this->_maps.end(); i++)
-		delete i->second;
+	for(auto pair : this->_maps)
+		delete pair.second;
 
-	for(auto i = this->_items.begin(); i != this->_items.end(); i++)
-		delete i->second;
+	for(auto pair : this->_items)
+		delete pair.second;
 
-	for(auto i = this->_npcs.begin(); i != this->_npcs.end(); i++)
-		delete i->second;
+	for(auto pair : this->_npcs)
+		delete pair.second;
 
-	for(auto i = this->_mobs.begin(); i != this->_mobs.end(); i++)
-		delete i->second;
+	for(auto pair : this->_mobs)
+		delete pair.second;
 
-	for(auto i = this->_classes.begin(); i != this->_classes.end(); i++)
-		delete *i;
+	for(auto cls : this->_classes)
+		delete cls;
 
-	for(auto i = this->_itemmixes.begin(); i != this->_itemmixes.end(); i++)
-		delete *i;
+	for(auto itemmix : this->_itemmixes)
+		delete itemmix;
 }
 
 bool fb::game::acceptor::convert_map_file(const std::string& db_fname)
@@ -1784,10 +1784,10 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
 
 fb::game::map* fb::game::acceptor::name2map(const std::string& name) const
 {
-	for(auto i = this->_maps.begin(); i != this->_maps.end(); i++)
+	for(auto pair : this->_maps)
 	{
-		if(i->second->name() == name)
-			return i->second;
+		if(pair.second->name() == name)
+			return pair.second;
 	}
 
 	return NULL;
@@ -1795,10 +1795,10 @@ fb::game::map* fb::game::acceptor::name2map(const std::string& name) const
 
 fb::game::npc::core* fb::game::acceptor::name2npc(const std::string& name) const
 {
-	for(auto i = this->_npcs.begin(); i != this->_npcs.end(); i++)
+	for(auto pair : this->_npcs)
 	{
-		if(i->second->name() == name)
-			return i->second;
+		if(pair.second->name() == name)
+			return pair.second;
 	}
 
 	return NULL;
@@ -1806,10 +1806,10 @@ fb::game::npc::core* fb::game::acceptor::name2npc(const std::string& name) const
 
 fb::game::mob::core* fb::game::acceptor::name2mob(const std::string& name) const
 {
-	for (auto i = this->_mobs.begin(); i != this->_mobs.end(); i++)
+	for(auto pair : this->_mobs)
 	{
-		if (i->second->name() == name)
-			return i->second;
+		if (pair.second->name() == name)
+			return pair.second;
 	}
 
 	return NULL;
@@ -1858,9 +1858,8 @@ bool fb::game::acceptor::name2class(const std::string& name, uint8_t* class_id, 
 
 itemmix* fb::game::acceptor::find_itemmix(const std::vector<item*>& items)
 {
-	for(auto i = this->_itemmixes.begin(); i != this->_itemmixes.end(); i++)
+	for(const auto itemmix : this->_itemmixes)
 	{
-		itemmix* itemmix = *i;
 		if(itemmix->require.size() != items.size())
 			continue;
 
@@ -1921,8 +1920,8 @@ bool acceptor::handle_disconnected(fb::game::session& session)
 
 void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 {
-	for(auto i = this->_maps.begin(); i != this->_maps.end(); i++)
-		i->second->handle_timer(elapsed_milliseconds);
+	for(auto pair : this->_maps)
+		pair.second->handle_timer(elapsed_milliseconds);
 }
 
 fb::ostream fb::game::acceptor::make_time_stream()
@@ -2032,15 +2031,15 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
 		if(life->move(direction, NULL, NULL, NULL, NULL, NULL, NULL, &shown_sessions, &hidden_sessions) == false)
 			throw std::exception();
 
-		for(auto i = shown_sessions.begin(); i != shown_sessions.end(); i++)
-			this->send_stream(**i, life->make_show_stream(), scope::SELF);
+		for(auto session : shown_sessions)
+			this->send_stream(*session, life->make_show_stream(), scope::SELF);
 
-		for(auto i = hidden_sessions.begin(); i != hidden_sessions.end(); i++)
-			this->send_stream(**i, life->make_hide_stream(), scope::SELF);
+		for(auto session : hidden_sessions)
+			this->send_stream(*session, life->make_hide_stream(), scope::SELF);
 
 		std::vector<fb::game::session*>& sessions = life->map()->sessions();
-		for(auto i = sessions.begin(); i != sessions.end(); i++)
-			this->send_stream(**i, move_stream, scope::SELF);
+		for(auto session : sessions)
+			this->send_stream(*session, move_stream, scope::SELF);
 
 		result = true;
 	}
@@ -2086,14 +2085,13 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 		mob.dead_time(::GetTickCount64());
 
 		// 드롭 아이템 떨구기
-		const std::vector<mob::drop>& items = mob.items();
 		std::vector<object*> dropped_items;
-		for(auto i = items.begin(); i != items.end(); i++)
+		for(auto candidate : mob.items())
 		{
-			if(std::rand() % 100 > (*i).percentage)
+			if(std::rand() % 100 > candidate.percentage)
 				continue;
 
-			item* item = static_cast<fb::game::item*>((*i).item->make());
+			item* item = static_cast<fb::game::item*>(candidate.item->make());
 			item->map(map, mob.position());
 
 			dropped_items.push_back(item);
@@ -2193,14 +2191,12 @@ bool acceptor::handle_login(fb::game::session& session)
 	this->send_stream(session, session.make_direction_stream(), scope::SELF);
 	this->send_stream(session, session.make_option_stream(), scope::SELF);
 
-	std::vector<fb::game::session*> sessions = session.looking_sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto i : session.looking_sessions())
 	{
-		fb::game::session* other = (*i);
-		if(other == &session)
+		if(i == &session)
 			continue;
 
-		this->send_stream(session, other->make_visual_stream(false), scope::SELF);
+		this->send_stream(session, i->make_visual_stream(false), scope::SELF);
 	}
 
 	for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
@@ -2268,22 +2264,22 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
 	
 	// 오브젝트 갱신
 	this->send_stream(session, object::make_show_stream(show_objects), scope::SELF);
-	for(auto i = hide_objects.begin(); i != hide_objects.end(); i++)
-		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
+	for(auto i : hide_objects)
+		this->send_stream(session, i->make_hide_stream(), scope::SELF);
 
 	// 움직인 세션에게 새로 보이는 세션 갱신
-	for(auto i = show_sessions.begin(); i != show_sessions.end(); i++)
-		this->send_stream(session, (*i)->make_visual_stream(false), scope::SELF);
+	for(auto i : show_sessions)
+		this->send_stream(session, i->make_visual_stream(false), scope::SELF);
 
 	// 움직인 세션에게 사라진 세션 갱신
-	for(auto i = hide_sessions.begin(); i != hide_sessions.end(); i++)
-		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
+	for(auto i : hide_sessions)
+		this->send_stream(session, i->make_hide_stream(), scope::SELF);
 
-	for(auto i = shown_sessions.begin(); i != shown_sessions.end(); i++)
-		this->send_stream(**i, session.make_visual_stream(false), scope::SELF);
+	for(auto i : shown_sessions)
+		this->send_stream(*i, session.make_visual_stream(false), scope::SELF);
 
-	for(auto i = hidden_sessions.begin(); i != hidden_sessions.end(); i++)
-		this->send_stream(**i, session.make_hide_stream(), scope::SELF);
+	for(auto i : hidden_sessions)
+		this->send_stream(*i, session.make_hide_stream(), scope::SELF);
 
 	return true;
 }
@@ -2614,23 +2610,22 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
 		return false;
 
 	std::vector<fb::game::session*> sessions = session.forward_sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto i : sessions)
 	{
-		this->send_stream(session, this->make_message_stream((*i)->name(), message_types::MESSAGE_STATE), scope::SELF);
+		this->send_stream(session, this->make_message_stream(i->name(), message_types::MESSAGE_STATE), scope::SELF);
 	}
 
 	std::vector<object*> objects = session.forward_objects(object::types::UNKNOWN);
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(auto i : objects)
 	{
-		object* object = *i;
-		if(object->type() == object::types::ITEM)
+		if(i->type() == fb::game::object::types::ITEM)
 		{
-			fb::game::item* item = static_cast<fb::game::item*>(object);
+			auto item = static_cast<fb::game::item*>(i);
 			this->send_stream(session, this->make_message_stream(item->name_styled(), message_types::MESSAGE_STATE), scope::SELF);
 		}
 		else
 		{
-			this->send_stream(session, this->make_message_stream(object->name(), message_types::MESSAGE_STATE), scope::SELF);
+			this->send_stream(session, this->make_message_stream(i->name(), message_types::MESSAGE_STATE), scope::SELF);
 		}
 	}
 
@@ -2867,10 +2862,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 		bool success = (std::rand() % 100) < itemmix->percentage;
 		if(success)
 		{
-			for(auto i = itemmix->success.begin(); i != itemmix->success.end(); i++)
+			for(auto success : itemmix->success)
 			{
-				item* item = static_cast<fb::game::item*>((*i).item->make());
-				item->count((*i).count);
+				item* item = static_cast<fb::game::item*>(success.item->make());
+				item->count(success.count);
 				uint8_t index = session.item_add(item);
 				this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
 			}
@@ -2879,10 +2874,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 		}
 		else
 		{
-			for(auto i = itemmix->failed.begin(); i != itemmix->failed.end(); i++)
+			for(auto failed : itemmix->failed)
 			{
-				item* item = static_cast<fb::game::item*>((*i).item->make());
-				item->count((*i).count);
+				item* item = static_cast<fb::game::item*>(failed.item->make());
+				item->count(failed.count);
 				uint8_t index = session.item_add(item);
 				this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
 			}
@@ -3094,8 +3089,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 		// 거래리스트에 올렸던 아이템과 금전을 원상복귀시킨다.
 		indices = ts_mine.restore();
 		this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-		for(auto i = indices.begin(); i != indices.end(); i++)
-			this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
+		for(auto i : indices)
+			this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
 		// 메시지 표시하고 거래종료
 		this->send_stream(session, ts_mine.make_close_stream("내가 교환을 취소했습니다."), scope::SELF);
 		ts_mine.end();
@@ -3103,8 +3098,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 		// 거래리스트에 올렸던 아이템과 금전을 원상복귀시킨다.
 		indices = ts_your.restore();
 		this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-		for(auto i = indices.begin(); i != indices.end(); i++)
-			this->send_stream(*partner, partner->make_update_item_slot_stream(*i), scope::SELF);
+		for(auto i : indices)
+			this->send_stream(*partner, partner->make_update_item_slot_stream(i), scope::SELF);
 		// 메시지 표시하고 거래종료
 		this->send_stream(*partner, ts_your.make_close_stream("상대방이 교환을 취소했습니다."), scope::SELF);
 		ts_your.end();
@@ -3132,14 +3127,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 				
 				// 상대의 거래리스트 물품들을 전부 받고 업데이트
 				ts_mine.flush(*partner, indices);
-				for(auto i = indices.begin(); i != indices.end(); i++)
-					this->send_stream(*partner, partner->make_update_item_slot_stream(*i), scope::SELF);
+				for(auto i : indices)
+					this->send_stream(*partner, partner->make_update_item_slot_stream(i), scope::SELF);
 				this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
 				// 나의 거래리스트 물품들을 전부 주고 업데이트
 				ts_your.flush(session, indices);
-				for(auto i = indices.begin(); i != indices.end(); i++)
-					this->send_stream(session, session.make_update_item_slot_stream(*i), scope::SELF);
+				for(auto i : indices)
+					this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
 				this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
 
@@ -3353,16 +3348,15 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 {
 	// 리젠된 전체 몹을 저장
 	std::vector<object*> spawned_mobs;
-	for(auto map_i = this->_maps.begin(); map_i != this->_maps.end(); map_i++)
+	for(auto pair : this->_maps)
 	{
-		fb::game::map* map = map_i->second;
-		const std::vector<object*>& objects = map->objects();
-		for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
+		fb::game::map* map = pair.second;
+		for(auto object : map->objects())
 		{
-			if((*obj_i)->type() != object::types::MOB)
+			if(object->type() != object::types::MOB)
 				continue;
 
-			fb::game::mob* mob = static_cast<fb::game::mob*>(*obj_i);
+			auto mob = static_cast<fb::game::mob*>(object);
 			if(mob == NULL)
 				continue;
 
@@ -3375,25 +3369,22 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 
 
 	// 화면에 보이는 몹만 갱신
-	std::vector<object*> buffer;
-	std::vector<fb::game::session*>& sessions = this->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	std::vector<object*> shown_mobs;
+	for(auto session : this->sessions())
 	{
-		fb::game::session* session = static_cast<fb::game::session*>(*i);
-
 		if(session == NULL)
 			continue;
 
-		buffer.clear();
-		for(auto obj_i = spawned_mobs.begin(); obj_i != spawned_mobs.end(); obj_i++)
+		shown_mobs.clear();
+		for(auto spawned : spawned_mobs)
 		{
-			if(session->sight(**obj_i) == false)
+			if(session->sight(*spawned) == false)
 				continue;
 
-			buffer.push_back(*obj_i);
+			shown_mobs.push_back(spawned);
 		}
 
-		this->send_stream(*session, object::make_show_stream(buffer), scope::SELF);
+		this->send_stream(*session, object::make_show_stream(shown_mobs), scope::SELF);
 	}
 }
 
@@ -3402,13 +3393,11 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
 	map*					map = session.map();
 
 	// 이전에 보이던 오브젝트들 전부 제거
-	auto                    objects = session.shown_objects();
-	for(auto i = objects.begin(); i != objects.end(); i++)
-		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
+	for(auto i : session.shown_objects())
+		this->send_stream(session, i->make_hide_stream(), scope::SELF);
 
-	auto					sessions = session.shown_sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
-		this->send_stream(session, (*i)->make_hide_stream(), scope::SELF);
+	for(auto i : session.shown_sessions())
+		this->send_stream(session, i->make_hide_stream(), scope::SELF);
 
 	session.map(warp->map, warp->after);
 
@@ -3424,9 +3413,8 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
 	this->send_stream(session, session.make_show_objects_stream(), scope::SELF);
 
 	// 새로 보이는 세션들 보여줌
-	sessions = session.shown_sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
-		this->send_stream(session, (*i)->make_visual_stream(false), scope::SELF);
+	for(auto i : session.shown_sessions())
+		this->send_stream(session, i->make_visual_stream(false), scope::SELF);
 }
 
 fb::game::acceptor* fb::game::acceptor::instance()

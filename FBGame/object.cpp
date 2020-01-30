@@ -238,10 +238,8 @@ bool fb::game::object::move(fb::game::direction direction, std::vector<object*>*
 	if(show_objects != NULL || hide_objects != NULL)
 	{
 		fb::game::map* map = this->_map;
-		std::vector<object*>& objects = map->objects();
-		for(auto i = objects.begin(); i != objects.end(); i++)
+		for(auto object : map->objects())
 		{
-			fb::game::object*   object = *i;
 			if(object == this)
 				continue;
 
@@ -262,10 +260,8 @@ bool fb::game::object::move(fb::game::direction direction, std::vector<object*>*
 	if(show_sessions != NULL || hide_sessions != NULL)
 	{
 		fb::game::map* map = this->_map;
-		std::vector<session*>& sessions = map->sessions();
-		for(auto i = sessions.begin(); i != sessions.end(); i++)
+		for(auto session : map->sessions())
 		{
-			fb::game::session*   session = *i;
 			if(session == this)
 				continue;
 
@@ -286,10 +282,8 @@ bool fb::game::object::move(fb::game::direction direction, std::vector<object*>*
 	if(shown_objects != NULL || hidden_objects)
 	{
 		fb::game::map* map = this->_map;
-		std::vector<object*>& objects = map->objects();
-		for(auto i = objects.begin(); i != objects.end(); i++)
+		for(auto object : map->objects())
 		{
-			fb::game::object*   object = *i;
 			if(object == this)
 				continue;
 
@@ -310,10 +304,8 @@ bool fb::game::object::move(fb::game::direction direction, std::vector<object*>*
 	if(shown_sessions != NULL || hidden_sessions)
 	{
 		fb::game::map* map = this->_map;
-		std::vector<session*>& sessions = map->sessions();
-		for(auto i = sessions.begin(); i != sessions.end(); i++)
+		for(auto session : map->sessions())
 		{
-			fb::game::session*   session = *i;
 			if(session == this)
 				continue;
 
@@ -461,11 +453,10 @@ fb::game::session* fb::game::object::near_session(fb::game::direction direction)
 	if(map->existable(front) == false)
 		return NULL;
 
-	std::vector<fb::game::session*>& sessions = map->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto session : map->sessions())
 	{
-		if((*i)->position() == front)
-			return *i;
+		if(session->position() == front)
+			return session;
 	}
 
 	return NULL;
@@ -503,11 +494,10 @@ std::vector<fb::game::session*> fb::game::object::near_sessions(fb::game::direct
 	if(map->existable(front) == false)
 		return list;
 
-	std::vector<fb::game::session*>& sessions = map->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto session : map->sessions())
 	{
-		if((*i)->position() == front)
-			list.push_back(*i);
+		if(session->position() == front)
+			list.push_back(session);
 	}
 
 	return list;
@@ -553,17 +543,16 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
 	if(map->existable(front) == false)
 		return NULL;
 
-	std::vector<fb::game::object*>& objects = map->objects();
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(auto object : map->objects())
 	{
-		if(type != fb::game::object::types::UNKNOWN && (*i)->type() != type)
+		if(type != fb::game::object::types::UNKNOWN && object->type() != type)
 			continue;
 
-		if((*i)->alive() == false)
+		if(object->alive() == false)
 			continue;
 
-		if((*i)->position() == front)
-			return *i;
+		if(object->position() == front)
+			return object;
 	}
 
 	return NULL;
@@ -601,17 +590,16 @@ std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::directio
 	if(map->existable(front) == false)
 		return list;
 
-	std::vector<fb::game::object*>& objects = map->objects();
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(auto object : map->objects())
 	{
-		if(type != fb::game::object::types::UNKNOWN && (*i)->type() != type)
+		if(type != fb::game::object::types::UNKNOWN && object->type() != type)
 			continue;
 
-		if((*i)->alive() == false)
+		if(object->alive() == false)
 			continue;
 
-		if((*i)->position() == front)
-			list.push_back(*i);
+		if(object->position() == front)
+			list.push_back(object);
 	}
 
 	return list;
@@ -635,10 +623,8 @@ std::vector<fb::game::object*> fb::game::object::shown_objects() const
 	if(map == NULL)
 		return list;
 
-	auto                    objects = map->objects();
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(auto object : map->objects())
 	{
-		fb::game::object*   object = *i;
 		if(object == this)
 			continue;
 
@@ -662,10 +648,8 @@ std::vector<fb::game::session*> fb::game::object::shown_sessions() const
 	if(map == NULL)
 		return list;
 
-	auto                    sessions = map->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto session : map->sessions())
 	{
-		fb::game::session*   session = *i;
 		if(session == this)
 			continue;
 
@@ -686,10 +670,8 @@ std::vector<fb::game::session*> fb::game::object::looking_sessions() const
 	if(map == NULL)
 		return list;
 
-	auto                    sessions = map->sessions();
-	for(auto i = sessions.begin(); i != sessions.end(); i++)
+	for(auto session : map->sessions())
 	{
-		fb::game::session*   session = *i;
 		if(session == this)
 			continue;
 
@@ -758,9 +740,8 @@ fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::objec
 	ostream.write_u8(0x07)
 		.write_u16(objects.size());
 
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(const auto object : objects)
 	{
-		fb::game::object*   object = *i;
 		ostream.write_u16(object->x()) // object x
 			.write_u16(object->y()) // object y
 			.write_u32(object->id()) // object id

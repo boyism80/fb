@@ -144,9 +144,8 @@ void fb::game::trade_system::flush(session& session, std::vector<uint8_t>& indic
 {
 	indices.clear();
 
-	for(auto i = this->_list.begin(); i != this->_list.end(); i++)
+	for(auto item : this->_list)
 	{
-		fb::game::item* item = *i;
 		indices.push_back(session.item_add(item));
 
 		if(item->empty())
@@ -314,8 +313,8 @@ fb::game::group_system::group_system(session& leader) :
 
 fb::game::group_system::~group_system()
 {
-	for(auto i = this->_members.begin(); i != this->_members.end(); i++)
-		(*i)->group_leave();
+	for(auto member : this->_members)
+		member->group_leave();
 }
 
 bool fb::game::group_system::add(session& session)
@@ -1380,11 +1379,9 @@ fb::ostream fb::game::session::make_show_objects_stream() const
 	if(map == NULL)
 		return fb::ostream();
 
-	auto                    objects = map->objects();
 	std::vector<object*>    visibles;
-	for(auto i = objects.begin(); i != objects.end(); i++)
+	for(auto object : map->objects())
 	{
-		fb::game::object*   object = *i;
 		if(this->sight(*object) == false)
 			continue;
 
@@ -1658,12 +1655,12 @@ fb::ostream fb::game::session::make_internal_info_stream() const
 		.write_u8(this->_options[options::PK]); // pk
 
 	ostream.write_u8(this->_legends.size());
-	for(auto i = this->_legends.cbegin(); i != this->_legends.cend(); i++)
+	for(auto legend : this->_legends)
 	{
-		ostream.write_u8((*i).look)
-			.write_u8((*i).color)
-			.write_u8((*i).content.size())
-			.write((*i).content.c_str(), (*i).content.size());
+		ostream.write_u8(legend.look)
+			.write_u8(legend.color)
+			.write_u8(legend.content.size())
+			.write(legend.content.c_str(), legend.content.size());
 	}
 	ostream.write_u8(0x00);
 
@@ -1775,12 +1772,12 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
 								// ¾÷Àû
 	ostream.write_u8(this->_legends.size());
-	for(auto i = this->_legends.cbegin(); i != this->_legends.cend(); i++)
+	for(auto legend : this->_legends)
 	{
-		ostream.write_u8((*i).look)
-			.write_u8((*i).color)
-			.write_u8((*i).content.size())
-			.write((*i).content.c_str(), (*i).content.size());
+		ostream.write_u8(legend.look)
+			.write_u8(legend.color)
+			.write_u8(legend.content.size())
+			.write(legend.content.c_str(), legend.content.size());
 	}
 	ostream.write_u8(0x00);
 

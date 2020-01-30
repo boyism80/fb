@@ -28,8 +28,8 @@ fb::base_acceptor<T>::~base_acceptor()
 	this->exit();
 	this->close();
 
-	for(auto i = this->_timers.begin(); i != this->_timers.end(); i++)
-		delete *i;
+	for(auto timer : this->_timers)
+		delete timer;
 }
 
 template <typename T>
@@ -97,10 +97,8 @@ bool fb::base_acceptor<T>::execute(bool async)
 			this->do_session();
 
 			uint64_t now = ::GetTickCount64();
-			for(auto i = this->_timers.begin(); i != this->_timers.end(); i++)
+			for(auto timer : this->_timers)
 			{
-				auto timer = *i;
-
 				if(timer->callable(now) == false)
 					continue;
 

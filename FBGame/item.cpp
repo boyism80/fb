@@ -1246,9 +1246,9 @@ fb::game::arrow::~arrow()
 
 bool fb::game::_itemmix::contains(const item* item) const
 {
-	for(auto i = this->require.begin(); i != this->require.end(); i++)
+	for(auto i : this->require)
 	{
-		if(item->based() == (*i).item && item->count() >= (*i).count)
+		if(item->based() == i.item && item->count() >= i.count)
 			return true;
 	}
 
@@ -1275,9 +1275,9 @@ bool fb::game::_itemmix::matched(const std::vector<item*>& items) const
 	if(this->require.size() != items.size())
 		return false;
 
-	for(auto i = items.cbegin(); i != items.cend(); i++)
+	for(const auto i : items)
 	{
-		if(this->contains(*i) == false)
+		if(this->contains(i) == false)
 			return false;
 	}
 
