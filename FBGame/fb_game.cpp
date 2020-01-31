@@ -1947,7 +1947,7 @@ fb::ostream fb::game::acceptor::make_time_stream()
     return ostream;
 }
 
-fb::ostream fb::game::acceptor::make_message_stream(const std::string& message, fb::game::message_types types)
+fb::ostream fb::game::acceptor::make_message_stream(const std::string& message, message::type types)
 {
     fb::ostream             ostream;
     ostream.write_u8(0x0A)
@@ -2160,12 +2160,12 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
         sstream << e.what();
     }
 
-    this->send_stream(session, this->make_message_stream(sstream.str(), fb::game::message_types::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 }
 
 bool acceptor::handle_login(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
+    auto&                   istream = session.in_stream();
     uint8_t                 enc_key[0x09] = {0,};
 
     uint8_t cmd = istream.read_u8();
@@ -2184,7 +2184,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-    this->send_stream(session, this->make_message_stream("0시간 1분만에 바람으로", fb::game::message_types::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, this->make_message_stream("0시간 1분만에 바람으로", message::type::MESSAGE_STATE), scope::SELF);
 
     this->send_stream(session, session.make_id_stream(), scope::SELF);
 
@@ -2220,7 +2220,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
 bool fb::game::acceptor::handle_direction(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     fb::game::direction     direction = fb::game::direction(istream.read_u8());
 
@@ -2233,7 +2233,7 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session)
 
 bool fb::game::acceptor::handle_move(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
+    auto&                   istream = session.in_stream();
 
     fb::game::map*          map = session.map();
     if(map == NULL)
@@ -2300,7 +2300,7 @@ bool fb::game::acceptor::handle_update_move(fb::game::session& session)
     if(this->handle_move(session) == false)
         return false;
 
-    fb::istream&            istream = session.in_stream();
+    auto&                   istream = session.in_stream();
     uint16_t                begin_x = istream.read_u16();
     uint16_t                begin_y = istream.read_u16();
     uint8_t                 width = istream.read_u8();
@@ -2312,102 +2312,126 @@ bool fb::game::acceptor::handle_update_move(fb::game::session& session)
 
 bool fb::game::acceptor::handle_attack(fb::game::session& session)
 {
-    this->send_stream(session, session.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
-    fb::game::weapon*       weapon = session.weapon();
-    if(weapon != NULL)
+    try
     {
-        uint16_t                sound = weapon->sound();
-        if(sound != 0)
-            this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(sound)), scope::PIVOT);
-    }
-    else
-    {
-        // 이거 무슨 사운드인지 확인하도록 하자
-        this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(0x015D)), scope::PIVOT);
-    }
+        session.state_assert(state(state::RIDING | state::GHOST));
 
-    object*     front = session.forward_object(object::types::MOB);
-    if(front == NULL)
-        return true;
+        this->send_stream(session, session.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
+        auto*               weapon = session.weapon();
+        if(weapon != NULL)
+        {
+            uint16_t        sound = weapon->sound();
+            if(sound != 0)
+                this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(sound)), scope::PIVOT);
+        }
+        else
+        {
+            // 이거 무슨 사운드인지 확인하도록 하자
+            this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(0x015D)), scope::PIVOT);
+        }
 
-    fb::game::mob*          front_mob = static_cast<fb::game::mob*>(front);
+        auto*               front = session.forward_object(object::types::MOB);
+        if(front == NULL)
+            return true;
+
+        auto*               front_mob = static_cast<fb::game::mob*>(front);
 
 #if !defined DEBUG && !defined _DEBUG
-    if(std::rand() % 3 == 0)
-        return true;
+        if(std::rand() % 3 == 0)
+            return true;
 #endif
 
-    bool                    critical = false;
-    uint32_t                random_damage = session.random_damage(*front_mob, critical);
-    
-    this->handle_attack_mob(session, *front_mob, random_damage);
+        bool                critical = false;
+        uint32_t            random_damage = session.random_damage(*front_mob, critical);
+
+        this->handle_attack_mob(session, *front_mob, random_damage);
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+    }
 
     return true;
 }
 
 bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     bool                    boost = bool(istream.read_u8());
 
-    fb::game::map*          map = session.map();
-    if(map == NULL)
-        return false;
-
-    this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
-
-
-    std::string             message;
-    std::vector<object*>&   objects = map->objects();
-
-    for(int i = objects.size()-1; i >= 0; i--)
+    try
     {
-        object*             object = objects[i];
-        if(object->position() != session.position())
-            continue;
+        auto                map = session.map();
+        if(map == NULL)
+            return false;
 
-        if(object->type() != object::types::ITEM)
-            continue;
+        session.state_assert(state(state::GHOST | state::RIDING));
 
-        fb::game::item*     below = static_cast<fb::game::item*>(object);
-        bool                item_moved = false;
-        if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
+        
+        // Do action : pick up
+        this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
+
+
+        std::string         message;
+        const auto&         objects = map->objects();
+        std::vector<item*>  gains;
+
+        // Pick up items in reverse order
+        for(auto i = objects.rbegin(); i != objects.rend(); i++)
         {
-            cash*           cash = static_cast<fb::game::cash*>(below);
-            uint32_t        remain = session.money_add(cash->chunk());
-            cash->chunk(remain); // 먹고 남은 돈으로 설정
+            auto            object = *i;
+            if(object->position() != session.position())
+                continue;
 
-            if(remain != 0)
-                this->send_stream(session, this->make_message_stream("더 이상 돈을 가질 수 없습니다.", fb::game::message_types::MESSAGE_STATE), scope::SELF);
+            if(object->type() != object::types::ITEM)
+                continue;
 
-            this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
+            auto            below = static_cast<fb::game::item*>(object);
+            bool            item_moved = false;
+            if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
+            {
+                auto        cash = static_cast<fb::game::cash*>(below);
+                uint32_t    remain = session.money_add(cash->chunk());
+                cash->chunk(remain); // 먹고 남은 돈으로 설정
 
-            this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-        }
-        else
-        {
-            uint8_t         index = session.item_add(below);
-            if(index == -1)
+                if(remain != 0)
+                    this->send_stream(session, this->make_message_stream("더 이상 돈을 가질 수 없습니다.", message::type::MESSAGE_STATE), scope::SELF);
+
+                this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
+                this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+            }
+            else
+            {
+                uint8_t         index = session.item_add(below);
+                if(index == -1)
+                    break;
+
+                this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+
+                item_moved = (session.item(index) == below);
+            }
+
+            if(item_moved || below->empty())
+            {
+                gains.push_back(below);
+                this->send_stream(*below, below->make_hide_stream(), scope::PIVOT, true);
+            }
+
+            if(boost == false)
                 break;
-
-            this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
-
-            item_moved = (session.item(index) == below);
         }
 
-        if(item_moved || below->empty())
+        for(auto gain : gains)
         {
-            map->object_delete(below);
-            this->send_stream(*below, below->make_hide_stream(), scope::PIVOT, true);
+            map->object_delete(gain);
+            if(gain->empty())
+                delete gain;
         }
-
-        if(below->empty())
-            delete below;
-
-        if(boost == false)
-            break;
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     return true;
@@ -2415,8 +2439,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 
 bool fb::game::acceptor::handle_emotion(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     uint8_t                 emotion = istream.read_u8();
 
@@ -2426,8 +2449,7 @@ bool fb::game::acceptor::handle_emotion(fb::game::session& session)
 
 bool fb::game::acceptor::handle_update_map(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-    
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     uint16_t                x = istream.read_u16();
     uint16_t                y = istream.read_u16();
@@ -2447,90 +2469,92 @@ bool fb::game::acceptor::handle_refresh(fb::game::session& session)
 
 bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     uint8_t                 index = istream.read_u8() - 1;
 
-    fb::game::item*         item = NULL;
-    uint8_t                 updated_index = 0;
-    std::string             message;
-    fb::game::equipment::eq_slots slot;
-    if(session.item_active(index, &item, &updated_index, slot, message) == false)
+    try
     {
-        //this->send_stream(session, this->make_message_stream(message, 0x03), scope::SELF);
-        return true;
-    }
+        session.state_assert(state(state::RIDING | state::GHOST));
 
-    if(item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
+        uint8_t                 updated_index = 0;
+        auto                    slot(equipment::eq_slots::UNKNOWN_SLOT);
+        auto                    item = session.item_active(index, &updated_index, slot);
+
+        if(item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
+        {
+            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_NONE, index), scope::SELF);
+            if(updated_index != 0xFF)
+                this->send_stream(session, session.make_update_item_slot_stream(updated_index), scope::SELF);
+
+            this->send_stream(session, session.make_state_stream(fb::game::state_level::LEVEL_MAX), scope::SELF);
+            this->send_stream(session, session.make_update_equipment_stream(slot), scope::SELF);
+            this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+            this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_ON), scope::PIVOT);
+
+            std::stringstream sstream;
+            switch(slot)
+            {
+            case fb::game::equipment::eq_slots::WEAPON_SLOT:
+                sstream << "w:무기  :";
+                break;
+
+            case fb::game::equipment::eq_slots::ARMOR_SLOT:
+                sstream << "a:갑옷  :";
+                break;
+
+            case fb::game::equipment::eq_slots::SHIELD_SLOT:
+                sstream << "s:방패  :";
+                break;
+
+            case fb::game::equipment::eq_slots::HELMET_SLOT:
+                sstream << "h:머리  :";
+                break;
+
+            case fb::game::equipment::eq_slots::LEFT_HAND_SLOT:
+                sstream << "l:왼손  :";
+                break;
+
+            case fb::game::equipment::eq_slots::RIGHT_HAND_SLOT:
+                sstream << "r:오른손  :";
+                break;
+
+            case fb::game::equipment::eq_slots::LEFT_AUX_SLOT:
+                sstream << "[:보조1  :";
+                break;
+
+            case fb::game::equipment::eq_slots::RIGHT_AUX_SLOT:
+                sstream << "]:보조2  :";
+                break;
+            }
+            sstream << item->name();
+            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+
+            sstream.str(std::string());
+            sstream << "갑옷 강도  " << session.defensive_physical() <<"  " << session.regenerative() << " S  " << session.defensive_magical();
+            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+
+            return true;
+        }
+
+
+        if(item->attr() & fb::game::item::attrs::ITEM_ATTR_CONSUME)
+        {   
+            this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+            this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+            this->send_stream(session, session.make_action_stream(action::EAT, duration::DURATION_EAT), scope::SELF);
+            this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EAT), scope::SELF);
+
+            if(item->empty())
+            {
+                this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
+                delete item;
+            }
+        }
+    }
+    catch(std::exception& e)
     {
-        this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_NONE, index), scope::SELF);
-        if(updated_index != 0xFF)
-            this->send_stream(session, session.make_update_item_slot_stream(updated_index), scope::SELF);
-        
-        this->send_stream(session, session.make_state_stream(fb::game::state_level::LEVEL_MAX), scope::SELF);
-        this->send_stream(session, session.make_update_equipment_stream(slot), scope::SELF);
-        this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-        this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_ON), scope::PIVOT);
-
-        std::stringstream sstream;
-        switch(slot)
-        {
-        case fb::game::equipment::eq_slots::WEAPON_SLOT:
-            sstream << "w:무기  :";
-            break;
-
-        case fb::game::equipment::eq_slots::ARMOR_SLOT:
-            sstream << "a:갑옷  :";
-            break;
-
-        case fb::game::equipment::eq_slots::SHIELD_SLOT:
-            sstream << "s:방패  :";
-            break;
-
-        case fb::game::equipment::eq_slots::HELMET_SLOT:
-            sstream << "h:머리  :";
-            break;
-
-        case fb::game::equipment::eq_slots::LEFT_HAND_SLOT:
-            sstream << "l:왼손  :";
-            break;
-
-        case fb::game::equipment::eq_slots::RIGHT_HAND_SLOT:
-            sstream << "r:오른손  :";
-            break;
-
-        case fb::game::equipment::eq_slots::LEFT_AUX_SLOT:
-            sstream << "[:보조1  :";
-            break;
-
-        case fb::game::equipment::eq_slots::RIGHT_AUX_SLOT:
-            sstream << "]:보조2  :";
-            break;
-        }
-        sstream << item->name();
-        this->send_stream(session, this->make_message_stream(sstream.str(), fb::game::message_types::MESSAGE_STATE), scope::SELF);
-        
-        sstream.str(std::string());
-        sstream << "갑옷 강도  " << session.defensive_physical() <<"  " << session.regenerative() << " S  " << session.defensive_magical();
-        this->send_stream(session, this->make_message_stream(sstream.str(), fb::game::message_types::MESSAGE_STATE), scope::SELF);
-
-        return true;
-    }
-
-
-    if(item->attr() & fb::game::item::attrs::ITEM_ATTR_CONSUME)
-    {   
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-        this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
-        this->send_stream(session, session.make_action_stream(action::EAT, duration::DURATION_EAT), scope::SELF);
-        this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EAT), scope::SELF);
-
-        if(item->empty())
-        {
-            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
-            delete item;
-        }
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
     }
 
     return true;
@@ -2538,80 +2562,100 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 
 bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-    
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
-    fb::game::equipment::eq_slots     slot = fb::game::equipment::eq_slots(istream.read_u8());
-    item*                   item = NULL;
+    auto                    slot(equipment::eq_slots(istream.read_u8()));
 
-    // 말, 귀신 상태인지 검사
+    try
+    {
+        session.state_assert(state(state::RIDING | state::GHOST));
 
-    std::string message;
-    uint8_t                 item_index = session.equipment_off(slot, message);
-    if(item_index == -1)
-        return true;
+        uint8_t             item_index = session.equipment_off(slot);
+        if(item_index == -1)
+            return true;
 
 
-    // 마법 딜레이 스트림 필요
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-    this->send_stream(session, session.make_equipment_off_stream(slot), scope::SELF);
-    this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-    this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_OFF), scope::PIVOT);
-    this->send_stream(session, session.make_update_item_slot_stream(item_index), scope::SELF);
+        // 마법 딜레이 스트림 필요
+        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        this->send_stream(session, session.make_equipment_off_stream(slot), scope::SELF);
+        this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+        this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_OFF), scope::PIVOT);
+        this->send_stream(session, session.make_update_item_slot_stream(item_index), scope::SELF);
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
+    }
 
     return true;
 }
 
 bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
-    uint8_t                 cmd = istream.read_u8();
-    uint8_t                 index = istream.read_u8() - 1;
-    bool                    drop_all = bool(istream.read_u8());
-
-    fb::game::item*         item = session.item(index);
-    if(item == NULL)
-        return true;
-
-    fb::game::item*         dropped = item->handle_drop(session, drop_all ? item->count() : 1);
-
-    if(item == dropped)
+    try
     {
-        this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
-        session.item_remove(index);
+        session.state_assert(state(state::RIDING | state::GHOST));
+
+        auto&               istream = session.in_stream();
+        uint8_t             cmd = istream.read_u8();
+        uint8_t             index = istream.read_u8() - 1;
+        bool                drop_all = bool(istream.read_u8());
+
+        auto                item = session.item(index);
+        if(item == NULL)
+            return true;
+
+        auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
+
+        if(item == dropped)
+        {
+            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
+            session.item_remove(index);
+        }
+
+        auto                map = session.map();
+        this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
+        this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
+        this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
     }
-    
-    fb::game::map* map = session.map();
-    this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
-    this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
-    this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+    catch(std::exception& e)
+    { 
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+    }
 
     return true;
 }
 
 bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
+    try
+    {
+        session.state_assert(state(state::RIDING | state::GHOST));
 
-    fb::game::map*          map = session.map();
-    if(map == NULL)
-        return false;
+        auto                map = session.map();
+        if(map == NULL)
+            return false;
 
-    uint8_t                 cmd = istream.read_u8();
-    uint32_t                chunk = std::min(session.money(), istream.read_u32());
-    cash*                   cash = new fb::game::cash(chunk);
-    
-    session.money_reduce(chunk);
+        auto&               istream = session.in_stream();
+        uint8_t             cmd = istream.read_u8();
+        uint32_t            chunk = std::min(session.money(), istream.read_u32());
+        cash*               cash = new fb::game::cash(chunk);
 
-    cash->map(map);
-    cash->position(session.position());
-    this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-    this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
-    this->send_stream(session, this->make_message_stream("돈을 버렸습니다.", fb::game::message_types::MESSAGE_STATE), scope::SELF);
+        session.money_reduce(chunk);
 
-    return true;
+        cash->map(map);
+        cash->position(session.position());
+        this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
+        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+        this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
+        this->send_stream(session, this->make_message_stream("돈을 버렸습니다.", message::type::MESSAGE_STATE), scope::SELF);
+
+        return true;
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+    }
 }
 
 bool fb::game::acceptor::handle_front_info(fb::game::session& session)
@@ -2623,7 +2667,7 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
     std::vector<fb::game::session*> sessions = session.forward_sessions();
     for(auto i : sessions)
     {
-        this->send_stream(session, this->make_message_stream(i->name(), message_types::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, this->make_message_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     std::vector<object*> objects = session.forward_objects(object::types::UNKNOWN);
@@ -2632,11 +2676,11 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
         if(i->type() == fb::game::object::types::ITEM)
         {
             auto item = static_cast<fb::game::item*>(i);
-            this->send_stream(session, this->make_message_stream(item->name_styled(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(item->name_styled(), message::type::MESSAGE_STATE), scope::SELF);
         }
         else
         {
-            this->send_stream(session, this->make_message_stream(i->name(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
         }
     }
 
@@ -2651,8 +2695,7 @@ bool fb::game::acceptor::handle_self_info(fb::game::session& session)
 
 bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     options                 option = options(istream.read_u8());
 
@@ -2669,10 +2712,10 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 
         try
         {
-			session.state_assert(state(state::GHOST | state::DISGUISE));
+            session.state_assert(state(state::GHOST | state::DISGUISE));
 
             object*         forward = NULL;
-			std::string		message;
+            std::string     message;
 
             if(session.state() == fb::game::state::RIDING)
             {
@@ -2690,18 +2733,20 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
                 if(forward == NULL || forward->based() != horse)
                     throw session::no_horse_exception();
 
-                static_cast<fb::game::mob*>(forward)->kill();
+                forward->map()->object_delete(forward);
                 this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
                 message = "말에 탔습니다.";
                 session.state(fb::game::state::RIDING);
+
+                delete forward;
             }
 
             this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-            this->send_stream(session, this->make_message_stream(message, message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(message, message::type::MESSAGE_STATE), scope::SELF);
         }
         catch(std::exception& e)
         {
-            this->send_stream(session, this->make_message_stream(e.what(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
         }
         return true;
     }
@@ -2755,7 +2800,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     }
 
     sstream << ": " << (enabled ? "ON" : "OFF");
-    this->send_stream(session, this->make_message_stream(sstream.str(), fb::game::message_types::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
     this->send_stream(session, session.make_option_stream(), scope::SELF);
 
@@ -2764,8 +2809,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 
 bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 {
-    fb::istream&            istream = session.in_stream();
-
+    auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
     uint8_t                 unknown = istream.read_u8();
     uint32_t                fd = istream.read_u32();
@@ -2780,16 +2824,17 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
         return true;
     }
 
-    fb::game::session* other = this->session(fd);
+    auto                    other = this->session(fd);
     if(other != NULL) // character
     {
         this->send_stream(session, other->make_external_info_stream(), scope::SELF);
         return true;
     }
 
-    object* object = session.map()->object(fd);
+    auto                    object = session.map()->object(fd);
     if(object != NULL) // object
     {
+        this->send_stream(session, this->make_message_stream(object->name(), message::type::MESSAGE_STATE), scope::SELF);
         return true;
     }
 
@@ -2798,7 +2843,7 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 
 bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
 
     uint8_t cmd = istream.read_u8();
     uint16_t position = istream.read_u16();
@@ -2818,7 +2863,7 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 
 bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
 
     uint8_t cmd = istream.read_u8();
     uint8_t count = istream.read_u8();
@@ -2844,7 +2889,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
         uint8_t free_size = session.inventory_free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
-			throw itemmix::full_inven_exception();
+            throw item::full_inven_exception();
 
 
         for(auto require : itemmix->require)
@@ -2897,7 +2942,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     }
     catch(std::exception& e)
     { 
-        this->send_stream(session, this->make_message_stream(e.what(), message_types::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
         return true;
     }
 
@@ -2908,7 +2953,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
 bool fb::game::acceptor::handle_trade(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
 
     uint8_t                     cmd = istream.read_u8();
     uint8_t                     action = istream.read_u8();
@@ -2934,7 +2979,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         if(session.option(options::TRADE) == false)
         {
             // 내가 교환 거부중
-            this->send_stream(session, this->make_message_stream("교환 거부 상태입니다.", message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream("교환 거부 상태입니다.", message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -2943,7 +2988,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             // 상대방이 교환 거부중
             std::stringstream sstream;
             sstream << partner->name() << "님은 교환 거부 상태입니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -2958,14 +3003,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             // 상대방이 이미 교환중
             std::stringstream sstream;
             sstream << partner->name() << "님은 이미 교환 중입니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
         if(session.sight(*partner) == false)
         {
             // 상대방이 시야에서 보이지 않음
-            this->send_stream(session, this->make_message_stream("대상이 보이지 않습니다.", message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream("대상이 보이지 않습니다.", message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -2974,7 +3019,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             // 상대방과의 거리가 너무 멈
             std::stringstream sstream;
             sstream << partner->name() << "님과 너무 멀리 떨어져 있습니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message_types::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -2997,7 +3042,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         // 교환 불가능한 아이템 거래 시도
         if(item->trade() == false)
         {
-            this->send_stream(session, this->make_message_stream("교환이 불가능한 아이템입니다.", message_types::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(session, this->make_message_stream("교환이 불가능한 아이템입니다.", message::type::MESSAGE_TRADE), scope::SELF);
             break;
         }
 
@@ -3037,7 +3082,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         uint16_t count = istream.read_u16();
         if(selected->count() < count)
         {
-            this->send_stream(session, this->make_message_stream("개수가 올바르지 않습니다.", message_types::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(session, this->make_message_stream("개수가 올바르지 않습니다.", message::type::MESSAGE_TRADE), scope::SELF);
             break;
         }
 
@@ -3159,7 +3204,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         else
         {
             // 상대방이 아직 교환확인을 누르지 않은 경우
-            this->send_stream(*partner, this->make_message_stream("상대방이 확인을 눌렀습니다.", message_types::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(*partner, this->make_message_stream("상대방이 확인을 눌렀습니다.", message::type::MESSAGE_TRADE), scope::SELF);
         }
         break;
     }
@@ -3170,7 +3215,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
 bool fb::game::acceptor::handle_group(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
 
     uint8_t                     cmd = istream.read_u8();
     uint8_t                     name_size = istream.read_u8();
@@ -3189,7 +3234,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
 
 bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
     uint8_t                     cmd = istream.read_u8();
     uint8_t                     unknown = istream.read_u8();
 
@@ -3219,7 +3264,7 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 
 bool fb::game::acceptor::handle_chat(fb::game::session& session)
 {
-    fb::istream&                istream = session.in_stream();
+    auto&                       istream = session.in_stream();
     uint8_t                     cmd = istream.read_u8();
     
     uint8_t                     shout = istream.read_u8();

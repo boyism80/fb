@@ -77,7 +77,7 @@ public:
 
 private:
     fb::ostream             make_time_stream();
-    fb::ostream             make_message_stream(const std::string& message, fb::game::message_types types);
+    fb::ostream             make_message_stream(const std::string& message, message::type types);
     fb::ostream             make_dialog_stream(const std::string& message, bool enabled_prev, bool enabled_next);
 
 public:

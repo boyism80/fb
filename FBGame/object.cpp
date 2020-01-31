@@ -142,22 +142,21 @@ fb::game::point16_t fb::game::object::forward() const
         return forward;
 
 
-    point16_t backward(this->_position);
-    forward.backward(this->_direction);
-    if(this->_map->movable(backward))
-        return backward;
-
-
     point16_t left(this->_position);
-    forward.left(this->_direction);
+    left.left(this->_direction);
     if(this->_map->movable(left))
         return left;
 
 
     point16_t right(this->_position);
-    forward.right(this->_direction);
+    right.right(this->_direction);
     if(this->_map->movable(right))
         return right;
+
+    point16_t backward(this->_position);
+    backward.backward(this->_direction);
+    if(this->_map->movable(backward))
+        return backward;
 
     return this->_position;
 }

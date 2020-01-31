@@ -21,6 +21,9 @@ class session;
 class item : public object
 {
 public:
+    DECLARE_EXCEPTION(full_inven_exception, "소지품이 꽉 찼습니다.")
+
+public:
     enum penalties { NONE, DROP, DESTRUCTION };
 
     enum delete_attr : uint8_t
@@ -298,6 +301,9 @@ public:
 //
 class equipment : public item
 {
+public:
+    DECLARE_EXCEPTION(not_equipment_exception, "입을 수 없는 물건입니다.")
+
 public:
     enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 
@@ -655,8 +661,7 @@ public:
 typedef struct _itemmix
 {
 public:
-	DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
-	DECLARE_EXCEPTION(full_inven_exception, "인벤토리가 가득 찼습니다.")
+    DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
 
 private:
     typedef struct _element

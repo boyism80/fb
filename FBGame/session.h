@@ -82,11 +82,11 @@ public:
 class session : public fb_session, public life, public life::core
 {
 public:
-	DECLARE_EXCEPTION(require_class_exception, "직업을 선택해야 합니다.")
-	DECLARE_EXCEPTION(ghost_exception, "귀신은 할 수 없습니다.")
-	DECLARE_EXCEPTION(ridding_exception, "말을 타고는 할 수 없습니다.")
-	DECLARE_EXCEPTION(no_horse_exception, "탈 것이 없습니다.")
-	DECLARE_EXCEPTION(disguise_exception, "변신 중에는 할 수 없습니다.")
+    DECLARE_EXCEPTION(require_class_exception, "직업을 선택해야 합니다.")
+    DECLARE_EXCEPTION(ghost_exception, "귀신은 할 수 없습니다.")
+    DECLARE_EXCEPTION(ridding_exception, "말을 타고는 할 수 없습니다.")
+    DECLARE_EXCEPTION(no_horse_exception, "탈 것이 없습니다.")
+    DECLARE_EXCEPTION(disguise_exception, "변신 중에는 할 수 없습니다.")
 
 private:
     uint8_t                 _strength, _intelligence, _dexteritry;
@@ -220,15 +220,15 @@ public:
     const std::string&      title() const;
     void                    title(const std::string& value);
 
-    item*                   item(uint8_t index) const;
+    fb::game::item*         item(uint8_t index) const;
     bool                    item_add(fb::game::item& item);
     uint8_t                 item_add(fb::game::item* item);
     bool                    item_remove(uint8_t index);
     bool                    item_reduce(uint8_t index, uint16_t count);
-    bool                    item_active(uint8_t index, fb::game::item** activated, uint8_t* updated_index, fb::game::equipment::eq_slots& slot, std::string& message);
+    fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::eq_slots& slot);
     uint8_t                 item2index(const fb::game::item::core* item) const;
-    bool                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index, std::string& message);
-    uint8_t                 equipment_off(fb::game::equipment::eq_slots slot, std::string& message);
+    void                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index);
+    uint8_t                 equipment_off(fb::game::equipment::eq_slots slot);
 
     fb::game::weapon*       weapon() const;
     fb::game::weapon*       weapon(fb::game::weapon* weapon);

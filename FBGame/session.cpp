@@ -71,7 +71,7 @@ void fb::game::trade_system::select(fb::game::item* item)
 
 uint8_t fb::game::trade_system::add(fb::game::item* item)
 {
-    if(item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE)
+    if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
         uint8_t exists = this->contains_core(item);
         if(exists != 0xFF)
@@ -880,7 +880,7 @@ uint8_t fb::game::session::item_add(fb::game::item* item)
 
 
     // 번들 형식의 아이템인 경우
-    if(item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE)
+    if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
         for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
         {
@@ -932,28 +932,21 @@ bool fb::game::session::item_reduce(uint8_t index, uint16_t count)
     return true;
 }
 
-bool fb::game::session::item_active(uint8_t index, fb::game::item** activated, uint8_t* updated_index, fb::game::equipment::eq_slots& slot, std::string& message)
+fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_index, equipment::eq_slots& slot)
 {
-    slot = fb::game::equipment::eq_slots::UNKNOWN_SLOT;
-    // TODO
-    // 말에 탄 상태, 귀신상태 체크
+    slot = equipment::eq_slots::UNKNOWN_SLOT;
     
-    
-    fb::game::item* item = this->_items[index];
+    auto                    item = this->_items[index];
     if(item == NULL)
-        return false;
+        return nullptr;
 
-    fb::game::item::attrs attr = item->attr();
-    if((attr & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) && this->equipment_on(index, slot, updated_index, message) == false)
-        return false;
-
+    auto                    attr(item->attr());
+    if((attr & item::attrs::ITEM_ATTR_EQUIPMENT))
+        this->equipment_on(index, slot, updated_index);
 
     item->handle_acive(*this);
     if(item->empty())
         this->_items[index] = NULL;
-
-    if(activated != NULL)
-        *activated = item;
 
     return item;
 }
@@ -972,69 +965,68 @@ uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
     return 0xFF;
 }
 
-bool fb::game::session::equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index, std::string& message)
+void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, uint8_t* updated_index)
 {
     if(updated_index != NULL)
         *updated_index = 0xFF;
 
-    fb::game::item* item = this->item(index);
+    fb::game::item*         item = this->item(index);
     if(item == NULL)
-        return false;
+        throw std::exception();
 
-    fb::game::item* before = NULL;
-    fb::game::item::attrs attr = fb::game::item::attrs(item->attr() & ~fb::game::item::attrs::ITEM_ATTR_EQUIPMENT);
+    fb::game::item*         before = NULL;
+    auto                    attr(fb::game::item::attrs(item->attr() & ~item::attrs::ITEM_ATTR_EQUIPMENT));
     switch(attr)
     {
-    case fb::game::item::attrs::ITEM_ATTR_WEAPON:
+    case item::attrs::ITEM_ATTR_WEAPON:
         before = this->weapon(static_cast<fb::game::weapon*>(item));
-        slot = fb::game::equipment::eq_slots::WEAPON_SLOT;
+        slot = equipment::eq_slots::WEAPON_SLOT;
         break;
 
-    case fb::game::item::attrs::ITEM_ATTR_ARMOR:
+    case item::attrs::ITEM_ATTR_ARMOR:
         before = this->armor(static_cast<fb::game::armor*>(item));
-        slot = fb::game::equipment::eq_slots::ARMOR_SLOT;
+        slot = equipment::eq_slots::ARMOR_SLOT;
         break;
 
-    case fb::game::item::attrs::ITEM_ATTR_SHIELD:
+    case item::attrs::ITEM_ATTR_SHIELD:
         before = this->shield(static_cast<fb::game::shield*>(item));
-        slot = fb::game::equipment::eq_slots::SHIELD_SLOT;
+        slot = equipment::eq_slots::SHIELD_SLOT;
         break;
 
-    case fb::game::item::attrs::ITEM_ATTR_HELMET:
+    case item::attrs::ITEM_ATTR_HELMET:
         before = this->helmet(static_cast<fb::game::helmet*>(item));
-        slot = fb::game::equipment::eq_slots::HELMET_SLOT;
+        slot = equipment::eq_slots::HELMET_SLOT;
         break;
 
-    case fb::game::item::attrs::ITEM_ATTR_RING:
+    case item::attrs::ITEM_ATTR_RING:
         if(this->_rings[0] == NULL)
         {
-            slot = fb::game::equipment::eq_slots::LEFT_HAND_SLOT;
+            slot = equipment::eq_slots::LEFT_HAND_SLOT;
         }
         else
         {
-            slot = fb::game::equipment::eq_slots::RIGHT_HAND_SLOT;
+            slot = equipment::eq_slots::RIGHT_HAND_SLOT;
         }
         
         before = this->ring(static_cast<fb::game::ring*>(item));
         break;
 
 
-    case fb::game::item::attrs::ITEM_ATTR_AUXILIARY:
+    case item::attrs::ITEM_ATTR_AUXILIARY:
         if(this->_auxiliaries[0] == NULL)
         {
-            slot = fb::game::equipment::eq_slots::LEFT_AUX_SLOT;
+            slot = equipment::eq_slots::LEFT_AUX_SLOT;
         }
         else
         {
-            slot = fb::game::equipment::eq_slots::RIGHT_AUX_SLOT;
+            slot = equipment::eq_slots::RIGHT_AUX_SLOT;
         }
 
         before = this->auxiliary(static_cast<fb::game::auxiliary*>(item));
         break;
     
     default:
-        message = "입을 수 없는 물건입니다.";
-        return false;
+        throw equipment::not_equipment_exception();
     }
 
 
@@ -1042,68 +1034,60 @@ bool fb::game::session::equipment_on(uint8_t index, fb::game::equipment::eq_slot
     uint8_t updated = this->item_add(before);
     if(updated_index != NULL)
         *updated_index = updated;
-    
-    return true;
 }
 
-uint8_t fb::game::session::equipment_off(fb::game::equipment::eq_slots slot, std::string& message)
+uint8_t fb::game::session::equipment_off(equipment::eq_slots slot)
 {
-    // TODO
-    // 말, 귀신 체크
-
     if(this->inventory_free() == false)
-    {
-        message = "소지품이 꽉 찼습니다.";
-        return -1;
-    }
+        throw item::full_inven_exception();
 
     fb::game::item* item;
     switch(slot)
     {
-    case fb::game::equipment::eq_slots::WEAPON_SLOT:
+    case equipment::eq_slots::WEAPON_SLOT:
         item = this->_weapon;
         if(this->_weapon != NULL)
             this->_weapon = NULL;
 
         break;
 
-    case fb::game::equipment::eq_slots::ARMOR_SLOT:
+    case equipment::eq_slots::ARMOR_SLOT:
         item = this->_armor;
         if(this->_armor != NULL)
             this->_armor = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::SHIELD_SLOT:
+    case equipment::eq_slots::SHIELD_SLOT:
         item = this->_shield;
         if(this->_shield != NULL)
             this->_shield = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::HELMET_SLOT:
+    case equipment::eq_slots::HELMET_SLOT:
         item = this->_helmet;
         if(this->_helmet != NULL)
             this->_helmet = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::LEFT_HAND_SLOT:
+    case equipment::eq_slots::LEFT_HAND_SLOT:
         item = this->_rings[0];
         if(this->_rings[0] != NULL)
             this->_rings[0] = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::RIGHT_HAND_SLOT:
+    case equipment::eq_slots::RIGHT_HAND_SLOT:
         item = this->_rings[1];
         if(this->_rings[1] != NULL)
             this->_rings[1] = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::LEFT_AUX_SLOT:
+    case equipment::eq_slots::LEFT_AUX_SLOT:
         item = this->_auxiliaries[0];
         if(this->_auxiliaries[0] != NULL)
             this->_auxiliaries[0] = NULL;
         break;
 
-    case fb::game::equipment::eq_slots::RIGHT_AUX_SLOT:
+    case equipment::eq_slots::RIGHT_AUX_SLOT:
         item = this->_auxiliaries[1];
         if(this->_auxiliaries[1] != NULL)
             this->_auxiliaries[1] = NULL;
@@ -1284,13 +1268,13 @@ bool fb::game::session::group_leave()
 void fb::game::session::state_assert(fb::game::state flags) const
 {
     if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
-		throw ghost_exception();
+        throw ghost_exception();
 
     if((flags & state::RIDING) == state::RIDING && this->_state == state::RIDING)
-		throw ridding_exception();
+        throw ridding_exception();
 
     if((flags & state::DISGUISE) == state::DISGUISE && this->_state == state::DISGUISE)
-		throw disguise_exception();
+        throw disguise_exception();
 }
 
 fb::game::map* fb::game::session::map() const
@@ -1521,42 +1505,42 @@ fb::ostream fb::game::session::make_delete_item_slot_stream(fb::game::item::dele
     return ostream;
 }
 
-fb::ostream fb::game::session::make_update_equipment_stream(fb::game::equipment::eq_slots slot) const
+fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots slot) const
 {
     fb::ostream             ostream;
     fb::game::item*         item;
 
     switch(slot)
     {
-    case fb::game::equipment::eq_slots::WEAPON_SLOT:
+    case equipment::eq_slots::WEAPON_SLOT:
         item = this->weapon();
         break;
 
-    case fb::game::equipment::eq_slots::ARMOR_SLOT:
+    case equipment::eq_slots::ARMOR_SLOT:
         item = this->armor();
         break;
 
-    case fb::game::equipment::eq_slots::SHIELD_SLOT:
+    case equipment::eq_slots::SHIELD_SLOT:
         item = this->shield();
         break;
 
-    case fb::game::equipment::eq_slots::HELMET_SLOT:
+    case equipment::eq_slots::HELMET_SLOT:
         item = this->helmet();
         break;
 
-    case fb::game::equipment::eq_slots::LEFT_HAND_SLOT:
+    case equipment::eq_slots::LEFT_HAND_SLOT:
         item = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
-    case fb::game::equipment::eq_slots::RIGHT_HAND_SLOT:
+    case equipment::eq_slots::RIGHT_HAND_SLOT:
         item = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
-    case fb::game::equipment::eq_slots::LEFT_AUX_SLOT:
+    case equipment::eq_slots::LEFT_AUX_SLOT:
         item = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
-    case fb::game::equipment::eq_slots::RIGHT_AUX_SLOT:
+    case equipment::eq_slots::RIGHT_AUX_SLOT:
         item = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
@@ -1577,7 +1561,7 @@ fb::ostream fb::game::session::make_update_equipment_stream(fb::game::equipment:
     return ostream;
 }
 
-fb::ostream fb::game::session::make_equipment_off_stream(fb::game::equipment::eq_slots slot) const
+fb::ostream fb::game::session::make_equipment_off_stream(equipment::eq_slots slot) const
 {
     fb::ostream             ostream;
     ostream.write_u8(0x38)
