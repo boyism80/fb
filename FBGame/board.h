@@ -17,7 +17,7 @@ public:
     class article
     {
     public:
-        DECLEAR_EXCEPTION(not_found_exception, "게시글이 존재하지 않습니다.")
+        DECLARE_EXCEPTION(not_found_exception, "게시글이 존재하지 않습니다.")
 
     private:
         uint16_t                        _id;
@@ -49,7 +49,7 @@ public:
     class section : private std::vector<article*>
     {
     public:
-        DECLEAR_EXCEPTION(not_found_exception, "섹션이 존재하지 않습니다.")
+        DECLARE_EXCEPTION(not_found_exception, "섹션이 존재하지 않습니다.")
 
     public:
         using std::vector<article*>::operator[];
@@ -75,7 +75,7 @@ public:
 #pragma endregion
 
 public:
-    DECLEAR_EXCEPTION(auth_exception, "권한이 없습니다.")
+    DECLARE_EXCEPTION(auth_exception, "권한이 없습니다.")
 
 private:
     std::vector<section*>               _sections;

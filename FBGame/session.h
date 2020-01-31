@@ -81,6 +81,13 @@ public:
 
 class session : public fb_session, public life, public life::core
 {
+public:
+	DECLARE_EXCEPTION(require_class_exception, "직업을 선택해야 합니다.")
+	DECLARE_EXCEPTION(ghost_exception, "귀신은 할 수 없습니다.")
+	DECLARE_EXCEPTION(ridding_exception, "말을 타고는 할 수 없습니다.")
+	DECLARE_EXCEPTION(no_horse_exception, "탈 것이 없습니다.")
+	DECLARE_EXCEPTION(disguise_exception, "변신 중에는 할 수 없습니다.")
+
 private:
     uint8_t                 _strength, _intelligence, _dexteritry;
     uint8_t                 _damage; // 공격수정
@@ -254,7 +261,7 @@ public:
     bool                    group_enter(fb::game::group_system* gs);
     bool                    group_leave();
 
-    bool                    state_assert(std::string& message, fb::game::state flags) const;
+    void                    state_assert(fb::game::state flags) const;
 
 public:
     fb::ostream             make_id_stream() const;

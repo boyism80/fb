@@ -654,6 +654,10 @@ public:
 
 typedef struct _itemmix
 {
+public:
+	DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
+	DECLARE_EXCEPTION(full_inven_exception, "인벤토리가 가득 찼습니다.")
+
 private:
     typedef struct _element
     {

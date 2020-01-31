@@ -2113,7 +2113,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 
         // 레벨 5면서 직업 안가졌으면 직업 가지라고 한다.
         if(session.level() >= 5 && session.cls() == 0)
-            throw std::runtime_error("직업골라 씨발롬아");
+            throw session::require_class_exception();
 
         // 경험치는 최대 3.3%로 제한하여 얻는다.
         uint32_t require = session.max_level() ? 0xFFFFFFFF : this->required_exp(session.cls(), session.level()+1) - this->required_exp(session.cls(), session.level());
@@ -2663,17 +2663,16 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     {
     case options::RIDE:
     {
-        std::string         message;
         static auto         horse = this->name2mob("말");
         if(horse == NULL)
             break;
 
         try
         {
-            if(session.state_assert(message, state(state::GHOST | state::DISGUISE)) == false)
-                throw std::runtime_error(message);
+			session.state_assert(state(state::GHOST | state::DISGUISE));
 
             object*         forward = NULL;
+			std::string		message;
 
             if(session.state() == fb::game::state::RIDING)
             {
@@ -2689,7 +2688,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
             {
                 forward = session.forward_object(object::types::MOB);
                 if(forward == NULL || forward->based() != horse)
-                    throw std::runtime_error("탈 것이 없습니다.");
+                    throw session::no_horse_exception();
 
                 static_cast<fb::game::mob*>(forward)->kill();
                 this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
@@ -2841,11 +2840,11 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     {
         itemmix* itemmix = this->find_itemmix(items);
         if(itemmix == NULL)
-            throw std::runtime_error("조합할 수 없습니다");
+            throw itemmix::no_match_exception();
 
         uint8_t free_size = session.inventory_free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
-            throw std::runtime_error("인벤토리가 부족합니다.");
+			throw itemmix::full_inven_exception();
 
 
         for(auto require : itemmix->require)

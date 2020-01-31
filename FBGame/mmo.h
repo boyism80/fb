@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#define DECLEAR_EXCEPTION(name, msg)    class name : public std::runtime_error\
+#define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\
                                         {\
                                         public:\
                                             name() : std::runtime_error(msg) {}\

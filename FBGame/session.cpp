@@ -1281,27 +1281,16 @@ bool fb::game::session::group_leave()
     return true;
 }
 
-bool fb::game::session::state_assert(std::string& message, fb::game::state flags) const
+void fb::game::session::state_assert(fb::game::state flags) const
 {
     if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
-    {
-        message = "귀신은 할 수 없습니다.";
-        return false;
-    }
+		throw ghost_exception();
 
     if((flags & state::RIDING) == state::RIDING && this->_state == state::RIDING)
-    {
-        message = "말을 타고는 할 수 없습니다.";
-        return false;
-    }
+		throw ridding_exception();
 
     if((flags & state::DISGUISE) == state::DISGUISE && this->_state == state::DISGUISE)
-    {
-        message = "변신 중에는 할 수 없습니다.";
-        return false;
-    }
-
-    return true;
+		throw disguise_exception();
 }
 
 fb::game::map* fb::game::session::map() const
