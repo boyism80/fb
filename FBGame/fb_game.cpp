@@ -3257,6 +3257,24 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
         break;
     }
 
+    case 0x03: // article
+    {
+        uint16_t                section_id = istream.read_u16();
+        uint16_t                article_id = istream.read_u16();
+
+        this->send_stream(session, this->_board.make_article_stream(section_id, article_id, session), scope::SELF);
+        break;
+    }
+
+    case 0x05: // delete
+    {
+        uint16_t                section_id = istream.read_u16();
+        uint16_t                article_id = istream.read_u16();
+
+        this->send_stream(session, this->_board.make_delete_stream(section_id, article_id, session), scope::SELF);
+        break;
+    }
+
     }
 
     return true;

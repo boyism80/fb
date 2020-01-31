@@ -5,6 +5,12 @@
 #include <string>
 #include <vector>
 
+#define DECLEAR_EXCEPTION(name, msg)    class name : public std::runtime_error\
+                                        {\
+                                        public:\
+                                            name() : std::runtime_error(msg) {}\
+                                        };
+
 namespace fb { namespace game {
 
 enum nation    : uint8_t { GOGURYEO = 0x01, BUYEO = 0x02 };

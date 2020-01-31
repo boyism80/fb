@@ -4,13 +4,14 @@
 //
 // item methods
 //
-fb::game::board::article::article(uint16_t id, const std::string& title, const std::string& content, const std::string& owner, uint8_t month, uint8_t day, uint8_t color) : 
+fb::game::board::article::article(uint16_t id, const std::string& title, const std::string& content, const std::string& writer, uint8_t month, uint8_t day, uint8_t color, bool deleted) : 
     _id(id),
     _title(title),
     _content(content),
-    _owner(owner),
+    _writer(writer),
     _month(month), _day(day),
-    _color(color)
+    _color(color),
+    _deleted(deleted)
 {}
 
 fb::game::board::article::~article()
@@ -31,9 +32,9 @@ const std::string& fb::game::board::article::content() const
     return this->_content;
 }
 
-const std::string& fb::game::board::article::owner() const
+const std::string& fb::game::board::article::writer() const
 {
-    return this->_owner;
+    return this->_writer;
 }
 
 uint8_t fb::game::board::article::month() const
@@ -51,6 +52,16 @@ uint8_t fb::game::board::article::color() const
     return this->_color;
 }
 
+bool fb::game::board::article::deleted() const
+{
+    return this->_deleted;
+}
+
+void fb::game::board::article::deleted(bool value)
+{
+    this->_deleted = value;
+}
+
 
 //
 // section methods
@@ -62,7 +73,7 @@ fb::game::board::section::section(const std::string & title) :
 
 fb::game::board::section::~section()
 {
-    for(auto article : this->_articles)
+    for(auto article : *this)
         delete article;
 }
 
@@ -71,25 +82,32 @@ const std::string& fb::game::board::section::title() const
     return this->_title;
 }
 
-const std::vector<fb::game::board::article*>& fb::game::board::section::articles() const
-{
-    return this->_articles;
-}
-
 fb::game::board::article* fb::game::board::section::add(uint16_t id, const std::string& title, const std::string& content, const session& session, uint8_t color)
 {
     return this->add(id, title, content, session.name(), color);
 }
 
-fb::game::board::article* fb::game::board::section::add(uint16_t id, const std::string& title, const std::string& content, const std::string& owner, uint8_t color)
+fb::game::board::article* fb::game::board::section::add(uint16_t id, const std::string& title, const std::string& content, const std::string& writer, uint8_t color)
 {
     auto time = std::time(0);
     auto now = std::localtime(&time);
 
-    auto allocated = new article(id, title, content, owner, now->tm_mon + 1, now->tm_mday, color);
-    this->_articles.push_back(allocated);
+    auto allocated = new article(id, title, content, writer, now->tm_mon + 1, now->tm_mday, color);
+    this->push_back(allocated);
 
     return allocated;
+}
+
+const fb::game::board::article* fb::game::board::section::at(uint32_t index) const
+{
+    if(index > this->size() - 1)
+        return nullptr;
+
+    const auto article = std::vector<board::article*>::at(index);
+    if(article->deleted())
+        return nullptr;
+
+    return article;
 }
 
 
@@ -112,9 +130,12 @@ const std::vector<fb::game::board::section*>& fb::game::board::sections() const
     return this->_sections;
 }
 
-fb::game::board::section* fb::game::board::at(uint32_t index)
+fb::game::board::section* fb::game::board::at(uint32_t index) const
 {
-    return this->_sections[index];
+    if(index > this->_sections.size() - 1)
+        return nullptr;
+
+    return this->_sections.at(index);
 }
 
 fb::game::board::section* fb::game::board::add(const std::string& name)
@@ -170,23 +191,26 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
         .write(section_name.c_str(), section_name.size());
 
 
-    const auto&             articles = section->articles();
     if(offset == 0x7FFF)
-        offset = articles.size() - 1;
-    uint16_t                reverse_offset = articles.size() - (offset + 1);
+        offset = section->size() - 1;
+    uint16_t                reverse_offset = section->size() - (offset + 1);
 
-    int                     count = std::min(size_t(20), articles.size() - reverse_offset);
+    int                     count = std::min(size_t(20), section->size() - reverse_offset);
     ostream.write_u8(count);
-    for(auto i = articles.rbegin() + reverse_offset; i != articles.rend(); i++)
+
+    for(auto i = section->rbegin() + reverse_offset; i != section->rend(); i++)
     {
-        const auto          article = *i;
+        const auto          article = (*i);
+        if(article->deleted())
+            continue;
+
         const auto&         title = article->title();
-        const auto&         owner = article->owner();
+        const auto&         writer = article->writer();
 
         ostream.write_u8(0x00)
             .write_u16(article->id())
-            .write_u8(owner.size())
-            .write(owner.c_str(), owner.size())
+            .write_u8(writer.size())
+            .write(writer.c_str(), writer.size())
             .write_u8(article->month())
             .write_u8(article->day())
             .write_u8(title.size())
@@ -197,5 +221,81 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
     }
 
     ostream.write_u8(0x00);
+    return ostream;
+}
+
+fb::ostream fb::game::board::make_article_stream(uint16_t section_id, uint16_t article_id, const session& session) const
+{
+    try
+    {
+        auto                    section = this->at(section_id);
+        if(section == nullptr)
+            throw board::section::not_found_exception();
+
+        auto                    article = section->at(article_id-1);
+        if(article == nullptr)
+            throw board::article::not_found_exception();
+
+        const auto&             writer = article->writer();
+        const auto&             title = article->title();
+        const auto&             content = article->content();
+
+        ostream                 ostream;
+
+        ostream.write_u8(0x31)
+            .write_u8(0x03)
+            .write_u8(0x01 | 0x02) // 0x01 : NEXT, 0x02 : WRITE
+            .write_u8(0x00)
+            .write_u16(article_id)
+            .write_u8(writer.size())
+            .write(writer.c_str(), writer.size())
+            .write_u8(article->month())
+            .write_u8(article->day())
+            .write_u8(title.size())
+            .write(title.c_str(), title.size())
+            .write_u16(content.size())
+            .write(content.c_str(), content.size())
+            .write_u8(0x00);
+
+        return ostream;
+    }
+    catch(std::exception& e)
+    {
+        return this->make_message_stream(e.what(), false);
+    }
+}
+
+fb::ostream fb::game::board::make_delete_stream(uint16_t section_id, uint16_t article_id, const session& session) const
+{
+    try
+    {
+        auto                    section = this->at(section_id);
+        if(section == nullptr)
+            throw board::section::not_found_exception();
+
+        auto                    article = section->at(article_id-1);
+        if(article == nullptr)
+            throw board::article::not_found_exception();
+
+
+        throw board::auth_exception();
+    }
+    catch(std::exception& e)
+    {
+        return this->make_message_stream(e.what(), false);
+    }
+}
+
+fb::ostream fb::game::board::make_message_stream(const std::string& message, bool success) const
+{
+    ostream                 ostream;
+
+    ostream.write_u8(0x31)
+        .write_u8(0x07)     // mail 관련 0x06인 것 같다. 확인 필요
+        .write_u8(success)
+        .write_u8(message.size())
+        .write(message.c_str(), message.size())
+        .write_u8(0x00);
+
     return ostream;
 }
