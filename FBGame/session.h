@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "item.h"
 #include "object.h"
+#include "spell.h"
 
 namespace fb { namespace game {
 
@@ -107,7 +108,8 @@ private:
 
     std::string             _title;
 
-    item*                   _items[item::MAX_ITEM_SLOT];
+    item*                   _items[item::MAX_SLOT];
+    spell*                  _spells[spell::MAX_SLOT];
     weapon*                 _weapon;
     armor*                  _armor;
     helmet*                 _helmet;
@@ -229,6 +231,12 @@ public:
     uint8_t                 item2index(const fb::game::item::core* item) const;
     void                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index);
     uint8_t                 equipment_off(fb::game::equipment::eq_slots slot);
+
+
+    fb::game::spell*        spell(uint8_t index) const;
+    uint8_t                 spell_add(fb::game::spell* spell);
+    bool                    spell_remove(uint8_t index);
+    bool                    spell_swap(uint8_t src, uint8_t dest);
 
     fb::game::weapon*       weapon() const;
     fb::game::weapon*       weapon(fb::game::weapon* weapon);

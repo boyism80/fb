@@ -341,7 +341,7 @@ bool acceptor::handle_login(fb::login::session& session)
 
 
     this->send_stream(session, this->make_message_stream(0x00, ""));
-    this->change_server(session, inet_addr("172.30.1.2"), 10021);
+    this->change_server(session, inet_addr("192.168.0.100"), 10021);
     return true;
 }
 

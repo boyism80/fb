@@ -36,6 +36,7 @@ private:
     std::map<uint16_t, item::core*>     _items;
     std::map<uint16_t, npc::core*>      _npcs;
     std::map<uint16_t, mob::core*>      _mobs;
+    std::map<uint16_t, spell*>          _spells;
     std::vector<class_data*>            _classes;
     std::vector<itemmix*>               _itemmixes;
     board                               _board;
@@ -63,6 +64,7 @@ private:
     bool                    load_drop_item(const std::string& db_fname = "db/item_drop.json");
     bool                    load_warp(const std::string& db_fname = "db/warp.json");
     bool                    load_itemmix(const std::string& db_fname = "db/itemmix.json");
+    bool                    load_spell(const std::string& db_fname = "db/spell.json");
 
 public:
     fb::game::map*          name2map(const std::string& name) const;
@@ -117,6 +119,7 @@ public:
     bool                    handle_user_list(fb::game::session& session);
     bool                    handle_chat(fb::game::session& session);
     bool                    handle_board(fb::game::session& session);
+    bool                    handle_swap(fb::game::session& session);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);

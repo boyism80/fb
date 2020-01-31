@@ -47,6 +47,9 @@
     <Filter Include="Source Files\board">
       <UniqueIdentifier>{46047bcc-bb53-4846-bec8-55613aea27b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\spell">
+      <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -90,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="board.cpp">
       <Filter>Source Files\board</Filter>
+    </ClCompile>
+    <ClCompile Include="spell.cpp">
+      <Filter>Source Files\spell</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="board.h">
       <Filter>Source Files\board</Filter>
+    </ClInclude>
+    <ClInclude Include="spell.h">
+      <Filter>Source Files\spell</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

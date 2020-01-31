@@ -9,10 +9,10 @@ using namespace fb::game;
 //
 fb::game::trade_system::trade_system(session& owner) : 
     _owner(&owner),
-    _selected(NULL),
+    _selected(nullptr),
     _money(0),
     _locked(false),
-    _partner(NULL)
+    _partner(nullptr)
 {
 }
 
@@ -38,7 +38,7 @@ session* fb::game::trade_system::partner() const
 
 bool fb::game::trade_system::begin(session* partner)
 {
-    if(this->_partner != NULL)
+    if(this->_partner != nullptr)
         return false;
 
     this->_partner = partner;
@@ -47,16 +47,16 @@ bool fb::game::trade_system::begin(session* partner)
 
 bool fb::game::trade_system::end()
 {
-    if(this->_partner == NULL)
+    if(this->_partner == nullptr)
         return false;
 
-    this->_partner = NULL;
+    this->_partner = nullptr;
     return true;
 }
 
 bool fb::game::trade_system::trading() const
 {
-    return this->_partner != NULL;
+    return this->_partner != nullptr;
 }
 
 item* fb::game::trade_system::selected()
@@ -103,10 +103,10 @@ std::vector<uint8_t> fb::game::trade_system::restore()
     {
         fb::game::item* item = *it;
 
-        for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+        for(int i = 0; i < item::MAX_SLOT; i++)
         {
             fb::game::item* own_item = this->_owner->item(i);
-            if(own_item == NULL)
+            if(own_item == nullptr)
                 continue;
 
             if(!(own_item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
@@ -119,11 +119,11 @@ std::vector<uint8_t> fb::game::trade_system::restore()
             indices.push_back(i);
 
             delete item;
-            item = NULL;
+            item = nullptr;
             break;
         }
 
-        if(item == NULL)
+        if(item == nullptr)
             continue;
 
         uint8_t index = this->_owner->item_add(item);
@@ -169,10 +169,10 @@ bool fb::game::trade_system::flushable(session& session) const
         return false;
 
     uint8_t free_size = session.inventory_free_size();
-    for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < item::MAX_SLOT; i++)
     {
         fb::game::item* item = session.item(i);
-        if(item == NULL)
+        if(item == nullptr)
             continue;
 
         if(!(item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
@@ -247,7 +247,7 @@ fb::ostream fb::game::trade_system::make_dialog_stream() const
 {
     fb::ostream             ostream;
     const std::string*      class_name = acceptor::instance()->class2name(this->_owner->cls(), this->_owner->promotion());
-    if(class_name == NULL)
+    if(class_name == nullptr)
         return ostream;
 
     std::stringstream sstream;
@@ -345,7 +345,7 @@ bool fb::game::group_system::remove(session& session)
 //
 session::session(SOCKET socket) : 
     fb_session(socket),
-    life((life::core*)NULL, socket, 0, 0, 0),
+    life((life::core*)nullptr, socket, 0, 0, 0),
     life::core(socket, "fb", 0, 0, 0, 0),
     _nation(fb::game::nation::GOGURYEO),
     _creature(fb::game::creature::DRAGON),
@@ -354,10 +354,11 @@ session::session(SOCKET socket) :
     _class(0),
     _promotion(0),
     _money(0),
-    _weapon(NULL), _armor(NULL), _helmet(NULL), _shield(NULL),
+    _weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(NULL),
     _trade_system(*this)
 {
     memset(this->_items, NULL, sizeof(this->_items));
+    memset(this->_spells, NULL, sizeof(this->_items));
     memset(this->_rings, NULL, sizeof(this->_rings));
     memset(this->_auxiliaries, NULL, sizeof(this->_auxiliaries));
     memset(this->_options, 0, sizeof(this->_options));
@@ -365,7 +366,7 @@ session::session(SOCKET socket) :
 
 session::~session()
 {
-    for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < item::MAX_SLOT; i++)
     {
         if(this->_items[i])
             delete this->_items[i];
@@ -765,7 +766,7 @@ uint32_t fb::game::session::random_damage(fb::game::life& life, bool& critical) 
 {
     uint32_t random_damage = 0;
 
-    if(this->_weapon == NULL) // no weapon
+    if(this->_weapon == nullptr) // no weapon
     {
         random_damage = 1 + std::rand() % 5;
         critical = false;
@@ -853,17 +854,17 @@ void fb::game::session::title(const std::string& value)
 
 item* fb::game::session::item(uint8_t index) const
 {
-    if(index > fb::game::item::MAX_ITEM_SLOT - 1)
-        return NULL;
+    if(index > fb::game::item::MAX_SLOT - 1)
+        return nullptr;
 
     return this->_items[index];
 }
 
 bool fb::game::session::item_add(fb::game::item& item)
 {
-    for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
-        if(this->_items[i] != NULL)
+        if(this->_items[i] != nullptr)
             continue;
 
         this->_items[i] = &item;
@@ -875,16 +876,16 @@ bool fb::game::session::item_add(fb::game::item& item)
 
 uint8_t fb::game::session::item_add(fb::game::item* item)
 {
-    if(item == NULL)
+    if(item == nullptr)
         return -1;
 
 
     // 번들 형식의 아이템인 경우
     if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
-        for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
+        for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         {
-            if(this->_items[i] == NULL)
+            if(this->_items[i] == nullptr)
                 continue;
 
             if(item->based() != this->_items[i]->based())
@@ -900,9 +901,9 @@ uint8_t fb::game::session::item_add(fb::game::item* item)
     }
 
     // 그 이외의 아이템인 경우
-    for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
-        if(this->_items[i] != NULL)
+        if(this->_items[i] != nullptr)
             continue;
 
         this->_items[i] = item;
@@ -915,17 +916,17 @@ uint8_t fb::game::session::item_add(fb::game::item* item)
 bool fb::game::session::item_remove(uint8_t index)
 {
     fb::game::item* item = this->item(index);
-    if(item == NULL)
+    if(item == nullptr)
         return false;
 
-    this->_items[index] = NULL;
+    this->_items[index] = nullptr;
     return true;
 }
 
 bool fb::game::session::item_reduce(uint8_t index, uint16_t count)
 {
     fb::game::item* item = this->item(index);
-    if(item == NULL)
+    if(item == nullptr)
         return false;
 
     this->_items[index]->reduce(count);
@@ -937,7 +938,7 @@ fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_i
     slot = equipment::eq_slots::UNKNOWN_SLOT;
     
     auto                    item = this->_items[index];
-    if(item == NULL)
+    if(item == nullptr)
         return nullptr;
 
     auto                    attr(item->attr());
@@ -946,16 +947,16 @@ fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_i
 
     item->handle_acive(*this);
     if(item->empty())
-        this->_items[index] = NULL;
+        this->_items[index] = nullptr;
 
     return item;
 }
 
 uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
 {
-    for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < item::MAX_SLOT; i++)
     {
-        if(this->_items[i] == NULL)
+        if(this->_items[i] == nullptr)
             continue;
 
         if(this->_items[i]->based<item::core>() == item)
@@ -967,14 +968,14 @@ uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
 
 void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, uint8_t* updated_index)
 {
-    if(updated_index != NULL)
+    if(updated_index != nullptr)
         *updated_index = 0xFF;
 
     fb::game::item*         item = this->item(index);
-    if(item == NULL)
+    if(item == nullptr)
         throw std::exception();
 
-    fb::game::item*         before = NULL;
+    fb::game::item*         before = nullptr;
     auto                    attr(fb::game::item::attrs(item->attr() & ~item::attrs::ITEM_ATTR_EQUIPMENT));
     switch(attr)
     {
@@ -999,7 +1000,7 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
         break;
 
     case item::attrs::ITEM_ATTR_RING:
-        if(this->_rings[0] == NULL)
+        if(this->_rings[0] == nullptr)
         {
             slot = equipment::eq_slots::LEFT_HAND_SLOT;
         }
@@ -1013,7 +1014,7 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
 
 
     case item::attrs::ITEM_ATTR_AUXILIARY:
-        if(this->_auxiliaries[0] == NULL)
+        if(this->_auxiliaries[0] == nullptr)
         {
             slot = equipment::eq_slots::LEFT_AUX_SLOT;
         }
@@ -1030,9 +1031,9 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
     }
 
 
-    this->_items[index] = NULL;
+    this->_items[index] = nullptr;
     uint8_t updated = this->item_add(before);
-    if(updated_index != NULL)
+    if(updated_index != nullptr)
         *updated_index = updated;
 }
 
@@ -1046,55 +1047,98 @@ uint8_t fb::game::session::equipment_off(equipment::eq_slots slot)
     {
     case equipment::eq_slots::WEAPON_SLOT:
         item = this->_weapon;
-        if(this->_weapon != NULL)
-            this->_weapon = NULL;
+        if(this->_weapon != nullptr)
+            this->_weapon = nullptr;
 
         break;
 
     case equipment::eq_slots::ARMOR_SLOT:
         item = this->_armor;
-        if(this->_armor != NULL)
-            this->_armor = NULL;
+        if(this->_armor != nullptr)
+            this->_armor = nullptr;
         break;
 
     case equipment::eq_slots::SHIELD_SLOT:
         item = this->_shield;
-        if(this->_shield != NULL)
-            this->_shield = NULL;
+        if(this->_shield != nullptr)
+            this->_shield = nullptr;
         break;
 
     case equipment::eq_slots::HELMET_SLOT:
         item = this->_helmet;
-        if(this->_helmet != NULL)
-            this->_helmet = NULL;
+        if(this->_helmet != nullptr)
+            this->_helmet = nullptr;
         break;
 
     case equipment::eq_slots::LEFT_HAND_SLOT:
         item = this->_rings[0];
-        if(this->_rings[0] != NULL)
-            this->_rings[0] = NULL;
+        if(this->_rings[0] != nullptr)
+            this->_rings[0] = nullptr;
         break;
 
     case equipment::eq_slots::RIGHT_HAND_SLOT:
         item = this->_rings[1];
-        if(this->_rings[1] != NULL)
-            this->_rings[1] = NULL;
+        if(this->_rings[1] != nullptr)
+            this->_rings[1] = nullptr;
         break;
 
     case equipment::eq_slots::LEFT_AUX_SLOT:
         item = this->_auxiliaries[0];
-        if(this->_auxiliaries[0] != NULL)
-            this->_auxiliaries[0] = NULL;
+        if(this->_auxiliaries[0] != nullptr)
+            this->_auxiliaries[0] = nullptr;
         break;
 
     case equipment::eq_slots::RIGHT_AUX_SLOT:
         item = this->_auxiliaries[1];
-        if(this->_auxiliaries[1] != NULL)
-            this->_auxiliaries[1] = NULL;
+        if(this->_auxiliaries[1] != nullptr)
+            this->_auxiliaries[1] = nullptr;
         break;
     }
 
     return this->item_add(item);
+}
+
+fb::game::spell* fb::game::session::spell(uint8_t index) const
+{
+    if(index > fb::game::spell::MAX_SLOT - 1)
+        return nullptr;
+
+    return this->_spells[index];
+}
+
+uint8_t fb::game::session::spell_add(fb::game::spell* spell)
+{
+    for(int i = 0; i < spell::MAX_SLOT; i++)
+    {
+        if(this->_spells[i] != nullptr)
+            continue;
+
+        this->_spells[i] = spell;
+        return i;
+    }
+
+    return -1;
+}
+
+bool fb::game::session::spell_remove(uint8_t index)
+{
+    if(index > spell::MAX_SLOT - 1)
+        return false;
+
+    this->_spells[index] = nullptr;
+    return true;
+}
+
+bool fb::game::session::spell_swap(uint8_t src, uint8_t dest)
+{
+    if(src == dest)
+        return false;
+
+    if(src > spell::MAX_SLOT - 1 || dest > spell::MAX_SLOT - 1)
+        return false;
+
+    std::swap(this->_spells[src], this->_spells[dest]);
+    return true;
 }
 
 weapon* fb::game::session::weapon() const
@@ -1156,9 +1200,9 @@ ring* fb::game::session::ring(fb::game::equipment::EQUIPMENT_POSITION position) 
 
 fb::game::ring* fb::game::session::ring(fb::game::ring* ring)
 {
-    fb::game::ring* before = NULL;
+    fb::game::ring* before = nullptr;
 
-    if(this->_rings[0] == NULL)
+    if(this->_rings[0] == nullptr)
     {
         before = this->_rings[0];
         this->_rings[0] = ring;
@@ -1180,9 +1224,9 @@ auxiliary* fb::game::session::auxiliary(fb::game::equipment::EQUIPMENT_POSITION 
 
 fb::game::auxiliary* fb::game::session::auxiliary(fb::game::auxiliary* auxiliary)
 {
-    fb::game::auxiliary* before = NULL;
+    fb::game::auxiliary* before = nullptr;
 
-    if(this->_auxiliaries[0] == NULL)
+    if(this->_auxiliaries[0] == nullptr)
     {
         before = this->_auxiliaries[0];
         this->_auxiliaries[0] = auxiliary;
@@ -1198,9 +1242,9 @@ fb::game::auxiliary* fb::game::session::auxiliary(fb::game::auxiliary* auxiliary
 
 bool fb::game::session::inventory_free() const
 {
-    for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < item::MAX_SLOT; i++)
     {
-        if(this->_items[i] == NULL)
+        if(this->_items[i] == nullptr)
             return true;
     }
 
@@ -1210,9 +1254,9 @@ bool fb::game::session::inventory_free() const
 uint8_t fb::game::session::inventory_free_size() const
 {
     uint8_t count = 0;
-    for(int i = 0; i < item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < item::MAX_SLOT; i++)
     {
-        if(this->_items[i] == NULL)
+        if(this->_items[i] == nullptr)
             count++;
     }
 
@@ -1221,7 +1265,7 @@ uint8_t fb::game::session::inventory_free_size() const
 
 uint16_t fb::game::session::map(fb::game::map* map)
 {
-    if(this->_map != NULL)
+    if(this->_map != nullptr)
         this->_map->session_delete(this);
 
     this->_map = map;
@@ -1249,7 +1293,7 @@ fb::game::group_system* fb::game::session::group_system() const
 
 bool fb::game::session::group_enter(fb::game::group_system* gs)
 {
-    if(this->_group != NULL)
+    if(this->_group != nullptr)
         return false;
 
     this->_group = gs;
@@ -1258,10 +1302,10 @@ bool fb::game::session::group_enter(fb::game::group_system* gs)
 
 bool fb::game::session::group_leave()
 {
-    if(this->_group == NULL)
+    if(this->_group == nullptr)
         return false;
 
-    this->_group = NULL;
+    this->_group = nullptr;
     return true;
 }
 
@@ -1349,7 +1393,7 @@ fb::ostream fb::game::session::make_state_stream(fb::game::state_level level) co
 fb::ostream fb::game::session::make_show_objects_stream() const
 {
     fb::game::map*          map = this->map();
-    if(map == NULL)
+    if(map == nullptr)
         return fb::ostream();
 
     std::vector<object*>    visibles;
@@ -1416,7 +1460,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
         .write_u16(this->look()) // face
         .write_u8(this->color()); // hair color
 
-    if(this->_armor != NULL)
+    if(this->_armor != nullptr)
     {
         ostream.write_u8(this->_armor->dress())
             .write_u8(this->_armor->color());
@@ -1427,7 +1471,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-    if(this->_weapon != NULL)
+    if(this->_weapon != nullptr)
     {
         ostream.write_u16(this->_weapon->dress())
             .write_u8(this->_weapon->color());
@@ -1438,7 +1482,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-    if(this->_shield != NULL)
+    if(this->_shield != nullptr)
     {
         ostream.write_u8(this->_shield->dress())
             .write_u8(this->_shield->color());
@@ -1473,7 +1517,7 @@ fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
 {
     fb::ostream             ostream;
     fb::game::item*         item = this->item(index);
-    if(item == NULL)
+    if(item == nullptr)
         return ostream;
 
     const std::string name = item->name_styled();
@@ -1494,7 +1538,7 @@ fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
 fb::ostream fb::game::session::make_delete_item_slot_stream(fb::game::item::delete_attr types, uint32_t slot, uint16_t count) const
 {
     fb::ostream             ostream;
-    if(slot + 1 > item::MAX_ITEM_SLOT)
+    if(slot + 1 > item::MAX_SLOT)
         return ostream;
 
     ostream.write_u8(0x10)
@@ -1548,7 +1592,7 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
         return false;
     }
 
-    if(item == NULL)
+    if(item == nullptr)
         return ostream;
 
     const std::string& name = item->name();
@@ -1602,7 +1646,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     ostream.write_u32(remained_exp);
 
     const std::string*             class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
-    if(class_name == NULL)
+    if(class_name == nullptr)
         return fb::ostream();
 
     ostream.write_u8((*class_name).size())
@@ -1611,7 +1655,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     fb::game::equipment* equipments[] = {this->helmet(), this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
     for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
     {
-        if(equipments[i] == NULL)
+        if(equipments[i] == nullptr)
         {
             ostream.write_u16(0xFFFF)
                 .write_u8(0x00);
@@ -1663,7 +1707,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
     // 클래스 이름
     const std::string* class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
-    if(class_name == NULL)
+    if(class_name == nullptr)
         return fb::ostream();
 
     ostream.write_u8((*class_name).size())
@@ -1693,47 +1737,47 @@ fb::ostream fb::game::session::make_external_info_stream() const
     // 장비정보
     std::stringstream sstream;
     fb::game::armor* armor = this->armor(); // 갑옷
-    ostream.write_u8(armor != NULL ? armor->dress() : 0xFF)
-        .write_u8(armor != NULL ? armor->color() : 0x00);
+    ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
+        .write_u8(armor != nullptr ? armor->color() : 0x00);
 
     fb::game::weapon* weapon = this->weapon(); // 무기
-    ostream.write_u16(weapon != NULL ? weapon->dress() : 0xFFFF)
-        .write_u8(weapon != NULL ? weapon->color() : 0x00);
+    ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
+        .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
     fb::game::shield* shield = this->shield(); // 방패
-    ostream.write_u8(shield != NULL ? shield->dress() : 0xFF)
-        .write_u8(shield != NULL ? shield->color() : 0x00);
+    ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
+        .write_u8(shield != nullptr ? shield->color() : 0x00);
 
     fb::game::helmet* helmet = this->helmet(); // 투구
-    ostream.write_u16(helmet != NULL ? helmet->look() : 0xFFFF)
-        .write_u8(helmet != NULL ? helmet->color() : 0x00);
+    ostream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
+        .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
     fb::game::ring* ring_l = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
-    ostream.write_u16(ring_l != NULL ? ring_l->look() : 0xFFFF)
-        .write_u8(ring_l != NULL ? ring_l->color() : 0x00);
+    ostream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
+        .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
     fb::game::ring* ring_r = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
-    ostream.write_u16(ring_r != NULL ? ring_r->look() : 0xFFFF)
-        .write_u8(ring_r != NULL ? ring_r->color() : 0x00);
+    ostream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
+        .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
     fb::game::auxiliary* aux_l = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
-    ostream.write_u16(aux_l != NULL ? aux_l->look() : 0xFFFF)
-        .write_u8(aux_l != NULL ? aux_l->color() : 0x00);
+    ostream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
+        .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
     fb::game::auxiliary* aux_r = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
-    ostream.write_u16(aux_r != NULL ? aux_r->look() : 0xFFFF)
-        .write_u8(aux_r != NULL ? aux_r->color() : 0x00);
+    ostream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
+        .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 
 
     // 장비정보 텍스트
-    sstream << " w:무기  :" << (weapon != NULL ? weapon->name() : "없음") << std::endl;
-    sstream << " a:갑옷  :" << (armor  != NULL ? armor->name()  : "없음") << std::endl;
-    sstream << " s:방패  :" << (shield != NULL ? shield->name() : "없음") << std::endl;
-    sstream << " h:머리  :" << (helmet != NULL ? helmet->name() : "없음") << std::endl;
-    sstream << " l:왼손  :" << (ring_l != NULL ? ring_l->name() : "없음") << std::endl;
-    sstream << " r:오른손:" << (ring_r != NULL ? ring_r->name() : "없음") << std::endl;
-    sstream << " [:보조1 :" << (aux_l  != NULL ? aux_l->name()  : "없음") << std::endl;
-    sstream << " ]:보조2 :" << (aux_r  != NULL ? aux_r->name()  : "없음") << std::endl;
+    sstream << " w:무기  :" << (weapon != nullptr ? weapon->name() : "없음") << std::endl;
+    sstream << " a:갑옷  :" << (armor  != nullptr ? armor->name()  : "없음") << std::endl;
+    sstream << " s:방패  :" << (shield != nullptr ? shield->name() : "없음") << std::endl;
+    sstream << " h:머리  :" << (helmet != nullptr ? helmet->name() : "없음") << std::endl;
+    sstream << " l:왼손  :" << (ring_l != nullptr ? ring_l->name() : "없음") << std::endl;
+    sstream << " r:오른손:" << (ring_r != nullptr ? ring_r->name() : "없음") << std::endl;
+    sstream << " [:보조1 :" << (aux_l  != nullptr ? aux_l->name()  : "없음") << std::endl;
+    sstream << " ]:보조2 :" << (aux_r  != nullptr ? aux_r->name()  : "없음") << std::endl;
     ostream.write_u8(sstream.str().size())
         .write(sstream.str().c_str(), sstream.str().size());
 

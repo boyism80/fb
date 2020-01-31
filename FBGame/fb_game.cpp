@@ -6,11 +6,12 @@ fb::game::acceptor* fb::game::acceptor::_instance = NULL;
 
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
-    this->convert_item_file("db/item_db.txt");
+    //this->convert_item_file("db/item_db.txt");
     //this->convert_npc_file();
     //this->convert_npc_spawn_file();
     //this->convert_mob_file();
 
+    this->load_spell("db/spell.json");
     this->load_maps("db/map.json");
     this->load_warp("db/warp.json");
     this->load_items("db/item.json");
@@ -64,6 +65,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x18, &acceptor::handle_user_list);           // 유저 리스트 핸들러
     this->register_handle(0x0E, &acceptor::handle_chat);                // 유저 채팅 핸들러
     this->register_handle(0x3B, &acceptor::handle_board);               // 게시판 섹션 리스트 핸들러
+    this->register_handle(0x30, &acceptor::handle_swap);          // 스펠 순서 변경
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -83,11 +85,15 @@ acceptor::~acceptor()
     for(auto pair : this->_mobs)
         delete pair.second;
 
+    for(auto pair : this->_spells)
+        delete pair.second;
+
     for(auto cls : this->_classes)
         delete cls;
 
     for(auto itemmix : this->_itemmixes)
         delete itemmix;
+
 }
 
 bool fb::game::acceptor::convert_map_file(const std::string& db_fname)
@@ -1793,6 +1799,45 @@ bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
     return true;
 }
 
+bool fb::game::acceptor::load_spell(const std::string& db_fname)
+{
+    std::ifstream ifstream(db_fname);
+    if(ifstream.is_open() == false)
+        return false;
+
+    Json::Value db;
+    Json::Reader reader;
+    if(reader.parse(ifstream, db) == false)
+        return false;
+
+    for(auto i = db.begin(); i != db.end(); i++)
+    {
+        uint16_t            id = std::stoi(i.key().asString());
+        const auto          data = (*i);
+
+        const auto          name = data["name"].asString();
+        uint8_t             type = data["type"].asInt();
+
+        std::string         cast, uncast, concast, message;
+        if (data.isMember("cast"))
+            cast = data["cast"].asString();
+
+        if (data.isMember("uncast"))
+            uncast = data["uncast"].asString();
+
+        if (data.isMember("concast"))
+            concast = data["concast"].asString();
+
+        if (data.isMember("message"))
+            message = data["message"].asString();
+
+        this->_spells.insert(std::make_pair(id, new spell(type, name, cast, uncast, concast, message)));
+    }
+
+    ifstream.close();
+    return true;
+}
+
 fb::game::map* fb::game::acceptor::name2map(const std::string& name) const
 {
     for(auto pair : this->_maps)
@@ -1920,6 +1965,12 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.ring(static_cast<fb::game::ring*>(this->_items[1689]->make()));
     session.auxiliary(static_cast<fb::game::auxiliary*>(this->_items[2135]->make()));
     session.auxiliary(static_cast<fb::game::auxiliary*>(this->_items[2129]->make()));
+
+    for(auto pair : this->_spells)
+    {
+        if(session.spell_add(pair.second) == -1)
+            break;
+    }
 
     return true;
 }
@@ -2202,6 +2253,17 @@ bool acceptor::handle_login(fb::game::session& session)
     this->send_stream(session, session.make_direction_stream(), scope::SELF);
     this->send_stream(session, session.make_option_stream(), scope::SELF);
 
+    // Initialize spell list
+    for(int i = 0; i < spell::MAX_SLOT; i++)
+    {
+        auto spell = session.spell(i);
+        if(spell == nullptr)
+            continue;
+
+        this->send_stream(session, spell->make_show_stream(i+1), scope::SELF);
+    }
+
+    // Initialize mobs
     for(auto i : session.looking_sessions())
     {
         if(i == &session)
@@ -2210,7 +2272,7 @@ bool acceptor::handle_login(fb::game::session& session)
         this->send_stream(session, i->make_visual_stream(false), scope::SELF);
     }
 
-    for(int i = 0; i < fb::game::item::MAX_ITEM_SLOT; i++)
+    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
 
     this->send_stream(session, this->make_dialog_stream("안녕하세요?", false, false), scope::SELF);
@@ -2867,7 +2929,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
     uint8_t cmd = istream.read_u8();
     uint8_t count = istream.read_u8();
-    if(count > item::MAX_ITEM_SLOT - 1)
+    if(count > item::MAX_SLOT - 1)
         return false;
 
     std::vector<item*> items;
@@ -3246,13 +3308,13 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
         .write_u16(sessions.size())
         .write_u8(0x00);
 
-    for(const auto& session : sessions)
+    for(const auto& i : sessions)
     {
-        const auto& name = session->name();
+        const auto& name = i->name();
 
-        ostream.write_u8(0x10 * session->nation())
-            .write_u8(0x10 * session->promotion())
-            .write_u8(0x0F)
+        ostream.write_u8(0x10 * i->nation())
+            .write_u8(0x10 * i->promotion())
+            .write_u8((&session == i) ? 0x88 : 0x0F)
             .write_u8(name.size())
             .write(name.c_str(), name.size());
     }
@@ -3320,6 +3382,31 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
     }
 
     }
+
+    return true;
+}
+
+bool fb::game::acceptor::handle_swap(fb::game::session& session)
+{
+    auto&                       istream = session.in_stream();
+    uint8_t                     cmd = istream.read_u8();
+    uint8_t                     swap_type = istream.read_u8();
+    uint8_t                     src = istream.read_u8();
+    uint8_t                     dest = istream.read_u8();
+
+    if(swap_type) // spell
+    {
+        if(session.spell_swap(src-1, dest-1) == false) // zero-based
+            return true;
+
+        const auto              right = session.spell(src-1);
+        this->send_stream(session, right ? right->make_show_stream(src) : right->make_delete_stream(src), scope::SELF);
+
+        const auto              left = session.spell(dest-1);
+        this->send_stream(session, left ? left->make_show_stream(dest) : left->make_delete_stream(dest), scope::SELF);
+    }
+    else // item
+    {}
 
     return true;
 }

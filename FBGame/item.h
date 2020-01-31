@@ -88,7 +88,7 @@ public:
     } item_limit;
 
     static const item_limit         DEFAULT_LIMIT;
-    static const uint32_t           MAX_ITEM_SLOT = 52;
+    static const uint32_t           MAX_SLOT = 52;
 
 public:
     class core : public fb::game::object::core

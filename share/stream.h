@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <string>
 
 namespace fb {
 
@@ -64,6 +65,7 @@ public:
     ostream&                write_u32(uint32_t value, buffer::endian endian = buffer::endian::BIG);
     ostream&                write(const void* buffer, uint32_t size);
     ostream&                write(const ostream& wb);
+    ostream&                write(const std::string& str);
 };
 
 }

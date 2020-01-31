@@ -223,3 +223,8 @@ fb::ostream& fb::ostream::write(const ostream& wb)
     this->insert(this->end(), wb.begin(), wb.end());
     return *this;
 }
+
+fb::ostream& fb::ostream::write(const std::string& str)
+{
+    return this->write_u8(str.size()).write(str.c_str(), str.size());
+}
