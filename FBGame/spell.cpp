@@ -51,11 +51,10 @@ fb::ostream fb::game::spell::make_show_stream(uint8_t slot) const
     ostream.write_u8(0x17)
         .write_u8(slot) // one-based
         .write_u8(this->_type)
-        .write_u8(this->_name.size())
-        .write(this->_name.c_str(), this->_name.size());
+		.write(this->_name);
 
     if(this->_type < 3)
-        ostream.write_u8(this->_message.size()).write(this->_message.c_str(), this->_message.size());
+		ostream.write(this->_message);
 
     return ostream;
 }

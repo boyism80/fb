@@ -224,7 +224,15 @@ fb::ostream& fb::ostream::write(const ostream& wb)
     return *this;
 }
 
-fb::ostream& fb::ostream::write(const std::string& str)
+fb::ostream& fb::ostream::write(const std::string& str, bool uint16)
 {
-    return this->write_u8(str.size()).write(str.c_str(), str.size());
+	if(uint16)
+		this->write_u16(str.size());
+	else
+		this->write_u8(str.size());
+    
+	if(str.empty() == false)
+		this->write(str.c_str(), str.size());
+
+	return *this;
 }

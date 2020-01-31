@@ -2003,8 +2003,7 @@ fb::ostream fb::game::acceptor::make_message_stream(const std::string& message, 
     fb::ostream             ostream;
     ostream.write_u8(0x0A)
         .write_u8(types)
-        .write_u16((uint16_t)message.length())
-        .write(message.c_str(), message.length() + 1);
+		.write(message, true);
 
     return ostream;
 }
@@ -2032,8 +2031,7 @@ fb::ostream fb::game::acceptor::make_dialog_stream(const std::string& message, b
         .write_u32(0x00000001)
         .write_u8(enabled_prev)
         .write_u8(enabled_next)
-        .write_u16((uint16_t)message.length())
-        .write(message.c_str(), message.length() + 1);
+		.write(message, true);
 
     return ostream;
 }
@@ -3315,8 +3313,7 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
         ostream.write_u8(0x10 * i->nation())
             .write_u8(0x10 * i->promotion())
             .write_u8((&session == i) ? 0x88 : 0x0F)
-            .write_u8(name.size())
-            .write(name.c_str(), name.size());
+			.write(name, false);
     }
 
     this->send_stream(session, ostream, scope::SELF);

@@ -65,7 +65,7 @@ public:
     ostream&                write_u32(uint32_t value, buffer::endian endian = buffer::endian::BIG);
     ostream&                write(const void* buffer, uint32_t size);
     ostream&                write(const ostream& wb);
-    ostream&                write(const std::string& str);
+    ostream&                write(const std::string& str, bool uint16 = false);
 };
 
 }

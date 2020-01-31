@@ -209,8 +209,7 @@ fb::ostream fb::game::trade_system::make_show_stream(bool mine, uint8_t index) c
     try
     {
         fb::ostream             ostream;
-        fb::game::item*         item = this->_items[index];
-        const std::string       name = item->name_trade();
+        const auto				item = this->_items[index];
 
         ostream.write_u8(0x42)
             .write_u8(0x02)
@@ -218,8 +217,7 @@ fb::ostream fb::game::trade_system::make_show_stream(bool mine, uint8_t index) c
             .write_u8(index) // trade slot index
             .write_u16(item->look())
             .write_u8(item->color())
-            .write_u8(name.length())
-            .write(name.c_str(), name.length())
+			.write(item->name_trade())
             .write_u8(0x00);
 
         return ostream;
@@ -246,19 +244,17 @@ fb::ostream fb::game::trade_system::make_money_stream(bool mine) const
 fb::ostream fb::game::trade_system::make_dialog_stream() const
 {
     fb::ostream             ostream;
-    const std::string*      class_name = acceptor::instance()->class2name(this->_owner->cls(), this->_owner->promotion());
+    const auto				class_name = acceptor::instance()->class2name(this->_owner->cls(), this->_owner->promotion());
     if(class_name == nullptr)
         return ostream;
 
     std::stringstream sstream;
     sstream << this->_owner->name() << '(' << class_name->c_str() << ')';
-    std::string your_name = sstream.str();
 
     ostream.write_u8(0x42)
         .write_u8(0x00)
         .write_u32(this->_owner->id())
-        .write_u8(your_name.length())
-        .write(your_name.c_str(), your_name.length())
+		.write(sstream.str())
         .write_u8(0x00);
 
     return ostream;
@@ -281,8 +277,7 @@ fb::ostream fb::game::trade_system::make_close_stream(const std::string& message
 
     ostream.write_u8(0x42)
         .write_u8(0x04)
-        .write_u16(message.length())
-        .write(message.c_str(), message.length())
+		.write(message, true)
         .write_u8(0x00);
 
     return ostream;
@@ -1193,7 +1188,7 @@ fb::game::helmet* fb::game::session::helmet(fb::game::helmet* helmet)
     return before;
 }
 
-ring* fb::game::session::ring(fb::game::equipment::EQUIPMENT_POSITION position) const
+ring* fb::game::session::ring(equipment::EQUIPMENT_POSITION position) const
 {
     return this->_rings[position];
 }
@@ -1217,7 +1212,7 @@ fb::game::ring* fb::game::session::ring(fb::game::ring* ring)
 }
 
 
-auxiliary* fb::game::session::auxiliary(fb::game::equipment::EQUIPMENT_POSITION position) const
+auxiliary* fb::game::session::auxiliary(equipment::EQUIPMENT_POSITION position) const
 {
     return this->_auxiliaries[position];
 }
@@ -1493,10 +1488,9 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-    const std::string& name = this->name();
+    const auto& name = this->name();
     ostream.write_u8(0x04) // head mark
-        .write_u8((uint8_t)name.length()) // name length
-        .write(name.c_str(), name.length() + 1); // name
+		.write(name, false); // name
 
     return ostream;
 }
@@ -1526,8 +1520,7 @@ fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
         .write_u8(index + 1)
         .write_u16(item->look())
         .write_u8(item->color())
-        .write_u8(name.length())
-        .write(name.c_str(), name.length())
+		.write(name, false)
         .write_u32(item->count())
         .write_u8(0x00)
         .write_u8(0x00);
@@ -1573,19 +1566,19 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
         break;
 
     case equipment::eq_slots::LEFT_HAND_SLOT:
-        item = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
     case equipment::eq_slots::RIGHT_HAND_SLOT:
-        item = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
     case equipment::eq_slots::LEFT_AUX_SLOT:
-        item = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
     case equipment::eq_slots::RIGHT_AUX_SLOT:
-        item = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
     default:
@@ -1599,8 +1592,7 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
     ostream.write_u8(0x37)
         .write_u16(item->look())
         .write_u8(item->color())
-        .write_u8(name.length())
-        .write(name.c_str(), name.length());
+		.write(name, false);
 
     return ostream;
 }
@@ -1627,16 +1619,12 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8(this->_defensive.physical)
         .write_u8(this->random_damage())
         .write_u8(this->hit())
-        .write_u8(0x00) // 클랜정보 없음
-        .write_u8(0x00); // 클랜 타이틀 없음
-
-    ostream.write_u8(this->_title.size());
-    if(this->_title.empty() == false)
-        ostream.write(this->_title.c_str(), this->_title.size());
+        .write("클랜 정보") // 클랜정보 없음
+        .write("클랜 타이틀") // 클랜 타이틀 없음
+		.write(this->_title);
 
     std::string             group_message = "그룹 없음.";
-    ostream.write_u8(group_message.size())
-        .write(group_message.c_str(), group_message.size());
+    ostream.write(group_message);
 
     ostream.write_u8(this->option(options::GROUP)); // 그룹허가
 
@@ -1649,10 +1637,9 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     if(class_name == nullptr)
         return fb::ostream();
 
-    ostream.write_u8((*class_name).size())
-        .write((*class_name).c_str(), (*class_name).size());
+    ostream.write(*class_name);
 
-    fb::game::equipment* equipments[] = {this->helmet(), this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
+    fb::game::equipment* equipments[] = {this->helmet(), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
     for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
     {
         if(equipments[i] == nullptr)
@@ -1676,8 +1663,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)
-            .write_u8(legend.content.size())
-            .write(legend.content.c_str(), legend.content.size());
+			.write(legend.content);
     }
     ostream.write_u8(0x00);
 
@@ -1692,31 +1678,18 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
     fb::ostream             ostream;
 
-    ostream.write_u8(0x34);
-
-    // 유저 타이틀
-    ostream.write_u8(this->_title.size());
-    if(this->_title.empty() == false)
-        ostream.write(this->_title.c_str(), this->_title.size());
-
-    // 클랜 타이틀
-    ostream.write_u8(0x00);
-
-    // 클랜 이름
-    ostream.write_u8(0x00);
+    ostream.write_u8(0x34)
+		.write(this->_title)
+		.write("클랜 타이틀")
+		.write("클랜 이름");
 
     // 클래스 이름
-    const std::string* class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
+    const auto class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
 
-    ostream.write_u8((*class_name).size())
-        .write((*class_name).c_str(), (*class_name).size());
-
-    // 캐릭터 이름
-    const std::string& name = this->name();
-    ostream.write_u8(name.size())
-        .write(name.c_str(), name.size());
+	ostream.write(*class_name)	// 직업
+		.write(this->_name);	// 이름
 
     // 캐릭터 상태
     bool transform = false;
@@ -1735,38 +1708,38 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
 
     // 장비정보
-    std::stringstream sstream;
-    fb::game::armor* armor = this->armor(); // 갑옷
+    std::stringstream   sstream;
+    auto                armor = this->armor(); // 갑옷
     ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
-        .write_u8(armor != nullptr ? armor->color() : 0x00);
+           .write_u8(armor != nullptr ? armor->color() : 0x00);
 
-    fb::game::weapon* weapon = this->weapon(); // 무기
+    auto                weapon = this->weapon(); // 무기
     ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
-        .write_u8(weapon != nullptr ? weapon->color() : 0x00);
+           .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-    fb::game::shield* shield = this->shield(); // 방패
+    auto                shield = this->shield(); // 방패
     ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
-        .write_u8(shield != nullptr ? shield->color() : 0x00);
+           .write_u8(shield != nullptr ? shield->color() : 0x00);
 
-    fb::game::helmet* helmet = this->helmet(); // 투구
+    auto                helmet = this->helmet(); // 투구
     ostream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
-        .write_u8(helmet != nullptr ? helmet->color() : 0x00);
+           .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-    fb::game::ring* ring_l = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
+    auto                ring_l = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
     ostream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
-        .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
+           .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-    fb::game::ring* ring_r = this->ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
+    auto                ring_r = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
     ostream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
-        .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
+           .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-    fb::game::auxiliary* aux_l = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
+    auto                aux_l = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
     ostream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
-        .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
+           .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-    fb::game::auxiliary* aux_r = this->auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
+    auto                aux_r = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
     ostream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
-        .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
+           .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 
 
     // 장비정보 텍스트
@@ -1778,8 +1751,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
     sstream << " r:오른손:" << (ring_r != nullptr ? ring_r->name() : "없음") << std::endl;
     sstream << " [:보조1 :" << (aux_l  != nullptr ? aux_l->name()  : "없음") << std::endl;
     sstream << " ]:보조2 :" << (aux_r  != nullptr ? aux_r->name()  : "없음") << std::endl;
-    ostream.write_u8(sstream.str().size())
-        .write(sstream.str().c_str(), sstream.str().size());
+	ostream.write(sstream.str());
 
 
     ostream.write_u32(this->id())
@@ -1793,8 +1765,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)
-            .write_u8(legend.content.size())
-            .write(legend.content.c_str(), legend.content.size());
+			.write(legend.content);
     }
     ostream.write_u8(0x00);
 
@@ -1822,13 +1793,10 @@ fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool
     std::stringstream       sstream;
     sstream << this->_name << ": " << message;
 
-    std::string             converted = sstream.str();
-
     ostream.write_u8(0x0D)
         .write_u8(shout)
         .write_u32(this->id())
-        .write_u8(converted.size())
-        .write(converted.c_str(), converted.size() + 1);
+		.write(sstream.str());
 
     return ostream;
 }

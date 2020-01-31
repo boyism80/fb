@@ -283,8 +283,7 @@ fb::ostream fb::game::item::make_tip_stream(uint16_t position)
 
     ostream.write_u8(0x59)
         .write_u16(position)
-        .write_u16(message.size())
-        .write(message.c_str(), message.size())
+		.write(message, true)
         .write_u8(0x00);
 
     return ostream;

@@ -379,8 +379,7 @@ fb::ostream fb::game::map::make_config_stream() const
         .write_u16(this->_size.width) // width
         .write_u16(this->_size.height) // height
         .write_u8(this->_option & map::options::BUILD_IN ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
-        .write_u16((uint16_t)this->_name.length()) // this name
-        .write(this->_name.c_str(), this->_name.length() + 1);
+		.write(this->_name, true);
 
     return ostream;
 }

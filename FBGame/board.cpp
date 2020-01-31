@@ -166,12 +166,8 @@ fb::ostream fb::game::board::make_sections_stream() const
 
     for(int i = 0; i < this->_sections.size(); i++)
     {
-        const auto section = this->_sections[i];
-        const auto& section_title = section->title();
-
         ostream.write_u16(i)
-            .write_u8(section_title.size())
-            .write(section_title.c_str(), section_title.size());
+			.write(this->_sections[i]->title());
     }
 
     return ostream;
@@ -181,14 +177,12 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
 {
     ostream                 ostream;
     const auto              section = this->_sections[section_id];
-    const auto&             section_name = section->title();
 
     ostream.write_u8(0x31)
         .write_u8(0x02)
         .write_u8(0x01) // 레벨제한 맞으면 3 아니면 1
         .write_u16(section_id)
-        .write_u8(section_name.size())
-        .write(section_name.c_str(), section_name.size());
+		.write(section->title());
 
 
     if(offset == 0x7FFF)
@@ -204,17 +198,12 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
         if(article->deleted())
             continue;
 
-        const auto&         title = article->title();
-        const auto&         writer = article->writer();
-
         ostream.write_u8(0x00)
             .write_u16(article->id())
-            .write_u8(writer.size())
-            .write(writer.c_str(), writer.size())
+			.write(article->writer())
             .write_u8(article->month())
             .write_u8(article->day())
-            .write_u8(title.size())
-            .write(title.c_str(), title.size());
+			.write(article->title());
 
         if(--count == 0)
             break;
@@ -236,10 +225,6 @@ fb::ostream fb::game::board::make_article_stream(uint16_t section_id, uint16_t a
         if(article == nullptr)
             throw board::article::not_found_exception();
 
-        const auto&             writer = article->writer();
-        const auto&             title = article->title();
-        const auto&             content = article->content();
-
         ostream                 ostream;
 
         ostream.write_u8(0x31)
@@ -247,14 +232,11 @@ fb::ostream fb::game::board::make_article_stream(uint16_t section_id, uint16_t a
             .write_u8(0x01 | 0x02) // 0x01 : NEXT, 0x02 : WRITE
             .write_u8(0x00)
             .write_u16(article_id)
-            .write_u8(writer.size())
-            .write(writer.c_str(), writer.size())
+			.write(article->writer())
             .write_u8(article->month())
             .write_u8(article->day())
-            .write_u8(title.size())
-            .write(title.c_str(), title.size())
-            .write_u16(content.size())
-            .write(content.c_str(), content.size())
+            .write(article->title())
+            .write(article->content())
             .write_u8(0x00);
 
         return ostream;
@@ -293,8 +275,7 @@ fb::ostream fb::game::board::make_message_stream(const std::string& message, boo
     ostream.write_u8(0x31)
         .write_u8(0x07)     // mail 관련 0x06인 것 같다. 확인 필요
         .write_u8(success)
-        .write_u8(message.size())
-        .write(message.c_str(), message.size())
+		.write(message)
         .write_u8(0x00);
 
     return ostream;
