@@ -180,7 +180,7 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
 
     ostream.write_u8(0x31)
         .write_u8(0x02)
-        .write_u8(0x01) // 레벨제한 맞으면 3 아니면 1
+        .write_u8(button_enabled::NEXT | button_enabled::WRITE)
         .write_u16(section_id)
 		.write(section->title());
 
@@ -229,7 +229,7 @@ fb::ostream fb::game::board::make_article_stream(uint16_t section_id, uint16_t a
 
         ostream.write_u8(0x31)
             .write_u8(0x03)
-            .write_u8(0x01 | 0x02) // 0x01 : NEXT, 0x02 : WRITE
+            .write_u8(button_enabled::NEXT | button_enabled::WRITE)
             .write_u8(0x00)
             .write_u16(article_id)
 			.write(article->writer())

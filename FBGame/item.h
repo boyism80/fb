@@ -142,7 +142,7 @@ public:
         friend class fb::game::item;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
+        core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
         core(const fb::game::object::core& core);
         virtual ~core();
 
@@ -232,7 +232,7 @@ public:
     class core : public fb::game::item::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint8_t color = 0);
         ~core();
 
     public:
@@ -275,7 +275,7 @@ public:
         friend class consume;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
+        core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
         ~core();
 
     public:
@@ -308,7 +308,7 @@ public:
         friend class pack;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+        core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
         ~core();
 
     public:
@@ -404,7 +404,7 @@ public:
         friend class equipment;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
         ~core();
 
     public:
@@ -553,8 +553,8 @@ public:
         friend class fb::game::weapon;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
         ~core();
 
     public:
@@ -603,7 +603,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:
@@ -628,7 +628,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:
@@ -653,7 +653,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:
@@ -678,7 +678,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:
@@ -703,7 +703,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:
@@ -728,7 +728,7 @@ public:
     class core : public equipment::core
     {
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~core();
 
     public:

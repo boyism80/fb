@@ -13,16 +13,14 @@
 #pragma comment(lib, "json/json_vc71_libmt.lib")
 #endif
 
-using namespace fb::game;
-
-fb::game::acceptor* acceptor_instance = nullptr;
+fb::game::acceptor* acceptor = nullptr;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
     switch(signal)
     {
     case CTRL_C_EVENT:
-        acceptor_instance->exit();
+        acceptor->exit();
         puts("Please wait to exit acceptor.");
         break;
     }
@@ -40,13 +38,13 @@ int main(int argc, const char** argv)
         return 0;
 
     // Load databases
-    db::loads();
+    fb::game::db::loads();
 
     // Create acceptor instance
-    acceptor_instance = new fb::game::acceptor(10021);
+    acceptor = new fb::game::acceptor(10021);
 
     // Execute acceptor
-    acceptor_instance->execute(true);
+    acceptor->execute(true);
 
 
     // Wait while key pressed
@@ -57,8 +55,8 @@ int main(int argc, const char** argv)
     WSACleanup();
     
     // Release
-    delete acceptor_instance;
-    db::release();
+    delete acceptor;
+    fb::game::db::release();
 
     return 0;
 }

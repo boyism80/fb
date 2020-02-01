@@ -8,7 +8,7 @@ using namespace fb::game;
 session::session(SOCKET socket) : 
     fb_session(socket),
     life((life::core*)nullptr, socket, 0, 0, 0),
-    life::core(socket, "fb", 0, 0, 0, 0),
+    life::core("fb", 0, 0, 0, 0),
     _nation(fb::game::nation::GOGURYEO),
     _creature(fb::game::creature::DRAGON),
     _state(state::NORMAL),
@@ -174,7 +174,7 @@ fb::game::nation fb::game::session::nation() const
 bool fb::game::session::nation(fb::game::nation value)
 {
     if(value != fb::game::nation::GOGURYEO &&
-        value != fb::game::nation::BUYEO)
+       value != fb::game::nation::BUYEO)
         return false;
 
     this->_nation = value;
@@ -188,10 +188,10 @@ fb::game::creature fb::game::session::creature() const
 
 bool fb::game::session::creature(fb::game::creature value)
 {
-    if(value != fb::game::creature::DRAGON &&
-        value != fb::game::creature::PHOENIX &&
-        value != fb::game::creature::TIGER &&
-        value != fb::game::creature::TURTLE)
+    if(value != fb::game::creature::DRAGON  &&
+       value != fb::game::creature::PHOENIX &&
+       value != fb::game::creature::TIGER   &&
+       value != fb::game::creature::TURTLE)
         return false;
 
     this->_creature = value;
@@ -406,27 +406,27 @@ void fb::game::session::random_damage(uint8_t value)
 
 uint32_t fb::game::session::random_damage(fb::game::life& life, bool& critical) const
 {
-    uint32_t random_damage = 0;
+    uint32_t                damage = 0;
 
     if(this->_weapon == nullptr) // no weapon
     {
-        random_damage = 1 + std::rand() % 5;
+        damage = 1 + std::rand() % 5;
         critical = false;
     }
     else if(std::rand() % 100 < 20) // critical
     {
-        fb::game::range32_t range = this->_weapon->damage_large();
-        random_damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
+        auto                range = this->_weapon->damage_large();
+        damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
         critical = true;
     }
     else // normal
     {
-        fb::game::range32_t range = this->_weapon->damage_small();
-        random_damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
+        auto                range = this->_weapon->damage_small();
+        damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
         critical = false;
     }
 
-    return __super::random_damage(random_damage, life);
+    return __super::random_damage(damage, life);
 }
 
 uint32_t fb::game::session::hit() const
@@ -557,7 +557,7 @@ uint8_t fb::game::session::item_add(fb::game::item* item)
 
 bool fb::game::session::item_remove(uint8_t index)
 {
-    fb::game::item* item = this->item(index);
+    auto                    item = this->item(index);
     if(item == nullptr)
         return false;
 
@@ -567,7 +567,7 @@ bool fb::game::session::item_remove(uint8_t index)
 
 bool fb::game::session::item_reduce(uint8_t index, uint16_t count)
 {
-    fb::game::item* item = this->item(index);
+    auto                    item = this->item(index);
     if(item == nullptr)
         return false;
 
@@ -684,7 +684,7 @@ uint8_t fb::game::session::equipment_off(equipment::eq_slots slot)
     if(this->inventory_free() == false)
         throw item::full_inven_exception();
 
-    fb::game::item* item;
+    fb::game::item*         item;
     switch(slot)
     {
     case equipment::eq_slots::WEAPON_SLOT:
@@ -790,7 +790,7 @@ weapon* fb::game::session::weapon() const
 
 fb::game::weapon* fb::game::session::weapon(fb::game::weapon* weapon)
 {
-    fb::game::weapon* before = this->_weapon;
+    fb::game::weapon*       before = this->_weapon;
 
     this->_weapon = weapon;
     return before;
@@ -803,7 +803,7 @@ armor* fb::game::session::armor() const
 
 fb::game::armor* fb::game::session::armor(fb::game::armor* armor)
 {
-    fb::game::armor* before = this->_armor;
+    fb::game::armor*        before = this->_armor;
     
     this->_armor = armor;
     return before;
@@ -816,7 +816,7 @@ shield* fb::game::session::shield() const
 
 fb::game::shield* fb::game::session::shield(fb::game::shield* shield)
 {
-    fb::game::shield* before = this->_shield;
+    fb::game::shield*       before = this->_shield;
 
     this->_shield = shield;
     return before;
@@ -829,7 +829,7 @@ helmet* fb::game::session::helmet() const
 
 fb::game::helmet* fb::game::session::helmet(fb::game::helmet* helmet)
 {
-    fb::game::helmet* before = this->_helmet;
+    fb::game::helmet*       before = this->_helmet;
 
     this->_helmet = helmet;
     return before;
@@ -842,7 +842,7 @@ ring* fb::game::session::ring(equipment::EQUIPMENT_POSITION position) const
 
 fb::game::ring* fb::game::session::ring(fb::game::ring* ring)
 {
-    fb::game::ring* before = nullptr;
+    fb::game::ring*         before = nullptr;
 
     if(this->_rings[0] == nullptr)
     {
@@ -866,7 +866,7 @@ auxiliary* fb::game::session::auxiliary(equipment::EQUIPMENT_POSITION position) 
 
 fb::game::auxiliary* fb::game::session::auxiliary(fb::game::auxiliary* auxiliary)
 {
-    fb::game::auxiliary* before = nullptr;
+    fb::game::auxiliary*    before = nullptr;
 
     if(this->_auxiliaries[0] == nullptr)
     {
@@ -895,7 +895,7 @@ bool fb::game::session::inventory_free() const
 
 uint8_t fb::game::session::inventory_free_size() const
 {
-    uint8_t count = 0;
+    uint8_t                 count = 0;
     for(int i = 0; i < item::MAX_SLOT; i++)
     {
         if(this->_items[i] == nullptr)
@@ -1039,7 +1039,7 @@ fb::ostream fb::game::session::make_state_stream(fb::game::state_level level) co
 
 fb::ostream fb::game::session::make_show_objects_stream() const
 {
-    fb::game::map*          map = this->map();
+    auto                    map = this->map();
     if(map == nullptr)
         return fb::ostream();
 
@@ -1063,7 +1063,7 @@ fb::ostream fb::game::session::make_position_stream() const
         .write_u16(this->_position.y); // 실제 y 좌표
 
                                  // 스크린에서의 x 좌표
-    fb::game::map*          map = this->map();
+    auto                    map = this->map();
     if(map->width() < map::MAX_SCREEN_WIDTH)
         ostream.write_u16(this->_position.x + map::HALF_SCREEN_WIDTH - (map->width() / 2));
     else if(this->_position.x < map::HALF_SCREEN_WIDTH)
@@ -1114,7 +1114,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
     }
     else
     {
-        ostream.write_u8((uint8_t)this->_sex) // sex
+        ostream.write_u8(this->_sex) // sex
             .write_u8(0x00);
     }
 
@@ -1140,9 +1140,8 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-    const auto& name = this->name();
     ostream.write_u8(0x04) // head mark
-        .write(name, false); // name
+        .write(this->name(), false); // name
 
     return ostream;
 }
@@ -1162,17 +1161,15 @@ fb::ostream fb::game::session::make_effet_stream(uint8_t effect) const
 fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
 {
     fb::ostream             ostream;
-    fb::game::item*         item = this->item(index);
+    auto                    item = this->item(index);
     if(item == nullptr)
         return ostream;
-
-    const std::string name = item->name_styled();
 
     ostream.write_u8(0x0F)
         .write_u8(index + 1)
         .write_u16(item->look())
         .write_u8(item->color())
-        .write(name, false)
+        .write(item->name_styled(), false)
         .write_u32(item->count())
         .write_u8(0x00)
         .write_u8(0x00);
@@ -1240,11 +1237,10 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
     if(item == nullptr)
         return ostream;
 
-    const std::string& name = item->name();
     ostream.write_u8(0x37)
         .write_u16(item->look())
         .write_u8(item->color())
-        .write(name, false);
+        .write(item->name(), false);
 
     return ostream;
 }
@@ -1261,37 +1257,31 @@ fb::ostream fb::game::session::make_equipment_off_stream(equipment::eq_slots slo
 
 fb::ostream fb::game::session::make_internal_info_stream() const
 {
-    //
-    // 키보드 S를 눌렀을 때 표현될 자신의 캐릭터 정보
-    //
-
     fb::ostream             ostream;
 
     ostream.write_u8(0x39)
         .write_u8(this->_defensive.physical)
         .write_u8(this->random_damage())
         .write_u8(this->hit())
-        .write("클랜 정보") // 클랜정보 없음
-        .write("클랜 타이틀") // 클랜 타이틀 없음
+        .write("클랜 정보")
+        .write("클랜 타이틀")
         .write(this->_title);
 
     std::string             group_message = "그룹 없음.";
     ostream.write(group_message);
 
-    ostream.write_u8(this->option(options::GROUP)); // 그룹허가
+    ostream.write_u8(this->option(options::GROUP));
 
 
-    // 남은 경험치
-    uint32_t remained_exp = this->experience_remained();
+    uint32_t                remained_exp = this->experience_remained();
     ostream.write_u32(remained_exp);
 
-    const std::string*             class_name = db::class2name(this->_class, this->_promotion);
+    auto                    class_name = db::class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
-
     ostream.write(*class_name);
 
-    fb::game::equipment* equipments[] = {this->helmet(), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
+    fb::game::equipment*    equipments[] = {this->helmet(), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
     for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
     {
         if(equipments[i] == nullptr)
@@ -1307,8 +1297,8 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     }
 
     ostream.write_u8(0x00) // fixed;
-        .write_u8(this->_options[options::TRADE]) // trade
-        .write_u8(this->_options[options::PK]); // pk
+        .write_u8(this->_options[options::TRADE])
+        .write_u8(this->_options[options::PK]);
 
     ostream.write_u8(this->_legends.size());
     for(auto legend : this->_legends)
@@ -1332,11 +1322,11 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
     ostream.write_u8(0x34)
         .write(this->_title)
-        .write("클랜 타이틀")
-        .write("클랜 이름");
+        .write("클랜 이름")
+        .write("클랜 타이틀");
 
     // 클래스 이름
-    const auto class_name = db::class2name(this->_class, this->_promotion);
+    const auto              class_name = db::class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
 
@@ -1344,8 +1334,8 @@ fb::ostream fb::game::session::make_external_info_stream() const
         .write(this->_name);    // 이름
 
     // 캐릭터 상태
-    bool transform = false;
-    if(transform) // 변신상태
+    bool                    disguise = false;
+    if(disguise) // 변신상태
     {
         ostream.write_u8(0x01);
     }
@@ -1360,36 +1350,36 @@ fb::ostream fb::game::session::make_external_info_stream() const
 
 
     // 장비정보
-    std::stringstream   sstream;
-    auto                armor = this->armor(); // 갑옷
+    std::stringstream       sstream;
+    auto                    armor = this->armor(); // 갑옷
     ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
            .write_u8(armor != nullptr ? armor->color() : 0x00);
 
-    auto                weapon = this->weapon(); // 무기
+    auto                    weapon = this->weapon(); // 무기
     ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
            .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-    auto                shield = this->shield(); // 방패
+    auto                    shield = this->shield(); // 방패
     ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
            .write_u8(shield != nullptr ? shield->color() : 0x00);
 
-    auto                helmet = this->helmet(); // 투구
+    auto                    helmet = this->helmet(); // 투구
     ostream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
            .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-    auto                ring_l = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
+    auto                    ring_l = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
     ostream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
            .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-    auto                ring_r = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
+    auto                    ring_r = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
     ostream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
            .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-    auto                aux_l = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
+    auto                    aux_l = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
     ostream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
            .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-    auto                aux_r = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
+    auto                    aux_r = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
     ostream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
            .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 

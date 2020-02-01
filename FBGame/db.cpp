@@ -102,7 +102,7 @@ fb::game::item::core* fb::game::db::create_item(uint32_t id, const Json::Value& 
     if(types == "stuff")
     {
         uint16_t        capacity        = std::max(data["capacity"].asInt(), 1);
-        return new fb::game::item::core(id, name, icon, color, capacity);
+        return new fb::game::item::core(name, icon, color, capacity);
     }
 
     if(types == "consume")
@@ -111,34 +111,34 @@ fb::game::item::core* fb::game::db::create_item(uint32_t id, const Json::Value& 
                                                                         // bundle  Ex) µµÅä¸®
         uint32_t        capacity        = data["capacity"].asInt();
         if (bundle_type == "package")
-            return new fb::game::pack::core(id, name, icon, color, capacity);
+            return new fb::game::pack::core(name, icon, color, capacity);
         else
-            return new fb::game::consume::core(id, name, icon, color, std::max(capacity, uint32_t(1)));
+            return new fb::game::consume::core(name, icon, color, std::max(capacity, uint32_t(1)));
     }
 
 
 
     uint16_t look = data["equipment option"]["look"].asInt();
     if(types == "weapon")
-        return new fb::game::weapon::core(id, name, icon, look, color);
+        return new fb::game::weapon::core(name, icon, look, color);
 
     if(types == "armor")
-        return new fb::game::armor::core(id, name, icon, look, color);
+        return new fb::game::armor::core(name, icon, look, color);
 
     if(types == "helmet")
-        return new fb::game::helmet::core(id, name, icon, look, color);
+        return new fb::game::helmet::core(name, icon, look, color);
 
     if(types == "shield")
-        return new fb::game::shield::core(id, name, icon, look, color);
+        return new fb::game::shield::core(name, icon, look, color);
 
     if(types == "ring")
-        return new fb::game::ring::core(id, name, icon, look, color);
+        return new fb::game::ring::core(name, icon, look, color);
 
     if(types == "auxiliary")
-        return new fb::game::auxiliary::core(id, name, icon, look, color);
+        return new fb::game::auxiliary::core(name, icon, look, color);
 
     if(types == "arrow")
-        return new fb::game::arrow::core(id, name, icon, look, color);
+        return new fb::game::arrow::core(name, icon, look, color);
 
     return nullptr;
 }
@@ -406,7 +406,7 @@ bool fb::game::db::load_npc(const std::string& db_fname)
         uint16_t            look = json["look"].asInt() + 0x7FFF;
         uint8_t             color = json["color"].asInt();
 
-        db::_npcs.insert(std::make_pair(id, new npc::core(id, name, look, color)));
+        db::_npcs.insert(std::make_pair(id, new npc::core(name, look, color)));
     }
 
     return true;
@@ -498,7 +498,7 @@ bool fb::game::db::load_mob(const std::string& db_fname)
         uint32_t            base_hp = data["hp"].asInt();
         uint32_t            base_mp = data["mp"].asInt();
 
-        auto mob = new fb::game::mob::core(id, name, look, color, base_hp, base_mp);
+        auto mob = new fb::game::mob::core(name, look, color, base_hp, base_mp);
         mob->defensive_physical(data["defensive"]["physical"].asInt());
         mob->defensive_magical(data["defensive"]["magical"].asInt());
         mob->experience(data["experience"].asInt());

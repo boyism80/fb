@@ -4,8 +4,7 @@
 #include <iostream>
 #include "mob.h"
 
-fb::game::object::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
-    _id(id),
+fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),
     _look(look),
     _color(color)
@@ -14,11 +13,6 @@ fb::game::object::core::core(uint32_t id, const std::string& name, uint16_t look
 
 fb::game::object::core::~core()
 {
-}
-
-uint32_t fb::game::object::core::id() const
-{
-    return this->_id;
 }
 
 const std::string& fb::game::object::core::name() const
@@ -633,8 +627,8 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
     return ostream;
 }
 
-fb::game::life::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-    object::core(id, name, look, color),
+fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+    object::core(name, look, color),
     _hp(hp), _mp(mp),
     _experience(0)
 {}

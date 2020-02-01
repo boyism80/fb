@@ -8,12 +8,12 @@
 #endif
 
 const fb::game::item::item_limit fb::game::item::DEFAULT_LIMIT;
-const fb::game::cash::core fb::game::cash::BRONZE(0xFFFFFFFF, "¿±Àü", 23 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::BRONZE_BUNDLE(0xFFFFFFFF, "¿±Àü¹¶Ä¡", 74 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::SILVER(0xFFFFFFFF, "ÀºÀü", 70 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::SILVER_BUNDLE(0xFFFFFFFF, "ÀºÀü¹¶Ä¡", 73 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::GOLD(0xFFFFFFFF, "±ÝÀü", 71 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::GOLD_BUNDLE(0xFFFFFFFF, "±Ýµ¢¾î¸®", 72 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::BRONZE("¿±Àü", 23 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::BRONZE_BUNDLE("¿±Àü¹¶Ä¡", 74 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::SILVER("ÀºÀü", 70 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::SILVER_BUNDLE("ÀºÀü¹¶Ä¡", 73 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::GOLD("±ÝÀü", 71 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::GOLD_BUNDLE("±Ýµ¢¾î¸®", 72 + 0xBFFF);
 
 
 fb::game::item::_limit::_limit() : 
@@ -38,8 +38,8 @@ fb::game::item::_limit::_limit(const _limit& right) :
 {
 }
 
-fb::game::item::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
-    fb::game::object::core(id, name, look, color),
+fb::game::item::core::core(const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
+    fb::game::object::core(name, look, color),
     _price(0),
     _capacity(capacity),
     _limit(limit),
@@ -331,8 +331,8 @@ fb::game::item* fb::game::item::handle_drop(object& owner, uint16_t count)
 
 
 
-fb::game::cash::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
-    fb::game::item::core(id, name, look, color)
+fb::game::cash::core::core(const std::string& name, uint16_t look, uint8_t color) : 
+    fb::game::item::core(name, look, color)
 {}
 
 fb::game::cash::core::~core()
@@ -413,8 +413,8 @@ bool fb::game::cash::empty() const
 //
 // class consume::core
 //
-fb::game::consume::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
-    fb::game::item::core(id, name, look, color, capacity)
+fb::game::consume::core::core(const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
+    fb::game::item::core(name, look, color, capacity)
 {}
 
 fb::game::consume::core::~core()
@@ -463,8 +463,8 @@ bool fb::game::consume::handle_acive(session& session)
 //
 // class pack::core
 //
-fb::game::pack::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t durability) : 
-    fb::game::item::core(id, name, look, color),
+fb::game::pack::core::core(const std::string& name, uint16_t look, uint8_t color, uint16_t durability) : 
+    fb::game::item::core(name, look, color),
     _durability(durability)
 {}
 
@@ -533,8 +533,8 @@ bool fb::game::pack::handle_acive(session& session)
 // class equipment
 //
 
-fb::game::equipment::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
-    fb::game::item::core(id, name, look, color),
+fb::game::equipment::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
+    fb::game::item::core(name, look, color),
     _dress(dress),
     _durability(durability)
 {}
@@ -918,13 +918,13 @@ std::string fb::game::equipment::tip_message() const
 //
 // class weapon
 //
-fb::game::weapon::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color),
+fb::game::weapon::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color),
     _damage_range(range32_t(0, 0), range32_t(0, 0))
 {}
 
-fb::game::weapon::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large) : 
-    fb::game::equipment::core(id, name, look, dress, color),
+fb::game::weapon::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large) : 
+    fb::game::equipment::core(name, look, dress, color),
     _damage_range(small, large)
 {
 }
@@ -1056,8 +1056,8 @@ std::string fb::game::weapon::mid_message() const
 //
 // armor::core methods
 //
-fb::game::armor::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::armor::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::armor::core::~core()
@@ -1097,8 +1097,8 @@ fb::game::armor::~armor()
 //
 // helmet::core methods
 //
-fb::game::helmet::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::helmet::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::helmet::core::~core()
@@ -1138,8 +1138,8 @@ fb::game::helmet::~helmet()
 //
 // shield::core methods
 //
-fb::game::shield::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::shield::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::shield::core::~core()
@@ -1179,8 +1179,8 @@ fb::game::shield::~shield()
 //
 // ring::core methods
 //
-fb::game::ring::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::ring::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::ring::core::~core()
@@ -1220,8 +1220,8 @@ fb::game::ring::~ring()
 //
 // auxiliary::core methods
 //
-fb::game::auxiliary::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::auxiliary::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::auxiliary::core::~core()
@@ -1261,8 +1261,8 @@ fb::game::auxiliary::~auxiliary()
 //
 // arrow::core methods
 //
-fb::game::arrow::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::core(id, name, look, dress, color)
+fb::game::arrow::core::core(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::core(name, look, dress, color)
 {}
 
 fb::game::arrow::core::~core()

@@ -997,15 +997,14 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
+    uint8_t						cmd = istream.read_u8();
+    uint16_t					position = istream.read_u16();
+    uint8_t						unknown1 = istream.read_u8();
+    uint8_t						unknown2 = istream.read_u8();
+    uint8_t						unknown3 = istream.read_u8();
+    uint8_t						slot = istream.read_u8() - 1;
 
-    uint8_t cmd = istream.read_u8();
-    uint16_t position = istream.read_u16();
-    uint8_t unknown1 = istream.read_u8();
-    uint8_t unknown2 = istream.read_u8();
-    uint8_t unknown3 = istream.read_u8();
-    uint8_t slot = istream.read_u8() - 1;
-
-    fb::game::item* item = session.item(slot);
+    auto						item = session.item(slot);
     if(item == NULL)
         return false;
 
@@ -1017,17 +1016,16 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-
-    uint8_t cmd = istream.read_u8();
-    uint8_t count = istream.read_u8();
+    uint8_t						cmd = istream.read_u8();
+    uint8_t						count = istream.read_u8();
     if(count > item::MAX_SLOT - 1)
         return false;
 
-    std::vector<item*> items;
+    std::vector<item*>			items;
     for(int i = 0; i < count; i++)
     {
-        uint8_t index = istream.read_u8() - 1;
-        item* item = session.item(index);
+        uint8_t					index = istream.read_u8() - 1;
+        auto					item = session.item(index);
         if(item == NULL)
             return true;
 
@@ -1036,22 +1034,22 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     
     try
     {
-        itemmix* itemmix = db::find_itemmix(items);
+        auto					itemmix = db::find_itemmix(items);
         if(itemmix == NULL)
             throw itemmix::no_match_exception();
 
-        uint8_t free_size = session.inventory_free_size();
+        uint8_t					free_size = session.inventory_free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
             throw item::full_inven_exception();
 
 
         for(auto require : itemmix->require)
         {
-            uint8_t index = session.item2index(require.item);
+            uint8_t				index = session.item2index(require.item);
             if(index == 0xFF)
                 return true;
 
-            fb::game::item* item = session.item(index);
+            auto				item = session.item(index);
             item->reduce(require.count);
 
 
@@ -1073,9 +1071,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         {
             for(auto success : itemmix->success)
             {
-                item* item = static_cast<fb::game::item*>(success.item->make());
+                auto		item = static_cast<fb::game::item*>(success.item->make());
                 item->count(success.count);
-                uint8_t index = session.item_add(item);
+                
+				uint8_t		index = session.item_add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1085,9 +1084,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         {
             for(auto failed : itemmix->failed)
             {
-                item* item = static_cast<fb::game::item*>(failed.item->make());
+                auto		item = static_cast<fb::game::item*>(failed.item->make());
                 item->count(failed.count);
-                uint8_t index = session.item_add(item);
+                
+				uint8_t		index = session.item_add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 

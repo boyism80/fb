@@ -13,11 +13,14 @@ namespace fb { namespace game {
 class board
 {
 public:
+	enum button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
+
+public:
 #pragma region item class
     class article
     {
     public:
-        DECLARE_EXCEPTION(not_found_exception, "게시글이 존재하지 않습니다.")
+        DECLARE_EXCEPTION(not_found_exception, message::board::ARTICLE_NOT_EXIST)
 
     private:
         uint16_t                        _id;
@@ -49,7 +52,7 @@ public:
     class section : private std::vector<article*>
     {
     public:
-        DECLARE_EXCEPTION(not_found_exception, "섹션이 존재하지 않습니다.")
+        DECLARE_EXCEPTION(not_found_exception, message::board::SECTION_NOT_EXIST)
 
     public:
         using std::vector<article*>::operator[];
@@ -75,7 +78,7 @@ public:
 #pragma endregion
 
 public:
-    DECLARE_EXCEPTION(auth_exception, "권한이 없습니다.")
+    DECLARE_EXCEPTION(auth_exception, message::board::NOT_AUTH)
 
 private:
     std::vector<section*>               _sections;

@@ -78,6 +78,13 @@ namespace message
         static const std::string UP = "레벨이 올랐습니다";
     }
 
+	namespace board
+	{
+		static const std::string ARTICLE_NOT_EXIST = "게시글이 존재하지 않습니다.";
+		static const std::string SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
+		static const std::string NOT_AUTH = "권한이 없습니다.";
+	}
+
 
     fb::ostream             make_stream(const std::string& message, message::type types);
 }

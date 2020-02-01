@@ -4,8 +4,8 @@
 #include <iostream>
 #include "mob.h"
 
-fb::game::mob::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-    fb::game::life::core(id, name, look, color, hp, mp),
+fb::game::mob::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
+    fb::game::life::core(name, look, color, hp, mp),
     _damage(0, 0),
     _offensive_type(offensive_type::NONE),
     _size(sizes::SMALL),

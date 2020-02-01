@@ -1,7 +1,7 @@
 #include "npc.h"
 
-fb::game::npc::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
-    fb::game::object::core(id, name, look, color)
+fb::game::npc::core::core(const std::string& name, uint16_t look, uint8_t color) : 
+    fb::game::object::core(name, look, color)
 {}
 
 fb::game::npc::core::~core()

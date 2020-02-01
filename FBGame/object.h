@@ -22,33 +22,30 @@ public:
     class core
     {
     protected:
-        uint32_t                    _id;
-        std::string                 _name;
-        uint16_t                    _look;
-        uint8_t                     _color;
+        std::string             _name;
+        uint16_t                _look;
+        uint8_t                 _color;
 
     public:
         friend class fb::game::object;
 
     public:
-        core(uint32_t id, const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
+        core(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
         virtual ~core();
 
     public:
-        uint32_t                    id() const;
+        const std::string&      name() const;
+        void                    name(const std::string& value);
 
-        const std::string&          name() const;
-        void                        name(const std::string& value);
+        uint16_t                look() const;
+        void                    look(uint16_t value);
 
-        uint16_t                    look() const;
-        void                        look(uint16_t value);
+        uint8_t                 color() const;
+        void                    color(uint8_t value);
 
-        uint8_t                     color() const;
-        void                        color(uint8_t value);
-
-        virtual object*             make() const = 0;
+        virtual object*         make() const = 0;
         template <typename T>
-        T*                          make() const { return static_cast<T*>(this->make()); }
+        T*                      make() const { return static_cast<T*>(this->make()); }
     };
 
 protected:
@@ -149,7 +146,7 @@ public:
         friend class fb::game::life;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+        core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
         core(const core& core, uint32_t hp, uint32_t mp);
         core(const core& core);
         virtual ~core();
