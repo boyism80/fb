@@ -2,6 +2,7 @@
 #include <iostream>
 #include "socket.h"
 #include "fb_game.h"
+#include "db.h"
 #include "leak.h"
 
 #pragma comment(lib, "ws2_32.lib")
@@ -14,14 +15,14 @@
 
 using namespace fb::game;
 
+fb::game::acceptor* acceptor_instance = nullptr;
+
 BOOL WINAPI handle_console(DWORD signal)
 {
-    acceptor*       acceptor = fb::game::acceptor::instance();
-
     switch(signal)
     {
     case CTRL_C_EVENT:
-        acceptor->exit();
+        acceptor_instance->exit();
         puts("Please wait to exit acceptor.");
         break;
     }
@@ -38,17 +39,26 @@ int main(int argc, const char** argv)
     if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         return 0;
 
+    // Load databases
+    db::loads();
+
+    // Create acceptor instance
+    acceptor_instance = new fb::game::acceptor(10021);
 
     // Execute acceptor
-    acceptor*       acceptor = fb::game::acceptor::instance();
-    acceptor->execute(true);
+    acceptor_instance->execute(true);
 
 
+    // Wait while key pressed
     _fgetchar();
+
 
     // Clean up
     WSACleanup();
-    fb::game::acceptor::release();
+    
+    // Release
+    delete acceptor_instance;
+    db::release();
 
     return 0;
 }

@@ -1,7 +1,7 @@
 #include "item.h"
 #include "session.h"
 #include "map.h"
-#include "fb_game.h"
+#include "db.h"
 
 #ifdef small
 #undef small
@@ -27,11 +27,18 @@ fb::game::item::_limit::_limit() :
 {
 }
 
-fb::game::item::_limit::_limit(uint16_t level, uint16_t strength, uint16_t dexteritry, uint16_t intelligence, uint16_t cls, uint16_t promotion, fb::game::sex sex)
+fb::game::item::_limit::_limit(const _limit& right) : 
+    level(right.level),
+    strength(right.strength),
+    dexteritry(right.dexteritry),
+    intelligence(right.intelligence),
+    cls(right.cls),
+    promotion(right.promotion),
+    sex(right.sex)
 {
 }
 
-fb::game::item::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
+fb::game::item::file::file(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
     fb::game::object::core(id, name, look, color),
     _price(0),
     _capacity(capacity),
@@ -42,94 +49,104 @@ fb::game::item::core::core(uint32_t id, const std::string& name, uint16_t look, 
     _entrust(0)
 {}
 
-fb::game::item::core::core(const fb::game::object::core& core) : 
+fb::game::item::file::file(const fb::game::object::core& core) : 
     fb::game::object::core(core)
 {}
 
-fb::game::item::core::~core()
+fb::game::item::file::~file()
 {}
 
-uint32_t fb::game::item::core::price() const
+uint32_t fb::game::item::file::price() const
 {
     return this->_price;
 }
 
-void fb::game::item::core::price(uint32_t value)
+void fb::game::item::file::price(uint32_t value)
 {
     this->_price = value;
 }
 
-uint16_t fb::game::item::core::capacity() const
+uint16_t fb::game::item::file::capacity() const
 {
     return this->_capacity;
 }
 
-void fb::game::item::core::capacity(uint16_t value)
+void fb::game::item::file::capacity(uint16_t value)
 {
     this->_capacity = value;
 }
 
-bool fb::game::item::core::trade() const
+bool fb::game::item::file::trade() const
 {
-    return this->_trade;
+    return this->_trade._enabled;
 }
 
-void fb::game::item::core::trade(bool value)
+void fb::game::item::file::trade(bool value)
 {
-    this->_trade = value;
+    this->_trade._enabled = value;
 }
 
-uint32_t fb::game::item::core::entrust() const
+bool fb::game::item::file::entrust_enabled() const
 {
-    return this->_entrust;
+    return this->_entrust._enabled;
 }
 
-void fb::game::item::core::entrust(uint32_t value)
+void fb::game::item::file::entrust_enabled(bool value)
 {
-    this->_entrust = value;
+    this->_entrust._enabled = value;
 }
 
-const fb::game::item::item_limit& fb::game::item::core::limit() const
+uint32_t fb::game::item::file::entrust_price() const
+{
+    return this->_entrust._price;
+}
+
+void fb::game::item::file::entrust_price(uint32_t value)
+{
+    this->_entrust._price = value;
+}
+
+const fb::game::item::item_limit& fb::game::item::file::limit() const
 {
     return this->_limit;
 }
 
-void fb::game::item::core::limit(const item::item_limit& value)
+void fb::game::item::file::limit(const item::item_limit& value)
 {
     this->_limit = value;
 }
 
-fb::game::item::penalties fb::game::item::core::penalty() const
+fb::game::item::penalties fb::game::item::file::penalty() const
 {
     return this->_penalty;
 }
 
-void fb::game::item::core::penalty(penalties value)
+void fb::game::item::file::penalty(penalties value)
 {
     this->_penalty = value;
 }
 
-const std::string& fb::game::item::core::desc() const
+const std::string& fb::game::item::file::desc() const
 {
     return this->_desc;
 }
 
-void fb::game::item::core::desc(const std::string& value)
+void fb::game::item::file::desc(const std::string& value)
 {
     this->_desc = value;
 }
 
-const std::string& fb::game::item::core::active_script() const
+const std::string& fb::game::item::file::active_script() const
 {
     return this->_active_script;
 }
 
-void fb::game::item::core::active_script(const std::string& value)
+void fb::game::item::file::active_script(const std::string& value)
 {
     this->_active_script = value;
 }
 
-fb::game::item::attrs fb::game::item::core::attr() const
+fb::game::item::attrs fb::game::item::file::attr() const
 {
     item::attrs attr = item::attrs::ITEM_ATTR_NONE;
     if(this->capacity() > 1)
@@ -137,7 +154,7 @@ fb::game::item::attrs fb::game::item::core::attr() const
     return attr;
 }
 
-fb::game::object* fb::game::item::core::make() const
+fb::game::object* fb::game::item::file::make() const
 {
     return new item(this);
 }
@@ -151,7 +168,7 @@ fb::game::object* fb::game::item::core::make() const
 // class item
 //
 
-fb::game::item::item(const fb::game::item::core* core) : 
+fb::game::item::item(const fb::game::item::file* core) : 
     fb::game::object(core),
     _count(1)
 {}
@@ -233,47 +250,52 @@ bool fb::game::item::empty() const
 
 uint32_t fb::game::item::price() const
 {
-    return static_cast<const core*>(this->_core)->_price;
+    return static_cast<const file*>(this->_core)->_price;
 }
 
 uint16_t fb::game::item::capacity() const
 {
-    return static_cast<const core*>(this->_core)->_capacity;
+    return static_cast<const file*>(this->_core)->_capacity;
 }
 
-bool fb::game::item::trade() const
+bool fb::game::item::trade_enabled() const
 {
-    return static_cast<const core*>(this->_core)->_trade;
+    return static_cast<const file*>(this->_core)->_trade._enabled;
 }
 
-uint32_t fb::game::item::entrust() const
+bool fb::game::item::entrust_enabled() const
 {
-    return static_cast<const core*>(this->_core)->_entrust;
+    return static_cast<const file*>(this->_core)->_entrust._enabled;
+}
+
+uint32_t fb::game::item::entrust_price() const
+{
+    return static_cast<const file*>(this->_core)->_entrust._price;
 }
 
 const fb::game::item::item_limit& fb::game::item::limit() const
 {
-    return static_cast<const core*>(this->_core)->_limit;
+    return static_cast<const file*>(this->_core)->_limit;
 }
 
 fb::game::item::penalties fb::game::item::penalty() const
 {
-    return static_cast<const core*>(this->_core)->_penalty;
+    return static_cast<const file*>(this->_core)->_penalty;
 }
 
 const std::string& fb::game::item::desc() const
 {
-    return static_cast<const core*>(this->_core)->_desc;
+    return static_cast<const file*>(this->_core)->_desc;
 }
 
 const std::string& fb::game::item::active_script() const
 {
-    return static_cast<const core*>(this->_core)->_active_script;
+    return static_cast<const file*>(this->_core)->_active_script;
 }
 
 fb::game::item::attrs fb::game::item::attr() const
 {
-    return static_cast<const core*>(this->_core)->attr();
+    return static_cast<const file*>(this->_core)->attr();
 }
 
 fb::ostream fb::game::item::make_tip_stream(uint16_t position)
@@ -283,7 +305,7 @@ fb::ostream fb::game::item::make_tip_stream(uint16_t position)
 
     ostream.write_u8(0x59)
         .write_u16(position)
-		.write(message, true)
+        .write(message, true)
         .write_u8(0x00);
 
     return ostream;
@@ -310,7 +332,7 @@ fb::game::item* fb::game::item::handle_drop(object& owner, uint16_t count)
 
 
 fb::game::cash::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
-    fb::game::item::core(id, name, look, color)
+    fb::game::item::file(id, name, look, color)
 {}
 
 fb::game::cash::core::~core()
@@ -392,7 +414,7 @@ bool fb::game::cash::empty() const
 // class consume::core
 //
 fb::game::consume::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
-    fb::game::item::core(id, name, look, color, capacity)
+    fb::game::item::file(id, name, look, color, capacity)
 {}
 
 fb::game::consume::core::~core()
@@ -421,7 +443,7 @@ fb::game::consume::consume(const fb::game::consume::core* core) :
 fb::game::consume::consume(const consume& right) : 
     fb::game::item(right)
 {
-    
+
 }
 
 fb::game::consume::~consume()
@@ -442,7 +464,7 @@ bool fb::game::consume::handle_acive(session& session)
 // class pack::core
 //
 fb::game::pack::core::core(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t durability) : 
-    fb::game::item::core(id, name, look, color),
+    fb::game::item::file(id, name, look, color),
     _durability(durability)
 {}
 
@@ -512,7 +534,7 @@ bool fb::game::pack::handle_acive(session& session)
 //
 
 fb::game::equipment::core::core(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
-    fb::game::item::core(id, name, look, color),
+    fb::game::item::file(id, name, look, color),
     _dress(dress),
     _durability(durability)
 {}
@@ -655,6 +677,26 @@ void fb::game::equipment::core::healing_cycle(uint8_t value)
     this->_healing_cycle = value;
 }
 
+const std::string& fb::game::equipment::core::dress_script() const
+{
+    return this->_dress_script;
+}
+
+void fb::game::equipment::core::dress_script(const std::string& value)
+{
+    this->_dress_script = value;
+}
+
+const std::string& fb::game::equipment::core::undress_script() const
+{
+    return this->_undress_script;
+}
+
+void fb::game::equipment::core::undress_script(const std::string& value)
+{
+    this->_undress_script = value;
+}
+
 uint16_t fb::game::equipment::core::durability() const
 {
     return this->_durability;
@@ -665,34 +707,44 @@ void fb::game::equipment::core::durability(uint16_t value)
     this->_durability = value;
 }
 
-bool fb::game::equipment::core::repairable() const
+bool fb::game::equipment::core::repair_enabled() const
 {
-    return this->_repairable;
+    return this->_repair._enabled;
 }
 
-void fb::game::equipment::core::repairable(bool value)
+void fb::game::equipment::core::repair_enabled(bool value)
 {
-    this->_repairable = value;
+    this->_repair._enabled = value;
 }
 
-uint32_t fb::game::equipment::core::repair_price() const
+float fb::game::equipment::core::repair_price() const
 {
-    return this->_repair_price;
+    return this->_repair._price;
 }
 
-void fb::game::equipment::core::repair_price(uint32_t value)
+void fb::game::equipment::core::repair_price(float value)
 {
-    this->_repair_price = value;
+    this->_repair._price = value;
+}
+
+bool fb::game::equipment::core::rename_enabled() const
+{
+    return this->_rename._enabled;
+}
+
+void fb::game::equipment::core::rename_enabled(bool value)
+{
+    this->_rename._enabled = value;
 }
 
 uint32_t fb::game::equipment::core::rename_price() const
 {
-    return this->_rename_price;
+    return this->_rename._price;
 }
 
 void fb::game::equipment::core::rename_price(uint32_t value)
 {
-    this->_rename_price = value;
+    this->_rename._price = value;
 }
 
 fb::game::equipment::equipment(const equipment::core* core) : 
@@ -733,19 +785,24 @@ uint16_t fb::game::equipment::durability_base() const
     return static_cast<const core*>(this->_core)->_durability;
 }
 
-bool fb::game::equipment::repairable() const
+bool fb::game::equipment::repair_enabled() const
 {
-    return static_cast<const core*>(this->_core)->_repairable;
+    return static_cast<const core*>(this->_core)->_repair._enabled;
 }
 
-uint32_t fb::game::equipment::repair_price() const
+float fb::game::equipment::repair_price() const
 {
-    return static_cast<const core*>(this->_core)->_repair_price;
+    return static_cast<const core*>(this->_core)->_repair._price;
+}
+
+bool fb::game::equipment::rename_enabled() const
+{
+    return static_cast<const core*>(this->_core)->_rename._enabled;
 }
 
 uint32_t fb::game::equipment::rename_price() const
 {
-    return static_cast<const core*>(this->_core)->_rename_price;
+    return static_cast<const core*>(this->_core)->_rename._price;
 }
 
 int16_t fb::game::equipment::defensive_physical() const
@@ -847,7 +904,7 @@ std::string fb::game::equipment::tip_message() const
     if(limit.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::acceptor::instance()->class2name(limit.cls, 0) << "용";
+        class_stream << db::class2name(limit.cls, 0) << "용";
     sstream << class_stream.str() << "레벨 " << std::to_string(limit.level) << " 이상";
 
     const std::string desc = this->desc();
@@ -1254,17 +1311,17 @@ bool fb::game::_itemmix::contains(const item* item) const
     return false;
 }
 
-void fb::game::_itemmix::require_add(fb::game::item::core* item, uint32_t count)
+void fb::game::_itemmix::require_add(fb::game::item::file* item, uint32_t count)
 {
     this->require.push_back(element(item, count));
 }
 
-void fb::game::_itemmix::success_add(fb::game::item::core* item, uint32_t count)
+void fb::game::_itemmix::success_add(fb::game::item::file* item, uint32_t count)
 {
     this->success.push_back(element(item, count));
 }
 
-void fb::game::_itemmix::failed_add(fb::game::item::core* item, uint32_t count)
+void fb::game::_itemmix::failed_add(fb::game::item::file* item, uint32_t count)
 {
     this->failed.push_back(element(item, count));
 }

@@ -75,7 +75,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 fb::game::map::~map()
 {
     delete[] this->_tiles;
-    
+
     for(auto object : this->_objects)
         delete object;
 
@@ -379,7 +379,7 @@ fb::ostream fb::game::map::make_config_stream() const
         .write_u16(this->_size.width) // width
         .write_u16(this->_size.height) // height
         .write_u8(this->_option & map::options::BUILD_IN ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
-		.write(this->_name, true);
+        .write(this->_name, true);
 
     return ostream;
 }

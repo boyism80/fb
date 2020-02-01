@@ -99,17 +99,17 @@ void fb::game::mob::core::offensive(offensive_type value)
     this->_offensive_type = value;
 }
 
-void fb::game::mob::core::dropitem_add(const mob::drop& drop)
+void fb::game::mob::core::dropitem_add(const mob::money& money)
 {
-    this->_items.push_back(drop);
+    this->_items.push_back(money);
 }
 
-void fb::game::mob::core::dropitem_add(const fb::game::item::core* item, float percentage)
+void fb::game::mob::core::dropitem_add(const fb::game::item::file* item, float percentage)
 {
-    this->_items.push_back(drop(item, percentage));
+    this->_items.push_back(money(item, percentage));
 }
 
-const std::vector<fb::game::mob::drop>& fb::game::mob::core::items() const
+const std::vector<fb::game::mob::money>& fb::game::mob::core::items() const
 {
     return this->_items;
 }
@@ -312,7 +312,7 @@ fb::game::session* fb::game::mob::autoset_target()
     return this->_target;
 }
 
-const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
+const std::vector<fb::game::mob::money>& fb::game::mob::items() const
 {
     return static_cast<const core*>(this->_core)->items();
 }

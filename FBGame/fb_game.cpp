@@ -1,46 +1,10 @@
 #include "fb_game.h"
+#include "db.h"
 
 using namespace fb::game;
 
-fb::game::acceptor* fb::game::acceptor::_instance = NULL;
-
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
-    //this->convert_item_file("db/item_db.txt");
-    //this->convert_npc_file();
-    //this->convert_npc_spawn_file();
-    //this->convert_mob_file();
-
-    this->load_spell("db/spell.json");
-    this->load_maps("db/map.json");
-    this->load_warp("db/warp.json");
-    this->load_items("db/item.json");
-    this->load_itemmix("db/itemmix.json");
-    this->load_npc("db/npc.json");
-    this->load_mob("db/mob.json");
-    this->load_drop_item("db/item_drop.json");
-
-    //this->convert_npc_spawn_file();
-    this->load_npc_spawn("db/npc_spawn.json");
-
-    //this->convert_mob_spawn_file();
-    this->load_mob_spawn("db/mob_spawn.json");
-
-
-    //this->convert_class_file();
-    this->load_class();
-
-    this->_board.add("공지사항");
-    auto section = this->_board.add("갓승현의 역사");
-    
-    for(int i = 0; i < 100; i++)
-    {
-        std::stringstream sstream;
-        sstream << "갓승현 연대기 - " << std::to_string(i);
-
-        section->add(i+1, sstream.str(), sstream.str(), "갓승현");
-    }
-
     this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
     this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
     this->register_handle(0x06, &acceptor::handle_update_move);         // 이동과 맵 데이터 업데이트 핸들러
@@ -65,1882 +29,19 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x18, &acceptor::handle_user_list);           // 유저 리스트 핸들러
     this->register_handle(0x0E, &acceptor::handle_chat);                // 유저 채팅 핸들러
     this->register_handle(0x3B, &acceptor::handle_board);               // 게시판 섹션 리스트 핸들러
-    this->register_handle(0x30, &acceptor::handle_swap);          // 스펠 순서 변경
+    this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
-{
-    for(auto pair : this->_maps)
-        delete pair.second;
-
-    for(auto pair : this->_items)
-        delete pair.second;
-
-    for(auto pair : this->_npcs)
-        delete pair.second;
-
-    for(auto pair : this->_mobs)
-        delete pair.second;
-
-    for(auto pair : this->_spells)
-        delete pair.second;
-
-    for(auto cls : this->_classes)
-        delete cls;
-
-    for(auto itemmix : this->_itemmixes)
-        delete itemmix;
-
-}
-
-bool fb::game::acceptor::convert_map_file(const std::string& db_fname)
-{
-    Json::Value db_map;
-
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        std::stringstream sstream(line);
-        
-        std::string id;
-        std::getline(sstream, id, '\t');
-
-        std::string parent;
-        std::getline(sstream, parent, '\t');
-
-        std::string name;
-        std::getline(sstream, name, '\t');
-
-        std::string bgm;
-        std::getline(sstream, bgm, '\t');
-
-        std::string effect;
-        std::getline(sstream, effect, '\t');
-
-        std::string attr;
-        std::getline(sstream, attr, '\t');
-
-        db_map[id] = Json::Value();
-        db_map[id]["name"] = name;
-        db_map[id]["parent"] = parent;
-        db_map[id]["bgm"] = std::stoi(bgm);
-
-        uint32_t i_attr = std::stoi(attr);
-        db_map[id]["option"]                        = Json::Value();
-        db_map[id]["option"]["build in"]            =  (bool(i_attr & 0x01));
-        db_map[id]["option"]["enabled talk"]        = !(bool(i_attr & 0x02));
-        db_map[id]["option"]["enabled whisper"]     = !(bool(i_attr & 0x04));
-        db_map[id]["option"]["enabled magic"]       = !(bool(i_attr & 0x08));
-        db_map[id]["option"]["hunting ground"]      =  (bool(i_attr & 0x10));
-        db_map[id]["option"]["enabled pk"]          =  (bool(i_attr & 0x20));
-        db_map[id]["option"]["enabled die penalty"] =  (bool(i_attr & 0x30));
-
-        uint32_t i_effect = std::stoi(effect);
-        if(i_effect == 0x01)
-            db_map[id]["effect"] = "hot wave";
-        else if(i_effect == 0x02)
-            db_map[id]["effect"] = "shipwreck";
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/map.json");
-    
-    Json::StyledWriter writer;
-    ofstream << writer.write(db_map);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_block_file(const map* map, const char* ext)
-{
-    char fname[256] = {0, };
-    sprintf(fname, "map/%06d.txt", map->id());
-    std::ifstream ifstream(fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    sprintf(fname, "map/%06d.%s", map->id(), ext);
-    std::ofstream ofstream(fname);
-    if(ofstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value block_json(Json::arrayValue);
-    while(std::getline(ifstream, line))
-    {
-        std::stringstream sstream(line);
-        std::string token;
-        std::getline(sstream, token, '\t');
-        std::getline(sstream, token, '\t');
-        uint16_t offset = std::stoi(token);
-
-        Json::Value json_value;
-        json_value["x"] = offset % map->width();
-        json_value["y"] = offset / map->width();
-        block_json.append(json_value);
-    }
-
-    Json::FastWriter writer;
-    ofstream << writer.write(block_json);
-
-    ifstream.close();
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_item_file(const std::string& db_fname)
-{
-    Json::Value db_map;
-
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::ifstream ifstream_ext("db/item_db_ext.txt");
-    if(ifstream_ext.is_open() == false)
-        return false;
-    Json::Value json_ext;
-    Json::Reader reader;
-    if(reader.parse(ifstream_ext, json_ext) == false)
-        return false;
-
-    ifstream_ext.close();
-    
-
-    std::string line;
-    Json::Value db_item;
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        Json::Value json_value;
-        std::stringstream sstream(line);
-
-        std::string id;
-        std::getline(sstream, id, '\t');
-
-        std::string name;
-        std::getline(sstream, name, '\t');
-        json_value["name"] = name;
-
-        if(name == "타라의남자옷")
-        {
-            std::cout << std::endl;
-        }
-
-        std::string types;
-        std::getline(sstream, types, '\t');
-        switch(std::stoi(types))
-        {
-        case 0:
-            json_value["type"] = "weapon";
-            break;
-
-        case 1:
-            json_value["type"] = "armor";
-            break;
-
-        case 2:
-            json_value["type"] = "shield";
-            break;
-
-        case 3:
-            json_value["type"] = "helmet";
-            break;
-
-        case 4:
-            json_value["type"] = "ring";
-            break;
-
-        case 5:
-            json_value["type"] = "auxiliary";
-            break;
-
-        case 6: // 동동주 같은거
-            json_value["type"] = "consume";// 사용하면 사라진다.
-                                            // bundle type이 반드시 필요
-            json_value["bundle type"] = "package";  // 하나의 아이템에 다수개 소비
-            break;
-
-        case 7: // 토끼고기 같은거
-            json_value["type"] = "consume"; // 사용하면 사라진다.
-            json_value["bundle type"] = "bundle"; // 그냥 여러개를 가질 수 있음
-            break;
-
-        case 8: // script
-            json_value["type"] = "stuff";
-            json_value["bundle type"] = "default";
-            json_value["available"] = true;
-            break;
-
-        case 9:
-            json_value["type"] = "stuff";
-            json_value["available"] = false;
-            break;
-
-        case 10: // 딱 하나만 가지면서 사용도 못함
-            json_value["type"] = "stuff";
-            json_value["available"] = false;
-            break;
-
-        case 11: // 여러개 가지면서 사용은 못함
-            json_value["type"] = "stuff";
-            json_value["bundle type"] = "bundle";
-            json_value["available"] = false;
-            break;
-
-        case 12:
-            json_value["type"] = "arrow"; // 기본으로 bundle type, consumable임
-            break;
-
-        default:
-            std::cout << "what?? : " << types << std::endl;
-            continue;
-        }
-
-        bool equipment = (json_value["type"] == "weapon" || 
-            json_value["type"] == "armor" || 
-            json_value["type"] == "shield" ||
-            json_value["type"] == "helmet" ||
-            json_value["type"] == "ring" ||
-            json_value["type"] == "auxiliary");
-
-        Json::Value equipment_option;
-
-        std::string icon;
-        std::getline(sstream, icon, '\t');
-        json_value["icon"] = std::stoi(icon);
-
-        std::string look;
-        std::getline(sstream, look, '\t');
-        if(equipment)
-            equipment_option["look"] = std::stoi(look);
-
-        std::string color;
-        std::getline(sstream, color, '\t');
-        if(std::stoi(color) != 0)
-            json_value["color"] = std::stoi(color);
-
-        std::string max_count;
-        std::getline(sstream, max_count, '\t');
-        if(std::stoi(max_count) == 0)
-        {}
-        else if(std::stoi(max_count) == 1 && json_value.isMember("bundle type") && json_value["bundle type"].asString() == "bundle")
-        {
-            json_value.removeMember("bundle type");
-        }
-        else
-        {
-            json_value["capacity"] = std::stoi(max_count);
-        }
-
-        std::string durability;
-        std::getline(sstream, durability, '\t');
-        if(std::stoi(durability) != 0)
-        {
-            if(std::stoi(types) == 6)
-                json_value["capacity"] = std::stoi(durability);
-            else
-                equipment_option["durability"] = std::stoi(durability);
-        }
-
-        std::string price;
-        std::getline(sstream, price, '\t');
-        if(std::stoi(price) != 0)
-            json_value["price"] = std::stoi(price);
-
-
-        // 제한 형식
-        Json::Value limit;
-        std::string strength_limit;
-        std::getline(sstream, strength_limit, '\t');
-        if(std::stoi(strength_limit) != 0)
-            limit["strength"] = std::stoi(strength_limit);
-
-        std::string dexteritry_limit;
-        std::getline(sstream, dexteritry_limit, '\t');
-        if(std::stoi(dexteritry_limit) != 0)
-            limit["dexteritry"] = std::stoi(dexteritry_limit);
-
-        std::string intelligence_limit;
-        std::getline(sstream, intelligence_limit, '\t');
-        if(std::stoi(intelligence_limit) != 0)
-            limit["intelligence"] = std::stoi(intelligence_limit);
-
-        std::string sex_limit;
-        std::getline(sstream, sex_limit, '\t');
-        if(std::stoi(sex_limit) == 1)
-            limit["sex"] = "man";
-        else if(std::stoi(sex_limit) == 2)
-            limit["sex"] = "woman";
-
-        std::string level_limit;
-        std::getline(sstream, level_limit, '\t');
-        if(std::stoi(level_limit) != 0)
-            limit["level"] = std::stoi(level_limit);
-
-        std::string class_limit;
-        std::getline(sstream, class_limit, '\t');
-        if(std::stoi(class_limit) != 0)
-            limit["level"] = std::stoi(class_limit);
-
-        std::string promotion_limit;
-        std::getline(sstream, promotion_limit, '\t');
-        if(std::stoi(promotion_limit) != 0)
-            limit["promotion"] = std::stoi(promotion_limit);
-
-        if(limit.size() != 0)
-            json_value["limit"] = limit;
-
-        std::string die_penelty;
-        std::getline(sstream, die_penelty, '\t');
-        if(std::stoi(die_penelty) == 0)
-            json_value["die penelty"] = "drop";
-        else if(std::stoi(die_penelty) == 1)
-            json_value["die penelty"] = "destroy";
-
-        std::string tradable;
-        std::getline(sstream, tradable, '\t');
-        json_value["tradable"] = bool(std::stoi(tradable));
-
-        std::string repairable;
-        std::getline(sstream, repairable, '\t');
-        if(equipment)
-            equipment_option["repairable"] = bool(std::stoi(repairable));
-
-        std::string repair_price;
-        std::getline(sstream, repair_price, '\t');
-        if(bool(std::stoi(repairable)) && std::stoi(repair_price) != 0)
-            equipment_option["repair price"] = std::stoi(repair_price);
-
-        std::string entrust_price;
-        std::getline(sstream, entrust_price, '\t');
-        if(std::stoi(entrust_price) != 0)
-            json_value["entrust price"] = std::stoi(entrust_price);
-
-        std::string rename_price;
-        std::getline(sstream, rename_price, '\t');
-        if(std::stoi(rename_price) != 0)
-            equipment_option["rename price"] = std::stoi(rename_price);
-
-
-        Json::Value script;
-        std::string dress_script;
-        std::getline(sstream, dress_script, '\t');
-        if(dress_script != "-")
-            script["active"] = dress_script;
-
-        Json::Value random_damage;
-        if(json_ext.isMember(dress_script))
-        {
-            if(json_ext[dress_script].isMember("s_mindam") && json_ext[dress_script].isMember("s_maxdam") && json_ext[dress_script].isMember("l_mindam") && json_ext[dress_script].isMember("l_maxdam"))
-            {
-                random_damage["small"] = Json::Value();
-                random_damage["small"]["min"] = json_ext[dress_script]["s_mindam"].asInt();
-                random_damage["small"]["max"] = json_ext[dress_script]["s_maxdam"].asInt();
-                random_damage["large"] = Json::Value();
-                random_damage["large"]["min"] = json_ext[dress_script]["l_mindam"].asInt();
-                random_damage["large"]["max"] = json_ext[dress_script]["l_maxdam"].asInt();
-
-                equipment_option["damage range"] = random_damage;
-            }
-
-            Json::Value defensive;
-            if(json_ext[dress_script].isMember("defensive physical"))
-                defensive["physical"] = json_ext[dress_script]["defensive physical"].asInt();
-
-            if(json_ext[dress_script].isMember("defensive magical"))
-                defensive["magical"] = json_ext[dress_script]["defensive magical"].asInt();
-
-            if(defensive.size() != 0)
-                equipment_option["defensive"] = defensive;
-
-            if(json_ext[dress_script].isMember("hit"))
-                equipment_option["hit"] = json_ext[dress_script]["hit"].asInt();
-
-            if(json_ext[dress_script].isMember("damage"))
-                equipment_option["damage"] = json_ext[dress_script]["damage"].asInt();
-
-            if(json_ext[dress_script].isMember("strength"))
-                equipment_option["strength"] = json_ext[dress_script]["strength"].asInt();
-
-            if(json_ext[dress_script].isMember("intelligence"))
-                equipment_option["intelligence"] = json_ext[dress_script]["intelligence"].asInt();
-
-            if(json_ext[dress_script].isMember("dexteritry"))
-                equipment_option["dexteritry"] = json_ext[dress_script]["dexteritry"].asInt();
-
-            if(json_ext[dress_script].isMember("hp"))
-                equipment_option["hp"] = json_ext[dress_script]["hp"].asInt();
-
-            if(json_ext[dress_script].isMember("mp"))
-                equipment_option["mp"] = json_ext[dress_script]["mp"].asInt();
-
-            if(json_ext[dress_script].isMember("sound"))
-                equipment_option["sound"] = json_ext[dress_script]["sound"].asInt();
-
-            if(json_ext[dress_script].isMember("hp percent"))
-                equipment_option["hp percent"] = json_ext[dress_script]["hp percent"].asInt();
-
-            if(json_ext[dress_script].isMember("mp percent"))
-                equipment_option["mp percent"] = json_ext[dress_script]["mp percent"].asInt();
-
-            if(json_ext[dress_script].isMember("healing cycle"))
-                equipment_option["healing cycle"] = json_ext[dress_script]["healing cycle"].asInt();
-
-            if(json_ext[dress_script].isMember("spell"))
-                equipment_option["spell"] = json_ext[dress_script]["spell"].asString();
-        }
-
-        std::string undress_script;
-        std::getline(sstream, undress_script, '\t');
-        if(undress_script != "-")
-            script["inactive"] = undress_script;
-
-        std::string action_script;
-        std::getline(sstream, action_script, '\t');
-        if(action_script != "-")
-            script["active"] = action_script;
-        if(script.size() != 0)
-            json_value["script"] = script;
-
-        std::string tooltip;
-        std::getline(sstream, tooltip, '\t');
-        if(tooltip != "-")
-            json_value["tooltip"] = tooltip;
-
-        std::string desc;
-        std::getline(sstream, desc, '\t');
-        if(desc != "-")
-            json_value["desc"] = desc;
-
-        if(equipment_option.size() != 0)
-            json_value["equipment option"] = equipment_option;
-
-        db_item[id] = json_value;
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/item.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db_item);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_npc_file(const std::string& db_fname)
-{
-    Json::Value db_map;
-
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value db_npc;
-    char buffer[256];
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        Json::Value json_value;
-        std::stringstream sstream(line);
-
-        std::string id;
-        std::getline(sstream, id, '\t');
-        sprintf(buffer, "%05d", std::stoi(id));
-
-        std::string name;
-        std::getline(sstream, name, '\t');
-        json_value["name"] = name;
-
-        std::string look;
-        std::getline(sstream, look, '\t');
-        json_value["look"] = std::stoi(look);
-
-        std::string color;
-        std::getline(sstream, color, '\t');
-        json_value["color"] = std::stoi(color);
-
-        db_npc[buffer] = json_value;
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/npc.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db_npc);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_npc_spawn_file(const std::string& db_fname)
-{
-    Json::Value db_map;
-
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value db(Json::arrayValue);
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        Json::Value json_value;
-        std::stringstream sstream(line);
-
-        std::string id_str;
-        std::getline(sstream, id_str, '\t');
-        uint16_t id = std::stoi(id_str);
-
-        if(this->_npcs.find(id) == this->_npcs.end())
-        {
-            std::cout << "invalid npc id : " << id << std::endl;
-            continue;
-        }
-        auto npc = this->_npcs[id];
-        json_value["npc"] = npc->name();
-
-        std::string map_id_str;
-        std::getline(sstream, map_id_str, '\t');
-        uint16_t map_id = std::stoi(map_id_str);
-        if(this->_maps.find(map_id) == this->_maps.end())
-        {
-            std::cout << "invalid map id : " << map_id << std::endl;
-            continue;
-        }
-        fb::game::map* map = this->_maps[map_id];
-        json_value["map"] = map->name();
-
-        std::string x;
-        std::getline(sstream, x, '\t');
-
-        std::string y;
-        std::getline(sstream, y, '\t');
-        json_value["position"] = Json::Value();
-        json_value["position"]["x"] = std::stoi(x);
-        json_value["position"]["y"] = std::stoi(y);
-
-        std::string direction;
-        std::getline(sstream, direction, '\t');
-        switch(std::stoi(direction))
-        {
-        case 0:
-            json_value["direction"] = "top";
-            break;
-
-        case 1:
-            json_value["direction"] = "right";
-            break;
-
-        case 2:
-            json_value["direction"] = "bottom";
-            break;
-
-        case 3:
-            json_value["direction"] = "left";
-            break;
-        }
-
-        std::string script;
-        std::getline(sstream, script, '\t');
-        json_value["script"] = script;
-
-        db.append(json_value);
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/npc_spawn.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_mob_file(const std::string& db_fname)
-{
-    Json::Value db_mob;
-
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value db;
-    char buffer[256];
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        Json::Value json_value;
-        std::stringstream sstream(line);
-
-        std::string id;
-        std::getline(sstream, id, '\t');
-        sprintf(buffer, "%06d", std::stoi(id));
-
-        std::string name;
-        std::getline(sstream, name, '\t');
-        json_value["name"] = name;
-
-        std::string look;
-        std::getline(sstream, look, '\t');
-        json_value["look"] = std::stoi(look);
-
-        std::string color;
-        std::getline(sstream, color, '\t');
-        json_value["color"] = std::stoi(color);
-
-        std::string base_hp;
-        std::getline(sstream, base_hp, '\t');
-        json_value["hp"] = std::stoi(base_hp);
-
-        std::string experience;
-        std::getline(sstream, experience, '\t');
-        json_value["experience"] = std::stoi(experience);
-
-        json_value["defensive"] = Json::Value();
-
-        std::string defensive_physical;
-        std::getline(sstream, defensive_physical, '\t');
-        json_value["defensive"]["physical"] = std::stoi(defensive_physical);
-
-        std::string size;
-        std::getline(sstream, size, '\t');
-        if(size == "s")
-            size = "small";
-        else if(size == "l")
-            size = "large";
-        json_value["size"] = size;
-
-        std::string offensive;
-        std::getline(sstream, offensive, '\t');
-        uint32_t offensive_int = std::stoi(offensive);
-        //json_value["offensive"] = offensive;
-        switch(offensive_int)
-        {
-        case 0:
-            json_value["offensive"] = "containment";
-            break;
-
-        case 1:
-            json_value["offensive"] = "counter";
-            break;
-
-        case 2:
-            json_value["offensive"] = "none";
-            break;
-
-        case 3:
-            json_value["offensive"] = "non move";
-            break;
-
-        case 4:
-            json_value["offensive"] = "run away";
-            break;
-
-        default:
-            json_value["offensive"] = "unknown";
-            break;
-        }
-
-        std::string defensive_magical;
-        std::getline(sstream, defensive_magical, '\t');
-        json_value["defensive"]["magical"] = std::stoi(defensive_magical);
-
-        std::string min;
-        std::getline(sstream, min, '\t');
-
-        std::string max;
-        std::getline(sstream, max, '\t');
-
-        json_value["damage"] = Json::Value();
-        json_value["damage"]["min"] = std::stoi(min);
-        json_value["damage"]["max"] = std::stoi(max);
-
-
-        std::string script_attack;
-        std::getline(sstream, script_attack, '\t');
-
-        std::string script_die;
-        std::getline(sstream, script_die, '\t');
-
-        json_value["script"] = Json::Value();
-        if(script_attack != "-")
-            json_value["script"]["attack"] = script_attack;
-
-        if(script_die != "-")
-            json_value["script"]["die"] = script_die;
-
-        if(json_value.size() == 0)
-            json_value.removeMember("script");
-
-        std::string speed;
-        std::getline(sstream, speed, '\t');
-        json_value["speed"] = std::stoi(speed);
-
-        db[buffer] = json_value;
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/mob.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_mob_spawn_file(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value db;
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        Json::Value spawns;
-        std::stringstream sstream(line);
-
-        std::string mob_id_str;
-        std::getline(sstream, mob_id_str, '\t');
-        uint16_t mob_id = std::stoi(mob_id_str);
-
-        if(this->_mobs.find(mob_id) == this->_mobs.end())
-        {
-            std::cout << "invalid mob id : " << mob_id << std::endl;
-            continue;
-        }
-        auto mob_core = this->_mobs[mob_id];
-
-
-        std::string map_id_str;
-        std::getline(sstream, map_id_str, '\t');
-        uint16_t map_id = std::stoi(map_id_str);
-
-        if(this->_maps.find(map_id) == this->_maps.end())
-        {
-            std::cout << "invalid map id : " << map_id << std::endl;
-            continue;
-        }
-        auto map = this->_maps[map_id];
-
-        std::string x0_str;
-        std::getline(sstream, x0_str, '\t');
-        uint16_t x0 = std::stoi(x0_str);
-
-        std::string x1_str;
-        std::getline(sstream, x1_str, '\t');
-        uint16_t x1 = std::stoi(x1_str);
-
-        std::string y0_str;
-        std::getline(sstream, y0_str, '\t');
-        uint16_t y0 = std::stoi(y0_str);
-
-        std::string y1_str;
-        std::getline(sstream, y1_str, '\t');
-        uint16_t y1 = std::stoi(y1_str);
-
-        std::string count_str;
-        std::getline(sstream, count_str, '\t');
-        uint16_t count = std::stoi(count_str);
-
-        std::string rezen_str;
-        std::getline(sstream, rezen_str, '\t');
-        uint16_t rezen = std::stoi(rezen_str);
-
-        if(db.isMember(map->name()))
-            spawns = db[map->name()];
-        else
-            db[map->name()] = Json::Value(Json::arrayValue);
-
-        Json::Value spawn;
-        spawn["name"] = mob_core->name();
-        spawn["area"] = Json::Value();
-        spawn["area"]["x0"] = x0;
-        spawn["area"]["x1"] = x1;
-        spawn["area"]["y0"] = y0;
-        spawn["area"]["y1"] = y1;
-        spawn["count"] = count;
-        spawn["rezen time"] = rezen;
-        db[map->name()].append(spawn);
-    }
-    ifstream.close();
-
-    std::ofstream ofstream;
-    ofstream.open("db/mob_spawn.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db);
-    ofstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::convert_class_file(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    std::string line;
-    Json::Value db;
-    while(std::getline(ifstream, line))
-    {
-        if(isdigit(line[0]) == false)
-            continue;
-
-        std::stringstream sstream(line);
-
-        std::string class_id_str;
-        std::getline(sstream, class_id_str, '\t');
-        uint8_t class_id = std::stoi(class_id_str);
-
-        std::string class_name;
-        switch(class_id)
-        {
-        case 0:
-            class_name = "평민";
-            break;
-        case 1:
-            class_name = "전사";
-            break;
-        case 2:
-            class_name = "도적";
-            break;
-        case 3:
-            class_name = "주술사";
-            break;
-        case 4:
-            class_name = "도사";
-            break;
-        }
-        //const std::string* class_name = this->class2name(class_id, 0);
-        //if(class_name == NULL)
-        //  throw std::runtime_error("cannot find id");
-
-        std::string level_str;
-        std::getline(sstream, level_str, '\t');
-        uint8_t level = std::stoi(level_str);
-
-        std::string require_exp_str;
-        std::getline(sstream, require_exp_str, '\t');
-        uint32_t require_exp = std::strtoul(require_exp_str.c_str(), nullptr, 0);
-
-        if(db.isMember(class_id_str) == false)
-        {
-            db[class_id_str] = Json::Value();
-            db[class_id_str]["levels"] = Json::Value(Json::arrayValue);
-            db[class_id_str]["promotions"] = Json::Value(Json::arrayValue);
-
-            switch(class_id)
-            {
-            case 0:
-                db[class_id_str]["promotions"].append("평민");
-                break;
-
-            case 1:
-                db[class_id_str]["promotions"].append("전사");
-                db[class_id_str]["promotions"].append("검객");
-                db[class_id_str]["promotions"].append("검제");
-                db[class_id_str]["promotions"].append("검황");
-                db[class_id_str]["promotions"].append("검성");
-                break;
-
-            case 2:
-                db[class_id_str]["promotions"].append("도적");
-                db[class_id_str]["promotions"].append("자객");
-                db[class_id_str]["promotions"].append("진검");
-                db[class_id_str]["promotions"].append("귀객");
-                db[class_id_str]["promotions"].append("태성");
-                break;
-
-            case 3:
-                db[class_id_str]["promotions"].append("주술사");
-                db[class_id_str]["promotions"].append("술사");
-                db[class_id_str]["promotions"].append("현사");
-                db[class_id_str]["promotions"].append("현인");
-                db[class_id_str]["promotions"].append("현자");
-                break;
-
-            case 4:
-                db[class_id_str]["promotions"].append("도사");
-                db[class_id_str]["promotions"].append("도인");
-                db[class_id_str]["promotions"].append("명인");
-                db[class_id_str]["promotions"].append("진인");
-                db[class_id_str]["promotions"].append("진선");
-                break;
-            }
-        }
-
-        Json::Value json_ability;
-        json_ability["exp"] = require_exp;
-        json_ability["strength"] = 0;
-        json_ability["intelligence"] = 0;
-        json_ability["dexteritry"] = 0;
-        json_ability["hp"] = 0;
-        json_ability["mp"] = 0;
-
-        std::stringstream comment_stream;
-        comment_stream << "// Level " << std::to_string(level);
-        db[class_id_str]["levels"].append(json_ability).setComment(comment_stream.str(), Json::CommentPlacement::commentAfterOnSameLine);
-    }
-
-    ifstream.close();
-
-    Json::Value db_array(Json::arrayValue);
-    std::stringstream comment_stream;
-    for(auto i = db.begin(); i != db.end(); i++)
-    {
-        comment_stream.str("");
-        comment_stream << "// class id " << i.key().asString();
-        db_array.append((*i)).setComment(comment_stream.str(), Json::CommentPlacement::commentAfterOnSameLine);
-    }
-
-
-    std::ofstream ofstream;
-    ofstream.open("db/class.json");
-
-    Json::StyledWriter writer;
-    ofstream << writer.write(db_array);
-    ofstream.close();
-
-    return true;
-}
-
-bool fb::game::acceptor::load_maps(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value json_maps;
-    Json::Reader reader;
-    if(reader.parse(ifstream, json_maps) == false)
-        return false;
-    ifstream.close();
-
-    
-    char fname[256] = {0, };
-    for(auto i = json_maps.begin(); i != json_maps.end(); i++)
-    {
-        Json::Value json = *i;
-
-        uint16_t            id      = std::stoi(i.key().asString());
-        uint16_t            parent  = std::stoi(json["parent"].asString());
-        uint8_t             bgm     = json["bgm"].asInt();
-        std::string         name    = json["name"].asString();
-
-        map::effects        effect;
-        if(json.isMember("effect") == false)
-            effect = map::effects::NO_EFFECT;
-        else if(json["effect"].asString() == "hot wave")
-            effect = map::effects::HOT_WAVE;
-        else if(json["effect"].asString() == "shipwreck")
-            effect = map::effects::SHIPWRECT;
-        else
-            effect = map::effects::NO_EFFECT;
-
-        map::options option = map::options::NO_OPTION;
-        if(json["option"]["build in"].asBool())
-            option = (map::options)(option | map::options::BUILD_IN);
-
-        if(json["option"]["enabled talk"].asBool() == false)
-            option = (map::options)(option | map::options::DISABLE_TALK);
-
-        if(json["option"]["enabled whisper"].asBool() == false)
-            option = (map::options)(option | map::options::DISABLE_WHISPER);
-
-        if(json["option"]["enabled magic"].asBool() == false)
-            option = (map::options)(option | map::options::DISABLE_MAGIC);
-
-        if(json["option"]["hunting ground"].asBool())
-            option = (map::options)(option | map::options::HUNTING_GROUND);
-
-        if(json["option"]["enabled pk"].asBool())
-            option = (map::options)(option | map::options::ENABLE_PK);
-
-        if(json["option"]["enabled die penalty"].asBool())
-            option = (map::options)(option | map::options::DISABLE_DIE_PENALTY);
-
-        sprintf(fname, "map/%06d.map", id);
-        std::ifstream ifstream_map(fname, std::ios::binary);
-        if(ifstream_map.is_open() == false)
-            continue;
-
-        std::vector<char> map_buffer(std::istreambuf_iterator<char>(ifstream_map), {});
-        ifstream_map.close();
-
-        try
-        {
-            map* created_map = new map(id, parent, bgm, name, option, effect, map_buffer.data(), map_buffer.size());
-            //this->convert_block_file(created_map, "block");
-
-            sprintf(fname, "map/%06d.block", id);
-            std::ifstream ifstream_block(fname);
-            if(ifstream_block.is_open() == false)
-                throw std::runtime_error("cannot load block file");
-
-            Json::Reader reader;
-            Json::Value block_json;
-            if(reader.parse(ifstream_block, block_json) == false)
-                throw std::runtime_error("cannot parse block data");
-
-            for(auto i = block_json.begin(); i != block_json.end(); i++)
-                created_map->block((*i)["x"].asInt(), (*i)["y"].asInt(), true);
-
-            ifstream_block.close();
-            this->_maps.insert(std::make_pair(id, created_map));
-        }
-        catch(std::exception e)
-        {
-            std::cout << e.what() << std::endl;
-        }
-    }
-    
-    return true;
-}
-
-bool fb::game::acceptor::load_items(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value json_items;
-    Json::Reader reader;
-    if(reader.parse(ifstream, json_items) == false)
-        return false;
-    ifstream.close();
-
-
-    for(auto i = json_items.begin(); i != json_items.end(); i++)
-    {
-        Json::Value         json            = *i;
-
-        uint32_t            code            = std::stoi(i.key().asString());
-        std::string         name            = json["name"].asString();
-        std::string         types           = json["type"].asString();
-        
-        uint16_t            icon            = json["icon"].asInt() + 0xBFFF;
-        uint8_t             color           = json["color"].asInt();
-
-        bool                trade           = json["tradable"].asBool();
-        std::string         action_script   = json["action script"].asString();
-        
-        uint32_t            price           = json["price"].asInt();
-        uint32_t            entrust         = json["entrust price"].asInt();
-
-        std::string         tooltip         = json["tooltip"].asString();
-        std::string         desc            = json["desc"].asString();
-
-        bool                equipment       = types == "weapon" || types == "armor" || types == "helmet" || types == "ring" || types == "auxiliary" || types == "arrow";
-
-        fb::game::item::item_limit limit;
-        if(json.isMember("limit"))
-        {
-            if(json["limit"].isMember("level"))
-                limit.level = json["limit"]["level"].asInt();
-
-            if(json["limit"].isMember("strength"))
-                limit.strength = json["limit"]["strength"].asInt();
-
-            if(json["limit"].isMember("dexteritry"))
-                limit.dexteritry = json["limit"]["dexteritry"].asInt();
-
-            if(json["limit"].isMember("intelligence"))
-                limit.intelligence = json["limit"]["intelligence"].asInt();
-
-            if(json["limit"].isMember("cls"))
-                limit.cls = json["limit"]["cls"].asInt();
-
-            if(json["limit"].isMember("promotion"))
-                limit.promotion = json["limit"]["promotion"].asInt();
-
-            if(json["limit"].isMember("sex"))
-            {
-                std::string sex_limit = json["limit"]["sex"].asString();
-                if(sex_limit == "man")
-                {
-                    limit.sex = fb::game::sex::MAN;
-                }
-                else if(sex_limit == "woman")
-                {
-                    limit.sex = fb::game::sex::WOMAN;
-                }
-                else
-                {
-                    std::cout << "invalid sex limit : " << name << std::endl;
-                    continue;
-                }
-            }
-        }
-
-        fb::game::item::penalties penalty;
-        if(json.isMember("die penelty") == false)
-        {
-            penalty = fb::game::item::penalties::NONE;
-        }
-        else if(json["die penelty"].asString() == "drop")
-        {
-            penalty = fb::game::item::penalties::DROP;
-        }
-        else if(json["die penelty"].asString() == "destroy")
-        {
-            penalty = fb::game::item::penalties::DESTRUCTION;
-        }
-        else
-        {
-            std::cout << "invalid die penelty : " << name << std::endl;
-            continue;
-        }
-
-        std::string active_script;
-        std::string inactive_script;
-        if(json.isMember("script"))
-        {
-            if(json["script"].isMember("active"))
-                active_script = json["script"]["active"].asString();
-
-            if(json["script"].isMember("inactive"))
-                inactive_script = json["script"]["inactive"].asString();
-        }
-
-        uint32_t look = 0;
-        uint32_t durability = 0;
-        bool repairable = true;
-        uint32_t repair_price = 0;
-        uint32_t rename_price = 0;
-
-        uint32_t damage_small_min = 0, damage_small_max = 0;
-        uint32_t damage_large_min = 0, damage_large_max = 0;
-        uint8_t hit = 0, damage = 0;
-        uint8_t sound = 0;
-        uint8_t strength = 0, intelligence = 0, dexteritry = 0;
-        uint32_t base_hp = 0, base_mp = 0;
-        float hp_percent = 0.0f, mp_percent = 0.0f;
-        uint8_t healing_cycle = 0;
-        std::string spell;
-
-        int16_t defensive_physical = 0, defensive_magical = 0;
-
-        if(json.isMember("equipment option"))
-        {
-            look = json["equipment option"]["look"].asInt();
-            durability = json["equipment option"]["durability"].asInt();
-            repairable = json["equipment option"]["repairable"].asBool();
-            repair_price = json["equipment option"]["repair price"].asInt();
-            rename_price = json["equipment option"]["rename price"].asInt();
-
-            if(json["equipment option"].isMember("damage range"))
-            {
-                damage_small_min = json["equipment option"]["damage range"]["small"]["min"].asInt();
-                damage_small_max = json["equipment option"]["damage range"]["small"]["max"].asInt();
-
-                damage_large_min = json["equipment option"]["damage range"]["large"]["min"].asInt();
-                damage_large_max = json["equipment option"]["damage range"]["large"]["max"].asInt();
-            }
-
-            hit = json["equipment option"]["hit"].asInt();
-            damage = json["equipment option"]["damage"].asInt();
-            strength = json["equipment option"]["strength"].asInt();
-            intelligence = json["equipment option"]["intelligence"].asInt();
-            base_hp = json["equipment option"]["hp"].asInt();
-            base_mp = json["equipment option"]["mp"].asInt();
-            sound = json["equipment option"]["sound"].asInt();
-            hp_percent = json["equipment option"]["hp percent"].asInt();
-            mp_percent = json["equipment option"]["mp percent"].asInt();
-            healing_cycle = json["equipment option"]["healing cycle"].asInt();
-            spell = json["equipment option"]["spell"].asString();
-            
-            if(json["equipment option"].isMember("defensive"))
-            {
-                defensive_physical = json["equipment option"]["defensive"]["physical"].asInt();
-                defensive_magical = json["equipment option"]["defensive"]["magical"].asInt();
-            }
-        }
-        
-
-        fb::game::item::core*               item = NULL;
-        if(types == "stuff")
-        {
-            bool            available       = json["available"].asBool();       // default인 경우 일반아이템, bundle인 경우 일반번들
-            std::string     bundle_type     = json["bundle type"].asString();
-
-            item = new fb::game::item::core(code, name, icon, color);
-            if(json.isMember("capacity"))
-                item->capacity(json["capacity"].asInt());
-
-            // price, limit, die_penalty, trade, entrust_price, tooltip, desc, active_script
-        }
-        else if(types == "consume")
-        {
-            std::string     bundle_type     = json["bundle type"].asString();   // package인 경우 동동주형식, bundle 형식인 경우 일반번들
-            uint32_t        capacity        = json["capacity"].asInt();
-
-            if(bundle_type == "package")
-                item = new fb::game::pack::core(code, name, icon, color, capacity);
-            else
-                item = new fb::game::consume::core(code, name, icon, color, std::max(capacity, uint32_t(1)));
-        }
-        else if(types == "weapon")
-        {
-            item = new fb::game::weapon::core(code, name, icon, look, color);
-        }
-        else if(types == "armor")
-        {
-            item = new fb::game::armor::core(code, name, icon, look, color);
-        }
-        else if(types == "helmet")
-        {
-            item = new fb::game::helmet::core(code, name, icon, look, color);
-        }
-        else if(types == "shield")
-        {
-            item = new fb::game::shield::core(code, name, icon, look, color);
-        }
-        else if(types == "ring")
-        {
-            item = new fb::game::ring::core(code, name, icon, look, color);
-        }
-        else if(types == "auxiliary")
-        {
-            item = new fb::game::auxiliary::core(code, name, icon, look, color);
-        }
-        else if(types == "arrow")
-        {
-            item = new fb::game::arrow::core(code, name, icon, look, color);
-        }
-        else
-        {
-            std::cout << "cannot load item : " << name << std::endl;
-            continue;
-        }
-
-        item->price(price);
-        item->limit(limit);
-        item->penalty(penalty);
-        item->trade(trade);
-        item->entrust(entrust);
-        item->desc(desc);
-        item->active_script(active_script);
-
-        if(item->attr() & item::attrs::ITEM_ATTR_EQUIPMENT)
-        {
-            auto equipment = static_cast<fb::game::equipment::core*>(item);
-            equipment->durability(durability);
-            equipment->repairable(repairable);
-            equipment->repair_price(repair_price);
-            equipment->rename_price(rename_price);
-            equipment->hit(hit);
-            equipment->damage(damage);
-            equipment->strength(strength);
-            equipment->intelligence(intelligence);
-            equipment->dexteritry(dexteritry);
-            equipment->base_hp(base_hp);
-            equipment->base_mp(base_mp);
-            equipment->hp_percentage(hp_percent);
-            equipment->mp_percentage(mp_percent);
-            equipment->healing_cycle(healing_cycle);
-            equipment->defensive_physical(defensive_physical);
-            equipment->defensive_magical(defensive_magical);
-        }
-
-        if(item->attr() & item::attrs::ITEM_ATTR_WEAPON)
-        {
-            auto weapon = static_cast<fb::game::weapon::core*>(item);
-            weapon->damage_small(damage_small_min, damage_small_max);
-            weapon->damage_large(damage_large_min, damage_large_max);
-            weapon->sound(sound);
-            weapon->spell(spell);
-        }
-
-        this->_items.insert(std::make_pair(code, item));
-    }
-
-    return true;
-}
-
-bool fb::game::acceptor::load_npc(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value json_npc;
-    Json::Reader reader;
-    if(reader.parse(ifstream, json_npc) == false)
-        return false;
-    ifstream.close();
-
-    for(auto i = json_npc.begin(); i != json_npc.end(); i++)
-    {
-        uint32_t            key = std::stoi(i.key().asString());
-        Json::Value         json = *i;
-
-        std::string         name = json["name"].asString();
-        uint16_t            look = json["look"].asInt() + 0x7FFF;
-        uint8_t             color = json["color"].asInt();
-
-        this->_npcs.insert(std::make_pair(key, new npc::core(key, name, look, color)));
-    }
-
-    return true;
-}
-
-bool fb::game::acceptor::load_npc_spawn(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value json_npc;
-    Json::Reader reader;
-    if(reader.parse(ifstream, json_npc) == false)
-        return false;
-    ifstream.close();
-
-
-    for(auto i = json_npc.begin(); i != json_npc.end(); i++)
-    {
-        auto                json = *i;
-        auto                npc_name = json["npc"].asString();
-        auto                core = this->name2npc(npc_name);
-        if(core == NULL)
-        {
-            std::cout << "존재하지 않는 NPC입니다. : " << npc_name << std::endl;
-            continue;
-        }
-
-
-        auto                map_name = json["map"].asString();
-        auto                map = this->name2map(map_name);
-        if(map == NULL)
-        {
-            std::cout << "존재하지 않는 맵입니다. : " << map_name << std::endl;
-            continue;
-        }
-
-        auto                direction_str = json["direction"].asString();
-        auto                direction = fb::game::direction::BOTTOM;
-        if(direction_str == "top")
-            direction = fb::game::direction::TOP;
-        else if(direction_str == "right")
-            direction = fb::game::direction::RIGHT;
-        else if(direction_str == "bottom")
-            direction = fb::game::direction::BOTTOM;
-        else if(direction_str == "left")
-            direction = fb::game::direction::LEFT;
-        else
-        {
-            std::cout << "NPC의 방향이 올바르지 않습니다. : " << npc_name << std::endl;
-            continue;
-        }
-
-        point16_t           position(json["position"]["x"].asInt(), json["position"]["y"].asInt());
-        auto                script = json["script"].asString();
-
-        auto                cloned = new npc(core);
-        cloned->direction(direction);
-        cloned->map(map, position);
-        cloned->script(script);
-    }
-    return true;
-}
-
-bool fb::game::acceptor::load_mob(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value json_npc;
-    Json::Reader reader;
-    if(reader.parse(ifstream, json_npc) == false)
-        return false;
-    ifstream.close();
-
-
-    for(auto i = json_npc.begin(); i != json_npc.end(); i++)
-    {
-        uint16_t            key = std::stoi(i.key().asString());
-        Json::Value         json = *i;
-
-        std::string         name = json["name"].asString();
-        uint16_t            look = json["look"].asInt() + 0x7FFF;
-        uint8_t             color = json["color"].asInt();
-        uint16_t            damage_min = json["damage"]["min"].asInt();
-        uint16_t            damage_max = json["damage"]["max"].asInt();
-        uint16_t            defensive_physical = json["defensive"]["physical"].asInt();
-        uint16_t            defensive_magical = json["defensive"]["magical"].asInt();
-        uint32_t            experience = json["experience"].asInt();
-        uint32_t            base_hp = json["hp"].asInt();
-        uint32_t            speed = json["speed"].asInt();
-
-        std::string         size_str = json["size"].asString();
-        mob::sizes          size;
-        if(size_str == "small")
-            size = mob::sizes::SMALL;
-        else if(size_str == "large")
-            size = mob::sizes::LARGE;
-        else
-        {
-            std::cout << "invalid mob size : " << key << std::endl;
-            continue;
-        }
-
-        std::string         offensive = json["offensive"].asString();
-        mob::offensive_type offensive_type;
-        if(offensive == "containment")
-            offensive_type = mob::offensive_type::CONTAINMENT;
-        else if(offensive == "counter")
-            offensive_type = mob::offensive_type::COUNTER;
-        else if(offensive == "none")
-            offensive_type = mob::offensive_type::NONE;
-        else if(offensive == "non move")
-            offensive_type = mob::offensive_type::NON_MOVE;
-        else if(offensive == "run away")
-            offensive_type = mob::offensive_type::RUN_AWAY;
-        else
-        {
-            std::cout << "invalid mob offensive type : " << key << std::endl;
-            continue;
-        }
-
-        std::string script_attack, script_die;
-        if(json.isMember("script"))
-        {
-            if(json["script"].isMember("attack"))
-                script_attack = json["script"]["attack"].asString();
-
-            if(json["script"].isMember("die"))
-                script_die = json["script"]["die"].asString();
-        }
-
-        auto mob = new fb::game::mob::core(key, name, look, color, base_hp, 0);
-        mob->defensive_physical(defensive_physical);
-        mob->defensive_magical(defensive_magical);
-        mob->experience(experience);
-        mob->damage_min(damage_min);
-        mob->damage_max(damage_max);
-        mob->offensive(offensive_type);
-        mob->size(size);
-        mob->speed(speed);
-        mob->script_attack(script_attack);
-        mob->script_die(script_die);
-
-        this->_mobs.insert(std::make_pair(key, mob));
-    }
-
-    return true;
-}
-
-bool fb::game::acceptor::load_mob_spawn(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-    ifstream.close();
-
-
-    for(auto db_i = db.begin(); db_i != db.end(); db_i++)
-    {
-        std::string         map_name = db_i.key().asString();
-        Json::Value         spawns = *db_i;
-
-        fb::game::map* map = this->name2map(map_name);
-        if(map == NULL)
-            continue;
-
-        for(auto spawn_i = spawns.begin(); spawn_i != spawns.end(); spawn_i++)
-        {
-            Json::Value     spawn = *spawn_i;
-
-            auto            core = this->name2mob(spawn["name"].asString());
-            if(core == NULL)
-                continue;
-
-            uint16_t        x0 = spawn["area"]["x0"].asInt();
-            uint16_t        x1 = spawn["area"]["x1"].asInt();
-            uint16_t        y0 = spawn["area"]["y0"].asInt();
-            uint16_t        y1 = spawn["area"]["y1"].asInt();
-            uint16_t        count = spawn["count"].asInt();
-            uint32_t        rezen = spawn["rezen time"].asInt();
-
-            for(int i = 0; i < count; i++)
-            {
-                mob*        mob = static_cast<fb::game::mob*>(core->make());
-                mob->spawn_point(x0, y0);
-                mob->spawn_size(x1, y1);
-                mob->respawn_time(rezen);
-                mob->map(map);
-            }
-        }
-    }
-    return true;
-}
-
-bool fb::game::acceptor::load_class(const std::string& db_fname)
-{
-    std::ifstream ifstream;
-    ifstream.open(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-    ifstream.close();
-
-    for(auto i1 = db.begin(); i1 != db.end(); i1++)
-    {
-        uint8_t class_id = i1.key().asInt();
-        class_data* cdata = new class_data();
-        
-        Json::Value levels = (*i1)["levels"];
-        for(auto i2 = levels.begin(); i2 != levels.end(); i2++)
-        {
-            uint32_t key = i2.key().asInt();
-
-            Json::Value ability = *i2;
-
-            std::cout << ability.toStyledString() << std::endl;
-
-            level_ability* allocated = new level_ability(ability["strength"].asInt(),
-                ability["intelligence"].asInt(),
-                ability["dexteritry"].asInt(),
-                ability["hp"].asInt(),
-                ability["mp"].asInt(),
-                ability["exp"].asInt64());
-
-            cdata->add_level_ability(allocated);
-        }
-
-        Json::Value promotions = (*i1)["promotions"];
-        for(auto i2 = promotions.begin(); i2 != promotions.end(); i2++)
-        {
-            cdata->add_promotion((*i2).asString());
-        }
-
-
-        this->_classes.push_back(cdata);
-    }
-
-    return true;
-}
-
-bool fb::game::acceptor::load_drop_item(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-
-    for(auto i1 = db.begin(); i1 != db.end(); i1++)
-    {
-        std::string mob_name = i1.key().asString();
-        auto mob_core = this->name2mob(mob_name);
-        if(mob_core == NULL)
-        {
-            std::cout << "잘못된 이름입니다. : " << mob_name << std::endl;
-            continue;
-        }
-
-        if(mob_core->name() == "다람쥐")
-            std::cout << std::endl;
-
-        Json::Value items = (*i1);
-        for(auto i2 = items.begin(); i2 != items.end(); i2++)
-        {
-            float percentage = (*i2)["percentage"].asFloat();
-            std::string item_name = (*i2)["item"].asString();
-            auto item_core = this->name2item(item_name);
-
-            if(item_core == NULL)
-            {
-                std::cout << "잘못된 아이템 이름입니다. : " << mob_name << std::endl;
-                continue;
-            }
-
-            mob_core->dropitem_add(item_core, percentage);
-        }
-    }
-
-    ifstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::load_warp(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-
-    for(auto i1 = db.begin(); i1 != db.end(); i1++)
-    {
-        std::string map_name = i1.key().asString();
-        fb::game::map* map = this->name2map(map_name);
-        if(map == NULL)
-            continue;
-
-        Json::Value warps = *i1;
-        for(auto i2 = warps.begin(); i2 != warps.end(); i2++)
-        {
-            std::string next_map_name = (*i2)["map"].asString();
-            fb::game::map* next_map = this->name2map(next_map_name);
-            if(next_map == NULL)
-                continue;
-
-            const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
-            const point16_t after((*i2)["after"]["x"].asInt(), (*i2)["after"]["y"].asInt());
-            const range8_t limit((*i2)["limit"]["min"].asInt(), (*i2)["limit"]["max"].asInt());
-
-            map->warp_add(next_map, before, after, limit);
-        }
-    }
-
-    ifstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::load_itemmix(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-
-    for(auto i1 = db.begin(); i1 != db.end(); i1++)
-    {
-        
-        float           percentage = (*i1)["percentage"].asDouble();
-        auto            itemmix = new fb::game::itemmix(percentage);
-
-        auto require = (*i1)["require"];
-        for(auto i2 = require.begin(); i2 != require.end(); i2++)
-        {
-            auto        item = this->name2item((*i2)["item"].asString());
-            uint32_t    count = (*i2)["count"].asInt();
-            itemmix->require_add(item, count);
-        }
-
-        auto success = (*i1)["success"];
-        for(auto i2 = success.begin(); i2 != success.end(); i2++)
-        {
-            auto        item = this->name2item((*i2)["item"].asString());
-            uint32_t    count = (*i2)["count"].asInt();
-            itemmix->success_add(item, count);
-        }
-
-        auto failed = (*i1)["failed"];
-        for(auto i2 = failed.begin(); i2 != failed.end(); i2++)
-        {
-            auto        item = this->name2item((*i2)["item"].asString());
-            uint32_t    count = (*i2)["count"].asInt();
-            itemmix->failed_add(item, count);
-        }
-
-        this->_itemmixes.push_back(itemmix);
-    }
-
-    ifstream.close();
-    return true;
-}
-
-bool fb::game::acceptor::load_spell(const std::string& db_fname)
-{
-    std::ifstream ifstream(db_fname);
-    if(ifstream.is_open() == false)
-        return false;
-
-    Json::Value db;
-    Json::Reader reader;
-    if(reader.parse(ifstream, db) == false)
-        return false;
-
-    for(auto i = db.begin(); i != db.end(); i++)
-    {
-        uint16_t            id = std::stoi(i.key().asString());
-        const auto          data = (*i);
-
-        const auto          name = data["name"].asString();
-        uint8_t             type = data["type"].asInt();
-
-        std::string         cast, uncast, concast, message;
-        if (data.isMember("cast"))
-            cast = data["cast"].asString();
-
-        if (data.isMember("uncast"))
-            uncast = data["uncast"].asString();
-
-        if (data.isMember("concast"))
-            concast = data["concast"].asString();
-
-        if (data.isMember("message"))
-            message = data["message"].asString();
-
-        this->_spells.insert(std::make_pair(id, new spell(type, name, cast, uncast, concast, message)));
-    }
-
-    ifstream.close();
-    return true;
-}
-
-fb::game::map* fb::game::acceptor::name2map(const std::string& name) const
-{
-    for(auto pair : this->_maps)
-    {
-        if(pair.second->name() == name)
-            return pair.second;
-    }
-
-    return NULL;
-}
-
-fb::game::npc::core* fb::game::acceptor::name2npc(const std::string& name) const
-{
-    for(auto pair : this->_npcs)
-    {
-        if(pair.second->name() == name)
-            return pair.second;
-    }
-
-    return NULL;
-}
-
-fb::game::mob::core* fb::game::acceptor::name2mob(const std::string& name) const
-{
-    for(auto pair : this->_mobs)
-    {
-        if (pair.second->name() == name)
-            return pair.second;
-    }
-
-    return NULL;
-}
-
-fb::game::item::core* fb::game::acceptor::name2item(const std::string& name) const
-{
-    for(auto item : this->_items)
-    {
-        if(item.second->name() == name)
-            return item.second;
-    }
-
-    return NULL;
-}
-
-const std::string* fb::game::acceptor::class2name(uint8_t cls, uint8_t promotion) const
-{
-    try
-    {
-        return &this->_classes[cls]->promotions[promotion];
-    }
-    catch(std::exception& e)
-    {
-        return NULL;
-    }
-}
-
-bool fb::game::acceptor::name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id) const
-{
-    for(int i1 = 0; i1 < this->_classes.size(); i1++)
-    {
-        for(int i2 = 0; i2 < this->_classes[i1]->promotions.size(); i2++)
-        {
-            if(this->_classes[i1]->promotions[i2] != name)
-                continue;
-
-            *class_id = i1;
-            *promotion_id = i2;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-itemmix* fb::game::acceptor::find_itemmix(const std::vector<item*>& items)
-{
-    for(const auto itemmix : this->_itemmixes)
-    {
-        if(itemmix->require.size() != items.size())
-            continue;
-
-        if(itemmix->matched(items))
-            return itemmix;
-    }
-
-    return NULL;
-}
-
-uint32_t fb::game::acceptor::required_exp(uint8_t class_id, uint8_t level)
-{
-    try
-    {
-        return this->_classes[class_id]->level_abilities[level]->exp;
-    }
-    catch(std::exception& e)
-    {
-        return 0;
-    }
-}
+{ }
 
 bool acceptor::handle_connected(fb::game::session& session)
 {
-    session.map(this->_maps[315], point16_t(6, 8));
+    auto& maps = db::maps();
+    session.map(maps[315], point16_t(6, 8));
     session.name("채승현");
     session.look(0x61);
     session.color(0x0A);
@@ -1952,21 +53,24 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.hp(0xFFFFFFFF);
     session.title("갓승현 타이틀");
 
-    session.item_add(static_cast<fb::game::item*>(this->_items[1015]->make())); // 정화의방패
-    session.item_add(static_cast<fb::game::item*>(this->_items[243]->make())); // 도씨검
-    session.item_add(static_cast<fb::game::item*>(this->_items[698]->make())); // 기모노
-    session.item_add(static_cast<fb::game::item*>(this->_items[3014]->make())); // 도토리
-    session.item_add(static_cast<fb::game::item*>(this->_items[2200]->make())); // 동동주
+    auto& items = db::items();
+    session.item_add(static_cast<fb::game::item*>(items[1015]->make())); // 정화의방패
+    session.item_add(static_cast<fb::game::item*>(items[243]->make())); // 도씨검
+    session.item_add(static_cast<fb::game::item*>(items[698]->make())); // 기모노
+    session.item_add(static_cast<fb::game::item*>(items[3014]->make())); // 도토리
+    session.item_add(static_cast<fb::game::item*>(items[2200]->make())); // 동동주
 
     // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-    session.weapon(static_cast<fb::game::weapon*>(this->_items[15]->make())); // 초심자의 목도
-    session.helmet(static_cast<fb::game::helmet*>(this->_items[1340]->make()));
-    session.ring(static_cast<fb::game::ring*>(this->_items[1689]->make()));
-    session.ring(static_cast<fb::game::ring*>(this->_items[1689]->make()));
-    session.auxiliary(static_cast<fb::game::auxiliary*>(this->_items[2135]->make()));
-    session.auxiliary(static_cast<fb::game::auxiliary*>(this->_items[2129]->make()));
+    session.weapon(static_cast<fb::game::weapon*>(items[15]->make())); // 초심자의 목도
+    session.helmet(static_cast<fb::game::helmet*>(items[1340]->make()));
+    session.ring(static_cast<fb::game::ring*>(items[1689]->make()));
+    session.ring(static_cast<fb::game::ring*>(items[1689]->make()));
+    session.auxiliary(static_cast<fb::game::auxiliary*>(items[2135]->make()));
+    session.auxiliary(static_cast<fb::game::auxiliary*>(items[2129]->make()));
 
-    for(auto pair : this->_spells)
+
+    auto& spells = db::spells();
+    for(auto pair : spells)
     {
         if(session.spell_add(pair.second) == -1)
             break;
@@ -1982,7 +86,7 @@ bool acceptor::handle_disconnected(fb::game::session& session)
 
 void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto pair : this->_maps)
+    for(auto pair : db::maps())
         pair.second->handle_timer(elapsed_milliseconds);
 }
 
@@ -1994,16 +98,6 @@ fb::ostream fb::game::acceptor::make_time_stream()
            .write_u8(hours%24)  // hours
            .write_u8(0x00)      // Unknown
            .write_u8(0x00);     // Unknown
-
-    return ostream;
-}
-
-fb::ostream fb::game::acceptor::make_message_stream(const std::string& message, message::type types)
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x0A)
-        .write_u8(types)
-		.write(message, true);
 
     return ostream;
 }
@@ -2031,7 +125,7 @@ fb::ostream fb::game::acceptor::make_dialog_stream(const std::string& message, b
         .write_u32(0x00000001)
         .write_u8(enabled_prev)
         .write_u8(enabled_next)
-		.write(message, true);
+        .write(message, true);
 
     return ostream;
 }
@@ -2080,8 +174,6 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
     if(life->alive() == false)
         return false;
 
-    point16_t                   before = life->position();
-    fb::ostream                 move_stream = life->make_move_stream(direction);
     bool                        result = false;
 
     try
@@ -2097,9 +189,8 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
         for(auto session : hidden_sessions)
             this->send_stream(*session, life->make_hide_stream(), scope::SELF);
 
-        std::vector<fb::game::session*>& sessions = life->map()->sessions();
-        for(auto session : sessions)
-            this->send_stream(*session, move_stream, scope::SELF);
+        for(const auto session : life->map()->sessions())
+            this->send_stream(*session, life->make_move_stream(direction), scope::SELF);
 
         result = true;
     }
@@ -2165,7 +256,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
             throw session::require_class_exception();
 
         // 경험치는 최대 3.3%로 제한하여 얻는다.
-        uint32_t require = session.max_level() ? 0xFFFFFFFF : this->required_exp(session.cls(), session.level()+1) - this->required_exp(session.cls(), session.level());
+        uint32_t require = session.max_level() ? 0xFFFFFFFF : db::required_exp(session.cls(), session.level()+1) - db::required_exp(session.cls(), session.level());
 #if defined DEBUG | defined _DEBUG
         uint32_t limit_exp = require;
 #else
@@ -2174,28 +265,30 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
         session.experience_add(limit_exp);
 
         uint32_t exp = session.experience();
-        uint32_t next_exp = this->required_exp(session.cls(), session.level()+1);
+        uint32_t next_exp = db::required_exp(session.cls(), session.level()+1);
 
         if(exp >= next_exp && session.level_up())
         {
-            session.strength_up(this->_classes[session.cls()]->level_abilities[session.level()]->strength);
-            session.intelligence_up(this->_classes[session.cls()]->level_abilities[session.level()]->intelligence);
-            session.dexteritry_up(this->_classes[session.cls()]->level_abilities[session.level()]->dexteritry);
+            auto& classes = db::classes();
+
+            session.strength_up(classes[session.cls()]->level_abilities[session.level()]->strength);
+            session.intelligence_up(classes[session.cls()]->level_abilities[session.level()]->intelligence);
+            session.dexteritry_up(classes[session.cls()]->level_abilities[session.level()]->dexteritry);
             
-            session.base_hp_up(this->_classes[session.cls()]->level_abilities[session.level()]->base_hp + std::rand() % 10);
-            session.base_mp_up(this->_classes[session.cls()]->level_abilities[session.level()]->base_mp + std::rand() % 10);
+            session.base_hp_up(classes[session.cls()]->level_abilities[session.level()]->base_hp + std::rand() % 10);
+            session.base_mp_up(classes[session.cls()]->level_abilities[session.level()]->base_mp + std::rand() % 10);
 
             session.hp(session.base_hp());
             session.mp(session.base_mp());
 
-            sstream << "레벨이 올랐습니다.";
+            sstream << message::level::UP;
             this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
             this->send_stream(session, session.make_effet_stream(0x02), scope::PIVOT);
         }
         else
         {
             float percentage = 0.0f;
-            uint32_t prev_exp = this->required_exp(session.cls(), session.level());
+            uint32_t prev_exp = db::required_exp(session.cls(), session.level());
             if(exp > prev_exp)
                 percentage = ((exp - prev_exp) / float(next_exp - prev_exp)) * 100;
 
@@ -2209,7 +302,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
         sstream << e.what();
     }
 
-    this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 }
 
 bool acceptor::handle_login(fb::game::session& session)
@@ -2233,7 +326,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-    this->send_stream(session, this->make_message_stream("0시간 1분만에 바람으로", message::type::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, message::make_stream("0시간 1분만에 바람으로", message::type::MESSAGE_STATE), scope::SELF);
 
     this->send_stream(session, session.make_id_stream(), scope::SELF);
 
@@ -2311,12 +404,11 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
     if(session.position() != before)
         this->send_stream(session, session.make_position_stream(), scope::SELF);
 
-    std::vector<object*> show_objects, hide_objects;
+    std::vector<object*>            show_objects, hide_objects;
     std::vector<fb::game::session*> show_sessions, hide_sessions, shown_sessions, hidden_sessions;
-    if(session.movable_forward())
+    if(session.move_forward(&show_objects, &hide_objects, &show_sessions, &hide_sessions, NULL, NULL, &shown_sessions, &hidden_sessions))
     {
         this->send_stream(session, session.make_move_stream(), scope::PIVOT, true);
-        session.move_forward(&show_objects, &hide_objects, &show_sessions, &hide_sessions, NULL, NULL, &shown_sessions, &hidden_sessions);
     }
     else
     {
@@ -2326,7 +418,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
 
 
     // 워프 위치라면 워프한다.
-    const map::warp*        warp = map->warpable(session.position());
+    const auto              warp = map->warpable(session.position());
     if(warp != NULL)
     {
         this->handle_session_warp(session, warp);
@@ -2374,7 +466,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 {
     try
     {
-        session.state_assert(state(state::RIDING | state::GHOST));
+        session.state_assert(state::RIDING | state::GHOST);
 
         this->send_stream(session, session.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
         auto*               weapon = session.weapon();
@@ -2408,7 +500,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     return true;
@@ -2426,7 +518,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
         if(map == NULL)
             return false;
 
-        session.state_assert(state(state::GHOST | state::RIDING));
+        session.state_assert(state::GHOST | state::RIDING);
 
         
         // Do action : pick up
@@ -2456,7 +548,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
                 cash->chunk(remain); // 먹고 남은 돈으로 설정
 
                 if(remain != 0)
-                    this->send_stream(session, this->make_message_stream("더 이상 돈을 가질 수 없습니다.", message::type::MESSAGE_STATE), scope::SELF);
+                    this->send_stream(session, message::make_stream(message::money::FULL, message::type::MESSAGE_STATE), scope::SELF);
 
                 this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
                 this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
@@ -2491,7 +583,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     return true;
@@ -2535,7 +627,7 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 
     try
     {
-        session.state_assert(state(state::RIDING | state::GHOST));
+        session.state_assert(state::RIDING | state::GHOST);
 
         uint8_t                 updated_index = 0;
         auto                    slot(equipment::eq_slots::UNKNOWN_SLOT);
@@ -2588,11 +680,11 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
                 break;
             }
             sstream << item->name();
-            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 
             sstream.str(std::string());
             sstream << "갑옷 강도  " << session.defensive_physical() <<"  " << session.regenerative() << " S  " << session.defensive_magical();
-            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 
             return true;
         }
@@ -2614,7 +706,7 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
     }
 
     return true;
@@ -2628,7 +720,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 
     try
     {
-        session.state_assert(state(state::RIDING | state::GHOST));
+        session.state_assert(state::RIDING | state::GHOST);
 
         uint8_t             item_index = session.equipment_off(slot);
         if(item_index == -1)
@@ -2644,7 +736,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::PIVOT);
     }
 
     return true;
@@ -2654,7 +746,7 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
 {
     try
     {
-        session.state_assert(state(state::RIDING | state::GHOST));
+        session.state_assert(state::RIDING | state::GHOST);
 
         auto&               istream = session.in_stream();
         uint8_t             cmd = istream.read_u8();
@@ -2680,7 +772,7 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
     }
     catch(std::exception& e)
     { 
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     return true;
@@ -2690,7 +782,7 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 {
     try
     {
-        session.state_assert(state(state::RIDING | state::GHOST));
+        session.state_assert(state::RIDING | state::GHOST);
 
         auto                map = session.map();
         if(map == NULL)
@@ -2708,13 +800,13 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
         this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
-        this->send_stream(session, this->make_message_stream("돈을 버렸습니다.", message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(message::money::DROP, message::type::MESSAGE_STATE), scope::SELF);
 
         return true;
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
     }
 }
 
@@ -2727,7 +819,7 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
     std::vector<fb::game::session*> sessions = session.forward_sessions();
     for(auto i : sessions)
     {
-        this->send_stream(session, this->make_message_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
     std::vector<object*> objects = session.forward_objects(object::types::UNKNOWN);
@@ -2736,11 +828,11 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
         if(i->type() == fb::game::object::types::ITEM)
         {
             auto item = static_cast<fb::game::item*>(i);
-            this->send_stream(session, this->make_message_stream(item->name_styled(), message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(item->name_styled(), message::type::MESSAGE_STATE), scope::SELF);
         }
         else
         {
-            this->send_stream(session, this->make_message_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
         }
     }
 
@@ -2766,47 +858,48 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     {
     case options::RIDE:
     {
-        static auto         horse = this->name2mob("말");
-        if(horse == NULL)
+        static auto         horse_core = db::name2mob("말");
+        if(horse_core == NULL)
             break;
 
         try
         {
-            session.state_assert(state(state::GHOST | state::DISGUISE));
+            session.state_assert(state::GHOST | state::DISGUISE);
 
             object*         forward = NULL;
             std::string     message;
 
             if(session.state() == fb::game::state::RIDING)
             {
-                message = "말에서 내렸습니다.";
+                message = game::message::ride::ON;
                 session.state(fb::game::state::NORMAL);
 
-                auto forward_horse = static_cast<fb::game::mob*>(horse->make());
-                forward_horse->map(session.map(), session.forward());
-                forward_horse->heal();
-                this->send_stream(*forward_horse, forward_horse->make_show_stream(), scope::PIVOT, true);
+                auto horse = static_cast<fb::game::mob*>(horse_core->make());
+                horse->map(session.map(), session.position_forward());
+                horse->heal();
+                this->send_stream(*horse, horse->make_show_stream(), scope::PIVOT, true);
             }
             else
             {
                 forward = session.forward_object(object::types::MOB);
-                if(forward == NULL || forward->based() != horse)
-                    throw session::no_horse_exception();
+                if(forward == NULL || forward->based() != horse_core)
+                    throw session::no_conveyance_exception();
 
                 forward->map()->object_delete(forward);
                 this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
-                message = "말에 탔습니다.";
+                message = game::message::ride::OFF;
                 session.state(fb::game::state::RIDING);
 
+                forward->map()->object_delete(forward);
                 delete forward;
             }
 
             this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-            this->send_stream(session, this->make_message_stream(message, message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(message, message::type::MESSAGE_STATE), scope::SELF);
         }
         catch(std::exception& e)
         {
-            this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
         }
         return true;
     }
@@ -2860,7 +953,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     }
 
     sstream << ": " << (enabled ? "ON" : "OFF");
-    this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+    this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
     this->send_stream(session, session.make_option_stream(), scope::SELF);
 
@@ -2894,7 +987,7 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
     auto                    object = session.map()->object(fd);
     if(object != NULL) // object
     {
-        this->send_stream(session, this->make_message_stream(object->name(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(object->name(), message::type::MESSAGE_STATE), scope::SELF);
         return true;
     }
 
@@ -2943,7 +1036,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     
     try
     {
-        itemmix* itemmix = this->find_itemmix(items);
+        itemmix* itemmix = db::find_itemmix(items);
         if(itemmix == NULL)
             throw itemmix::no_match_exception();
 
@@ -2974,7 +1067,8 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
             }
         }
 
-        bool success = (std::rand() % 100) < itemmix->percentage;
+        bool                success = (std::rand() % 100) < itemmix->percentage;
+        std::string         message;
         if(success)
         {
             for(auto success : itemmix->success)
@@ -2985,7 +1079,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
-            throw std::runtime_error("성공하였습니다.");
+            message = game::message::mix::SUCCESS;
         }
         else
         {
@@ -2997,12 +1091,14 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
-            throw std::runtime_error("실패하였습니다.");
+            message = game::message::mix::FAILED;
         }
+
+        this->send_stream(session, message::make_stream(message, message::type::MESSAGE_STATE), scope::SELF);
     }
     catch(std::exception& e)
     { 
-        this->send_stream(session, this->make_message_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
+        this->send_stream(session, message::make_stream(e.what(), message::type::MESSAGE_STATE), scope::SELF);
         return true;
     }
 
@@ -3014,14 +1110,13 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 bool fb::game::acceptor::handle_trade(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-
     uint8_t                     cmd = istream.read_u8();
     uint8_t                     action = istream.read_u8();
     uint32_t                    fd = istream.read_u32();
 
-    fb::game::session*          partner = this->session(fd);            // 파트너
-    trade_system&               ts_mine = session.trade_system();       // 나의 거래시스템
-    trade_system&               ts_your = partner->trade_system();      // 상대방의 거래시스템
+    auto                        partner = this->session(fd);            // 파트너
+    auto&                       ts_mine = session.trade();       // 나의 거래시스템
+    auto&                       ts_your = partner->trade();      // 상대방의 거래시스템
 
     if(partner == NULL)
         return true;
@@ -3039,7 +1134,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         if(session.option(options::TRADE) == false)
         {
             // 내가 교환 거부중
-            this->send_stream(session, this->make_message_stream("교환 거부 상태입니다.", message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::REFUSED_BY_ME, message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -3047,8 +1142,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         {
             // 상대방이 교환 거부중
             std::stringstream sstream;
-            sstream << partner->name() << "님은 교환 거부 상태입니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+            sstream << partner->name() << message::trade::REFUSED_BY_PARTNER;
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -3062,15 +1157,15 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         {
             // 상대방이 이미 교환중
             std::stringstream sstream;
-            sstream << partner->name() << "님은 이미 교환 중입니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+            sstream << partner->name() << message::trade::PARTNER_ALREADY_TRADING;
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
         if(session.sight(*partner) == false)
         {
             // 상대방이 시야에서 보이지 않음
-            this->send_stream(session, this->make_message_stream("대상이 보이지 않습니다.", message::type::MESSAGE_STATE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::PARTNER_INVISIBLE, message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -3078,8 +1173,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         {
             // 상대방과의 거리가 너무 멈
             std::stringstream sstream;
-            sstream << partner->name() << "님과 너무 멀리 떨어져 있습니다.";
-            this->send_stream(session, this->make_message_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+            sstream << partner->name() << message::trade::PARTNER_TOO_FAR;
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
             break;
         }
 
@@ -3094,15 +1189,15 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
     case 1: // 아이템 올릴때
     {
-        uint8_t index = istream.read_u8() - 1;
-        fb::game::item* item = session.item(index);
+        uint8_t             index = istream.read_u8() - 1;
+        auto                item = session.item(index);
         if(item == NULL)
             return true;
 
         // 교환 불가능한 아이템 거래 시도
-        if(item->trade() == false)
+        if(item->trade_enabled() == false)
         {
-            this->send_stream(session, this->make_message_stream("교환이 불가능한 아이템입니다.", message::type::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::MESSAGE_TRADE), scope::SELF);
             break;
         }
 
@@ -3134,23 +1229,23 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     case 2: // 아이템 갯수까지 해서 올릴 때
     {
         // 이전에 올리려고 시도한 묶음 단위의 아이템
-        fb::game::item* selected = ts_mine.selected();
+        auto                selected = ts_mine.selected();
         if(selected == NULL)
             return false;
 
         // 올릴 갯수 (클라이언트가 입력한 값)
-        uint16_t count = istream.read_u16();
+        uint16_t            count = istream.read_u16();
         if(selected->count() < count)
         {
-            this->send_stream(session, this->make_message_stream("개수가 올바르지 않습니다.", message::type::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::INVALID_COUNT, message::type::MESSAGE_TRADE), scope::SELF);
             break;
         }
 
-        uint8_t index = session.item2index(selected->based<item::core>());
+        uint8_t             index = session.item2index(selected->based<item::file>());
         if(selected->count() == count)
         {
             // 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.
-            uint8_t trade_index = ts_mine.add(selected);
+            uint8_t         trade_index = ts_mine.add(selected);
             if(index != 0xFF)
             {
                 session.item_remove(index);
@@ -3164,10 +1259,10 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         {
             // 일부만 올리는 경우, 기존의 것에서 갯수를 깎고 새로 복사된 아이템을 거래 리스트로 옮긴다.
             selected->reduce(count);
-            item* cloned = selected->clone<fb::game::item>();
-            cloned->count(count);
+            auto            came_out = selected->clone<fb::game::item>();
+            came_out->count(count);
 
-            uint8_t trade_index = ts_mine.add(cloned);
+            uint8_t trade_index = ts_mine.add(came_out);
 
             this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
 
@@ -3180,11 +1275,11 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     case 3: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        uint32_t money = istream.read_u32();
+        uint32_t            money = istream.read_u32();
 
         // 입력한 금전 양을 계속해서 빼면 안된다.
         // 100전 입력한 경우 -1, -10, -100 이렇게 까여버림
-        uint32_t total = session.money() + ts_mine.money();
+        uint32_t            total = session.money() + ts_mine.money();
         if(money > total)
             money = total;
 
@@ -3206,17 +1301,21 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
             this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
+
         // 메시지 표시하고 거래종료
-        this->send_stream(session, ts_mine.make_close_stream("내가 교환을 취소했습니다."), scope::SELF);
+        this->send_stream(session, ts_mine.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
         ts_mine.end();
+
+
 
         // 거래리스트에 올렸던 아이템과 금전을 원상복귀시킨다.
         indices = ts_your.restore();
         this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
             this->send_stream(*partner, partner->make_update_item_slot_stream(i), scope::SELF);
+
         // 메시지 표시하고 거래종료
-        this->send_stream(*partner, ts_your.make_close_stream("상대방이 교환을 취소했습니다."), scope::SELF);
+        this->send_stream(*partner, ts_your.make_close_stream(message::trade::CANCELLED_BY_PARTNER), scope::SELF);
         ts_your.end();
         break;
     }
@@ -3233,8 +1332,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             {
                 // 나 혹은 상대가 거래리스트에 올라온 아이템이나 금전을 다 받을 수 없는 상황일 때
                 // 인벤토리가 가득 차거나, 더 이상 금전을 얻을 수 없는 경우
-                this->send_stream(session, ts_mine.make_close_stream("교환에 실패했습니다."), scope::SELF);
-                this->send_stream(*partner, ts_your.make_close_stream("교환에 실패했습니다."), scope::SELF);
+                this->send_stream(session, ts_mine.make_close_stream(message::trade::FAILED), scope::SELF);
+                this->send_stream(*partner, ts_your.make_close_stream(message::trade::FAILED), scope::SELF);
             }
             else
             {
@@ -3254,17 +1353,17 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
 
                 // 메시지 표시하고 거래 종료
-                this->send_stream(session, ts_mine.make_close_stream("교환에 성공했습니다."), scope::SELF);
+                this->send_stream(session, ts_mine.make_close_stream(message::trade::SUCCESS), scope::SELF);
                 ts_mine.end();
 
-                this->send_stream(*partner, ts_your.make_close_stream("교환에 성공했습니다."), scope::SELF);
+                this->send_stream(*partner, ts_your.make_close_stream(message::trade::SUCCESS), scope::SELF);
                 ts_your.end();
             }
         }
         else
         {
             // 상대방이 아직 교환확인을 누르지 않은 경우
-            this->send_stream(*partner, this->make_message_stream("상대방이 확인을 눌렀습니다.", message::type::MESSAGE_TRADE), scope::SELF);
+            this->send_stream(*partner, message::make_stream(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::MESSAGE_TRADE), scope::SELF);
         }
         break;
     }
@@ -3313,7 +1412,7 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
         ostream.write_u8(0x10 * i->nation())
             .write_u8(0x10 * i->promotion())
             .write_u8((&session == i) ? 0x88 : 0x0F)
-			.write(name, false);
+            .write(name, false);
     }
 
     this->send_stream(session, ostream, scope::SELF);
@@ -3339,6 +1438,7 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session)
 
 bool fb::game::acceptor::handle_board(fb::game::session& session)
 {
+    auto&                       board = db::board();
     auto&                       istream = session.in_stream();
     uint8_t                     cmd = istream.read_u8();
     uint8_t                     action = istream.read_u8();
@@ -3347,7 +1447,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
     {
     case 0x01: // section list
     {
-        this->send_stream(session, this->_board.make_sections_stream(), scope::SELF);
+        this->send_stream(session, board.make_sections_stream(), scope::SELF);
         break;
     }
 
@@ -3356,7 +1456,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
         uint16_t                section_id = istream.read_u16();
         uint16_t                offset = istream.read_u16();
 
-        this->send_stream(session, this->_board.make_articles_stream(section_id, offset), scope::SELF);
+        this->send_stream(session, board.make_articles_stream(section_id, offset), scope::SELF);
         break;
     }
 
@@ -3365,7 +1465,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
         uint16_t                section_id = istream.read_u16();
         uint16_t                article_id = istream.read_u16();
 
-        this->send_stream(session, this->_board.make_article_stream(section_id, article_id, session), scope::SELF);
+        this->send_stream(session, board.make_article_stream(section_id, article_id, session), scope::SELF);
         break;
     }
 
@@ -3374,7 +1474,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
         uint16_t                section_id = istream.read_u16();
         uint16_t                article_id = istream.read_u16();
 
-        this->send_stream(session, this->_board.make_delete_stream(section_id, article_id, session), scope::SELF);
+        this->send_stream(session, board.make_delete_stream(section_id, article_id, session), scope::SELF);
         break;
     }
 
@@ -3491,9 +1591,11 @@ void fb::game::acceptor::handle_containment_mob_action(fb::game::mob* mob)
 
 void fb::game::acceptor::handle_mob_action(uint64_t now)
 {
-    for(auto map_i = this->_maps.begin(); map_i != this->_maps.end(); map_i++)
+    auto&               maps = db::maps();
+
+    for(auto map_i = maps.begin(); map_i != maps.end(); map_i++)
     {
-        fb::game::map* map = map_i->second;
+        auto            map = map_i->second;
         const std::vector<object*>& objects = map->objects();
 
         for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
@@ -3533,7 +1635,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*> spawned_mobs;
-    for(auto pair : this->_maps)
+    for(auto pair : db::maps())
     {
         fb::game::map* map = pair.second;
         for(auto object : map->objects())
@@ -3600,18 +1702,4 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
     // 새로 보이는 세션들 보여줌
     for(auto i : session.shown_sessions())
         this->send_stream(session, i->make_visual_stream(false), scope::SELF);
-}
-
-fb::game::acceptor* fb::game::acceptor::instance()
-{
-    if(fb::game::acceptor::_instance == NULL)
-        fb::game::acceptor::_instance = new fb::game::acceptor(10021);
-
-    return fb::game::acceptor::_instance;
-}
-
-void fb::game::acceptor::release()
-{
-    if(fb::game::acceptor::_instance != NULL)
-        delete fb::game::acceptor::_instance;
 }

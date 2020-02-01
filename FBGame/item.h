@@ -21,6 +21,41 @@ class session;
 class item : public object
 {
 public:
+    typedef struct _trade
+    {
+    private:
+        bool _enabled;
+
+        friend class item;
+
+    public:
+        explicit _trade(bool enabled = true) : _enabled(enabled) {}
+
+    public:
+        bool enabled() const { return this->_enabled; }
+        void enabled(bool value) { this->_enabled = value; }
+    } trade;
+
+    typedef struct _entrust
+    {
+    private:
+        bool _enabled;
+        uint32_t _price;
+
+        friend class item;
+
+    public:
+        explicit _entrust(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
+
+    public:
+        bool enabled() const { return this->_enabled; }
+        void enabled(bool value) { this->_enabled = value; }
+        
+        uint32_t price() const { return this->_price; }
+        void price(uint32_t value) { this->_price = value; }
+    } entrust;
+
+public:
     DECLARE_EXCEPTION(full_inven_exception, "소지품이 꽉 찼습니다.")
 
 public:
@@ -84,32 +119,32 @@ public:
 
     public:
         _limit();
-        _limit(uint16_t level, uint16_t strength, uint16_t dexteritry, uint16_t intelligence, uint16_t cls, uint16_t promotion, fb::game::sex sex);
+        _limit(const _limit& right);
     } item_limit;
 
     static const item_limit         DEFAULT_LIMIT;
     static const uint32_t           MAX_SLOT = 52;
 
 public:
-    class core : public fb::game::object::core
+    class file : public fb::game::object::core
     {
     protected:
         uint32_t                    _price;
         item_limit                  _limit;
         penalties                   _penalty;
         uint16_t                    _capacity;
-        bool                        _trade;
+        item::trade                 _trade;
+        item::entrust               _entrust;
         bool                        _bundle;
-        uint32_t                    _entrust;
         std::string                 _tooltip, _desc;
         std::string                 _active_script;
 
         friend class fb::game::item;
 
     public:
-        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
-        core(const fb::game::object::core& core);
-        virtual ~core();
+        file(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
+        file(const fb::game::object::core& core);
+        virtual ~file();
 
     public:
         uint32_t                    price() const;
@@ -121,8 +156,11 @@ public:
         bool                        trade() const;
         void                        trade(bool value);
 
-        uint32_t                    entrust() const;
-        void                        entrust(uint32_t value);
+        bool                        entrust_enabled() const;
+        void                        entrust_enabled(bool value);
+
+        uint32_t                    entrust_price() const;
+        void                        entrust_price(uint32_t value);
 
         const item_limit&           limit() const;
         void                        limit(const item::item_limit& value);
@@ -144,7 +182,7 @@ protected:
     uint16_t                        _count;
 
 public:
-    item(const fb::game::item::core* core);
+    item(const fb::game::item::file* core);
     item(const item& right);
     virtual ~item();
 
@@ -166,8 +204,9 @@ public:
 public:
     uint32_t                        price() const;
     uint16_t                        capacity() const;
-    bool                            trade() const;
-    uint32_t                        entrust() const;
+    bool                            trade_enabled() const;
+    bool                            entrust_enabled() const;
+    uint32_t                        entrust_price() const;
     const item_limit&               limit() const;
     penalties                       penalty() const;
     const std::string&              desc() const;
@@ -190,7 +229,7 @@ public:
 class cash : public item
 {
 public:
-    class core : public fb::game::item::core
+    class core : public fb::game::item::file
     {
     public:
         core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
@@ -230,7 +269,7 @@ public:
 class consume : public item
 {
 public:
-    class core : public fb::game::item::core
+    class core : public fb::game::item::file
     {
     public:
         friend class consume;
@@ -261,7 +300,7 @@ public:
 class pack : public item
 {
 public:
-    class core : public fb::game::item::core
+    class core : public fb::game::item::file
     {
     private:
         uint16_t                    _durability;
@@ -308,15 +347,52 @@ public:
     enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 
 public:
-    class core : public fb::game::item::core
+    typedef struct _repair
+    {
+    private:
+        bool _enabled;
+        float _price;
+
+        friend class equipment;
+
+    public:
+        explicit _repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) {}
+
+    public:
+        bool enabled() const { return this->_enabled; }
+        void enabled(bool value) { this->_enabled = value; }
+
+        float price() const { return this->_price; }
+        void price(float value) { this->_price = value; }
+    } repair;
+
+    typedef struct _rename
+    {
+    private:
+        bool _enabled;
+        uint32_t _price;
+
+        friend class equipment;
+
+    public:
+        explicit _rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
+
+    public:
+        bool enabled() const { return this->_enabled; }
+        void enabled(bool value) { this->_enabled = value; }
+
+        uint32_t price() const { return this->_price; }
+        void price(uint32_t value) { this->_price = value; }
+    } rename;
+
+    class core : public fb::game::item::file
     {
     protected:
         uint16_t                    _dress;
         uint16_t                    _durability;
-        bool                        _repairable;
-        uint32_t                    _repair_price;
-        uint32_t                    _rename_price;
-        std::string                 _inactive_script;
+        equipment::repair           _repair;
+        equipment::rename           _rename;
+        std::string                 _dress_script, _undress_script;
 
         uint8_t                     _hit, _damage;
         uint8_t                     _strength, _intelligence, _dexteritry;
@@ -341,11 +417,14 @@ public:
         uint16_t                    durability() const;
         void                        durability(uint16_t value);
 
-        bool                        repairable() const;
-        void                        repairable(bool value);
+        bool                        repair_enabled() const;
+        void                        repair_enabled(bool value);
 
-        uint32_t                    repair_price() const;
-        void                        repair_price(uint32_t value);
+        float                       repair_price() const;
+        void                        repair_price(float value);
+
+        bool                        rename_enabled() const;
+        void                        rename_enabled(bool value);
 
         uint32_t                    rename_price() const;
         void                        rename_price(uint32_t value);
@@ -387,6 +466,12 @@ public:
         uint8_t                     healing_cycle() const;
         void                        healing_cycle(uint8_t value);
 
+        const std::string&          dress_script() const;
+        void                        dress_script(const std::string& value);
+
+        const std::string&          undress_script() const;
+        void                        undress_script(const std::string& value);
+
     };
 
 protected:
@@ -406,8 +491,10 @@ public:
     uint16_t                        durability() const;
     uint16_t                        durability_base() const;
 
-    bool                            repairable() const;
-    uint32_t                        repair_price() const;
+    bool                            repair_enabled() const;
+    float                           repair_price() const;
+
+    bool                            rename_enabled() const;
     uint32_t                        rename_price() const;
 
     int16_t                         defensive_physical() const;
@@ -667,11 +754,11 @@ private:
     typedef struct _element
     {
     public:
-        item::core*                 item;       // 재료 아이템
+        item::file*                 item;       // 재료 아이템
         uint32_t                    count;      // 갯수
 
     public:
-        _element(fb::game::item::core* item, uint32_t count) : item(item), count(count) {}
+        _element(fb::game::item::file* item, uint32_t count) : item(item), count(count) {}
         _element(const _element& right) : item(right.item), count(right.count) {}
     } element;
 
@@ -694,9 +781,9 @@ private:
     bool contains(const item* item) const;
 
 public:
-    void                            require_add(fb::game::item::core* item, uint32_t count);
-    void                            success_add(fb::game::item::core* item, uint32_t count);
-    void                            failed_add(fb::game::item::core* item, uint32_t count);
+    void                            require_add(fb::game::item::file* item, uint32_t count);
+    void                            success_add(fb::game::item::file* item, uint32_t count);
+    void                            failed_add(fb::game::item::file* item, uint32_t count);
     bool                            matched(const std::vector<item*>& items) const;
 } itemmix;
 

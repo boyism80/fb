@@ -9,85 +9,21 @@
 #include "item.h"
 #include "object.h"
 #include "spell.h"
+#include "trade.h"
+#include "group.h"
 
 namespace fb { namespace game {
 
 class map;
-class item;
-class session;
-
-class trade_system
-{
-private:
-    session*                _owner;
-    session*                _partner;
-    std::vector<item*>      _items;
-    item*                   _selected;
-    uint32_t                _money;
-    bool                    _locked;
-
-public:
-    trade_system(session& owner);
-    ~trade_system();
-
-private:
-    uint8_t                 contains_core(item* item) const;
-
-public:
-    session*                partner() const;
-
-    bool                    begin(session* partner);
-    bool                    end();
-    bool                    trading() const;
-
-    item*                   selected();
-    void                    select(item* item);
-
-    uint8_t                 add(item* item);
-    void                    money(uint32_t value);
-    uint32_t                money() const;
-    std::vector<uint8_t>    restore();
-    void                    flush(session& session, std::vector<uint8_t>& indices);
-    bool                    flushable(session& session) const;
-
-    bool                    lock() const;
-    void                    lock(bool value);
-
-public:
-    fb::ostream             make_show_stream(bool mine, uint8_t index) const;
-    fb::ostream             make_money_stream(bool mine) const;
-    fb::ostream             make_dialog_stream() const;
-    fb::ostream             make_bundle_stream() const;
-    fb::ostream             make_close_stream(const std::string& message) const;
-    fb::ostream             make_lock_stream() const;
-};
-
-
-class group_system
-{
-private:
-    session*                _leader;
-    std::vector<session*>   _members;
-
-public:
-    group_system(session& leader);
-    ~group_system();
-
-public:
-    bool                    add(session& session);
-    bool                    remove(session& session);
-};
-
-
 
 class session : public fb_session, public life, public life::core
 {
 public:
-    DECLARE_EXCEPTION(require_class_exception, "직업을 선택해야 합니다.")
-    DECLARE_EXCEPTION(ghost_exception, "귀신은 할 수 없습니다.")
-    DECLARE_EXCEPTION(ridding_exception, "말을 타고는 할 수 없습니다.")
-    DECLARE_EXCEPTION(no_horse_exception, "탈 것이 없습니다.")
-    DECLARE_EXCEPTION(disguise_exception, "변신 중에는 할 수 없습니다.")
+    DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
+    DECLARE_EXCEPTION(ghost_exception, message::exception::GHOST)
+    DECLARE_EXCEPTION(ridding_exception, message::exception::RIDDING)
+    DECLARE_EXCEPTION(no_conveyance_exception, message::exception::NO_CONVEYANCE)
+    DECLARE_EXCEPTION(disguise_exception, message::exception::DISGUISE)
 
 private:
     uint8_t                 _strength, _intelligence, _dexteritry;
@@ -117,8 +53,8 @@ private:
     ring*                   _rings[2];
     auxiliary*              _auxiliaries[2];
 
-    trade_system            _trade_system;
-    group_system*           _group;
+    trade                   _trade;
+    group*                  _group;
 
 public:
     session(SOCKET socket);
@@ -228,7 +164,7 @@ public:
     bool                    item_remove(uint8_t index);
     bool                    item_reduce(uint8_t index, uint16_t count);
     fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::eq_slots& slot);
-    uint8_t                 item2index(const fb::game::item::core* item) const;
+    uint8_t                 item2index(const fb::game::item::file* item) const;
     void                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index);
     uint8_t                 equipment_off(fb::game::equipment::eq_slots slot);
 
@@ -263,13 +199,14 @@ public:
     uint16_t                map(fb::game::map* map);
     uint16_t                map(fb::game::map* map, const point16_t position);
 
-    trade_system&           trade_system();
+    fb::game::trade&        trade();
 
-    fb::game::group_system* group_system() const;
-    bool                    group_enter(fb::game::group_system* gs);
+    fb::game::group*        group() const;
+    bool                    group_enter(fb::game::group* gs);
     bool                    group_leave();
 
     void                    state_assert(fb::game::state flags) const;
+    void                    state_assert(uint8_t flags) const;
 
 public:
     fb::ostream             make_id_stream() const;

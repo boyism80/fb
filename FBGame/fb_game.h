@@ -28,58 +28,12 @@ class acceptor : public fb_acceptor<fb::game::session>
 private:
     enum scope { SELF, PIVOT, MAP, GLOBAL };
 
-private:
-    static acceptor*                    _instance;
-
-private:
-    std::map<uint16_t, map*>            _maps;
-    std::map<uint16_t, item::core*>     _items;
-    std::map<uint16_t, npc::core*>      _npcs;
-    std::map<uint16_t, mob::core*>      _mobs;
-    std::map<uint16_t, spell*>          _spells;
-    std::vector<class_data*>            _classes;
-    std::vector<itemmix*>               _itemmixes;
-    board                               _board;
-
 public:
     acceptor(uint16_t port);
     ~acceptor();
 
 private:
-    bool                    convert_map_file(const std::string& db_fname = "db/map_db.txt");
-    bool                    convert_block_file(const map* map, const char* ext = "block");
-    bool                    convert_item_file(const std::string& db_fname = "db/item_db.txt");
-    bool                    convert_npc_file(const std::string& db_fname = "db/npc_db.txt");
-    bool                    convert_npc_spawn_file(const std::string& db_fname = "db/npcspawn.txt");
-    bool                    convert_mob_file(const std::string& db_fname = "db/mob_db.txt");
-    bool                    convert_mob_spawn_file(const std::string& db_fname = "db/mobspawn.txt");
-    bool                    convert_class_file(const std::string& db_fname = "db/level_db.txt");
-    bool                    load_maps(const std::string& db_fname = "db/map.json");
-    bool                    load_items(const std::string& db_fname = "db/item.json");
-    bool                    load_npc(const std::string& db_fname = "db/npc.json");
-    bool                    load_npc_spawn(const std::string& db_fname = "db/npc_spawn.json");
-    bool                    load_mob(const std::string& db_fname = "db/mob.json");
-    bool                    load_mob_spawn(const std::string& db_fname = "db/mob_spawn.json");
-    bool                    load_class(const std::string& db_fname = "db/class.json");
-    bool                    load_drop_item(const std::string& db_fname = "db/item_drop.json");
-    bool                    load_warp(const std::string& db_fname = "db/warp.json");
-    bool                    load_itemmix(const std::string& db_fname = "db/itemmix.json");
-    bool                    load_spell(const std::string& db_fname = "db/spell.json");
-
-public:
-    fb::game::map*          name2map(const std::string& name) const;
-    fb::game::npc::core*    name2npc(const std::string& name) const;
-    fb::game::mob::core*    name2mob(const std::string& name) const;
-    fb::game::item::core*   name2item(const std::string& name) const;
-    const std::string*      class2name(uint8_t cls, uint8_t promotion) const;
-    bool                    name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id) const;
-    itemmix*                find_itemmix(const std::vector<item*>& items);
-
-    uint32_t                required_exp(uint8_t class_id, uint8_t level);
-
-private:
     fb::ostream             make_time_stream();
-    fb::ostream             make_message_stream(const std::string& message, message::type types);
     fb::ostream             make_dialog_stream(const std::string& message, bool enabled_prev, bool enabled_next);
 
 public:
@@ -129,10 +83,6 @@ public:
     void                    handle_mob_action(uint64_t now);
     void                    handle_mob_respawn(uint64_t now);
     void                    handle_session_warp(fb::game::session& session, const map::warp* warp);
-
-public:
-    static acceptor*        instance();
-    static void             release();
 };
 
 } }

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "stream.h"
 
 #define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\
                                         {\
@@ -28,6 +29,57 @@ namespace message
         MESSAGE_STATE = 0x03,
         MESSAGE_TRADE = 0x08,
     };
+
+    namespace exception
+    {
+        static const std::string RIDDING = "말을 타고는 할 수 없습니다.";
+        static const std::string GHOST = "귀신은 할 수 없습니다.";
+        static const std::string REQUIRE_CLASS = "직업을 선택해야 합니다.";
+        static const std::string NO_CONVEYANCE = "탈 것이 없습니다.";
+        static const std::string DISGUISE = "변신 중에는 할 수 없습니다.";
+    };
+
+    namespace trade
+    {
+        static const std::string SUCCESS = "교환에 성공했습니다.";
+        static const std::string FAILED = "교환에 실패했습니다.";
+        static const std::string NOTIFY_LOCK_TO_PARTNER = "상대방이 확인을 눌렀습니다.";
+        static const std::string CANCELLED_BY_ME = "내가 교환을 취소했습니다.";
+        static const std::string CANCELLED_BY_PARTNER = "상대방이 교환을 취소했습니다.";
+        static const std::string INVALID_COUNT = "갯수가 올바르지 않습니다.";
+        static const std::string NOT_ALLOWED_TO_TRADE = "교환이 불가능한 아이템입니다.";
+        static const std::string REFUSED_BY_ME = "교환 거부 상태입니다.";
+        static const std::string REFUSED_BY_PARTNER = "님은 교환 거부 상태입니다.";
+        static const std::string PARTNER_ALREADY_TRADING = "님은 이미 교환 중입니다.";
+        static const std::string PARTNER_INVISIBLE = "대상이 보이지 않습니다.";
+        static const std::string PARTNER_TOO_FAR = "님과 너무 멀리 떨어져 있습니다.";
+    }
+
+    namespace mix
+    {
+        static const std::string SUCCESS = "성공하였습니다.";
+        static const std::string FAILED = "실패하였습니다.";
+    }
+
+    namespace ride
+    {
+        static const std::string ON = "말에 탔습니다.";
+        static const std::string OFF = "말에서 내렸습니다.";
+    }
+
+    namespace money
+    {
+        static const std::string DROP = "돈을 버렸습니다.";
+        static const std::string FULL = "더 이상 돈을 가질 수 없습니다.";
+    }
+
+    namespace level
+    {
+        static const std::string UP = "레벨이 올랐습니다";
+    }
+
+
+    fb::ostream             make_stream(const std::string& message, message::type types);
 }
 
 enum options : uint8_t

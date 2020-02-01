@@ -1,7 +1,6 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
-#include <Windows.h>
 #include "object.h"
 #include "item.h"
 
@@ -27,13 +26,13 @@ public:
     {
     public:
         float percentage;
-        const fb::game::item::core* item;
+        const fb::game::item::file* item;
 
     public:
         _drop() : percentage(0), item(NULL) {}
-        _drop(const fb::game::item::core* item, float percentage) : item(item), percentage(percentage) {}
+        _drop(const fb::game::item::file* item, float percentage) : item(item), percentage(percentage) {}
         _drop(const _drop& right) : percentage(right.percentage), item(right.item) {}
-    } drop;
+    } money;
 
     enum offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
 
@@ -48,7 +47,7 @@ public:
         sizes                   _size;
         uint32_t                _speed;
         std::string             _script_attack, _script_die;
-        std::vector<drop>       _items;
+        std::vector<money>       _items;
 
         friend class mob;
 
@@ -83,9 +82,9 @@ public:
         offensive_type          offensive() const;
         void                    offensive(offensive_type value);
 
-        void                    dropitem_add(const mob::drop& drop);
-        void                    dropitem_add(const fb::game::item::core* item, float percentage);
-        const std::vector<drop>& items() const;
+        void                    dropitem_add(const mob::money& money);
+        void                    dropitem_add(const fb::game::item::file* item, float percentage);
+        const std::vector<money>& items() const;
     };
 
 private:
@@ -140,7 +139,7 @@ public:
     void                    target(fb::game::session* value);
     fb::game::session*      autoset_target();
 
-    const std::vector<drop>& items() const;
+    const std::vector<money>& items() const;
 };
 
 } }

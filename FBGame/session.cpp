@@ -1,343 +1,10 @@
 #include "session.h"
 #include "map.h"
 #include "item.h"
-#include "fb_game.h"
+#include "db.h"
+
 using namespace fb::game;
 
-//
-// trade system
-//
-fb::game::trade_system::trade_system(session& owner) : 
-    _owner(&owner),
-    _selected(nullptr),
-    _money(0),
-    _locked(false),
-    _partner(nullptr)
-{
-}
-
-fb::game::trade_system::~trade_system()
-{
-}
-
-uint8_t fb::game::trade_system::contains_core(fb::game::item* item) const
-{
-    for(int i = 0; i < this->_items.size(); i++)
-    {
-        if(this->_items[i]->based() == item->based())
-            return i;
-    }
-
-    return 0xFF;
-}
-
-session* fb::game::trade_system::partner() const
-{
-    return this->_partner;
-}
-
-bool fb::game::trade_system::begin(session* partner)
-{
-    if(this->_partner != nullptr)
-        return false;
-
-    this->_partner = partner;
-    return true;
-}
-
-bool fb::game::trade_system::end()
-{
-    if(this->_partner == nullptr)
-        return false;
-
-    this->_partner = nullptr;
-    return true;
-}
-
-bool fb::game::trade_system::trading() const
-{
-    return this->_partner != nullptr;
-}
-
-item* fb::game::trade_system::selected()
-{
-    return this->_selected;
-}
-
-void fb::game::trade_system::select(fb::game::item* item)
-{
-    this->_selected = item;
-}
-
-uint8_t fb::game::trade_system::add(fb::game::item* item)
-{
-    if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
-    {
-        uint8_t exists = this->contains_core(item);
-        if(exists != 0xFF)
-        {
-            uint16_t count = this->_items[exists]->count() + item->count();
-            this->_items[exists]->count(count);
-            return exists;
-        }
-    }
-
-    this->_items.push_back(item);
-    return this->_items.size() - 1;
-}
-
-void fb::game::trade_system::money(uint32_t value)
-{
-    this->_money = value;
-}
-
-uint32_t fb::game::trade_system::money() const
-{
-    return this->_money;
-}
-
-std::vector<uint8_t> fb::game::trade_system::restore()
-{
-    std::vector<uint8_t> indices;
-    for(auto it = this->_items.begin(); it != this->_items.end(); it++)
-    {
-        fb::game::item* item = *it;
-
-        for(int i = 0; i < item::MAX_SLOT; i++)
-        {
-            fb::game::item* own_item = this->_owner->item(i);
-            if(own_item == nullptr)
-                continue;
-
-            if(!(own_item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
-                continue;
-
-            if(own_item->based() != item->based())
-                continue;
-
-            own_item->count(own_item->count() + item->count());
-            indices.push_back(i);
-
-            delete item;
-            item = nullptr;
-            break;
-        }
-
-        if(item == nullptr)
-            continue;
-
-        uint8_t index = this->_owner->item_add(item);
-        if(index != 0xFF)
-            indices.push_back(index);
-    }
-
-    this->_items.clear();
-
-    this->_owner->money_add(this->_money);
-    this->_money = 0;
-
-    this->_locked = false;
-    return indices;
-}
-
-void fb::game::trade_system::flush(session& session, std::vector<uint8_t>& indices)
-{
-    indices.clear();
-
-    for(auto item : this->_items)
-    {
-        indices.push_back(session.item_add(item));
-
-        if(item->empty())
-            delete item;
-    }
-    this->_items.clear();
-
-    session.money_add(this->_money);
-    this->_money = 0;
-
-    this->_locked = false;
-}
-
-bool fb::game::trade_system::flushable(session& session) const
-{
-    uint32_t before_money = session.money();
-    uint32_t remain = session.money_add(this->_money);
-    session.money(before_money);
-    
-    if(remain != 0)
-        return false;
-
-    uint8_t free_size = session.inventory_free_size();
-    for(int i = 0; i < item::MAX_SLOT; i++)
-    {
-        fb::game::item* item = session.item(i);
-        if(item == nullptr)
-            continue;
-
-        if(!(item->attr() & item::attrs::ITEM_ATTR_BUNDLE))
-            continue;
-
-        uint8_t contains_core = this->contains_core(item);
-        if(contains_core == 0xFF)
-            continue;
-
-        if(item->free_space() < this->_items[contains_core]->count())
-            return false;
-
-        free_size++;
-    }
-
-    if(free_size < this->_items.size())
-        return false;
-
-    return true;
-}
-
-bool fb::game::trade_system::lock() const
-{
-    return this->_locked;
-}
-
-void fb::game::trade_system::lock(bool value)
-{
-    this->_locked = value;
-}
-
-fb::ostream fb::game::trade_system::make_show_stream(bool mine, uint8_t index) const
-{
-    try
-    {
-        fb::ostream             ostream;
-        const auto				item = this->_items[index];
-
-        ostream.write_u8(0x42)
-            .write_u8(0x02)
-            .write_u8(mine ? 0x00 : 0x01)
-            .write_u8(index) // trade slot index
-            .write_u16(item->look())
-            .write_u8(item->color())
-			.write(item->name_trade())
-            .write_u8(0x00);
-
-        return ostream;
-    }
-    catch(std::exception& e)
-    {
-        return fb::ostream();
-    }
-}
-
-fb::ostream fb::game::trade_system::make_money_stream(bool mine) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x03)
-        .write_u8(mine ? 0x00 : 0x01)
-        .write_u32(this->_money)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade_system::make_dialog_stream() const
-{
-    fb::ostream             ostream;
-    const auto				class_name = acceptor::instance()->class2name(this->_owner->cls(), this->_owner->promotion());
-    if(class_name == nullptr)
-        return ostream;
-
-    std::stringstream sstream;
-    sstream << this->_owner->name() << '(' << class_name->c_str() << ')';
-
-    ostream.write_u8(0x42)
-        .write_u8(0x00)
-        .write_u32(this->_owner->id())
-		.write(sstream.str())
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade_system::make_bundle_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x01)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade_system::make_close_stream(const std::string& message) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x04)
-		.write(message, true)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade_system::make_lock_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x05)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-
-
-
-//
-// group system
-//
-fb::game::group_system::group_system(session& leader) : 
-    _leader(&leader)
-{
-    this->add(leader);
-}
-
-fb::game::group_system::~group_system()
-{
-    for(auto member : this->_members)
-        member->group_leave();
-}
-
-bool fb::game::group_system::add(session& session)
-{
-    if(this->_members.size() >= 8)
-        return false;
-
-    this->_members.push_back(&session);
-    return true;
-}
-
-bool fb::game::group_system::remove(session& session)
-{
-    auto i = std::find(this->_members.begin(), this->_members.end(), &session);
-    if(i == this->_members.end())
-        return false;
-
-    (*i)->group_leave();
-    this->_members.erase(i);
-    return true;
-}
-
-
-
-
-//
-// class session
-//
 session::session(SOCKET socket) : 
     fb_session(socket),
     life((life::core*)nullptr, socket, 0, 0, 0),
@@ -350,7 +17,7 @@ session::session(SOCKET socket) :
     _promotion(0),
     _money(0),
     _weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(NULL),
-    _trade_system(*this)
+    _trade(*this)
 {
     memset(this->_items, NULL, sizeof(this->_items));
     memset(this->_spells, NULL, sizeof(this->_items));
@@ -393,26 +60,6 @@ session::~session()
 
     delete this->_core;
 }
-
-//uint16_t fb::game::session::look() const
-//{
-//  return this->_look;
-//}
-
-//void fb::game::session::look(uint16_t value)
-//{
-//  this->_core->look(value);
-//}
-
-//uint8_t fb::game::session::color() const
-//{
-//  return this->_core->color();
-//}
-
-//void fb::game::session::color(uint16_t value)
-//{
-//  this->_core->color(value);
-//}
 
 const std::string& fb::game::session::name() const
 {
@@ -704,7 +351,7 @@ uint32_t fb::game::session::experience_remained() const
     if(this->_class == 0 && this->_level >= 5)
         return 0;
 
-    return fb::game::acceptor::instance()->required_exp(this->_class, this->_level+1) - this->experience();
+    return db::required_exp(this->_class, this->_level+1) - this->experience();
 }
 
 uint32_t fb::game::session::money() const
@@ -947,14 +594,14 @@ fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_i
     return item;
 }
 
-uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
+uint8_t fb::game::session::item2index(const fb::game::item::file* item) const
 {
     for(int i = 0; i < item::MAX_SLOT; i++)
     {
         if(this->_items[i] == nullptr)
             continue;
 
-        if(this->_items[i]->based<item::core>() == item)
+        if(this->_items[i]->based<item::file>() == item)
             return i;
     }
 
@@ -1276,17 +923,17 @@ uint16_t fb::game::session::map(fb::game::map* map, const point16_t position)
     return seq;
 }
 
-trade_system& fb::game::session::trade_system()
+fb::game::trade& fb::game::session::trade()
 {
-    return this->_trade_system;
+    return this->_trade;
 }
 
-fb::game::group_system* fb::game::session::group_system() const
+fb::game::group* fb::game::session::group() const
 {
     return this->_group;
 }
 
-bool fb::game::session::group_enter(fb::game::group_system* gs)
+bool fb::game::session::group_enter(fb::game::group* gs)
 {
     if(this->_group != nullptr)
         return false;
@@ -1314,6 +961,11 @@ void fb::game::session::state_assert(fb::game::state flags) const
 
     if((flags & state::DISGUISE) == state::DISGUISE && this->_state == state::DISGUISE)
         throw disguise_exception();
+}
+
+void fb::game::session::state_assert(uint8_t flags) const
+{
+    return this->state_assert(fb::game::state(flags));
 }
 
 fb::game::map* fb::game::session::map() const
@@ -1490,7 +1142,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
 
     const auto& name = this->name();
     ostream.write_u8(0x04) // head mark
-		.write(name, false); // name
+        .write(name, false); // name
 
     return ostream;
 }
@@ -1520,7 +1172,7 @@ fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
         .write_u8(index + 1)
         .write_u16(item->look())
         .write_u8(item->color())
-		.write(name, false)
+        .write(name, false)
         .write_u32(item->count())
         .write_u8(0x00)
         .write_u8(0x00);
@@ -1592,7 +1244,7 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
     ostream.write_u8(0x37)
         .write_u16(item->look())
         .write_u8(item->color())
-		.write(name, false);
+        .write(name, false);
 
     return ostream;
 }
@@ -1621,7 +1273,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8(this->hit())
         .write("클랜 정보") // 클랜정보 없음
         .write("클랜 타이틀") // 클랜 타이틀 없음
-		.write(this->_title);
+        .write(this->_title);
 
     std::string             group_message = "그룹 없음.";
     ostream.write(group_message);
@@ -1633,7 +1285,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     uint32_t remained_exp = this->experience_remained();
     ostream.write_u32(remained_exp);
 
-    const std::string*             class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
+    const std::string*             class_name = db::class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
 
@@ -1663,7 +1315,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)
-			.write(legend.content);
+            .write(legend.content);
     }
     ostream.write_u8(0x00);
 
@@ -1679,17 +1331,17 @@ fb::ostream fb::game::session::make_external_info_stream() const
     fb::ostream             ostream;
 
     ostream.write_u8(0x34)
-		.write(this->_title)
-		.write("클랜 타이틀")
-		.write("클랜 이름");
+        .write(this->_title)
+        .write("클랜 타이틀")
+        .write("클랜 이름");
 
     // 클래스 이름
-    const auto class_name = fb::game::acceptor::instance()->class2name(this->_class, this->_promotion);
+    const auto class_name = db::class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
 
-	ostream.write(*class_name)	// 직업
-		.write(this->_name);	// 이름
+    ostream.write(*class_name)  // 직업
+        .write(this->_name);    // 이름
 
     // 캐릭터 상태
     bool transform = false;
@@ -1751,7 +1403,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
     sstream << " r:오른손:" << (ring_r != nullptr ? ring_r->name() : "없음") << std::endl;
     sstream << " [:보조1 :" << (aux_l  != nullptr ? aux_l->name()  : "없음") << std::endl;
     sstream << " ]:보조2 :" << (aux_r  != nullptr ? aux_r->name()  : "없음") << std::endl;
-	ostream.write(sstream.str());
+    ostream.write(sstream.str());
 
 
     ostream.write_u32(this->id())
@@ -1765,7 +1417,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)
-			.write(legend.content);
+            .write(legend.content);
     }
     ostream.write_u8(0x00);
 
@@ -1796,7 +1448,7 @@ fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool
     ostream.write_u8(0x0D)
         .write_u8(shout)
         .write_u32(this->id())
-		.write(sstream.str());
+        .write(sstream.str());
 
     return ostream;
 }

@@ -156,7 +156,9 @@
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
     <ClCompile Include="board.cpp" />
+    <ClCompile Include="db.cpp" />
     <ClCompile Include="fb_game.cpp" />
+    <ClCompile Include="group.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="spell.cpp" />
     <ClCompile Include="main.cpp" />
@@ -166,6 +168,7 @@
     <ClCompile Include="npc.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="session.cpp" />
+    <ClCompile Include="trade.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\share\acceptor.h" />
@@ -175,7 +178,9 @@
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="board.h" />
+    <ClInclude Include="db.h" />
     <ClInclude Include="fb_game.h" />
+    <ClInclude Include="group.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="spell.h" />
     <ClInclude Include="map.h" />
@@ -184,6 +189,7 @@
     <ClInclude Include="object.h" />
     <ClInclude Include="session.h" />
     <ClInclude Include="mmo.h" />
+    <ClInclude Include="trade.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -50,6 +50,18 @@
     <Filter Include="Source Files\spell">
       <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\session">
+      <UniqueIdentifier>{9c0348dc-dbd9-40c4-b063-b7ed5f44ba7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\trade">
+      <UniqueIdentifier>{9355b608-aa86-4908-8344-3d3aeaa005b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\group">
+      <UniqueIdentifier>{01b52b79-b945-4fde-b4fd-6c1455ced530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\db">
+      <UniqueIdentifier>{9ad21ae0-9f62-4478-a5ee-747b056d113f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -76,9 +88,6 @@
     <ClCompile Include="item.cpp">
       <Filter>Source Files\item</Filter>
     </ClCompile>
-    <ClCompile Include="session.cpp">
-      <Filter>Source Files\mmo</Filter>
-    </ClCompile>
     <ClCompile Include="object.cpp">
       <Filter>Source Files\object</Filter>
     </ClCompile>
@@ -96,6 +105,18 @@
     </ClCompile>
     <ClCompile Include="spell.cpp">
       <Filter>Source Files\spell</Filter>
+    </ClCompile>
+    <ClCompile Include="session.cpp">
+      <Filter>Source Files\session</Filter>
+    </ClCompile>
+    <ClCompile Include="group.cpp">
+      <Filter>Source Files\group</Filter>
+    </ClCompile>
+    <ClCompile Include="trade.cpp">
+      <Filter>Source Files\trade</Filter>
+    </ClCompile>
+    <ClCompile Include="db.cpp">
+      <Filter>Source Files\db</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -126,9 +147,6 @@
     <ClInclude Include="item.h">
       <Filter>Source Files\item</Filter>
     </ClInclude>
-    <ClInclude Include="session.h">
-      <Filter>Source Files\mmo</Filter>
-    </ClInclude>
     <ClInclude Include="mmo.h">
       <Filter>Source Files\mmo</Filter>
     </ClInclude>
@@ -146,6 +164,18 @@
     </ClInclude>
     <ClInclude Include="spell.h">
       <Filter>Source Files\spell</Filter>
+    </ClInclude>
+    <ClInclude Include="session.h">
+      <Filter>Source Files\session</Filter>
+    </ClInclude>
+    <ClInclude Include="trade.h">
+      <Filter>Source Files\trade</Filter>
+    </ClInclude>
+    <ClInclude Include="group.h">
+      <Filter>Source Files\group</Filter>
+    </ClInclude>
+    <ClInclude Include="db.h">
+      <Filter>Source Files\db</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

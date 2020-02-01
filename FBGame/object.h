@@ -84,13 +84,9 @@ public:
 
 
     point16_t                   position() const;
-    bool                        position(uint16_t x, uint16_t y);
-    bool                        position(const point16_t position);
-    point16_t                   forward() const;
-    bool                        movable(fb::game::direction direction) const;
-    bool                        movable_forward() const;
-    bool                        move(fb::game::direction direction, std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
-    bool                        move_forward(std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
+    point16_t                   position_forward() const;
+    virtual bool                position(uint16_t x, uint16_t y);
+    virtual bool                position(const point16_t position);
 
     uint16_t                    x() const;
     bool                        x(uint16_t value);
@@ -177,9 +173,12 @@ public:
         object*                 make() const;
     };
 
+private:
+    point16_t                   _before;
+
 protected:
-    uint32_t                _hp, _mp;
-    fb::game::condition     _condition;
+    uint32_t                    _hp, _mp;
+    fb::game::condition         _condition;
 
 protected:
     life(const core* core);
@@ -187,48 +186,58 @@ protected:
     life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp);
     virtual ~life();
 
+private:
+    bool                        movable(fb::game::direction direction) const;
+    bool                        movable_forward() const;
+
 protected:
-    uint32_t                random_damage(uint32_t value, const fb::game::life& life) const;
+    uint32_t                    random_damage(uint32_t value, const fb::game::life& life) const;
 
 public:
-    virtual uint32_t        hp() const;
-    virtual void            hp(uint32_t value);
-    void                    heal(uint32_t value = 0xFFFFFFFF);
+    point16_t                   position() const;
+    bool                        position(uint16_t x, uint16_t y);
+    bool                        position(const point16_t position);
+    bool                        move(fb::game::direction direction, std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
+    bool                        move_forward(std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* hown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
 
-    virtual uint32_t        mp() const;
-    virtual void            mp(uint32_t value);
+    virtual uint32_t            hp() const;
+    virtual void                hp(uint32_t value);
+    void                        heal(uint32_t value = 0xFFFFFFFF);
 
-    virtual uint32_t        base_hp() const;
-    virtual uint32_t        base_mp() const;
+    virtual uint32_t            mp() const;
+    virtual void                mp(uint32_t value);
 
-    virtual uint32_t        experience() const;
+    virtual uint32_t            base_hp() const;
+    virtual uint32_t            base_mp() const;
 
-    virtual uint32_t        defensive_physical() const;
-    virtual uint32_t        defensive_magical() const;
+    virtual uint32_t            experience() const;
 
-    void                    hp_up(uint32_t value);
-    void                    hp_down(uint32_t value);
+    virtual uint32_t            defensive_physical() const;
+    virtual uint32_t            defensive_magical() const;
 
-    void                    mp_up(uint32_t value);
-    void                    mp_down(uint32_t value);
+    void                        hp_up(uint32_t value);
+    void                        hp_down(uint32_t value);
 
-    fb::game::condition     condition() const;
-    fb::game::condition     condition_add(fb::game::condition value);
-    fb::game::condition     condition_remove(fb::game::condition value);
-    bool                    condition_contains(fb::game::condition value) const;
+    void                        mp_up(uint32_t value);
+    void                        mp_down(uint32_t value);
 
-    bool                    alive() const;
-    void                    kill();
+    fb::game::condition         condition() const;
+    fb::game::condition         condition_add(fb::game::condition value);
+    fb::game::condition         condition_remove(fb::game::condition value);
+    bool                        condition_contains(fb::game::condition value) const;
+
+    bool                        alive() const;
+    void                        kill();
 
 public:
-    fb::ostream             make_move_stream() const;
-    fb::ostream             make_move_stream(fb::game::direction direction) const;
-    fb::ostream             make_direction_stream() const;
+    fb::ostream                 make_move_stream(bool from_before = true) const;
+    fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
+    fb::ostream                 make_direction_stream() const;
 
-    fb::ostream             make_action_stream(fb::game::action action, fb::game::duration duration) const;
+    fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration) const;
 
-    fb::ostream             make_show_hp_stream(uint32_t random_damage, bool critical) const;
-    fb::ostream             make_die_stream() const;
+    fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
+    fb::ostream                 make_die_stream() const;
 };
 
 } }

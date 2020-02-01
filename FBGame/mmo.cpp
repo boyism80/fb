@@ -30,3 +30,13 @@ void fb::game::class_data::add_promotion(const std::string& name)
 {
     this->promotions.push_back(name);
 }
+
+fb::ostream fb::game::message::make_stream(const std::string& message, message::type types)
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x0A)
+        .write_u8(types)
+        .write(message, true);
+
+    return ostream;
+}
