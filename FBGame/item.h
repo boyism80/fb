@@ -126,7 +126,7 @@ public:
     static const uint32_t           MAX_SLOT = 52;
 
 public:
-    class file : public fb::game::object::core
+    class core : public fb::game::object::core
     {
     protected:
         uint32_t                    _price;
@@ -142,9 +142,9 @@ public:
         friend class fb::game::item;
 
     public:
-        file(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
-        file(const fb::game::object::core& core);
-        virtual ~file();
+        core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
+        core(const fb::game::object::core& core);
+        virtual ~core();
 
     public:
         uint32_t                    price() const;
@@ -182,7 +182,7 @@ protected:
     uint16_t                        _count;
 
 public:
-    item(const fb::game::item::file* core);
+    item(const fb::game::item::core* core);
     item(const item& right);
     virtual ~item();
 
@@ -229,7 +229,7 @@ public:
 class cash : public item
 {
 public:
-    class core : public fb::game::item::file
+    class core : public fb::game::item::core
     {
     public:
         core(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
@@ -269,7 +269,7 @@ public:
 class consume : public item
 {
 public:
-    class core : public fb::game::item::file
+    class core : public fb::game::item::core
     {
     public:
         friend class consume;
@@ -300,7 +300,7 @@ public:
 class pack : public item
 {
 public:
-    class core : public fb::game::item::file
+    class core : public fb::game::item::core
     {
     private:
         uint16_t                    _durability;
@@ -385,7 +385,7 @@ public:
         void price(uint32_t value) { this->_price = value; }
     } rename;
 
-    class core : public fb::game::item::file
+    class core : public fb::game::item::core
     {
     protected:
         uint16_t                    _dress;
@@ -754,11 +754,11 @@ private:
     typedef struct _element
     {
     public:
-        item::file*                 item;       // 재료 아이템
+        item::core*                 item;       // 재료 아이템
         uint32_t                    count;      // 갯수
 
     public:
-        _element(fb::game::item::file* item, uint32_t count) : item(item), count(count) {}
+        _element(fb::game::item::core* item, uint32_t count) : item(item), count(count) {}
         _element(const _element& right) : item(right.item), count(right.count) {}
     } element;
 
@@ -781,9 +781,9 @@ private:
     bool contains(const item* item) const;
 
 public:
-    void                            require_add(fb::game::item::file* item, uint32_t count);
-    void                            success_add(fb::game::item::file* item, uint32_t count);
-    void                            failed_add(fb::game::item::file* item, uint32_t count);
+    void                            require_add(fb::game::item::core* item, uint32_t count);
+    void                            success_add(fb::game::item::core* item, uint32_t count);
+    void                            failed_add(fb::game::item::core* item, uint32_t count);
     bool                            matched(const std::vector<item*>& items) const;
 } itemmix;
 
