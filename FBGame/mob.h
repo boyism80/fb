@@ -26,11 +26,11 @@ public:
     {
     public:
         float percentage;
-        const fb::game::item::file* item;
+        const fb::game::item::core* item;
 
     public:
         _drop() : percentage(0), item(NULL) {}
-        _drop(const fb::game::item::file* item, float percentage) : item(item), percentage(percentage) {}
+        _drop(const fb::game::item::core* item, float percentage) : item(item), percentage(percentage) {}
         _drop(const _drop& right) : percentage(right.percentage), item(right.item) {}
     } money;
 
@@ -83,7 +83,7 @@ public:
         void                    offensive(offensive_type value);
 
         void                    dropitem_add(const mob::money& money);
-        void                    dropitem_add(const fb::game::item::file* item, float percentage);
+        void                    dropitem_add(const fb::game::item::core* item, float percentage);
         const std::vector<money>& items() const;
     };
 

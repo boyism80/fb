@@ -164,7 +164,7 @@ public:
     bool                    item_remove(uint8_t index);
     bool                    item_reduce(uint8_t index, uint16_t count);
     fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::eq_slots& slot);
-    uint8_t                 item2index(const fb::game::item::file* item) const;
+    uint8_t                 item2index(const fb::game::item::core* item) const;
     void                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index);
     uint8_t                 equipment_off(fb::game::equipment::eq_slots slot);
 

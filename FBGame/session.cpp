@@ -594,14 +594,14 @@ fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_i
     return item;
 }
 
-uint8_t fb::game::session::item2index(const fb::game::item::file* item) const
+uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
 {
     for(int i = 0; i < item::MAX_SLOT; i++)
     {
         if(this->_items[i] == nullptr)
             continue;
 
-        if(this->_items[i]->based<item::file>() == item)
+        if(this->_items[i]->based<item::core>() == item)
             return i;
     }
 

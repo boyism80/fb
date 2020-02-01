@@ -1241,7 +1241,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             break;
         }
 
-        uint8_t             index = session.item2index(selected->based<item::file>());
+        uint8_t             index = session.item2index(selected->based<item::core>());
         if(selected->count() == count)
         {
             // 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.

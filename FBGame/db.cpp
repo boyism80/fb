@@ -1,7 +1,7 @@
 #include "db.h"
 
 std::map<uint16_t, fb::game::map*>              fb::game::db::_maps;
-std::map<uint16_t, fb::game::item::file*>       fb::game::db::_items;
+std::map<uint16_t, fb::game::item::core*>       fb::game::db::_items;
 std::map<uint16_t, fb::game::npc::core*>        fb::game::db::_npcs;
 std::map<uint16_t, fb::game::mob::core*>        fb::game::db::_mobs;
 std::map<uint16_t, fb::game::spell*>            fb::game::db::_spells;
@@ -92,7 +92,7 @@ bool fb::game::db::load_map_blocks(uint16_t id, Json::Value& buffer)
     return true;
 }
 
-fb::game::item::file* fb::game::db::create_item(uint32_t id, const Json::Value& data)
+fb::game::item::core* fb::game::db::create_item(uint32_t id, const Json::Value& data)
 {
     std::string         types           = data["type"].asString();
     std::string         name            = data["name"].asString();
@@ -102,7 +102,7 @@ fb::game::item::file* fb::game::db::create_item(uint32_t id, const Json::Value& 
     if(types == "stuff")
     {
         uint16_t        capacity        = std::max(data["capacity"].asInt(), 1);
-        return new fb::game::item::file(id, name, icon, color, capacity);
+        return new fb::game::item::core(id, name, icon, color, capacity);
     }
 
     if(types == "consume")
@@ -301,7 +301,7 @@ bool fb::game::db::load_items(const std::string& db_fname)
 
     for(auto i = items.begin(); i != items.end(); i++)
     {
-        fb::game::item::file*   item = nullptr;
+        fb::game::item::core*   item = nullptr;
 
         try
         {
@@ -867,7 +867,7 @@ std::map<uint16_t, fb::game::map*>& fb::game::db::maps()
     return db::_maps;
 }
 
-std::map<uint16_t, fb::game::item::file*>& fb::game::db::items()
+std::map<uint16_t, fb::game::item::core*>& fb::game::db::items()
 {
     return db::_items;
 }
@@ -935,7 +935,7 @@ fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
     return NULL;
 }
 
-fb::game::item::file* fb::game::db::name2item(const std::string& name)
+fb::game::item::core* fb::game::db::name2item(const std::string& name)
 {
     for(auto item : db::_items)
     {

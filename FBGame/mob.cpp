@@ -104,7 +104,7 @@ void fb::game::mob::core::dropitem_add(const mob::money& money)
     this->_items.push_back(money);
 }
 
-void fb::game::mob::core::dropitem_add(const fb::game::item::file* item, float percentage)
+void fb::game::mob::core::dropitem_add(const fb::game::item::core* item, float percentage)
 {
     this->_items.push_back(money(item, percentage));
 }
