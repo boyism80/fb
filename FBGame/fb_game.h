@@ -34,7 +34,6 @@ public:
 
 private:
     fb::ostream             make_time_stream();
-    fb::ostream             make_dialog_stream(const std::string& message, bool enabled_prev, bool enabled_next);
 
 public:
     void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
@@ -83,6 +82,10 @@ public:
     void                    handle_mob_action(uint64_t now);
     void                    handle_mob_respawn(uint64_t now);
     void                    handle_session_warp(fb::game::session& session, const map::warp* warp);
+
+#if defined DEBUG | defined _DEBUG
+    bool                    handle_admin(fb::game::session& session, const std::string& message);
+#endif
 };
 
 } }

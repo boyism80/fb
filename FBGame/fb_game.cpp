@@ -102,34 +102,6 @@ fb::ostream fb::game::acceptor::make_time_stream()
     return ostream;
 }
 
-fb::ostream fb::game::acceptor::make_dialog_stream(const std::string& message, bool enabled_prev, bool enabled_next)
-{
-    fb::ostream             ostream;
-    uint16_t                look = 0xC012;
-    uint8_t                 color = 0x04;
-    uint8_t                 icon_type = look < 0xC000 ? 0x01 : 0x02;
-
-    ostream.write_u8(0x30)
-        .write_u8(0x00)
-        .write_u8(0x00)
-        .write_u8(0x00)
-        .write_u8(0x00)
-        .write_u16(0x01) // idÀÎµí
-        .write_u8(icon_type)
-        .write_u8(0x01) // fixed
-        .write_u16(look) // icon
-        .write_u8(color) // color
-        .write_u8(icon_type)
-        .write_u16(look) // icon
-        .write_u8(color) // color
-        .write_u32(0x00000001)
-        .write_u8(enabled_prev)
-        .write_u8(enabled_next)
-        .write(message, true);
-
-    return ostream;
-}
-
 void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
     switch(scope)
@@ -365,8 +337,6 @@ bool acceptor::handle_login(fb::game::session& session)
 
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
-
-    this->send_stream(session, this->make_dialog_stream("¾È³çÇÏ¼¼¿ä?", false, false), scope::SELF);
 
     return true;
 }
@@ -997,14 +967,14 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t						cmd = istream.read_u8();
-    uint16_t					position = istream.read_u16();
-    uint8_t						unknown1 = istream.read_u8();
-    uint8_t						unknown2 = istream.read_u8();
-    uint8_t						unknown3 = istream.read_u8();
-    uint8_t						slot = istream.read_u8() - 1;
+    uint8_t                     cmd = istream.read_u8();
+    uint16_t                    position = istream.read_u16();
+    uint8_t                     unknown1 = istream.read_u8();
+    uint8_t                     unknown2 = istream.read_u8();
+    uint8_t                     unknown3 = istream.read_u8();
+    uint8_t                     slot = istream.read_u8() - 1;
 
-    auto						item = session.item(slot);
+    auto                        item = session.item(slot);
     if(item == NULL)
         return false;
 
@@ -1016,16 +986,16 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t						cmd = istream.read_u8();
-    uint8_t						count = istream.read_u8();
+    uint8_t                     cmd = istream.read_u8();
+    uint8_t                     count = istream.read_u8();
     if(count > item::MAX_SLOT - 1)
         return false;
 
-    std::vector<item*>			items;
+    std::vector<item*>          items;
     for(int i = 0; i < count; i++)
     {
-        uint8_t					index = istream.read_u8() - 1;
-        auto					item = session.item(index);
+        uint8_t                 index = istream.read_u8() - 1;
+        auto                    item = session.item(index);
         if(item == NULL)
             return true;
 
@@ -1034,22 +1004,22 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     
     try
     {
-        auto					itemmix = db::find_itemmix(items);
+        auto                    itemmix = db::find_itemmix(items);
         if(itemmix == NULL)
             throw itemmix::no_match_exception();
 
-        uint8_t					free_size = session.inventory_free_size();
+        uint8_t                 free_size = session.inventory_free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
             throw item::full_inven_exception();
 
 
         for(auto require : itemmix->require)
         {
-            uint8_t				index = session.item2index(require.item);
+            uint8_t             index = session.item2index(require.item);
             if(index == 0xFF)
                 return true;
 
-            auto				item = session.item(index);
+            auto                item = session.item(index);
             item->reduce(require.count);
 
 
@@ -1071,10 +1041,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         {
             for(auto success : itemmix->success)
             {
-                auto		item = static_cast<fb::game::item*>(success.item->make());
+                auto        item = static_cast<fb::game::item*>(success.item->make());
                 item->count(success.count);
                 
-				uint8_t		index = session.item_add(item);
+                uint8_t     index = session.item_add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1084,10 +1054,10 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         {
             for(auto failed : itemmix->failed)
             {
-                auto		item = static_cast<fb::game::item*>(failed.item->make());
+                auto        item = static_cast<fb::game::item*>(failed.item->make());
                 item->count(failed.count);
                 
-				uint8_t		index = session.item_add(item);
+                uint8_t     index = session.item_add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1431,6 +1401,9 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session)
     istream.read(message, length);
     message[length] = 0;
 
+    if(this->handle_admin(session, message))
+        return true;
+
     this->send_stream(session, session.make_chat_stream(message, shout), shout ? scope::MAP : scope::PIVOT);
 
     return true;
@@ -1702,4 +1675,79 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
     // »õ·Î º¸ÀÌ´Â ¼¼¼Çµé º¸¿©ÁÜ
     for(auto i : session.shown_sessions())
         this->send_stream(session, i->make_visual_stream(false), scope::SELF);
+}
+
+bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::string& message)
+{
+    if(message[0] != '/')
+        return false;
+
+
+    auto npc = db::name2npc("³«¶û");
+    std::string command(message.begin() + 1, message.end());
+    if(command == "show short list")
+    {
+        std::vector<std::string> menus = {"°«", "½Â", "Çö"};
+        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´Ô Á¸°æÇÕ´Ï´Ù.", menus), scope::SELF);
+        return true;
+    }
+
+    if(command == "show long list")
+    {
+        std::vector<std::string> menus;
+        std::string message = "°«½ÂÇö´ÔÀº À§´ëÇÏ½Å °ÔÀÓ¼­¹ö °³¹ß°èÀÇ Å« º°ÀÌ½Ã´Ù.";
+        int i = 0;
+        int mod = 0;
+        for(auto c : message)
+        {
+            i++;
+            
+            if(c == ' ')
+                mod = int(!(bool(mod)));
+
+            if(i % 2 != mod)
+                continue;
+
+            menus.push_back(std::string(message.begin(), message.begin() + i));
+        }
+        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´Ô Á¸°æÇÕ´Ï´Ù.", menus), scope::SELF);
+        return true;
+    }
+
+    if(command == "show inventory items")
+    {
+        std::vector<uint8_t> slots;
+        for(int i = 0; i < item::MAX_SLOT; i++)
+        {
+            const auto item = session.item(i);
+            if(item == nullptr)
+                continue;
+
+            slots.push_back(i+1);
+        }
+        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´ÔÀÇ ÀÎº¥Åä¸®¸¦ º¸¿©µå¸³´Ï´Ù.", slots), scope::SELF);
+        return true;
+    }
+
+    if(command == "show item core list")
+    {
+        std::vector<item::core*> items;
+        int count = 0;
+        for(auto pair : db::items())
+        {
+            items.push_back(pair.second);
+            if(count++ > 100)
+                break;
+        }
+        this->send_stream(session, npc->make_dialog_stream("¾Æ½Ã¹ß ´Ù ÆÇ´Ù", items), scope::SELF);
+        return true;
+    }
+
+    if(command == "show question")
+    {
+        this->send_stream(session, npc->make_input_dialog_stream("What is your name?"), scope::SELF);
+        return true;
+    }
+
+    return false;
 }

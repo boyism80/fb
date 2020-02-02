@@ -15,6 +15,11 @@ fb::game::object::core::~core()
 {
 }
 
+uint8_t fb::game::object::core::dialog_look_type() const
+{
+    return this->look() > 0xBFFF ? 0x02 : 0x01;
+}
+
 const std::string& fb::game::object::core::name() const
 {
     return this->_name;
@@ -43,6 +48,104 @@ uint8_t fb::game::object::core::color() const
 void fb::game::object::core::color(uint8_t value)
 {
     this->_color = value;
+}
+
+fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x30)
+        .write_u8(0x00)     // unknown
+        .write_u8(0x00)     // unknown
+        .write_u32(map != nullptr ? map->id() : 0x01)
+        .write_u8(this->dialog_look_type())
+        .write_u8(0x01)
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u8(this->dialog_look_type())
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u32(0x01)
+        .write_u8(button_prev)
+        .write_u8(button_next)
+        .write(message, true);
+
+    return ostream;
+}
+
+fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x2F)
+        .write_u8(0x01)
+        .write_u8(0x04)
+        .write_u32(map ? map->id() : 0x01)
+        .write_u8(this->dialog_look_type())
+        .write_u8(0x01)
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u8(this->dialog_look_type())
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write(message, true);
+
+    ostream.write_u16(menus.size());
+    for(int i = 0; i < menus.size(); i++)
+    {
+        ostream.write(menus[i])
+            .write_u16(i);
+    }
+
+    ostream.write_u8(0x00);
+    return ostream;
+}
+
+fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x2F)
+        .write_u8(0x05)
+        .write_u8(0x10)
+        .write_u32(map ? map->id() : 0x01)
+        .write_u8(this->dialog_look_type())
+        .write_u8(0x01)
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u8(this->dialog_look_type())
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write(message, true)
+        .write_u16(0xFFFF)
+        .write_u8(item_slots.size());
+
+    for(auto item_slot : item_slots)
+        ostream.write_u8(item_slot);
+    ostream.write_u8(0x00);
+
+    return ostream;
+}
+
+fb::ostream fb::game::object::core::make_input_dialog_stream(const std::string& message, fb::game::map* map) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x2F)
+        .write_u8(0x03)
+        .write_u8(0x01)
+        .write_u32(map ? map->id() : 0x01)
+        .write_u8(this->dialog_look_type())
+        .write_u8(0x01)
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u8(this->dialog_look_type())
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write(message, true)
+        .write_u8(0x00);
+
+    return ostream;
 }
 
 
@@ -625,6 +728,26 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
         .write_u8(0x00);
 
     return ostream;
+}
+
+fb::ostream fb::game::object::make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const
+{
+    return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
+}
+
+fb::ostream fb::game::object::make_dialog_stream(const std::string& message, const std::vector<std::string>& menus) const
+{
+    return this->_core->make_dialog_stream(message, menus, this->_map);
+}
+
+fb::ostream fb::game::object::make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots) const
+{
+    return this->_core->make_dialog_stream(message, item_slots, this->_map);
+}
+
+fb::ostream fb::game::object::make_input_dialog_stream(const std::string& message, fb::game::map* map) const
+{
+    return this->_core->make_input_dialog_stream(message, this->_map);
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
