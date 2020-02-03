@@ -103,8 +103,6 @@ public:
     ~mob();
 
 public:
-    object::types           type() const;
-
     uint16_t                damage_min() const;
     uint16_t                damage_max() const;
     mob::sizes              size() const;

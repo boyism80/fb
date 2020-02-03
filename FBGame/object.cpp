@@ -20,6 +20,11 @@ uint8_t fb::game::object::core::dialog_look_type() const
     return this->look() > 0xBFFF ? 0x02 : 0x01;
 }
 
+fb::game::object::types fb::game::object::core::type() const
+{
+    return types::UNKNOWN;
+}
+
 const std::string& fb::game::object::core::name() const
 {
     return this->_name;
@@ -73,85 +78,10 @@ fb::ostream fb::game::object::core::make_dialog_stream(const std::string& messag
     return ostream;
 }
 
-fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x2F)
-        .write_u8(0x01)
-        .write_u8(0x04)
-        .write_u32(map ? map->id() : 0x01)
-        .write_u8(this->dialog_look_type())
-        .write_u8(0x01)
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write_u8(this->dialog_look_type())
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write(message, true);
-
-    ostream.write_u16(menus.size());
-    for(int i = 0; i < menus.size(); i++)
-    {
-        ostream.write(menus[i])
-            .write_u16(i);
-    }
-
-    ostream.write_u8(0x00);
-    return ostream;
-}
-
-fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x2F)
-        .write_u8(0x05)
-        .write_u8(0x10)
-        .write_u32(map ? map->id() : 0x01)
-        .write_u8(this->dialog_look_type())
-        .write_u8(0x01)
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write_u8(this->dialog_look_type())
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write(message, true)
-        .write_u16(0xFFFF)
-        .write_u8(item_slots.size());
-
-    for(auto item_slot : item_slots)
-        ostream.write_u8(item_slot);
-    ostream.write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::core::make_input_dialog_stream(const std::string& message, fb::game::map* map) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x2F)
-        .write_u8(0x03)
-        .write_u8(0x01)
-        .write_u32(map ? map->id() : 0x01)
-        .write_u8(this->dialog_look_type())
-        .write_u8(0x01)
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write_u8(this->dialog_look_type())
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write(message, true)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 
 
 // fb::game::object
-fb::game::object::object(const core* core, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
+fb::game::object::object(const fb::game::object::core* core, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
     _core(core),
     _id(id),
     _position(position),
@@ -200,7 +130,7 @@ uint8_t fb::game::object::color() const
 
 fb::game::object::types fb::game::object::type() const
 {
-    return object::types::UNKNOWN;
+    return this->_core->type();
 }
 
 fb::game::point16_t fb::game::object::position() const
@@ -513,10 +443,8 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
 
 std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::direction direction, fb::game::object::types type) const
 {
-    std::vector<fb::game::object*> list;
-
-    fb::game::map* map = this->_map;
-    if(map == NULL)
+    std::vector<object*>    list;
+    if(this->_map == NULL)
         return list;
 
 
@@ -540,10 +468,10 @@ std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::directio
         break;
     }
 
-    if(map->existable(front) == false)
+    if(this->_map->existable(front) == false)
         return list;
 
-    for(auto object : map->objects())
+    for(auto object : this->_map->objects())
     {
         if(type != fb::game::object::types::UNKNOWN && object->type() != type)
             continue;
@@ -570,13 +498,11 @@ std::vector<fb::game::object*> fb::game::object::forward_objects(fb::game::objec
 
 std::vector<fb::game::object*> fb::game::object::shown_objects() const
 {
-    std::vector<object*> list;
-
-    fb::game::map*          map = this->map();
-    if(map == NULL)
+    std::vector<object*>    list;
+    if(this->_map == NULL)
         return list;
 
-    for(auto object : map->objects())
+    for(auto object : this->_map->objects())
     {
         if(object == this)
             continue;
@@ -597,11 +523,10 @@ std::vector<fb::game::session*> fb::game::object::shown_sessions() const
 {
     std::vector<session*> list;
 
-    fb::game::map*          map = this->map();
-    if(map == NULL)
+    if(this->_map == NULL)
         return list;
 
-    for(auto session : map->sessions())
+    for(auto session : this->_map->sessions())
     {
         if(session == this)
             continue;
@@ -619,11 +544,10 @@ std::vector<fb::game::session*> fb::game::object::looking_sessions() const
 {
     std::vector<session*> list;
 
-    fb::game::map*          map = this->map();
-    if(map == NULL)
+    if(this->_map == NULL)
         return list;
 
-    for(auto session : map->sessions())
+    for(auto session : this->_map->sessions())
     {
         if(session == this)
             continue;
@@ -733,21 +657,6 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
 fb::ostream fb::game::object::make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const
 {
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
-}
-
-fb::ostream fb::game::object::make_dialog_stream(const std::string& message, const std::vector<std::string>& menus) const
-{
-    return this->_core->make_dialog_stream(message, menus, this->_map);
-}
-
-fb::ostream fb::game::object::make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots) const
-{
-    return this->_core->make_dialog_stream(message, item_slots, this->_map);
-}
-
-fb::ostream fb::game::object::make_input_dialog_stream(const std::string& message, fb::game::map* map) const
-{
-    return this->_core->make_input_dialog_stream(message, this->_map);
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
@@ -936,13 +845,12 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 내 기준으로 한 오브젝트
     if(show_objects != NULL || hide_objects != NULL)
     {
-        fb::game::map* map = this->_map;
-        for(auto object : map->objects())
+        for(auto object : this->_map->objects())
         {
             if(object == this)
                 continue;
 
-            bool                before_sight = fb::game::object::sight(before, object->position(), map);
+            bool                before_sight = object::sight(before, object->position(), this->_map);
             bool                after_sight  = this->sight(*object);
 
             bool                show = (!before_sight && after_sight);
@@ -958,13 +866,12 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 내 기준으로 한 세션
     if(show_sessions != NULL || hide_sessions != NULL)
     {
-        fb::game::map* map = this->_map;
-        for(auto session : map->sessions())
+        for(auto session : this->_map->sessions())
         {
             if(session == this)
                 continue;
 
-            bool                before_sight = fb::game::object::sight(before, session->position(), map);
+            bool                before_sight = object::sight(before, session->position(), this->_map);
             bool                after_sight  = this->sight(*session);
 
             bool                show = (!before_sight && after_sight);
@@ -980,13 +887,12 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 상대 기준으로 한 오브젝트
     if(shown_objects != NULL || hidden_objects)
     {
-        auto                    map = this->_map;
-        for(auto object : map->objects())
+        for(auto object : this->_map->objects())
         {
             if(object == this)
                 continue;
 
-            bool                before_sight = object::sight(object->position(), before, map);
+            bool                before_sight = object::sight(object->position(), before, this->_map);
             bool                after_sight  = object->sight(*this);
 
             bool                show = (!before_sight && after_sight);
@@ -1002,13 +908,12 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 상대 기준으로 한 세션
     if(shown_sessions != NULL || hidden_sessions)
     {
-        auto                map = this->_map;
-        for(auto session : map->sessions())
+        for(auto session : this->_map->sessions())
         {
             if(session == this)
                 continue;
 
-            bool                before_sight = fb::game::object::sight(session->position(), before, map);
+            bool                before_sight = fb::game::object::sight(session->position(), before, this->_map);
             bool                after_sight  = session->sight(*this);
 
             bool                show = (!before_sight && after_sight);

@@ -163,10 +163,10 @@ public:
     uint8_t                 item_add(fb::game::item* item);
     bool                    item_remove(uint8_t index);
     bool                    item_reduce(uint8_t index, uint16_t count);
-    fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::eq_slots& slot);
+    fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot);
     uint8_t                 item2index(const fb::game::item::core* item) const;
-    void                    equipment_on(uint8_t index, fb::game::equipment::eq_slots& slot, uint8_t* updated_index);
-    uint8_t                 equipment_off(fb::game::equipment::eq_slots slot);
+    void                    equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index);
+    uint8_t                 equipment_off(fb::game::equipment::slot slot);
 
 
     fb::game::spell*        spell(uint8_t index) const;
@@ -219,8 +219,8 @@ public:
 
     fb::ostream             make_update_item_slot_stream(uint8_t index) const;
     fb::ostream             make_delete_item_slot_stream(fb::game::item::delete_attr types, uint32_t slot, uint16_t count = 0) const;
-    fb::ostream             make_update_equipment_stream(fb::game::equipment::eq_slots slot) const;
-    fb::ostream             make_equipment_off_stream(fb::game::equipment::eq_slots slot) const;
+    fb::ostream             make_update_equipment_stream(fb::game::equipment::slot slot) const;
+    fb::ostream             make_equipment_off_stream(fb::game::equipment::slot slot) const;
     fb::ostream             make_internal_info_stream() const;
     fb::ostream             make_external_info_stream() const;
     fb::ostream             make_option_stream() const;

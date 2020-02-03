@@ -575,9 +575,9 @@ bool fb::game::session::item_reduce(uint8_t index, uint16_t count)
     return true;
 }
 
-fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_index, equipment::eq_slots& slot)
+fb::game::item* fb::game::session::item_active(uint8_t index, uint8_t* updated_index, equipment::slot& slot)
 {
-    slot = equipment::eq_slots::UNKNOWN_SLOT;
+    slot = equipment::slot::UNKNOWN_SLOT;
     
     auto                    item = this->_items[index];
     if(item == nullptr)
@@ -608,7 +608,7 @@ uint8_t fb::game::session::item2index(const fb::game::item::core* item) const
     return 0xFF;
 }
 
-void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, uint8_t* updated_index)
+void fb::game::session::equipment_on(uint8_t index, equipment::slot& slot, uint8_t* updated_index)
 {
     if(updated_index != nullptr)
         *updated_index = 0xFF;
@@ -623,32 +623,32 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
     {
     case item::attrs::ITEM_ATTR_WEAPON:
         before = this->weapon(static_cast<fb::game::weapon*>(item));
-        slot = equipment::eq_slots::WEAPON_SLOT;
+        slot = equipment::slot::WEAPON_SLOT;
         break;
 
     case item::attrs::ITEM_ATTR_ARMOR:
         before = this->armor(static_cast<fb::game::armor*>(item));
-        slot = equipment::eq_slots::ARMOR_SLOT;
+        slot = equipment::slot::ARMOR_SLOT;
         break;
 
     case item::attrs::ITEM_ATTR_SHIELD:
         before = this->shield(static_cast<fb::game::shield*>(item));
-        slot = equipment::eq_slots::SHIELD_SLOT;
+        slot = equipment::slot::SHIELD_SLOT;
         break;
 
     case item::attrs::ITEM_ATTR_HELMET:
         before = this->helmet(static_cast<fb::game::helmet*>(item));
-        slot = equipment::eq_slots::HELMET_SLOT;
+        slot = equipment::slot::HELMET_SLOT;
         break;
 
     case item::attrs::ITEM_ATTR_RING:
         if(this->_rings[0] == nullptr)
         {
-            slot = equipment::eq_slots::LEFT_HAND_SLOT;
+            slot = equipment::slot::LEFT_HAND_SLOT;
         }
         else
         {
-            slot = equipment::eq_slots::RIGHT_HAND_SLOT;
+            slot = equipment::slot::RIGHT_HAND_SLOT;
         }
         
         before = this->ring(static_cast<fb::game::ring*>(item));
@@ -658,11 +658,11 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
     case item::attrs::ITEM_ATTR_AUXILIARY:
         if(this->_auxiliaries[0] == nullptr)
         {
-            slot = equipment::eq_slots::LEFT_AUX_SLOT;
+            slot = equipment::slot::LEFT_AUX_SLOT;
         }
         else
         {
-            slot = equipment::eq_slots::RIGHT_AUX_SLOT;
+            slot = equipment::slot::RIGHT_AUX_SLOT;
         }
 
         before = this->auxiliary(static_cast<fb::game::auxiliary*>(item));
@@ -679,7 +679,7 @@ void fb::game::session::equipment_on(uint8_t index, equipment::eq_slots& slot, u
         *updated_index = updated;
 }
 
-uint8_t fb::game::session::equipment_off(equipment::eq_slots slot)
+uint8_t fb::game::session::equipment_off(equipment::slot slot)
 {
     if(this->inventory_free() == false)
         throw item::full_inven_exception();
@@ -687,50 +687,50 @@ uint8_t fb::game::session::equipment_off(equipment::eq_slots slot)
     fb::game::item*         item;
     switch(slot)
     {
-    case equipment::eq_slots::WEAPON_SLOT:
+    case equipment::slot::WEAPON_SLOT:
         item = this->_weapon;
         if(this->_weapon != nullptr)
             this->_weapon = nullptr;
 
         break;
 
-    case equipment::eq_slots::ARMOR_SLOT:
+    case equipment::slot::ARMOR_SLOT:
         item = this->_armor;
         if(this->_armor != nullptr)
             this->_armor = nullptr;
         break;
 
-    case equipment::eq_slots::SHIELD_SLOT:
+    case equipment::slot::SHIELD_SLOT:
         item = this->_shield;
         if(this->_shield != nullptr)
             this->_shield = nullptr;
         break;
 
-    case equipment::eq_slots::HELMET_SLOT:
+    case equipment::slot::HELMET_SLOT:
         item = this->_helmet;
         if(this->_helmet != nullptr)
             this->_helmet = nullptr;
         break;
 
-    case equipment::eq_slots::LEFT_HAND_SLOT:
+    case equipment::slot::LEFT_HAND_SLOT:
         item = this->_rings[0];
         if(this->_rings[0] != nullptr)
             this->_rings[0] = nullptr;
         break;
 
-    case equipment::eq_slots::RIGHT_HAND_SLOT:
+    case equipment::slot::RIGHT_HAND_SLOT:
         item = this->_rings[1];
         if(this->_rings[1] != nullptr)
             this->_rings[1] = nullptr;
         break;
 
-    case equipment::eq_slots::LEFT_AUX_SLOT:
+    case equipment::slot::LEFT_AUX_SLOT:
         item = this->_auxiliaries[0];
         if(this->_auxiliaries[0] != nullptr)
             this->_auxiliaries[0] = nullptr;
         break;
 
-    case equipment::eq_slots::RIGHT_AUX_SLOT:
+    case equipment::slot::RIGHT_AUX_SLOT:
         item = this->_auxiliaries[1];
         if(this->_auxiliaries[1] != nullptr)
             this->_auxiliaries[1] = nullptr;
@@ -1191,42 +1191,42 @@ fb::ostream fb::game::session::make_delete_item_slot_stream(fb::game::item::dele
     return ostream;
 }
 
-fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots slot) const
+fb::ostream fb::game::session::make_update_equipment_stream(equipment::slot slot) const
 {
     fb::ostream             ostream;
     fb::game::item*         item;
 
     switch(slot)
     {
-    case equipment::eq_slots::WEAPON_SLOT:
+    case equipment::slot::WEAPON_SLOT:
         item = this->weapon();
         break;
 
-    case equipment::eq_slots::ARMOR_SLOT:
+    case equipment::slot::ARMOR_SLOT:
         item = this->armor();
         break;
 
-    case equipment::eq_slots::SHIELD_SLOT:
+    case equipment::slot::SHIELD_SLOT:
         item = this->shield();
         break;
 
-    case equipment::eq_slots::HELMET_SLOT:
+    case equipment::slot::HELMET_SLOT:
         item = this->helmet();
         break;
 
-    case equipment::eq_slots::LEFT_HAND_SLOT:
+    case equipment::slot::LEFT_HAND_SLOT:
         item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
-    case equipment::eq_slots::RIGHT_HAND_SLOT:
+    case equipment::slot::RIGHT_HAND_SLOT:
         item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
-    case equipment::eq_slots::LEFT_AUX_SLOT:
+    case equipment::slot::LEFT_AUX_SLOT:
         item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
-    case equipment::eq_slots::RIGHT_AUX_SLOT:
+    case equipment::slot::RIGHT_AUX_SLOT:
         item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
         break;
 
@@ -1245,7 +1245,7 @@ fb::ostream fb::game::session::make_update_equipment_stream(equipment::eq_slots 
     return ostream;
 }
 
-fb::ostream fb::game::session::make_equipment_off_stream(equipment::eq_slots slot) const
+fb::ostream fb::game::session::make_equipment_off_stream(equipment::slot slot) const
 {
     fb::ostream             ostream;
     ostream.write_u8(0x38)

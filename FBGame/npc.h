@@ -25,14 +25,14 @@ public:
         object*             make() const;
 
     public:
-        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<fb::game::item::core*>& items, fb::game::map* map = nullptr) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map = nullptr) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map = nullptr) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<item::core*>& cores, fb::game::map* map = nullptr) const;
+        fb::ostream         make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
     };
 
 private:
     std::string             _script;
-
-public:
-    using object::make_dialog_stream;
 
 public:
     npc(const core* core);
@@ -40,15 +40,20 @@ public:
     ~npc();
 
 public:
+    using object::make_dialog_stream;
+
+public:
     const std::string&      script() const;
     void                    script(const std::string& value);
 
 public:
     npc*                    make();
-    object::types           type() const;
 
 public:
-    fb::ostream             make_dialog_stream(const std::string& message, const std::vector<fb::game::item::core*>& items) const;
+    fb::ostream             make_dialog_stream(const std::string& message, const std::vector<std::string>& menus) const;
+    fb::ostream             make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots) const;
+    fb::ostream             make_dialog_stream(const std::string& message, const std::vector<item::core*>& cores, fb::game::map* map = nullptr) const;
+    fb::ostream             make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
 };
 
 

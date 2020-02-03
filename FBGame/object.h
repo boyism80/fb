@@ -36,6 +36,8 @@ public:
         uint8_t                 dialog_look_type() const;
 
     public:
+        virtual object::types   type() const;
+
         const std::string&      name() const;
         void                    name(const std::string& value);
 
@@ -50,9 +52,6 @@ public:
         T*                      make() const { return static_cast<T*>(this->make()); }
         
         fb::ostream             make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map = nullptr) const;
-        fb::ostream             make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map = nullptr) const;
-        fb::ostream             make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map = nullptr) const;
-        fb::ostream             make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
     };
 
 protected:
@@ -84,7 +83,7 @@ public:
     const std::string&          name() const;
     uint16_t                    look() const;
     uint8_t                     color() const;
-    virtual object::types       type() const;
+    object::types               type() const;
 
 
     point16_t                   position() const;
@@ -134,9 +133,6 @@ public:
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     fb::ostream                 make_sound_stream(fb::game::action_sounds sound) const;
     fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
-    fb::ostream                 make_dialog_stream(const std::string& message, const std::vector<std::string>& menus) const;
-    fb::ostream                 make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots) const;
-    fb::ostream                 make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
 
 public:
     virtual void                handle_timer(uint64_t elapsed_milliseconds) {}

@@ -599,9 +599,9 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
     {
         session.state_assert(state::RIDING | state::GHOST);
 
-        uint8_t                 updated_index = 0;
-        auto                    slot(equipment::eq_slots::UNKNOWN_SLOT);
-        auto                    item = session.item_active(index, &updated_index, slot);
+        uint8_t             updated_index = 0;
+        auto                slot(equipment::slot::UNKNOWN_SLOT);
+        auto                item = session.item_active(index, &updated_index, slot);
 
         if(item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
         {
@@ -617,35 +617,35 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
             std::stringstream sstream;
             switch(slot)
             {
-            case fb::game::equipment::eq_slots::WEAPON_SLOT:
+            case fb::game::equipment::slot::WEAPON_SLOT:
                 sstream << "w:¹«±â  :";
                 break;
 
-            case fb::game::equipment::eq_slots::ARMOR_SLOT:
+            case fb::game::equipment::slot::ARMOR_SLOT:
                 sstream << "a:°©¿Ê  :";
                 break;
 
-            case fb::game::equipment::eq_slots::SHIELD_SLOT:
+            case fb::game::equipment::slot::SHIELD_SLOT:
                 sstream << "s:¹æÆÐ  :";
                 break;
 
-            case fb::game::equipment::eq_slots::HELMET_SLOT:
+            case fb::game::equipment::slot::HELMET_SLOT:
                 sstream << "h:¸Ó¸®  :";
                 break;
 
-            case fb::game::equipment::eq_slots::LEFT_HAND_SLOT:
+            case fb::game::equipment::slot::LEFT_HAND_SLOT:
                 sstream << "l:¿Þ¼Õ  :";
                 break;
 
-            case fb::game::equipment::eq_slots::RIGHT_HAND_SLOT:
+            case fb::game::equipment::slot::RIGHT_HAND_SLOT:
                 sstream << "r:¿À¸¥¼Õ  :";
                 break;
 
-            case fb::game::equipment::eq_slots::LEFT_AUX_SLOT:
+            case fb::game::equipment::slot::LEFT_AUX_SLOT:
                 sstream << "[:º¸Á¶1  :";
                 break;
 
-            case fb::game::equipment::eq_slots::RIGHT_AUX_SLOT:
+            case fb::game::equipment::slot::RIGHT_AUX_SLOT:
                 sstream << "]:º¸Á¶2  :";
                 break;
             }
@@ -686,7 +686,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
     uint8_t                 cmd = istream.read_u8();
-    auto                    slot(equipment::eq_slots(istream.read_u8()));
+    auto                    slot(equipment::slot(istream.read_u8()));
 
     try
     {
@@ -782,18 +782,16 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 
 bool fb::game::acceptor::handle_front_info(fb::game::session& session)
 {
-    fb::game::map* map = session.map();
+    auto                    map = session.map();
     if(map == NULL)
         return false;
 
-    std::vector<fb::game::session*> sessions = session.forward_sessions();
-    for(auto i : sessions)
+    for(auto i : session.forward_sessions())
     {
         this->send_stream(session, message::make_stream(i->name(), message::type::MESSAGE_STATE), scope::SELF);
     }
 
-    std::vector<object*> objects = session.forward_objects(object::types::UNKNOWN);
-    for(auto i : objects)
+    for(auto i : session.forward_objects(object::types::UNKNOWN))
     {
         if(i->type() == fb::game::object::types::ITEM)
         {
@@ -1685,6 +1683,14 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     auto npc = db::name2npc("³«¶û");
     std::string command(message.begin() + 1, message.end());
+
+    if(command == "show")
+    {
+        auto item = db::name2item("³²ÀÚ±â¸ð³ë");
+        this->send_stream(session, item->make_dialog_stream("°«½ÂÇö´Ô »ç¶ûÇÕ´Ï´Ù.", true, true), scope::SELF);
+        return true;
+    }
+
     if(command == "show short list")
     {
         std::vector<std::string> menus = {"°«", "½Â", "Çö"};

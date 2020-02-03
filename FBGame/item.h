@@ -95,19 +95,6 @@ public:
         ITEM_ATTR_CASH              = 0x00000800,
     };
 
-    enum eq_slots : uint8_t
-    {
-        UNKNOWN_SLOT                = 0,
-        WEAPON_SLOT                 = 1,
-        ARMOR_SLOT                  = 2,
-        SHIELD_SLOT                 = 3,
-        HELMET_SLOT                 = 4,
-        LEFT_HAND_SLOT              = 7,
-        RIGHT_HAND_SLOT             = 8,
-        LEFT_AUX_SLOT               = 20,
-        RIGHT_AUX_SLOT              = 21,
-    };
-
     typedef struct _limit
     {
         uint8_t                     level;
@@ -147,6 +134,8 @@ public:
         virtual ~core();
 
     public:
+        object::types               type() const { return object::ITEM; }
+
         uint32_t                    price() const;
         void                        price(uint32_t value);
 
@@ -211,7 +200,6 @@ public:
     penalties                       penalty() const;
     const std::string&              desc() const;
     const std::string&              active_script() const;
-    object::types                   type() const { return object::ITEM; }
     attrs                           attr() const;
 
 public:
@@ -472,6 +460,19 @@ public:
         const std::string&          undress_script() const;
         void                        undress_script(const std::string& value);
 
+    };
+
+    enum slot : uint8_t
+    {
+        UNKNOWN_SLOT                = 0,
+        WEAPON_SLOT                 = 1,
+        ARMOR_SLOT                  = 2,
+        SHIELD_SLOT                 = 3,
+        HELMET_SLOT                 = 4,
+        LEFT_HAND_SLOT              = 7,
+        RIGHT_HAND_SLOT             = 8,
+        LEFT_AUX_SLOT               = 20,
+        RIGHT_AUX_SLOT              = 21,
     };
 
 protected:

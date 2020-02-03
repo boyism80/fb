@@ -138,11 +138,6 @@ fb::game::mob::mob(const mob& right) :
 fb::game::mob::~mob()
 {}
 
-fb::game::object::types fb::game::mob::type() const
-{
-    return static_cast<const core*>(this->_core)->type();
-}
-
 uint16_t fb::game::mob::damage_min() const
 {
     return static_cast<const core*>(this->_core)->_damage.min;
