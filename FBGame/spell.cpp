@@ -69,3 +69,12 @@ fb::ostream fb::game::spell::make_delete_stream(uint8_t slot)
 
     return ostream;
 }
+
+fb::game::spells::spells(session& owner) : 
+	container(owner, spell::MAX_SLOT, false)
+{
+}
+
+fb::game::spells::~spells()
+{
+}

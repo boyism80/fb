@@ -13,6 +13,8 @@ fb::socket::socket(SOCKET socket) : _fd(INVALID_SOCKET)
 
 fb::socket::~socket()
 {
+	this->_istream.emplace_back();
+	this->_ostream.emplace_back();
 }
 
 bool fb::socket::valid() const

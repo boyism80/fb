@@ -37,7 +37,7 @@ fb::cryptor::~cryptor()
     delete[] this->_key;
 }
 
-void fb::cryptor::internal_crypt(const uint8_t* core, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize)
+void fb::cryptor::intercrypt(const uint8_t* core, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize)
 {
     uint8_t*                dest_offset = dest;
     const uint8_t*          src_offset  = core;
@@ -97,7 +97,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         if(size - 1 <= 0)
             throw;
 
-        this->internal_crypt(data_c + 1, buffer + 2, size - 1, this->_key, key_size);
+        this->intercrypt(data_c + 1, buffer + 2, size - 1, this->_key, key_size);
 
         uint32_t            num_loop = (size - 2) / key_size + 1;
         if(num_loop > 0)
@@ -106,12 +106,12 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
             for(uint32_t i = 0; i < num_loop; i++)
             {
                 if(i != this->_sequence)
-                    this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+                    this->intercrypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
                 offset += key_size;
             }
         }
-        this->internal_crypt(buffer + 2, buffer + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
+        this->intercrypt(buffer + 2, buffer + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
     }
     catch(...)
     {
@@ -149,7 +149,7 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         if(size < 1)
             throw;
 
-        this->internal_crypt(data_c + 2, buffer + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
+        this->intercrypt(data_c + 2, buffer + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
         int num_subenc = (size - 3) / key_size + 1;
         if(num_subenc > 0)
         {
@@ -157,13 +157,13 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
             for(int i = 0; i < num_subenc; i++)
             {
                 if(sequence != i)
-                    this->internal_crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+                    this->intercrypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
                 offset += key_size;
             }
         }
 
-        this->internal_crypt(buffer + 1, buffer + 1, size - 2, this->_key, key_size);
+        this->intercrypt(buffer + 1, buffer + 1, size - 2, this->_key, key_size);
 
     }
     catch(...)

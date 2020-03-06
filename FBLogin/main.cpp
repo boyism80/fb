@@ -5,6 +5,8 @@
 #include "fb_login.h"
 #include <Windows.h>
 #include "leak.h"
+#include "console.h"
+#include "resource.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "zlib/zlib.lib")
@@ -33,6 +35,10 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
+	_CrtSetBreakAlloc(165); // 525885
+
+	::SetConsoleIcon(IDI_BARAM);
+	::SetConsoleTitle(CONSOLE_TITLE);
     ::SetConsoleCtrlHandler(handle_console, true);
 
     // Initialization

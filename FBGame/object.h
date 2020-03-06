@@ -3,15 +3,13 @@
 
 #include "mmo.h"
 #include "stream.h"
+#include "lua.h"
 
 namespace fb { namespace game {
 
 class map;
 class session;
 
-//
-// object
-//
 class object
 {
 public:
@@ -20,6 +18,9 @@ public:
 public:
     class core
     {
+	public:
+		DECLARE_LUA_PROTOTYPE
+
     protected:
         std::string             _name;
         uint16_t                _look;
@@ -34,6 +35,7 @@ public:
 
     protected:
         uint8_t                 dialog_look_type() const;
+		virtual void			handle_lua_field(lua_State* lua) const;
 
     public:
         virtual object::types   type() const;
@@ -50,12 +52,27 @@ public:
         virtual object*         make() const = 0;
         template <typename T>
         T*                      make() const { return static_cast<T*>(this->make()); }
+		void					make_lua_table(lua_State* lua) const;
         
+	public:
         fb::ostream             make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map = nullptr) const;
+
+
+	public:
+		IMPLEMENT_NEW_LUA
+
+		static int				builtin_name(lua_State* lua);
+		static int				builtin_look(lua_State* lua);
+		static int				builtin_color(lua_State* lua);
+		static int				builtin_dialog(lua_State* lua);
     };
+
+public:
+	DECLARE_LUA_PROTOTYPE
 
 protected:
     const core*                 _core;
+	point16_t                   _before;
     
 
 protected:
@@ -71,6 +88,12 @@ public:
     virtual ~object();
 
 public:
+	BUILTIN_CORE(fb::game::object)
+
+private:
+	static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
+
+public:
     const core*                 based() const;
     template <typename T>
     const T*                    based() const { return static_cast<const T*>(this->_core); }
@@ -80,10 +103,10 @@ public:
     uint32_t                    id() const;
     void                        id(uint32_t value);
 
-    const std::string&          name() const;
-    uint16_t                    look() const;
-    uint8_t                     color() const;
-    object::types               type() const;
+    virtual const std::string&  name() const;
+    virtual uint16_t            look() const;
+    virtual uint8_t             color() const;
+    virtual object::types       type() const;
 
 
     point16_t                   position() const;
@@ -104,9 +127,8 @@ public:
     virtual uint16_t            map(fb::game::map* map);
     virtual uint16_t            map(fb::game::map* map, const point16_t& position);
 
-    bool                        sight(const point16_t& position) const;
-    bool                        sight(const fb::game::object& object) const;
-    static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
+    bool                        sight(const point16_t& position, bool before = false) const;
+    bool                        sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
 
     session*                    near_session(fb::game::direction direction) const;
     std::vector<session*>       near_sessions(fb::game::direction direction) const;
@@ -136,6 +158,14 @@ public:
 
 public:
     virtual void                handle_timer(uint64_t elapsed_milliseconds) {}
+
+public:
+	IMPLEMENT_NEW_LUA
+
+public:
+	static int					builtin_dialog(lua_State* lua);
+	static int					builtin_sound(lua_State* lua);
+	static int					builtin_position(lua_State* lua);
 };
 
 
@@ -144,6 +174,9 @@ class life : public object
 public:
     class core : public fb::game::object::core
     {
+	public:
+		DECLARE_LUA_PROTOTYPE
+
     protected:
         fb::game::defensive     _defensive;
         uint32_t                _hp, _mp;
@@ -157,6 +190,9 @@ public:
         core(const core& core, uint32_t hp, uint32_t mp);
         core(const core& core);
         virtual ~core();
+
+	protected:
+		virtual void			handle_lua_field(lua_State* lua) const;
 
     public:
         uint32_t                hp() const;
@@ -175,10 +211,11 @@ public:
         void                    defensive_magical(uint8_t value);
 
         object*                 make() const;
-    };
 
-private:
-    point16_t                   _before;
+	public:
+		static int				builtin_hp(lua_State* lua);
+		static int				builtin_mp(lua_State* lua);
+    };
 
 protected:
     uint32_t                    _hp, _mp;
@@ -190,6 +227,10 @@ protected:
     life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp);
     virtual ~life();
 
+public:
+	DECLARE_LUA_PROTOTYPE
+	BUILTIN_CORE(fb::game::life)
+
 private:
     bool                        movable(fb::game::direction direction) const;
     bool                        movable_forward() const;
@@ -198,9 +239,6 @@ protected:
     uint32_t                    random_damage(uint32_t value, const fb::game::life& life) const;
 
 public:
-    point16_t                   position() const;
-    bool                        position(uint16_t x, uint16_t y);
-    bool                        position(const point16_t position);
     bool                        move(fb::game::direction direction, std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
     bool                        move_forward(std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* hown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
 
@@ -242,6 +280,10 @@ public:
 
     fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
     fb::ostream                 make_die_stream() const;
+
+public:
+	static int					builtin_hp(lua_State* lua);
+	static int					builtin_mp(lua_State* lua);
 };
 
 } }

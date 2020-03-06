@@ -22,7 +22,7 @@ public:
     ~cryptor();
 
 private:
-    void                    internal_crypt(const uint8_t *core, uint8_t *dest, uint32_t size, const uint8_t *key, uint32_t ksize);
+    void                    intercrypt(const uint8_t *core, uint8_t *dest, uint32_t size, const uint8_t *key, uint32_t ksize);
 
 public:
     uint32_t                encrypt(buffer& data, uint32_t offset, uint32_t size);

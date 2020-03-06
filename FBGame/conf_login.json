@@ -1,0 +1,21 @@
+{
+   "account option" : {
+      "allow other language" : false,
+      "forbidden" : [ "김대중", "노무현" ]
+   },
+   "agreement" : "적당히 좀 하지?\n사람 열받게 하지 말고",
+   "gateway" : [
+      {
+         "desc" : "채승현은 신이다.",
+         "ip" : "192.168.0.100",
+         "name" : "채승현",
+         "port" : 2001
+      },
+      {
+         "desc" : "채진영은 바보다.",
+         "ip" : "192.168.0.100",
+         "name" : "채진영",
+         "port" : 2001
+      }
+   ]
+}

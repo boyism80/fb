@@ -860,6 +860,8 @@ void fb::game::db::release()
     for(auto itemmix : db::_itemmixes)
         delete itemmix;
     db::_itemmixes.clear();
+
+	db::_board.clear();
 }
 
 std::map<uint16_t, fb::game::map*>& fb::game::db::maps()

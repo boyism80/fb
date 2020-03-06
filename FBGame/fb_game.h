@@ -14,6 +14,7 @@
 #include "npc.h"
 #include "mob.h"
 #include "board.h"
+#include "lua.h"
 
 namespace fb { namespace game {
 
@@ -25,7 +26,10 @@ namespace fb { namespace game {
 
 class acceptor : public fb_acceptor<fb::game::session>
 {
-private:
+public:
+    DECLARE_LUA_PROTOTYPE
+
+public:
     enum scope { SELF, PIVOT, MAP, GLOBAL };
 
 public:
@@ -41,6 +45,8 @@ public:
 public:
     bool                    handle_move_life(fb::game::life* life, fb::game::direction direction);
     void                    handle_attack_mob(fb::game::session& session, fb::game::mob& mob, uint32_t random_damage);
+    void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
+    void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
 
 public:
     bool                    handle_connected(fb::game::session& session);
@@ -72,7 +78,8 @@ public:
     bool                    handle_user_list(fb::game::session& session);
     bool                    handle_chat(fb::game::session& session);
     bool                    handle_board(fb::game::session& session);
-    bool                    handle_swap(fb::game::session& session);
+	bool                    handle_swap(fb::game::session& session);
+	bool                    handle_dialog(fb::game::session& session);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
@@ -86,6 +93,9 @@ public:
 #if defined DEBUG | defined _DEBUG
     bool                    handle_admin(fb::game::session& session, const std::string& message);
 #endif
+
+public:
+    static int              builtin_name2mob(lua_State* lua);
 };
 
 } }

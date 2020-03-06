@@ -41,13 +41,16 @@ public:
 public:
     class core : public fb::game::life::core
     {
+	public:
+		DECLARE_LUA_PROTOTYPE
+
     private:
         mob::damage             _damage;
         offensive_type          _offensive_type;
         sizes                   _size;
         uint32_t                _speed;
         std::string             _script_attack, _script_die;
-        std::vector<money>       _items;
+        std::vector<money>      _items;
 
         friend class mob;
 
@@ -85,6 +88,9 @@ public:
         void                    dropitem_add(const mob::money& money);
         void                    dropitem_add(const fb::game::item::core* item, float percentage);
         const std::vector<money>& items() const;
+
+	public:
+		static int				builtin_speed(lua_State* lua);
     };
 
 private:
@@ -101,6 +107,10 @@ public:
     mob(const mob::core* core);
     mob(const mob& right);
     ~mob();
+
+public:
+	DECLARE_LUA_PROTOTYPE
+	BUILTIN_CORE(fb::game::mob)
 
 public:
     uint16_t                damage_min() const;

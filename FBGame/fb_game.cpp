@@ -3,8 +3,31 @@
 
 using namespace fb::game;
 
+IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
+    {"name2mob", builtin_name2mob},
+END_LUA_EXTENSION
+
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
+    lua::env<acceptor>("acceptor", this);
+
+    lua::bind_class<object::core>();
+    lua::bind_class<object>();
+    
+    lua::bind_class<life::core, object::core>();
+    lua::bind_class<life, object>();
+    
+    lua::bind_class<mob::core, life::core>();
+    lua::bind_class<mob, life>();
+
+    lua::bind_class<npc::core, object::core>();
+    lua::bind_class<npc, object>();
+
+    lua::bind_class<game::session, life>();
+
+    luaL_register(lua::main::get(), "fb", LUA_METHODS);
+
+
     this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
     this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
     this->register_handle(0x06, &acceptor::handle_update_move);         // 이동과 맵 데이터 업데이트 핸들러
@@ -29,14 +52,17 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x18, &acceptor::handle_user_list);           // 유저 리스트 핸들러
     this->register_handle(0x0E, &acceptor::handle_chat);                // 유저 채팅 핸들러
     this->register_handle(0x3B, &acceptor::handle_board);               // 게시판 섹션 리스트 핸들러
-    this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
+	this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
+	this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
-{ }
+{ 
+    
+}
 
 bool acceptor::handle_connected(fb::game::session& session)
 {
@@ -54,25 +80,25 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.title("갓승현 타이틀");
 
     auto& items = db::items();
-    session.item_add(static_cast<fb::game::item*>(items[1015]->make())); // 정화의방패
-    session.item_add(static_cast<fb::game::item*>(items[243]->make())); // 도씨검
-    session.item_add(static_cast<fb::game::item*>(items[698]->make())); // 기모노
-    session.item_add(static_cast<fb::game::item*>(items[3014]->make())); // 도토리
-    session.item_add(static_cast<fb::game::item*>(items[2200]->make())); // 동동주
+    session.items.add(static_cast<item*>(items[1015]->make())); // 정화의방패
+    session.items.add(static_cast<item*>(items[243]->make())); // 도씨검
+    session.items.add(static_cast<item*>(items[698]->make())); // 기모노
+    session.items.add(static_cast<item*>(items[3014]->make())); // 도토리
+    session.items.add(static_cast<item*>(items[2200]->make())); // 동동주
 
     // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-    session.weapon(static_cast<fb::game::weapon*>(items[15]->make())); // 초심자의 목도
-    session.helmet(static_cast<fb::game::helmet*>(items[1340]->make()));
-    session.ring(static_cast<fb::game::ring*>(items[1689]->make()));
-    session.ring(static_cast<fb::game::ring*>(items[1689]->make()));
-    session.auxiliary(static_cast<fb::game::auxiliary*>(items[2135]->make()));
-    session.auxiliary(static_cast<fb::game::auxiliary*>(items[2129]->make()));
+    session.items.weapon(static_cast<weapon*>(items[15]->make())); // 초심자의 목도
+    session.items.helmet(static_cast<helmet*>(items[1340]->make()));
+    session.items.ring(static_cast<ring*>(items[1689]->make()));
+    session.items.ring(static_cast<ring*>(items[1689]->make()));
+    session.items.auxiliary(static_cast<auxiliary*>(items[2135]->make()));
+    session.items.auxiliary(static_cast<auxiliary*>(items[2129]->make()));
 
 
     auto& spells = db::spells();
     for(auto pair : spells)
     {
-        if(session.spell_add(pair.second) == -1)
+        if(session.spells.add(pair.second) == -1)
             break;
     }
 
@@ -277,6 +303,27 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
     this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 }
 
+void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
+{
+    this->send_stream(session, message::make_stream(mob.name(), message::type::MESSAGE_STATE), scope::SELF);
+}
+
+void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
+{
+	if(session.dialog_thread != nullptr)
+		delete session.dialog_thread;
+
+	session.dialog_thread = new lua::thread();
+
+    luaL_dofile(*session.dialog_thread, "scripts/script.lua");
+    lua_getglobal(*session.dialog_thread, "handle_click");
+
+	// 루아스크립트의 handle_click 함수의 리턴값 설정
+    session.new_lua<fb::game::session>(*session.dialog_thread);
+    npc.new_lua<fb::game::mob>(*session.dialog_thread);
+	session.dialog_thread->resume(2);
+}
+
 bool acceptor::handle_login(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
@@ -319,7 +366,7 @@ bool acceptor::handle_login(fb::game::session& session)
     // Initialize spell list
     for(int i = 0; i < spell::MAX_SLOT; i++)
     {
-        auto spell = session.spell(i);
+        auto spell = session.spells[i];
         if(spell == nullptr)
             continue;
 
@@ -439,7 +486,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         session.state_assert(state::RIDING | state::GHOST);
 
         this->send_stream(session, session.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
-        auto*               weapon = session.weapon();
+        auto*               weapon = session.items.weapon();
         if(weapon != NULL)
         {
             uint16_t        sound = weapon->sound();
@@ -525,13 +572,13 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
             }
             else
             {
-                uint8_t         index = session.item_add(below);
+                uint8_t         index = session.items.add(below);
                 if(index == -1)
                     break;
 
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
 
-                item_moved = (session.item(index) == below);
+                item_moved = (session.items[index] == below);
             }
 
             if(item_moved || below->empty())
@@ -601,7 +648,7 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 
         uint8_t             updated_index = 0;
         auto                slot(equipment::slot::UNKNOWN_SLOT);
-        auto                item = session.item_active(index, &updated_index, slot);
+        auto                item = session.items.active(index, &updated_index, slot);
 
         if(item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
         {
@@ -692,7 +739,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
     {
         session.state_assert(state::RIDING | state::GHOST);
 
-        uint8_t             item_index = session.equipment_off(slot);
+        uint8_t             item_index = session.items.inactive(slot);
         if(item_index == -1)
             return true;
 
@@ -723,7 +770,7 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
         uint8_t             index = istream.read_u8() - 1;
         bool                drop_all = bool(istream.read_u8());
 
-        auto                item = session.item(index);
+        auto                item = session.items[index];
         if(item == NULL)
             return true;
 
@@ -732,7 +779,7 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
         if(item == dropped)
         {
             this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
-            session.item_remove(index);
+            session.items.remove(index);
         }
 
         auto                map = session.map();
@@ -955,7 +1002,17 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
     auto                    object = session.map()->object(fd);
     if(object != NULL) // object
     {
-        this->send_stream(session, message::make_stream(object->name(), message::type::MESSAGE_STATE), scope::SELF);
+        switch(object->type())
+        {
+        case fb::game::object::types::MOB:
+            this->handle_click_mob(session, *static_cast<mob*>(object));
+            break;
+
+        case fb::game::object::types::NPC:
+            this->handle_click_npc(session, *static_cast<npc*>(object));
+            break;
+        }
+
         return true;
     }
 
@@ -972,7 +1029,7 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
     uint8_t                     unknown3 = istream.read_u8();
     uint8_t                     slot = istream.read_u8() - 1;
 
-    auto                        item = session.item(slot);
+    auto                        item = session.items[slot];
     if(item == NULL)
         return false;
 
@@ -993,7 +1050,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     for(int i = 0; i < count; i++)
     {
         uint8_t                 index = istream.read_u8() - 1;
-        auto                    item = session.item(index);
+        auto                    item = session.items[index];
         if(item == NULL)
             return true;
 
@@ -1006,25 +1063,25 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         if(itemmix == NULL)
             throw itemmix::no_match_exception();
 
-        uint8_t                 free_size = session.inventory_free_size();
+        uint8_t                 free_size = session.items.free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
             throw item::full_inven_exception();
 
 
         for(auto require : itemmix->require)
         {
-            uint8_t             index = session.item2index(require.item);
+            uint8_t             index = session.items.to_index(require.item);
             if(index == 0xFF)
                 return true;
 
-            auto                item = session.item(index);
+            auto                item = session.items[index];
             item->reduce(require.count);
 
 
             if(item->empty())
             {
                 this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
-                session.item_remove(index);
+                session.items.remove(index);
                 delete item;
             }
             else
@@ -1042,7 +1099,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 auto        item = static_cast<fb::game::item*>(success.item->make());
                 item->count(success.count);
                 
-                uint8_t     index = session.item_add(item);
+                uint8_t     index = session.items.add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1055,7 +1112,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 auto        item = static_cast<fb::game::item*>(failed.item->make());
                 item->count(failed.count);
                 
-                uint8_t     index = session.item_add(item);
+                uint8_t     index = session.items.add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1082,9 +1139,9 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     uint8_t                     action = istream.read_u8();
     uint32_t                    fd = istream.read_u32();
 
-    auto                        partner = this->session(fd);            // 파트너
-    auto&                       ts_mine = session.trade();       // 나의 거래시스템
-    auto&                       ts_your = partner->trade();      // 상대방의 거래시스템
+    auto                        partner = this->session(fd);   // 파트너
+    auto&                       ts_mine = session.trade;       // 나의 거래시스템
+    auto&                       ts_your = partner->trade;      // 상대방의 거래시스템
 
     if(partner == NULL)
         return true;
@@ -1158,7 +1215,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     case 1: // 아이템 올릴때
     {
         uint8_t             index = istream.read_u8() - 1;
-        auto                item = session.item(index);
+        auto                item = session.items[index];
         if(item == NULL)
             return true;
 
@@ -1184,7 +1241,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
                 return false;
 
             // 현재 인벤토리에서 거래중인 아이템 리스트로 아이템 이동
-            session.item_remove(index);
+            session.items.remove(index);
             this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
 
             // 나와 상대 둘 다에게 올린 아이템을 표시함
@@ -1209,14 +1266,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             break;
         }
 
-        uint8_t             index = session.item2index(selected->based<item::core>());
+        uint8_t             index = session.items.to_index(selected->based<item::core>());
         if(selected->count() == count)
         {
             // 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.
             uint8_t         trade_index = ts_mine.add(selected);
             if(index != 0xFF)
             {
-                session.item_remove(index);
+                session.items.remove(index);
                 this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
 
                 this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
@@ -1464,19 +1521,41 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
 
     if(swap_type) // spell
     {
-        if(session.spell_swap(src-1, dest-1) == false) // zero-based
+        if(session.spells.swap(src-1, dest-1) == false) // zero-based
             return true;
 
-        const auto              right = session.spell(src-1);
+        const auto              right = session.spells[src-1];
         this->send_stream(session, right ? right->make_show_stream(src) : right->make_delete_stream(src), scope::SELF);
 
-        const auto              left = session.spell(dest-1);
+        const auto              left = session.spells[dest-1];
         this->send_stream(session, left ? left->make_show_stream(dest) : left->make_delete_stream(dest), scope::SELF);
     }
     else // item
     {}
 
     return true;
+}
+
+bool fb::game::acceptor::handle_dialog(fb::game::session& session)
+{
+	auto&                       istream = session.in_stream();
+	uint8_t                     cmd = istream.read_u8();
+	auto						unknown1 = istream.read_u32();
+	auto						unknown2 = istream.read_u32();
+	auto						action = istream.read_u8();
+
+	if(session.dialog_thread == nullptr)
+		return true;
+
+	// 루아스크립트 다이얼로그 함수의 리턴값 설정
+	session.dialog_thread->pushinteger(action);
+	if(session.dialog_thread->resume(1))
+	{
+		delete session.dialog_thread;
+		session.dialog_thread = nullptr;
+	}
+
+	return true;
 }
 
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
@@ -1725,7 +1804,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         std::vector<uint8_t> slots;
         for(int i = 0; i < item::MAX_SLOT; i++)
         {
-            const auto item = session.item(i);
+            const auto item = session.items[i];
             if(item == nullptr)
                 continue;
 
@@ -1756,4 +1835,14 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     }
 
     return false;
+}
+
+int fb::game::acceptor::builtin_name2mob(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    auto name = lua_tostring(lua, 1);
+    auto mob = db::name2mob(name);
+    mob->new_lua<fb::game::mob::core>(lua);
+    return 1;
 }

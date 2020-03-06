@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp" />
+    <ClCompile Include="..\share\console.cpp" />
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="fb_game.cpp" />
     <ClCompile Include="group.cpp" />
     <ClCompile Include="item.cpp" />
+    <ClCompile Include="lua.cpp" />
     <ClCompile Include="spell.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
@@ -173,15 +175,20 @@
   <ItemGroup>
     <ClInclude Include="..\share\acceptor.h" />
     <ClInclude Include="..\share\acceptor.hpp" />
+    <ClInclude Include="..\share\console.h" />
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="board.h" />
+    <ClInclude Include="container.h" />
+    <ClInclude Include="container.hpp" />
     <ClInclude Include="db.h" />
     <ClInclude Include="fb_game.h" />
     <ClInclude Include="group.h" />
     <ClInclude Include="item.h" />
+    <ClInclude Include="lua.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="spell.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="mob.h" />
@@ -190,6 +197,12 @@
     <ClInclude Include="session.h" />
     <ClInclude Include="mmo.h" />
     <ClInclude Include="trade.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FBGame.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\baram.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

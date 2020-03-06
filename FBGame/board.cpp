@@ -151,6 +151,14 @@ void fb::game::board::remove(uint32_t index)
     this->_sections.erase(this->_sections.begin() + index);
 }
 
+void fb::game::board::clear()
+{
+	for(auto section : this->_sections)
+		delete section;
+
+	this->_sections.clear();
+}
+
 fb::game::board::section* fb::game::board::operator[](uint32_t index)
 {
     return this->at(index);

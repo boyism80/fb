@@ -13,6 +13,9 @@ public:
     {
         friend class npc;
 
+	public:
+		DECLARE_LUA_PROTOTYPE
+
     public:
         core(const std::string& name, uint16_t look, uint8_t color = 0);
         ~core();
@@ -41,6 +44,10 @@ public:
 
 public:
     using object::make_dialog_stream;
+
+public:
+	DECLARE_LUA_PROTOTYPE
+	BUILTIN_CORE(fb::game::npc)
 
 public:
     const std::string&      script() const;

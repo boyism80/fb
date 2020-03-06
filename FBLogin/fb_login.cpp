@@ -54,9 +54,9 @@ acceptor::~acceptor()
     Json::StyledWriter writer;
     std::ofstream ofstream;
 
-    ofstream.open("conf_login.json");
-    ofstream << writer.write(this->_config);
-    ofstream.close();
+    //ofstream.open("conf_login.json");
+    //ofstream << writer.write(this->_config);
+    //ofstream.close();
 }
 
 uint32_t acceptor::compress(const uint8_t* source, uint32_t size, uint8_t* dest) const

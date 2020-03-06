@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp" />
+    <ClCompile Include="..\share\console.cpp" />
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
@@ -169,11 +170,19 @@
   <ItemGroup>
     <ClInclude Include="..\share\acceptor.h" />
     <ClInclude Include="..\share\acceptor.hpp" />
+    <ClInclude Include="..\share\console.h" />
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="fb_login.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FBLogin.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\baram.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

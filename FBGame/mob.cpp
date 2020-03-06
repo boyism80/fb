@@ -4,6 +4,10 @@
 #include <iostream>
 #include "mob.h"
 
+IMPLEMENT_LUA_EXTENSION(fb::game::mob::core, "fb.game.mob.core")
+	{"speed", fb::game::mob::core::builtin_speed},
+END_LUA_EXTENSION
+
 fb::game::mob::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
     fb::game::life::core(name, look, color, hp, mp),
     _damage(0, 0),
@@ -114,7 +118,18 @@ const std::vector<fb::game::mob::money>& fb::game::mob::core::items() const
     return this->_items;
 }
 
+int fb::game::mob::core::builtin_speed(lua_State* lua)
+{
+	auto mob = *(fb::game::mob::core**)lua_touserdata(lua, 1);
 
+	lua_pushinteger(lua, mob->_speed);
+	return 1;
+}
+
+
+
+IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
+END_LUA_EXTENSION
 
 
 fb::game::mob::mob(const mob::core* core) : 

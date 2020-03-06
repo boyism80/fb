@@ -1,5 +1,8 @@
 #include "npc.h"
 
+IMPLEMENT_LUA_EXTENSION(fb::game::npc::core, "fb.game.npc.core")
+END_LUA_EXTENSION
+
 fb::game::npc::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     fb::game::object::core(name, look, color)
 {}
@@ -120,6 +123,9 @@ fb::ostream fb::game::npc::core::make_input_dialog_stream(const std::string& mes
 
     return ostream;
 }
+
+IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
+END_LUA_EXTENSION
 
 fb::game::npc::npc(const core* core) : 
     fb::game::object(core)

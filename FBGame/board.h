@@ -93,6 +93,7 @@ public:
 
     section*                            add(const std::string& name);
     void                                remove(uint32_t index);
+	void								clear();
 
 public:
     section*                            operator [] (uint32_t index);

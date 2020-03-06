@@ -1300,7 +1300,7 @@ fb::game::arrow::~arrow()
 }
 
 
-bool fb::game::_itemmix::contains(const item* item) const
+bool fb::game::itemmix::contains(const item* item) const
 {
     for(auto i : this->require)
     {
@@ -1311,22 +1311,22 @@ bool fb::game::_itemmix::contains(const item* item) const
     return false;
 }
 
-void fb::game::_itemmix::require_add(fb::game::item::core* item, uint32_t count)
+void fb::game::itemmix::require_add(fb::game::item::core* item, uint32_t count)
 {
     this->require.push_back(element(item, count));
 }
 
-void fb::game::_itemmix::success_add(fb::game::item::core* item, uint32_t count)
+void fb::game::itemmix::success_add(fb::game::item::core* item, uint32_t count)
 {
     this->success.push_back(element(item, count));
 }
 
-void fb::game::_itemmix::failed_add(fb::game::item::core* item, uint32_t count)
+void fb::game::itemmix::failed_add(fb::game::item::core* item, uint32_t count)
 {
     this->failed.push_back(element(item, count));
 }
 
-bool fb::game::_itemmix::matched(const std::vector<item*>& items) const
+bool fb::game::itemmix::matched(const std::vector<item*>& items) const
 {
     if(this->require.size() != items.size())
         return false;
@@ -1338,4 +1338,303 @@ bool fb::game::_itemmix::matched(const std::vector<item*>& items) const
     }
 
     return true;
+}
+
+fb::game::items::items(session& owner) :
+	container(owner, item::MAX_SLOT),
+	_weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(nullptr)
+{
+	memset(this->_rings, NULL, sizeof(this->_rings));
+	memset(this->_auxiliaries, NULL, sizeof(this->_auxiliaries));
+}
+
+fb::game::items::~items()
+{
+	if(this->_weapon)
+		delete this->_weapon;
+
+	if(this->_armor)
+		delete this->_armor;
+
+	if(this->_helmet)
+		delete this->_helmet;
+
+	if(this->_shield)
+		delete this->_shield;
+
+	if(this->_rings[0])
+		delete this->_rings[0];
+
+	if(this->_rings[1])
+		delete this->_rings[1];
+
+	if(this->_auxiliaries[0])
+		delete this->_auxiliaries[0];
+
+	if(this->_auxiliaries[1])
+		delete this->_auxiliaries[1];
+}
+
+void fb::game::items::equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index)
+{
+	if(updated_index != nullptr)
+		*updated_index = 0xFF;
+
+	fb::game::item*         item = this->at(index);
+	if(item == nullptr)
+		throw std::exception();
+
+	fb::game::item*         before = nullptr;
+	auto                    attr(fb::game::item::attrs(item->attr() & ~item::attrs::ITEM_ATTR_EQUIPMENT));
+	switch(attr)
+	{
+	case item::attrs::ITEM_ATTR_WEAPON:
+		before = this->weapon(static_cast<fb::game::weapon*>(item));
+		slot = equipment::slot::WEAPON_SLOT;
+		break;
+
+	case item::attrs::ITEM_ATTR_ARMOR:
+		before = this->armor(static_cast<fb::game::armor*>(item));
+		slot = equipment::slot::ARMOR_SLOT;
+		break;
+
+	case item::attrs::ITEM_ATTR_SHIELD:
+		before = this->shield(static_cast<fb::game::shield*>(item));
+		slot = equipment::slot::SHIELD_SLOT;
+		break;
+
+	case item::attrs::ITEM_ATTR_HELMET:
+		before = this->helmet(static_cast<fb::game::helmet*>(item));
+		slot = equipment::slot::HELMET_SLOT;
+		break;
+
+	case item::attrs::ITEM_ATTR_RING:
+		if(this->_rings[0] == nullptr)
+		{
+			slot = equipment::slot::LEFT_HAND_SLOT;
+		}
+		else
+		{
+			slot = equipment::slot::RIGHT_HAND_SLOT;
+		}
+
+		before = this->ring(static_cast<fb::game::ring*>(item));
+		break;
+
+
+	case item::attrs::ITEM_ATTR_AUXILIARY:
+		if(this->_auxiliaries[0] == nullptr)
+		{
+			slot = equipment::slot::LEFT_AUX_SLOT;
+		}
+		else
+		{
+			slot = equipment::slot::RIGHT_AUX_SLOT;
+		}
+
+		before = this->auxiliary(static_cast<fb::game::auxiliary*>(item));
+		break;
+
+	default:
+		throw equipment::not_equipment_exception();
+	}
+
+
+	this->remove(index);
+	uint8_t updated = this->add(before);
+	if(updated_index != nullptr)
+		*updated_index = updated;
+}
+
+uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
+{
+	return uint8_t();
+}
+
+uint8_t fb::game::items::add(fb::game::item* item)
+{
+	if(item == nullptr)
+		return -1;
+
+
+	// 번들 형식의 아이템인 경우
+	if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
+	{
+		for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
+		{
+			if(this->at(i) == nullptr)
+				continue;
+
+			if(item->based() != this->at(i)->based())
+				continue;
+
+
+			// 아이템을 합치고 남은 갯수로 설정한다.
+			uint16_t remain = this->at(i)->fill(item->count());
+			item->count(remain);
+
+			return i;
+		}
+	}
+
+	// 그 이외의 아이템인 경우
+	for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
+	{
+		if(this->at(i) != nullptr)
+			continue;
+
+		this->set(item, i);
+		return i;
+	}
+
+	return -1;
+}
+
+bool fb::game::items::reduce(uint8_t index, uint16_t count)
+{
+	auto                    item = this->at(index);
+	if(item == nullptr)
+		return false;
+
+	this->at(index)->reduce(count);
+	return true;
+}
+
+fb::game::item* fb::game::items::active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot)
+{
+	slot = equipment::slot::UNKNOWN_SLOT;
+
+	auto                    item = this->at(index);
+	if(item == nullptr)
+		return nullptr;
+
+	auto                    attr(item->attr());
+	if((attr & item::attrs::ITEM_ATTR_EQUIPMENT))
+		this->equipment_on(index, slot, updated_index);
+
+	item->handle_acive(this->owner());
+	if(item->empty())
+		this->set(nullptr, index);
+
+	return item;
+}
+
+uint8_t fb::game::items::inactive(equipment::slot slot)
+{
+	return this->equipment_off(slot);
+}
+
+uint8_t fb::game::items::to_index(const fb::game::item::core* item) const
+{
+	for(int i = 0; i < item::MAX_SLOT; i++)
+	{
+		auto now = this->at(i);
+
+		if(now == nullptr)
+			continue;
+
+		if(now->based<item::core>() == item)
+			return i;
+	}
+
+	return 0xFF;
+}
+
+fb::game::weapon* fb::game::items::weapon() const
+{
+	return this->_weapon;
+}
+
+fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
+{
+	fb::game::weapon*       before = this->_weapon;
+
+	this->_weapon = weapon;
+	return before;
+}
+
+fb::game::armor* fb::game::items::armor() const
+{
+	return this->_armor;
+}
+
+fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
+{
+	fb::game::armor*        before = this->_armor;
+
+	this->_armor = armor;
+	return before;
+}
+
+fb::game::shield* fb::game::items::shield() const
+{
+	return this->_shield;
+}
+
+fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
+{
+	fb::game::shield*       before = this->_shield;
+
+	this->_shield = shield;
+	return before;
+}
+
+fb::game::helmet* fb::game::items::helmet() const
+{
+	return this->_helmet;
+}
+
+fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
+{
+	fb::game::helmet*       before = this->_helmet;
+
+	this->_helmet = helmet;
+	return before;
+}
+
+fb::game::ring* fb::game::items::ring(equipment::EQUIPMENT_POSITION position) const
+{
+	return this->_rings[position];
+}
+
+fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
+{
+	fb::game::ring*         before = nullptr;
+
+	if(this->_rings[0] == nullptr)
+	{
+		before = this->_rings[0];
+		this->_rings[0] = ring;
+	}
+	else
+	{
+		before = this->_rings[1];
+		this->_rings[1] = ring;
+	}
+
+	return before;
+}
+
+
+fb::game::auxiliary* fb::game::items::auxiliary(equipment::EQUIPMENT_POSITION position) const
+{
+	return this->_auxiliaries[position];
+}
+
+fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
+{
+	fb::game::auxiliary*    before = nullptr;
+
+	if(this->_auxiliaries[0] == nullptr)
+	{
+		before = this->_auxiliaries[0];
+		this->_auxiliaries[0] = auxiliary;
+	}
+	else
+	{
+		before = this->_auxiliaries[1];
+		this->_auxiliaries[1] = auxiliary;
+	}
+
+	return before;
 }

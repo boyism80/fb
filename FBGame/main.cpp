@@ -4,16 +4,21 @@
 #include "fb_game.h"
 #include "db.h"
 #include "leak.h"
+#include "console.h"
+#include "resource.h"
+#include "lua.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "zlib/zlib.lib")
+#pragma comment(lib, "lua/lua51.lib")
+#pragma comment(lib, "lua/lua5.1.lib")
 #if defined DEBUG | defined _DEBUG
 #pragma comment(lib, "json/json_vc71_libmtd.lib")
 #else
 #pragma comment(lib, "json/json_vc71_libmt.lib")
 #endif
 
-fb::game::acceptor* acceptor = nullptr;
+fb::game::acceptor*  acceptor = nullptr;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
@@ -30,7 +35,11 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
-    ::SetConsoleCtrlHandler(handle_console, true);
+	//::SetConsoleIcon(IDI_BARAM);
+	//::SetConsoleTitle(CONSOLE_TITLE);
+ //   ::SetConsoleCtrlHandler(handle_console, true);
+
+	_CrtSetBreakAlloc(748960); // 525885
 
     // Initialization
     WSADATA                 wsa;
@@ -57,6 +66,8 @@ int main(int argc, const char** argv)
     // Release
     delete acceptor;
     fb::game::db::release();
+
+	fb::game::lua::release();
 
     return 0;
 }

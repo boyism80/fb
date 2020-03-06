@@ -26,6 +26,12 @@
     <Filter Include="Module\fb\socket">
       <UniqueIdentifier>{3599787d-9cfb-4ef2-ba7e-83223bb6e247}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{de1c61f1-ec66-4b00-97cd-dd8ac3284651}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\console">
+      <UniqueIdentifier>{aa299de3-4336-4681-bdd7-3a179b756980}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,6 +51,9 @@
     </ClCompile>
     <ClCompile Include="..\share\stream.cpp">
       <Filter>Module\fb\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\console.cpp">
+      <Filter>Module\fb\console</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -69,5 +78,21 @@
     <ClInclude Include="..\share\leak.h">
       <Filter>Module</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\console.h">
+      <Filter>Module\fb\console</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\baram.ico">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FBLogin.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

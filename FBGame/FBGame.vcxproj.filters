@@ -8,9 +8,6 @@
     <Filter Include="Module">
       <UniqueIdentifier>{5ec2bef3-c8b6-45bb-a923-609c3c3c9da7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\fb_game">
-      <UniqueIdentifier>{6ca031dc-49e0-4ad8-b31b-8656d85aeeb1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Module\fb">
       <UniqueIdentifier>{f73c01c6-b686-4a85-9c81-650a95d444af}</UniqueIdentifier>
     </Filter>
@@ -26,50 +23,59 @@
     <Filter Include="Module\fb\stream">
       <UniqueIdentifier>{6326e8d3-87e8-4318-ac14-f0157189332a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{24d69f68-8c4c-45dc-8e35-155ff301e16c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module\fb\console">
+      <UniqueIdentifier>{9bb86d78-5cf7-44ce-b23b-6035ce0fac70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\trade">
+      <UniqueIdentifier>{9355b608-aa86-4908-8344-3d3aeaa005b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\acceptor">
+      <UniqueIdentifier>{6ca031dc-49e0-4ad8-b31b-8656d85aeeb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\board">
+      <UniqueIdentifier>{46047bcc-bb53-4846-bec8-55613aea27b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\db">
+      <UniqueIdentifier>{9ad21ae0-9f62-4478-a5ee-747b056d113f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\group">
+      <UniqueIdentifier>{01b52b79-b945-4fde-b4fd-6c1455ced530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\item">
+      <UniqueIdentifier>{1184158f-8c42-461b-95b8-d854e9b57817}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files\map">
       <UniqueIdentifier>{33a7a961-c741-4238-91c0-548909eab46d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\mmo">
       <UniqueIdentifier>{c5f700bf-779d-4df8-aec0-0557a8bf0d3c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\item">
-      <UniqueIdentifier>{1184158f-8c42-461b-95b8-d854e9b57817}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\object">
-      <UniqueIdentifier>{5b47e544-6f95-4326-999b-2a03d7c4a472}</UniqueIdentifier>
+    <Filter Include="Source Files\mob">
+      <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\npc">
       <UniqueIdentifier>{62a9fc95-aa6a-45fd-a274-d759b027442d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mob">
-      <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\board">
-      <UniqueIdentifier>{46047bcc-bb53-4846-bec8-55613aea27b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\spell">
-      <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
+    <Filter Include="Source Files\object">
+      <UniqueIdentifier>{5b47e544-6f95-4326-999b-2a03d7c4a472}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\session">
       <UniqueIdentifier>{9c0348dc-dbd9-40c4-b063-b7ed5f44ba7c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\trade">
-      <UniqueIdentifier>{9355b608-aa86-4908-8344-3d3aeaa005b2}</UniqueIdentifier>
+    <Filter Include="Source Files\spell">
+      <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\group">
-      <UniqueIdentifier>{01b52b79-b945-4fde-b4fd-6c1455ced530}</UniqueIdentifier>
+    <Filter Include="Source Files\lua">
+      <UniqueIdentifier>{b1ff05e7-2f9b-469b-ab05-df03f34617fb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\db">
-      <UniqueIdentifier>{9ad21ae0-9f62-4478-a5ee-747b056d113f}</UniqueIdentifier>
+    <Filter Include="Source Files\container">
+      <UniqueIdentifier>{8f427b70-88fc-4d2c-b7c0-488518268648}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fb_game.cpp">
-      <Filter>Source Files\fb_game</Filter>
-    </ClCompile>
     <ClCompile Include="..\share\acceptor.cpp">
       <Filter>Module\fb\acceptor</Filter>
     </ClCompile>
@@ -118,11 +124,20 @@
     <ClCompile Include="db.cpp">
       <Filter>Source Files\db</Filter>
     </ClCompile>
+    <ClCompile Include="..\share\console.cpp">
+      <Filter>Module\fb\console</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fb_game.cpp">
+      <Filter>Source Files\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="lua.cpp">
+      <Filter>Source Files\lua</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fb_game.h">
-      <Filter>Source Files\fb_game</Filter>
-    </ClInclude>
     <ClInclude Include="..\share\acceptor.h">
       <Filter>Module\fb\acceptor</Filter>
     </ClInclude>
@@ -177,5 +192,33 @@
     <ClInclude Include="db.h">
       <Filter>Source Files\db</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\console.h">
+      <Filter>Module\fb\console</Filter>
+    </ClInclude>
+    <ClInclude Include="fb_game.h">
+      <Filter>Source Files\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="lua.h">
+      <Filter>Source Files\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="container.h">
+      <Filter>Source Files\container</Filter>
+    </ClInclude>
+    <ClInclude Include="container.hpp">
+      <Filter>Source Files\container</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\baram.ico">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FBGame.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

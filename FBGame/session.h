@@ -11,12 +11,13 @@
 #include "spell.h"
 #include "trade.h"
 #include "group.h"
+#include "lua.h"
 
 namespace fb { namespace game {
 
 class map;
 
-class session : public fb_session, public life, public life::core
+class session : public fb_session, public life
 {
 public:
     DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
@@ -25,16 +26,28 @@ public:
     DECLARE_EXCEPTION(no_conveyance_exception, message::exception::NO_CONVEYANCE)
     DECLARE_EXCEPTION(disguise_exception, message::exception::DISGUISE)
 
+public:
+	DECLARE_LUA_PROTOTYPE
+
+private:
+	std::string             _name;
+	uint16_t                _look;
+	uint8_t                 _color;
+
+	defensive				_defensive;
+	uint32_t                _base_hp, _base_mp;
+	uint32_t                _experience;
+
 private:
     uint8_t                 _strength, _intelligence, _dexteritry;
     uint8_t                 _damage; // 공격수정
     uint8_t                 _hit; // 명중수정
     uint8_t                 _regenerative; // 재생력
 
-    fb::game::nation        _nation;
-    fb::game::creature      _creature;
-    fb::game::sex           _sex;
-    fb::game::state         _state;
+    nation					_nation;
+    creature				_creature;
+    sex						_sex;
+    state					_state;
     uint8_t                 _level;
     uint8_t                 _class, _promotion;
     uint32_t                _money;
@@ -44,17 +57,16 @@ private:
 
     std::string             _title;
 
-    item*                   _items[item::MAX_SLOT];
-    spell*                  _spells[spell::MAX_SLOT];
-    weapon*                 _weapon;
-    armor*                  _armor;
-    helmet*                 _helmet;
-    shield*                 _shield;
-    ring*                   _rings[2];
-    auxiliary*              _auxiliaries[2];
-
-    trade                   _trade;
     group*                  _group;
+
+public:
+	fb::game::trade         trade;
+	fb::game::items			items;
+	fb::game::spells		spells;
+	lua::thread*			dialog_thread;
+
+private:
+	using object::based;
 
 public:
     session(SOCKET socket);
@@ -67,7 +79,7 @@ public:
     uint16_t                look() const;
     void                    look(uint16_t value);
 
-    uint16_t                color() const;
+    uint8_t                 color() const;
     void                    color(uint16_t value);
 
     uint32_t                defensive_physical() const;
@@ -84,12 +96,6 @@ public:
 
     uint32_t                base_hp() const;
     uint32_t                base_mp() const;
-
-    void                    hp(uint32_t value);
-    void                    mp(uint32_t value);
-
-    uint32_t                hp() const;
-    uint32_t                mp() const;
 
     uint32_t                id() const;
     fb::game::nation        nation() const;
@@ -158,48 +164,9 @@ public:
     const std::string&      title() const;
     void                    title(const std::string& value);
 
-    fb::game::item*         item(uint8_t index) const;
-    bool                    item_add(fb::game::item& item);
-    uint8_t                 item_add(fb::game::item* item);
-    bool                    item_remove(uint8_t index);
-    bool                    item_reduce(uint8_t index, uint16_t count);
-    fb::game::item*         item_active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot);
-    uint8_t                 item2index(const fb::game::item::core* item) const;
-    void                    equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index);
-    uint8_t                 equipment_off(fb::game::equipment::slot slot);
-
-
-    fb::game::spell*        spell(uint8_t index) const;
-    uint8_t                 spell_add(fb::game::spell* spell);
-    bool                    spell_remove(uint8_t index);
-    bool                    spell_swap(uint8_t src, uint8_t dest);
-
-    fb::game::weapon*       weapon() const;
-    fb::game::weapon*       weapon(fb::game::weapon* weapon);
-
-    fb::game::armor*        armor() const;
-    fb::game::armor*        armor(fb::game::armor* armor);
-
-    fb::game::shield*       shield() const;
-    fb::game::shield*       shield(fb::game::shield* shield);
-
-    fb::game::helmet*       helmet() const;
-    fb::game::helmet*       helmet(fb::game::helmet* helmet);
-
-    fb::game::ring*         ring(equipment::EQUIPMENT_POSITION position) const;
-    fb::game::ring*         ring(fb::game::ring* ring);
-
-    fb::game::auxiliary*    auxiliary(equipment::EQUIPMENT_POSITION position) const;
-    fb::game::auxiliary*    auxiliary(fb::game::auxiliary* auxiliary);
-
-    bool                    inventory_free() const;
-    uint8_t                 inventory_free_size() const;
-
     fb::game::map*          map() const;
     uint16_t                map(fb::game::map* map);
     uint16_t                map(fb::game::map* map, const point16_t position);
-
-    fb::game::trade&        trade();
 
     fb::game::group*        group() const;
     bool                    group_enter(fb::game::group* gs);
@@ -225,6 +192,22 @@ public:
     fb::ostream             make_external_info_stream() const;
     fb::ostream             make_option_stream() const;
     fb::ostream             make_chat_stream(const std::string& message, bool shout) const;
+
+public:
+	IMPLEMENT_NEW_LUA
+
+public:
+	static int				builtin_name(lua_State* lua);
+	static int				builtin_look(lua_State* lua);
+	static int				builtin_color(lua_State* lua);
+	static int				builtin_position(lua_State* lua);
+	static int				builtin_money(lua_State* lua);
+	static int				builtin_exp(lua_State* lua);
+	static int				builtin_base_hp(lua_State* lua);
+	static int				builtin_base_mp(lua_State* lua);
+	static int				builtin_strength(lua_State* lua);
+	static int				builtin_dexterity(lua_State* lua);
+	static int				builtin_intelligence(lua_State* lua);
 };
 
 } }

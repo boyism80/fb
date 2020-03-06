@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 #include "object.h"
+#include "container.h"
 
 #ifdef small
 #undef small
@@ -746,7 +747,7 @@ public:
 
 
 
-typedef struct _itemmix
+class itemmix
 {
 public:
     DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
@@ -770,8 +771,8 @@ public:
     float percentage;
 
 public:
-    _itemmix(float percentage = 100.0f) : percentage(percentage) {}
-    _itemmix(const struct _itemmix& right) : 
+    itemmix(float percentage = 100.0f) : percentage(percentage) {}
+    itemmix(const struct itemmix& right) : 
         require(right.require.begin(), right.require.end()),
         success(right.success.begin(), right.success.end()),
         failed(right.failed.begin(), right.failed.end()),
@@ -786,7 +787,54 @@ public:
     void                            success_add(fb::game::item::core* item, uint32_t count);
     void                            failed_add(fb::game::item::core* item, uint32_t count);
     bool                            matched(const std::vector<item*>& items) const;
-} itemmix;
+};
+
+
+
+class items : public container<fb::game::item>
+{
+private:
+	weapon*							_weapon;
+	armor*							_armor;
+	helmet*							_helmet;
+	shield*							_shield;
+	ring*							_rings[2];
+	auxiliary*						_auxiliaries[2];
+
+public:
+	items(session& owner);
+	~items();
+
+private:
+	void							equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index);
+	uint8_t							equipment_off(fb::game::equipment::slot slot);
+
+public:
+	uint8_t							add(fb::game::item* item);
+	bool							reduce(uint8_t index, uint16_t count);
+	fb::game::item*					active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot);
+	uint8_t							inactive(equipment::slot slot);
+	uint8_t							to_index(const fb::game::item::core* item) const;
+
+	fb::game::weapon*				weapon() const;
+	fb::game::weapon*				weapon(fb::game::weapon* weapon);
+
+	fb::game::armor*				armor() const;
+	fb::game::armor*				armor(fb::game::armor* armor);
+
+	fb::game::shield*				shield() const;
+	fb::game::shield*				shield(fb::game::shield* shield);
+
+	fb::game::helmet*				helmet() const;
+	fb::game::helmet*				helmet(fb::game::helmet* helmet);
+
+	fb::game::ring*					ring(equipment::EQUIPMENT_POSITION position) const;
+	fb::game::ring*					ring(fb::game::ring* ring);
+
+	fb::game::auxiliary*			auxiliary(equipment::EQUIPMENT_POSITION position) const;
+	fb::game::auxiliary*			auxiliary(fb::game::auxiliary* auxiliary);
+};
+
 
 } }
 

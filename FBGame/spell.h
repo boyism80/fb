@@ -3,6 +3,7 @@
 
 #include "mmo.h"
 #include "stream.h"
+#include "container.h"
 
 namespace fb { namespace game {
 
@@ -32,6 +33,14 @@ public:
 public:
     ostream                 make_show_stream(uint8_t slot) const;
     static ostream          make_delete_stream(uint8_t slot);
+};
+
+
+class spells : public container<fb::game::spell>
+{
+public:
+	spells(session& owner);
+	~spells();
 };
 
 } }

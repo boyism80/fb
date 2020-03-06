@@ -100,7 +100,7 @@ std::vector<uint8_t> fb::game::trade::restore()
 
         for(int i = 0; i < item::MAX_SLOT; i++)
         {
-            fb::game::item* own_item = this->_owner->item(i);
+            fb::game::item* own_item = this->_owner->items[i];
             if(own_item == nullptr)
                 continue;
 
@@ -121,7 +121,7 @@ std::vector<uint8_t> fb::game::trade::restore()
         if(item == nullptr)
             continue;
 
-        uint8_t index = this->_owner->item_add(item);
+        uint8_t index = this->_owner->items.add(item);
         if(index != 0xFF)
             indices.push_back(index);
     }
@@ -141,7 +141,7 @@ void fb::game::trade::flush(session& session, std::vector<uint8_t>& indices)
 
     for(auto item : this->_items)
     {
-        indices.push_back(session.item_add(item));
+        indices.push_back(session.items.add(item));
 
         if(item->empty())
             delete item;
@@ -163,10 +163,10 @@ bool fb::game::trade::flushable(session& session) const
     if(remain != 0)
         return false;
 
-    uint8_t free_size = session.inventory_free_size();
+    uint8_t free_size = session.items.free_size();
     for(int i = 0; i < item::MAX_SLOT; i++)
     {
-        fb::game::item* item = session.item(i);
+        fb::game::item* item = session.items[i];
         if(item == nullptr)
             continue;
 

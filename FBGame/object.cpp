@@ -3,6 +3,33 @@
 #include "session.h"
 #include <iostream>
 #include "mob.h"
+#include "fb_game.h"
+
+IMPLEMENT_LUA_EXTENSION(fb::game::object::core, "fb.game.object.core")
+{"name", fb::game::object::core::builtin_name},
+{"look", fb::game::object::core::builtin_look},
+{"color", fb::game::object::core::builtin_color},
+{"dialog", fb::game::object::core::builtin_dialog},
+END_LUA_EXTENSION
+
+
+IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
+{"core", fb::game::object::builtin_core},
+{"dialog", fb::game::object::builtin_dialog},
+{"sound", fb::game::object::builtin_sound},
+{"position", fb::game::object::builtin_position},
+END_LUA_EXTENSION
+
+
+IMPLEMENT_LUA_EXTENSION(fb::game::life::core, "fb.game.life.core")
+{"hp", fb::game::life::core::builtin_hp},
+{"mp", fb::game::life::core::builtin_mp},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
+{"hp", fb::game::life::builtin_hp},
+{"mp", fb::game::life::builtin_mp},
+END_LUA_EXTENSION
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),
@@ -18,6 +45,21 @@ fb::game::object::core::~core()
 uint8_t fb::game::object::core::dialog_look_type() const
 {
     return this->look() > 0xBFFF ? 0x02 : 0x01;
+}
+
+void fb::game::object::core::handle_lua_field(lua_State* lua) const
+{
+    lua_pushstring(lua, "name");
+    lua_pushstring(lua, this->_name.c_str());
+    lua_rawset(lua, -3);
+
+    lua_pushstring(lua, "look");
+    lua_pushnumber(lua, this->_look);
+    lua_rawset(lua, -3);
+
+    lua_pushstring(lua, "color");
+    lua_pushnumber(lua, this->_color);
+    lua_rawset(lua, -3);
 }
 
 fb::game::object::types fb::game::object::core::type() const
@@ -55,6 +97,12 @@ void fb::game::object::core::color(uint8_t value)
     this->_color = value;
 }
 
+void fb::game::object::core::make_lua_table(lua_State* lua) const
+{
+    lua_newtable(lua);
+    this->handle_lua_field(lua);
+}
+
 fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map) const
 {
     fb::ostream             ostream;
@@ -76,6 +124,45 @@ fb::ostream fb::game::object::core::make_dialog_stream(const std::string& messag
         .write(message, true);
 
     return ostream;
+}
+
+int fb::game::object::core::builtin_name(lua_State* lua)
+{
+    auto object = *(fb::game::object::core**)lua_touserdata(lua, 1);
+
+    lua_pushstring(lua, object->_name.c_str());
+    return 1;
+}
+
+int fb::game::object::core::builtin_look(lua_State* lua)
+{
+    auto object = *(fb::game::object::core**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_look);
+    return 1;
+}
+
+int fb::game::object::core::builtin_color(lua_State* lua)
+{
+    auto object = *(fb::game::object::core**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_color);
+    return 1;
+}
+
+int fb::game::object::core::builtin_dialog(lua_State* lua)
+{
+    // Ex) npc:dialog(session, "hello", true, true);
+    auto object = *(fb::game::object::core**)lua_touserdata(lua, 1);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+    auto message = lua_tostring(lua, 3);
+    auto button_prev = lua_toboolean(lua, 4);
+    auto button_next = lua_toboolean(lua, 5);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next, nullptr), acceptor::scope::PIVOT);
+
+    return lua_yield(lua, 1);
 }
 
 
@@ -143,6 +230,9 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
     if(this->_map == NULL)
         return false;
 
+    this->_before.x = this->_position.x;
+    this->_before.y = this->_position.y;
+
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
     return true;
@@ -152,6 +242,9 @@ bool fb::game::object::position(const point16_t position)
 {
     if(this->_map == NULL)
         return false;
+
+    this->_before.x = this->_position.x;
+    this->_before.y = this->_position.y;
 
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(position.x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(position.y)));
@@ -249,12 +342,12 @@ uint16_t fb::game::object::map(fb::game::map* map, const point16_t& position)
     return seq;
 }
 
-bool fb::game::object::sight(const point16_t& position) const
+bool fb::game::object::sight(const point16_t& position, bool before) const
 {
-    return fb::game::object::sight(this->_position, position, this->_map);
+    return fb::game::object::sight(before ? this->_before : this->_position, position, this->_map);
 }
 
-bool fb::game::object::sight(const fb::game::object& object) const
+bool fb::game::object::sight(const fb::game::object& object, bool before_me, bool before_you) const
 {
     if(this->_map == NULL)
         return false;
@@ -262,7 +355,7 @@ bool fb::game::object::sight(const fb::game::object& object) const
     if(this->_map != object.map())
         return false;
 
-    return this->sight(object.position());
+    return this->sight(before_you ? object._before : object._position, before_me);
 }
 
 bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
@@ -659,6 +752,41 @@ fb::ostream fb::game::object::make_dialog_stream(const std::string& message, boo
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
 }
 
+int fb::game::object::builtin_dialog(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+    auto message = lua_tostring(lua, 3);
+    auto button_prev = lua_toboolean(lua, 4);
+    auto button_next = lua_toboolean(lua, 5);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
+
+    return lua_yield(lua, 0);
+}
+
+int fb::game::object::builtin_sound(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto sound = lua_tointeger(lua, 2);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    acceptor->send_stream(*object, object->make_sound_stream(action_sounds(sound)), acceptor::scope::PIVOT);
+
+    lua_pushinteger(lua, -1);
+    return 1;
+}
+
+int fb::game::object::builtin_position(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_position.x);
+    lua_pushinteger(lua, object->_position.y);
+    return 2;
+}
+
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
     object::core(name, look, color),
     _hp(hp), _mp(mp),
@@ -682,6 +810,22 @@ fb::game::life::core::core(const core& right) :
 
 fb::game::life::core::~core()
 {
+}
+
+void fb::game::life::core::handle_lua_field(lua_State* lua) const
+{
+    __super::handle_lua_field(lua);
+    lua_pushstring(lua, "hp");
+    lua_pushnumber(lua, this->_hp);
+    lua_rawset(lua, -3);
+
+    lua_pushstring(lua, "mp");
+    lua_pushnumber(lua, this->_mp);
+    lua_rawset(lua, -3);
+
+    lua_pushstring(lua, "exp");
+    lua_pushnumber(lua, this->_experience);
+    lua_rawset(lua, -3);
 }
 
 uint32_t fb::game::life::core::hp() const
@@ -739,6 +883,22 @@ fb::game::object* fb::game::life::core::make() const
     return new life(this);
 }
 
+int fb::game::life::core::builtin_hp(lua_State* lua)
+{
+    auto object = *(fb::game::life::core**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_hp);
+    return 1;
+}
+
+int fb::game::life::core::builtin_mp(lua_State* lua)
+{
+    auto object = *(fb::game::life::core**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_mp);
+    return 1;
+}
+
 
 fb::game::life::life(const core* core) : 
     object(core),
@@ -779,25 +939,6 @@ uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& lif
     return random_damage * Xrate;
 }
 
-fb::game::point16_t fb::game::life::position() const
-{
-    return object::position();
-}
-
-bool fb::game::life::position(uint16_t x, uint16_t y)
-{
-    this->_before.x = x;
-    this->_before.y = y;
-    return object::position(x, y);
-}
-
-bool fb::game::life::position(const point16_t position)
-{
-    this->_before.x = position.x;
-    this->_before.y = position.y;
-    return object::position(position);
-}
-
 bool fb::game::life::movable(fb::game::direction direction) const
 {
     if(this->_map == NULL)
@@ -819,7 +960,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     if(this->movable(direction) == false)
         return false;
 
-    point16_t before = this->_position;
+    const auto before = this->_position;
 
     switch(direction)
     {
@@ -840,7 +981,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
         break;
     }
 
-    point16_t& after = this->_position;
+    const auto& after = this->_position;
 
     // 내 기준으로 한 오브젝트
     if(show_objects != NULL || hide_objects != NULL)
@@ -850,7 +991,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
             if(object == this)
                 continue;
 
-            bool                before_sight = object::sight(before, object->position(), this->_map);
+            bool                before_sight = this->sight(*object, true);
             bool                after_sight  = this->sight(*object);
 
             bool                show = (!before_sight && after_sight);
@@ -871,7 +1012,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
             if(session == this)
                 continue;
 
-            bool                before_sight = object::sight(before, session->position(), this->_map);
+            bool                before_sight = this->sight(*session, true);
             bool                after_sight  = this->sight(*session);
 
             bool                show = (!before_sight && after_sight);
@@ -892,7 +1033,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
             if(object == this)
                 continue;
 
-            bool                before_sight = object::sight(object->position(), before, this->_map);
+            bool                before_sight = object->sight(*this, false, true);
             bool                after_sight  = object->sight(*this);
 
             bool                show = (!before_sight && after_sight);
@@ -913,7 +1054,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
             if(session == this)
                 continue;
 
-            bool                before_sight = fb::game::object::sight(session->position(), before, this->_map);
+            bool                before_sight = session->sight(*this, false, true);
             bool                after_sight  = session->sight(*this);
 
             bool                show = (!before_sight && after_sight);
@@ -1111,4 +1252,20 @@ fb::ostream fb::game::life::make_die_stream() const
         .write_u8(0x00);
 
     return ostream;
+}
+
+int fb::game::life::builtin_hp(lua_State* lua)
+{
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_hp);
+    return 1;
+}
+
+int fb::game::life::builtin_mp(lua_State* lua)
+{
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, object->_mp);
+    return 1;
 }
