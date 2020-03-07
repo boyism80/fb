@@ -39,7 +39,7 @@ int main(int argc, const char** argv)
 	::SetConsoleTitle(CONSOLE_TITLE);
     ::SetConsoleCtrlHandler(handle_console, true);
 
-	_CrtSetBreakAlloc(157); // 525885
+	//_CrtSetBreakAlloc(157);
 
     // Initialization
     WSADATA                 wsa;

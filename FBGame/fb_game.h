@@ -76,7 +76,6 @@ public:
     bool                    handle_board(fb::game::session& session);
 	bool                    handle_swap(fb::game::session& session);
 	bool                    handle_dialog(fb::game::session& session);
-	//bool                    handle_dialog_input(fb::game::session& session);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
