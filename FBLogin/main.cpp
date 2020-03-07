@@ -35,7 +35,7 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
-	_CrtSetBreakAlloc(165); // 525885
+	//_CrtSetBreakAlloc(165); // 525885
 
 	::SetConsoleIcon(IDI_BARAM);
 	::SetConsoleTitle(CONSOLE_TITLE);

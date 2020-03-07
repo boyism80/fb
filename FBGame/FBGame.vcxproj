@@ -157,6 +157,7 @@
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
     <ClCompile Include="board.cpp" />
+    <ClCompile Include="builtin_function.cpp" />
     <ClCompile Include="db.cpp" />
     <ClCompile Include="fb_game.cpp" />
     <ClCompile Include="group.cpp" />
@@ -181,6 +182,8 @@
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="board.h" />
+    <ClInclude Include="builtin_function.h" />
+    <ClInclude Include="builtin_function.hpp" />
     <ClInclude Include="container.h" />
     <ClInclude Include="container.hpp" />
     <ClInclude Include="db.h" />

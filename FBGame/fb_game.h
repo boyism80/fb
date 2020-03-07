@@ -9,12 +9,8 @@
 #include "json/json.h"
 #include "acceptor.h"
 #include "session.h"
-#include "map.h"
-#include "item.h"
-#include "npc.h"
-#include "mob.h"
-#include "board.h"
 #include "lua.h"
+#include "db.h"
 
 namespace fb { namespace game {
 
@@ -80,6 +76,7 @@ public:
     bool                    handle_board(fb::game::session& session);
 	bool                    handle_swap(fb::game::session& session);
 	bool                    handle_dialog(fb::game::session& session);
+	//bool                    handle_dialog_input(fb::game::session& session);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
@@ -96,6 +93,8 @@ public:
 
 public:
     static int              builtin_name2mob(lua_State* lua);
+    static int              builtin_name2npc(lua_State* lua);
+    static int              builtin_name2item(lua_State* lua);
 };
 
 } }

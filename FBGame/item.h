@@ -15,10 +15,6 @@ namespace fb { namespace game {
 
 class session;
 
-//
-// class item
-// 일반 아이템
-//
 class item : public object
 {
 public:

@@ -28,10 +28,19 @@ public:
         object*             make() const;
 
     public:
-        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map = nullptr) const;
-        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map = nullptr) const;
-        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<item::core*>& cores, fb::game::map* map = nullptr) const;
-        fb::ostream         make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<std::string>& menus, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::MENU) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::SLOT) const;
+        fb::ostream         make_dialog_stream(const std::string& message, const std::vector<item::core*>& cores, fb::game::map* map = nullptr, uint16_t pursuit = 0xFFFF, dialog::interaction interaction = dialog::interaction::SELL) const;
+        fb::ostream         make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::INPUT) const;
+		fb::ostream			make_input_dialog_stream(const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::INPUT_EX) const;
+
+	public:
+		IMPLEMENT_NEW_LUA
+
+        static int          builtin_input_dialog(lua_State* lua);
+		static int			builtin_input_dialog_ext(lua_State* lua);
+        static int          builtin_menu_dialog(lua_State* lua);
+        static int          builtin_item_dialog(lua_State* lua);
     };
 
 private:
@@ -61,8 +70,16 @@ public:
     fb::ostream             make_dialog_stream(const std::string& message, const std::vector<uint8_t>& item_slots) const;
     fb::ostream             make_dialog_stream(const std::string& message, const std::vector<item::core*>& cores, fb::game::map* map = nullptr) const;
     fb::ostream             make_input_dialog_stream(const std::string& message, fb::game::map* map = nullptr) const;
-};
+	fb::ostream				make_input_dialog_stream(const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false) const;
 
+public:
+	IMPLEMENT_NEW_LUA
+
+    static int              builtin_input_dialog(lua_State* lua);
+	static int				builtin_input_dialog_ext(lua_State* lua);
+    static int              builtin_menu_dialog(lua_State* lua);
+    static int              builtin_item_dialog(lua_State* lua);
+};
 
 } }
 

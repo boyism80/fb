@@ -74,6 +74,9 @@
     <Filter Include="Source Files\container">
       <UniqueIdentifier>{8f427b70-88fc-4d2c-b7c0-488518268648}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\builtin_function">
+      <UniqueIdentifier>{65b1a007-14ad-4712-acb3-a49994731430}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp">
@@ -135,6 +138,9 @@
     </ClCompile>
     <ClCompile Include="lua.cpp">
       <Filter>Source Files\lua</Filter>
+    </ClCompile>
+    <ClCompile Include="builtin_function.cpp">
+      <Filter>Source Files\builtin_function</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +215,12 @@
     </ClInclude>
     <ClInclude Include="container.hpp">
       <Filter>Source Files\container</Filter>
+    </ClInclude>
+    <ClInclude Include="builtin_function.h">
+      <Filter>Source Files\builtin_function</Filter>
+    </ClInclude>
+    <ClInclude Include="builtin_function.hpp">
+      <Filter>Source Files\builtin_function</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

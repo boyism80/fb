@@ -1,34 +1,34 @@
 #include "object.h"
 #include "map.h"
 #include "session.h"
-#include <iostream>
 #include "mob.h"
 #include "fb_game.h"
+#include "builtin_function.h"
 
 IMPLEMENT_LUA_EXTENSION(fb::game::object::core, "fb.game.object.core")
-{"name", fb::game::object::core::builtin_name},
-{"look", fb::game::object::core::builtin_look},
-{"color", fb::game::object::core::builtin_color},
-{"dialog", fb::game::object::core::builtin_dialog},
+{"name",        fb::game::object::core::builtin_name},
+{"look",        fb::game::object::core::builtin_look},
+{"color",       fb::game::object::core::builtin_color},
+{"dialog",      fb::game::object::core::builtin_dialog},
 END_LUA_EXTENSION
 
 
 IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
-{"core", fb::game::object::builtin_core},
-{"dialog", fb::game::object::builtin_dialog},
-{"sound", fb::game::object::builtin_sound},
-{"position", fb::game::object::builtin_position},
+{"core",        fb::game::object::builtin_core},
+{"dialog",      fb::game::object::builtin_dialog},
+{"sound",       fb::game::object::builtin_sound},
+{"position",    fb::game::object::builtin_position},
 END_LUA_EXTENSION
 
 
 IMPLEMENT_LUA_EXTENSION(fb::game::life::core, "fb.game.life.core")
-{"hp", fb::game::life::core::builtin_hp},
-{"mp", fb::game::life::core::builtin_mp},
+{"hp",          fb::game::life::core::builtin_hp},
+{"mp",          fb::game::life::core::builtin_mp},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
-{"hp", fb::game::life::builtin_hp},
-{"mp", fb::game::life::builtin_mp},
+{"hp",          fb::game::life::builtin_hp},
+{"mp",          fb::game::life::builtin_mp},
 END_LUA_EXTENSION
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
@@ -103,13 +103,13 @@ void fb::game::object::core::make_lua_table(lua_State* lua) const
     this->handle_lua_field(lua);
 }
 
-fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map) const
+fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map, dialog::interaction interaction) const
 {
     fb::ostream             ostream;
 
     ostream.write_u8(0x30)
         .write_u8(0x00)     // unknown
-        .write_u8(0x00)     // unknown
+        .write_u8(interaction)     // interaction
         .write_u32(map != nullptr ? map->id() : 0x01)
         .write_u8(this->dialog_look_type())
         .write_u8(0x01)
@@ -153,16 +153,7 @@ int fb::game::object::core::builtin_color(lua_State* lua)
 int fb::game::object::core::builtin_dialog(lua_State* lua)
 {
     // Ex) npc:dialog(session, "hello", true, true);
-    auto object = *(fb::game::object::core**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
-    auto button_prev = lua_toboolean(lua, 4);
-    auto button_next = lua_toboolean(lua, 5);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-
-    acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next, nullptr), acceptor::scope::PIVOT);
-
-    return lua_yield(lua, 1);
+    return ::builtin_dialog<object::core>(lua);
 }
 
 
@@ -754,16 +745,7 @@ fb::ostream fb::game::object::make_dialog_stream(const std::string& message, boo
 
 int fb::game::object::builtin_dialog(lua_State* lua)
 {
-    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
-    auto button_prev = lua_toboolean(lua, 4);
-    auto button_next = lua_toboolean(lua, 5);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-
-    acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
-
-    return lua_yield(lua, 0);
+    return ::builtin_dialog<object>(lua);
 }
 
 int fb::game::object::builtin_sound(lua_State* lua)

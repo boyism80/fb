@@ -55,7 +55,7 @@ public:
 		void					make_lua_table(lua_State* lua) const;
         
 	public:
-        fb::ostream             make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map = nullptr) const;
+        fb::ostream             make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::NORMAL) const;
 
 
 	public:

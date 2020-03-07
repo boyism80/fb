@@ -1,5 +1,4 @@
 #include "fb_game.h"
-#include "db.h"
 
 using namespace fb::game;
 
@@ -53,7 +52,8 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x0E, &acceptor::handle_chat);                // 유저 채팅 핸들러
     this->register_handle(0x3B, &acceptor::handle_board);               // 게시판 섹션 리스트 핸들러
 	this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
-	this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
+    this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
+    this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -320,7 +320,7 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
 
 	// 루아스크립트의 handle_click 함수의 리턴값 설정
     session.new_lua<fb::game::session>(*session.dialog_thread);
-    npc.new_lua<fb::game::mob>(*session.dialog_thread);
+    npc.new_lua<fb::game::npc>(*session.dialog_thread);
 	session.dialog_thread->resume(2);
 }
 
@@ -1540,19 +1540,117 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 {
 	auto&                       istream = session.in_stream();
 	uint8_t                     cmd = istream.read_u8();
-	auto						unknown1 = istream.read_u32();
-	auto						unknown2 = istream.read_u32();
-	auto						action = istream.read_u8();
+	auto						interaction = istream.read_u8();
 
-	if(session.dialog_thread == nullptr)
-		return true;
-
-	// 루아스크립트 다이얼로그 함수의 리턴값 설정
-	session.dialog_thread->pushinteger(action);
-	if(session.dialog_thread->resume(1))
+	switch(interaction)
 	{
-		delete session.dialog_thread;
-		session.dialog_thread = nullptr;
+    case dialog::interaction::NORMAL: // 일반 다이얼로그
+	{
+		istream.read(nullptr, 0x07); // 7바이트 무시
+		auto					action = istream.read_u8();
+
+        if(session.dialog_thread == nullptr)
+            return true;
+
+		// 루아스크립트 다이얼로그 함수의 리턴값 설정
+		session.dialog_thread->pushinteger(action);
+		if(session.dialog_thread->resume(1))
+		{
+			delete session.dialog_thread;
+			session.dialog_thread = nullptr;
+		}
+		break;
+	}
+
+    case dialog::interaction::INPUT:
+	{
+        auto unknown1 = istream.read_u16();
+        auto unknown2 = istream.read_u32();
+        auto message = istream.readstr_u16();
+
+        if(session.dialog_thread == nullptr)
+            return true;
+
+        session.dialog_thread->pushstring(message);
+        if(session.dialog_thread->resume(1))
+        {
+            delete session.dialog_thread;
+            session.dialog_thread = nullptr;
+        }
+		break;
+	}
+
+    case dialog::interaction::INPUT_EX:
+	{
+		if(session.dialog_thread == nullptr)
+			return true;
+
+		istream.read(nullptr, 0x07); // 7바이트 무시
+		auto					action = istream.read_u8();
+		if(action == 0x02) // OK button
+		{
+			auto unknown1 = istream.read_u8();
+			auto message = istream.readstr_u8();
+			session.dialog_thread->pushstring(message);
+		}
+		else
+		{
+            session.dialog_thread->pushinteger(action);
+		}
+
+		if(session.dialog_thread->resume(1))
+		{
+			delete session.dialog_thread;
+			session.dialog_thread = nullptr;
+		}
+		break;
+	}
+
+    case dialog::interaction::MENU:
+	{
+        auto unknown = istream.read_u32();
+        auto index = istream.read_u16();
+
+        if(session.dialog_thread == nullptr)
+            return true;
+
+        session.dialog_thread->pushinteger(index);
+        if(session.dialog_thread->resume(1))
+        {
+            delete session.dialog_thread;
+            session.dialog_thread = nullptr;
+        }
+		break;
+	}
+
+    case dialog::interaction::SLOT:
+	{
+		break;
+	}
+
+    case dialog::interaction::SELL:
+    {
+        auto unknown = istream.read_u32();
+        auto pursuit = istream.read_u16();
+        auto item_name = istream.readstr_u8();
+
+        if(session.dialog_thread == nullptr)
+            return true;
+
+        session.dialog_thread->pushstring(item_name);
+        if(session.dialog_thread->resume(1))
+        {
+            delete session.dialog_thread;
+            session.dialog_thread = nullptr;
+        }
+
+        break;
+    }
+
+	default:
+	{
+		break;
+	}
 	}
 
 	return true;
@@ -1834,15 +1932,11 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+	if(command == "show extend input")
+	{
+		this->send_stream(session, npc->make_input_dialog_stream("안녕", "탑", "바텀", 0xFF, true), scope::SELF);
+		return true;
+	}
+
     return false;
-}
-
-int fb::game::acceptor::builtin_name2mob(lua_State* lua)
-{
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-
-    auto name = lua_tostring(lua, 1);
-    auto mob = db::name2mob(name);
-    mob->new_lua<fb::game::mob::core>(lua);
-    return 1;
 }

@@ -22,6 +22,19 @@ enum sex       : uint8_t { MAN = 0x00, WOMAN = 0x01, BOTH = 0x02};
 enum action    : uint8_t { ATTACK = 0x01, EMOTION = 0x0B, PICKUP = 0x04, PICKUP_SILENT = 0x05, EAT = 0x08, };
 enum state     : uint8_t { NORMAL = 0x00, GHOST = 0x01, TRANSLUCENCY = 0x02, RIDING = 0x03, DISGUISE = 0x04, TRANSPARENCY = 0x06, };
 
+namespace dialog
+{
+    enum interaction : uint8_t
+    {
+        NORMAL      = 0x00,
+        INPUT       = 0x01,
+        INPUT_EX    = 0x02,
+        MENU        = 0x04,
+        SLOT        = 0x05,
+        SELL        = 0x06,
+    };
+}
+
 namespace message
 {
     enum type : uint8_t

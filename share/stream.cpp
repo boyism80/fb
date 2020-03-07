@@ -89,8 +89,39 @@ uint32_t fb::istream::read_u32(buffer::endian endian)
 
 void fb::istream::read(void * buffer, uint32_t size)
 {
-    memcpy(buffer, this->data() + this->_position + this->_offset, size);
+	if(buffer != nullptr)
+		memcpy(buffer, this->data() + this->_position + this->_offset, size);
     this->_offset += size;
+}
+
+std::string fb::istream::readstr_u8()
+{
+	uint8_t					size = this->read_u8();
+	char					buffer[0xFF];
+	this->read(buffer, size);
+	buffer[std::min(size, uint8_t(0xFF))] = 0x00;
+
+	return std::string(buffer);
+}
+
+std::string fb::istream::readstr_u16(buffer::endian endian)
+{
+	uint16_t				size = this->read_u16(endian);
+	char					buffer[0xFF];
+	this->read(buffer, size);
+	buffer[std::min(size, uint16_t(0xFF))] = 0x00;
+
+	return std::string(buffer);
+}
+
+std::string fb::istream::readstr_u32(buffer::endian endian)
+{
+    uint32_t				size = this->read_u32(endian);
+    char					buffer[0xFF];
+    this->read(buffer, size);
+    buffer[std::min(size, uint32_t(0xFF))] = 0x00;
+
+    return std::string(buffer);
 }
 
 uint32_t fb::istream::readable_size() const

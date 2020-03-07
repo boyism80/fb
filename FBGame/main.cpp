@@ -35,11 +35,11 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
-	//::SetConsoleIcon(IDI_BARAM);
-	//::SetConsoleTitle(CONSOLE_TITLE);
- //   ::SetConsoleCtrlHandler(handle_console, true);
+	::SetConsoleIcon(IDI_BARAM);
+	::SetConsoleTitle(CONSOLE_TITLE);
+    ::SetConsoleCtrlHandler(handle_console, true);
 
-	_CrtSetBreakAlloc(748960); // 525885
+	_CrtSetBreakAlloc(157); // 525885
 
     // Initialization
     WSADATA                 wsa;
@@ -47,7 +47,7 @@ int main(int argc, const char** argv)
         return 0;
 
     // Load databases
-    fb::game::db::loads();
+	fb::game::db::init();
 
     // Create acceptor instance
     acceptor = new fb::game::acceptor(10021);
@@ -65,8 +65,7 @@ int main(int argc, const char** argv)
     
     // Release
     delete acceptor;
-    fb::game::db::release();
-
+	fb::game::db::release();
 	fb::game::lua::release();
 
     return 0;

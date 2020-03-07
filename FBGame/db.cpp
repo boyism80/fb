@@ -1,22 +1,41 @@
 #include "db.h"
 
-std::map<uint16_t, fb::game::map*>              fb::game::db::_maps;
-std::map<uint16_t, fb::game::item::core*>       fb::game::db::_items;
-std::map<uint16_t, fb::game::npc::core*>        fb::game::db::_npcs;
-std::map<uint16_t, fb::game::mob::core*>        fb::game::db::_mobs;
-std::map<uint16_t, fb::game::spell*>            fb::game::db::_spells;
-std::vector<fb::game::class_data*>              fb::game::db::_classes;
-std::vector<fb::game::itemmix*>                 fb::game::db::_itemmixes;
-fb::game::board                                 fb::game::db::_board;
+fb::game::db* fb::game::db::_instance;
 
-fb::game::db::db()
-{
-    this->loads();
-}
+fb::game::db::db() : _initialized(false)
+{}
 
 fb::game::db::~db()
 {
-    db::release();
+	for(auto pair : this->_maps)
+		delete pair.second;
+	this->_maps.clear();
+
+	for(auto pair : this->_items)
+		delete pair.second;
+	this->_items.clear();
+
+	for(auto pair : this->_npcs)
+		delete pair.second;
+	this->_npcs.clear();
+
+	for(auto pair : this->_mobs)
+		delete pair.second;
+	this->_mobs.clear();
+
+	for(auto pair : this->_spells)
+		delete pair.second;
+	this->_spells.clear();
+
+	for(auto cls : this->_classes)
+		delete cls;
+	this->_classes.clear();
+
+	for(auto itemmix : this->_itemmixes)
+		delete itemmix;
+	this->_itemmixes.clear();
+
+	this->_board.clear();
 }
 
 fb::game::map::effects fb::game::db::parse_map_effect(const std::string& effect)
@@ -225,6 +244,51 @@ fb::game::mob::offensive_type fb::game::db::parse_mob_offensive(const std::strin
         return mob::offensive_type::RUN_AWAY;
 
     throw std::runtime_error("invalid offensive type");
+}
+
+bool fb::game::db::loads()
+{
+	if(this->_initialized)
+		return false;
+
+	if(this->load_spell("db/spell.json") == false)
+		return false;
+
+	if(this->load_maps("db/map.json") == false)
+		return false;
+
+	if(this->load_warp("db/warp.json") == false)
+		return false;
+
+	if(this->load_items("db/item.json") == false)
+		return false;
+
+	if(this->load_itemmix("db/itemmix.json") == false)
+		return false;
+
+	if(this->load_npc("db/npc.json") == false)
+		return false;
+
+	if(this->load_mob("db/mob.json") == false)
+		return false;
+
+	if(this->load_drop_item("db/item_drop.json") == false)
+		return false;
+
+	if(this->load_npc_spawn("db/npc_spawn.json") == false)
+		return false;
+
+	if(this->load_mob_spawn("db/mob_spawn.json") == false)
+		return false;
+
+	if(this->load_class() == false)
+		return false;
+
+	if(this->load_board("db/board.json") == false)
+		return false;
+
+	this->_initialized = true;
+	return true;
 }
 
 bool fb::game::db::load_maps(const std::string& db_fname)
@@ -788,125 +852,71 @@ bool fb::game::db::load_board(const std::string& db_fname)
     return true;
 }
 
-bool fb::game::db::loads()
+fb::game::db* fb::game::db::get()
 {
-    db::release();
+	if(db::_instance == nullptr)
+		db::_instance = new db();
 
-    if(db::load_spell("db/spell.json") == false)
-        return false;
-    
-    if(db::load_maps("db/map.json") == false)
-        return false;
-    
-    if(db::load_warp("db/warp.json") == false)
-        return false;
-    
-    if(db::load_items("db/item.json") == false)
-        return false;
-    
-    if(db::load_itemmix("db/itemmix.json") == false)
-        return false;
-    
-    if(db::load_npc("db/npc.json") == false)
-        return false;
-    
-    if(db::load_mob("db/mob.json") == false)
-        return false;
-    
-    if(db::load_drop_item("db/item_drop.json") == false)
-        return false;
-    
-    if(db::load_npc_spawn("db/npc_spawn.json") == false)
-        return false;
-    
-    if(db::load_mob_spawn("db/mob_spawn.json") == false)
-        return false;
-    
-    if(db::load_class() == false)
-        return false;
-    
-    if(db::load_board("db/board.json") == false)
-        return false;
-    
-    return true;
+	return db::_instance;
+}
+
+void fb::game::db::init()
+{
+	auto instance = db::get();
+	instance->loads();
 }
 
 void fb::game::db::release()
 {
-    for(auto pair : db::_maps)
-        delete pair.second;
-    db::_maps.clear();
+    if(db::_instance != nullptr)
+		delete db::_instance;
 
-    for(auto pair : db::_items)
-        delete pair.second;
-    db::_items.clear();
-
-    for(auto pair : db::_npcs)
-        delete pair.second;
-    db::_npcs.clear();
-
-    for(auto pair : db::_mobs)
-        delete pair.second;
-    db::_mobs.clear();
-
-    for(auto pair : db::_spells)
-        delete pair.second;
-    db::_spells.clear();
-
-    for(auto cls : db::_classes)
-        delete cls;
-    db::_classes.clear();
-
-    for(auto itemmix : db::_itemmixes)
-        delete itemmix;
-    db::_itemmixes.clear();
-
-	db::_board.clear();
+	db::_instance = nullptr;
 }
 
 std::map<uint16_t, fb::game::map*>& fb::game::db::maps()
 {
-    return db::_maps;
+	return db::get()->_maps;
 }
 
 std::map<uint16_t, fb::game::item::core*>& fb::game::db::items()
 {
-    return db::_items;
+    return db::get()->_items;
 }
 
 std::map<uint16_t, fb::game::npc::core*>& fb::game::db::npcs()
 {
-    return db::_npcs;
+    return db::get()->_npcs;
 }
 
 std::map<uint16_t, fb::game::mob::core*>& fb::game::db::mobs()
 {
-    return db::_mobs;
+    return db::get()->_mobs;
 }
 
 std::map<uint16_t, fb::game::spell*>& fb::game::db::spells()
 {
-    return db::_spells;
+    return db::get()->_spells;
 }
 
 std::vector<fb::game::class_data*>& fb::game::db::classes()
 {
-    return db::_classes;
+    return db::get()->_classes;
 }
 
 std::vector<fb::game::itemmix*>& fb::game::db::itemmixes()
 {
-    return db::_itemmixes;
+    return db::get()->_itemmixes;
 }
 
 fb::game::board& fb::game::db::board()
 {
-    return db::_board;
+    return db::get()->_board;
 }
 
 fb::game::map* fb::game::db::name2map(const std::string& name)
 {
-    for(auto pair : db::_maps)
+    for(auto pair : db::maps())
     {
         if(pair.second->name() == name)
             return pair.second;
@@ -917,7 +927,7 @@ fb::game::map* fb::game::db::name2map(const std::string& name)
 
 fb::game::npc::core* fb::game::db::name2npc(const std::string& name)
 {
-    for(auto pair : db::_npcs)
+    for(auto pair : db::npcs())
     {
         if(pair.second->name() == name)
             return pair.second;
@@ -928,7 +938,7 @@ fb::game::npc::core* fb::game::db::name2npc(const std::string& name)
 
 fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
 {
-    for(auto pair : db::_mobs)
+    for(auto pair : db::mobs())
     {
         if (pair.second->name() == name)
             return pair.second;
@@ -939,7 +949,7 @@ fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
 
 fb::game::item::core* fb::game::db::name2item(const std::string& name)
 {
-    for(auto item : db::_items)
+    for(auto item : db::items())
     {
         if(item.second->name() == name)
             return item.second;
@@ -950,9 +960,10 @@ fb::game::item::core* fb::game::db::name2item(const std::string& name)
 
 const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
 {
+    const auto classes = db::classes();
     try
     {
-        return &db::_classes[cls]->promotions[promotion];
+        return &classes[cls]->promotions[promotion];
     }
     catch(std::exception& e)
     {
@@ -962,11 +973,12 @@ const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
 
 bool fb::game::db::name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id)
 {
-    for(int i1 = 0; i1 < db::_classes.size(); i1++)
+    const auto classes = db::classes();
+    for(int i1 = 0; i1 < classes.size(); i1++)
     {
-        for(int i2 = 0; i2 < db::_classes[i1]->promotions.size(); i2++)
+        for(int i2 = 0; i2 < classes[i1]->promotions.size(); i2++)
         {
-            if(db::_classes[i1]->promotions[i2] != name)
+            if(classes[i1]->promotions[i2] != name)
                 continue;
 
             *class_id = i1;
@@ -980,7 +992,7 @@ bool fb::game::db::name2class(const std::string& name, uint8_t* class_id, uint8_
 
 fb::game::itemmix* fb::game::db::find_itemmix(const std::vector<item*>& items)
 {
-    for(const auto itemmix : db::_itemmixes)
+    for(const auto itemmix : db::itemmixes())
     {
         if(itemmix->require.size() != items.size())
             continue;
@@ -996,7 +1008,7 @@ uint32_t fb::game::db::required_exp(uint8_t class_id, uint8_t level)
 {
     try
     {
-        return db::_classes[class_id]->level_abilities[level]->exp;
+        return db::classes()[class_id]->level_abilities[level]->exp;
     }
     catch(std::exception& e)
     {
