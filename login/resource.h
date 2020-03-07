@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FBLogin.rc
+// Used by login.rc
 //
 #define IDI_BARAM                       101
 

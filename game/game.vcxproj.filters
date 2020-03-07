@@ -229,7 +229,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="FBGame.rc">
+    <ResourceCompile Include="game.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>

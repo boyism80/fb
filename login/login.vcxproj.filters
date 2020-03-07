@@ -91,7 +91,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="FBLogin.rc">
+    <ResourceCompile Include="login.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
   </ItemGroup>

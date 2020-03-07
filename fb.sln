@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.705
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBLogin", "FBLogin\FBLogin.vcxproj", "{5C57BA6C-26FA-4CAF-9E57-02A2BD95B353}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "login", "login\login.vcxproj", "{5C57BA6C-26FA-4CAF-9E57-02A2BD95B353}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBGame", "FBGame\FBGame.vcxproj", "{FCA3D8F1-0E42-4DF3-A799-33C7AF44609A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game\game.vcxproj", "{FCA3D8F1-0E42-4DF3-A799-33C7AF44609A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
