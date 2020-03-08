@@ -6,32 +6,56 @@ using namespace fb::game;
 template <typename T>
 int builtin_dialog(lua_State* lua)
 {
-    auto object = *(T**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
-    auto button_prev = lua_toboolean(lua, 4);
-    auto button_next = lua_toboolean(lua, 5);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    try
+    {
+        auto argc = lua_gettop(lua);
+        if(argc < 3)
+            throw std::runtime_error("not enough parameters");
 
-    acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
-    return lua_yield(lua, 1);
+        auto object = *(T**)lua_touserdata(lua, 1);
+        auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+        auto message = lua_tostring(lua, 3);
+        auto button_prev = argc < 4 ? false : lua_toboolean(lua, 4);
+        auto button_next = argc < 5 ? false : lua_toboolean(lua, 5);
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+        acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
+        return lua_yield(lua, 1);
+    }
+    catch(std::exception& e)
+    {
+        lua_pushnil(lua);
+        return 1;
+    }
 }
 
 template <typename T>
 int builtin_input_dialog_ext(lua_State* lua)
 {
-    auto npc = *(T**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
-    auto top = lua_tostring(lua, 4);
-    auto bottom = lua_tostring(lua, 5);
-    auto maxlen = lua_tointeger(lua, 6);
-    auto prev = lua_toboolean(lua, 7);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    try
+    {
+        auto argc = lua_gettop(lua);
+        if(argc < 5)
+            throw std::runtime_error("not enough parameters");
 
-    acceptor->send_stream(*session, npc->make_input_dialog_stream(message, top, bottom, maxlen, prev), acceptor::scope::SELF);
+        auto npc = *(T**)lua_touserdata(lua, 1);
+        auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+        auto message = lua_tostring(lua, 3);
+        auto top = lua_tostring(lua, 4);
+        auto bottom = lua_tostring(lua, 5);
+        auto maxlen = argc < 6 ? 0xFF : lua_tointeger(lua, 6);
+        auto prev = argc < 7 ? false : lua_toboolean(lua, 7);
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-    return lua_yield(lua, 1);
+        acceptor->send_stream(*session, npc->make_input_dialog_stream(message, top, bottom, maxlen, prev), acceptor::scope::SELF);
+
+        return lua_yield(lua, 1);
+    }
+    catch(std::exception& e)
+    {
+        lua_pushnil(lua);
+        return 1;
+    }
 }
 
 template <typename T>
