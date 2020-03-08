@@ -272,6 +272,7 @@ public:
     void                        kill();
 
 public:
+    virtual fb::ostream         make_state_stream(fb::game::state_level level) const { return fb::ostream(); }
     fb::ostream                 make_move_stream(bool from_before = true) const;
     fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
     fb::ostream                 make_direction_stream() const;

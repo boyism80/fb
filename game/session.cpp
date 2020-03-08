@@ -180,6 +180,18 @@ bool fb::game::session::level_up()
         return false;
 
     this->_level++;
+    
+    auto&           classes = db::classes();
+    this->strength_up(classes[this->_class]->level_abilities[this->_level]->strength);
+    this->intelligence_up(classes[this->_class]->level_abilities[this->_level]->intelligence);
+    this->dexteritry_up(classes[this->_class]->level_abilities[this->_level]->dexteritry);
+
+    this->base_hp_up(classes[this->_class]->level_abilities[this->_level]->base_hp + std::rand() % 10);
+    this->base_mp_up(classes[this->_class]->level_abilities[this->_level]->base_mp + std::rand() % 10);
+
+    this->hp(this->base_hp());
+    this->mp(this->base_mp());
+
     return true;
 }
 

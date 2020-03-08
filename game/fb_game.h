@@ -40,7 +40,8 @@ public:
 
 public:
     bool                    handle_move_life(fb::game::life* life, fb::game::direction direction);
-    void                    handle_damage(fb::game::session& session, fb::game::mob& mob, uint32_t random_damage);
+    void                    handle_damage(fb::game::session& session, fb::game::mob& mob, uint32_t damage);
+    void                    handle_damage(fb::game::life& from, fb::game::life& to, uint32_t damage);
     void                    handle_experience(fb::game::session& session, uint32_t exp, bool limit = true);
     void                    handle_level_up(fb::game::session& session);
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
