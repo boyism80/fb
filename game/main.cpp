@@ -9,13 +9,14 @@
 #include "lua.h"
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "zlib/zlib.lib")
 #pragma comment(lib, "lua/lua51.lib")
 #pragma comment(lib, "lua/lua5.1.lib")
 #if defined DEBUG | defined _DEBUG
 #pragma comment(lib, "json/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/zlibd.lib")
 #else
 #pragma comment(lib, "json/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/zlib.lib")
 #endif
 
 fb::game::acceptor*  acceptor = nullptr;

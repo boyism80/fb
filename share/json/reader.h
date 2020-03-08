@@ -125,7 +125,7 @@ namespace Json {
 
       typedef std::deque<ErrorInfo> Errors;
 
-      bool expectToken( TokenType types, Token &token, const char *message );
+      bool expectToken( TokenType type, Token &token, const char *message );
       bool readToken( Token &token );
       void skipSpaces();
       bool match( Location pattern, 
@@ -160,10 +160,10 @@ namespace Json {
       void skipUntilSpace();
       Value &currentValue();
       Char getNextChar();
-      void getLocationLineAndColumn( Location position,
+      void getLocationLineAndColumn( Location location,
                                      int &line,
                                      int &column ) const;
-      std::string getLocationLineAndColumn( Location position ) const;
+      std::string getLocationLineAndColumn( Location location ) const;
       void addComment( Location begin, 
                        Location end, 
                        CommentPlacement placement );

@@ -258,7 +258,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
 #if defined DEBUG | defined _DEBUG
         uint32_t limit_exp = require;
 #else
-        uint32_t limit_exp = max_level ? mob.experience() : std::min(uint32_t(require / 100.0f*3.3f + 1), mob.experience());
+        uint32_t limit_exp = session.max_level() ? mob.experience() : std::min(uint32_t(require / 100.0f*3.3f + 1), mob.experience());
 #endif
         session.experience_add(limit_exp);
 
@@ -1456,8 +1456,10 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session)
     istream.read(message, length);
     message[length] = 0;
 
+#if defined DEBUG | defined _DEBUG
     if(this->handle_admin(session, message))
         return true;
+#endif
 
     this->send_stream(session, session.make_chat_stream(message, shout), shout ? scope::MAP : scope::PIVOT);
 
@@ -1852,6 +1854,7 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
         this->send_stream(session, i->make_visual_stream(false), scope::SELF);
 }
 
+#if defined DEBUG | defined _DEBUG
 bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::string& message)
 {
     if(message[0] != '/')
@@ -1940,3 +1943,4 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     return false;
 }
+#endif

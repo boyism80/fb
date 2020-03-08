@@ -211,7 +211,7 @@ namespace Json {
     Json::Value obj_value(Json::objectValue); // {}
     \endcode
       */
-      Value( ValueType types = nullValue );
+      Value( ValueType type = nullValue );
       Value( Int value );
       Value( UInt value );
 #if defined(JSON_HAS_INT64)
@@ -246,7 +246,7 @@ namespace Json {
       /// both logic and efficiency.
       void swap( Value &other );
 
-      ValueType types() const;
+      ValueType type() const;
 
       bool operator <( const Value &other ) const;
       bool operator <=( const Value &other ) const;
@@ -561,7 +561,7 @@ namespace Json {
                          InArgs::const_iterator &itInArg, 
                          PathArgument::Kind kind );
       void invalidPath( const std::string &path, 
-                        int position );
+                        int location );
 
       Args args_;
    };
