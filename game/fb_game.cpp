@@ -54,6 +54,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 	this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
     this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
+    this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -775,7 +776,6 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
             return true;
 
         auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
-
         if(item == dropped)
         {
             this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
@@ -1656,6 +1656,61 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 	}
 
 	return true;
+}
+
+bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
+{
+    auto&                       istream = session.in_stream();
+    auto                        cmd = istream.read_u8();
+    auto                        unknown = istream.read_u8();
+    auto                        slot = istream.read_u8() - 1;
+
+    try
+    {
+        auto                    item = session.items.at(slot);
+        if(item == nullptr)
+            throw std::exception();
+
+        if(item->trade_enabled() == false)
+            throw std::runtime_error("던질 수 없는 물건입니다.");
+
+        auto                    map = session.map();
+        if(map == nullptr)
+            throw std::exception();
+
+        auto                    dropped = item->handle_drop(session, 1);
+        item->direction(session.direction());
+        for(int i = 0; i < 7; i++)
+        {
+            if(map->movable_forward(*item) == false)
+                break;
+
+            item->position(item->position_forward());
+        }
+
+        if(item == dropped)
+        {
+            session.items.remove(slot);
+            this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_THROW, slot), scope::SELF);
+        }
+        else
+        {
+            this->send_stream(session, session.make_update_item_slot_stream(slot), scope::SELF);
+        }
+        this->send_stream(session, session.make_throw_item_stream(*item), scope::PIVOT);
+        this->send_stream(session, item->make_show_stream(), scope::PIVOT);
+    }
+    catch(std::runtime_error& e)
+    {
+        auto message = std::string(e.what());
+        if(message.empty() == false)
+            this->send_stream(session, message::make_stream(message, message::type::MESSAGE_STATE), scope::SELF);
+    }
+    catch(std::exception& e)
+    {
+
+    }
+    return true;
 }
 
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)

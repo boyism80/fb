@@ -194,8 +194,8 @@ fb::game::object* fb::game::map::object(uint16_t id)
 
 uint16_t fb::game::map::object_add(fb::game::object* object)
 {
-    uint16_t                seq = this->empty_seq();
-    fb::game::object*       found = this->object(seq);
+    auto                    seq = this->empty_seq();
+    auto                    found = this->object(seq);
     if(found != NULL)
     {
         this->_objects.erase(std::find(this->_objects.begin(), this->_objects.end(), found));

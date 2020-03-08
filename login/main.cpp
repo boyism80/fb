@@ -9,11 +9,12 @@
 #include "resource.h"
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "zlib/zlib.lib")
 #if defined DEBUG | defined _DEBUG
 #pragma comment(lib, "json/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/zlibd.lib")
 #else
 #pragma comment(lib, "json/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/zlib.lib")
 #endif
 
 using namespace fb::login;

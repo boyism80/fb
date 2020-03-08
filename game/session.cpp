@@ -997,6 +997,26 @@ fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool
     return ostream;
 }
 
+fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x16)
+        .write_u32(this->_id)
+        .write_u16(item.look())
+        .write_u8(item.color())
+        .write_u32(item.id())
+        .write_u16(this->_position.x)
+        .write_u16(this->_position.y)
+        .write_u16(item.x())
+        .write_u16(item.y())
+        .write_u32(0x00000000)
+        .write_u8(0x02)
+        .write_u8(0x00);
+
+    return ostream;
+}
+
 int fb::game::session::builtin_name(lua_State* lua)
 {
 	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
