@@ -207,19 +207,17 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
     return result;
 }
 
-void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game::mob& mob, uint32_t random_damage)
+void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob& mob, uint32_t random_damage)
 {
-    std::stringstream sstream;
+    std::stringstream       sstream;
 
     try
     {
-        map* map = mob.map();
+        auto                map = mob.map();
 
         // 몹 체력 깎고 체력게이지 표시
         mob.hp_down(random_damage);
         this->send_stream(mob, mob.make_show_hp_stream(random_damage, true), scope::PIVOT, true);
-
-        
 
         // 맞고도 살아있으면 더 이상 진행할 거 없음
         if(mob.alive())
@@ -241,7 +239,7 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
             if(std::rand() % 100 > candidate.percentage)
                 continue;
 
-            item* item = static_cast<fb::game::item*>(candidate.item->make());
+            auto            item = static_cast<fb::game::item*>(candidate.item->make());
             item->map(map, mob.position());
 
             dropped_items.push_back(item);
@@ -250,51 +248,11 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
         if(dropped_items.size() != 0)
             this->send_stream(mob, object::make_show_stream(dropped_items), scope::PIVOT, true);
 
-        // 레벨 5면서 직업 안가졌으면 직업 가지라고 한다.
-        if(session.level() >= 5 && session.cls() == 0)
-            throw session::require_class_exception();
-
-        // 경험치는 최대 3.3%로 제한하여 얻는다.
-        uint32_t require = session.max_level() ? 0xFFFFFFFF : db::required_exp(session.cls(), session.level()+1) - db::required_exp(session.cls(), session.level());
 #if defined DEBUG | defined _DEBUG
-        uint32_t limit_exp = require;
+        this->handle_experience(session, mob.experience(), false);
 #else
-        uint32_t limit_exp = session.max_level() ? mob.experience() : std::min(uint32_t(require / 100.0f*3.3f + 1), mob.experience());
+        this->handle_experience(session, mob.experience(), true);
 #endif
-        session.experience_add(limit_exp);
-
-        uint32_t exp = session.experience();
-        uint32_t next_exp = db::required_exp(session.cls(), session.level()+1);
-
-        if(exp >= next_exp && session.level_up())
-        {
-            auto& classes = db::classes();
-
-            session.strength_up(classes[session.cls()]->level_abilities[session.level()]->strength);
-            session.intelligence_up(classes[session.cls()]->level_abilities[session.level()]->intelligence);
-            session.dexteritry_up(classes[session.cls()]->level_abilities[session.level()]->dexteritry);
-            
-            session.base_hp_up(classes[session.cls()]->level_abilities[session.level()]->base_hp + std::rand() % 10);
-            session.base_mp_up(classes[session.cls()]->level_abilities[session.level()]->base_mp + std::rand() % 10);
-
-            session.hp(session.base_hp());
-            session.mp(session.base_mp());
-
-            sstream << message::level::UP;
-            this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-            this->send_stream(session, session.make_effet_stream(0x02), scope::PIVOT);
-        }
-        else
-        {
-            float percentage = 0.0f;
-            uint32_t prev_exp = db::required_exp(session.cls(), session.level());
-            if(exp > prev_exp)
-                percentage = ((exp - prev_exp) / float(next_exp - prev_exp)) * 100;
-
-            sstream << "경험치가 " << limit_exp << '(' << int(percentage) << "%) 올랐습니다.";
-
-            this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-        }
     }
     catch(std::exception& e)
     {
@@ -302,6 +260,57 @@ void fb::game::acceptor::handle_attack_mob(fb::game::session& session, fb::game:
     }
 
     this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+}
+
+void fb::game::acceptor::handle_experience(fb::game::session& session, uint32_t exp, bool limit)
+{
+    // 레벨 5면서 직업 안가졌으면 직업 가지라고 한다.
+    if(session.level() >= 5 && session.cls() == 0)
+        throw session::require_class_exception();
+
+    // 다음 레벨로 가기 위한 경험치
+    auto                    next_exp = db::required_exp(session.cls(), session.level()+1);
+    auto                    prev_exp = db::required_exp(session.cls(), session.level());
+    auto                    exp_range = session.max_level() ? 0xFFFFFFFF : next_exp - prev_exp;
+
+    // 3.3% 제한한 경험치
+    if(limit && session.max_level() == false)
+        exp = std::min(uint32_t(exp_range / 100.0f*3.3f + 1), exp);
+
+
+    // 경험치 상승
+    session.experience_add(exp);
+    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+
+    // 경험치 상승 메시지
+    std::stringstream       sstream;
+    auto                    percentage = ((exp - prev_exp) / float(exp_range)) * 100;
+    sstream << "경험치가 " << exp << '(' << int(percentage) << "%) 올랐습니다.";
+    this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
+
+    // 레벨업 확인
+    if(session.experience() > next_exp)
+        this->handle_level_up(session);
+}
+
+void fb::game::acceptor::handle_level_up(fb::game::session& session)
+{
+    auto&           classes = db::classes();
+
+    session.strength_up(classes[session.cls()]->level_abilities[session.level()]->strength);
+    session.intelligence_up(classes[session.cls()]->level_abilities[session.level()]->intelligence);
+    session.dexteritry_up(classes[session.cls()]->level_abilities[session.level()]->dexteritry);
+
+    session.base_hp_up(classes[session.cls()]->level_abilities[session.level()]->base_hp + std::rand() % 10);
+    session.base_mp_up(classes[session.cls()]->level_abilities[session.level()]->base_mp + std::rand() % 10);
+
+    session.hp(session.base_hp());
+    session.mp(session.base_mp());
+
+    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+    this->send_stream(session, session.make_effet_stream(0x02), scope::PIVOT);
+
+    this->send_stream(session, message::make_stream(message::level::UP, message::type::MESSAGE_STATE), scope::SELF);
 }
 
 void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
@@ -514,7 +523,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         bool                critical = false;
         uint32_t            random_damage = session.random_damage(*front_mob, critical);
 
-        this->handle_attack_mob(session, *front_mob, random_damage);
+        this->handle_damage(session, *front_mob, random_damage);
     }
     catch(std::exception& e)
     {
@@ -1715,18 +1724,18 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
 
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 {
-    fb::game::session* target = mob->target();
+    auto                    target = mob->target();
     if(target == NULL)
     {
-        fb::game::direction before_direction = mob->direction();
-        this->handle_move_life(mob, fb::game::direction(std::rand() % 4));
+        auto                before_direction = mob->direction();
+        this->handle_move_life(mob, direction(std::rand() % 4));
         return;
     }
 
     // 상하좌우로 타겟이 있는지 검사한다.
     for(int i = 0; i < 4; i++)
     {
-        fb::game::direction direction = fb::game::direction(i);
+        auto                direction = game::direction(i);
         if(mob->near_session(direction) != target)
             continue;
 
@@ -1736,12 +1745,12 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
             this->send_stream(*mob, mob->make_direction_stream(), scope::PIVOT, true);
         }
 
-        uint32_t random_damage = mob->random_damage(*target);
+        auto                random_damage = mob->random_damage(*target);
         target->hp_down(random_damage);
 
 
         // 공격하는 패킷 보낸다.
-        this->send_stream(*mob, mob->make_action_stream(fb::game::action::ATTACK, fb::game::duration::DURATION_ATTACK), scope::PIVOT, true);
+        this->send_stream(*mob, mob->make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT, true);
         this->send_stream(*target, target->make_show_hp_stream(random_damage, false), scope::PIVOT);
         this->send_stream(*target, target->make_state_stream(state_level::LEVEL_MIDDLE), scope::SELF);
         return;
@@ -1749,39 +1758,37 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 
 
     // 타겟 방향으로 이동이 가능하다면 이동한다.
-    bool x_axis = bool(std::rand()%2);
+    auto                    x_axis = bool(std::rand()%2);
     if(x_axis)
     {
-        if(mob->x() > target->x() && this->handle_move_life(mob, fb::game::direction::LEFT))   return;
-        if(mob->x() < target->x() && this->handle_move_life(mob, fb::game::direction::RIGHT))  return;
-        if(mob->y() > target->y() && this->handle_move_life(mob, fb::game::direction::TOP))    return;
-        if(mob->y() < target->y() && this->handle_move_life(mob, fb::game::direction::BOTTOM)) return;
+        if(mob->x() > target->x() && this->handle_move_life(mob, direction::LEFT))   return;
+        if(mob->x() < target->x() && this->handle_move_life(mob, direction::RIGHT))  return;
+        if(mob->y() > target->y() && this->handle_move_life(mob, direction::TOP))    return;
+        if(mob->y() < target->y() && this->handle_move_life(mob, direction::BOTTOM)) return;
     }
     else
     {
-        if(mob->y() > target->y() && this->handle_move_life(mob, fb::game::direction::TOP))    return;
-        if(mob->y() < target->y() && this->handle_move_life(mob, fb::game::direction::BOTTOM)) return;
-        if(mob->x() > target->x() && this->handle_move_life(mob, fb::game::direction::LEFT))   return;
-        if(mob->x() < target->x() && this->handle_move_life(mob, fb::game::direction::RIGHT))  return;
+        if(mob->y() > target->y() && this->handle_move_life(mob, direction::TOP))    return;
+        if(mob->y() < target->y() && this->handle_move_life(mob, direction::BOTTOM)) return;
+        if(mob->x() > target->x() && this->handle_move_life(mob, direction::LEFT))   return;
+        if(mob->x() < target->x() && this->handle_move_life(mob, direction::RIGHT))  return;
     }
 
 
     // 이동할 수 있는 방향으로 일단 이동한다.
-    uint8_t random_direction = std::rand() % 4;
+    auto                    random_direction = std::rand() % 4;
     for(int i = 0; i < 4; i++)
     {
-        if(this->handle_move_life(mob, fb::game::direction((random_direction + i) % 4)))
+        if(this->handle_move_life(mob, direction((random_direction + i) % 4)))
             return;
     }
 }
 
 void fb::game::acceptor::handle_containment_mob_action(fb::game::mob* mob)
 {
-    fb::game::session* target = mob->target();
-    fb::game::direction before_direction = mob->direction();
-
     try
     {
+        auto                    target = mob->target();
         if(target == NULL || target->sight(*mob) == false)
             target = mob->autoset_target();
 
@@ -1796,20 +1803,18 @@ void fb::game::acceptor::handle_containment_mob_action(fb::game::mob* mob)
 
 void fb::game::acceptor::handle_mob_action(uint64_t now)
 {
-    auto&               maps = db::maps();
-
-    for(auto map_i = maps.begin(); map_i != maps.end(); map_i++)
+    for(auto pair : db::maps())
     {
-        auto            map = map_i->second;
-        const std::vector<object*>& objects = map->objects();
+        auto                map = pair.second;
+        const auto&         objects = map->objects();
 
         for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
         {
-            object* object = (*obj_i);
+            auto            object = (*obj_i);
             if(object->type() != object::types::MOB)
                 continue;
 
-            fb::game::mob* mob = static_cast<fb::game::mob*>(object);
+            auto            mob = static_cast<fb::game::mob*>(object);
             if(now < mob->action_time() + mob->speed())
                 continue;
 
@@ -1839,7 +1844,7 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
 void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 {
     // 리젠된 전체 몹을 저장
-    std::vector<object*> spawned_mobs;
+    std::vector<object*>    spawned_mobs;
     for(auto pair : db::maps())
     {
         fb::game::map* map = pair.second;
@@ -1995,6 +2000,17 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 		this->send_stream(session, npc->make_input_dialog_stream("안녕", "탑", "바텀", 0xFF, true), scope::SELF);
 		return true;
 	}
+
+    if(command == "be ghost")
+    {
+        if(session.state() == state::NORMAL)
+            session.state(state::GHOST);
+        else
+            session.state(state::NORMAL);
+
+        this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+        return true;
+    }
 
     return false;
 }
