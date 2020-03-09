@@ -1448,7 +1448,66 @@ void fb::game::items::equipment_on(uint8_t index, fb::game::equipment::slot& slo
 
 uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
 {
-	return uint8_t();
+    if (this->free() == false)
+        return 0xFF;
+
+    fb::game::item* item = nullptr;
+    switch (slot)
+    {
+    case fb::game::equipment::slot::WEAPON_SLOT:
+        item = this->_weapon;
+        if (this->_weapon != NULL)
+            this->_weapon = NULL;
+
+        break;
+
+    case fb::game::equipment::slot::ARMOR_SLOT:
+        item = this->_armor;
+        if (this->_armor != NULL)
+            this->_armor = NULL;
+        break;
+
+    case fb::game::equipment::slot::SHIELD_SLOT:
+        item = this->_shield;
+        if (this->_shield != NULL)
+            this->_shield = NULL;
+        break;
+
+    case fb::game::equipment::slot::HELMET_SLOT:
+        item = this->_helmet;
+        if (this->_helmet != NULL)
+            this->_helmet = NULL;
+        break;
+
+    case fb::game::equipment::slot::LEFT_HAND_SLOT:
+        item = this->_rings[0];
+        if (this->_rings[0] != NULL)
+            this->_rings[0] = NULL;
+        break;
+
+    case fb::game::equipment::slot::RIGHT_HAND_SLOT:
+        item = this->_rings[1];
+        if (this->_rings[1] != NULL)
+            this->_rings[1] = NULL;
+        break;
+
+    case fb::game::equipment::slot::LEFT_AUX_SLOT:
+        item = this->_auxiliaries[0];
+        if (this->_auxiliaries[0] != NULL)
+            this->_auxiliaries[0] = NULL;
+        break;
+
+    case fb::game::equipment::slot::RIGHT_AUX_SLOT:
+        item = this->_auxiliaries[1];
+        if (this->_auxiliaries[1] != NULL)
+            this->_auxiliaries[1] = NULL;
+        break;
+
+    default:
+        return 0xFF;
+    }
+
+    return this->add(item);
 }
 
 uint8_t fb::game::items::add(fb::game::item* item)

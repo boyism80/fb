@@ -120,7 +120,7 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 fb::ostream fb::game::acceptor::make_time_stream()
 {
     fb::ostream             ostream;
-    uint8_t                 hours = 25;
+    auto                    hours = 25;
     ostream.write_u8(0x20)      // cmd : 0x20
            .write_u8(hours%24)  // hours
            .write_u8(0x00)      // Unknown
@@ -358,9 +358,9 @@ bool acceptor::handle_login(fb::game::session& session)
     auto&                   istream = session.in_stream();
     uint8_t                 enc_key[0x09] = {0,};
 
-    uint8_t cmd = istream.read_u8();
-    uint8_t enc_type = istream.read_u8();
-    uint8_t key_size = istream.read_u8();
+    auto                    cmd = istream.read_u8();
+    auto                    enc_type = istream.read_u8();
+    auto                    key_size = istream.read_u8();
     istream.read(enc_key, key_size);
     session.crt(enc_type, enc_key);
 
@@ -420,7 +420,7 @@ bool acceptor::handle_login(fb::game::session& session)
 bool fb::game::acceptor::handle_direction(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
+    auto                    cmd = istream.read_u8();
     fb::game::direction     direction = fb::game::direction(istream.read_u8());
 
     if(session.direction(direction) == false)
@@ -438,11 +438,11 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
     if(map == NULL)
         return false;
 
-    uint8_t                 cmd = istream.read_u8();
+    auto                    cmd = istream.read_u8();
     fb::game::direction     direction = fb::game::direction(istream.read_u8());
-    uint8_t                 sequence = istream.read_u8();
-    uint16_t                x = istream.read_u16();
-    uint16_t                y = istream.read_u16();
+    auto                    sequence = istream.read_u8();
+    auto                    x = istream.read_u16();
+    auto                    y = istream.read_u16();
 
     session.direction(direction);
 
@@ -499,11 +499,11 @@ bool fb::game::acceptor::handle_update_move(fb::game::session& session)
         return false;
 
     auto&                   istream = session.in_stream();
-    uint16_t                begin_x = istream.read_u16();
-    uint16_t                begin_y = istream.read_u16();
-    uint8_t                 width = istream.read_u8();
-    uint8_t                 height = istream.read_u8();
-    uint16_t                crc = istream.read_u16();
+    auto                    begin_x = istream.read_u16();
+    auto                    begin_y = istream.read_u16();
+    auto                    width = istream.read_u8();
+    auto                    height = istream.read_u8();
+    auto                    crc = istream.read_u16();
     this->send_stream(session, session.map()->make_update_stream(begin_x, begin_y, width, height, crc), scope::SELF);
     return true;
 }
@@ -518,7 +518,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         auto*               weapon = session.items.weapon();
         if(weapon != NULL)
         {
-            uint16_t        sound = weapon->sound();
+            auto            sound = weapon->sound();
             if(sound != 0)
                 this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(sound)), scope::PIVOT);
         }
@@ -555,7 +555,7 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
+    auto                    cmd = istream.read_u8();
     bool                    boost = bool(istream.read_u8());
 
     try
@@ -601,7 +601,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
             }
             else
             {
-                uint8_t         index = session.items.add(below);
+                auto            index = session.items.add(below);
                 if(index == -1)
                     break;
 
@@ -638,8 +638,8 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 bool fb::game::acceptor::handle_emotion(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
-    uint8_t                 emotion = istream.read_u8();
+    auto                    cmd = istream.read_u8();
+    auto                    emotion = istream.read_u8();
 
     this->send_stream(session, session.make_action_stream(action(action::EMOTION + emotion), duration::DURATION_EMOTION), scope::SELF);
     return true;
@@ -648,12 +648,12 @@ bool fb::game::acceptor::handle_emotion(fb::game::session& session)
 bool fb::game::acceptor::handle_update_map(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
-    uint16_t                x = istream.read_u16();
-    uint16_t                y = istream.read_u16();
-    uint8_t                 width = istream.read_u8();
-    uint8_t                 height = istream.read_u8();
-    uint16_t                crc = istream.read_u16();
+    auto                    cmd = istream.read_u8();
+    auto                    x = istream.read_u16();
+    auto                    y = istream.read_u16();
+    auto                    width = istream.read_u8();
+    auto                    height = istream.read_u8();
+    auto                    crc = istream.read_u16();
 
     this->send_stream(session, session.map()->make_update_stream(x, y, width, height, crc), scope::SELF);
     return true;
@@ -668,14 +668,14 @@ bool fb::game::acceptor::handle_refresh(fb::game::session& session)
 bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
-    uint8_t                 index = istream.read_u8() - 1;
+    auto                    cmd = istream.read_u8();
+    auto                    index = istream.read_u8() - 1;
 
     try
     {
         session.state_assert(state::RIDING | state::GHOST);
 
-        uint8_t             updated_index = 0;
+        auto                updated_index = uint8_t(0);
         auto                slot(equipment::slot::UNKNOWN_SLOT);
         auto                item = session.items.active(index, &updated_index, slot);
 
@@ -761,16 +761,16 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
+    auto                    cmd = istream.read_u8();
     auto                    slot(equipment::slot(istream.read_u8()));
 
     try
     {
         session.state_assert(state::RIDING | state::GHOST);
 
-        uint8_t             item_index = session.items.inactive(slot);
-        if(item_index == -1)
-            return true;
+        auto                item_index = session.items.inactive(slot);
+        if(item_index == 0xFF)
+            throw std::runtime_error("소지품이 꽉 찼습니다.");
 
 
         // 마법 딜레이 스트림 필요
@@ -795,8 +795,8 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
         session.state_assert(state::RIDING | state::GHOST);
 
         auto&               istream = session.in_stream();
-        uint8_t             cmd = istream.read_u8();
-        uint8_t             index = istream.read_u8() - 1;
+        auto                cmd = istream.read_u8();
+        auto                index = istream.read_u8() - 1;
         bool                drop_all = bool(istream.read_u8());
 
         auto                item = session.items[index];
@@ -834,9 +834,9 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
             return false;
 
         auto&               istream = session.in_stream();
-        uint8_t             cmd = istream.read_u8();
-        uint32_t            chunk = std::min(session.money(), istream.read_u32());
-        cash*               cash = new fb::game::cash(chunk);
+        auto                cmd = istream.read_u8();
+        auto                chunk = std::min(session.money(), istream.read_u32());
+        auto                cash = new fb::game::cash(chunk);
 
         session.money_reduce(chunk);
 
@@ -891,8 +891,8 @@ bool fb::game::acceptor::handle_self_info(fb::game::session& session)
 bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
-    options                 option = options(istream.read_u8());
+    auto                    cmd = istream.read_u8();
+    auto                    option = options(istream.read_u8());
 
 
     bool                    enabled = session.option_toggle(option);
@@ -1006,9 +1006,9 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
 bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
-    uint8_t                 cmd = istream.read_u8();
-    uint8_t                 unknown = istream.read_u8();
-    uint32_t                fd = istream.read_u32();
+    auto                    cmd = istream.read_u8();
+    auto                    unknown = istream.read_u8();
+    auto                    fd = istream.read_u32();
 
     if(fd == 0xFFFFFFFF) // Press F1
     {
@@ -1050,12 +1050,12 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint16_t                    position = istream.read_u16();
-    uint8_t                     unknown1 = istream.read_u8();
-    uint8_t                     unknown2 = istream.read_u8();
-    uint8_t                     unknown3 = istream.read_u8();
-    uint8_t                     slot = istream.read_u8() - 1;
+    auto                        cmd = istream.read_u8();
+    auto                        position = istream.read_u16();
+    auto                        unknown1 = istream.read_u8();
+    auto                        unknown2 = istream.read_u8();
+    auto                        unknown3 = istream.read_u8();
+    auto                        slot = istream.read_u8() - 1;
 
     auto                        item = session.items[slot];
     if(item == NULL)
@@ -1069,15 +1069,15 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
 bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     count = istream.read_u8();
+    auto                        cmd = istream.read_u8();
+    auto                        count = istream.read_u8();
     if(count > item::MAX_SLOT - 1)
         return false;
 
     std::vector<item*>          items;
     for(int i = 0; i < count; i++)
     {
-        uint8_t                 index = istream.read_u8() - 1;
+        auto                    index = istream.read_u8() - 1;
         auto                    item = session.items[index];
         if(item == NULL)
             return true;
@@ -1091,14 +1091,14 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         if(itemmix == NULL)
             throw itemmix::no_match_exception();
 
-        uint8_t                 free_size = session.items.free_size();
+        auto                    free_size = session.items.free_size();
         if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
             throw item::full_inven_exception();
 
 
         for(auto require : itemmix->require)
         {
-            uint8_t             index = session.items.to_index(require.item);
+            auto                index = session.items.to_index(require.item);
             if(index == 0xFF)
                 return true;
 
@@ -1118,7 +1118,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
             }
         }
 
-        bool                success = (std::rand() % 100) < itemmix->percentage;
+        auto                success = (std::rand() % 100) < itemmix->percentage;
         std::string         message;
         if(success)
         {
@@ -1127,7 +1127,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 auto        item = static_cast<fb::game::item*>(success.item->make());
                 item->count(success.count);
                 
-                uint8_t     index = session.items.add(item);
+                auto        index = session.items.add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1140,7 +1140,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 auto        item = static_cast<fb::game::item*>(failed.item->make());
                 item->count(failed.count);
                 
-                uint8_t     index = session.items.add(item);
+                auto        index = session.items.add(item);
                 this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             }
 
@@ -1163,9 +1163,9 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 bool fb::game::acceptor::handle_trade(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     action = istream.read_u8();
-    uint32_t                    fd = istream.read_u32();
+    auto                        cmd = istream.read_u8();
+    auto                        action = istream.read_u8();
+    auto                        fd = istream.read_u32();
 
     auto                        partner = this->session(fd);   // 파트너
     auto&                       ts_mine = session.trade;       // 나의 거래시스템
@@ -1242,7 +1242,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
     case 1: // 아이템 올릴때
     {
-        uint8_t             index = istream.read_u8() - 1;
+        auto                index = istream.read_u8() - 1;
         auto                item = session.items[index];
         if(item == NULL)
             return true;
@@ -1287,18 +1287,18 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             return false;
 
         // 올릴 갯수 (클라이언트가 입력한 값)
-        uint16_t            count = istream.read_u16();
+        auto                count = istream.read_u16();
         if(selected->count() < count)
         {
             this->send_stream(session, message::make_stream(message::trade::INVALID_COUNT, message::type::MESSAGE_TRADE), scope::SELF);
             break;
         }
 
-        uint8_t             index = session.items.to_index(selected->based<item::core>());
+        auto                index = session.items.to_index(selected->based<item::core>());
         if(selected->count() == count)
         {
             // 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.
-            uint8_t         trade_index = ts_mine.add(selected);
+            auto            trade_index = ts_mine.add(selected);
             if(index != 0xFF)
             {
                 session.items.remove(index);
@@ -1328,11 +1328,11 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     case 3: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        uint32_t            money = istream.read_u32();
+        auto                money = istream.read_u32();
 
         // 입력한 금전 양을 계속해서 빼면 안된다.
         // 100전 입력한 경우 -1, -10, -100 이렇게 까여버림
-        uint32_t            total = session.money() + ts_mine.money();
+        auto                total = session.money() + ts_mine.money();
         if(money > total)
             money = total;
 
@@ -1429,8 +1429,8 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
 
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     name_size = istream.read_u8();
+    auto                        cmd = istream.read_u8();
+    auto                        name_size = istream.read_u8();
     
     char*                       buffer = new char[name_size];
     istream.read(buffer, name_size);
@@ -1447,8 +1447,8 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
 bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     unknown = istream.read_u8();
+    auto                        cmd = istream.read_u8();
+    auto                        unknown = istream.read_u8();
 
 
     fb::ostream                 ostream;
@@ -1476,10 +1476,10 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 bool fb::game::acceptor::handle_chat(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
+    auto                        cmd = istream.read_u8();
     
-    uint8_t                     shout = istream.read_u8();
-    uint8_t                     length = istream.read_u8();
+    auto                        shout = istream.read_u8();
+    auto                        length = istream.read_u8();
     static char                 message[0xFF];
     istream.read(message, length);
     message[length] = 0;
@@ -1498,8 +1498,8 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 {
     auto&                       board = db::board();
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     action = istream.read_u8();
+    auto                        cmd = istream.read_u8();
+    auto                        action = istream.read_u8();
 
     switch(action)
     {
@@ -1511,8 +1511,8 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 
     case 0x02: // article list
     {
-        uint16_t                section_id = istream.read_u16();
-        uint16_t                offset = istream.read_u16();
+        auto                    section_id = istream.read_u16();
+        auto                    offset = istream.read_u16();
 
         this->send_stream(session, board.make_articles_stream(section_id, offset), scope::SELF);
         break;
@@ -1520,8 +1520,8 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 
     case 0x03: // article
     {
-        uint16_t                section_id = istream.read_u16();
-        uint16_t                article_id = istream.read_u16();
+        auto                    section_id = istream.read_u16();
+        auto                    article_id = istream.read_u16();
 
         this->send_stream(session, board.make_article_stream(section_id, article_id, session), scope::SELF);
         break;
@@ -1529,8 +1529,8 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 
     case 0x05: // delete
     {
-        uint16_t                section_id = istream.read_u16();
-        uint16_t                article_id = istream.read_u16();
+        auto                    section_id = istream.read_u16();
+        auto                    article_id = istream.read_u16();
 
         this->send_stream(session, board.make_delete_stream(section_id, article_id, session), scope::SELF);
         break;
@@ -1544,10 +1544,10 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 bool fb::game::acceptor::handle_swap(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-    uint8_t                     cmd = istream.read_u8();
-    uint8_t                     swap_type = istream.read_u8();
-    uint8_t                     src = istream.read_u8();
-    uint8_t                     dest = istream.read_u8();
+    auto                        cmd = istream.read_u8();
+    auto                        swap_type = istream.read_u8();
+    auto                        src = istream.read_u8();
+    auto                        dest = istream.read_u8();
 
     if(swap_type) // spell
     {
@@ -1569,7 +1569,7 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
 bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 {
 	auto&                       istream = session.in_stream();
-	uint8_t                     cmd = istream.read_u8();
+	auto                        cmd = istream.read_u8();
 	auto						interaction = istream.read_u8();
 
 	switch(interaction)

@@ -30,7 +30,7 @@ public:
 	virtual bool			remove(uint8_t index);
 	virtual bool			swap(uint8_t src, uint8_t dest);
 
-	bool					is_free() const;
+	bool					free() const;
 	uint8_t					free_size() const;
 
 public:

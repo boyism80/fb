@@ -87,7 +87,7 @@ inline bool fb::game::container<T>::swap(uint8_t src, uint8_t dest)
 	return true;
 }
 template<typename T>
-inline bool fb::game::container<T>::is_free() const
+inline bool fb::game::container<T>::free() const
 {
 	for(int i = 0; i < this->_size; i++)
 	{
