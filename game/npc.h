@@ -38,7 +38,6 @@ public:
 		IMPLEMENT_NEW_LUA
 
         static int          builtin_input_dialog(lua_State* lua);
-		static int			builtin_input_dialog_ext(lua_State* lua);
         static int          builtin_menu_dialog(lua_State* lua);
         static int          builtin_item_dialog(lua_State* lua);
     };
@@ -76,7 +75,6 @@ public:
 	IMPLEMENT_NEW_LUA
 
     static int              builtin_input_dialog(lua_State* lua);
-	static int				builtin_input_dialog_ext(lua_State* lua);
     static int              builtin_menu_dialog(lua_State* lua);
     static int              builtin_item_dialog(lua_State* lua);
 };

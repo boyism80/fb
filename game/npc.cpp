@@ -6,14 +6,12 @@ using namespace fb::game;
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc::core, "fb.game.npc.core")
 {"input_dialog",        fb::game::npc::core::builtin_input_dialog},
-{"input_dialog_ext",    fb::game::npc::core::builtin_input_dialog_ext},
 {"menu_dialog",         fb::game::npc::core::builtin_menu_dialog},
 {"item_dialog",         fb::game::npc::core::builtin_item_dialog},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"input_dialog",        fb::game::npc::builtin_input_dialog},
-{"input_dialog_ext",    fb::game::npc::builtin_input_dialog_ext},
 {"menu_dialog",         fb::game::npc::builtin_menu_dialog},
 {"item_dialog",         fb::game::npc::builtin_item_dialog},
 END_LUA_EXTENSION
@@ -172,11 +170,6 @@ int fb::game::npc::core::builtin_input_dialog(lua_State* lua)
     return ::builtin_input_dialog<npc::core>(lua);
 }
 
-int fb::game::npc::core::builtin_input_dialog_ext(lua_State* lua)
-{
-    return ::builtin_input_dialog_ext<npc::core>(lua);
-}
-
 int fb::game::npc::core::builtin_menu_dialog(lua_State* lua)
 {
     // Ex) npc::menu_dialog(session, "hello", {"hello 1", "hello 2", "hello 3"})
@@ -246,11 +239,6 @@ fb::ostream fb::game::npc::make_input_dialog_stream(const std::string& message, 
 int fb::game::npc::builtin_input_dialog(lua_State* lua)
 {
     return ::builtin_input_dialog<npc>(lua);
-}
-
-int fb::game::npc::builtin_input_dialog_ext(lua_State* lua)
-{
-    return ::builtin_input_dialog_ext<npc>(lua);
 }
 
 int fb::game::npc::builtin_menu_dialog(lua_State* lua)

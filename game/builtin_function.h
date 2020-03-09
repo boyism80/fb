@@ -8,9 +8,6 @@ template <typename T>
 int builtin_dialog(lua_State* lua);
 
 template <typename T>
-int builtin_input_dialog_ext(lua_State* lua);
-
-template <typename T>
 int builtin_menu_dialog(lua_State* lua);
 
 template <typename T>
