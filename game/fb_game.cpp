@@ -216,11 +216,8 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob
 
     try
     {
-        auto                map = mob.map();
-
         // 몹 체력 깎고 체력게이지 표시
-        mob.hp_down(damage);
-        this->send_stream(mob, mob.make_show_hp_stream(damage, true), scope::PIVOT, true);
+        this->handle_damage(static_cast<life&>(mob), damage);
 
         // 맞고도 살아있으면 더 이상 진행할 거 없음
         if(mob.alive())
@@ -231,25 +228,9 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob
             return;
         }
 
-        // 몹 체력을 다 깎았으면 죽인다.
-        this->send_stream(mob, mob.make_die_stream(), scope::PIVOT, true);
-        mob.dead_time(::GetTickCount64());
+        this->handle_die(mob);
 
-        // 드롭 아이템 떨구기
-        std::vector<object*> dropped_items;
-        for(auto candidate : mob.items())
-        {
-            if(std::rand() % 100 > candidate.percentage)
-                continue;
-
-            auto            item = static_cast<fb::game::item*>(candidate.item->make());
-            item->map(map, mob.position());
-
-            dropped_items.push_back(item);
-        }
-
-        if(dropped_items.size() != 0)
-            this->send_stream(mob, object::make_show_stream(dropped_items), scope::PIVOT, true);
+        
 
 #if defined DEBUG | defined _DEBUG
         this->handle_experience(session, mob.experience(), false);
@@ -265,14 +246,48 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob
     this->send_stream(session, message::make_stream(sstream.str(), message::type::MESSAGE_STATE), scope::SELF);
 }
 
-void fb::game::acceptor::handle_damage(fb::game::life& from, fb::game::life& to, uint32_t damage)
+void fb::game::acceptor::handle_damage(fb::game::life& life, uint32_t damage)
 {
-    to.hp_down(damage);
+    life.hp_down(damage);
+    this->send_stream(life, life.make_show_hp_stream(damage, false), scope::PIVOT, true);
+}
 
-    // 공격하는 패킷 보낸다.
-    this->send_stream(from, from.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT, true);
-    this->send_stream(to, to.make_show_hp_stream(damage, false), scope::PIVOT);
-    this->send_stream(to, to.make_state_stream(state_level::LEVEL_MIDDLE), scope::SELF);
+void fb::game::acceptor::handle_damage(fb::game::session& session, uint32_t damage)
+{
+    handle_damage(static_cast<life&>(session), damage);
+    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIDDLE), scope::SELF);
+
+    if(session.alive() == false)
+        this->handle_die(session);
+}
+
+void fb::game::acceptor::handle_die(fb::game::mob& mob)
+{
+    // 몹 체력을 다 깎았으면 죽인다.
+    this->send_stream(mob, mob.make_die_stream(), scope::PIVOT, true);
+    mob.dead_time(::GetTickCount64());
+
+    // 드롭 아이템 떨구기
+    std::vector<object*> dropped_items;
+    for(auto candidate : mob.items())
+    {
+        if(std::rand() % 100 > candidate.percentage)
+            continue;
+
+        auto            item = static_cast<fb::game::item*>(candidate.item->make());
+        item->map(mob.map(), mob.position());
+
+        dropped_items.push_back(item);
+    }
+
+    if(dropped_items.size() != 0)
+        this->send_stream(mob, object::make_show_stream(dropped_items), scope::PIVOT, true);
+}
+
+void fb::game::acceptor::handle_die(fb::game::session& session)
+{
+    session.state(state::GHOST);
+    this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
 }
 
 void fb::game::acceptor::handle_experience(fb::game::session& session, uint32_t exp, bool limit)
@@ -1749,7 +1764,9 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
         }
 
         auto                damage = mob->random_damage(*target);
-        this->handle_damage(*mob, *target, damage);
+
+        this->send_stream(*mob, mob->make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT, true);
+        this->handle_damage(*target, damage);
         return;
     }
 
