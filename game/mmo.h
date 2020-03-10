@@ -118,12 +118,16 @@ enum options : uint8_t
     PK                      = 0x0B,
 };
 
-enum action_sounds : uint16_t
+namespace sound
 {
-    SOUND_EAT               = 0x0006,
-    SOUND_EQUIPMENT_OFF     = 0x019A,
-    SOUND_EQUIPMENT_ON      = 0x019B,
-};
+    enum type : uint16_t
+    {
+        SWING              = 0x014B,
+        EAT                 = 0x0006,
+        EQUIPMENT_OFF       = 0x019A,
+        EQUIPMENT_ON        = 0x019B,
+    };
+}
 
 enum duration : uint8_t
 {

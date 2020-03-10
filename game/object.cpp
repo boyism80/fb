@@ -716,7 +716,7 @@ fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::objec
     return ostream;
 }
 
-fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) const
+fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) const
 {
     // 0x019A : 장비 해제 사운드
     // 0x019B : 장비 장착 사운드
@@ -729,11 +729,11 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::action_sounds sound) c
         .write_u16(sound) // sound
         .write_u8(100)
         .write_u16(0x0004)
-        .write_u32(this->id())
-        .write_u32(0x0100)
+        .write_u32(this->_id)
+        .write_u16(0x0100)
         .write_u16(0x0202)
         .write_u16(0x0004)
-        .write_u8(0x00);
+        .write_u16(0xCCCC);
 
     return ostream;
 }
@@ -754,7 +754,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
     auto sound = lua_tointeger(lua, 2);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-    acceptor->send_stream(*object, object->make_sound_stream(action_sounds(sound)), acceptor::scope::PIVOT);
+    acceptor->send_stream(*object, object->make_sound_stream(sound::type(sound)), acceptor::scope::PIVOT);
 
     lua_pushinteger(lua, -1);
     return 1;

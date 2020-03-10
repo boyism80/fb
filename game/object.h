@@ -153,7 +153,7 @@ public:
     fb::ostream                 make_show_stream() const;
     fb::ostream                 make_hide_stream() const;
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
-    fb::ostream                 make_sound_stream(fb::game::action_sounds sound) const;
+    fb::ostream                 make_sound_stream(fb::game::sound::type sound) const;
     fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
 
 public:

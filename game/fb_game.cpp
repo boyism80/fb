@@ -1,5 +1,7 @@
 #include "fb_game.h"
 
+
+
 using namespace fb::game;
 
 IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
@@ -86,6 +88,7 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.items.add(static_cast<item*>(items[698]->make())); // 기모노
     session.items.add(static_cast<item*>(items[3014]->make())); // 도토리
     session.items.add(static_cast<item*>(items[2200]->make())); // 동동주
+    session.items.add(static_cast<item*>(db::name2item("얼음칼")->make()));
 
     // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
     session.items.weapon(static_cast<weapon*>(items[15]->make())); // 초심자의 목도
@@ -421,7 +424,7 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session)
 {
     auto&                   istream = session.in_stream();
     auto                    cmd = istream.read_u8();
-    fb::game::direction     direction = fb::game::direction(istream.read_u8());
+    auto                    direction = fb::game::direction(istream.read_u8());
 
     if(session.direction(direction) == false)
         return false;
@@ -439,7 +442,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
         return false;
 
     auto                    cmd = istream.read_u8();
-    fb::game::direction     direction = fb::game::direction(istream.read_u8());
+    auto                    direction = fb::game::direction(istream.read_u8());
     auto                    sequence = istream.read_u8();
     auto                    x = istream.read_u16();
     auto                    y = istream.read_u16();
@@ -519,20 +522,14 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         if(weapon != NULL)
         {
             auto            sound = weapon->sound();
-            if(sound != 0)
-                this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(sound)), scope::PIVOT);
-        }
-        else
-        {
-            // 이거 무슨 사운드인지 확인하도록 하자
-            this->send_stream(session, session.make_sound_stream(fb::game::action_sounds(0x015D)), scope::PIVOT);
+            this->send_stream(session, session.make_sound_stream(sound != 0 ? game::sound::type(sound) : game::sound::SWING), scope::PIVOT);
         }
 
         auto*               front = session.forward_object(object::types::MOB);
         if(front == NULL)
             return true;
 
-        auto*               front_mob = static_cast<fb::game::mob*>(front);
+        auto*               front_mob = static_cast<mob*>(front);
 
 #if !defined DEBUG && !defined _DEBUG
         if(std::rand() % 3 == 0)
@@ -688,7 +685,7 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
             this->send_stream(session, session.make_state_stream(fb::game::state_level::LEVEL_MAX), scope::SELF);
             this->send_stream(session, session.make_update_equipment_stream(slot), scope::SELF);
             this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-            this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_ON), scope::PIVOT);
+            this->send_stream(session, session.make_sound_stream(sound::type::EQUIPMENT_ON), scope::PIVOT);
 
             std::stringstream sstream;
             switch(slot)
@@ -741,7 +738,7 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
             this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
             this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
             this->send_stream(session, session.make_action_stream(action::EAT, duration::DURATION_EAT), scope::SELF);
-            this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EAT), scope::SELF);
+            this->send_stream(session, session.make_sound_stream(sound::type::EAT), scope::SELF);
 
             if(item->empty())
             {
@@ -777,7 +774,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
         this->send_stream(session, session.make_equipment_off_stream(slot), scope::SELF);
         this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
-        this->send_stream(session, session.make_sound_stream(action_sounds::SOUND_EQUIPMENT_OFF), scope::PIVOT);
+        this->send_stream(session, session.make_sound_stream(sound::type::EQUIPMENT_OFF), scope::PIVOT);
         this->send_stream(session, session.make_update_item_slot_stream(item_index), scope::SELF);
     }
     catch(std::exception& e)
