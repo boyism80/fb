@@ -35,12 +35,37 @@ namespace dialog
     };
 }
 
+namespace timer
+{
+    enum type : uint8_t
+    {
+        INCREASE    = 0x01,
+        DECREASE    = 0x02,
+    };
+}
+
+namespace chat
+{
+    enum type : uint8_t
+    {
+        NORMAL      = 0x00,
+        SHOUT       = 0x01,
+        BLUE        = 0x02,
+        LIGHT_BLUE  = 0x03,
+    };
+}
+
 namespace message
 {
     enum type : uint8_t
     {
-        MESSAGE_STATE = 0x03,
-        MESSAGE_TRADE = 0x08,
+        BLUE        = 0x01,
+        STATE       = 0x03,
+        SHOUT       = 0x04,
+        WORLD       = 0x05,
+        TRADE       = 0x08,
+        YELLOW      = 0x0B,
+        BROWN       = 0x0C,
     };
 
     namespace exception

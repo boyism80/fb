@@ -994,17 +994,14 @@ fb::ostream fb::game::session::make_option_stream() const
     return ostream;
 }
 
-fb::ostream fb::game::session::make_chat_stream(const std::string& message, bool shout) const
+fb::ostream fb::game::session::make_chat_stream(const std::string& message, chat::type type) const
 {
     fb::ostream             ostream;
     
-    std::stringstream       sstream;
-    sstream << this->_name << ": " << message;
-
     ostream.write_u8(0x0D)
-        .write_u8(shout)
+        .write_u8(type)
         .write_u32(this->id())
-        .write(sstream.str());
+        .write(message);
 
     return ostream;
 }

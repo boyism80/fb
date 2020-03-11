@@ -191,7 +191,7 @@ public:
     fb::ostream             make_internal_info_stream() const;
     fb::ostream             make_external_info_stream() const;
     fb::ostream             make_option_stream() const;
-    fb::ostream             make_chat_stream(const std::string& message, bool shout) const;
+    fb::ostream             make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
     fb::ostream             make_throw_item_stream(const item& item) const;
 
 public:
