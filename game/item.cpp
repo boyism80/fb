@@ -148,9 +148,9 @@ void fb::game::item::core::active_script(const std::string& value)
 
 fb::game::item::attrs fb::game::item::core::attr() const
 {
-    item::attrs attr = item::attrs::ITEM_ATTR_NONE;
+    auto                    attr = attrs::ITEM_ATTR_NONE;
     if(this->capacity() > 1)
-        attr = item::attrs(attr | item::attrs::ITEM_ATTR_BUNDLE);
+        attr = attrs(attr | attrs::ITEM_ATTR_BUNDLE);
     return attr;
 }
 

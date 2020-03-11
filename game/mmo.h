@@ -42,6 +42,21 @@ namespace timer
         INCREASE    = 0x01,
         DECREASE    = 0x02,
     };
+
+    fb::ostream             make_stream(uint32_t time, type type = timer::type::DECREASE);
+}
+
+namespace weather
+{
+    enum type : uint8_t
+    {
+        NORMAL      = 0x00,
+        RAIN        = 0x01,
+        SNOW        = 0x02,
+        BIRD        = 0x03,
+    };
+
+    fb::ostream             make_stream(type weather);
 }
 
 namespace chat
@@ -63,7 +78,7 @@ namespace message
         STATE       = 0x03,
         SHOUT       = 0x04,
         WORLD       = 0x05,
-        TRADE       = 0x08,
+        POPUP       = 0x08,
         YELLOW      = 0x0B,
         BROWN       = 0x0C,
     };

@@ -83,21 +83,21 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.title("갓승현 타이틀");
 
     auto& items = db::items();
-    session.items.add(static_cast<item*>(items[1015]->make())); // 정화의방패
-    session.items.add(static_cast<item*>(items[243]->make())); // 도씨검
-    session.items.add(static_cast<item*>(items[698]->make())); // 기모노
-    session.items.add(static_cast<item*>(items[3014]->make())); // 도토리
-    session.items.add(static_cast<item*>(items[2200]->make())); // 동동주
-    session.items.add(static_cast<item*>(db::name2item("얼음칼")->make()));
+    session.items.add(db::name2item("얼음칼")->make<item>());
+    session.items.add(db::name2item("정화의방패")->make<item>());
+    session.items.add(db::name2item("도씨검")->make<item>());
+    session.items.add(db::name2item("남자기모노")->make<item>());
+    session.items.add(db::name2item("도토리")->make<item>());
+    session.items.add(db::name2item("동동주")->make<item>());
+    
 
     // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-    session.items.weapon(static_cast<weapon*>(items[15]->make())); // 초심자의 목도
-    session.items.helmet(static_cast<helmet*>(items[1340]->make()));
-    session.items.ring(static_cast<ring*>(items[1689]->make()));
-    session.items.ring(static_cast<ring*>(items[1689]->make()));
-    session.items.auxiliary(static_cast<auxiliary*>(items[2135]->make()));
-    session.items.auxiliary(static_cast<auxiliary*>(items[2129]->make()));
-
+    session.items.weapon(db::name2item("양첨목봉")->make<weapon>()); // 초심자의 목도
+    session.items.helmet(db::name2item("쇄자황금투구")->make<helmet>());
+    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
+    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
+    session.items.auxiliary(db::name2item("보무의목걸이")->make<auxiliary>());
+    session.items.auxiliary(db::name2item("해독의귀걸이")->make<auxiliary>());
 
     auto& spells = db::spells();
     for(auto pair : spells)
@@ -132,36 +132,13 @@ fb::ostream fb::game::acceptor::make_time_stream()
     return ostream;
 }
 
-fb::ostream fb::game::acceptor::make_timer_stream(uint32_t time, timer::type type)
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x67)
-        .write_u8(type)
-        .write_u32(time)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::acceptor::make_weather_stream(uint8_t weather)
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x1F)
-        .write_u8(weather)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::ostream fb::game::acceptor::make_bright_stream(uint8_t value)
 {
     fb::ostream             ostream;
 
     ostream.write_u8(0x20)
         .write_u8(0x00)
-        .write_u8(value);
+        .write_u8(std::max(0, 20 - value));
 
     return ostream;
 }
@@ -1281,7 +1258,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         // 교환 불가능한 아이템 거래 시도
         if(item->trade_enabled() == false)
         {
-            this->send_stream(session, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::TRADE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::POPUP), scope::SELF);
             break;
         }
 
@@ -1321,7 +1298,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         auto                count = istream.read_u16();
         if(selected->count() < count)
         {
-            this->send_stream(session, message::make_stream(message::trade::INVALID_COUNT, message::type::TRADE), scope::SELF);
+            this->send_stream(session, message::make_stream(message::trade::INVALID_COUNT, message::type::POPUP), scope::SELF);
             break;
         }
 
@@ -1447,7 +1424,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         else
         {
             // 상대방이 아직 교환확인을 누르지 않은 경우
-            this->send_stream(*partner, message::make_stream(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::TRADE), scope::SELF);
+            this->send_stream(*partner, message::make_stream(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
         }
         break;
     }
@@ -1971,25 +1948,32 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(message[0] != '/')
         return false;
 
+    auto                            npc = db::name2npc("낙랑");
+    std::string                     command(message.begin() + 1, message.end());
+    std::vector<std::string>        splitted;
+    std::istringstream              sstream(command);
+    std::string                     unit;
 
-    auto npc = db::name2npc("낙랑");
-    std::string command(message.begin() + 1, message.end());
+    while(std::getline(sstream, unit, ' '))
+    {
+        splitted.push_back(unit);
+    }
 
-    if(command == "show")
+    if(splitted[0] == "show")
     {
         auto item = db::name2item("남자기모노");
         this->send_stream(session, item->make_dialog_stream("갓승현님 사랑합니다.", true, true), scope::SELF);
         return true;
     }
 
-    if(command == "show short list")
+    if(splitted[0] == "show short list")
     {
         std::vector<std::string> menus = {"갓", "승", "현"};
         this->send_stream(session, npc->make_dialog_stream("갓승현님 존경합니다.", menus), scope::SELF);
         return true;
     }
 
-    if(command == "show long list")
+    if(splitted[0] == "show long list")
     {
         std::vector<std::string> menus;
         std::string message = "갓승현님은 위대하신 게임서버 개발계의 큰 별이시다.";
@@ -2011,7 +1995,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
-    if(command == "show inventory items")
+    if(splitted[0] == "show inventory items")
     {
         std::vector<uint8_t> slots;
         for(int i = 0; i < item::MAX_SLOT; i++)
@@ -2026,7 +2010,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
-    if(command == "show item core list")
+    if(splitted[0] == "show item core list")
     {
         std::vector<item::core*> items;
         int count = 0;
@@ -2040,19 +2024,19 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
-    if(command == "show question")
+    if(splitted[0] == "show question")
     {
         this->send_stream(session, npc->make_input_dialog_stream("What is your name?"), scope::SELF);
         return true;
     }
 
-	if(command == "show extend input")
+	if(splitted[0] == "show extend input")
 	{
 		this->send_stream(session, npc->make_input_dialog_stream("안녕", "탑", "바텀", 0xFF, true), scope::SELF);
 		return true;
 	}
 
-    if(command == "be ghost")
+    if(splitted[0] == "be ghost")
     {
         if(session.state() == state::NORMAL)
             session.state(state::GHOST);
@@ -2060,6 +2044,27 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
             session.state(state::NORMAL);
 
         this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+        return true;
+    }
+
+    if(splitted[0] == "weather")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, weather::make_stream(weather::type(value)), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "bright")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, this->make_bright_stream(value), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "timer")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, timer::make_stream(value), scope::SELF);
         return true;
     }
 

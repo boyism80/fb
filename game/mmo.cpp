@@ -40,3 +40,26 @@ fb::ostream fb::game::message::make_stream(const std::string& message, message::
 
     return ostream;
 }
+
+fb::ostream fb::game::timer::make_stream(uint32_t time, type type)
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x67)
+        .write_u8(type)
+        .write_u32(time)
+        .write_u8(0x00);
+
+    return ostream;
+}
+
+fb::ostream fb::game::weather::make_stream(type weather)
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x1F)
+        .write_u8(weather)
+        .write_u8(0x00);
+
+    return ostream;
+}

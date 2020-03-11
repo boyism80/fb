@@ -162,6 +162,8 @@ public:
 
         virtual attrs               attr() const;
         virtual object*             make() const;
+        template <typename T>
+        T* make() const { return static_cast<T*>(this->make()); }
     };
 
 protected:

@@ -34,8 +34,6 @@ public:
 
 private:
     fb::ostream             make_time_stream();
-    fb::ostream             make_timer_stream(uint32_t time, timer::type type = timer::type::DECREASE);
-    fb::ostream             make_weather_stream(uint8_t weather);
     fb::ostream             make_bright_stream(uint8_t value);
 
 public:
