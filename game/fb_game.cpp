@@ -1,11 +1,7 @@
 #include "fb_game.h"
-
-
-
 using namespace fb::game;
 
 IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
-    {"name2mob", builtin_name2mob},
 END_LUA_EXTENSION
 
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
@@ -26,8 +22,11 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 
     lua::bind_class<game::session, life>();
 
-    luaL_register(lua::main::get(), "fb", LUA_METHODS);
-
+    lua_register(lua::main::get(), "name2mob",  builtin_name2mob);
+    lua_register(lua::main::get(), "name2item", builtin_name2item);
+    lua_register(lua::main::get(), "name2npc",  builtin_name2npc);
+    lua_register(lua::main::get(), "timer",     builtin_timer);
+    lua_register(lua::main::get(), "weather",   builtin_weather);
 
     this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
     this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
@@ -86,6 +85,7 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.items.add(db::name2item("얼음칼")->make<item>());
     session.items.add(db::name2item("정화의방패")->make<item>());
     session.items.add(db::name2item("도씨검")->make<item>());
+    session.items.add(db::name2item("낙랑의두루마리2")->make<item>());
     session.items.add(db::name2item("남자기모노")->make<item>());
     session.items.add(db::name2item("도토리")->make<item>());
     session.items.add(db::name2item("동동주")->make<item>());
@@ -182,7 +182,19 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
         break;
     }
 
+    case acceptor::scope::WORLD:
+    {
+        this->send_stream(stream, encrypt);
+        break;
     }
+
+    }
+}
+
+void fb::game::acceptor::send_stream(const fb::ostream& stream, bool encrypt)
+{
+    for(const auto session : this->sessions())
+        __super::send_stream(*session, stream, encrypt);
 }
 
 bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direction direction)
@@ -778,7 +790,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 
         auto                item_index = session.items.inactive(slot);
         if(item_index == 0xFF)
-            throw std::runtime_error("소지품이 꽉 찼습니다.");
+            throw std::runtime_error(message::exception::INVENTORY_OVERFLOW);
 
 
         // 마법 딜레이 스트림 필요
@@ -810,6 +822,9 @@ bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
         auto                item = session.items[index];
         if(item == NULL)
             return true;
+
+        if(item->trade_enabled() == false)
+            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
         auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
         if(item == dropped)
@@ -1714,7 +1729,7 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
             throw std::exception();
 
         if(item->trade_enabled() == false)
-            throw std::runtime_error("던질 수 없는 물건입니다.");
+            throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = session.map();
         if(map == nullptr)

@@ -26,7 +26,7 @@ public:
     DECLARE_LUA_PROTOTYPE
 
 public:
-    enum scope { SELF, PIVOT, MAP, GLOBAL };
+    enum scope { SELF, PIVOT, MAP, WORLD };
 
 public:
     acceptor(uint16_t port);
@@ -38,6 +38,7 @@ private:
 
 public:
     void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send_stream(const fb::ostream& stream, bool encrypt = true);
 
 public:
     bool                    handle_move_life(fb::game::life* life, fb::game::direction direction);
@@ -102,6 +103,8 @@ public:
     static int              builtin_name2mob(lua_State* lua);
     static int              builtin_name2npc(lua_State* lua);
     static int              builtin_name2item(lua_State* lua);
+    static int              builtin_timer(lua_State* lua);
+    static int              builtin_weather(lua_State* lua);
 };
 
 } }

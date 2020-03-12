@@ -9,6 +9,7 @@ function handle_click(session, npc)
 	local action = npc:input_dialog(session, string.format('안녕하세요 %s님. \n\n현재 위치는 %s, %s입니다.', session:name(), x, y), "갓승현님을 존경하는 저의 이름은", "입니다.")
 
 	if type(action) == 'string' then
+		npc:chat(action)
 		if npc:dialog(session, string.format('"%s"라닛?', action), false, true) == DIALOG_RESULT_NEXT then
 			npc:dialog(session, "next : 갓승현님이 나아가실 앞으로의 찬란한 인생을 뜻하는 단어")
 
@@ -17,6 +18,7 @@ function handle_click(session, npc)
 		end
 
 	elseif action == DIALOG_RESULT_QUIT then
+		timer(10)
 		message = npc:input_dialog(session, "아무거나 입력해보세요")
 		npc:dialog(session, string.format('입력한 메시지 : %s', message))
 	end

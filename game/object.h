@@ -153,6 +153,7 @@ public:
     fb::ostream                 make_show_stream() const;
     fb::ostream                 make_hide_stream() const;
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
+    fb::ostream                 make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
     fb::ostream                 make_sound_stream(fb::game::sound::type sound) const;
     fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
 
@@ -166,6 +167,7 @@ public:
 	static int					builtin_dialog(lua_State* lua);
 	static int					builtin_sound(lua_State* lua);
 	static int					builtin_position(lua_State* lua);
+    static int                  builtin_chat(lua_State* lua);
 };
 
 

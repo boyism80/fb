@@ -18,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"dialog",      fb::game::object::builtin_dialog},
 {"sound",       fb::game::object::builtin_sound},
 {"position",    fb::game::object::builtin_position},
+{"chat",        fb::game::object::builtin_chat},
 END_LUA_EXTENSION
 
 
@@ -716,6 +717,18 @@ fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::objec
     return ostream;
 }
 
+fb::ostream fb::game::object::make_chat_stream(const std::string& message, chat::type type) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x0D)
+        .write_u8(type)
+        .write_u32(this->_id)
+        .write(message);
+
+    return ostream;
+}
+
 fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) const
 {
     // 0x019A : 장비 해제 사운드
@@ -767,6 +780,32 @@ int fb::game::object::builtin_position(lua_State* lua)
     lua_pushinteger(lua, object->_position.x);
     lua_pushinteger(lua, object->_position.y);
     return 2;
+}
+
+int fb::game::object::builtin_chat(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto message = lua_tostring(lua, 2);
+    auto type = argc < 3 ? chat::type::NORMAL : chat::type(lua_tointeger(lua, 3));
+    auto decorate = argc < 4 ? true : lua_toboolean(lua, 4);
+
+    std::stringstream sstream;
+    if(decorate)
+    {
+        if(type == chat::type::SHOUT)
+            sstream << object->name() << "! " << message;
+        else
+            sstream << object->name() << ": " << message;
+    }
+    else
+    {
+        sstream << message;
+    }
+
+    acceptor->send_stream(*object, object->make_chat_stream(sstream.str(), type), acceptor::scope::PIVOT, true);
+    return 0;
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
