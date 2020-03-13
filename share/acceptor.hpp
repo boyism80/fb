@@ -45,19 +45,19 @@ bool fb::base_acceptor<T>::do_session()
     if (::select(0, &copy, NULL, NULL, &timeout) == SOCKET_ERROR)
         return false;
 
-    for (uint32_t i = 0; i < reads.fd_count; i++)
+    for (auto i = 0; i < reads.fd_count; i++)
     {
-        SOCKET fd = reads.fd_array[i];
+        auto                fd = reads.fd_array[i];
         if (FD_ISSET(fd, &copy) == false)
             continue;
 
         if(fd == *this)
             this->handle_accept();
         else
-            this->handle_receive((T&)*this->_sockets[fd]);
+            this->handle_receive(*this->_sockets[fd]);
     }
 
-    for(uint32_t i = 0; i < reads.fd_count; i++)
+    for(auto i = 0; i < reads.fd_count; i++)
     {
         this->_sockets[reads.fd_array[i]]->in_stream().flush();
         this->_sockets[reads.fd_array[i]]->send();
@@ -68,8 +68,11 @@ bool fb::base_acceptor<T>::do_session()
 template <typename T>
 bool fb::base_acceptor<T>::disconnect(SOCKET fd)
 {
+    auto session = this->session(fd);
+
     this->handle_disconnected((T&)*this->_sockets[fd]);
-    this->_sessions.erase(std::find(this->_sessions.begin(), this->_sessions.end(), this->_sockets[fd]));
+    this->_session_table.erase(fd);
+    this->_sessions.erase(std::find(this->_sessions.begin(), this->_sessions.end(), session));
     this->_sockets.remove(fd);
     return true;
 }
@@ -124,13 +127,13 @@ inline void fb::base_acceptor<T>::exit()
 }
 
 template<class T>
-inline T* fb::base_acceptor<T>::session(uint32_t fd)
+inline T* fb::base_acceptor<T>::session(SOCKET fd)
 {
-    auto i = this->_sockets.find(fd);
-    if(i == this->_sockets.end())
-        return NULL;
+    auto                    found = this->_session_table.find(fd);
+    if(found == this->_session_table.end())
+        return nullptr;
 
-    return static_cast<T*>(i->second);
+    return found->second;
 }
 
 template<class T>
@@ -149,18 +152,22 @@ void fb::base_acceptor<T>::register_timer(uint32_t interval, fn callback)
 template <typename T>
 bool fb::base_acceptor<T>::handle_accept()
 {
-    SOCKADDR_IN     address          = {0,};
-    int32_t         address_size     = sizeof(address);
-    SOCKET          fd               = ::accept(*this, (struct sockaddr*) & address, &address_size);
+    SOCKADDR_IN             address = {0,};
+    int                     address_size = sizeof(address);
+    auto                    fd = ::accept(*this, (struct sockaddr*) & address, &address_size);
+    auto                    session = this->handle_allocate_session(fd);
+    if(session == nullptr)
+        return false;
 
-    this->_sockets.add(fd, (socket*)new T(fd));
-    this->_sessions.push_back(static_cast<T*>(this->_sockets[fd]));
+    this->_sockets.add(fd, &static_cast<socket&>(*session));
+    this->_sessions.push_back(session);
+    this->_session_table.insert(std::make_pair(fd, session));
 
-    return this->handle_connected((T&)*this->_sockets[fd]);
+    return this->handle_connected(*session);
 }
 
 template<typename T>
-inline void fb::base_acceptor<T>::handle_receive(T& session)
+inline void fb::base_acceptor<T>::handle_receive(socket& session)
 {
     if(session.recv() == false || this->handle_parse(session) == false)
         this->disconnect(session);
@@ -231,16 +238,18 @@ bool fb::fb_acceptor<T>::change_server(T& session, uint32_t ip, uint16_t port)
 {
     fb::ostream&                ostream = session.out_stream();
     fb::ostream                 buffer_stream;
+    auto&                       crtsocket = static_cast<fb::crtsocket&>(session);
+    auto&                       crt = static_cast<fb::cryptor&>(crtsocket);
 
     buffer_stream.write_u8(0x03)
         .write_u32(ip)          // ip
         .write_u16(port)        // port
         .write_u8(0x0C)         // backward size
-        .write_u8(session.crt().types())
+        .write_u8(crt.types())
         .write_u8(0x09)
-        .write(session.crt().key(), 0x09)
+        .write(crt.key(), 0x09)
         .write_u8(0x00);
-    session.crt().wrap(buffer_stream);
+    crt.wrap(buffer_stream);
     ostream.write(buffer_stream);
     return true;
 }
@@ -256,11 +265,14 @@ inline bool fb::fb_acceptor<T>::call_handle(T& session, uint8_t cmd)
 }
 
 template<class T>
-inline bool fb::fb_acceptor<T>::handle_parse(T& session)
+inline bool fb::fb_acceptor<T>::handle_parse(socket& socket)
 {
-    static uint8_t      base_size = sizeof(uint8_t) + sizeof(uint16_t);
-    istream&            istream   = session.in_stream();
-    bool                success   = true;
+    static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
+    auto&               istream     = socket.in_stream();
+    auto                success     = true;
+
+    auto&               crtsocket   = static_cast<fb::crtsocket&>(socket);
+    auto&               crt         = static_cast<fb::cryptor&>(crtsocket);
 
     while(true)
     {
@@ -292,11 +304,11 @@ inline bool fb::fb_acceptor<T>::handle_parse(T& session)
             // If command byte is not 0x10, this data must be decrypted by session's encrypt key
             uint8_t             cmd = istream.read_u8();
             if(cmd != 0x00 && cmd != 0x10)
-                size = session.crt().decrypt(istream, istream.position(), size);
+                size = crt.decrypt(istream, istream.position(), size);
 
             // Call function that matched by command byte
             istream.reset();
-            if(this->call_handle(session, cmd) == false)
+            if(this->call_handle(*this->session(socket), cmd) == false)
                 throw std::exception();
 
             // Set data pointer to process next packet bytes
@@ -314,17 +326,10 @@ inline bool fb::fb_acceptor<T>::handle_parse(T& session)
 }
 
 template<class T>
-inline bool fb::fb_acceptor<T>::send_stream(fb_session& session, const fb::ostream& stream, bool encrypt)
+inline bool fb::fb_acceptor<T>::send_stream(fb::base& session, const fb::ostream& stream, bool encrypt, bool wrap)
 {
     if(stream.empty())
         return true;
 
-    fb::ostream             clone = stream;
-    if(encrypt)
-        session.crt().encrypt(clone);
-    session.crt().wrap(clone);
-
-    session.out_stream().write(clone);
-
-    return true;
+    return session.send(stream, encrypt, wrap);
 }

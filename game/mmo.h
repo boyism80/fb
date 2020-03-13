@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "socket.h"
 #include "stream.h"
 
 #define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\

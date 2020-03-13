@@ -17,7 +17,7 @@ private:
 
 public:
     cryptor();
-    cryptor(uint8_t types, uint8_t* key);
+    cryptor(uint8_t types, const uint8_t* key);
     cryptor(const cryptor& crt);
     ~cryptor();
 

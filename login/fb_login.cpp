@@ -2,7 +2,7 @@
 using namespace fb::login;
 
 
-session::session(SOCKET socket) : fb_session(socket)
+session::session(SOCKET fd) : crtsocket(fd)
 {}
 
 session::~session()
@@ -53,10 +53,11 @@ acceptor::~acceptor()
 {
     Json::StyledWriter writer;
     std::ofstream ofstream;
+}
 
-    //ofstream.open("conf_login.json");
-    //ofstream << writer.write(this->_config);
-    //ofstream.close();
+fb::login::session* acceptor::handle_allocate_session(SOCKET fd)
+{
+    return new login::session(fd);
 }
 
 uint32_t acceptor::compress(const uint8_t* source, uint32_t size, uint8_t* dest) const

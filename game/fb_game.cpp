@@ -143,6 +143,12 @@ fb::ostream fb::game::acceptor::make_bright_stream(uint8_t value)
     return ostream;
 }
 
+fb::game::session* fb::game::acceptor::handle_allocate_session(SOCKET fd)
+{
+    auto session = new fb::game::session(fd);
+    return session;
+}
+
 void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
     if(stream.empty())
@@ -151,14 +157,14 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
     switch(scope)
     {
     case acceptor::scope::SELF:
-        __super::send_stream(static_cast<fb::game::session&>(object), stream, encrypt);
+        __super::send_stream(object, stream, encrypt);
         break;
 
     case acceptor::scope::PIVOT:
     {
         const auto sessions = object.looking_sessions();
         if(!exclude_self)
-            __super::send_stream(static_cast<fb::game::session&>(object), stream, encrypt);
+            __super::send_stream(object, stream, encrypt);
 
         for(const auto session : sessions)
             __super::send_stream(*session, stream, encrypt);
@@ -388,7 +394,9 @@ bool acceptor::handle_login(fb::game::session& session)
     auto                    enc_type = istream.read_u8();
     auto                    key_size = istream.read_u8();
     istream.read(enc_key, key_size);
-    session.crt(enc_type, enc_key);
+
+    auto&                   socket = static_cast<crtsocket&>(session);
+    socket.crt(enc_type, enc_key);
 
     fb::ostream             ostream;
     ostream.write_u8(0x1E)

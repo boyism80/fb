@@ -85,9 +85,6 @@
     <ClCompile Include="..\share\cryptor.cpp">
       <Filter>Module\fb\cryptor</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\socket.cpp">
-      <Filter>Module\fb\socket</Filter>
-    </ClCompile>
     <ClCompile Include="..\share\stream.cpp">
       <Filter>Module\fb\stream</Filter>
     </ClCompile>
@@ -141,6 +138,9 @@
     </ClCompile>
     <ClCompile Include="builtin_function.cpp">
       <Filter>Source Files\builtin_function</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\socket.cpp">
+      <Filter>Module\fb\socket</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +221,9 @@
     </ClInclude>
     <ClInclude Include="builtin_function.hpp">
       <Filter>Source Files\builtin_function</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\socket.hpp">
+      <Filter>Module\fb\socket</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

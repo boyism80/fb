@@ -5,10 +5,28 @@
 #include <exception>
 #include <map>
 #include "stream.h"
+#include "cryptor.h"
 
 namespace fb {
 
-class socket
+class base
+{
+private:
+    uint32_t                _id;
+
+protected:
+    base() : _id(0xFFFFFFFF) {}
+    base(uint32_t id) : _id(id) {}
+    virtual ~base() {}
+
+public:
+    uint32_t                id() const { return this->_id; }
+    void                    id(uint32_t value) { this->_id = value; }
+
+    virtual bool            send(const fb::ostream& stream, bool encrypt, bool wrap) { return true; }
+};
+
+class socket : public base
 {
 private:
     SOCKET                  _fd;
@@ -34,6 +52,26 @@ public:
 
 public:
     operator                SOCKET () const;
+};
+
+class crtsocket : public socket
+{
+private:
+    fb::cryptor             _crt;
+
+public:
+    crtsocket(SOCKET fd);
+    crtsocket(SOCKET fd, const fb::cryptor& crt);
+    virtual ~crtsocket();
+
+public:
+    bool                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    crt(const fb::cryptor& crt);
+    void                    crt(uint8_t enctype, const uint8_t* enckey);
+
+    // operator
+public:
+    operator                fb::cryptor& ();
 };
 
 

@@ -17,7 +17,7 @@ namespace fb { namespace game {
 
 class map;
 
-class session : public fb_session, public life
+class session : public life
 {
 public:
     DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
@@ -28,6 +28,9 @@ public:
 
 public:
 	DECLARE_LUA_PROTOTYPE
+
+private:
+    crtsocket               _socket;
 
 private:
 	std::string             _name;
@@ -71,6 +74,20 @@ private:
 public:
     session(SOCKET socket);
     ~session();
+
+    // override
+public:
+    bool                    send(const fb::ostream& stream, bool encrypt, bool wrap);
+
+    // middle man
+public:
+    istream&                in_stream();
+    ostream&                out_stream();
+
+    // operator
+public:
+    operator                fb::crtsocket& ();
+    operator                fb::socket& ();
 
 public:
     const std::string&      name() const;
@@ -200,7 +217,6 @@ public:
 	static int				builtin_name(lua_State* lua);
 	static int				builtin_look(lua_State* lua);
 	static int				builtin_color(lua_State* lua);
-	static int				builtin_position(lua_State* lua);
 	static int				builtin_money(lua_State* lua);
 	static int				builtin_exp(lua_State* lua);
 	static int				builtin_base_hp(lua_State* lua);

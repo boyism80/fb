@@ -9,7 +9,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"name", fb::game::session::builtin_name},
 {"look", fb::game::session::builtin_look},
 {"color", fb::game::session::builtin_color},
-{"position", fb::game::session::builtin_position},
 {"money", fb::game::session::builtin_money},
 {"exp", fb::game::session::builtin_exp},
 {"base_hp", fb::game::session::builtin_base_hp},
@@ -20,12 +19,12 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
-    fb_session(socket),
     life((life::core*)nullptr, socket, 0, 0, 0),
+    _socket(socket),
 	_look(0), _color(0),
 	_defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
-    _nation(fb::game::nation::GOGURYEO),
-    _creature(fb::game::creature::DRAGON),
+    _nation(nation::GOGURYEO),
+    _creature(creature::DRAGON),
     _state(state::NORMAL),
     _level(1),
     _class(0),
@@ -45,6 +44,31 @@ session::~session()
 
 	if(dialog_thread != nullptr)
 		delete dialog_thread;
+}
+
+bool fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{
+    return this->_socket.send(stream, encrypt, wrap);
+}
+
+fb::istream& fb::game::session::in_stream()
+{
+    return this->_socket.in_stream();
+}
+
+fb::ostream& fb::game::session::out_stream()
+{
+    return this->_socket.out_stream();
+}
+
+fb::game::session::operator fb::crtsocket& ()
+{
+    return this->_socket;
+}
+
+fb::game::session::operator fb::socket& ()
+{
+    return static_cast<socket&>(this->_socket);
 }
 
 const std::string& fb::game::session::name() const
@@ -999,7 +1023,7 @@ fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
     fb::ostream             ostream;
 
     ostream.write_u8(0x16)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u16(item.look())
         .write_u8(item.color())
         .write_u32(item.id())
@@ -1037,15 +1061,6 @@ int fb::game::session::builtin_color(lua_State* lua)
 
 	lua_pushnumber(lua, session->_color);
 	return 1;
-}
-
-int fb::game::session::builtin_position(lua_State* lua)
-{
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-
-	lua_pushinteger(lua, session->_position.x);
-	lua_pushinteger(lua, session->_position.y);
-	return 2;
 }
 
 int fb::game::session::builtin_money(lua_State* lua)

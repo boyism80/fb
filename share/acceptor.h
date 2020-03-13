@@ -30,12 +30,6 @@ public:
     fn                      callback();
 };
 
-class base_session : public socket
-{
-public:
-    base_session(SOCKET socket);
-    virtual ~base_session();
-};
 
 template <class T>
 class base_acceptor : private fb::socket
@@ -44,12 +38,11 @@ public:
     typedef void (base_acceptor<T>::*TimerCallbackFunc)(uint64_t now);
     typedef std::vector<fb_timer<TimerCallbackFunc>*> timer_list;
 
-    typedef std::vector<T*> session_list;
-
 private:
     bool                    _running;
     fb::socket_map          _sockets;
-    session_list            _sessions;
+    std::vector<T*>         _sessions;
+    std::map<SOCKET, T*>    _session_table;
     std::thread*            _execute_thread;
     timer_list              _timers;
     
@@ -65,7 +58,7 @@ private:
 public:
     bool                    execute(bool async = false);
     void                    exit();
-    T*                      session(uint32_t fd);
+    T*                      session(SOCKET fd);
     std::vector<T*>&        sessions();
 
     template <typename fn>
@@ -73,33 +66,17 @@ public:
 
 public:
     bool                    handle_accept();
-    void                    handle_receive(T& base_session);
+    void                    handle_receive(socket& base_session);
 
 public:
     virtual bool            handle_connected(T& base_session) { return true; }
     virtual bool            handle_disconnected(T& base_session) { return true; }
-    virtual bool            handle_parse(T& base_session) = 0;
+    virtual bool            handle_parse(socket& base_session) = 0;
+    virtual T*              handle_allocate_session(SOCKET socket) = 0;
 
 public:
     T*                      operator [] (uint32_t fd) const;
 };
-
-
-class fb_session : public base_session
-{
-private:
-    cryptor                 _cryptor;
-
-public:
-    fb_session(SOCKET socket);
-    virtual ~fb_session();
-
-public:
-    cryptor&                crt();
-    void                    crt(const cryptor& cryptor);
-    void                    crt(uint8_t types, uint8_t* key);
-};
-
 
 template <class T>
 class fb_acceptor : public base_acceptor<T>
@@ -121,10 +98,10 @@ public:
     bool                    register_handle(uint8_t cmd, fn handle_login);
     bool                    change_server(T& base_session, uint32_t ip, uint16_t port);
     bool                    call_handle(T& session, uint8_t cmd);
-    virtual bool            handle_parse(T& base_session);
+    virtual bool            handle_parse(socket& base_session);
 
 public:
-    bool                    send_stream(fb_session& session, const fb::ostream& stream, bool encrypt = true);
+    bool                    send_stream(fb::base& session, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
 };
 
 #include "acceptor.hpp"

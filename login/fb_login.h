@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
+#include "socket.h"
 #include "acceptor.h"
 #include "json/json.h"
 
@@ -70,10 +71,10 @@ public:
 #pragma endregion
 
 
-class session : public fb_session
+class session : public crtsocket
 {
 public:
-    session(SOCKET socket);
+    session(SOCKET fd);
     ~session();
 };
 
@@ -110,6 +111,10 @@ private:
 public:
     acceptor(uint16_t port);
     ~acceptor();
+
+    // override
+public:
+    login::session*             handle_allocate_session(SOCKET fd);
 
 private:
     uint32_t                    compress(const uint8_t * source, uint32_t size, uint8_t * dest) const;

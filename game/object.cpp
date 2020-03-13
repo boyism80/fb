@@ -161,8 +161,8 @@ int fb::game::object::core::builtin_dialog(lua_State* lua)
 
 // fb::game::object
 fb::game::object::object(const fb::game::object::core* core, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
+    fb::base(id),
     _core(core),
-    _id(id),
     _position(position),
     _direction(direction),
     _map(map)
@@ -170,7 +170,7 @@ fb::game::object::object(const fb::game::object::core* core, uint32_t id, const 
 }
 
 fb::game::object::object(const object& right) :
-    object(right._core, right._id, right._position, right._direction, right._map)
+    object(right._core, right.id(), right._position, right._direction, right._map)
 {
 }
 
@@ -180,16 +180,6 @@ fb::game::object::~object()
 const fb::game::object::core* fb::game::object::based() const
 {
     return this->_core;
-}
-
-uint32_t fb::game::object::id() const
-{
-    return this->_id;
-}
-
-void fb::game::object::id(uint32_t value)
-{
-    this->_id = value;
 }
 
 const std::string& fb::game::object::name() const
@@ -723,7 +713,7 @@ fb::ostream fb::game::object::make_chat_stream(const std::string& message, chat:
 
     ostream.write_u8(0x0D)
         .write_u8(type)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write(message);
 
     return ostream;
@@ -742,7 +732,7 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) con
         .write_u16(sound) // sound
         .write_u8(100)
         .write_u16(0x0004)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u16(0x0100)
         .write_u16(0x0202)
         .write_u16(0x0004)
@@ -1215,7 +1205,7 @@ fb::ostream fb::game::life::make_move_stream(fb::game::direction direction, bool
     fb::ostream             ostream;
 
     ostream.write_u8(0x0C)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u16(from_before ? this->_before.x : this->_position.x)
         .write_u16(from_before ? this->_before.y : this->_position.y)
         .write_u8(direction)
@@ -1228,7 +1218,7 @@ fb::ostream fb::game::life::make_direction_stream() const
 {
     fb::ostream             ostream;
     ostream.write_u8(0x11)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u8(this->_direction)
         .write_u8(0x00);
 
@@ -1241,7 +1231,7 @@ fb::ostream fb::game::life::make_action_stream(fb::game::action action, fb::game
 
     fb::ostream             ostream;
     ostream.write_u8(0x1A)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u8(action) // type
         .write_u16(duration) // duration
         .write_u8(sound); // sound
@@ -1255,7 +1245,7 @@ fb::ostream fb::game::life::make_show_hp_stream(uint32_t random_damage, bool cri
     uint8_t                 percentage = uint8_t((this->_hp / float(this->base_hp())) * 100);
 
     ostream.write_u8(0x13)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u8(critical)
         .write_u8(percentage)
         .write_u32(random_damage)
@@ -1269,7 +1259,7 @@ fb::ostream fb::game::life::make_die_stream() const
     fb::ostream             ostream;
 
     ostream.write_u8(0x5F)
-        .write_u32(this->_id)
+        .write_u32(this->id())
         .write_u8(0x00);
 
     return ostream;

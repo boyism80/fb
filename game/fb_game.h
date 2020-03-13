@@ -37,6 +37,9 @@ private:
     fb::ostream             make_bright_stream(uint8_t value);
 
 public:
+    fb::game::session*      handle_allocate_session(SOCKET fd);
+
+public:
     void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send_stream(const fb::ostream& stream, bool encrypt = true);
 

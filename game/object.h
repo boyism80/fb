@@ -10,7 +10,7 @@ namespace fb { namespace game {
 class map;
 class session;
 
-class object
+class object : public fb::base
 {
 public:
     enum types { UNKNOWN = 0x00, ITEM = 0x01, NPC = 0x02, MOB = 0x04 };
@@ -76,7 +76,6 @@ protected:
     
 
 protected:
-    uint32_t                    _id;
     point16_t                   _position;
     fb::game::direction         _direction;
     fb::game::map*              _map;
@@ -99,9 +98,6 @@ public:
     const T*                    based() const { return static_cast<const T*>(this->_core); }
     template <typename T>
     T*                          clone() const { return static_cast<T*>(this->_core->make<T>()); }
-    
-    uint32_t                    id() const;
-    void                        id(uint32_t value);
 
     virtual const std::string&  name() const;
     virtual uint16_t            look() const;

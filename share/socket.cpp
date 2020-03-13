@@ -179,3 +179,44 @@ fb::socket_map::operator fd_set& ()
 {
     return this->_fd_set;
 }
+
+fb::crtsocket::crtsocket(SOCKET fd) : socket(fd)
+{
+}
+
+fb::crtsocket::crtsocket(SOCKET fd, const fb::cryptor& crt) : 
+    socket(fd), _crt(crt)
+{
+}
+
+fb::crtsocket::~crtsocket()
+{
+}
+
+bool fb::crtsocket::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{
+    auto                    clone(stream);
+    if(encrypt)
+        this->_crt.encrypt(clone);
+
+    if(wrap)
+        this->_crt.wrap(clone);
+
+    this->out_stream().write(clone);
+    return true;
+}
+
+void fb::crtsocket::crt(const fb::cryptor& crt)
+{
+    this->_crt = cryptor(crt);
+}
+
+void fb::crtsocket::crt(uint8_t enctype, const uint8_t* enckey)
+{
+    this->_crt = cryptor(enctype, enckey);
+}
+
+fb::crtsocket::operator fb::cryptor& ()
+{
+    return this->_crt;
+}
