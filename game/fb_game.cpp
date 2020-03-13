@@ -2083,6 +2083,27 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+    if(splitted[0] == "effect")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, session.make_effet_stream(value), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "action")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, session.make_action_stream(game::action(value), duration::DURATION_SPELL), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "sound")
+    {
+        auto value = std::stoi(splitted[1]);
+        this->send_stream(session, session.make_sound_stream(game::sound::type(value)), scope::SELF);
+        return true;
+    }
+
     return false;
 }
 #endif
