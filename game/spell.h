@@ -33,6 +33,7 @@ public:
 public:
     ostream                 make_show_stream(uint8_t slot) const;
     static ostream          make_delete_stream(uint8_t slot);
+    static fb::ostream      make_buff_stream(const std::string& message, uint32_t time);
 };
 
 

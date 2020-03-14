@@ -70,6 +70,17 @@ fb::ostream fb::game::spell::make_delete_stream(uint8_t slot)
     return ostream;
 }
 
+fb::ostream fb::game::spell::make_buff_stream(const std::string& message, uint32_t time)
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x3A)
+        .write(message)
+        .write_u32(time);
+
+    return ostream;
+}
+
 fb::game::spells::spells(session& owner) : 
 	container(owner, spell::MAX_SLOT, false)
 {

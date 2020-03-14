@@ -19,6 +19,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"sound",       fb::game::object::builtin_sound},
 {"position",    fb::game::object::builtin_position},
 {"chat",        fb::game::object::builtin_chat},
+{"message",     fb::game::object::builtin_message},
+{"buff",        fb::game::object::builtin_buff},
+{"effect",      fb::game::object::builtin_effect},
 END_LUA_EXTENSION
 
 
@@ -30,6 +33,9 @@ END_LUA_EXTENSION
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"hp",          fb::game::life::builtin_hp},
 {"mp",          fb::game::life::builtin_mp},
+{"base_hp",     fb::game::life::builtin_base_hp},
+{"base_mp",     fb::game::life::builtin_base_mp},
+{"action",      fb::game::life::builtin_action},
 END_LUA_EXTENSION
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
@@ -726,6 +732,18 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) con
     return ostream;
 }
 
+fb::ostream fb::game::object::make_effet_stream(uint8_t effect) const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x29)
+        .write_u32(this->id())
+        .write_u8(effect)
+        .write_u8(0x00);
+
+    return ostream;
+}
+
 fb::ostream fb::game::object::make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const
 {
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
@@ -779,7 +797,46 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    acceptor->send_stream(*object, object->make_chat_stream(sstream.str(), type), acceptor::scope::PIVOT, true);
+    acceptor->send_stream(*object, object->make_chat_stream(sstream.str(), type), acceptor::scope::PIVOT);
+    return 0;
+}
+
+int fb::game::object::builtin_message(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto message = lua_tostring(lua, 2);
+    auto type = argc < 3 ? fb::game::message::STATE : lua_tointeger(lua, 3);
+
+    if(object->type() == object::types::SESSION)
+        acceptor->send_stream(*object, fb::game::message::make_stream(message, fb::game::message::type(type)), acceptor::scope::SELF);
+
+    return 0;
+}
+
+int fb::game::object::builtin_buff(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto message = lua_tostring(lua, 2);
+    auto time = lua_tointeger(lua, 3);
+
+    if(object->type() == object::types::SESSION)
+        acceptor->send_stream(*object, spell::make_buff_stream(message, time), acceptor::scope::SELF);
+
+    return 0;
+}
+
+int fb::game::object::builtin_effect(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto effect = lua_tointeger(lua, 2);
+
+    if(object->type() == object::types::SESSION)
+        acceptor->send_stream(*object, object->make_effet_stream(effect), acceptor::scope::SELF);
+
     return 0;
 }
 
@@ -1219,4 +1276,34 @@ int fb::game::life::builtin_mp(lua_State* lua)
 
     lua_pushinteger(lua, object->_mp);
     return 1;
+}
+
+int fb::game::life::builtin_base_hp(lua_State* lua)
+{
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto core = object->based<life::core>();
+
+    lua_pushinteger(lua, core->_hp);
+    return 1;
+}
+
+int fb::game::life::builtin_base_mp(lua_State* lua)
+{
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto core = object->based<life::core>();
+
+    lua_pushinteger(lua, core->_mp);
+    return 1;
+}
+
+int fb::game::life::builtin_action(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto life = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto action = lua_tointeger(lua, 2);
+    auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
+
+    acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration)), acceptor::scope::SELF);
+    return 0;
 }

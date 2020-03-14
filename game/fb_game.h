@@ -55,11 +55,13 @@ public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
 
+    // game event method
 public:
     bool                    handle_connected(fb::game::session& session);
     bool                    handle_disconnected(fb::game::session& session);
     void                    handle_timer(uint64_t elapsed_milliseconds);
 
+    // game event method
 public:
     bool                    handle_login(fb::game::session& session);
     bool                    handle_direction(fb::game::session& session);
@@ -102,6 +104,7 @@ public:
     bool                    handle_admin(fb::game::session& session, const std::string& message);
 #endif
 
+    // built-in method
 public:
     static int              builtin_name2mob(lua_State* lua);
     static int              builtin_name2npc(lua_State* lua);

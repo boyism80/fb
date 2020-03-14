@@ -196,7 +196,6 @@ public:
     fb::ostream             make_appears_stream() const;
     fb::ostream             make_position_stream() const;
     fb::ostream             make_visual_stream(bool light) const;
-    fb::ostream             make_effet_stream(uint8_t effect) const;
 
 
     fb::ostream             make_update_item_slot_stream(uint8_t index) const;

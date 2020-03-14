@@ -720,18 +720,6 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
     return ostream;
 }
 
-fb::ostream fb::game::session::make_effet_stream(uint8_t effect) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x29)
-        .write_u32(this->id())
-        .write_u8(effect)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
 {
     fb::ostream             ostream;

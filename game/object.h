@@ -152,11 +152,12 @@ public:
     uint32_t                    distance_sqrt(const object& right) const;
 
 public:
+    static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     virtual fb::ostream         make_show_stream() const;
     fb::ostream                 make_hide_stream() const;
-    static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     fb::ostream                 make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
     fb::ostream                 make_sound_stream(fb::game::sound::type sound) const;
+    fb::ostream                 make_effet_stream(uint8_t effect) const;
     fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
 
 public:
@@ -170,6 +171,9 @@ public:
 	static int					builtin_sound(lua_State* lua);
 	static int					builtin_position(lua_State* lua);
     static int                  builtin_chat(lua_State* lua);
+    static int                  builtin_message(lua_State* lua);
+    static int                  builtin_buff(lua_State* lua);
+    static int                  builtin_effect(lua_State* lua);
 };
 
 
@@ -279,15 +283,16 @@ public:
     fb::ostream                 make_move_stream(bool from_before = true) const;
     fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
     fb::ostream                 make_direction_stream() const;
-
     fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration) const;
-
     fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
     fb::ostream                 make_die_stream() const;
 
 public:
-	static int					builtin_hp(lua_State* lua);
-	static int					builtin_mp(lua_State* lua);
+    static int					builtin_hp(lua_State* lua);
+    static int					builtin_mp(lua_State* lua);
+    static int					builtin_base_hp(lua_State* lua);
+    static int					builtin_base_mp(lua_State* lua);
+    static int                  builtin_action(lua_State* lua);
 };
 
 } }

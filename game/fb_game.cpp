@@ -371,18 +371,19 @@ void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::
 
 void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
 {
-	if(session.dialog_thread != nullptr)
-		delete session.dialog_thread;
+    if(session.dialog_thread != nullptr)
+        delete session.dialog_thread;
 
-	session.dialog_thread = new lua::thread();
+    session.dialog_thread = new lua::thread();
 
     luaL_dofile(*session.dialog_thread, "scripts/script.lua");
     lua_getglobal(*session.dialog_thread, "handle_click");
 
-	// 루아스크립트의 handle_click 함수의 리턴값 설정
+
+    // 루아스크립트의 handle_click 함수의 리턴값 설정
     session.new_lua<fb::game::session>(*session.dialog_thread);
     npc.new_lua<fb::game::npc>(*session.dialog_thread);
-	session.dialog_thread->resume(2);
+    session.dialog_thread->resume(2);
 }
 
 bool acceptor::handle_login(fb::game::session& session)
@@ -2102,6 +2103,14 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     {
         auto value = std::stoi(splitted[1]);
         this->send_stream(session, session.make_sound_stream(game::sound::type(value)), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "spelltime")
+    {
+        auto message = splitted[1];
+        auto value = std::stoi(splitted[2]);
+        this->send_stream(session, spell::make_buff_stream(message, value), scope::SELF);
         return true;
     }
 
