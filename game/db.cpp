@@ -829,7 +829,7 @@ bool fb::game::db::load_spell(const std::string& db_fname)
         if (data.isMember("message"))
             message = data["message"].asString();
 
-        db::_spells.insert(std::make_pair(id, new spell(type, name, cast, uncast, concast, message)));
+        db::_spells.insert(std::make_pair(id, new spell(spell::types(type), name, cast, uncast, concast, message)));
     }
 
     db_spell.close();

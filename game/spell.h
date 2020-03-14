@@ -12,18 +12,26 @@ class spell
 public:
     static const uint32_t   MAX_SLOT = 52;
 
+public:
+    enum types : uint8_t
+    {
+        INPUT   = 0x01, 
+        TARGET  = 0x02,
+        NORMAL  = 0x05, 
+    };
+
 private:
-    uint8_t                 _type;
+    types                   _type;
     std::string             _name;
     std::string             _cast, _uncast, _concast;
     std::string             _message;
 
 public:
-    spell(uint8_t type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
+    spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
 
 public:
-    uint8_t                 type() const;
+    types                   type() const;
     const std::string&      name() const;
     const std::string&      cast() const;
     const std::string&      uncast() const;

@@ -1,6 +1,6 @@
 #include "spell.h"
 
-fb::game::spell::spell(uint8_t type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
+fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
     _type(type),
     _name(name),
     _cast(cast),
@@ -14,7 +14,7 @@ fb::game::spell::~spell()
 {
 }
 
-uint8_t fb::game::spell::type() const
+fb::game::spell::types fb::game::spell::type() const
 {
     return this->_type;
 }
