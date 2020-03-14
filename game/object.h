@@ -13,7 +13,14 @@ class session;
 class object : public fb::base
 {
 public:
-    enum types { UNKNOWN = 0x00, ITEM = 0x01, NPC = 0x02, MOB = 0x04 };
+    enum types 
+    { 
+        UNKNOWN = 0x00, 
+        ITEM    = 0x01, 
+        NPC     = 0x02, 
+        MOB     = 0x04, 
+        SESSION = 0x08, 
+        OBJECT  = (ITEM | NPC | MOB) };
 
 public:
     class core
@@ -81,7 +88,7 @@ protected:
     fb::game::map*              _map;
 
 protected:
-    object(const core* core, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = NULL);
+    object(const core* core, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
     object(const object& right);
 public:
     virtual ~object();
@@ -136,9 +143,8 @@ public:
     object*                     forward_object(fb::game::object::types type) const;
     std::vector<object*>        forward_objects(fb::game::object::types type) const;
 
-    std::vector<object*>        shown_objects() const;
-    std::vector<session*>       shown_sessions() const;
-    std::vector<session*>       looking_sessions() const;
+    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;
+    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;
 
     virtual bool                alive() const;
 
@@ -146,7 +152,7 @@ public:
     uint32_t                    distance_sqrt(const object& right) const;
 
 public:
-    fb::ostream                 make_show_stream() const;
+    virtual fb::ostream         make_show_stream() const;
     fb::ostream                 make_hide_stream() const;
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     fb::ostream                 make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
@@ -237,8 +243,8 @@ protected:
     uint32_t                    random_damage(uint32_t value, const fb::game::life& life) const;
 
 public:
-    bool                        move(fb::game::direction direction, std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* shown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
-    bool                        move_forward(std::vector<object*>* show_objects = NULL, std::vector<object*>* hide_objects = NULL, std::vector<session*>* show_sessions = NULL, std::vector<session*>* hide_sessions = NULL, std::vector<object*>* hown_objects = NULL, std::vector<object*>* hidden_objects = NULL, std::vector<session*>* shown_sessions = NULL, std::vector<session*>* hidden_sessions = NULL);
+    bool                        move(fb::game::direction direction, std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
+    bool                        move_forward(std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
 
     virtual uint32_t            hp() const;
     virtual void                hp(uint32_t value);

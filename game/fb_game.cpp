@@ -157,17 +157,17 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
     switch(scope)
     {
     case acceptor::scope::SELF:
-        __super::send_stream(object, stream, encrypt);
+        object.send(stream, encrypt);
         break;
 
     case acceptor::scope::PIVOT:
     {
-        const auto sessions = object.looking_sessions();
+        const auto sessions = object.showns(object::types::SESSION);
         if(!exclude_self)
-            __super::send_stream(object, stream, encrypt);
+            object.send(stream, encrypt);
 
         for(const auto session : sessions)
-            __super::send_stream(*session, stream, encrypt);
+            session->send(stream, encrypt);
         break;
     }
 
@@ -182,7 +182,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
             if(exclude_self && session == &object)
                 continue;
 
-            __super::send_stream(*session, stream, encrypt);
+            session->send(stream, encrypt);
         }
 
         break;
@@ -200,7 +200,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
 void fb::game::acceptor::send_stream(const fb::ostream& stream, bool encrypt)
 {
     for(const auto session : this->sessions())
-        __super::send_stream(*session, stream, encrypt);
+        session->send(stream, encrypt);
 }
 
 bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direction direction)
@@ -212,15 +212,15 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
 
     try
     {
-        std::vector<fb::game::session*> shown_sessions, hidden_sessions;
+        std::vector<object*>    showns, hiddens;
 
-        if(life->move(direction, NULL, NULL, NULL, NULL, NULL, NULL, &shown_sessions, &hidden_sessions) == false)
+        if(life->move(direction, nullptr, nullptr, &showns, &hiddens) == false)
             throw std::exception();
 
-        for(auto session : shown_sessions)
+        for(auto session : showns)
             this->send_stream(*session, life->make_show_stream(), scope::SELF);
 
-        for(auto session : hidden_sessions)
+        for(auto session : hiddens)
             this->send_stream(*session, life->make_hide_stream(), scope::SELF);
 
         for(const auto session : life->map()->sessions())
@@ -420,13 +420,12 @@ bool acceptor::handle_login(fb::game::session& session)
 
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
 
-    this->send_stream(session, session.make_show_objects_stream(), scope::SELF);
-
-    this->send_stream(session, session.make_visual_stream(false), scope::PIVOT);
+    this->send_stream(session, session.make_show_stream(), scope::PIVOT);
     this->send_stream(session, session.make_direction_stream(), scope::SELF);
     this->send_stream(session, session.make_option_stream(), scope::SELF);
 
-    // Initialize spell list
+
+    // spell slots
     for(int i = 0; i < spell::MAX_SLOT; i++)
     {
         auto spell = session.spells[i];
@@ -436,17 +435,17 @@ bool acceptor::handle_login(fb::game::session& session)
         this->send_stream(session, spell->make_show_stream(i+1), scope::SELF);
     }
 
-    // Initialize mobs
-    for(auto i : session.looking_sessions())
-    {
-        if(i == &session)
-            continue;
-
-        this->send_stream(session, i->make_visual_stream(false), scope::SELF);
-    }
-
+    // item slots
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
+
+
+    // objects existed
+    //this->send_stream(session, object::make_show_stream(session.showings(object::types::OBJECT)), scope::SELF);
+
+    // session existed
+    for(auto i : session.showns())
+        this->send_stream(session, i->make_show_stream(), scope::SELF);
 
     return true;
 }
@@ -484,9 +483,8 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
     if(session.position() != before)
         this->send_stream(session, session.make_position_stream(), scope::SELF);
 
-    std::vector<object*>            show_objects, hide_objects;
-    std::vector<fb::game::session*> show_sessions, hide_sessions, shown_sessions, hidden_sessions;
-    if(session.move_forward(&show_objects, &hide_objects, &show_sessions, &hide_sessions, NULL, NULL, &shown_sessions, &hidden_sessions))
+    std::vector<object*>            shows, hides, showns, hiddens;
+    if(session.move_forward(&shows, &hides, &showns, &hiddens))
     {
         this->send_stream(session, session.make_move_stream(), scope::PIVOT, true);
     }
@@ -505,24 +503,23 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
         return true;
     }
     
-    // 오브젝트 갱신
-    this->send_stream(session, object::make_show_stream(show_objects), scope::SELF);
-    for(auto i : hide_objects)
+    for(auto i : shows)
+        this->send_stream(session, i->make_show_stream(), scope::SELF);
+
+    for(auto i : hides)
+    {
         this->send_stream(session, i->make_hide_stream(), scope::SELF);
+    }
 
-    // 움직인 세션에게 새로 보이는 세션 갱신
-    for(auto i : show_sessions)
-        this->send_stream(session, i->make_visual_stream(false), scope::SELF);
+    for(auto i : showns)
+    {
+        this->send_stream(*i, session.make_show_stream(), scope::SELF);
+    }
 
-    // 움직인 세션에게 사라진 세션 갱신
-    for(auto i : hide_sessions)
-        this->send_stream(session, i->make_hide_stream(), scope::SELF);
-
-    for(auto i : shown_sessions)
-        this->send_stream(*i, session.make_visual_stream(false), scope::SELF);
-
-    for(auto i : hidden_sessions)
+    for(auto i : hiddens)
+    {
         this->send_stream(*i, session.make_hide_stream(), scope::SELF);
+    }
 
     return true;
 }
@@ -669,7 +666,7 @@ bool fb::game::acceptor::handle_emotion(fb::game::session& session)
     auto                    cmd = istream.read_u8();
     auto                    emotion = istream.read_u8();
 
-    this->send_stream(session, session.make_action_stream(action(action::EMOTION + emotion), duration::DURATION_EMOTION), scope::SELF);
+    this->send_stream(session, session.make_action_stream(action(action::EMOTION + emotion), duration::DURATION_EMOTION), scope::PIVOT);
     return true;
 }
 
@@ -897,7 +894,7 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
         this->send_stream(session, message::make_stream(i->name(), message::type::STATE), scope::SELF);
     }
 
-    for(auto i : session.forward_objects(object::types::UNKNOWN))
+    for(auto i : session.forward_objects(object::types::OBJECT))
     {
         if(i->type() == fb::game::object::types::ITEM)
         {
@@ -1857,11 +1854,14 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
     for(auto pair : db::maps())
     {
         auto                map = pair.second;
+        auto                sessions = map->sessions();
+        if(sessions.size() == 0)
+            continue;
+
         const auto&         objects = map->objects();
 
-        for(auto obj_i = objects.begin(); obj_i != objects.end(); obj_i++)
+        for(auto object : objects)
         {
-            auto            object = (*obj_i);
             if(object->type() != object::types::MOB)
                 continue;
 
@@ -1938,13 +1938,10 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 
 void fb::game::acceptor::handle_session_warp(fb::game::session& session, const map::warp* warp)
 {
-    map*                    map = session.map();
+    auto                    map = session.map();
 
     // 이전에 보이던 오브젝트들 전부 제거
-    for(auto i : session.shown_objects())
-        this->send_stream(session, i->make_hide_stream(), scope::SELF);
-
-    for(auto i : session.shown_sessions())
+    for(auto i : session.showings())
         this->send_stream(session, i->make_hide_stream(), scope::SELF);
 
     session.map(warp->map, warp->after);
@@ -1957,12 +1954,8 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
     this->send_stream(session, session.make_visual_stream(false), scope::SELF);
     this->send_stream(session, session.make_direction_stream(), scope::SELF);
 
-    // 새로 보이는 오브젝트 보여줌
-    this->send_stream(session, session.make_show_objects_stream(), scope::SELF);
-
-    // 새로 보이는 세션들 보여줌
-    for(auto i : session.shown_sessions())
-        this->send_stream(session, i->make_visual_stream(false), scope::SELF);
+    for(auto i : session.showns())
+        this->send_stream(session, i->make_show_stream(), scope::SELF);
 }
 
 #if defined DEBUG | defined _DEBUG

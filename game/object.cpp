@@ -209,7 +209,7 @@ fb::game::point16_t fb::game::object::position() const
 
 bool fb::game::object::position(uint16_t x, uint16_t y)
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     this->_before.x = this->_position.x;
@@ -222,7 +222,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
 
 bool fb::game::object::position(const point16_t position)
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     this->_before.x = this->_position.x;
@@ -267,7 +267,7 @@ uint16_t fb::game::object::x() const
 
 bool fb::game::object::x(uint16_t value)
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     this->_position.x = std::max(uint16_t(0), std::min(uint16_t(this->_map->width() - 1), value));
@@ -281,7 +281,7 @@ uint16_t fb::game::object::y() const
 
 bool fb::game::object::y(uint16_t value)
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     this->_position.y = std::max(uint16_t(0), std::min(uint16_t(this->_map->height() - 1), value));
@@ -309,7 +309,7 @@ fb::game::map* fb::game::object::map() const
 
 uint16_t fb::game::object::map(fb::game::map* map)
 {
-    if(this->_map != NULL)
+    if(this->_map != nullptr)
         this->_map->object_delete(this);
 
     this->_map = map;
@@ -331,7 +331,7 @@ bool fb::game::object::sight(const point16_t& position, bool before) const
 
 bool fb::game::object::sight(const fb::game::object& object, bool before_me, bool before_you) const
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     if(this->_map != object.map())
@@ -384,8 +384,8 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 fb::game::session* fb::game::object::near_session(fb::game::direction direction) const
 {
     fb::game::map* map = this->_map;
-    if(map == NULL)
-        return NULL;
+    if(map == nullptr)
+        return nullptr;
 
 
     point16_t front = this->position();
@@ -409,7 +409,7 @@ fb::game::session* fb::game::object::near_session(fb::game::direction direction)
     }
 
     if(map->existable(front) == false)
-        return NULL;
+        return nullptr;
 
     for(auto session : map->sessions())
     {
@@ -417,7 +417,7 @@ fb::game::session* fb::game::object::near_session(fb::game::direction direction)
             return session;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 std::vector<fb::game::session*> fb::game::object::near_sessions(fb::game::direction direction) const
@@ -425,7 +425,7 @@ std::vector<fb::game::session*> fb::game::object::near_sessions(fb::game::direct
     std::vector<fb::game::session*> list;
 
     fb::game::map* map = this->_map;
-    if(map == NULL)
+    if(map == nullptr)
         return list;
 
 
@@ -474,8 +474,8 @@ std::vector<fb::game::session*> fb::game::object::forward_sessions() const
 fb::game::object* fb::game::object::near_object(fb::game::direction direction, fb::game::object::types type) const
 {
     fb::game::map* map = this->_map;
-    if(map == NULL)
-        return NULL;
+    if(map == nullptr)
+        return nullptr;
 
 
     point16_t front = this->position();
@@ -499,7 +499,7 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
     }
 
     if(map->existable(front) == false)
-        return NULL;
+        return nullptr;
 
     for(auto object : map->objects())
     {
@@ -513,13 +513,13 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
             return object;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::direction direction, fb::game::object::types type) const
 {
     std::vector<object*>    list;
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return list;
 
 
@@ -548,7 +548,7 @@ std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::directio
 
     for(auto object : this->_map->objects())
     {
-        if(type != fb::game::object::types::UNKNOWN && object->type() != type)
+        if(type != fb::game::object::types::UNKNOWN && (object->type() & type) != object->type())
             continue;
 
         if(object->alive() == false)
@@ -571,15 +571,18 @@ std::vector<fb::game::object*> fb::game::object::forward_objects(fb::game::objec
     return this->near_objects(this->_direction, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::shown_objects() const
+std::vector<fb::game::object*> fb::game::object::showings(object::types type) const
 {
     std::vector<object*>    list;
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return list;
 
     for(auto object : this->_map->objects())
     {
         if(object == this)
+            continue;
+
+        if(type != object::types::UNKNOWN && (object->type() & type) != object->type())
             continue;
 
         if(object->alive() == false)
@@ -594,43 +597,25 @@ std::vector<fb::game::object*> fb::game::object::shown_objects() const
     return list;
 }
 
-std::vector<fb::game::session*> fb::game::object::shown_sessions() const
+std::vector<object*> fb::game::object::showns(object::types type) const
 {
-    std::vector<session*> list;
+    std::vector<object*> list;
 
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return list;
 
-    for(auto session : this->_map->sessions())
+    for(auto object : this->_map->objects())
     {
-        if(session == this)
+        if(object == this)
             continue;
 
-        if(this->sight(*session) == false)
+        if(type != object::types::UNKNOWN && (object->type() & type) != object->type())
             continue;
 
-        list.push_back(session);
-    }
-
-    return list;
-}
-
-std::vector<fb::game::session*> fb::game::object::looking_sessions() const
-{
-    std::vector<session*> list;
-
-    if(this->_map == NULL)
-        return list;
-
-    for(auto session : this->_map->sessions())
-    {
-        if(session == this)
+        if(object->sight(*this) == false)
             continue;
 
-        if(session->sight(*this) == false)
-            continue;
-
-        list.push_back(session);
+        list.push_back(object);
     }
 
     return list;
@@ -952,7 +937,7 @@ uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& lif
 
 bool fb::game::life::movable(fb::game::direction direction) const
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     return this->_map->movable(*this, direction);
@@ -960,13 +945,13 @@ bool fb::game::life::movable(fb::game::direction direction) const
 
 bool fb::game::life::movable_forward() const
 {
-    if(this->_map == NULL)
+    if(this->_map == nullptr)
         return false;
 
     return this->_map->movable_forward(*this);
 }
 
-bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* show_objects, std::vector<object*>* hide_objects, std::vector<session*>* show_sessions, std::vector<session*>* hide_sessions, std::vector<object*>* shown_objects, std::vector<object*>* hidden_objects, std::vector<session*>* shown_sessions, std::vector<session*>* hidden_sessions)
+bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* shows, std::vector<object*>* hides, std::vector<object*>* showns, std::vector<object*>* hiddens)
 {
     if(this->movable(direction) == false)
         return false;
@@ -995,49 +980,28 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     const auto& after = this->_position;
 
     // 내 기준으로 한 오브젝트
-    if(show_objects != NULL || hide_objects != NULL)
+    if(shows != nullptr || hides != nullptr)
     {
         for(auto object : this->_map->objects())
         {
             if(object == this)
                 continue;
 
-            bool                before_sight = this->sight(*object, true);
-            bool                after_sight  = this->sight(*object);
+            bool                before = this->sight(*object, true);
+            bool                after  = this->sight(*object);
 
-            bool                show = (!before_sight && after_sight);
-            bool                hide = (before_sight && !after_sight);
+            bool                show = (!before && after);
+            bool                hide = (before && !after);
 
-            if(show && show_objects != NULL)
-                show_objects->push_back(object);
-            else if(hide && hide_objects != NULL)
-                hide_objects->push_back(object);
-        }
-    }
-
-    // 내 기준으로 한 세션
-    if(show_sessions != NULL || hide_sessions != NULL)
-    {
-        for(auto session : this->_map->sessions())
-        {
-            if(session == this)
-                continue;
-
-            bool                before_sight = this->sight(*session, true);
-            bool                after_sight  = this->sight(*session);
-
-            bool                show = (!before_sight && after_sight);
-            bool                hide = (before_sight && !after_sight);
-
-            if(show && show_sessions != NULL)
-                show_sessions->push_back(session);
-            else if(hide && hide_sessions != NULL)
-                hide_sessions->push_back(session);
+            if(show && shows != nullptr)
+                shows->push_back(object);
+            else if(hide && hides != nullptr)
+                hides->push_back(object);
         }
     }
 
     // 상대 기준으로 한 오브젝트
-    if(shown_objects != NULL || hidden_objects)
+    if(showns != nullptr || hiddens)
     {
         for(auto object : this->_map->objects())
         {
@@ -1050,31 +1014,10 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
             bool                show = (!before_sight && after_sight);
             bool                hide = (before_sight && !after_sight);
 
-            if(show && shown_objects != NULL)
-                shown_objects->push_back(object);
-            else if(hide && hidden_objects != NULL)
-                hidden_objects->push_back(object);
-        }
-    }
-
-    // 상대 기준으로 한 세션
-    if(shown_sessions != NULL || hidden_sessions)
-    {
-        for(auto session : this->_map->sessions())
-        {
-            if(session == this)
-                continue;
-
-            bool                before_sight = session->sight(*this, false, true);
-            bool                after_sight  = session->sight(*this);
-
-            bool                show = (!before_sight && after_sight);
-            bool                hide = (before_sight && !after_sight);
-
-            if(show && shown_sessions != NULL)
-                shown_sessions->push_back(session);
-            else if(hide && hidden_sessions != NULL)
-                hidden_sessions->push_back(session);
+            if(show && showns != nullptr)
+                showns->push_back(object);
+            else if(hide && hiddens != nullptr)
+                hiddens->push_back(object);
         }
     }
 
@@ -1082,12 +1025,9 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     return true;
 }
 
-bool fb::game::life::move_forward(std::vector<object*>* show_objects, std::vector<object*>* hide_objects, 
-    std::vector<session*>* show_sessions, std::vector<session*>* hide_sessions, 
-    std::vector<object*>* shown_objects, std::vector<object*>* hidden_objects, 
-    std::vector<session*>* shown_sessions, std::vector<session*>* hidden_sessions)
+bool fb::game::life::move_forward(std::vector<object*>* shows, std::vector<object*>* hides, std::vector<object*>* showns, std::vector<object*>* hiddens)
 {
-    return this->move(this->_direction, show_objects, hide_objects, show_sessions, hide_sessions, shown_objects, hidden_objects, shown_sessions, hidden_sessions);
+    return this->move(this->_direction, shows, hides, showns, hiddens);
 }
 
 void fb::game::life::hp_up(uint32_t value)

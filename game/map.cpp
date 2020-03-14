@@ -179,6 +179,21 @@ std::vector<fb::game::object*>& fb::game::map::objects()
     return this->_objects;
 }
 
+std::vector<fb::game::session*> fb::game::map::sessions()
+{
+    std::vector<session*> sessions;
+
+    for(auto e : this->_objects)
+    {
+        if(e->type() != object::types::SESSION)
+            continue;
+
+        sessions.push_back(static_cast<session*>(e));
+    }
+
+    return sessions;
+}
+
 fb::game::object* fb::game::map::object(uint16_t id)
 {
     for(const auto object : this->_objects)
@@ -236,39 +251,6 @@ fb::game::object* fb::game::map::object_exists(point16_t position) const
     return NULL;
 }
 
-std::vector<fb::game::object*> fb::game::map::all() const
-{
-    std::vector<fb::game::object*> list(this->_sessions.begin(), this->_sessions.end());
-    list.insert(list.end(), this->_objects.begin(), this->_objects.end());
-
-    return list;
-}
-
-std::vector<fb::game::session*>& fb::game::map::sessions()
-{
-    return this->_sessions;
-}
-
-bool fb::game::map::session_add(fb::game::session* session)
-{
-    auto i = std::find(this->_sessions.begin(), this->_sessions.end(), session);
-    if(i != this->_sessions.end())
-        return false;
-
-    this->_sessions.push_back(session);
-    return true;
-}
-
-bool fb::game::map::session_delete(fb::game::session* session)
-{
-    auto i = std::find(this->_sessions.begin(), this->_sessions.end(), session);
-    if(i == this->_sessions.end())
-        return false;
-
-    this->_sessions.erase(i);
-    return true;
-}
-
 bool fb::game::map::existable(const point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
@@ -291,12 +273,6 @@ bool fb::game::map::movable(const point16_t position) const
             continue;
 
         if(object->position() == position)
-            return false;
-    }
-
-    for(const auto session : this->_sessions)
-    {
-        if(session->position() == position)
             return false;
     }
 

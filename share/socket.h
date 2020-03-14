@@ -23,7 +23,7 @@ public:
     uint32_t                id() const { return this->_id; }
     void                    id(uint32_t value) { this->_id = value; }
 
-    virtual bool            send(const fb::ostream& stream, bool encrypt, bool wrap) { return true; }
+    virtual bool            send(const fb::ostream& stream, bool encrypt, bool wrap = true) { return true; }
 };
 
 class socket : public base

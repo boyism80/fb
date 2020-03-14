@@ -52,9 +52,14 @@ bool fb::base_acceptor<T>::do_session()
             continue;
 
         if(fd == *this)
+        {
             this->handle_accept();
+        }
         else
-            this->handle_receive(*this->_sockets[fd]);
+        {
+            auto session = this->_sockets[fd];
+            this->handle_receive(*session);
+        }
     }
 
     for(auto i = 0; i < reads.fd_count; i++)

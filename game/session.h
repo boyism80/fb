@@ -77,7 +77,8 @@ public:
 
     // override
 public:
-    bool                    send(const fb::ostream& stream, bool encrypt, bool wrap);
+    bool                    send(const fb::ostream& stream, bool encrypt, bool wrap = true);
+    object::types           type() const;
 
     // middle man
 public:
@@ -181,10 +182,6 @@ public:
     const std::string&      title() const;
     void                    title(const std::string& value);
 
-    fb::game::map*          map() const;
-    uint16_t                map(fb::game::map* map);
-    uint16_t                map(fb::game::map* map, const point16_t position);
-
     fb::game::group*        group() const;
     bool                    group_enter(fb::game::group* gs);
     bool                    group_leave();
@@ -193,9 +190,10 @@ public:
     void                    state_assert(uint8_t flags) const;
 
 public:
+    fb::ostream             make_show_stream() const;
     fb::ostream             make_id_stream() const;
     fb::ostream             make_state_stream(fb::game::state_level level) const;
-    fb::ostream             make_show_objects_stream() const;
+    fb::ostream             make_appears_stream() const;
     fb::ostream             make_position_stream() const;
     fb::ostream             make_visual_stream(bool light) const;
     fb::ostream             make_effet_stream(uint8_t effect) const;

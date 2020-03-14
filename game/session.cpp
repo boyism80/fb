@@ -51,6 +51,11 @@ bool fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
     return this->_socket.send(stream, encrypt, wrap);
 }
 
+object::types fb::game::session::type() const
+{
+    return object::types::SESSION;
+}
+
 fb::istream& fb::game::session::in_stream()
 {
     return this->_socket.in_stream();
@@ -497,24 +502,6 @@ void fb::game::session::title(const std::string& value)
     this->_title = value;
 }
 
-uint16_t fb::game::session::map(fb::game::map* map)
-{
-    if(this->_map != nullptr)
-        this->_map->session_delete(this);
-
-    this->_map = map;
-    this->_map->session_add(this);
-    return this->id();
-}
-
-uint16_t fb::game::session::map(fb::game::map* map, const point16_t position)
-{
-    uint16_t seq = this->map(map);
-    this->position(position);
-
-    return seq;
-}
-
 fb::game::group* fb::game::session::group() const
 {
     return this->_group;
@@ -555,9 +542,9 @@ void fb::game::session::state_assert(uint8_t flags) const
     return this->state_assert(fb::game::state(flags));
 }
 
-fb::game::map* fb::game::session::map() const
+fb::ostream fb::game::session::make_show_stream() const
 {
-    return __super::map();
+    return this->make_visual_stream(false);
 }
 
 fb::ostream fb::game::session::make_id_stream() const
@@ -624,22 +611,19 @@ fb::ostream fb::game::session::make_state_stream(fb::game::state_level level) co
     return ostream;
 }
 
-fb::ostream fb::game::session::make_show_objects_stream() const
+fb::ostream fb::game::session::make_appears_stream() const
 {
+    fb::ostream             ostream;
     auto                    map = this->map();
     if(map == nullptr)
         return fb::ostream();
 
-    std::vector<object*>    visibles;
-    for(auto object : map->objects())
-    {
-        if(this->sight(*object) == false)
-            continue;
+    ostream.write(object::make_show_stream(this->showings(object::types::OBJECT)));
 
-        visibles.push_back(object);
-    }
+    for(auto session : this->showings(object::types::SESSION))
+        ostream.write(session->make_show_stream());
 
-    return fb::game::object::make_show_stream(visibles);
+    return ostream;
 }
 
 fb::ostream fb::game::session::make_position_stream() const

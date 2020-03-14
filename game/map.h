@@ -59,7 +59,6 @@ private:
     uint8_t                 _bgm;
     uint16_t                _sequence;
     std::vector<object*>    _objects;
-    std::vector<fb::game::session*> _sessions;
     std::vector<warp*>      _warps;
 
 public:
@@ -83,17 +82,12 @@ public:
     uint8_t                 bgm() const;
 
     std::vector<object*>&   objects();
+    std::vector<session*>   sessions();
     fb::game::object*       object(uint16_t id);
     uint16_t                object_add(fb::game::object* object);
     bool                    object_delete(fb::game::object* object);
     uint16_t                object_add(fb::game::object* object, const point16_t position);
     fb::game::object*       object_exists(point16_t position) const;
-
-    std::vector<fb::game::object*>  all() const;
-
-    std::vector<fb::game::session*>& sessions();
-    bool                    session_add(fb::game::session* session);
-    bool                    session_delete(fb::game::session* session);
 
     bool                    existable(const point16_t position) const;
     bool                    movable(const point16_t position) const;

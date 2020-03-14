@@ -302,17 +302,17 @@ void fb::game::mob::target(fb::game::session* value)
 
 fb::game::session* fb::game::mob::autoset_target()
 {
-    fb::game::map* map = this->_map;
+    auto                    map = this->_map;
     if(map == NULL)
         return NULL;
 
-    uint32_t min_distance_sqrt = 0xFFFFFFFF;
+    auto                    min_distance_sqrt = 0xFFFFFFFF;
     for(auto session : map->sessions())
     {
         if(session->sight(*this) == false)
             continue;
 
-        uint32_t distance_sqrt = std::abs(session->x() - this->x()) * std::abs(session->y() - this->y());
+        auto                distance_sqrt = std::abs(session->x() - this->x()) * std::abs(session->y() - this->y());
         if(distance_sqrt > min_distance_sqrt)
             continue;
 
