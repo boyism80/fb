@@ -56,6 +56,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
+    this->register_handle(0x0F, &acceptor::handle_spell);               // 스펠 핸들러
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -1773,6 +1774,57 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
     {
 
     }
+    return true;
+}
+
+bool fb::game::acceptor::handle_spell(fb::game::session& session)
+{
+    auto&                   istream = session.in_stream();
+    auto                    cmd = istream.read_u8();
+    auto                    slot = istream.read_u8() - 1;
+
+    if(slot > spell::MAX_SLOT - 1)
+        return false;
+
+    auto                    spell = session.spells[slot];
+    if(spell == nullptr)
+        return false;
+
+    switch(spell->type())
+    {
+    case spell::types::INPUT:
+    {
+        char                buffer[256];
+        auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
+        istream.read(buffer, std::min(uint32_t(256), size)); buffer[size] = 0x00;
+        this->send_stream(session, session.make_chat_stream(buffer), scope::PIVOT);
+        break;
+    }
+
+    case spell::types::TARGET:
+    {
+        auto                id = istream.read_u32();
+        auto                x = istream.read_u16();
+        auto                y = istream.read_u16();
+
+        auto                map = session.map();
+        if(map == nullptr)
+            return false;
+
+        auto                target = map->object(id);
+        if(target == nullptr)
+            return true;
+
+        this->send_stream(*target, target->make_chat_stream("sex"), scope::PIVOT);
+        break;
+    }
+
+    case spell::types::NORMAL:
+    {
+        break;
+    }
+    }
+
     return true;
 }
 
