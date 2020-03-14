@@ -1521,9 +1521,9 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session)
 
     std::stringstream           sstream;
     if(shout)
-        sstream << session.id() << "! " << message;
+        sstream << session.name() << "! " << message;
     else
-        sstream << session.id() << ": " << message;
+        sstream << session.name() << ": " << message;
 
     this->send_stream(session, session.make_chat_stream(sstream.str(), shout ? chat::SHOUT : chat::NORMAL), shout ? scope::MAP : scope::PIVOT);
 
@@ -1790,14 +1790,27 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     if(spell == nullptr)
         return false;
 
+    char                    path[256];
+    sprintf(path, "scripts/spell/%s.lua", spell->cast().c_str());
+
+    lua::thread             thread;
+    thread.fromfile(path, "handle_spell");
+
+
     switch(spell->type())
     {
     case spell::types::INPUT:
     {
-        char                buffer[256];
+        char                message[256];
         auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
-        istream.read(buffer, std::min(uint32_t(256), size)); buffer[size] = 0x00;
-        this->send_stream(session, session.make_chat_stream(buffer), scope::PIVOT);
+        istream.read(message, std::min(uint32_t(256), size)); message[size] = 0x00;
+
+        session.new_lua<fb::game::session>(thread);
+        // spell->new_lua<fb::game::spell>(thread);
+        thread.pushstring(message);
+
+        //thread.resume(3);
+        thread.resume(2);
         break;
     }
 
@@ -1815,7 +1828,30 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         if(target == nullptr)
             return true;
 
-        this->send_stream(*target, target->make_chat_stream("sex"), scope::PIVOT);
+        if(session.sight(*target) == false)
+            return true;
+
+        session.new_lua<fb::game::session>(thread);
+        // spell->new_lua<fb::game::spell>(thread);
+        switch(target->type())
+        {
+        case object::types::SESSION:
+            target->new_lua<fb::game::session>(thread);
+            break;
+
+        case object::types::MOB:
+            target->new_lua<fb::game::session>(thread);
+            break;
+
+        case object::types::NPC:
+            target->new_lua<fb::game::npc>(thread);
+            break;
+
+        default:
+            return true;
+        }
+
+        thread.resume(2);
         break;
     }
 

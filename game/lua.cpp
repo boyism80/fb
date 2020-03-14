@@ -12,6 +12,12 @@ state::~state()
 {
 }
 
+void fb::game::lua::state::fromfile(const std::string& file, const std::string& name)
+{
+    luaL_dofile(*this, file.c_str());
+    lua_getglobal(*this, name.c_str());
+}
+
 state::operator lua_State* () const
 {
 	return this->_lua;

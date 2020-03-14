@@ -69,6 +69,8 @@ public:
 	bool					arg_boolean(int offset) { return toboolean(offset); }
 	bool					ret_boolean(int offset) { return toboolean(-offset); }
 
+    void                    fromfile(const std::string& file, const std::string& name);
+
 public:
 	operator				lua_State* () const;
 };
