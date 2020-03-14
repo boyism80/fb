@@ -24,7 +24,7 @@ thread::thread() :
 
 thread::~thread()
 {
-	lua_unref(main::get(), this->_ref);
+	luaL_unref(main::get(), LUA_REGISTRYINDEX, this->_ref);
 }
 
 main::main() : state(lua_open())

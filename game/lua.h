@@ -140,7 +140,10 @@ T* env(const char* key)
 	lua_pushstring(main::get(), key);
 	lua_gettable(main::get(), LUA_REGISTRYINDEX);
 
-	return static_cast<T*>(lua_touserdata(main::get(), -1));
+    auto ret = static_cast<T*>(lua_touserdata(main::get(), -1));
+    lua_remove(main::get(), -1);
+
+	return ret;
 }
 
 
