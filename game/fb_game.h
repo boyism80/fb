@@ -113,6 +113,7 @@ public:
 public:
     static int              builtin_name2mob(lua_State* lua);
     static int              builtin_name2npc(lua_State* lua);
+    static int              builtin_name2map(lua_State* lua);
     static int              builtin_name2item(lua_State* lua);
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);

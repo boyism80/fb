@@ -15,11 +15,13 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     lua::bind_class<life::core, object::core>();    lua::bind_class<life, object>();
     lua::bind_class<mob::core, life::core>();       lua::bind_class<mob, life>();
     lua::bind_class<npc::core, object::core>();     lua::bind_class<npc, object>();
+    lua::bind_class<item::core, object::core>();    lua::bind_class<item, object>();
     lua::bind_class<game::session, life>();
 
     lua_register(lua::main::get(), "name2mob",  builtin_name2mob);
     lua_register(lua::main::get(), "name2item", builtin_name2item);
     lua_register(lua::main::get(), "name2npc",  builtin_name2npc);
+    lua_register(lua::main::get(), "name2map",  builtin_name2map);
     lua_register(lua::main::get(), "timer",     builtin_timer);
     lua_register(lua::main::get(), "weather",   builtin_weather);
 

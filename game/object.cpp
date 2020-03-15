@@ -782,9 +782,9 @@ int fb::game::object::builtin_dialog(lua_State* lua)
 
 int fb::game::object::builtin_sound(lua_State* lua)
 {
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto sound = lua_tointeger(lua, 2);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
     acceptor->send_stream(*object, object->make_sound_stream(sound::type(sound)), acceptor::scope::PIVOT);
 
@@ -803,7 +803,7 @@ int fb::game::object::builtin_position(lua_State* lua)
         lua_pushinteger(lua, object->_position.y);
         return 2;
     }
-    else
+    else if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
         object->_position.x = lua_tointeger(lua, -1);
@@ -812,6 +812,12 @@ int fb::game::object::builtin_position(lua_State* lua)
         lua_rawgeti(lua, 2, 2);
         object->_position.y = lua_tointeger(lua, -1);
         lua_remove(lua, -1);
+        return 0;
+    }
+    else
+    {
+        object->_position.x = lua_tointeger(lua, 2);
+        object->_position.y = lua_tointeger(lua, 3);
         return 0;
     }
 }
@@ -882,15 +888,25 @@ int fb::game::object::builtin_effect(lua_State* lua)
 
 int fb::game::object::builtin_map(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
 
-    auto map = object->map();
-    if(map == nullptr)
-        lua_pushnil(lua);
+    if(argc == 1)
+    {
+        auto map = object->map();
+        if(map == nullptr)
+            lua_pushnil(lua);
+        else
+            map->to_lua(lua);
+        return 1;
+    }
     else
-        map->to_lua(lua);
-    return 1;
+    {
+        auto map = *(fb::game::map**)lua_touserdata(lua, 2);
+        object->map(map);
+        return 0;
+    }
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 

@@ -2,10 +2,18 @@
 #include "session.h"
 #include "map.h"
 #include "db.h"
+#include "fb_game.h"
 
 #ifdef small
 #undef small
 #endif
+
+IMPLEMENT_LUA_EXTENSION(fb::game::item::core, "fb.game.item.core")
+{"make",        fb::game::item::core::builtin_make},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+END_LUA_EXTENSION
 
 const fb::game::item::item_limit fb::game::item::DEFAULT_LIMIT;
 const fb::game::cash::core fb::game::cash::BRONZE("¿±Àü", 23 + 0xBFFF);
@@ -144,6 +152,36 @@ const std::string& fb::game::item::core::active_script() const
 void fb::game::item::core::active_script(const std::string& value)
 {
     this->_active_script = value;
+}
+
+int fb::game::item::core::builtin_make(lua_State* lua)
+{
+    auto core = *(fb::game::item::core**)lua_touserdata(lua, 1);
+    auto object = core->make();
+
+    auto map = *(fb::game::map**)lua_touserdata(lua, 2);
+    object->map(map);
+
+    if(lua_istable(lua, 3))
+    {
+        lua_rawgeti(lua, 3, 1);
+        object->x(lua_tointeger(lua, -1));
+        lua_remove(lua, -1);
+
+        lua_rawgeti(lua, 3, 2);
+        object->y(lua_tointeger(lua, -1));
+        lua_remove(lua, -1);
+    }
+    else
+    {
+        object->position(lua_tointeger(lua, 3), lua_tointeger(lua, 4));
+    }
+
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+
+    object->to_lua(lua);
+    return 1;
 }
 
 fb::game::item::attrs fb::game::item::core::attr() const

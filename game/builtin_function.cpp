@@ -25,6 +25,17 @@ int fb::game::acceptor::builtin_name2npc(lua_State* lua)
     return 1;
 }
 
+int fb::game::acceptor::builtin_name2map(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto name = lua_tostring(lua, 1);
+    auto map = db::name2map(name);
+
+    if(map == nullptr)  { lua_pushnil(lua); }
+    else                { map->to_lua(lua); }
+    return 1;
+}
+
 int fb::game::acceptor::builtin_name2item(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");

@@ -17,6 +17,14 @@ class session;
 
 class item : public object
 {
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+    BUILTIN_CORE(fb::game::item)
+#pragma endregion
+
+
+#pragma region structure
 public:
     typedef struct _trade
     {
@@ -52,9 +60,30 @@ public:
         void price(uint32_t value) { this->_price = value; }
     } entrust;
 
+    typedef struct _limit
+    {
+        uint8_t                     level;
+        uint8_t                     strength;
+        uint8_t                     dexteritry;
+        uint8_t                     intelligence;
+        uint8_t                     cls, promotion;
+        fb::game::sex               sex;
+
+    public:
+        _limit();
+        _limit(const _limit& right);
+    } item_limit;
+
+#pragma endregion
+
+
+#pragma region exception
 public:
     DECLARE_EXCEPTION(full_inven_exception, "º“¡ˆ«∞¿Ã ≤À √°Ω¿¥œ¥Ÿ.")
+#pragma endregion
 
+
+#pragma region enum
 public:
     enum penalties { NONE, DROP, DESTRUCTION };
 
@@ -91,95 +120,146 @@ public:
         ITEM_ATTR_SCRIPT            = 0x00000400,
         ITEM_ATTR_CASH              = 0x00000800,
     };
+#pragma endregion
 
-    typedef struct _limit
-    {
-        uint8_t                     level;
-        uint8_t                     strength;
-        uint8_t                     dexteritry;
-        uint8_t                     intelligence;
-        uint8_t                     cls, promotion;
-        fb::game::sex               sex;
 
-    public:
-        _limit();
-        _limit(const _limit& right);
-    } item_limit;
-
+#pragma region static const field
+    
     static const item_limit         DEFAULT_LIMIT;
     static const uint32_t           MAX_SLOT = 52;
 
+#pragma endregion
+
+
+#pragma region core class
 public:
-    class core : public fb::game::object::core
-    {
-    protected:
-        uint32_t                    _price;
-        item_limit                  _limit;
-        penalties                   _penalty;
-        uint16_t                    _capacity;
-        item::trade                 _trade;
-        item::entrust               _entrust;
-        bool                        _bundle;
-        std::string                 _tooltip, _desc;
-        std::string                 _active_script;
+class core : public fb::game::object::core
+{
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+        BUILTIN_CORE(fb::game::life)
+#pragma endregion
 
-        friend class fb::game::item;
+#pragma region protected field
+protected:
+    uint32_t                        _price;
+    item_limit                      _limit;
+    penalties                       _penalty;
+    uint16_t                        _capacity;
+    item::trade                     _trade;
+    item::entrust                   _entrust;
+    bool                            _bundle;
+    std::string                     _tooltip, _desc;
+    std::string                     _active_script;
+#pragma endregion
 
-    public:
-        core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, const item_limit& limit = DEFAULT_LIMIT);
-        core(const fb::game::object::core& core);
-        virtual ~core();
 
-    public:
-        object::types               type() const { return object::ITEM; }
+#pragma region friend
+    friend class fb::game::item;
+#pragma endregion
 
-        uint32_t                    price() const;
-        void                        price(uint32_t value);
 
-        uint16_t                    capacity() const;
-        void                        capacity(uint16_t value);
+#pragma region constructor / destructor
+public:
+    core(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, 
+        const item_limit& limit = DEFAULT_LIMIT);
+    core(const fb::game::object::core& core);
+    virtual ~core();
+#pragma endregion
 
-        bool                        trade() const;
-        void                        trade(bool value);
 
-        bool                        entrust_enabled() const;
-        void                        entrust_enabled(bool value);
+#pragma region override method
+public:
+    object::types                   type() const { return object::ITEM; }
+#pragma endregion
 
-        uint32_t                    entrust_price() const;
-        void                        entrust_price(uint32_t value);
 
-        const item_limit&           limit() const;
-        void                        limit(const item::item_limit& value);
+#pragma region virtual method
+public:
+    virtual attrs                   attr() const;
+    virtual object*                 make() const;
+#pragma endregion
 
-        penalties                   penalty() const;
-        void                        penalty(penalties value);
 
-        const std::string&          desc() const;
-        void                        desc(const std::string& value);
+#pragma region template method
+public:
+    template <typename T>
+    T* make() const { return static_cast<T*>(this->make()); }
+#pragma endregion
 
-        const std::string&          active_script() const;
-        void                        active_script(const std::string& value);
 
-        virtual attrs               attr() const;
-        virtual object*             make() const;
-        template <typename T>
-        T* make() const { return static_cast<T*>(this->make()); }
-    };
+#pragma region public method
+public:
+    uint32_t                        price() const;
+    void                            price(uint32_t value);
+
+    uint16_t                        capacity() const;
+    void                            capacity(uint16_t value);
+
+    bool                            trade() const;
+    void                            trade(bool value);
+
+    bool                            entrust_enabled() const;
+    void                            entrust_enabled(bool value);
+
+    uint32_t                        entrust_price() const;
+    void                            entrust_price(uint32_t value);
+
+    const item_limit&               limit() const;
+    void                            limit(const item::item_limit& value);
+
+    penalties                       penalty() const;
+    void                            penalty(penalties value);
+
+    const std::string&              desc() const;
+    void                            desc(const std::string& value);
+
+    const std::string&              active_script() const;
+    void                            active_script(const std::string& value);
+
+#pragma endregion
+
+#pragma region built-in method
+public:
+    static int					    builtin_make(lua_State* lua);
+#pragma endregion
+
+};
+#pragma endregion
+
+
+#pragma region protected field
 
 protected:
     uint16_t                        _count;
+
+#pragma endregion
+
+
+#pragma region constructor / destructor
 
 public:
     item(const fb::game::item::core* core);
     item(const item& right);
     virtual ~item();
 
+#pragma endregion
+
+
+#pragma region virtual method
+
+protected:
+    virtual std::string             tip_message() const;
+
 public:
     virtual const std::string       name_styled() const;
     virtual const std::string       name_trade() const;
 
-protected:
-    virtual std::string             tip_message() const;
+#pragma endregion
+
+
+#pragma region public method
 
 public:
     uint16_t                        fill(uint16_t count);
@@ -201,12 +281,24 @@ public:
     const std::string&              active_script() const;
     attrs                           attr() const;
 
+#pragma endregion
+
+
+#pragma region make stream method
+
 public:
     fb::ostream                     make_tip_stream(uint16_t position);
+
+#pragma endregion
+
+
+#pragma region event method
 
 public:
     virtual bool                    handle_acive(session& session) { return false; }
     virtual item*                   handle_drop(object& owner, uint16_t count = 1);
+
+#pragma endregion
 };
 
 //
