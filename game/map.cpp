@@ -1,5 +1,11 @@
 #include "map.h"
 #include "session.h"
+#include "fb_game.h"
+
+IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
+{"name",        fb::game::map::builtin_name},
+{"objects",     fb::game::map::builtin_objects},
+END_LUA_EXTENSION
 
 static const uint16_t crc16tab[256] = 
 {
@@ -418,4 +424,30 @@ fb::ostream fb::game::map::make_update_stream(uint16_t begin_x, uint16_t begin_y
         return fb::ostream();
 
     return ostream;
+}
+
+int fb::game::map::builtin_name(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_pushstring(lua, map->name().c_str());
+    return 1;
+}
+
+int fb::game::map::builtin_objects(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_newtable(lua);
+    const auto& objects = map->objects();
+
+    for(int i = 0; i < objects.size(); i++)
+    {
+        objects[i]->to_lua(lua);
+        lua_rawseti(lua, -2, i+1);
+    }
+
+    return 1;
 }

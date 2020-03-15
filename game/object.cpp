@@ -15,6 +15,10 @@ END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"core",        fb::game::object::builtin_core},
+{"__eq",        fb::game::object::builtin_eq},
+{"__tostring",  fb::game::object::builtin_tostring},
+{"id",          fb::game::object::builtin_id},
+{"name",        fb::game::object::builtin_name},
 {"dialog",      fb::game::object::builtin_dialog},
 {"sound",       fb::game::object::builtin_sound},
 {"position",    fb::game::object::builtin_position},
@@ -22,6 +26,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"message",     fb::game::object::builtin_message},
 {"buff",        fb::game::object::builtin_buff},
 {"effect",      fb::game::object::builtin_effect},
+{"map",         fb::game::object::builtin_map},
 END_LUA_EXTENSION
 
 
@@ -31,12 +36,35 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life::core, "fb.game.life.core")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
+{"__eq",        fb::game::object::builtin_eq},
 {"hp",          fb::game::life::builtin_hp},
 {"mp",          fb::game::life::builtin_mp},
 {"base_hp",     fb::game::life::builtin_base_hp},
 {"base_mp",     fb::game::life::builtin_base_mp},
 {"action",      fb::game::life::builtin_action},
 END_LUA_EXTENSION
+
+void fb::game::lua::luable::to_lua(lua_State* lua) const
+{
+    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
+    *allocated = (void*)this;
+
+    auto metaname = this->metaname();
+    luaL_getmetatable(lua, metaname.c_str());
+    lua_setmetatable(lua, -2);
+}
+
+fb::game::lua::luable::luable()
+{
+}
+
+fb::game::lua::luable::luable(uint32_t id) : base(id)
+{
+}
+
+fb::game::lua::luable::~luable()
+{
+}
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),
@@ -52,21 +80,6 @@ fb::game::object::core::~core()
 uint8_t fb::game::object::core::dialog_look_type() const
 {
     return this->look() > 0xBFFF ? 0x02 : 0x01;
-}
-
-void fb::game::object::core::handle_lua_field(lua_State* lua) const
-{
-    lua_pushstring(lua, "name");
-    lua_pushstring(lua, this->_name.c_str());
-    lua_rawset(lua, -3);
-
-    lua_pushstring(lua, "look");
-    lua_pushnumber(lua, this->_look);
-    lua_rawset(lua, -3);
-
-    lua_pushstring(lua, "color");
-    lua_pushnumber(lua, this->_color);
-    lua_rawset(lua, -3);
 }
 
 fb::game::object::types fb::game::object::core::type() const
@@ -102,12 +115,6 @@ uint8_t fb::game::object::core::color() const
 void fb::game::object::core::color(uint8_t value)
 {
     this->_color = value;
-}
-
-void fb::game::object::core::make_lua_table(lua_State* lua) const
-{
-    lua_newtable(lua);
-    this->handle_lua_field(lua);
 }
 
 fb::ostream fb::game::object::core::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map, dialog::interaction interaction) const
@@ -167,7 +174,7 @@ int fb::game::object::core::builtin_dialog(lua_State* lua)
 
 // fb::game::object
 fb::game::object::object(const fb::game::object::core* core, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
-    fb::base(id),
+    luable(id),
     _core(core),
     _position(position),
     _direction(direction),
@@ -749,6 +756,42 @@ fb::ostream fb::game::object::make_dialog_stream(const std::string& message, boo
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
 }
 
+int fb::game::object::builtin_id(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    lua_pushinteger(lua, object->id());
+    return 1;
+}
+
+int fb::game::object::builtin_eq(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto me = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto you = *(fb::game::object**)lua_touserdata(lua, 2);
+    
+    lua_pushboolean(lua, me->id() == you->id());
+    return 1;
+}
+
+int fb::game::object::builtin_tostring(lua_State* lua)
+{
+    auto me = *(fb::game::object**)lua_touserdata(lua, 1);
+
+    lua_pushstring(lua, me->name().c_str());
+    return 1;
+}
+
+int fb::game::object::builtin_name(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    lua_pushstring(lua, object->name().c_str());
+    return 1;
+}
+
 int fb::game::object::builtin_dialog(lua_State* lua)
 {
     return ::builtin_dialog<object>(lua);
@@ -834,10 +877,22 @@ int fb::game::object::builtin_effect(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto effect = lua_tointeger(lua, 2);
 
-    if(object->type() == object::types::SESSION)
-        acceptor->send_stream(*object, object->make_effet_stream(effect), acceptor::scope::SELF);
-
+    if(object->type() != object::types::ITEM)
+        acceptor->send_stream(*object, object->make_effet_stream(effect), acceptor::scope::PIVOT);
     return 0;
+}
+
+int fb::game::object::builtin_map(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+
+    auto map = object->map();
+    if(map == nullptr)
+        lua_pushnil(lua);
+    else
+        map->to_lua(lua);
+    return 1;
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
@@ -863,22 +918,6 @@ fb::game::life::core::core(const core& right) :
 
 fb::game::life::core::~core()
 {
-}
-
-void fb::game::life::core::handle_lua_field(lua_State* lua) const
-{
-    __super::handle_lua_field(lua);
-    lua_pushstring(lua, "hp");
-    lua_pushnumber(lua, this->_hp);
-    lua_rawset(lua, -3);
-
-    lua_pushstring(lua, "mp");
-    lua_pushnumber(lua, this->_mp);
-    lua_rawset(lua, -3);
-
-    lua_pushstring(lua, "exp");
-    lua_pushnumber(lua, this->_experience);
-    lua_rawset(lua, -3);
 }
 
 uint32_t fb::game::life::core::hp() const

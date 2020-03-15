@@ -1,4 +1,11 @@
 #include "spell.h"
+#include "fb_game.h"
+
+IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
+{"type",        fb::game::spell::builtin_type},
+{"name",        fb::game::spell::builtin_name},
+{"message",     fb::game::spell::builtin_message},
+END_LUA_EXTENSION
 
 fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
     _type(type),
@@ -79,6 +86,33 @@ fb::ostream fb::game::spell::make_buff_stream(const std::string& message, uint32
         .write_u32(time);
 
     return ostream;
+}
+
+int fb::game::spell::builtin_type(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, spell->type());
+    return 1;
+}
+
+int fb::game::spell::builtin_name(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+
+    lua_pushstring(lua, spell->_name.c_str());
+    return 1;
+}
+
+int fb::game::spell::builtin_message(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+
+    lua_pushstring(lua, spell->_message.c_str());
+    return 1;
 }
 
 fb::game::spells::spells(session& owner) : 

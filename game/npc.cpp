@@ -11,6 +11,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::core, "fb.game.npc.core")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
+{"__eq",                fb::game::object::builtin_eq},
 {"input_dialog",        fb::game::npc::builtin_input_dialog},
 {"menu_dialog",         fb::game::npc::builtin_menu_dialog},
 {"item_dialog",         fb::game::npc::builtin_item_dialog},

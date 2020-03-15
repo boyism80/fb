@@ -1,3 +1,3 @@
-function handle_spell(session, message)
-	session:chat(message)
+function handle_spell(me, spell, message)
+	me:chat(message)
 end

@@ -8,11 +8,13 @@ extern "C"
 #include "lua/lauxlib.h"
 }
 
+#include "socket.h"
 #include <vector>
 #include <string>
 
-#define DECLARE_LUA_PROTOTYPE               static const struct luaL_Reg    LUA_METHODS[];\
-                                            static const std::string        LUA_METATABLE_NAME;
+#define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\
+                                            static const std::string        LUA_METATABLE_NAME;\
+                                            virtual const std::string& metaname() const { return this->LUA_METATABLE_NAME; }
 
 #define IMPLEMENT_LUA_EXTENSION(type, name) const std::string type::LUA_METATABLE_NAME = name;\
                                             const struct luaL_Reg type::LUA_METHODS[] = \
@@ -26,53 +28,61 @@ extern "C"
                                             {\
                                                 auto object = *(T**)lua_touserdata(lua, 1);\
                                                 auto core = object->based<T::core>();\
-                                                core->new_lua<T::core>(lua);\
+                                                core->to_lua(lua);\
                                                 return 1;\
-                                            }
-
-#define IMPLEMENT_NEW_LUA                   template <typename T>\
-                                            void new_lua(lua_State* lua) const\
-                                            {\
-                                                auto allocated = (const T**)lua_newuserdata(lua, sizeof(T**));\
-                                                *allocated = static_cast<const T*>(this);\
-                                                auto metaname = T::LUA_METATABLE_NAME.c_str();\
-                                                luaL_getmetatable(lua, metaname);\
-                                                auto ret = lua_setmetatable(lua, -2);\
                                             }
 
 namespace fb { namespace game { namespace lua {
 
+class luable : public fb::base
+{
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+    void                        to_lua(lua_State* lua) const;
+#pragma endregion
+
+#pragma region public method
+public:
+    luable();
+    luable(uint32_t id);
+    ~luable();
+#pragma endregion
+};
+
 class state
 {
 private:
-	lua_State*				_lua;
+	lua_State*				    _lua;
 
 protected:
 	state(lua_State* lua);
 	virtual ~state();
 
 public:
-	void					pushstring(const std::string& value) { lua_pushstring(*this, value.c_str()); }
-	void					pushinteger(int value) { lua_pushinteger(*this, value); }
-	void					pushnil() { lua_pushnil(*this); }
-	void					pushboolean(bool value) { lua_pushboolean(*this, value); }
+	void					    pushstring(const std::string& value) { lua_pushstring(*this, value.c_str()); }
+	void					    pushinteger(int value) { lua_pushinteger(*this, value); }
+	void					    pushnil() { lua_pushnil(*this); }
+	void					    pushboolean(bool value) { lua_pushboolean(*this, value); }
+    void                        pushobject(luable* object);
+    void                        pushobject(luable& object);
 
-	const std::string		tostring(int offset) { return lua_tostring(*this, offset); }
-	const std::string		arg_string(int offset) { return tostring(offset); }
-	const std::string		ret_string(int offset) { return tostring(-offset); }
+	const std::string		    tostring(int offset) { return lua_tostring(*this, offset); }
+	const std::string		    arg_string(int offset) { return tostring(offset); }
+	const std::string		    ret_string(int offset) { return tostring(-offset); }
 	
-	int						tointeger(int offset) { return lua_tointeger(*this, offset); }
-	int						arg_integer(int offset) { return tointeger(offset); }
-	int						ret_integer(int offset) { return tointeger(-offset); }
+	int						    tointeger(int offset) { return lua_tointeger(*this, offset); }
+	int						    arg_integer(int offset) { return tointeger(offset); }
+	int						    ret_integer(int offset) { return tointeger(-offset); }
 	
-	bool					toboolean(int offset) { return lua_toboolean(*this, offset); }
-	bool					arg_boolean(int offset) { return toboolean(offset); }
-	bool					ret_boolean(int offset) { return toboolean(-offset); }
+	bool					    toboolean(int offset) { return lua_toboolean(*this, offset); }
+	bool					    arg_boolean(int offset) { return toboolean(offset); }
+	bool					    ret_boolean(int offset) { return toboolean(-offset); }
 
-    void                    fromfile(const std::string& file, const std::string& name);
+    void                        fromfile(const std::string& file, const std::string& name);
 
 public:
-	operator				lua_State* () const;
+	operator				    lua_State* () const;
 };
 
 class main : public state
@@ -85,22 +95,22 @@ public:
 	~main();
 
 public:
-	static main&			get();
-	static void				release();
+	static main&			    get();
+	static void				    release();
 };
 
 class thread : public state
 {
 private:
-	int						_ref;
+	int						    _ref;
 
 public:
 	thread();
 	~thread();
 
 public:
-	bool					resume(int num_args) { return lua_resume(*this, num_args) == 0; } // 종료되면 true, 아니면 false
-	int						yield(int num_rets) { return lua_yield(*this, num_rets); }
+	bool					    resume(int num_args) { return lua_resume(*this, num_args) == 0; } // 종료되면 true, 아니면 false
+	int						    yield(int num_rets) { return lua_yield(*this, num_rets); }
 };
 
 void release();
@@ -118,9 +128,13 @@ void bind_class()
 template <typename T, typename B>
 void bind_class()
 {
+    // 새로운 메타테이블 형식을 생성 (T : -1)
     luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());
     
+    // 상속받을 메타테이블을 가져온다. (B : -1) (T : -2)
     luaL_getmetatable(main::get(), B::LUA_METATABLE_NAME.c_str());
+
+    // 상속받을 메타테이블로 설정한다. (T : -1)
     lua_setmetatable(main::get(), -2);
 
     lua_pushvalue(main::get(), -1);

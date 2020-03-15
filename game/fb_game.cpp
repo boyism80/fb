@@ -8,18 +8,12 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
     lua::env<acceptor>("acceptor", this);
 
-    lua::bind_class<object::core>();
-    lua::bind_class<object>();
-    
-    lua::bind_class<life::core, object::core>();
-    lua::bind_class<life, object>();
-    
-    lua::bind_class<mob::core, life::core>();
-    lua::bind_class<mob, life>();
-
-    lua::bind_class<npc::core, object::core>();
-    lua::bind_class<npc, object>();
-
+    lua::bind_class<spell>();
+    lua::bind_class<map>();
+    lua::bind_class<object::core>();                lua::bind_class<object>();
+    lua::bind_class<life::core, object::core>();    lua::bind_class<life, object>();
+    lua::bind_class<mob::core, life::core>();       lua::bind_class<mob, life>();
+    lua::bind_class<npc::core, object::core>();     lua::bind_class<npc, object>();
     lua::bind_class<game::session, life>();
 
     lua_register(lua::main::get(), "name2mob",  builtin_name2mob);
@@ -382,8 +376,8 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
 
 
     // 루아스크립트의 handle_click 함수의 리턴값 설정
-    session.new_lua<fb::game::session>(*session.dialog_thread);
-    npc.new_lua<fb::game::npc>(*session.dialog_thread);
+    session.dialog_thread->pushobject(session);
+    session.dialog_thread->pushobject(npc);
     session.dialog_thread->resume(2);
 }
 
@@ -1805,12 +1799,11 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
         istream.read(message, std::min(uint32_t(256), size)); message[size] = 0x00;
 
-        session.new_lua<fb::game::session>(thread);
-        // spell->new_lua<fb::game::spell>(thread);
+        thread.pushobject(session);
+        thread.pushobject(spell);
         thread.pushstring(message);
 
-        //thread.resume(3);
-        thread.resume(2);
+        thread.resume(3);
         break;
     }
 
@@ -1831,27 +1824,10 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         if(session.sight(*target) == false)
             return true;
 
-        session.new_lua<fb::game::session>(thread);
-        // spell->new_lua<fb::game::spell>(thread);
-        switch(target->type())
-        {
-        case object::types::SESSION:
-            target->new_lua<fb::game::session>(thread);
-            break;
-
-        case object::types::MOB:
-            target->new_lua<fb::game::session>(thread);
-            break;
-
-        case object::types::NPC:
-            target->new_lua<fb::game::npc>(thread);
-            break;
-
-        default:
-            return true;
-        }
-
-        thread.resume(2);
+        thread.pushobject(session);
+        thread.pushobject(spell);
+        thread.pushobject(target);
+        thread.resume(3);
         break;
     }
 

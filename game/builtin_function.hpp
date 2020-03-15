@@ -3,6 +3,17 @@
 
 using namespace fb::game;
 
+template<typename T>
+inline void to_lua(lua_State* lua, const T* self)
+{
+    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
+    *allocated = (const void*)self;
+
+    auto metaname = self->metaname();
+    luaL_getmetatable(lua, metaname.c_str());
+    lua_setmetatable(lua, -2);
+}
+
 template <typename T>
 int builtin_dialog(lua_State* lua)
 {

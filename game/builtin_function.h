@@ -5,6 +5,9 @@
 #include "lua.h"
 
 template <typename T>
+void to_lua(lua_State* lua, const T* self);
+
+template <typename T>
 int builtin_dialog(lua_State* lua);
 
 template <typename T>

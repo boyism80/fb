@@ -1,4 +1,5 @@
 #include "lua.h"
+#include "object.h"
 using namespace fb::game::lua;
 
 
@@ -10,6 +11,16 @@ state::state(lua_State* lua) : _lua(lua)
 
 state::~state()
 {
+}
+
+void fb::game::lua::state::pushobject(fb::game::lua::luable* object)
+{
+    object->to_lua(*this);
+}
+
+void fb::game::lua::state::pushobject(fb::game::lua::luable& object)
+{
+    object.to_lua(*this);
 }
 
 void fb::game::lua::state::fromfile(const std::string& file, const std::string& name)

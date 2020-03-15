@@ -6,16 +6,16 @@
 using namespace fb::game;
 
 IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
-{"name", fb::game::session::builtin_name},
-{"look", fb::game::session::builtin_look},
-{"color", fb::game::session::builtin_color},
-{"money", fb::game::session::builtin_money},
-{"exp", fb::game::session::builtin_exp},
-{"base_hp", fb::game::session::builtin_base_hp},
-{"base_mp", fb::game::session::builtin_base_mp},
-{"strength", fb::game::session::builtin_strength},
-{"dexterity", fb::game::session::builtin_dexterity},
-{"intelligence", fb::game::session::builtin_intelligence},
+{"__eq",            fb::game::object::builtin_eq},
+{"look",            fb::game::session::builtin_look},
+{"color",           fb::game::session::builtin_color},
+{"money",           fb::game::session::builtin_money},
+{"exp",             fb::game::session::builtin_exp},
+{"base_hp",         fb::game::session::builtin_base_hp},
+{"base_mp",         fb::game::session::builtin_base_mp},
+{"strength",        fb::game::session::builtin_strength},
+{"dexterity",       fb::game::session::builtin_dexterity},
+{"intelligence",    fb::game::session::builtin_intelligence},
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
@@ -1009,15 +1009,6 @@ fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
 
     return ostream;
 }
-
-int fb::game::session::builtin_name(lua_State* lua)
-{
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-
-	lua_pushstring(lua, session->_name.c_str());
-	return 1;
-}
-
 
 int fb::game::session::builtin_look(lua_State* lua)
 {

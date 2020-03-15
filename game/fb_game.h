@@ -23,7 +23,7 @@ namespace fb { namespace game {
 class acceptor : public fb_acceptor<fb::game::session>
 {
 public:
-    DECLARE_LUA_PROTOTYPE
+    LUA_PROTOTYPE
 
 public:
     enum scope { SELF, PIVOT, MAP, WORLD };
