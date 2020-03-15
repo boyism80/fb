@@ -2,6 +2,9 @@
 #include "object.h"
 using namespace fb::game::lua;
 
+IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
+END_LUA_EXTENSION
+
 
 main* main::_instance;
 

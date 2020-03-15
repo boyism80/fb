@@ -8,9 +8,10 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
     lua::env<acceptor>("acceptor", this);
 
-    lua::bind_class<spell>();
-    lua::bind_class<map>();
-    lua::bind_class<object::core>();                lua::bind_class<object>();
+    lua::bind_class<lua::luable>();
+    lua::bind_class<spell, lua::luable>();
+    lua::bind_class<map, lua::luable>();
+    lua::bind_class<object::core, lua::luable>();   lua::bind_class<object, lua::luable>();
     lua::bind_class<life::core, object::core>();    lua::bind_class<life, object>();
     lua::bind_class<mob::core, life::core>();       lua::bind_class<mob, life>();
     lua::bind_class<npc::core, object::core>();     lua::bind_class<npc, object>();

@@ -38,6 +38,7 @@ class core : public lua::luable
 {
 #pragma region lua
 public:
+    LUA_PROTOTYPE
 #pragma endregion
 
 
