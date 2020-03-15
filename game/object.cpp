@@ -44,27 +44,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"action",      fb::game::life::builtin_action},
 END_LUA_EXTENSION
 
-void fb::game::lua::luable::to_lua(lua_State* lua) const
-{
-    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
-    *allocated = (void*)this;
-
-    auto metaname = this->metaname();
-    luaL_getmetatable(lua, metaname.c_str());
-    lua_setmetatable(lua, -2);
-}
-
-fb::game::lua::luable::luable()
-{
-}
-
-fb::game::lua::luable::luable(uint32_t id) : base(id)
-{
-}
-
-fb::game::lua::luable::~luable()
-{
-}
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),

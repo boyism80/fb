@@ -5,8 +5,29 @@ using namespace fb::game::lua;
 IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
 END_LUA_EXTENSION
 
-
 main* main::_instance;
+
+void fb::game::lua::luable::to_lua(lua_State* lua) const
+{
+    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
+    *allocated = (void*)this;
+
+    auto metaname = this->metaname();
+    luaL_getmetatable(lua, metaname.c_str());
+    lua_setmetatable(lua, -2);
+}
+
+fb::game::lua::luable::luable()
+{
+}
+
+fb::game::lua::luable::luable(uint32_t id) : base(id)
+{
+}
+
+fb::game::lua::luable::~luable()
+{
+}
 
 state::state(lua_State* lua) : _lua(lua)
 {
