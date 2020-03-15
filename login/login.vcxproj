@@ -178,7 +178,6 @@
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
-    <ClInclude Include="..\share\socket.hpp" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="fb_login.h" />
     <ClInclude Include="resource.h" />

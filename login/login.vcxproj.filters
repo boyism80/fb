@@ -84,9 +84,6 @@
     <ClInclude Include="..\share\console.h">
       <Filter>Module\fb\console</Filter>
     </ClInclude>
-    <ClInclude Include="..\share\socket.hpp">
-      <Filter>Module\fb\socket</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Desktop\baram.ico">
