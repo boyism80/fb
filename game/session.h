@@ -239,6 +239,9 @@ public:
 	static int				    builtin_strength(lua_State* lua);
 	static int				    builtin_dexterity(lua_State* lua);
 	static int				    builtin_intelligence(lua_State* lua);
+    static int                  builtin_item(lua_State* lua);
+    static int                  builtin_items(lua_State* lua);
+    static int                  builtin_item_drop(lua_State* lua);
 #pragma endregion
 };
 

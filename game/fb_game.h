@@ -105,6 +105,10 @@ public:
     bool                    handle_admin(fb::game::session& session, const std::string& message);
 #endif
 
+    // macro method
+public:
+    item*                   macro_drop_item(fb::game::session& session, uint8_t index, bool drop_all = false);
+
     // built-in method
 public:
     static int              builtin_name2mob(lua_State* lua);

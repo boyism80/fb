@@ -10,4 +10,6 @@ function handle_spell(me, spell, you)
 	me:dex(10)
 
 	me:exp(100)
+
+	me:dropitem(4, true)
 end

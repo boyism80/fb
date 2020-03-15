@@ -428,7 +428,6 @@ fb::ostream fb::game::map::make_update_stream(uint16_t begin_x, uint16_t begin_y
 
 int fb::game::map::builtin_name(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto map = *(fb::game::map**)lua_touserdata(lua, 1);
 
     lua_pushstring(lua, map->name().c_str());
@@ -437,7 +436,6 @@ int fb::game::map::builtin_name(lua_State* lua)
 
 int fb::game::map::builtin_objects(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto map = *(fb::game::map**)lua_touserdata(lua, 1);
 
     lua_newtable(lua);

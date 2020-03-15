@@ -812,39 +812,12 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 
 bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
 {
-    try
-    {
-        session.state_assert(state::RIDING | state::GHOST);
+    auto&               istream = session.in_stream();
+    auto                cmd = istream.read_u8();
+    auto                index = istream.read_u8() - 1;
+    bool                drop_all = bool(istream.read_u8());
 
-        auto&               istream = session.in_stream();
-        auto                cmd = istream.read_u8();
-        auto                index = istream.read_u8() - 1;
-        bool                drop_all = bool(istream.read_u8());
-
-        auto                item = session.items[index];
-        if(item == NULL)
-            return true;
-
-        if(item->trade_enabled() == false)
-            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
-
-        auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
-        if(item == dropped)
-        {
-            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
-            session.items.remove(index);
-        }
-
-        auto                map = session.map();
-        this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
-        this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
-        this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
-    }
-    catch(std::exception& e)
-    { 
-        this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
-    }
-
+    this->macro_drop_item(session, index, drop_all);
     return true;
 }
 
@@ -1301,8 +1274,8 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
             this->send_stream(*partner, ts_mine.make_show_stream(false, trade_index), scope::SELF);
         }
-    }
         break;
+    }
 
     case 2: // 아이템 갯수까지 해서 올릴 때
     {
@@ -2184,4 +2157,38 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     return false;
 }
+
+fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, uint8_t index, bool drop_all)
+{
+    try
+    {
+        session.state_assert(state::RIDING | state::GHOST);
+
+        auto                item = session.items[index];
+        if(item == nullptr)
+            return nullptr;
+
+        if(item->trade_enabled() == false)
+            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
+
+        auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
+        if(item == dropped)
+        {
+            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
+            session.items.remove(index);
+        }
+
+        auto                map = session.map();
+        this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
+        this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
+        this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+        return dropped;
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
+        return nullptr;
+    }
+}
+
 #endif

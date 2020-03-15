@@ -2,6 +2,7 @@
 #include "map.h"
 #include "item.h"
 #include "db.h"
+#include "fb_game.h"
 
 using namespace fb::game;
 
@@ -16,6 +17,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"str",             fb::game::session::builtin_strength},
 {"dex",             fb::game::session::builtin_dexterity},
 {"int",             fb::game::session::builtin_intelligence},
+{"item",            fb::game::session::builtin_item},
+{"items",           fb::game::session::builtin_items},
+{"dropitem",        fb::game::session::builtin_item_drop},
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
@@ -1176,4 +1180,51 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
         session->intelligence(value);
         return 0;
     }
+}
+
+int fb::game::session::builtin_item(lua_State* lua)
+{
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto index = lua_tointeger(lua, 2);
+
+    auto item = session->items[index];
+    if(item == nullptr)
+        lua_pushnil(lua);
+    else
+        item->to_lua(lua);
+
+    return 1;
+}
+
+int fb::game::session::builtin_items(lua_State* lua)
+{
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+
+    lua_newtable(lua);
+    for(int i = 0; i < item::MAX_SLOT; i++)
+    {
+        if(session->items[i] == nullptr)
+            continue;
+
+        session->items[i]->to_lua(lua);
+        lua_rawseti(lua, -2, i+1);
+    }
+
+    return 1;
+}
+
+int fb::game::session::builtin_item_drop(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto index = lua_tointeger(lua, 2);
+    auto drop_all = lua_toboolean(lua, 3);
+
+    auto dropped = acceptor->macro_drop_item(*session, index - 1, drop_all);
+    if(dropped != nullptr)
+        dropped->to_lua(lua);
+    else
+        lua_pushnil(lua);
+
+    return 1;
 }
