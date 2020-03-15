@@ -79,7 +79,7 @@ public:
 class spells : public container<fb::game::spell>
 {
 public:
-	spells(session& owner);
+	spells(life& owner);
 	~spells();
 };
 

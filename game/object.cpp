@@ -39,11 +39,15 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"__eq",        fb::game::object::builtin_eq},
 {"hp",          fb::game::life::builtin_hp},
 {"mp",          fb::game::life::builtin_mp},
+{"hp_inc",      fb::game::life::builtin_hp_inc},
+{"mp_inc",      fb::game::life::builtin_mp_inc},
+{"hp_dec",      fb::game::life::builtin_hp_dec},
+{"mp_dec",      fb::game::life::builtin_mp_dec},
 {"base_hp",     fb::game::life::builtin_base_hp},
 {"base_mp",     fb::game::life::builtin_base_mp},
 {"action",      fb::game::life::builtin_action},
+{"spell",       fb::game::life::builtin_spell},
 END_LUA_EXTENSION
-
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),
@@ -790,11 +794,26 @@ int fb::game::object::builtin_sound(lua_State* lua)
 
 int fb::game::object::builtin_position(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
 
-    lua_pushinteger(lua, object->_position.x);
-    lua_pushinteger(lua, object->_position.y);
-    return 2;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, object->_position.x);
+        lua_pushinteger(lua, object->_position.y);
+        return 2;
+    }
+    else
+    {
+        lua_rawgeti(lua, 2, 1);
+        object->_position.x = lua_tointeger(lua, -1);
+        lua_remove(lua, -1);
+
+        lua_rawgeti(lua, 2, 2);
+        object->_position.y = lua_tointeger(lua, -1);
+        lua_remove(lua, -1);
+        return 0;
+    }
 }
 
 int fb::game::object::builtin_chat(lua_State* lua)
@@ -975,7 +994,8 @@ fb::game::life::life(const core* core) :
     object(core),
     _hp(0),
     _mp(0),
-    _condition(fb::game::condition::NONE)
+    _condition(fb::game::condition::NONE),
+    spells(*this)
 {
 }
 
@@ -983,7 +1003,8 @@ fb::game::life::life(core* core, uint32_t id, uint32_t hp, uint32_t mp, uint32_t
     object(core, id),
     _hp(hp),
     _mp(mp),
-    _condition(fb::game::condition::NONE)
+    _condition(fb::game::condition::NONE),
+    spells(*this)
 {
 }
 
@@ -991,7 +1012,8 @@ fb::game::life::life(const fb::game::object& object, uint32_t hp, uint32_t mp, u
     object(object),
     _hp(hp),
     _mp(mp),
-    _condition(fb::game::condition::NONE)
+    _condition(fb::game::condition::NONE),
+    spells(*this)
 {
 }
 
@@ -1282,18 +1304,38 @@ fb::ostream fb::game::life::make_die_stream() const
 
 int fb::game::life::builtin_hp(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
 
-    lua_pushinteger(lua, object->_hp);
-    return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, object->hp());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        object->hp(value);
+        return 0;
+    }
 }
 
 int fb::game::life::builtin_mp(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
 
-    lua_pushinteger(lua, object->_mp);
-    return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, object->mp());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        object->mp(value);
+        return 0;
+    }
 }
 
 int fb::game::life::builtin_base_hp(lua_State* lua)
@@ -1314,6 +1356,46 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     return 1;
 }
 
+int fb::game::life::builtin_hp_inc(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto value = lua_tointeger(lua, 2);
+
+    object->hp_up(value);
+    return 0;
+}
+
+int fb::game::life::builtin_hp_dec(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto value = lua_tointeger(lua, 2);
+
+    object->hp_down(value);
+    return 0;
+}
+
+int fb::game::life::builtin_mp_inc(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto value = lua_tointeger(lua, 2);
+
+    object->mp_up(value);
+    return 0;
+}
+
+int fb::game::life::builtin_mp_dec(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto value = lua_tointeger(lua, 2);
+
+    object->mp_down(value);
+    return 0;
+}
+
 int fb::game::life::builtin_action(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
@@ -1324,4 +1406,15 @@ int fb::game::life::builtin_action(lua_State* lua)
 
     acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration)), acceptor::scope::SELF);
     return 0;
+}
+
+int fb::game::life::builtin_spell(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto life = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto index = lua_tointeger(lua, 2);
+
+    life->spells[index]->to_lua(lua);
+    return 1;
 }

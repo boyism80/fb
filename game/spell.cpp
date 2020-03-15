@@ -115,7 +115,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
     return 1;
 }
 
-fb::game::spells::spells(session& owner) : 
+fb::game::spells::spells(life& owner) : 
 	container(owner, spell::MAX_SLOT, false)
 {
 }

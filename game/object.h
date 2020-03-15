@@ -3,6 +3,7 @@
 
 #include "mmo.h"
 #include "stream.h"
+#include "spell.h"
 #include "lua.h"
 
 namespace fb { namespace game {
@@ -188,7 +189,7 @@ public:
 #pragma endregion
 
 
-#pragma region make stream method of object
+#pragma region make stream method
 public:
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     virtual fb::ostream         make_show_stream() const;
@@ -206,7 +207,7 @@ public:
 #pragma endregion
 
 
-#pragma region build-in method of object
+#pragma region build-in method
 public:
     static int					builtin_id(lua_State* lua);
     static int                  builtin_eq(lua_State* lua);
@@ -304,6 +305,12 @@ protected:
 #pragma endregion
 
 
+#pragma region public field
+public:
+    fb::game::spells		    spells;
+#pragma endregion
+
+
 #pragma region constructor / destructor
 protected:
     life(const core* core);
@@ -379,7 +386,12 @@ public:
     static int					builtin_mp(lua_State* lua);
     static int					builtin_base_hp(lua_State* lua);
     static int					builtin_base_mp(lua_State* lua);
+    static int                  builtin_hp_inc(lua_State* lua);
+    static int                  builtin_hp_dec(lua_State* lua);
+    static int                  builtin_mp_inc(lua_State* lua);
+    static int                  builtin_mp_dec(lua_State* lua);
     static int                  builtin_action(lua_State* lua);
+    static int                  builtin_spell(lua_State* lua);
 #pragma endregion
 };
 

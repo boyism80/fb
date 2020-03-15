@@ -1571,7 +1571,7 @@ fb::game::item* fb::game::items::active(uint8_t index, uint8_t* updated_index, f
 	if((attr & item::attrs::ITEM_ATTR_EQUIPMENT))
 		this->equipment_on(index, slot, updated_index);
 
-	item->handle_acive(this->owner());
+	item->handle_acive(static_cast<session&>(this->owner()));
 	if(item->empty())
 		this->set(nullptr, index);
 

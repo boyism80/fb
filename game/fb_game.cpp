@@ -1803,7 +1803,6 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         thread.pushobject(session);
         thread.pushobject(spell);
         thread.pushstring(message);
-
         thread.resume(3);
         break;
     }
@@ -1834,10 +1833,14 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
 
     case spell::types::NORMAL:
     {
+        thread.pushobject(session);
+        thread.pushobject(spell);
+        thread.resume(2);
         break;
     }
     }
 
+    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
     return true;
 }
 

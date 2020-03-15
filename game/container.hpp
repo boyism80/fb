@@ -1,7 +1,7 @@
 #include "container.h"
 
 template<typename T>
-inline fb::game::container<T>::container(session& owner, uint8_t size, bool auto_release) : 
+inline fb::game::container<T>::container(life& owner, uint8_t size, bool auto_release) : 
 	_owner(owner),
 	_size(size),
 	_auto_release(auto_release)
@@ -28,12 +28,12 @@ inline T* fb::game::container<T>::set(T* element, int position)
 	return before;
 }
 template<typename T>
-inline fb::game::session& fb::game::container<T>::owner()
+inline fb::game::life& fb::game::container<T>::owner()
 {
 	return this->_owner;
 }
 template<typename T>
-inline const fb::game::session& fb::game::container<T>::owner() const
+inline const fb::game::life& fb::game::container<T>::owner() const
 {
 	return this->_owner;
 }

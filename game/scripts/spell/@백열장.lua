@@ -4,4 +4,10 @@ function handle_spell(me, spell, you)
 			object:effect(110)
 		end
 	end
+
+	me:str(me:str() + 2)
+	me:int(10)
+	me:dex(10)
+
+	me:exp(100)
 end

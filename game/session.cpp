@@ -13,9 +13,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"exp",             fb::game::session::builtin_exp},
 {"base_hp",         fb::game::session::builtin_base_hp},
 {"base_mp",         fb::game::session::builtin_base_mp},
-{"strength",        fb::game::session::builtin_strength},
-{"dexterity",       fb::game::session::builtin_dexterity},
-{"intelligence",    fb::game::session::builtin_intelligence},
+{"str",             fb::game::session::builtin_strength},
+{"dex",             fb::game::session::builtin_dexterity},
+{"int",             fb::game::session::builtin_intelligence},
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
@@ -32,7 +32,6 @@ session::session(SOCKET socket) :
     _money(0),
     trade(*this),
 	items(*this),
-	spells(*this),
 	dialog_thread(nullptr)
 {
     memset(this->_options, 0, sizeof(this->_options));
@@ -139,11 +138,13 @@ void fb::game::session::base_mp_up(uint32_t value)
 void fb::game::session::base_hp(uint32_t value)
 {
     this->_base_hp = value;
+    this->_hp = std::min(this->_hp, this->_base_hp);
 }
 
 void fb::game::session::base_mp(uint32_t value)
 {
     this->_base_mp = value;
+    this->_mp = std::min(this->_mp, this->_base_mp);
 }
 
 uint32_t fb::game::session::base_hp() const
@@ -317,6 +318,11 @@ void fb::game::session::dexteritry_up(uint8_t value)
 uint32_t fb::game::session::experience() const
 {
     return this->_experience;
+}
+
+void fb::game::session::experience(uint32_t value)
+{
+    this->_experience = value;
 }
 
 uint32_t fb::game::session::experience_add(uint32_t value)
@@ -1012,72 +1018,162 @@ fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushnumber(lua, session->_look);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->look());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->look(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_color(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushnumber(lua, session->_color);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->color());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->color(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_money(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_money);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->money());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->money(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_exp(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_experience);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->experience());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->experience(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_base_hp(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_base_hp);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->base_hp());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->base_hp(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_base_mp(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_base_mp);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->base_mp());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->base_mp(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_strength(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
 	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_strength);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->strength());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->strength(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_dexterity(lua_State* lua)
 {
+    auto argc = lua_gettop(lua);
 	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_dexteritry);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->dexteritry());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->dexteritry(value);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_intelligence(lua_State* lua)
 {
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, session->_intelligence);
-	return 1;
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->intelligence());
+        return 1;
+    }
+    else
+    {
+        auto value = lua_tointeger(lua, 2);
+        session->intelligence(value);
+        return 0;
+    }
 }

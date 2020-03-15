@@ -71,7 +71,6 @@ private:
 public:
 	fb::game::trade             trade;
 	fb::game::items			    items;
-	fb::game::spells		    spells;
 	lua::thread*			    dialog_thread;
 #pragma endregion
 
@@ -168,6 +167,7 @@ public:
     void                        dexteritry_up(uint8_t value);
 
     uint32_t                    experience() const;
+    void                        experience(uint32_t value);
     uint32_t                    experience_add(uint32_t value);
     uint32_t                    experience_reduce(uint32_t value);
     uint32_t                    experience_remained() const;

@@ -3,27 +3,27 @@
 
 namespace fb { namespace game {
 
-class session;
+class life;
 
 template <typename T>
 class container
 {
 private:
-	session&				_owner;
+	life&				    _owner;
 	T**						_elements;
 	uint8_t					_size;
 	bool					_auto_release;
 
 protected:
-	container(session& owner, uint8_t size, bool auto_release = true);
+	container(life& owner, uint8_t size, bool auto_release = true);
 	~container();
 
 protected:
 	T*						set(T* element, int position);
 
 public:
-	session&				owner();
-	const session&			owner() const;
+	life&				    owner();
+	const life&			    owner() const;
 	virtual T*				at(uint8_t index) const;
 	virtual bool			add(T& element);
 	virtual uint8_t			add(T* element);
