@@ -1,3 +1,3 @@
 function handle_spell(me, spell, you)
-	me:rmitem(me:item(2))
+	you:position(me:position())
 end

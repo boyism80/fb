@@ -647,8 +647,6 @@ fb::ostream fb::game::object::make_show_stream() const
         .write_u8(this->color())  // color
         .write_u8(this->direction()); // side
 
-    std::cout << "show mob : " << this->id() << std::endl;
-
     return ostream;
 }
 
@@ -658,8 +656,6 @@ fb::ostream fb::game::object::make_hide_stream() const
     ostream.write_u8(0x0E)
         .write_u32(this->id())
         .write_u8(0x00);
-
-    std::cout << "hide mob : " << this->id() << std::endl;
 
     return ostream;
 }
@@ -812,7 +808,8 @@ int fb::game::object::builtin_position(lua_State* lua)
         lua_pushinteger(lua, object->_position.y);
         return 2;
     }
-    else if(lua_istable(lua, 2))
+    
+    if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
         object->_position.x = lua_tointeger(lua, -1);
@@ -821,14 +818,17 @@ int fb::game::object::builtin_position(lua_State* lua)
         lua_rawgeti(lua, 2, 2);
         object->_position.y = lua_tointeger(lua, -1);
         lua_remove(lua, -1);
-        return 0;
     }
     else
     {
         object->_position.x = lua_tointeger(lua, 2);
         object->_position.y = lua_tointeger(lua, 3);
-        return 0;
     }
+
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+
+    return 0;
 }
 
 int fb::game::object::builtin_chat(lua_State* lua)
