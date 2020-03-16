@@ -22,6 +22,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"dialog",      fb::game::object::builtin_dialog},
 {"sound",       fb::game::object::builtin_sound},
 {"position",    fb::game::object::builtin_position},
+{"direction",   fb::game::object::builtin_direction},
 {"chat",        fb::game::object::builtin_chat},
 {"message",     fb::game::object::builtin_message},
 {"buff",        fb::game::object::builtin_buff},
@@ -829,6 +830,27 @@ int fb::game::object::builtin_position(lua_State* lua)
     acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
 
     return 0;
+}
+
+int fb::game::object::builtin_direction(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, object->_direction);
+        return 1;
+    }
+    else
+    {
+        auto direction = game::direction(lua_tointeger(lua, 2));
+        object->direction(direction);
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+        return 0;
+    }
 }
 
 int fb::game::object::builtin_chat(lua_State* lua)

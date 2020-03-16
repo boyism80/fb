@@ -1,3 +1,3 @@
 function handle_spell(me, spell, you)
-	you:position(me:position())
+	you:direction((you:direction() + 1) % 4)
 end

@@ -216,6 +216,7 @@ public:
 	static int					builtin_dialog(lua_State* lua);
 	static int					builtin_sound(lua_State* lua);
 	static int					builtin_position(lua_State* lua);
+    static int                  builtin_direction(lua_State* lua);
     static int                  builtin_chat(lua_State* lua);
     static int                  builtin_message(lua_State* lua);
     static int                  builtin_buff(lua_State* lua);
