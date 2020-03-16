@@ -205,7 +205,7 @@ fb::game::point16_t fb::game::object::position() const
     return this->_position;
 }
 
-bool fb::game::object::position(uint16_t x, uint16_t y)
+bool fb::game::object::position(uint16_t x, uint16_t y, std::vector<object*>* shows, std::vector<object*>* hides, std::vector<object*>* showns, std::vector<object*>* hiddens)
 {
     if(this->_map == nullptr)
         return false;
@@ -215,10 +215,12 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
 
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
+
+    this->visibles(shows, hides, showns, hiddens);
     return true;
 }
 
-bool fb::game::object::position(const point16_t position)
+bool fb::game::object::position(const point16_t position, std::vector<object*>* shows, std::vector<object*>* hides, std::vector<object*>* showns, std::vector<object*>* hiddens)
 {
     if(this->_map == nullptr)
         return false;
@@ -228,6 +230,8 @@ bool fb::game::object::position(const point16_t position)
 
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(position.x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(position.y)));
+
+    this->visibles(shows, hides, showns, hiddens);
     return true;
 }
 
@@ -377,6 +381,50 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
     return begin.x <= you.x && end.x >= you.x &&
         begin.y <= you.y && end.y >= you.y;
+}
+
+void fb::game::object::visibles(std::vector<object*>* shows, std::vector<object*>* hides, std::vector<object*>* showns, std::vector<object*>* hiddens)
+{
+    if(shows != nullptr || hides != nullptr)
+    {
+        for(auto object : this->_map->objects)
+        {
+            if(object == this)
+                continue;
+
+            bool                before = this->sight(*object, true);
+            bool                after  = this->sight(*object);
+
+            bool                show = (!before && after);
+            bool                hide = (before && !after);
+
+            if(show && shows != nullptr)
+                shows->push_back(object);
+            else if(hide && hides != nullptr)
+                hides->push_back(object);
+        }
+    }
+
+    // 상대 기준으로 한 오브젝트
+    if(showns != nullptr || hiddens)
+    {
+        for(auto object : this->_map->objects)
+        {
+            if(object == this)
+                continue;
+
+            bool                before_sight = object->sight(*this, false, true);
+            bool                after_sight  = object->sight(*this);
+
+            bool                show = (!before_sight && after_sight);
+            bool                hide = (before_sight && !after_sight);
+
+            if(show && showns != nullptr)
+                showns->push_back(object);
+            else if(hide && hiddens != nullptr)
+                hiddens->push_back(object);
+        }
+    }
 }
 
 fb::game::session* fb::game::object::near_session(fb::game::direction direction) const
@@ -661,6 +709,17 @@ fb::ostream fb::game::object::make_hide_stream() const
     return ostream;
 }
 
+fb::ostream fb::game::object::make_direction_stream() const
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x11)
+        .write_u32(this->id())
+        .write_u8(this->_direction)
+        .write_u8(0x00);
+
+    return ostream;
+}
+
 fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::object*>& objects)
 {
     fb::ostream             ostream;
@@ -919,25 +978,67 @@ int fb::game::object::builtin_effect(lua_State* lua)
 
 int fb::game::object::builtin_map(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    try
+    {
+        auto argc = lua_gettop(lua);
+        auto object = *(fb::game::object**)lua_touserdata(lua, 1);
 
-    if(argc == 1)
-    {
-        auto map = object->map();
-        if(map == nullptr)
-            lua_pushnil(lua);
+        if(argc == 1)
+        {
+            auto map = object->map();
+            if(map == nullptr)
+                lua_pushnil(lua);
+            else
+                map->to_lua(lua);
+            return 1;
+        }
+
+        fb::game::map* map = nullptr;
+        if(lua_isuserdata(lua, 2))
+        {
+            map = *(fb::game::map**)lua_touserdata(lua, 2);
+            if(map == nullptr)
+                throw std::exception();
+        }
+        else if(lua_isstring(lua, 2))
+        {
+            map = db::name2map(lua_tostring(lua, 2));
+            if(map == nullptr)
+                throw std::exception();
+        }
         else
-            map->to_lua(lua);
-        return 1;
+        {
+            throw std::exception();
+        }
+
+        point16_t position;
+        if(lua_istable(lua, 3))
+        {
+            lua_rawgeti(lua, 3, 1);
+            position.x = lua_tointeger(lua, -1);
+            lua_remove(lua, -1);
+
+            lua_rawgeti(lua, 3, 2);
+            position.y = lua_tointeger(lua, -1);
+            lua_remove(lua, -1);
+        }
+        else if(lua_isnumber(lua, 3) && lua_isnumber(lua, 4))
+        {
+            position.x = lua_tointeger(lua, 3);
+            position.y = lua_tointeger(lua, 4);
+        }
+        else
+        {
+            throw std::exception();
+        }
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->macro_object_map(*object, *map, position);
     }
-    else
-    {
-        auto map = *(fb::game::map**)lua_touserdata(lua, 2);
-        object->map(map);
-        return 0;
-    }
+    catch(...)
+    { }
+
+    return 0;
 }
 
 int fb::game::object::builtin_mkitem(lua_State* lua)
@@ -1123,7 +1224,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     if(this->movable(direction) == false)
         return false;
 
-    const auto before = this->_position;
+    this->_before = this->_position;
 
     switch(direction)
     {
@@ -1144,51 +1245,8 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
         break;
     }
 
-    const auto& after = this->_position;
-
     // 내 기준으로 한 오브젝트
-    if(shows != nullptr || hides != nullptr)
-    {
-        for(auto object : this->_map->objects)
-        {
-            if(object == this)
-                continue;
-
-            bool                before = this->sight(*object, true);
-            bool                after  = this->sight(*object);
-
-            bool                show = (!before && after);
-            bool                hide = (before && !after);
-
-            if(show && shows != nullptr)
-                shows->push_back(object);
-            else if(hide && hides != nullptr)
-                hides->push_back(object);
-        }
-    }
-
-    // 상대 기준으로 한 오브젝트
-    if(showns != nullptr || hiddens)
-    {
-        for(auto object : this->_map->objects)
-        {
-            if(object == this)
-                continue;
-
-            bool                before_sight = object->sight(*this, false, true);
-            bool                after_sight  = object->sight(*this);
-
-            bool                show = (!before_sight && after_sight);
-            bool                hide = (before_sight && !after_sight);
-
-            if(show && showns != nullptr)
-                showns->push_back(object);
-            else if(hide && hiddens != nullptr)
-                hiddens->push_back(object);
-        }
-    }
-
-    this->_before = before;
+    this->visibles(shows, hides, showns, hiddens);
     return true;
 }
 
@@ -1316,17 +1374,6 @@ fb::ostream fb::game::life::make_move_stream(fb::game::direction direction, bool
         .write_u16(from_before ? this->_before.x : this->_position.x)
         .write_u16(from_before ? this->_before.y : this->_position.y)
         .write_u8(direction)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::life::make_direction_stream() const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x11)
-        .write_u32(this->id())
-        .write_u8(this->_direction)
         .write_u8(0x00);
 
     return ostream;

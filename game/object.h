@@ -132,6 +132,11 @@ private:
 	static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
+#pragma region protected method
+protected:
+    void                        visibles(std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
+#pragma endregion
+
 
 #pragma region public method
 public:
@@ -149,8 +154,8 @@ public:
 
     point16_t                   position() const;
     point16_t                   position_forward() const;
-    virtual bool                position(uint16_t x, uint16_t y);
-    virtual bool                position(const point16_t position);
+    virtual bool                position(uint16_t x, uint16_t y, std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
+    virtual bool                position(const point16_t position, std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
 
     uint16_t                    x() const;
     bool                        x(uint16_t value);
@@ -190,6 +195,7 @@ public:
 
 #pragma region make stream method
 public:
+    fb::ostream                 make_direction_stream() const;
     static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
     virtual fb::ostream         make_show_stream() const;
     fb::ostream                 make_hide_stream() const;
@@ -374,7 +380,6 @@ public:
 public:
     fb::ostream                 make_move_stream(bool from_before = true) const;
     fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
-    fb::ostream                 make_direction_stream() const;
     fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration) const;
     fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
     fb::ostream                 make_die_stream() const;

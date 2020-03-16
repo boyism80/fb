@@ -493,7 +493,6 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
         return true;
     }
 
-
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
     if(warp != nullptr)
@@ -501,25 +500,8 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
         this->handle_session_warp(session, warp);
         return true;
     }
-    
-    for(auto i : shows)
-        this->send_stream(session, i->make_show_stream(), scope::SELF);
 
-    for(auto i : hides)
-    {
-        this->send_stream(session, i->make_hide_stream(), scope::SELF);
-    }
-
-    for(auto i : showns)
-    {
-        this->send_stream(*i, session.make_show_stream(), scope::SELF);
-    }
-
-    for(auto i : hiddens)
-    {
-        this->send_stream(*i, session.make_hide_stream(), scope::SELF);
-    }
-
+    this->macro_visible_update(session, &shows, &hides, &showns, &hiddens);
     return true;
 }
 
@@ -1987,22 +1969,7 @@ void fb::game::acceptor::handle_session_warp(fb::game::session& session, const m
 {
     auto                    map = session.map();
 
-    // 이전에 보이던 오브젝트들 전부 제거
-    for(auto i : session.showings())
-        this->send_stream(session, i->make_hide_stream(), scope::SELF);
-
-    session.map(warp->map, warp->after);
-
-    this->send_stream(session, session.make_id_stream(), scope::SELF);
-    this->send_stream(session, warp->map->make_config_stream(), scope::SELF);
-    this->send_stream(session, warp->map->make_bgm_stream(), scope::SELF);
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-    this->send_stream(session, session.make_position_stream(), scope::SELF);
-    this->send_stream(session, session.make_visual_stream(false), scope::SELF);
-    this->send_stream(session, session.make_direction_stream(), scope::SELF);
-
-    for(auto i : session.showns())
-        this->send_stream(session, i->make_show_stream(), scope::SELF);
+    this->macro_object_map(session, *warp->map, warp->after);
 }
 
 #if defined DEBUG | defined _DEBUG
@@ -2203,6 +2170,67 @@ fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, 
         this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
         return nullptr;
     }
+}
+
+void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vector<fb::game::object*>* shows, std::vector<fb::game::object*>* hides, std::vector<fb::game::object*>* showns, std::vector<fb::game::object*>* hiddens)
+{
+    if(shows != nullptr)
+    {
+        for(auto i : *shows)
+            this->send_stream(object, i->make_show_stream(), scope::SELF);
+    }
+
+    if(hides != nullptr)
+    {
+        for(auto i : *hides)
+            this->send_stream(object, i->make_hide_stream(), scope::SELF);
+    }
+
+    if(showns != nullptr)
+    {
+        for(auto i : *showns)
+            this->send_stream(*i, object.make_show_stream(), scope::SELF);
+    }
+
+    if(hiddens != nullptr)
+    {
+        for(auto i : *hiddens)
+            this->send_stream(*i, object.make_hide_stream(), scope::SELF);
+    }
+}
+
+void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::map& map, const point16_t& position)
+{
+    // 이전에 보이던 오브젝트들 전부 제거
+    for(auto i : object.showings())
+        this->send_stream(object, i->make_hide_stream(), scope::SELF);
+
+    // 이전에 나를 보던 오브젝트들에게서 나를 제거
+    for(auto i : object.showns())
+        this->send_stream(*i, object.make_hide_stream(), scope::SELF);
+
+    object.map(&map, position);
+
+
+    if(object.type() == object::types::SESSION)
+    {
+        auto& session = static_cast<game::session&>(object);
+        this->send_stream(session, session.make_id_stream(), scope::SELF);
+        this->send_stream(session, map.make_config_stream(), scope::SELF);
+        this->send_stream(session, map.make_bgm_stream(), scope::SELF);
+        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        this->send_stream(session, session.make_position_stream(), scope::SELF);
+        this->send_stream(session, session.make_visual_stream(false), scope::SELF);
+        this->send_stream(session, session.make_direction_stream(), scope::SELF);
+    }
+
+    // 지금 내가 볼 수 있는 오브젝트를 표시
+    for(auto i : object.showings())
+        this->send_stream(object, i->make_show_stream(), scope::SELF);
+
+    // 지금 나를 볼 수 있는 오브젝트들에게 나를 표시
+    for(auto i : object.showns())
+        this->send_stream(*i, object.make_show_stream(), scope::SELF);
 }
 
 #endif
