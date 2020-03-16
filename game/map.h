@@ -190,6 +190,9 @@ public:
 public:
     static int                  builtin_name(lua_State* lua);
     static int                  builtin_objects(lua_State* lua);
+    static int                  builtin_width(lua_State* lua);
+    static int                  builtin_height(lua_State* lua);
+    static int                  builtin_area(lua_State* lua);
 #pragma endregion
 };
 

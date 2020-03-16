@@ -5,6 +5,9 @@
 IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"name",        fb::game::map::builtin_name},
 {"objects",     fb::game::map::builtin_objects},
+{"width",       fb::game::map::builtin_width},
+{"height",      fb::game::map::builtin_height},
+{"area",        fb::game::map::builtin_area},
 END_LUA_EXTENSION
 
 static const uint16_t crc16tab[256] = 
@@ -454,4 +457,29 @@ int fb::game::map::builtin_objects(lua_State* lua)
     }
 
     return 1;
+}
+
+int fb::game::map::builtin_width(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, map->width());
+    return 1;
+}
+
+int fb::game::map::builtin_height(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, map->height());
+    return 1;
+}
+
+int fb::game::map::builtin_area(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_pushinteger(lua, map->width());
+    lua_pushinteger(lua, map->height());
+    return 2;
 }
