@@ -166,10 +166,11 @@ namespace sound
 {
     enum type : uint16_t
     {
-        SWING              = 0x014B,
+        SWING               = 0x014B,
         EAT                 = 0x0006,
         EQUIPMENT_OFF       = 0x019A,
         EQUIPMENT_ON        = 0x019B,
+        DAMAGE              = 0x015D,
     };
 }
 

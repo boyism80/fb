@@ -549,6 +549,8 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         uint32_t            random_damage = session.random_damage(*front_mob, critical);
 
         this->handle_damage(session, *front_mob, random_damage);
+        if(weapon != nullptr)
+            this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
     }
     catch(std::exception& e)
     {
