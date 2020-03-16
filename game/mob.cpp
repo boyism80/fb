@@ -307,7 +307,7 @@ fb::game::session* fb::game::mob::autoset_target()
         return NULL;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto session : map->sessions())
+    for(auto session : map->objects.sessions())
     {
         if(session->sight(*this) == false)
             continue;

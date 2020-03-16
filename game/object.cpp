@@ -27,6 +27,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"buff",        fb::game::object::builtin_buff},
 {"effect",      fb::game::object::builtin_effect},
 {"map",         fb::game::object::builtin_map},
+{"mkitem",      fb::game::object::builtin_mkitem},
 END_LUA_EXTENSION
 
 
@@ -306,10 +307,10 @@ fb::game::map* fb::game::object::map() const
 uint16_t fb::game::object::map(fb::game::map* map)
 {
     if(this->_map != nullptr)
-        this->_map->object_delete(this);
+        this->_map->objects.remove(this);
 
     this->_map = map;
-    return this->_map->object_add(this);
+    return this->_map->objects.add(this);
 }
 
 uint16_t fb::game::object::map(fb::game::map* map, const point16_t& position)
@@ -407,7 +408,7 @@ fb::game::session* fb::game::object::near_session(fb::game::direction direction)
     if(map->existable(front) == false)
         return nullptr;
 
-    for(auto session : map->sessions())
+    for(auto session : map->objects.sessions())
     {
         if(session->position() == front)
             return session;
@@ -448,7 +449,7 @@ std::vector<fb::game::session*> fb::game::object::near_sessions(fb::game::direct
     if(map->existable(front) == false)
         return list;
 
-    for(auto session : map->sessions())
+    for(auto session : map->objects.sessions())
     {
         if(session->position() == front)
             list.push_back(session);
@@ -497,7 +498,7 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
     if(map->existable(front) == false)
         return nullptr;
 
-    for(auto object : map->objects())
+    for(auto object : map->objects)
     {
         if(type != fb::game::object::types::UNKNOWN && object->type() != type)
             continue;
@@ -542,7 +543,7 @@ std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::directio
     if(this->_map->existable(front) == false)
         return list;
 
-    for(auto object : this->_map->objects())
+    for(auto object : this->_map->objects)
     {
         if(type != fb::game::object::types::UNKNOWN && (object->type() & type) != object->type())
             continue;
@@ -573,7 +574,7 @@ std::vector<fb::game::object*> fb::game::object::showings(object::types type) co
     if(this->_map == nullptr)
         return list;
 
-    for(auto object : this->_map->objects())
+    for(auto object : this->_map->objects)
     {
         if(object == this)
             continue;
@@ -600,7 +601,7 @@ std::vector<object*> fb::game::object::showns(object::types type) const
     if(this->_map == nullptr)
         return list;
 
-    for(auto object : this->_map->objects())
+    for(auto object : this->_map->objects)
     {
         if(object == this)
             continue;
@@ -737,6 +738,14 @@ fb::ostream fb::game::object::make_effet_stream(uint8_t effect) const
 fb::ostream fb::game::object::make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const
 {
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
+}
+
+int fb::game::object::builtin_core(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto core = object->based();
+    core->to_lua(lua);
+    return 1;
 }
 
 int fb::game::object::builtin_id(lua_State* lua)
@@ -907,6 +916,29 @@ int fb::game::object::builtin_map(lua_State* lua)
         object->map(map);
         return 0;
     }
+}
+
+int fb::game::object::builtin_mkitem(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto name = lua_tostring(lua, 2);
+
+    auto core = db::name2item(name);
+    if(core == nullptr)
+    {
+        lua_pushnil(lua);
+    }
+    else
+    {
+        auto item = core->make();
+        item->map(object->_map, object->_position);
+        item->to_lua(lua);
+        
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->send_stream(*item, item->make_show_stream(), acceptor::scope::PIVOT);
+    }
+
+    return 1;
 }
 
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
@@ -1095,7 +1127,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 내 기준으로 한 오브젝트
     if(shows != nullptr || hides != nullptr)
     {
-        for(auto object : this->_map->objects())
+        for(auto object : this->_map->objects)
         {
             if(object == this)
                 continue;
@@ -1116,7 +1148,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
     // 상대 기준으로 한 오브젝트
     if(showns != nullptr || hiddens)
     {
-        for(auto object : this->_map->objects())
+        for(auto object : this->_map->objects)
         {
             if(object == this)
                 continue;

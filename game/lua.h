@@ -23,15 +23,6 @@ extern "C"
 #define END_LUA_EXTENSION                   {NULL, NULL}\
                                             };
 
-
-#define BUILTIN_CORE(T)                     static int builtin_core(lua_State* lua)\
-                                            {\
-                                                auto object = *(T**)lua_touserdata(lua, 1);\
-                                                auto core = object->based<T::core>();\
-                                                core->to_lua(lua);\
-                                                return 1;\
-                                            }
-
 namespace fb { namespace game { namespace lua {
 
 class luable : public fb::base

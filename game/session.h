@@ -216,11 +216,6 @@ public:
     fb::ostream                 make_position_stream() const;
     fb::ostream                 make_visual_stream(bool light) const;
 
-
-    fb::ostream                 make_update_item_slot_stream(uint8_t index) const;
-    fb::ostream                 make_delete_item_slot_stream(fb::game::item::delete_attr types, uint32_t slot, uint16_t count = 0) const;
-    fb::ostream                 make_update_equipment_stream(fb::game::equipment::slot slot) const;
-    fb::ostream                 make_equipment_off_stream(fb::game::equipment::slot slot) const;
     fb::ostream                 make_internal_info_stream() const;
     fb::ostream                 make_external_info_stream() const;
     fb::ostream                 make_option_stream() const;
@@ -242,6 +237,8 @@ public:
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_items(lua_State* lua);
     static int                  builtin_item_drop(lua_State* lua);
+    static int                  builtin_mkitem(lua_State* lua);
+    static int                  builtin_rmitem(lua_State* lua);
 #pragma endregion
 };
 

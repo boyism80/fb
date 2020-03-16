@@ -13,6 +13,44 @@ namespace fb { namespace game {
 
 class session;
 
+class objects : private std::vector<fb::game::object*>
+{
+private:
+    uint16_t                    _sequence;
+
+public:
+    using std::vector<fb::game::object*>::begin;
+    using std::vector<fb::game::object*>::end;
+    using std::vector<fb::game::object*>::cbegin;
+    using std::vector<fb::game::object*>::cend;
+    using std::vector<fb::game::object*>::rbegin;
+    using std::vector<fb::game::object*>::rend;
+    using std::vector<fb::game::object*>::crbegin;
+    using std::vector<fb::game::object*>::crend;
+    using std::vector<fb::game::object*>::size;
+    using std::vector<fb::game::object*>::operator[];
+
+public:
+    objects();
+    ~objects();
+
+#pragma region private method
+private:
+    uint16_t                    empty_seq();
+#pragma endregion
+
+
+#pragma region public method
+public:
+    std::vector<session*>       sessions();
+    fb::game::object*           at(uint16_t id);
+    uint16_t                    add(fb::game::object* object);
+    uint16_t                    add(fb::game::object* object, const point16_t position);
+    bool                        remove(fb::game::object* object);
+    fb::game::object*           exists(point16_t position) const;
+#pragma endregion
+};
+
 class map : public lua::luable
 {
 #pragma region lua
@@ -88,9 +126,12 @@ private:
     options                     _option;
     effects                     _effect;
     uint8_t                     _bgm;
-    uint16_t                    _sequence;
-    std::vector<object*>        _objects;
     std::vector<warp*>          _warps;
+#pragma endregion
+
+#pragma region public field
+public:
+    objects                     objects;
 #pragma endregion
 
 
@@ -98,12 +139,6 @@ private:
 public:
     map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, uint32_t size);
     ~map();
-#pragma endregion
-
-
-#pragma region private method
-private:
-    uint16_t                    empty_seq();
 #pragma endregion
 
 
@@ -120,14 +155,6 @@ public:
     uint16_t                    height() const;
     size16_t                    size() const;
     uint8_t                     bgm() const;
-
-    std::vector<object*>&       objects();
-    std::vector<session*>       sessions();
-    fb::game::object*           object(uint16_t id);
-    uint16_t                    object_add(fb::game::object* object);
-    bool                        object_delete(fb::game::object* object);
-    uint16_t                    object_add(fb::game::object* object, const point16_t position);
-    fb::game::object*           object_exists(point16_t position) const;
 
     bool                        existable(const point16_t position) const;
     bool                        movable(const point16_t position) const;

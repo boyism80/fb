@@ -43,6 +43,113 @@ static const uint16_t crc16tab[256] =
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
+
+
+fb::game::objects::objects() : _sequence(1)
+{
+}
+
+fb::game::objects::~objects()
+{
+}
+
+uint16_t fb::game::objects::empty_seq()
+{
+    for(int i = this->_sequence; i < 0xFFFF; i++)
+    {
+        if(this->at(i) != NULL)
+            continue;
+
+        this->_sequence = i + 1;
+        return i;
+    }
+
+    for(int i = 1; i < this->_sequence; i++)
+    {
+        if(this->at(i) != NULL)
+            continue;
+
+        this->_sequence = i + 1;
+        return i;
+    }
+
+    return 0xFFFF;
+}
+
+std::vector<fb::game::session*> fb::game::objects::sessions()
+{
+    std::vector<session*> sessions;
+
+    for(auto e : *this)
+    {
+        if(e->type() != object::types::SESSION)
+            continue;
+
+        sessions.push_back(static_cast<session*>(e));
+    }
+
+    return sessions;
+}
+
+fb::game::object* fb::game::objects::at(uint16_t id)
+{
+    for(const auto object : *this)
+    {
+        if(object->id() != id)
+            continue;
+
+        return object;
+    }
+
+    return NULL;
+}
+
+uint16_t fb::game::objects::add(fb::game::object* object)
+{
+    auto                    seq = this->empty_seq();
+    auto                    found = this->at(seq);
+    if(found != NULL)
+    {
+        this->erase(std::find(this->begin(), this->end(), found));
+        delete found;
+    }
+
+    this->push_back(object);
+    object->id(seq);
+    return seq;
+}
+
+uint16_t fb::game::objects::add(fb::game::object* object, const point16_t position)
+{
+    auto seq = this->add(object);
+    object->position(position);
+
+    return seq;
+}
+
+bool fb::game::objects::remove(fb::game::object* object)
+{
+    auto i = std::find(this->begin(), this->end(), object);
+    if(i == this->end())
+        return false;
+
+    this->erase(i);
+    return true;
+}
+
+fb::game::object* fb::game::objects::exists(point16_t position) const
+{
+    for(auto object : *this)
+    {
+        if(object->position() == position)
+            return object;
+    }
+
+    return NULL;
+}
+
+
+
 fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, uint32_t size) :
     _id(id),
     _parent(parent),
@@ -50,8 +157,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    _tiles(NULL),
-    _sequence(1)
+    _tiles(NULL)
 {
 
     std::string what;
@@ -82,34 +188,11 @@ fb::game::map::~map()
 {
     delete[] this->_tiles;
 
-    for(auto object : this->_objects)
+    for(auto object : this->objects)
         delete object;
 
     for(auto warp : this->_warps)
         delete warp;
-}
-
-uint16_t fb::game::map::empty_seq()
-{
-    for(int i = this->_sequence; i < 0xFFFF; i++)
-    {
-        if(this->object(i) != NULL)
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    for(int i = 1; i < this->_sequence; i++)
-    {
-        if(this->object(i) != NULL)
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    return 0xFFFF;
 }
 
 uint16_t fb::game::map::id() const
@@ -180,83 +263,6 @@ uint8_t fb::game::map::bgm() const
     return this->_bgm;
 }
 
-std::vector<fb::game::object*>& fb::game::map::objects()
-{
-    return this->_objects;
-}
-
-std::vector<fb::game::session*> fb::game::map::sessions()
-{
-    std::vector<session*> sessions;
-
-    for(auto e : this->_objects)
-    {
-        if(e->type() != object::types::SESSION)
-            continue;
-
-        sessions.push_back(static_cast<session*>(e));
-    }
-
-    return sessions;
-}
-
-fb::game::object* fb::game::map::object(uint16_t id)
-{
-    for(const auto object : this->_objects)
-    {
-        if(object->id() != id)
-            continue;
-
-        return object;
-    }
-
-    return NULL;
-}
-
-uint16_t fb::game::map::object_add(fb::game::object* object)
-{
-    auto                    seq = this->empty_seq();
-    auto                    found = this->object(seq);
-    if(found != NULL)
-    {
-        this->_objects.erase(std::find(this->_objects.begin(), this->_objects.end(), found));
-        delete found;
-    }
-
-    this->_objects.push_back(object);
-    object->id(seq);
-    return seq;
-}
-
-bool fb::game::map::object_delete(fb::game::object* object)
-{
-    auto i = std::find(this->_objects.begin(), this->_objects.end(), object);
-    if(i == this->_objects.end())
-        return false;
-
-    this->_objects.erase(i);
-    return true;
-}
-
-uint16_t fb::game::map::object_add(fb::game::object* object, const point16_t position)
-{
-    uint16_t seq = this->object_add(object);
-    object->position(position);
-
-    return seq;
-}
-
-fb::game::object* fb::game::map::object_exists(point16_t position) const
-{
-    for(auto object : this->_objects)
-    {
-        if(object->position() == position)
-            return object;
-    }
-
-    return NULL;
-}
-
 bool fb::game::map::existable(const point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
@@ -270,7 +276,7 @@ bool fb::game::map::movable(const point16_t position) const
     if((*this)(position.x, position.y)->blocked)
         return false;
 
-    for(const auto object : this->_objects)
+    for(const auto object : this->objects)
     {
         if(object->alive() == false)
             continue;
@@ -439,11 +445,11 @@ int fb::game::map::builtin_objects(lua_State* lua)
     auto map = *(fb::game::map**)lua_touserdata(lua, 1);
 
     lua_newtable(lua);
-    const auto& objects = map->objects();
+    const auto& objects = map->objects;
 
-    for(int i = 0; i < objects.size(); i++)
+    for(int i = 0; i < map->objects.size(); i++)
     {
-        objects[i]->to_lua(lua);
+        map->objects[i]->to_lua(lua);
         lua_rawseti(lua, -2, i+1);
     }
 

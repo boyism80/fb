@@ -11,7 +11,6 @@ class npc : public object
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    BUILTIN_CORE(fb::game::npc)
 #pragma endregion
 
 

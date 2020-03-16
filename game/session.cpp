@@ -20,6 +20,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"item",            fb::game::session::builtin_item},
 {"items",           fb::game::session::builtin_items},
 {"dropitem",        fb::game::session::builtin_item_drop},
+{"mkitem",          fb::game::session::builtin_mkitem},
+{"rmitem",          fb::game::session::builtin_rmitem},
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
@@ -730,103 +732,6 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
     return ostream;
 }
 
-fb::ostream fb::game::session::make_update_item_slot_stream(uint8_t index) const
-{
-    fb::ostream             ostream;
-    auto                    item = this->items[index];
-    if(item == nullptr)
-        return ostream;
-
-    ostream.write_u8(0x0F)
-        .write_u8(index + 1)
-        .write_u16(item->look())
-        .write_u8(item->color())
-        .write(item->name_styled(), false)
-        .write_u32(item->count())
-        .write_u8(0x00)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::session::make_delete_item_slot_stream(fb::game::item::delete_attr types, uint32_t slot, uint16_t count) const
-{
-    fb::ostream             ostream;
-    if(slot + 1 > item::MAX_SLOT)
-        return ostream;
-
-    ostream.write_u8(0x10)
-        .write_u8(slot + 1)
-        .write_u8(types)
-        .write_u16(count);
-
-    return ostream;
-}
-
-fb::ostream fb::game::session::make_update_equipment_stream(equipment::slot slot) const
-{
-    fb::ostream             ostream;
-    fb::game::item*         item;
-
-    switch(slot)
-    {
-    case equipment::slot::WEAPON_SLOT:
-        item = this->items.weapon();
-        break;
-
-    case equipment::slot::ARMOR_SLOT:
-        item = this->items.armor();
-        break;
-
-    case equipment::slot::SHIELD_SLOT:
-        item = this->items.shield();
-        break;
-
-    case equipment::slot::HELMET_SLOT:
-        item = this->items.helmet();
-        break;
-
-    case equipment::slot::LEFT_HAND_SLOT:
-        item = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
-        break;
-
-    case equipment::slot::RIGHT_HAND_SLOT:
-        item = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
-
-    case equipment::slot::LEFT_AUX_SLOT:
-        item = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
-        break;
-
-    case equipment::slot::RIGHT_AUX_SLOT:
-        item = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
-
-    default:
-        return false;
-    }
-
-    if(item == nullptr)
-        return ostream;
-
-    ostream.write_u8(0x37)
-        .write_u16(item->look())
-        .write_u8(item->color())
-        .write(item->name(), false);
-
-    return ostream;
-}
-
-fb::ostream fb::game::session::make_equipment_off_stream(equipment::slot slot) const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x38)
-        .write_u8(slot)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::ostream fb::game::session::make_internal_info_stream() const
 {
     fb::ostream             ostream;
@@ -1227,4 +1132,86 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
         lua_pushnil(lua);
 
     return 1;
+}
+
+int fb::game::session::builtin_mkitem(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto name = lua_tostring(lua, 2);
+    auto store = argc < 3 ? true : lua_toboolean(lua, 3);
+
+    if(store == false)
+        return object::builtin_mkitem(lua);
+
+    auto core = db::name2item(name);
+    if(core == nullptr)
+    {
+        lua_pushnil(lua);
+    }
+    else
+    {
+        auto item = core->make<fb::game::item>();
+        auto slot = session->items.add(item);
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->send_stream(*session, session->items.make_update_stream(slot), acceptor::scope::SELF);
+    }
+}
+
+int fb::game::session::builtin_rmitem(lua_State* lua)
+{
+    try
+    {
+        auto argc = lua_gettop(lua);
+        auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+        auto index = 0;
+        auto count = argc < 3 ? 1 : lua_tointeger(lua, 3);
+
+        if(lua_isuserdata(lua, 2))
+        {
+            auto item = *(fb::game::item**)lua_touserdata(lua, 2);
+            if(item == nullptr)
+                throw std::exception();
+
+            index = session->items.to_index(item->based<fb::game::item::core>());
+        }
+        else if(lua_isnumber(lua, 2))
+        {
+            index = lua_tointeger(lua, 2) - 1;
+        }
+        else if(lua_isstring(lua, 2))
+        {
+            auto name = lua_tostring(lua, 2);
+            if(name == nullptr)
+                throw std::exception();
+
+            auto core = db::name2item(name);
+            if(core == nullptr)
+                throw std::exception();
+
+            index = session->items.to_index(core);
+        }
+        else
+        {
+            throw std::exception();
+        }
+
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        auto dropped = acceptor->macro_remove_item(*session, index, count, item::delete_attr::DELETE_REMOVED);
+        if(dropped == nullptr)
+            return 0;
+
+        auto map = dropped->map();
+        if(map != nullptr)
+            map->objects.remove(dropped);
+
+        if(dropped != nullptr)
+            delete dropped;
+    }
+    catch(...)
+    { }
+
+    return 0;
 }

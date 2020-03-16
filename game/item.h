@@ -20,7 +20,6 @@ class item : public object
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    BUILTIN_CORE(fb::game::item)
 #pragma endregion
 
 
@@ -138,7 +137,6 @@ class core : public fb::game::object::core
 #pragma region lua
 public:
     LUA_PROTOTYPE
-        BUILTIN_CORE(fb::game::life)
 #pragma endregion
 
 #pragma region protected field
@@ -923,6 +921,12 @@ public:
 
 	fb::game::auxiliary*			auxiliary(equipment::EQUIPMENT_POSITION position) const;
 	fb::game::auxiliary*			auxiliary(fb::game::auxiliary* auxiliary);
+
+public:
+    fb::ostream                     make_update_stream(uint8_t index) const;
+    fb::ostream                     make_update_stream(equipment::slot slot) const;
+    fb::ostream                     make_delete_stream(item::delete_attr types, uint32_t index, uint16_t count = 0) const;
+    fb::ostream                     make_unequip_stream(equipment::slot slot) const;
 };
 
 

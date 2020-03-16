@@ -16,7 +16,6 @@ class object : public lua::luable
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    BUILTIN_CORE(fb::game::object)
 #pragma endregion
 
 
@@ -104,7 +103,7 @@ public:
 	static int				    builtin_color(lua_State* lua);
 	static int				    builtin_dialog(lua_State* lua);
 #pragma endregion
-    };
+};
 #pragma endregion
 
 
@@ -209,6 +208,7 @@ public:
 
 #pragma region build-in method
 public:
+    static int                  builtin_core(lua_State* lua);
     static int					builtin_id(lua_State* lua);
     static int                  builtin_eq(lua_State* lua);
     static int                  builtin_tostring(lua_State* lua);
@@ -221,6 +221,7 @@ public:
     static int                  builtin_buff(lua_State* lua);
     static int                  builtin_effect(lua_State* lua);
     static int                  builtin_map(lua_State* lua);
+    static int                  builtin_mkitem(lua_State* lua);
 #pragma endregion
 };
 
@@ -230,7 +231,6 @@ class life : public object
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    BUILTIN_CORE(fb::game::life)
 #pragma endregion
 
 

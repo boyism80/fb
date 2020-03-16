@@ -107,6 +107,7 @@ public:
 
     // macro method
 public:
+    item*                   macro_remove_item(fb::game::session& session, uint8_t index, int count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
     item*                   macro_drop_item(fb::game::session& session, uint8_t index, bool drop_all = false);
 
     // built-in method

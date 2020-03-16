@@ -221,7 +221,7 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
         for(auto session : hiddens)
             this->send_stream(*session, life->make_hide_stream(), scope::SELF);
 
-        for(const auto session : life->map()->sessions())
+        for(const auto session : life->map()->objects.sessions())
             this->send_stream(*session, life->make_move_stream(direction), scope::SELF);
 
         result = true;
@@ -436,7 +436,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
     // item slots
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
-        this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
+        this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
 
 
     // objects existed
@@ -467,7 +467,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
     auto&                   istream = session.in_stream();
 
     fb::game::map*          map = session.map();
-    if(map == NULL)
+    if(map == nullptr)
         return false;
 
     auto                    cmd = istream.read_u8();
@@ -496,7 +496,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
 
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
-    if(warp != NULL)
+    if(warp != nullptr)
     {
         this->handle_session_warp(session, warp);
         return true;
@@ -546,14 +546,14 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 
         this->send_stream(session, session.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
         auto*               weapon = session.items.weapon();
-        if(weapon != NULL)
+        if(weapon != nullptr)
         {
             auto            sound = weapon->sound();
             this->send_stream(session, session.make_sound_stream(sound != 0 ? game::sound::type(sound) : game::sound::SWING), scope::PIVOT);
         }
 
         auto*               front = session.forward_object(object::types::MOB);
-        if(front == NULL)
+        if(front == nullptr)
             return true;
 
         auto*               front_mob = static_cast<mob*>(front);
@@ -585,7 +585,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
     try
     {
         auto                map = session.map();
-        if(map == NULL)
+        if(map == nullptr)
             return false;
 
         session.state_assert(state::GHOST | state::RIDING);
@@ -596,7 +596,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 
 
         std::string         message;
-        const auto&         objects = map->objects();
+        const auto&         objects = map->objects;
         std::vector<item*>  gains;
 
         // Pick up items in reverse order
@@ -629,7 +629,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
                 if(index == -1)
                     break;
 
-                this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+                this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
 
                 item_moved = (session.items[index] == below);
             }
@@ -646,7 +646,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 
         for(auto gain : gains)
         {
-            map->object_delete(gain);
+            map->objects.remove(gain);
             if(gain->empty())
                 delete gain;
         }
@@ -705,12 +705,12 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 
         if(item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
         {
-            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_NONE, index), scope::SELF);
+            this->send_stream(session, session.items.make_delete_stream(fb::game::item::delete_attr::DELETE_NONE, index), scope::SELF);
             if(updated_index != 0xFF)
-                this->send_stream(session, session.make_update_item_slot_stream(updated_index), scope::SELF);
+                this->send_stream(session, session.items.make_update_stream(updated_index), scope::SELF);
 
             this->send_stream(session, session.make_state_stream(fb::game::state_level::LEVEL_MAX), scope::SELF);
-            this->send_stream(session, session.make_update_equipment_stream(slot), scope::SELF);
+            this->send_stream(session, session.items.make_update_stream(slot), scope::SELF);
             this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
             this->send_stream(session, session.make_sound_stream(sound::type::EQUIPMENT_ON), scope::PIVOT);
 
@@ -763,13 +763,13 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
         if(item->attr() & fb::game::item::attrs::ITEM_ATTR_CONSUME)
         {   
             this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-            this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+            this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
             this->send_stream(session, session.make_action_stream(action::EAT, duration::DURATION_EAT), scope::SELF);
             this->send_stream(session, session.make_sound_stream(sound::type::EAT), scope::SELF);
 
             if(item->empty())
             {
-                this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
+                this->send_stream(session, session.items.make_delete_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
                 delete item;
             }
         }
@@ -799,10 +799,10 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
 
         // 마법 딜레이 스트림 필요
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-        this->send_stream(session, session.make_equipment_off_stream(slot), scope::SELF);
+        this->send_stream(session, session.items.make_unequip_stream(slot), scope::SELF);
         this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
         this->send_stream(session, session.make_sound_stream(sound::type::EQUIPMENT_OFF), scope::PIVOT);
-        this->send_stream(session, session.make_update_item_slot_stream(item_index), scope::SELF);
+        this->send_stream(session, session.items.make_update_stream(item_index), scope::SELF);
     }
     catch(std::exception& e)
     {
@@ -830,7 +830,7 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
         session.state_assert(state::RIDING | state::GHOST);
 
         auto                map = session.map();
-        if(map == NULL)
+        if(map == nullptr)
             return false;
 
         auto&               istream = session.in_stream();
@@ -858,7 +858,7 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 bool fb::game::acceptor::handle_front_info(fb::game::session& session)
 {
     auto                    map = session.map();
-    if(map == NULL)
+    if(map == nullptr)
         return false;
 
     for(auto i : session.forward_sessions())
@@ -902,14 +902,14 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     case options::RIDE:
     {
         static auto         horse_core = db::name2mob("말");
-        if(horse_core == NULL)
+        if(horse_core == nullptr)
             break;
 
         try
         {
             session.state_assert(state::GHOST | state::DISGUISE);
 
-            object*         forward = NULL;
+            object*         forward = nullptr;
             std::string     message;
 
             if(session.state() == fb::game::state::RIDING)
@@ -925,15 +925,15 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
             else
             {
                 forward = session.forward_object(object::types::MOB);
-                if(forward == NULL || forward->based() != horse_core)
+                if(forward == nullptr || forward->based() != horse_core)
                     throw session::no_conveyance_exception();
 
-                forward->map()->object_delete(forward);
+                forward->map()->objects.remove(forward);
                 this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
                 message = game::message::ride::OFF;
                 session.state(fb::game::state::RIDING);
 
-                forward->map()->object_delete(forward);
+                forward->map()->objects.remove(forward);
                 delete forward;
             }
 
@@ -1021,14 +1021,17 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
     }
 
     auto                    other = this->session(fd);
-    if(other != NULL) // character
+    if(other != nullptr) // character
     {
         this->send_stream(session, other->make_external_info_stream(), scope::SELF);
         return true;
     }
+    auto                    map = session.map();
+    if(map == nullptr)
+        return true;
 
-    auto                    object = session.map()->object(fd);
-    if(object != NULL) // object
+    auto                    object = map->objects.at(fd);
+    if(object != nullptr) // object
     {
         switch(object->type())
         {
@@ -1058,7 +1061,7 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session)
     auto                        slot = istream.read_u8() - 1;
 
     auto                        item = session.items[slot];
-    if(item == NULL)
+    if(item == nullptr)
         return false;
 
     this->send_stream(session, item->make_tip_stream(position), scope::SELF);
@@ -1079,7 +1082,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     {
         auto                    index = istream.read_u8() - 1;
         auto                    item = session.items[index];
-        if(item == NULL)
+        if(item == nullptr)
             return true;
 
         items.push_back(item);
@@ -1088,7 +1091,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     try
     {
         auto                    itemmix = db::find_itemmix(items);
-        if(itemmix == NULL)
+        if(itemmix == nullptr)
             throw itemmix::no_match_exception();
 
         auto                    free_size = session.items.free_size();
@@ -1108,13 +1111,13 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
             if(item->empty())
             {
-                this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
+                this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
                 session.items.remove(index);
                 delete item;
             }
             else
             {
-                this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+                this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
             }
         }
 
@@ -1128,7 +1131,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 item->count(success.count);
                 
                 auto        index = session.items.add(item);
-                this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+                this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
             }
 
             message = game::message::mix::SUCCESS;
@@ -1141,7 +1144,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
                 item->count(failed.count);
                 
                 auto        index = session.items.add(item);
-                this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+                this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
             }
 
             message = game::message::mix::FAILED;
@@ -1171,7 +1174,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     auto&                       ts_mine = session.trade;       // 나의 거래시스템
     auto&                       ts_your = partner->trade;      // 상대방의 거래시스템
 
-    if(partner == NULL)
+    if(partner == nullptr)
         return true;
 
     switch(action)
@@ -1244,7 +1247,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     {
         auto                index = istream.read_u8() - 1;
         auto                item = session.items[index];
-        if(item == NULL)
+        if(item == nullptr)
             return true;
 
         // 교환 불가능한 아이템 거래 시도
@@ -1270,7 +1273,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
             // 현재 인벤토리에서 거래중인 아이템 리스트로 아이템 이동
             session.items.remove(index);
-            this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
+            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
 
             // 나와 상대 둘 다에게 올린 아이템을 표시함
             this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
@@ -1283,7 +1286,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     {
         // 이전에 올리려고 시도한 묶음 단위의 아이템
         auto                selected = ts_mine.selected();
-        if(selected == NULL)
+        if(selected == nullptr)
             return false;
 
         // 올릴 갯수 (클라이언트가 입력한 값)
@@ -1302,7 +1305,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             if(index != 0xFF)
             {
                 session.items.remove(index);
-                this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
+                this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
 
                 this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
                 this->send_stream(*partner, ts_mine.make_show_stream(false, trade_index), scope::SELF);
@@ -1317,7 +1320,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
             uint8_t trade_index = ts_mine.add(came_out);
 
-            this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+            this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
 
             this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
             this->send_stream(*partner, ts_mine.make_show_stream(false, trade_index), scope::SELF);
@@ -1353,7 +1356,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         indices = ts_mine.restore();
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
-            this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
+            this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
 
         // 메시지 표시하고 거래종료
         this->send_stream(session, ts_mine.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
@@ -1365,7 +1368,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         indices = ts_your.restore();
         this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
-            this->send_stream(*partner, partner->make_update_item_slot_stream(i), scope::SELF);
+            this->send_stream(*partner, partner->items.make_update_stream(i), scope::SELF);
 
         // 메시지 표시하고 거래종료
         this->send_stream(*partner, ts_your.make_close_stream(message::trade::CANCELLED_BY_PARTNER), scope::SELF);
@@ -1395,13 +1398,13 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
                 // 상대의 거래리스트 물품들을 전부 받고 업데이트
                 ts_mine.flush(*partner, indices);
                 for(auto i : indices)
-                    this->send_stream(*partner, partner->make_update_item_slot_stream(i), scope::SELF);
+                    this->send_stream(*partner, partner->items.make_update_stream(i), scope::SELF);
                 this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
                 // 나의 거래리스트 물품들을 전부 주고 업데이트
                 ts_your.flush(session, indices);
                 for(auto i : indices)
-                    this->send_stream(session, session.make_update_item_slot_stream(i), scope::SELF);
+                    this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
                 this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
 
@@ -1725,11 +1728,11 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
         if(item == dropped)
         {
             session.items.remove(slot);
-            this->send_stream(session, session.make_delete_item_slot_stream(item::delete_attr::DELETE_THROW, slot), scope::SELF);
+            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_THROW, slot), scope::SELF);
         }
         else
         {
-            this->send_stream(session, session.make_update_item_slot_stream(slot), scope::SELF);
+            this->send_stream(session, session.items.make_update_stream(slot), scope::SELF);
         }
         this->send_stream(session, session.make_throw_item_stream(*item), scope::PIVOT);
         this->send_stream(session, item->make_show_stream(), scope::PIVOT);
@@ -1792,7 +1795,7 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         if(map == nullptr)
             return false;
 
-        auto                target = map->object(id);
+        auto                target = map->objects.at(id);
         if(target == nullptr)
             return true;
 
@@ -1822,7 +1825,7 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 {
     auto                    target = mob->target();
-    if(target == NULL)
+    if(target == nullptr)
     {
         this->handle_move_life(mob, direction(std::rand() % 4));
         return;
@@ -1881,10 +1884,10 @@ void fb::game::acceptor::handle_containment_mob_action(fb::game::mob* mob)
     try
     {
         auto                    target = mob->target();
-        if(target == NULL || target->sight(*mob) == false)
+        if(target == nullptr || target->sight(*mob) == false)
             target = mob->autoset_target();
 
-        if(target == NULL)
+        if(target == nullptr)
             throw std::runtime_error("no target");
     }
     catch(std::exception&)
@@ -1898,11 +1901,11 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
     for(auto pair : db::maps())
     {
         auto                map = pair.second;
-        auto                sessions = map->sessions();
+        auto                sessions = map->objects.sessions();
         if(sessions.size() == 0)
             continue;
 
-        const auto&         objects = map->objects();
+        const auto&         objects = map->objects;
 
         for(auto object : objects)
         {
@@ -1943,13 +1946,13 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     for(auto pair : db::maps())
     {
         fb::game::map* map = pair.second;
-        for(auto object : map->objects())
+        for(auto object : map->objects)
         {
             if(object->type() != object::types::MOB)
                 continue;
 
             auto mob = static_cast<fb::game::mob*>(object);
-            if(mob == NULL)
+            if(mob == nullptr)
                 continue;
 
             if(mob->spawn(now) == false)
@@ -1964,7 +1967,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     std::vector<object*> shown_mobs;
     for(auto session : this->sessions())
     {
-        if(session == NULL)
+        if(session == nullptr)
             continue;
 
         shown_mobs.clear();
@@ -2160,6 +2163,22 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     return false;
 }
 
+item* fb::game::acceptor::macro_remove_item(fb::game::session& session, uint8_t index, int count, item::delete_attr attr)
+{
+    auto                item = session.items[index];
+    if(item == nullptr)
+        return nullptr;
+
+    auto                dropped = item->handle_drop(session, count);
+    if(item == dropped)
+    {
+        this->send_stream(session, session.items.make_delete_stream(attr, index), scope::SELF);
+        session.items.remove(index);
+    }
+    
+    return dropped;
+}
+
 fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, uint8_t index, bool drop_all)
 {
     try
@@ -2173,17 +2192,10 @@ fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, 
         if(item->trade_enabled() == false)
             throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
-        auto                dropped = item->handle_drop(session, drop_all ? item->count() : 1);
-        if(item == dropped)
-        {
-            this->send_stream(session, session.make_delete_item_slot_stream(fb::game::item::delete_attr::DELETE_DROP, index), scope::SELF);
-            session.items.remove(index);
-        }
-
-        auto                map = session.map();
+        auto                dropped = this->macro_remove_item(session, index, drop_all ? item->count() : 1);
         this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
         this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
-        this->send_stream(session, session.make_update_item_slot_stream(index), scope::SELF);
+        this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
         return dropped;
     }
     catch(std::exception& e)

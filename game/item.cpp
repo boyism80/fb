@@ -1735,3 +1735,100 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
 
 	return before;
 }
+
+fb::ostream fb::game::items::make_update_stream(uint8_t index) const
+{
+    fb::ostream             ostream;
+    auto                    item = this->at(index);
+    if(item == nullptr)
+        return ostream;
+
+    ostream.write_u8(0x0F)
+        .write_u8(index + 1)
+        .write_u16(item->look())
+        .write_u8(item->color())
+        .write(item->name_styled(), false)
+        .write_u32(item->count())
+        .write_u8(0x00)
+        .write_u8(0x00);
+
+    return ostream;
+}
+
+fb::ostream fb::game::items::make_update_stream(equipment::slot slot) const
+{
+    fb::ostream             ostream;
+    fb::game::item*         item;
+
+    switch(slot)
+    {
+    case equipment::slot::WEAPON_SLOT:
+        item = this->weapon();
+        break;
+
+    case equipment::slot::ARMOR_SLOT:
+        item = this->armor();
+        break;
+
+    case equipment::slot::SHIELD_SLOT:
+        item = this->shield();
+        break;
+
+    case equipment::slot::HELMET_SLOT:
+        item = this->helmet();
+        break;
+
+    case equipment::slot::LEFT_HAND_SLOT:
+        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        break;
+
+    case equipment::slot::RIGHT_HAND_SLOT:
+        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        break;
+
+    case equipment::slot::LEFT_AUX_SLOT:
+        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        break;
+
+    case equipment::slot::RIGHT_AUX_SLOT:
+        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        break;
+
+    default:
+        return ostream;
+    }
+
+    if(item == nullptr)
+        return ostream;
+
+    ostream.write_u8(0x37)
+        .write_u16(item->look())
+        .write_u8(item->color())
+        .write(item->name(), false);
+
+    return ostream;
+}
+
+fb::ostream fb::game::items::make_delete_stream(item::delete_attr types, uint32_t index, uint16_t count) const
+{
+    fb::ostream             ostream;
+    if(index + 1 > item::MAX_SLOT)
+        return ostream;
+
+    ostream.write_u8(0x10)
+        .write_u8(index + 1)
+        .write_u8(types)
+        .write_u16(count);
+
+    return ostream;
+}
+
+fb::ostream fb::game::items::make_unequip_stream(equipment::slot slot) const
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x38)
+        .write_u8(slot)
+        .write_u8(0x00);
+
+    return ostream;
+}

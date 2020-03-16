@@ -14,7 +14,6 @@ class mob : public life
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    BUILTIN_CORE(fb::game::mob)
 #pragma endregion
 
 
