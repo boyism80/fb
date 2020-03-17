@@ -136,11 +136,10 @@ bool fb::socket_map::remove(SOCKET fd)
     if (FD_ISSET(fd, &this->_fd_set) == false)
         return false;
 
-    socket* base_session = this->get(fd);
+    auto base_session = this->get(fd);
 
     FD_CLR(fd, &this->_fd_set);
     this->erase(fd);
-    delete base_session;
     return true;
 }
 

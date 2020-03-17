@@ -107,7 +107,7 @@ fb::game::object* fb::game::objects::at(uint16_t id)
     return NULL;
 }
 
-uint16_t fb::game::objects::add(fb::game::object* object)
+uint16_t fb::game::objects::add(fb::game::object& object)
 {
     auto                    seq = this->empty_seq();
     auto                    found = this->at(seq);
@@ -117,22 +117,22 @@ uint16_t fb::game::objects::add(fb::game::object* object)
         delete found;
     }
 
-    this->push_back(object);
-    object->id(seq);
+    this->push_back(&object);
+    object.id(seq);
     return seq;
 }
 
-uint16_t fb::game::objects::add(fb::game::object* object, const point16_t position)
+uint16_t fb::game::objects::add(fb::game::object& object, const point16_t position)
 {
     auto seq = this->add(object);
-    object->position(position);
+    object.position(position);
 
     return seq;
 }
 
-bool fb::game::objects::remove(fb::game::object* object)
+bool fb::game::objects::remove(fb::game::object& object)
 {
-    auto i = std::find(this->begin(), this->end(), object);
+    auto i = std::find(this->begin(), this->end(), &object);
     if(i == this->end())
         return false;
 

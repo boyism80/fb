@@ -74,11 +74,15 @@ template <typename T>
 bool fb::base_acceptor<T>::disconnect(SOCKET fd)
 {
     auto session = this->session(fd);
+    if(session == nullptr)
+        return false;
 
-    this->handle_disconnected((T&)*this->_sockets[fd]);
+    this->handle_disconnected(*session);
     this->_session_table.erase(fd);
     this->_sessions.erase(std::find(this->_sessions.begin(), this->_sessions.end(), session));
     this->_sockets.remove(fd);
+
+    delete session;
     return true;
 }
 

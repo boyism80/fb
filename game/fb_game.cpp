@@ -109,6 +109,10 @@ bool acceptor::handle_connected(fb::game::session& session)
 
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
+    auto map = session.map();
+    if(map != nullptr)
+        map->objects.remove(session);
+
     return false;
 }
 
@@ -246,6 +250,10 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob
 
     try
     {
+        auto weapon = session.items.weapon();
+        if(weapon != nullptr)
+            this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
+
         // 몹 체력 깎고 체력게이지 표시
         this->handle_damage(static_cast<life&>(mob), damage);
 
@@ -279,7 +287,7 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob
 void fb::game::acceptor::handle_damage(fb::game::life& life, uint32_t damage)
 {
     life.hp_down(damage);
-    this->send_stream(life, life.make_show_hp_stream(damage, false), scope::PIVOT, true);
+    this->send_stream(life, life.make_show_hp_stream(damage, false), scope::PIVOT);
 }
 
 void fb::game::acceptor::handle_damage(fb::game::session& session, uint32_t damage)
@@ -549,8 +557,6 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         uint32_t            random_damage = session.random_damage(*front_mob, critical);
 
         this->handle_damage(session, *front_mob, random_damage);
-        if(weapon != nullptr)
-            this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
     }
     catch(std::exception& e)
     {
@@ -630,7 +636,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
 
         for(auto gain : gains)
         {
-            map->objects.remove(gain);
+            map->objects.remove(*gain);
             if(gain->empty())
                 delete gain;
         }
@@ -912,12 +918,12 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
                 if(forward == nullptr || forward->based() != horse_core)
                     throw session::no_conveyance_exception();
 
-                forward->map()->objects.remove(forward);
+                forward->map()->objects.remove(*forward);
                 this->send_stream(*forward, forward->make_hide_stream(), scope::PIVOT, true);
                 message = game::message::ride::OFF;
                 session.state(fb::game::state::RIDING);
 
-                forward->map()->objects.remove(forward);
+                forward->map()->objects.remove(*forward);
                 delete forward;
             }
 

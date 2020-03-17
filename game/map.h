@@ -44,9 +44,9 @@ private:
 public:
     std::vector<session*>       sessions();
     fb::game::object*           at(uint16_t id);
-    uint16_t                    add(fb::game::object* object);
-    uint16_t                    add(fb::game::object* object, const point16_t position);
-    bool                        remove(fb::game::object* object);
+    uint16_t                    add(fb::game::object& object);
+    uint16_t                    add(fb::game::object& object, const point16_t position);
+    bool                        remove(fb::game::object& object);
     fb::game::object*           exists(point16_t position) const;
 #pragma endregion
 };

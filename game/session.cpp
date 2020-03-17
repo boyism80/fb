@@ -1205,7 +1205,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
         auto map = dropped->map();
         if(map != nullptr)
-            map->objects.remove(dropped);
+            map->objects.remove(*dropped);
 
         if(dropped != nullptr)
             delete dropped;

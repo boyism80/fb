@@ -312,10 +312,10 @@ fb::game::map* fb::game::object::map() const
 uint16_t fb::game::object::map(fb::game::map* map)
 {
     if(this->_map != nullptr)
-        this->_map->objects.remove(this);
+        this->_map->objects.remove(*this);
 
     this->_map = map;
-    return this->_map->objects.add(this);
+    return this->_map->objects.add(*this);
 }
 
 uint16_t fb::game::object::map(fb::game::map* map, const point16_t& position)
