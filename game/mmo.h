@@ -94,6 +94,7 @@ namespace message
         static const std::string CANNOT_DROP_ITEM = "버릴 수 없는 물건입니다.";
         static const std::string CANNOT_THROW_ITEM = "던질 수 없는 물건입니다.";
         static const std::string INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다.";
+        static const std::string INVALID_TARGET = "대상이 올바르지 않습니다.";
     };
 
     namespace trade

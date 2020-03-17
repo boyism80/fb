@@ -29,6 +29,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"effect",      fb::game::object::builtin_effect},
 {"map",         fb::game::object::builtin_map},
 {"mkitem",      fb::game::object::builtin_mkitem},
+{"showings",    fb::game::object::builtin_showings},
+{"showns",      fb::game::object::builtin_showns},
 END_LUA_EXTENSION
 
 
@@ -49,6 +51,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"base_mp",     fb::game::life::builtin_base_mp},
 {"action",      fb::game::life::builtin_action},
 {"spell",       fb::game::life::builtin_spell},
+{"damage",      fb::game::life::builtin_damage},
 END_LUA_EXTENSION
 
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
@@ -178,6 +181,12 @@ fb::game::object::~object()
 const fb::game::object::core* fb::game::object::based() const
 {
     return this->_core;
+}
+
+bool fb::game::object::is(object::types type)
+{
+    auto mine = this->type();
+    return (type & mine) == mine;
 }
 
 const std::string& fb::game::object::name() const
@@ -628,7 +637,7 @@ std::vector<fb::game::object*> fb::game::object::showings(object::types type) co
         if(object == this)
             continue;
 
-        if(type != object::types::UNKNOWN && (object->type() & type) != object->type())
+        if(type != object::types::UNKNOWN && object->is(type) == false)
             continue;
 
         if(object->alive() == false)
@@ -655,7 +664,7 @@ std::vector<object*> fb::game::object::showns(object::types type) const
         if(object == this)
             continue;
 
-        if(type != object::types::UNKNOWN && (object->type() & type) != object->type())
+        if(type != object::types::UNKNOWN && object->is(type) == false)
             continue;
 
         if(object->sight(*this) == false)
@@ -1064,6 +1073,42 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     return 1;
 }
 
+int fb::game::object::builtin_showings(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto filter = argc < 2 ? object::types::UNKNOWN : object::types(lua_tointeger(lua, 2));
+
+    lua_newtable(lua);
+    const auto& objects = object->showings(filter);
+
+    for(int i = 0; i < objects.size(); i++)
+    {
+        objects[i]->to_lua(lua);
+        lua_rawseti(lua, -2, i+1);
+    }
+
+    return 1;
+}
+
+int fb::game::object::builtin_showns(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto filter = argc < 2 ? object::types::UNKNOWN : object::types(lua_tointeger(lua, 2));
+
+    lua_newtable(lua);
+    const auto& objects = object->showns(filter);
+
+    for(int i = 0; i < objects.size(); i++)
+    {
+        objects[i]->to_lua(lua);
+        lua_rawseti(lua, -2, i+1);
+    }
+
+    return 1;
+}
+
 fb::game::life::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
     object::core(name, look, color),
     _hp(hp), _mp(mp),
@@ -1258,23 +1303,23 @@ bool fb::game::life::move_forward(std::vector<object*>* shows, std::vector<objec
 void fb::game::life::hp_up(uint32_t value)
 {
     uint32_t capacity = 0xFFFFFFFF - this->base_hp();
-    this->_hp += std::min(capacity, value);
+    this->hp(this->_hp + std::min(capacity, value));
 }
 
 void fb::game::life::hp_down(uint32_t value)
 {
-    this->_hp -= std::min(value, this->_hp);
+    this->hp(this->_hp - std::min(value, this->_hp));
 }
 
 void fb::game::life::mp_up(uint32_t value)
 {
     uint32_t capacity = 0xFFFFFFFF - this->base_mp();
-    this->_mp += std::min(capacity, value);
+    this->mp(this->_mp + std::min(capacity, value));
 }
 
 void fb::game::life::mp_down(uint32_t value)
 {
-    this->_mp -= std::min(value, this->_mp);
+    this->mp(this->_mp - std::min(value, this->_mp));
 }
 
 uint32_t fb::game::life::hp() const
@@ -1290,7 +1335,7 @@ void fb::game::life::hp(uint32_t value)
 void fb::game::life::heal(uint32_t value)
 {
     uint32_t space = this->base_hp() - this->_hp;
-    this->_hp += std::min(value, space);
+    this->hp(this->_hp + std::min(value, space));
 }
 
 uint32_t fb::game::life::mp() const
@@ -1533,5 +1578,18 @@ int fb::game::life::builtin_spell(lua_State* lua)
     auto index = lua_tointeger(lua, 2);
 
     life->spells[index]->to_lua(lua);
+    return 1;
+}
+
+int fb::game::life::builtin_damage(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto me = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto you = *(fb::game::life**)lua_touserdata(lua, 2);
+    auto damage = lua_tointeger(lua, 3);
+
+    acceptor->handle_damage(*me, *you, damage);
+    lua_pushboolean(lua, you->alive());
     return 1;
 }

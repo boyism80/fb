@@ -290,33 +290,33 @@ bool fb::game::mob::spawn(uint64_t now)
     std::cout << "spawn mob : " << this->id() << std::endl;
 }
 
-fb::game::session* fb::game::mob::target() const
+fb::game::life* fb::game::mob::target() const
 {
     return this->_target;
 }
 
-void fb::game::mob::target(fb::game::session* value)
+void fb::game::mob::target(fb::game::life* value)
 {
     this->_target = value;
 }
 
-fb::game::session* fb::game::mob::autoset_target()
+fb::game::life* fb::game::mob::autoset_target()
 {
     auto                    map = this->_map;
     if(map == NULL)
         return NULL;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto session : map->objects.sessions())
+    for(auto object : map->objects.sessions())
     {
-        if(session->sight(*this) == false)
+        if(object->sight(*this) == false)
             continue;
 
-        auto                distance_sqrt = std::abs(session->x() - this->x()) * std::abs(session->y() - this->y());
+        auto                distance_sqrt = std::abs(object->x() - this->x()) * std::abs(object->y() - this->y());
         if(distance_sqrt > min_distance_sqrt)
             continue;
 
-        this->_target = session;
+        this->_target = object;
     }
 
     return this->_target;

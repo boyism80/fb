@@ -136,7 +136,7 @@ private:
     uint64_t                    _dead_time; // ms
     uint32_t                    _respawn_time; // seconds
 
-    fb::game::session*          _target;
+    fb::game::life*             _target;
 #pragma endregion
     
 
@@ -180,9 +180,9 @@ public:
 
     bool                        spawn(uint64_t now);
 
-    fb::game::session*          target() const;
-    void                        target(fb::game::session* value);
-    fb::game::session*          autoset_target();
+    fb::game::life*             target() const;
+    void                        target(fb::game::life* value);
+    fb::game::life*             autoset_target();
 
     const std::vector<money>&   items() const;
 #pragma endregion

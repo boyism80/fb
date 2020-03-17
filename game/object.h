@@ -28,7 +28,9 @@ public:
         NPC     = 0x02, 
         MOB     = 0x04, 
         SESSION = 0x08, 
-        OBJECT  = (ITEM | NPC | MOB) };
+        LIFE    = (MOB | SESSION),
+        OBJECT  = (ITEM | NPC | MOB) 
+    };
 #pragma endregion
 
 
@@ -132,6 +134,7 @@ private:
 	static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
+
 #pragma region protected method
 protected:
     void                        visibles(std::vector<object*>* shows = nullptr, std::vector<object*>* hides = nullptr, std::vector<object*>* showns = nullptr, std::vector<object*>* hiddens = nullptr);
@@ -145,6 +148,7 @@ public:
     const T*                    based() const { return static_cast<const T*>(this->_core); }
     template <typename T>
     T*                          clone() const { return static_cast<T*>(this->_core->make<T>()); }
+    bool                        is(object::types type);
 
     virtual const std::string&  name() const;
     virtual uint16_t            look() const;
@@ -183,8 +187,8 @@ public:
     object*                     forward_object(fb::game::object::types type) const;
     std::vector<object*>        forward_objects(fb::game::object::types type) const;
 
-    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;
-    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;
+    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
+    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
 
     virtual bool                alive() const;
 
@@ -229,6 +233,8 @@ public:
     static int                  builtin_effect(lua_State* lua);
     static int                  builtin_map(lua_State* lua);
     static int                  builtin_mkitem(lua_State* lua);
+    static int                  builtin_showings(lua_State* lua);
+    static int                  builtin_showns(lua_State* lua);
 #pragma endregion
 };
 
@@ -239,7 +245,6 @@ class life : public object
 public:
     LUA_PROTOTYPE
 #pragma endregion
-
 
 #pragma region core class
 public:
@@ -398,6 +403,7 @@ public:
     static int                  builtin_mp_dec(lua_State* lua);
     static int                  builtin_action(lua_State* lua);
     static int                  builtin_spell(lua_State* lua);
+    static int                  builtin_damage(lua_State* lua);
 #pragma endregion
 };
 

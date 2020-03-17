@@ -25,6 +25,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     lua_register(lua::main::get(), "timer",     builtin_timer);
     lua_register(lua::main::get(), "weather",   builtin_weather);
 
+
     this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
     this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
     this->register_handle(0x06, &acceptor::handle_update_move);         // 이동과 맵 데이터 업데이트 핸들러
@@ -244,50 +245,59 @@ bool fb::game::acceptor::handle_move_life(fb::game::life* life, fb::game::direct
     return result;
 }
 
-void fb::game::acceptor::handle_damage(fb::game::session& session, fb::game::mob& mob, uint32_t damage)
+void fb::game::acceptor::handle_damage(fb::game::life& me, fb::game::life& you, uint32_t damage)
 {
-    std::stringstream       sstream;
-
     try
     {
-        auto weapon = session.items.weapon();
-        if(weapon != nullptr)
-            this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
+        if(you.is(object::types::LIFE) == false)
+            throw std::runtime_error(message::exception::INVALID_TARGET);
 
         // 몹 체력 깎고 체력게이지 표시
-        this->handle_damage(static_cast<life&>(mob), damage);
-
-        // 맞고도 살아있으면 더 이상 진행할 거 없음
-        if(mob.alive())
+        if(this->handle_damage(static_cast<life&>(you), damage))
         {
+            if(you.type() != object::types::MOB)
+                return;
+
+            auto& mob = static_cast<fb::game::mob&>(you);
             if(mob.offensive() != mob::offensive_type::NONE)
-                mob.target(&session);
-
-            return;
+                mob.target(&me);
         }
+        else
+        {
+            switch(you.type())
+            {
+            case object::types::SESSION:
+                this->handle_die(static_cast<fb::game::session&>(you));
+                break;
 
-        this->handle_die(mob);
+            case object::types::MOB:
+                this->handle_die(static_cast<fb::game::mob&>(you));
+                break;
+            }
 
-        
-
+            if(me.is(object::types::SESSION) && you.is(object::types::MOB))
+            {
+                auto& session = static_cast<fb::game::session&>(me);
 #if defined DEBUG | defined _DEBUG
-        this->handle_experience(session, mob.experience(), false);
+                this->handle_experience(session, you.experience(), false);
 #else
-        this->handle_experience(session, mob.experience(), true);
+                this->handle_experience(session, mob.experience(), true);
 #endif
+            }
+        }
     }
     catch(std::exception& e)
     {
-        sstream << e.what();
+        this->send_stream(me, message::make_stream(e.what(), message::type::STATE), scope::SELF);
     }
-
-    this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
 }
 
-void fb::game::acceptor::handle_damage(fb::game::life& life, uint32_t damage)
+bool fb::game::acceptor::handle_damage(fb::game::life& life, uint32_t damage)
 {
     life.hp_down(damage);
     this->send_stream(life, life.make_show_hp_stream(damage, false), scope::PIVOT);
+
+    return life.alive();
 }
 
 void fb::game::acceptor::handle_damage(fb::game::session& session, uint32_t damage)
@@ -553,10 +563,12 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
             return true;
 #endif
 
-        bool                critical = false;
-        uint32_t            random_damage = session.random_damage(*front_mob, critical);
-
+        auto                critical = false;
+        auto                random_damage = session.random_damage(*front_mob, critical);
         this->handle_damage(session, *front_mob, random_damage);
+
+        if(weapon != nullptr)
+            this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
     }
     catch(std::exception& e)
     {
