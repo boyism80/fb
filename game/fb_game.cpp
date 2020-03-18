@@ -552,11 +552,19 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
             this->send_stream(session, session.make_sound_stream(sound != 0 ? game::sound::type(sound) : game::sound::SWING), scope::PIVOT);
         }
 
-        auto*               front = session.forward_object(object::types::MOB);
-        if(front == nullptr)
-            return true;
 
-        auto*               front_mob = static_cast<mob*>(front);
+        game::mob*          mob = nullptr;
+        for(auto front : session.forward_objects(object::types::MOB))
+        {
+            if(front->alive() == false)
+                continue;
+
+            mob = static_cast<game::mob*>(front);
+            break;
+        }
+
+        if(mob == nullptr)
+            return true;
 
 #if !defined DEBUG && !defined _DEBUG
         if(std::rand() % 3 == 0)
@@ -564,8 +572,8 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 #endif
 
         auto                critical = false;
-        auto                random_damage = session.random_damage(*front_mob, critical);
-        this->handle_damage(session, *front_mob, random_damage);
+        auto                random_damage = session.random_damage(*mob, critical);
+        this->handle_damage(session, *mob, random_damage);
 
         if(weapon != nullptr)
             this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
@@ -2197,13 +2205,23 @@ void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vec
     if(shows != nullptr)
     {
         for(auto i : *shows)
+        {
+            if(i->is(object::types::MOB) && i->alive() == false)
+                continue;
+
             this->send_stream(object, i->make_show_stream(), scope::SELF);
+        }
     }
 
     if(hides != nullptr)
     {
         for(auto i : *hides)
+        {
+            if(i->is(object::types::MOB) && i->alive() == false)
+                continue;
+
             this->send_stream(object, i->make_hide_stream(), scope::SELF);
+        }
     }
 
     if(showns != nullptr)

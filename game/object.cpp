@@ -558,10 +558,7 @@ fb::game::object* fb::game::object::near_object(fb::game::direction direction, f
 
     for(auto object : map->objects)
     {
-        if(type != fb::game::object::types::UNKNOWN && object->type() != type)
-            continue;
-
-        if(object->alive() == false)
+        if(type != fb::game::object::types::UNKNOWN && object->is(type) == false)
             continue;
 
         if(object->position() == front)
@@ -603,10 +600,7 @@ std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::directio
 
     for(auto object : this->_map->objects)
     {
-        if(type != fb::game::object::types::UNKNOWN && (object->type() & type) != object->type())
-            continue;
-
-        if(object->alive() == false)
+        if(type != fb::game::object::types::UNKNOWN && object->is(type) == false)
             continue;
 
         if(object->position() == front)
