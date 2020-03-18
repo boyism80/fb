@@ -27,12 +27,12 @@ namespace dialog
 {
     enum interaction : uint8_t
     {
-        NORMAL      = 0x00,
-        INPUT       = 0x01,
-        INPUT_EX    = 0x02,
-        MENU        = 0x04,
-        SLOT        = 0x05,
-        SELL        = 0x06,
+        NORMAL              = 0x00,
+        INPUT               = 0x01,
+        INPUT_EX            = 0x02,
+        MENU                = 0x04,
+        SLOT                = 0x05,
+        SELL                = 0x06,
     };
 }
 
@@ -40,8 +40,8 @@ namespace timer
 {
     enum type : uint8_t
     {
-        INCREASE    = 0x01,
-        DECREASE    = 0x02,
+        INCREASE            = 0x01,
+        DECREASE            = 0x02,
     };
 
     fb::ostream             make_stream(uint32_t time, type type = timer::type::DECREASE);
@@ -51,10 +51,10 @@ namespace weather
 {
     enum type : uint8_t
     {
-        NORMAL      = 0x00,
-        RAIN        = 0x01,
-        SNOW        = 0x02,
-        BIRD        = 0x03,
+        NORMAL              = 0x00,
+        RAIN                = 0x01,
+        SNOW                = 0x02,
+        BIRD                = 0x03,
     };
 
     fb::ostream             make_stream(type weather);
@@ -64,10 +64,19 @@ namespace chat
 {
     enum type : uint8_t
     {
-        NORMAL      = 0x00,
-        SHOUT       = 0x01,
-        BLUE        = 0x02,
-        LIGHT_BLUE  = 0x03,
+        NORMAL              = 0x00,
+        SHOUT               = 0x01,
+        BLUE                = 0x02,
+        LIGHT_BLUE          = 0x03,
+    };
+}
+
+namespace swap
+{
+    enum type : uint8_t
+    {
+        ITEM                = 0x00,
+        SPELL               = 0x01,
     };
 }
 

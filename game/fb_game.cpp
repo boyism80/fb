@@ -444,13 +444,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
     // spell slots
     for(int i = 0; i < spell::MAX_SLOT; i++)
-    {
-        auto spell = session.spells[i];
-        if(spell == nullptr)
-            continue;
-
-        this->send_stream(session, spell->make_show_stream(i+1), scope::SELF);
-    }
+        this->send_stream(session, session.spells.make_update_stream(i), scope::SELF);
 
     // item slots
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
@@ -1564,23 +1558,42 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
     auto                        cmd = istream.read_u8();
-    auto                        swap_type = istream.read_u8();
+    auto                        type = swap::type(istream.read_u8());
     auto                        src = istream.read_u8();
     auto                        dest = istream.read_u8();
 
-    if(swap_type) // spell
+    switch(type)
+    {
+    case swap::type::SPELL:
     {
         if(session.spells.swap(src-1, dest-1) == false) // zero-based
             return true;
 
         const auto              right = session.spells[src-1];
-        this->send_stream(session, right ? right->make_show_stream(src) : right->make_delete_stream(src), scope::SELF);
+        this->send_stream(session, right ? session.spells.make_update_stream(src-1) : session.spells.make_delete_stream(src-1), scope::SELF);
 
         const auto              left = session.spells[dest-1];
-        this->send_stream(session, left ? left->make_show_stream(dest) : left->make_delete_stream(dest), scope::SELF);
+        this->send_stream(session, left ? session.spells.make_update_stream(dest-1) : session.spells.make_delete_stream(dest-1), scope::SELF);
+
+        break;
     }
-    else // item
-    {}
+
+    case swap::type::ITEM:
+    {
+        if(session.items.swap(src-1, dest-1) == false)
+            return true;
+
+        const auto              right = session.items[src-1];
+        this->send_stream(session, right ? session.items.make_update_stream(src-1) : session.items.make_delete_stream(item::delete_attr::DELETE_REMOVED, src-1), scope::SELF);
+
+        const auto              left = session.items[dest-1];
+        this->send_stream(session, left ? session.items.make_update_stream(dest-1) : session.items.make_delete_stream(item::delete_attr::DELETE_REMOVED, dest-1), scope::SELF);
+        break;
+    }
+
+    default:
+        return false;
+    }
 
     return true;
 }

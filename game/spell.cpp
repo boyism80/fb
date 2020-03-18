@@ -51,32 +51,6 @@ const std::string& fb::game::spell::message() const
     return this->_message;
 }
 
-fb::ostream fb::game::spell::make_show_stream(uint8_t slot) const
-{
-    ostream                 ostream;
-
-    ostream.write_u8(0x17)
-        .write_u8(slot) // one-based
-        .write_u8(this->_type)
-        .write(this->_name);
-
-    if(this->_type < 3)
-        ostream.write(this->_message);
-
-    return ostream;
-}
-
-fb::ostream fb::game::spell::make_delete_stream(uint8_t slot)
-{
-    ostream                 ostream;
-    
-    ostream.write_u8(0x18)
-        .write_u8(slot) // one-based
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::ostream fb::game::spell::make_buff_stream(const std::string& message, uint32_t time)
 {
     fb::ostream             ostream;
@@ -122,4 +96,36 @@ fb::game::spells::spells(life& owner) :
 
 fb::game::spells::~spells()
 {
+}
+
+fb::ostream fb::game::spells::make_update_stream(uint8_t index) const
+{
+    ostream                 ostream;
+    auto                    spell = this->at(index);
+    if(spell == nullptr)
+        return ostream;
+
+    ostream.write_u8(0x17)
+        .write_u8(index + 1)
+        .write_u8(spell->type())
+        .write(spell->name());
+
+    if(spell->type() < 3)
+        ostream.write(spell->message());
+
+    return ostream;
+}
+
+fb::ostream fb::game::spells::make_delete_stream(uint8_t index) const
+{
+    ostream                 ostream;
+    auto                    spell = this->at(index);
+    if(spell != nullptr)
+        return ostream;
+
+    ostream.write_u8(0x18)
+        .write_u8(index + 1)
+        .write_u8(0x00);
+
+    return ostream;
 }
