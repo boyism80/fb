@@ -80,11 +80,13 @@ private:
 	using object::based;
 #pragma endregion
 
+
 #pragma region constructor / destructor
 public:
     session(SOCKET socket);
     ~session();
 #pragma endregion
+
 
 #pragma region override method
 public:
@@ -92,17 +94,20 @@ public:
     object::types               type() const;
 #pragma endregion
 
+
 #pragma region middle-man method
 public:
     istream&                    in_stream();
     ostream&                    out_stream();
 #pragma endregion
 
+
 #pragma region operator method
 public:
     operator                    fb::crtsocket& ();
     operator                    fb::socket& ();
 #pragma endregion
+
 
 #pragma region public method
 public:
@@ -239,6 +244,7 @@ public:
     static int                  builtin_item_drop(lua_State* lua);
     static int                  builtin_mkitem(lua_State* lua);
     static int                  builtin_rmitem(lua_State* lua);
+    static int                  builtin_state(lua_State* lua);
 #pragma endregion
 };
 

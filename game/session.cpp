@@ -22,6 +22,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"dropitem",        fb::game::session::builtin_item_drop},
 {"mkitem",          fb::game::session::builtin_mkitem},
 {"rmitem",          fb::game::session::builtin_rmitem},
+{"state",           fb::game::session::builtin_state},
 END_LUA_EXTENSION
 
 session::session(SOCKET socket) : 
