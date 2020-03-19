@@ -1,7 +1,6 @@
 function handle_spell(me, spell, you)
-	-- you:direction((you:direction() + 1) % 4)
-
-	for i, object in pairs(me:showings(0x04)) do
-		me:damage(object, 100)
-	end
+	me:action(0x06)
+	me:state(0x05)
+	me:effect(0x14)
+	me:sound(0x001C)
 end
