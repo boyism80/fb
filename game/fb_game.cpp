@@ -375,7 +375,7 @@ void fb::game::acceptor::handle_level_up(fb::game::session& session)
     session.level_up();
 
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-    this->send_stream(session, session.make_effet_stream(0x02), scope::PIVOT);
+    this->send_stream(session, session.make_effect_stream(0x02), scope::PIVOT);
 
     this->send_stream(session, message::make_stream(message::level::UP, message::type::STATE), scope::SELF);
 }
@@ -2142,7 +2142,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "effect")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, session.make_effet_stream(value), scope::SELF);
+        this->send_stream(session, session.make_effect_stream(value), scope::SELF);
         return true;
     }
 

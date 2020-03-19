@@ -782,7 +782,7 @@ fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) con
     return ostream;
 }
 
-fb::ostream fb::game::object::make_effet_stream(uint8_t effect) const
+fb::ostream fb::game::object::make_effect_stream(uint8_t effect) const
 {
     fb::ostream             ostream;
 
@@ -975,7 +975,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
     auto effect = lua_tointeger(lua, 2);
 
     if(object->type() != object::types::ITEM)
-        acceptor->send_stream(*object, object->make_effet_stream(effect), acceptor::scope::PIVOT);
+        acceptor->send_stream(*object, object->make_effect_stream(effect), acceptor::scope::PIVOT);
     return 0;
 }
 

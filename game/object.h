@@ -205,7 +205,7 @@ public:
     fb::ostream                 make_hide_stream() const;
     fb::ostream                 make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
     fb::ostream                 make_sound_stream(fb::game::sound::type sound) const;
-    fb::ostream                 make_effet_stream(uint8_t effect) const;
+    fb::ostream                 make_effect_stream(uint8_t effect) const;
     fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
 #pragma endregion
 
