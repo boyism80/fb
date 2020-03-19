@@ -1738,7 +1738,7 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
         if(map == nullptr)
             throw std::exception();
 
-        auto                    dropped = item->handle_drop(session, 1);
+        auto                    dropped = item->split(session);
         item->direction(session.direction());
         for(int i = 0; i < 7; i++)
         {
@@ -2177,7 +2177,7 @@ item* fb::game::acceptor::macro_remove_item(fb::game::session& session, uint8_t 
     if(item == nullptr)
         return nullptr;
 
-    auto                dropped = item->handle_drop(session, count);
+    auto                dropped = item->split(session, count);
     if(item == dropped)
     {
         this->send_stream(session, session.items.make_delete_stream(attr, index), scope::SELF);

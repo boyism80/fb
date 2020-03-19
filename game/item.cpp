@@ -349,9 +349,9 @@ fb::ostream fb::game::item::make_tip_stream(uint16_t position)
     return ostream;
 }
 
-fb::game::item* fb::game::item::handle_drop(object& owner, uint16_t count)
+fb::game::item* fb::game::item::split(object& owner, uint16_t count)
 {
-    item* item = NULL;
+    item* item = nullptr;
     if((this->attr() & item::attrs::ITEM_ATTR_BUNDLE) && this->_count > count)
     {
         this->_count -= count;
@@ -392,7 +392,7 @@ fb::game::object* fb::game::cash::core::make() const
 // class cash
 //
 fb::game::cash::cash(uint32_t chunk) : 
-    fb::game::item(NULL)
+    fb::game::item(nullptr)
 {
     this->chunk(chunk);
 }
@@ -418,7 +418,7 @@ void fb::game::cash::chunk(uint32_t value)
 {
     this->_chunk = value;
 
-    const fb::game::item* core = NULL;
+    const fb::game::item* core = nullptr;
     if(this->_chunk == 1)
         this->_core = &fb::game::cash::BRONZE;
     else if(this->_chunk < 100)
@@ -1382,8 +1382,8 @@ fb::game::items::items(session& owner) :
 	container(owner, item::MAX_SLOT),
 	_weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(nullptr)
 {
-	memset(this->_rings, NULL, sizeof(this->_rings));
-	memset(this->_auxiliaries, NULL, sizeof(this->_auxiliaries));
+	memset(this->_rings, 0, sizeof(this->_rings));
+	memset(this->_auxiliaries, 0, sizeof(this->_auxiliaries));
 }
 
 fb::game::items::~items()
@@ -1494,51 +1494,51 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
     {
     case fb::game::equipment::slot::WEAPON_SLOT:
         item = this->_weapon;
-        if (this->_weapon != NULL)
-            this->_weapon = NULL;
+        if (this->_weapon != nullptr)
+            this->_weapon = nullptr;
 
         break;
 
     case fb::game::equipment::slot::ARMOR_SLOT:
         item = this->_armor;
-        if (this->_armor != NULL)
-            this->_armor = NULL;
+        if (this->_armor != nullptr)
+            this->_armor = nullptr;
         break;
 
     case fb::game::equipment::slot::SHIELD_SLOT:
         item = this->_shield;
-        if (this->_shield != NULL)
-            this->_shield = NULL;
+        if (this->_shield != nullptr)
+            this->_shield = nullptr;
         break;
 
     case fb::game::equipment::slot::HELMET_SLOT:
         item = this->_helmet;
-        if (this->_helmet != NULL)
-            this->_helmet = NULL;
+        if (this->_helmet != nullptr)
+            this->_helmet = nullptr;
         break;
 
     case fb::game::equipment::slot::LEFT_HAND_SLOT:
         item = this->_rings[0];
-        if (this->_rings[0] != NULL)
-            this->_rings[0] = NULL;
+        if (this->_rings[0] != nullptr)
+            this->_rings[0] = nullptr;
         break;
 
     case fb::game::equipment::slot::RIGHT_HAND_SLOT:
         item = this->_rings[1];
-        if (this->_rings[1] != NULL)
-            this->_rings[1] = NULL;
+        if (this->_rings[1] != nullptr)
+            this->_rings[1] = nullptr;
         break;
 
     case fb::game::equipment::slot::LEFT_AUX_SLOT:
         item = this->_auxiliaries[0];
-        if (this->_auxiliaries[0] != NULL)
-            this->_auxiliaries[0] = NULL;
+        if (this->_auxiliaries[0] != nullptr)
+            this->_auxiliaries[0] = nullptr;
         break;
 
     case fb::game::equipment::slot::RIGHT_AUX_SLOT:
         item = this->_auxiliaries[1];
-        if (this->_auxiliaries[1] != NULL)
-            this->_auxiliaries[1] = NULL;
+        if (this->_auxiliaries[1] != nullptr)
+            this->_auxiliaries[1] = nullptr;
         break;
 
     default:

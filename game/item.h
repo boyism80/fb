@@ -294,7 +294,7 @@ public:
 
 public:
     virtual bool                    handle_acive(session& session) { return false; }
-    virtual item*                   handle_drop(object& owner, uint16_t count = 1);
+    virtual item*                   split(object& owner, uint16_t count = 1);
 
 #pragma endregion
 };
