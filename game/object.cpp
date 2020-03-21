@@ -31,6 +31,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"mkitem",      fb::game::object::builtin_mkitem},
 {"showings",    fb::game::object::builtin_showings},
 {"showns",      fb::game::object::builtin_showns},
+{"front",       fb::game::object::builtin_front},
 END_LUA_EXTENSION
 
 
@@ -891,6 +892,12 @@ int fb::game::object::builtin_position(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
 
+    if(object->is(object::types::SESSION))
+    {
+        auto session = static_cast<fb::game::session*>(object);
+        acceptor->send_stream(*object, session->make_position_stream(), acceptor::scope::SELF);
+    }
+
     return 0;
 }
 
@@ -910,7 +917,7 @@ int fb::game::object::builtin_direction(lua_State* lua)
         object->direction(direction);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-        acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+        acceptor->send_stream(*object, object->make_direction_stream(), acceptor::scope::PIVOT);
         return 0;
     }
 }
@@ -1099,6 +1106,21 @@ int fb::game::object::builtin_showns(lua_State* lua)
         objects[i]->to_lua(lua);
         lua_rawseti(lua, -2, i+1);
     }
+
+    return 1;
+}
+
+int fb::game::object::builtin_front(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto filter = argc < 2 ? object::types::UNKNOWN : object::types(lua_tointeger(lua, 2));
+
+    auto front = object->forward_object(filter);
+    if(front == nullptr)
+        lua_pushnil(lua);
+    else
+        front->to_lua(lua);
 
     return 1;
 }
@@ -1418,10 +1440,8 @@ fb::ostream fb::game::life::make_move_stream(fb::game::direction direction, bool
     return ostream;
 }
 
-fb::ostream fb::game::life::make_action_stream(fb::game::action action, fb::game::duration duration) const
+fb::ostream fb::game::life::make_action_stream(fb::game::action action, fb::game::duration duration, uint8_t sound) const
 {
-    uint8_t sound = 0x00;
-
     fb::ostream             ostream;
     ostream.write_u8(0x1A)
         .write_u32(this->id())
@@ -1559,8 +1579,9 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto life = *(fb::game::life**)lua_touserdata(lua, 1);
     auto action = lua_tointeger(lua, 2);
     auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
+    auto sound = argc < 4 ? 0x00 : lua_tointeger(lua, 4);
 
-    acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration)), acceptor::scope::SELF);
+    acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
     return 0;
 }
 

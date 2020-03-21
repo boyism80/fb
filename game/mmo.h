@@ -186,6 +186,7 @@ namespace sound
 
 enum duration : uint8_t
 {
+    DURATION_FAST           = 0x0F,
     DURATION_EAT            = 0x27,
     DURATION_ATTACK         = 0x14,
     DURATION_PICKUP         = 0x32,

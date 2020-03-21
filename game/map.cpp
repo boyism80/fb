@@ -8,6 +8,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"width",       fb::game::map::builtin_width},
 {"height",      fb::game::map::builtin_height},
 {"area",        fb::game::map::builtin_area},
+{"movable",     fb::game::map::builtin_movable},
 END_LUA_EXTENSION
 
 static const uint16_t crc16tab[256] = 
@@ -482,4 +483,34 @@ int fb::game::map::builtin_area(lua_State* lua)
     lua_pushinteger(lua, map->width());
     lua_pushinteger(lua, map->height());
     return 2;
+}
+
+int fb::game::map::builtin_movable(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto position = point16_t();
+
+    if(lua_istable(lua, 2))
+    {
+        lua_rawgeti(lua, 2, 1);
+        position.x = lua_tointeger(lua, -1);
+        lua_remove(lua, -1);
+
+        lua_rawgeti(lua, 2, 2);
+        position.y = lua_tointeger(lua, -1);
+        lua_remove(lua, -1);
+    }
+    else if(lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
+    {
+        position.x = lua_tointeger(lua, 2);
+        position.y = lua_tointeger(lua, 3);
+    }
+    else
+    {
+        lua_pushboolean(lua, false);
+        return 1;
+    }
+
+    lua_pushboolean(lua, map->movable(position));
+    return 1;
 }

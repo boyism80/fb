@@ -193,6 +193,7 @@ public:
     static int                  builtin_width(lua_State* lua);
     static int                  builtin_height(lua_State* lua);
     static int                  builtin_area(lua_State* lua);
+    static int                  builtin_movable(lua_State* lua);
 #pragma endregion
 };
 

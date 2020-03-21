@@ -235,6 +235,7 @@ public:
     static int                  builtin_mkitem(lua_State* lua);
     static int                  builtin_showings(lua_State* lua);
     static int                  builtin_showns(lua_State* lua);
+    static int                  builtin_front(lua_State* lua);
 #pragma endregion
 };
 
@@ -385,7 +386,7 @@ public:
 public:
     fb::ostream                 make_move_stream(bool from_before = true) const;
     fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
-    fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration) const;
+    fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00) const;
     fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
     fb::ostream                 make_die_stream() const;
 #pragma endregion
