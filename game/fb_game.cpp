@@ -58,6 +58,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 
     this->register_timer(100, &acceptor::handle_mob_action);            // ¸÷ Çàµ¿ Å¸ÀÌ¸Ó
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // ¸÷ ¸®Á¨ Å¸ÀÌ¸Ó
+    this->register_timer(1000, &acceptor::handle_buff_timer);          // ¸÷ ¸®Á¨ Å¸ÀÌ¸Ó
 }
 
 acceptor::~acceptor()
@@ -889,6 +890,9 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
 bool fb::game::acceptor::handle_self_info(fb::game::session& session)
 {
     this->send_stream(session, session.make_internal_info_stream(), scope::SELF);
+    
+    for(auto buff : session.buffs)
+        this->send_stream(session, buff->make_stream(), scope::SELF);
     return true;
 }
 
@@ -1024,31 +1028,24 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
         return true;
     }
 
-    auto                    other = this->session(fd);
-    if(other != nullptr) // character
-    {
-        this->send_stream(session, other->make_external_info_stream(), scope::SELF);
-        return true;
-    }
     auto                    map = session.map();
-    if(map == nullptr)
+    auto                    other = map->objects.at(fd);
+    if(other == nullptr)
         return true;
 
-    auto                    object = map->objects.at(fd);
-    if(object != nullptr) // object
+    switch(other->type())
     {
-        switch(object->type())
-        {
-        case fb::game::object::types::MOB:
-            this->handle_click_mob(session, *static_cast<mob*>(object));
-            break;
+    case fb::game::object::types::SESSION:
+        this->send_stream(session, static_cast<game::session*>(other)->make_external_info_stream(), scope::SELF);
+        break;
 
-        case fb::game::object::types::NPC:
-            this->handle_click_npc(session, *static_cast<npc*>(object));
-            break;
-        }
+    case fb::game::object::types::MOB:
+        this->handle_click_mob(session, *static_cast<mob*>(other));
+        break;
 
-        return true;
+    case fb::game::object::types::NPC:
+        this->handle_click_npc(session, *static_cast<npc*>(other));
+        break;
     }
 
     return true;
@@ -1968,7 +1965,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     std::vector<object*>    spawned_mobs;
     for(auto pair : db::maps())
     {
-        fb::game::map* map = pair.second;
+        auto map = pair.second;
         for(auto object : map->objects)
         {
             if(object->type() != object::types::MOB)
@@ -2003,6 +2000,41 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
         }
 
         this->send_stream(*session, object::make_show_stream(shown_mobs), scope::SELF);
+    }
+}
+
+void fb::game::acceptor::handle_buff_timer(uint64_t now)
+{
+    for(auto pair : db::maps())
+    {
+        auto map = pair.second;
+        if(map->objects.size() == 0)
+            continue;
+
+        for(auto object : map->objects)
+        {
+            if(object->buffs.size() == 0)
+                continue;
+
+            std::vector<buff*> finishes;
+            for(auto buff : object->buffs)
+            {
+                buff->time_dec(1);
+                if(buff->time() <= 0)
+                    finishes.push_back(buff);
+            }
+
+            for(auto finish : finishes)
+            {
+                lua::thread thread;
+                thread.fromfile(finish->spell().uncast(), "handle_finish");
+                thread.pushobject(*object);
+                thread.pushobject(finish->spell());
+                thread.resume(2);
+
+                object->buffs.remove(finish);
+            }
+        }
     }
 }
 
@@ -2157,14 +2189,6 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     {
         auto value = std::stoi(splitted[1]);
         this->send_stream(session, session.make_sound_stream(game::sound::type(value)), scope::SELF);
-        return true;
-    }
-
-    if(splitted[0] == "spelltime")
-    {
-        auto message = splitted[1];
-        auto value = std::stoi(splitted[2]);
-        this->send_stream(session, spell::make_buff_stream(message, value), scope::SELF);
         return true;
     }
 

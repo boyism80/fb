@@ -5,6 +5,7 @@
 #include "stream.h"
 #include "container.h"
 #include "lua.h"
+#include <vector>
 
 namespace fb { namespace game {
 
@@ -62,7 +63,6 @@ public:
 
 #pragma region make stream method
 public:
-    static fb::ostream          make_buff_stream(const std::string& message, uint32_t time);
 #pragma endregion
 
 #pragma region built-in method
@@ -83,6 +83,66 @@ public:
     fb::ostream                 make_update_stream(uint8_t index) const;
     fb::ostream                 make_delete_stream(uint8_t index) const;
 };
+
+
+class buff
+{
+private:
+    const spell*                _spell;
+    uint32_t                    _time;
+
+public:
+    buff(const spell* spell, uint32_t time);
+    ~buff();
+
+public:
+    const game::spell&          spell() const;
+    uint32_t                    time() const;
+    void                        time(uint32_t value);
+    void                        time_inc(uint32_t inc);
+    void                        time_dec(uint32_t dec);
+
+public:
+    fb::ostream                 make_stream() const;
+
+public:
+    operator                    const game::spell& () const;
+    operator                    const game::spell* () const;
+};
+
+
+class buffs : private std::vector<buff*>
+{
+public:
+    using std::vector<buff*>::size;
+    using std::vector<buff*>::begin;
+    using std::vector<buff*>::end;
+    using std::vector<buff*>::rbegin;
+    using std::vector<buff*>::rend;
+    using std::vector<buff*>::cbegin;
+    using std::vector<buff*>::cend;
+    using std::vector<buff*>::crbegin;
+    using std::vector<buff*>::crend;
+    using std::vector<buff*>::operator[];
+
+public:
+    buffs();
+    ~buffs();
+
+public:
+    bool                        contains(const buff* buff) const;
+    bool                        contains(const spell* spell) const;
+    bool                        contains(const std::string& name) const;
+    bool                        push_back(buff* buff);
+    buff*                       push_back(const game::spell* spell, uint32_t time);
+    void                        remove(const std::string& name);
+    void                        remove(const game::spell* spell);
+    void                        remove(buff* buff);
+
+public:
+    buff*                       operator [] (const std::string& name) const;
+};
+
 
 } }
 

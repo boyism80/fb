@@ -10,6 +10,7 @@ namespace fb { namespace game {
 
 class map;
 class session;
+class buffs;
 
 class object : public lua::luable
 {
@@ -108,7 +109,6 @@ public:
 };
 #pragma endregion
 
-
 #pragma region protected field
 protected:
     const core*                 _core;
@@ -117,6 +117,11 @@ protected:
     point16_t                   _position;
     fb::game::direction         _direction;
     fb::game::map*              _map;
+#pragma endregion
+
+#pragma region public field
+public:
+    buffs                       buffs;
 #pragma endregion
 
 

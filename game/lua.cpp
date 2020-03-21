@@ -37,12 +37,12 @@ state::~state()
 {
 }
 
-void fb::game::lua::state::pushobject(fb::game::lua::luable* object)
+void fb::game::lua::state::pushobject(const fb::game::lua::luable* object)
 {
     object->to_lua(*this);
 }
 
-void fb::game::lua::state::pushobject(fb::game::lua::luable& object)
+void fb::game::lua::state::pushobject(const fb::game::lua::luable& object)
 {
     object.to_lua(*this);
 }

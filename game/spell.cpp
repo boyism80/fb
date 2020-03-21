@@ -51,17 +51,6 @@ const std::string& fb::game::spell::message() const
     return this->_message;
 }
 
-fb::ostream fb::game::spell::make_buff_stream(const std::string& message, uint32_t time)
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x3A)
-        .write(message)
-        .write_u32(time);
-
-    return ostream;
-}
-
 int fb::game::spell::builtin_type(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
@@ -128,4 +117,132 @@ fb::ostream fb::game::spells::make_delete_stream(uint8_t index) const
         .write_u8(0x00);
 
     return ostream;
+}
+
+fb::game::buff::buff(const game::spell* spell, uint32_t time) : 
+    _spell(spell),
+    _time(time)
+{
+}
+
+fb::game::buff::~buff()
+{
+}
+
+const fb::game::spell& fb::game::buff::spell() const
+{
+    return *this->_spell;
+}
+
+uint32_t fb::game::buff::time() const
+{
+    return this->_time;
+}
+
+void fb::game::buff::time(uint32_t value)
+{
+    this->_time = value;
+}
+
+void fb::game::buff::time_inc(uint32_t inc)
+{
+    this->_time++;
+}
+
+void fb::game::buff::time_dec(uint32_t dec)
+{
+    this->_time--;
+}
+
+fb::ostream fb::game::buff::make_stream() const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x3A)
+        .write(this->_spell->name())
+        .write_u32(this->_time);
+
+    return ostream;
+}
+
+fb::game::buff::operator const fb::game::spell& () const
+{
+    return *this->_spell;
+}
+
+fb::game::buff::operator const fb::game::spell* () const
+{
+    return this->_spell;
+}
+
+fb::game::buffs::buffs()
+{
+}
+
+fb::game::buffs::~buffs()
+{
+    for(auto buff : *this)
+        delete buff;
+}
+
+bool fb::game::buffs::contains(const buff* buff) const
+{
+    return this->contains(buff->spell().name());
+}
+
+bool fb::game::buffs::contains(const spell* spell) const
+{
+    return this->contains(spell->name());
+}
+
+bool fb::game::buffs::contains(const std::string& name) const
+{
+    return this->operator[](name) != nullptr;
+}
+
+bool fb::game::buffs::push_back(buff* buff)
+{
+    if(this->contains(buff))
+        return false;
+
+    std::vector<game::buff*>::push_back(buff);
+    return true;
+}
+
+fb::game::buff* fb::game::buffs::push_back(const game::spell* spell, uint32_t time)
+{
+    if(this->contains(spell))
+        return nullptr;
+
+    auto created = new buff(spell, time);
+    this->push_back(created);
+    return created;
+}
+
+void fb::game::buffs::remove(const std::string& name)
+{
+    auto buff = this->operator[](name);
+    auto found = std::find(this->begin(), this->end(), buff);
+    this->erase(found);
+}
+
+void fb::game::buffs::remove(const game::spell* spell)
+{
+    this->remove(spell->name());
+}
+
+void fb::game::buffs::remove(buff* buff)
+{
+    this->remove(buff->spell().name());
+}
+
+fb::game::buff* fb::game::buffs::operator[](const std::string& name) const
+{
+    for(auto buff : *this)
+    {
+        if(buff->spell().name() == name)
+            return buff;
+    }
+
+    return nullptr;
 }

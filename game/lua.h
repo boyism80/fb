@@ -55,8 +55,8 @@ public:
 	void					    pushinteger(int value) { lua_pushinteger(*this, value); }
 	void					    pushnil() { lua_pushnil(*this); }
 	void					    pushboolean(bool value) { lua_pushboolean(*this, value); }
-    void                        pushobject(luable* object);
-    void                        pushobject(luable& object);
+    void                        pushobject(const luable* object);
+    void                        pushobject(const luable& object);
 
 	const std::string		    tostring(int offset) { return lua_tostring(*this, offset); }
 	const std::string		    arg_string(int offset) { return tostring(offset); }

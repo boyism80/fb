@@ -966,13 +966,16 @@ int fb::game::object::builtin_buff(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto message = lua_tostring(lua, 2);
+    auto spell = *(fb::game::spell**)lua_touserdata(lua, 2);
     auto time = lua_tointeger(lua, 3);
 
-    if(object->type() == object::types::SESSION)
-        acceptor->send_stream(*object, spell::make_buff_stream(message, time), acceptor::scope::SELF);
+    auto buff = object->buffs.push_back(spell, time);
+    if(buff == nullptr)
+        lua_pushnil(lua);
+    else
+        acceptor->send_stream(*object, buff->make_stream(), acceptor::scope::SELF);
 
-    return 0;
+    return 1;
 }
 
 int fb::game::object::builtin_effect(lua_State* lua)

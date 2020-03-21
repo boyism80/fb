@@ -99,6 +99,7 @@ private:
 public:
     void                    handle_mob_action(uint64_t now);
     void                    handle_mob_respawn(uint64_t now);
+    void                    handle_buff_timer(uint64_t now);
     void                    handle_session_warp(fb::game::session& session, const map::warp* warp);
 
 #if defined DEBUG | defined _DEBUG

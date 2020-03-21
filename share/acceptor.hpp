@@ -207,13 +207,13 @@ inline fb::fb_timer<fn>::~fb_timer()
 template<typename fn>
 inline void fb::fb_timer<fn>::reset(uint64_t now)
 {
-    this->_begin = now + this->_interval;
+    this->_begin = now;
 }
 
 template<typename fn>
 inline bool fb::fb_timer<fn>::callable(uint64_t now) const
 {
-    return this->_begin + this->_interval < now;
+    return this->_begin + this->_interval <= now;
 }
 
 template<typename fn>
