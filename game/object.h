@@ -235,6 +235,7 @@ public:
     static int                  builtin_chat(lua_State* lua);
     static int                  builtin_message(lua_State* lua);
     static int                  builtin_buff(lua_State* lua);
+    static int                  builtin_unbuff(lua_State* lua);
     static int                  builtin_effect(lua_State* lua);
     static int                  builtin_map(lua_State* lua);
     static int                  builtin_mkitem(lua_State* lua);

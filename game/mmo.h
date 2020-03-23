@@ -152,8 +152,14 @@ namespace message
         static const std::string NOT_AUTH = "권한이 없습니다.";
     }
 
+    namespace door
+    {
+        static const std::string OPEN = "문을 열었습니다.";
+        static const std::string CLOSE = "문을 닫았습니다.";
+    }
 
-    fb::ostream             make_stream(const std::string& message, message::type types);
+
+    fb::ostream             make_stream(const std::string& message, message::type types = message::type::STATE);
 }
 
 enum options : uint8_t

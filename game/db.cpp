@@ -35,6 +35,10 @@ fb::game::db::~db()
 		delete itemmix;
 	this->_itemmixes.clear();
 
+    for(auto door : this->_doors)
+        delete door;
+    this->_doors.clear();
+
 	this->_board.clear();
 }
 
@@ -84,7 +88,7 @@ bool fb::game::db::load_map_data(uint16_t id, std::vector<char>& buffer)
     sprintf(fname, "map/%06d.map", id);
 
 
-    std::ifstream       map_file(fname, std::ios::binary);
+    std::ifstream           map_file(fname, std::ios::binary);
     if(map_file.is_open() == false)
         return false;
 
@@ -253,6 +257,9 @@ bool fb::game::db::loads()
 
 	if(this->load_spell("db/spell.json") == false)
 		return false;
+
+    if(this->load_door("db/door.json") == false)
+        return false;
 
 	if(this->load_maps("db/map.json") == false)
 		return false;
@@ -852,6 +859,34 @@ bool fb::game::db::load_board(const std::string& db_fname)
     return true;
 }
 
+bool fb::game::db::load_door(const std::string& db_fname)
+{
+    std::ifstream           db_door(db_fname);
+    if(db_door.is_open() == false)
+        return false;
+
+    Json::Value             doors;
+    Json::Reader            reader;
+    if(reader.parse(db_door, doors) == false)
+        return false;
+
+    for(auto& door : doors)
+    {
+        auto                created = new fb::game::door();
+        for(auto& e : door)
+        {
+            auto            open  = e["open"].asInt();
+            auto            close = e["close"].asInt();
+            created->push_back(door_element(open, close));
+        }
+
+        db::_doors.push_back(created);
+    }
+
+    db_door.close();
+    return true;
+}
+
 fb::game::db* fb::game::db::get()
 {
 	if(db::_instance == nullptr)
@@ -912,6 +947,11 @@ std::vector<fb::game::itemmix*>& fb::game::db::itemmixes()
 fb::game::board& fb::game::db::board()
 {
     return db::get()->_board;
+}
+
+std::vector<fb::game::door*>& fb::game::db::doors()
+{
+    return db::get()->_doors;
 }
 
 fb::game::map* fb::game::db::name2map(const std::string& name)

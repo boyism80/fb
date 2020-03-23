@@ -13,6 +13,31 @@ namespace fb { namespace game {
 
 class session;
 
+typedef struct _door_element
+{
+    uint16_t                    open;
+    uint16_t                    close;
+
+    _door_element(uint16_t open, uint16_t close) : open(open), close(close) {}
+    ~_door_element() {}
+} door_element;
+
+class door : private std::vector<door_element>
+{
+public:
+    using std::vector<door_element>::begin;
+    using std::vector<door_element>::end;
+    using std::vector<door_element>::cbegin;
+    using std::vector<door_element>::cend;
+    using std::vector<door_element>::rbegin;
+    using std::vector<door_element>::rend;
+    using std::vector<door_element>::crbegin;
+    using std::vector<door_element>::crend;
+    using std::vector<door_element>::size;
+    using std::vector<door_element>::push_back;
+    using std::vector<door_element>::operator[];
+};
+
 class objects : private std::vector<fb::game::object*>
 {
 private:
@@ -116,6 +141,29 @@ public:
 #pragma endregion
 
 
+#pragma region class
+class door
+{
+private:
+    game::map*                  _owner;
+    game::door&                 _core;
+    bool                        _opened;
+
+public:
+    const point16_t             position;
+
+public:
+    door(fb::game::map* owner, fb::game::door& core, const point16_t position, bool opened);
+    ~door();
+
+public:
+    const fb::game::door&       core() const;
+    bool                        toggle();
+    bool                        opened() const;
+};
+#pragma endregion
+
+
 #pragma region private field
 private:
     uint16_t                    _id;
@@ -127,7 +175,9 @@ private:
     effects                     _effect;
     uint8_t                     _bgm;
     std::vector<warp*>          _warps;
+    std::vector<door*>          _doors;
 #pragma endregion
+
 
 #pragma region public field
 public:
@@ -139,6 +189,12 @@ public:
 public:
     map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, uint32_t size);
     ~map();
+#pragma endregion
+
+
+#pragma region private method
+    bool                        matched_door(const fb::game::door& door, const point16_t& position, bool open) const;
+    bool                        find_door(const fb::game::door& door, point16_t& position, bool open) const;
 #pragma endregion
 
 
@@ -155,6 +211,7 @@ public:
     uint16_t                    height() const;
     size16_t                    size() const;
     uint8_t                     bgm() const;
+    fb::game::map::door*        find_door(const point16_t& position);
 
     bool                        existable(const point16_t position) const;
     bool                        movable(const point16_t position) const;
@@ -182,7 +239,7 @@ public:
 public:
     fb::ostream                 make_config_stream() const;
     fb::ostream                 make_bgm_stream() const;
-    fb::ostream                 make_update_stream(uint16_t begin_x, uint16_t begin_y, uint8_t width, uint8_t height, uint16_t crc) const;
+    fb::ostream                 make_update_stream(uint16_t begin_x, uint16_t begin_y, uint8_t width, uint8_t height, uint16_t crc = 0xFFFF) const;
 #pragma endregion
 
 

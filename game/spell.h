@@ -104,6 +104,7 @@ public:
 
 public:
     fb::ostream                 make_stream() const;
+    fb::ostream                 make_clear_stream() const;
 
 public:
     operator                    const game::spell& () const;

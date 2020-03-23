@@ -91,6 +91,7 @@ public:
 	bool                    handle_dialog(fb::game::session& session);
     bool                    handle_throw_item(fb::game::session& session);
     bool                    handle_spell(fb::game::session& session);
+    bool                    handle_door(fb::game::session& session);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
@@ -112,6 +113,7 @@ public:
     item*                   macro_drop_item(fb::game::session& session, uint8_t index, bool drop_all = false);
     void                    macro_visible_update(fb::game::object& object, std::vector<fb::game::object*>* shows = nullptr, std::vector<fb::game::object*>* hides = nullptr, std::vector<fb::game::object*>* showns = nullptr, std::vector<fb::game::object*>* hiddens = nullptr);
     void                    macro_object_map(fb::game::object& object, fb::game::map& map, const point16_t& position);
+    void                    macro_object_unbuff(fb::game::object& object, const std::string& bufname);
 
     // built-in method
 public:

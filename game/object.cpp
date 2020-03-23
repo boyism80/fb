@@ -26,6 +26,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"chat",        fb::game::object::builtin_chat},
 {"message",     fb::game::object::builtin_message},
 {"buff",        fb::game::object::builtin_buff},
+{"unbuff",      fb::game::object::builtin_unbuff},
 {"effect",      fb::game::object::builtin_effect},
 {"map",         fb::game::object::builtin_map},
 {"mkitem",      fb::game::object::builtin_mkitem},
@@ -873,24 +874,30 @@ int fb::game::object::builtin_position(lua_State* lua)
         return 2;
     }
     
+
+    uint16_t x, y;
     if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
-        object->_position.x = lua_tointeger(lua, -1);
+        x = lua_tointeger(lua, -1);
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 2, 2);
-        object->_position.y = lua_tointeger(lua, -1);
+        y = lua_tointeger(lua, -1);
         lua_remove(lua, -1);
     }
     else
     {
-        object->_position.x = lua_tointeger(lua, 2);
-        object->_position.y = lua_tointeger(lua, 3);
+        x = lua_tointeger(lua, 2);
+        y = lua_tointeger(lua, 3);
     }
+
+    std::vector<game::object*> shows, hides, showns, hiddens;
+    object->position(x, y, &shows, &hides, &showns, &hiddens);
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+    acceptor->macro_visible_update(*object, &shows, &hides, &showns, &hiddens);
 
     if(object->is(object::types::SESSION))
     {
@@ -975,6 +982,26 @@ int fb::game::object::builtin_buff(lua_State* lua)
     else
         acceptor->send_stream(*object, buff->make_stream(), acceptor::scope::SELF);
 
+    return 1;
+}
+
+int fb::game::object::builtin_unbuff(lua_State* lua)
+{
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto buff_name = lua_tostring(lua, 2);
+
+    auto buff = object->buffs[buff_name];
+    if(buff == nullptr)
+    {
+        lua_pushboolean(lua, false);
+        return 1;
+    }
+
+    acceptor->send_stream(*object, buff->make_clear_stream(), acceptor::scope::SELF);
+    object->buffs.remove(buff);
+
+    lua_pushboolean(lua, true);
     return 1;
 }
 

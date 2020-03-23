@@ -55,6 +55,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
     this->register_handle(0x0F, &acceptor::handle_spell);               // 스펠 핸들러
+    this->register_handle(0x20, &acceptor::handle_door);               // 스펠 핸들러
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -1842,6 +1843,34 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     return true;
 }
 
+bool fb::game::acceptor::handle_door(fb::game::session& session)
+{
+    auto direction = session.direction();
+    if(direction == fb::game::direction::LEFT || direction == fb::game::direction::RIGHT)
+        return true;
+
+    auto map = session.map();
+    if(map == nullptr)
+        return false;
+
+    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::direction::TOP ? -1 : 1));
+    auto door = map->find_door(forward);
+    if(door == nullptr)
+        return true;
+
+    door->toggle();
+
+    auto door_core = door->core();
+    this->send_stream(session, map->make_update_stream(door->position.x, door->position.y, door_core.size(), 1), scope::MAP);
+
+    if(door->opened())
+        this->send_stream(session, message::make_stream(message::door::OPEN, message::type::STATE), scope::SELF);
+    else
+        this->send_stream(session, message::make_stream(message::door::CLOSE, message::type::STATE), scope::SELF);
+
+    return true;
+}
+
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 {
     auto                    target = mob->target();
@@ -2026,12 +2055,7 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
 
             for(auto finish : finishes)
             {
-                lua::thread thread;
-                thread.fromfile(finish->spell().uncast(), "handle_finish");
-                thread.pushobject(*object);
-                thread.pushobject(finish->spell());
-                thread.resume(2);
-
+                this->macro_object_unbuff(*object, finish->spell().name());
                 object->buffs.remove(finish);
             }
         }
@@ -2192,6 +2216,26 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+    if(splitted[0] == "map")
+    {
+        auto name = splitted[1];
+        auto x = 0;
+        auto y = 0;
+
+        if(splitted.size() > 2)
+            x = std::stoi(splitted[2]);
+
+        if(splitted.size() > 3)
+            y = std::stoi(splitted[3]);
+
+        auto map = db::name2map(name);
+        if(map == nullptr)
+            return true;
+
+        this->macro_object_map(session, *map, point16_t(x, y));
+        return true;
+    }
+
     return false;
 }
 
@@ -2306,6 +2350,22 @@ void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::ma
     // 지금 나를 볼 수 있는 오브젝트들에게 나를 표시
     for(auto i : object.showns())
         this->send_stream(*i, object.make_show_stream(), scope::SELF);
+}
+
+void fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std::string& bufname)
+{
+    auto buff = object.buffs[bufname];
+    if(buff == nullptr)
+        return;
+
+    lua::thread thread;
+    thread.fromfile(buff->spell().uncast(), "handle_uncast");
+    thread.pushobject(object);
+    thread.pushobject(buff->spell());
+    thread.resume(2);
+
+    object.buffs.remove(buff);
+    this->send_stream(object, buff->make_clear_stream(), scope::SELF);
 }
 
 #endif

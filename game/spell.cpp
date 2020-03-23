@@ -165,6 +165,17 @@ fb::ostream fb::game::buff::make_stream() const
     return ostream;
 }
 
+fb::ostream fb::game::buff::make_clear_stream() const
+{
+    fb::ostream             ostream;
+
+    ostream.write_u8(0x3A)
+        .write(this->_spell->name())
+        .write_u32(0x00);
+
+    return ostream;
+}
+
 fb::game::buff::operator const fb::game::spell& () const
 {
     return *this->_spell;

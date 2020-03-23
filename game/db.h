@@ -29,6 +29,7 @@ private:
     std::map<uint16_t, spell*>              _spells;
     std::vector<class_data*>                _classes;
     std::vector<itemmix*>                   _itemmixes;
+    std::vector<door*>                      _doors;
     fb::game::board                         _board;
 
 private:
@@ -67,6 +68,7 @@ private:
     bool                                    load_itemmix(const std::string& db_fname = "db/itemmix.json");
     bool                                    load_spell(const std::string& db_fname = "db/spell.json");
     bool                                    load_board(const std::string& db_fname = "db/board.json");
+    bool                                    load_door(const std::string& db_fname = "db/door.json");
 
 public:
     static std::map<uint16_t, map*>&        maps();
@@ -77,6 +79,7 @@ public:
     static std::vector<class_data*>&        classes();
     static std::vector<itemmix*>&           itemmixes();
     static fb::game::board&                 board();
+    static std::vector<door*>&              doors();
 
     static fb::game::map*                   name2map(const std::string& name);
     static fb::game::npc::core*             name2npc(const std::string& name);
