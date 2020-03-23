@@ -26,6 +26,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"chat",        fb::game::object::builtin_chat},
 {"message",     fb::game::object::builtin_message},
 {"buff",        fb::game::object::builtin_buff},
+{"isbuff",      fb::game::object::builtin_isbuff},
 {"unbuff",      fb::game::object::builtin_unbuff},
 {"effect",      fb::game::object::builtin_effect},
 {"map",         fb::game::object::builtin_map},
@@ -1002,6 +1003,15 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
     object->buffs.remove(buff);
 
     lua_pushboolean(lua, true);
+    return 1;
+}
+
+int fb::game::object::builtin_isbuff(lua_State* lua)
+{
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto buff_name = lua_tostring(lua, 2);
+
+    lua_pushboolean(lua, object->buffs.contains(buff_name));
     return 1;
 }
 

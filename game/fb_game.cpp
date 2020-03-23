@@ -2054,10 +2054,7 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
             }
 
             for(auto finish : finishes)
-            {
                 this->macro_object_unbuff(*object, finish->spell().name());
-                object->buffs.remove(finish);
-            }
         }
     }
 }
