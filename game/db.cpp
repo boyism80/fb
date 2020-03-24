@@ -853,7 +853,7 @@ bool fb::game::db::load_board(const std::string& db_fname)
         std::stringstream sstream;
         sstream << "°«½ÂÇö ¿¬´ë±â - " << std::to_string(i);
 
-        section->add(i+1, sstream.str(), sstream.str(), "°«½ÂÇö");
+        section->add(sstream.str(), sstream.str(), "°«½ÂÇö");
     }
 
     return true;

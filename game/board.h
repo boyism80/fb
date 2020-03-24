@@ -58,6 +58,8 @@ public:
         using std::vector<article*>::operator[];
         using std::vector<article*>::begin;
         using std::vector<article*>::end;
+        using std::vector<article*>::cbegin;
+        using std::vector<article*>::cend;
         using std::vector<article*>::rbegin;
         using std::vector<article*>::rend;
         using std::vector<article*>::size;
@@ -69,11 +71,17 @@ public:
         section(const std::string& title);
         ~section();
 
+    private:
+        iterator                        it(uint16_t id);
+        const_iterator                  const_it(uint16_t id) const;
+
     public:
         const std::string&              title() const;
-        article*                        add(uint16_t id, const std::string& title, const std::string& content, const session& session, uint8_t color = 0x00);
-        article*                        add(uint16_t id, const std::string& title, const std::string& content, const std::string& writer, uint8_t color = 0x00);
+        article*                        add(const std::string& title, const std::string& content, const session& session, uint8_t color = 0x00);
+        article*                        add(const std::string& title, const std::string& content, const std::string& writer, uint8_t color = 0x00);
+        bool                            remove(uint16_t id);
         const article*                  at(uint32_t index) const;
+        const article*                  find(uint16_t id) const;
     };
 #pragma endregion
 
@@ -103,7 +111,7 @@ public:
     ostream                             make_articles_stream(uint16_t section_id, uint16_t offset) const;
     ostream                             make_article_stream(uint16_t section_id, uint16_t article_id, const session& session) const;
     ostream                             make_delete_stream(uint16_t section_id, uint16_t article_id, const session& session) const;
-    ostream                             make_message_stream(const std::string& message, bool success) const;
+    ostream                             make_message_stream(const std::string& message, bool success, bool refresh = false) const;
 };
 
 } }

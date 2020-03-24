@@ -150,6 +150,7 @@ namespace message
         static const std::string ARTICLE_NOT_EXIST = "게시글이 존재하지 않습니다.";
         static const std::string SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
         static const std::string NOT_AUTH = "권한이 없습니다.";
+        static const std::string SUCCESS_DELETE = "글이 삭제되었습니다.";
     }
 
     namespace door

@@ -1538,6 +1538,18 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
         break;
     }
 
+    case 0x04:
+    {
+        auto                    section_id = istream.read_u16();
+        auto                    subject = istream.readstr_u8();
+        auto                    content = istream.readstr_u16();
+
+        auto                    section = board.sections().at(section_id);
+        if(section->add(subject, content, session.name()) != nullptr)
+            this->send_stream(session, board.make_message_stream("글을 작성하였습니다.", true, true), scope::SELF);
+        break;
+    }
+
     case 0x05: // delete
     {
         auto                    section_id = istream.read_u16();
