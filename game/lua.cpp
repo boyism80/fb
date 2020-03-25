@@ -55,47 +55,47 @@ void fb::game::lua::state::fromfile(const std::string& file, const std::string& 
 
 state::operator lua_State* () const
 {
-	return this->_lua;
+    return this->_lua;
 }
 
 thread::thread() : 
-	state(lua_newthread(main::get())),
-	_ref(luaL_ref(main::get(), LUA_REGISTRYINDEX))
+    state(lua_newthread(main::get())),
+    _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX))
 { }
 
 thread::~thread()
 {
-	luaL_unref(main::get(), LUA_REGISTRYINDEX, this->_ref);
+    luaL_unref(main::get(), LUA_REGISTRYINDEX, this->_ref);
 }
 
 main::main() : state(lua_open())
 {
-	luaL_openlibs(*this);
+    luaL_openlibs(*this);
 }
 
 main::~main()
 {
-	lua_close(*this);
+    lua_close(*this);
 }
 
 main& main::get()
 {
-	if(main::_instance == nullptr)
-		main::_instance = new main();
+    if(main::_instance == nullptr)
+        main::_instance = new main();
 
-	return *_instance;
+    return *_instance;
 }
 
 void main::release()
 {
-	if(main::_instance == nullptr)
-		return;
-	
-	delete main::_instance;
-	main::_instance = nullptr;
+    if(main::_instance == nullptr)
+        return;
+    
+    delete main::_instance;
+    main::_instance = nullptr;
 }
 
 void fb::game::lua::release()
 {
-	main::release();
+    main::release();
 }

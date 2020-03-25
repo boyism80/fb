@@ -44,64 +44,64 @@ public:
 class state
 {
 private:
-	lua_State*				    _lua;
+    lua_State*                  _lua;
 
 protected:
-	state(lua_State* lua);
-	virtual ~state();
+    state(lua_State* lua);
+    virtual ~state();
 
 public:
-	void					    pushstring(const std::string& value) { lua_pushstring(*this, value.c_str()); }
-	void					    pushinteger(int value) { lua_pushinteger(*this, value); }
-	void					    pushnil() { lua_pushnil(*this); }
-	void					    pushboolean(bool value) { lua_pushboolean(*this, value); }
+    void                        pushstring(const std::string& value) { lua_pushstring(*this, value.c_str()); }
+    void                        pushinteger(int value) { lua_pushinteger(*this, value); }
+    void                        pushnil() { lua_pushnil(*this); }
+    void                        pushboolean(bool value) { lua_pushboolean(*this, value); }
     void                        pushobject(const luable* object);
     void                        pushobject(const luable& object);
 
-	const std::string		    tostring(int offset) { return lua_tostring(*this, offset); }
-	const std::string		    arg_string(int offset) { return tostring(offset); }
-	const std::string		    ret_string(int offset) { return tostring(-offset); }
-	
-	int						    tointeger(int offset) { return lua_tointeger(*this, offset); }
-	int						    arg_integer(int offset) { return tointeger(offset); }
-	int						    ret_integer(int offset) { return tointeger(-offset); }
-	
-	bool					    toboolean(int offset) { return lua_toboolean(*this, offset); }
-	bool					    arg_boolean(int offset) { return toboolean(offset); }
-	bool					    ret_boolean(int offset) { return toboolean(-offset); }
+    const std::string           tostring(int offset) { return lua_tostring(*this, offset); }
+    const std::string           arg_string(int offset) { return tostring(offset); }
+    const std::string           ret_string(int offset) { return tostring(-offset); }
+    
+    int                         tointeger(int offset) { return lua_tointeger(*this, offset); }
+    int                         arg_integer(int offset) { return tointeger(offset); }
+    int                         ret_integer(int offset) { return tointeger(-offset); }
+    
+    bool                        toboolean(int offset) { return lua_toboolean(*this, offset); }
+    bool                        arg_boolean(int offset) { return toboolean(offset); }
+    bool                        ret_boolean(int offset) { return toboolean(-offset); }
 
     void                        fromfile(const std::string& file, const std::string& name);
 
 public:
-	operator				    lua_State* () const;
+    operator                    lua_State* () const;
 };
 
 class main : public state
 {
 private:
-	static main* _instance;
+    static main* _instance;
 
 public:
-	main();
-	~main();
+    main();
+    ~main();
 
 public:
-	static main&			    get();
-	static void				    release();
+    static main&                get();
+    static void                 release();
 };
 
 class thread : public state
 {
 private:
-	int						    _ref;
+    int                         _ref;
 
 public:
-	thread();
-	~thread();
+    thread();
+    ~thread();
 
 public:
-	bool					    resume(int num_args) { return lua_resume(*this, num_args) == 0; } // 종료되면 true, 아니면 false
-	int						    yield(int num_rets) { return lua_yield(*this, num_rets); }
+    bool                        resume(int num_args) { return lua_resume(*this, num_args) == 0; } // 종료되면 true, 아니면 false
+    int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
 };
 
 void release();
@@ -136,21 +136,21 @@ void bind_class()
 template <typename T>
 void env(const char* key, T* data)
 {
-	lua_pushstring(main::get(), key);
-	lua_pushlightuserdata(main::get(), data);
-	lua_settable(main::get(), LUA_REGISTRYINDEX);
+    lua_pushstring(main::get(), key);
+    lua_pushlightuserdata(main::get(), data);
+    lua_settable(main::get(), LUA_REGISTRYINDEX);
 }
 
 template <typename T>
 T* env(const char* key)
 {
-	lua_pushstring(main::get(), key);
-	lua_gettable(main::get(), LUA_REGISTRYINDEX);
+    lua_pushstring(main::get(), key);
+    lua_gettable(main::get(), LUA_REGISTRYINDEX);
 
     auto ret = static_cast<T*>(lua_touserdata(main::get(), -1));
     lua_remove(main::get(), -1);
 
-	return ret;
+    return ret;
 }
 
 
