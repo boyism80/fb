@@ -140,29 +140,29 @@ fb::ostream fb::game::npc::core::make_input_dialog_stream(const std::string& mes
 
 fb::ostream fb::game::npc::core::make_input_dialog_stream(const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::map* map, dialog::interaction interaction) const
 {
-	fb::ostream             ostream;
+    fb::ostream             ostream;
 
-	ostream.write_u8(0x30)
-		.write_u8(0x04)
-		.write_u8(interaction)
-		.write_u32(map ? map->id() : 0x01)
-		.write_u8(this->dialog_look_type())
-		.write_u8(0x01)
-		.write_u16(this->look())
-		.write_u8(this->color())
-		.write_u8(this->dialog_look_type())
-		.write_u16(this->look())
-		.write_u8(this->color())
-		.write_u32(0x00000001)
-		.write_u8(prev)
-		.write_u8(0x00)
-		.write(message, true)
-		.write(top, false)
-		.write_u8(maxlen)
-		.write(bottom, false)
-		.write_u8(0x00);
+    ostream.write_u8(0x30)
+        .write_u8(0x04)
+        .write_u8(interaction)
+        .write_u32(map ? map->id() : 0x01)
+        .write_u8(this->dialog_look_type())
+        .write_u8(0x01)
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u8(this->dialog_look_type())
+        .write_u16(this->look())
+        .write_u8(this->color())
+        .write_u32(0x00000001)
+        .write_u8(prev)
+        .write_u8(0x00)
+        .write(message, true)
+        .write(top, false)
+        .write_u8(maxlen)
+        .write(bottom, false)
+        .write_u8(0x00);
 
-	return ostream;
+    return ostream;
 }
 
 int fb::game::npc::core::builtin_input_dialog(lua_State* lua)
@@ -234,7 +234,7 @@ fb::ostream fb::game::npc::make_input_dialog_stream(const std::string& message, 
 
 fb::ostream fb::game::npc::make_input_dialog_stream(const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev) const
 {
-	return this->based<npc::core>()->make_input_dialog_stream(message, top, bottom, maxlen, prev, this->_map);
+    return this->based<npc::core>()->make_input_dialog_stream(message, top, bottom, maxlen, prev, this->_map);
 }
 
 int fb::game::npc::builtin_input_dialog(lua_State* lua)

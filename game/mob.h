@@ -57,7 +57,7 @@ class core : public fb::game::life::core
 {
 public:
 #pragma region lua
-	LUA_PROTOTYPE
+    LUA_PROTOTYPE
 #pragma endregion
 
 
@@ -121,7 +121,7 @@ public:
 
 #pragma region built-in method
 public:
-	static int				    builtin_speed(lua_State* lua);
+    static int                  builtin_speed(lua_State* lua);
 #pragma endregion
 };
 #pragma endregion

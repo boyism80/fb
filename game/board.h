@@ -13,7 +13,7 @@ namespace fb { namespace game {
 class board
 {
 public:
-	enum button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
+    enum button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
 
 public:
 #pragma region item class
@@ -101,7 +101,7 @@ public:
 
     section*                            add(const std::string& name);
     void                                remove(uint32_t index);
-	void								clear();
+    void                                clear();
 
 public:
     section*                            operator [] (uint32_t index);

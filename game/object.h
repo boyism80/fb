@@ -69,7 +69,7 @@ public:
 #pragma region protected method
 protected:
     uint8_t                     dialog_look_type() const;
-	//virtual void			    handle_lua_field(lua_State* lua) const;
+    //virtual void              handle_lua_field(lua_State* lua) const;
 #pragma endregion
 
 
@@ -89,7 +89,7 @@ public:
     virtual object*             make() const = 0;
     template <typename T>
     T*                          make() const { return static_cast<T*>(this->make()); }
-	//void					    make_lua_table(lua_State* lua) const;
+    //void                      make_lua_table(lua_State* lua) const;
 #pragma endregion
         
 
@@ -101,10 +101,10 @@ public:
 
 #pragma region build-in method
 public:
-	static int				    builtin_name(lua_State* lua);
-	static int				    builtin_look(lua_State* lua);
-	static int				    builtin_color(lua_State* lua);
-	static int				    builtin_dialog(lua_State* lua);
+    static int                  builtin_name(lua_State* lua);
+    static int                  builtin_look(lua_State* lua);
+    static int                  builtin_color(lua_State* lua);
+    static int                  builtin_dialog(lua_State* lua);
 #pragma endregion
 };
 #pragma endregion
@@ -112,7 +112,7 @@ public:
 #pragma region protected field
 protected:
     const core*                 _core;
-	point16_t                   _before;
+    point16_t                   _before;
 
     point16_t                   _position;
     fb::game::direction         _direction;
@@ -136,7 +136,7 @@ public:
 
 #pragma region private method
 private:
-	static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
+    static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
 
@@ -224,13 +224,13 @@ public:
 #pragma region build-in method
 public:
     static int                  builtin_core(lua_State* lua);
-    static int					builtin_id(lua_State* lua);
+    static int                  builtin_id(lua_State* lua);
     static int                  builtin_eq(lua_State* lua);
     static int                  builtin_tostring(lua_State* lua);
-    static int					builtin_name(lua_State* lua);
-	static int					builtin_dialog(lua_State* lua);
-	static int					builtin_sound(lua_State* lua);
-	static int					builtin_position(lua_State* lua);
+    static int                  builtin_name(lua_State* lua);
+    static int                  builtin_dialog(lua_State* lua);
+    static int                  builtin_sound(lua_State* lua);
+    static int                  builtin_position(lua_State* lua);
     static int                  builtin_direction(lua_State* lua);
     static int                  builtin_chat(lua_State* lua);
     static int                  builtin_message(lua_State* lua);
@@ -260,7 +260,7 @@ class core : public fb::game::object::core
 {
 #pragma region lua
 public:
-	LUA_PROTOTYPE
+    LUA_PROTOTYPE
 #pragma endregion
 
 
@@ -310,8 +310,8 @@ public:
 
 #pragma region built-in method
 public:
-	static int				    builtin_hp(lua_State* lua);
-	static int				    builtin_mp(lua_State* lua);
+    static int                  builtin_hp(lua_State* lua);
+    static int                  builtin_mp(lua_State* lua);
 #pragma endregion
 };
 
@@ -327,7 +327,7 @@ protected:
 
 #pragma region public field
 public:
-    fb::game::spells		    spells;
+    fb::game::spells            spells;
 #pragma endregion
 
 
@@ -401,10 +401,10 @@ public:
 
 #pragma region built-in method
 public:
-    static int					builtin_hp(lua_State* lua);
-    static int					builtin_mp(lua_State* lua);
-    static int					builtin_base_hp(lua_State* lua);
-    static int					builtin_base_mp(lua_State* lua);
+    static int                  builtin_hp(lua_State* lua);
+    static int                  builtin_mp(lua_State* lua);
+    static int                  builtin_base_hp(lua_State* lua);
+    static int                  builtin_base_mp(lua_State* lua);
     static int                  builtin_hp_inc(lua_State* lua);
     static int                  builtin_hp_dec(lua_State* lua);
     static int                  builtin_mp_inc(lua_State* lua);

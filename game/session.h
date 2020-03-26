@@ -30,20 +30,20 @@ public:
 
 #pragma region lua
 public:
-	LUA_PROTOTYPE
+    LUA_PROTOTYPE
 #pragma endregion
 
 
 #pragma region private field
 private:
     crtsocket                   _socket;
-	std::string                 _name;
-	uint16_t                    _look;
-	uint8_t                     _color;
+    std::string                 _name;
+    uint16_t                    _look;
+    uint8_t                     _color;
 
-	defensive				    _defensive;
-	uint32_t                    _base_hp, _base_mp;
-	uint32_t                    _experience;
+    defensive                   _defensive;
+    uint32_t                    _base_hp, _base_mp;
+    uint32_t                    _experience;
 
 private:
     uint8_t                     _strength, _intelligence, _dexteritry;
@@ -51,10 +51,10 @@ private:
     uint8_t                     _hit; // 명중수정
     uint8_t                     _regenerative; // 재생력
 
-    nation					    _nation;
-    creature				    _creature;
-    sex						    _sex;
-    state					    _state;
+    nation                      _nation;
+    creature                    _creature;
+    sex                         _sex;
+    state                       _state;
     uint8_t                     _level;
     uint8_t                     _class, _promotion;
     uint32_t                    _money;
@@ -69,15 +69,15 @@ private:
 
 #pragma region public field
 public:
-	fb::game::trade             trade;
-	fb::game::items			    items;
-	lua::thread*			    dialog_thread;
+    fb::game::trade             trade;
+    fb::game::items             items;
+    lua::thread*                dialog_thread;
 #pragma endregion
 
 
 #pragma region hide parent method
 private:
-	using object::based;
+    using object::based;
 #pragma endregion
 
 
@@ -230,15 +230,15 @@ public:
 
 #pragma region built-in method
 public:
-	static int				    builtin_look(lua_State* lua);
-	static int				    builtin_color(lua_State* lua);
-	static int				    builtin_money(lua_State* lua);
-	static int				    builtin_exp(lua_State* lua);
-	static int				    builtin_base_hp(lua_State* lua);
-	static int				    builtin_base_mp(lua_State* lua);
-	static int				    builtin_strength(lua_State* lua);
-	static int				    builtin_dexterity(lua_State* lua);
-	static int				    builtin_intelligence(lua_State* lua);
+    static int                  builtin_look(lua_State* lua);
+    static int                  builtin_color(lua_State* lua);
+    static int                  builtin_money(lua_State* lua);
+    static int                  builtin_exp(lua_State* lua);
+    static int                  builtin_base_hp(lua_State* lua);
+    static int                  builtin_base_mp(lua_State* lua);
+    static int                  builtin_strength(lua_State* lua);
+    static int                  builtin_dexterity(lua_State* lua);
+    static int                  builtin_intelligence(lua_State* lua);
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_items(lua_State* lua);
     static int                  builtin_item_drop(lua_State* lua);

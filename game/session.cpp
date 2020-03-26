@@ -28,8 +28,8 @@ END_LUA_EXTENSION
 session::session(SOCKET socket) : 
     life((life::core*)nullptr, socket, 0, 0, 0),
     _socket(socket),
-	_look(0), _color(0),
-	_defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
+    _look(0), _color(0),
+    _defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
     _nation(nation::GOGURYEO),
     _creature(creature::DRAGON),
     _state(state::NORMAL),
@@ -38,8 +38,8 @@ session::session(SOCKET socket) :
     _promotion(0),
     _money(0),
     trade(*this),
-	items(*this),
-	dialog_thread(nullptr)
+    items(*this),
+    dialog_thread(nullptr)
 {
     memset(this->_options, 0, sizeof(this->_options));
 }
@@ -48,8 +48,8 @@ session::~session()
 {
     delete this->_core;
 
-	if(dialog_thread != nullptr)
-		delete dialog_thread;
+    if(dialog_thread != nullptr)
+        delete dialog_thread;
 }
 
 bool fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
@@ -427,7 +427,7 @@ void fb::game::session::random_damage(uint8_t value)
 uint32_t fb::game::session::random_damage(fb::game::life& life, bool& critical) const
 {
     uint32_t                damage = 0;
-	auto					weapon = this->items.weapon();
+    auto                    weapon = this->items.weapon();
 
     if(weapon == nullptr) // no weapon
     {
@@ -691,7 +691,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
         .write_u16(this->look()) // face
         .write_u8(this->color()); // hair color
 
-	auto armor = this->items.armor();
+    auto armor = this->items.armor();
     if(armor != nullptr)
     {
         ostream.write_u8(armor->dress())
@@ -703,7 +703,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-	auto weapon = this->items.weapon();
+    auto weapon = this->items.weapon();
     if(weapon != nullptr)
     {
         ostream.write_u16(weapon->dress())
@@ -715,7 +715,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
             .write_u8(0x00);
     }
 
-	auto shield = this->items.shield();
+    auto shield = this->items.shield();
     if(shield != nullptr)
     {
         ostream.write_u8(shield->dress())
@@ -1037,7 +1037,7 @@ int fb::game::session::builtin_base_mp(lua_State* lua)
 int fb::game::session::builtin_strength(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
     if(argc == 1)
     {
@@ -1055,7 +1055,7 @@ int fb::game::session::builtin_strength(lua_State* lua)
 int fb::game::session::builtin_dexterity(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
-	auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
 
     if(argc == 1)
     {

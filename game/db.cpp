@@ -7,39 +7,39 @@ fb::game::db::db() : _initialized(false)
 
 fb::game::db::~db()
 {
-	for(auto pair : this->_maps)
-		delete pair.second;
-	this->_maps.clear();
+    for(auto pair : this->_maps)
+        delete pair.second;
+    this->_maps.clear();
 
-	for(auto pair : this->_items)
-		delete pair.second;
-	this->_items.clear();
+    for(auto pair : this->_items)
+        delete pair.second;
+    this->_items.clear();
 
-	for(auto pair : this->_npcs)
-		delete pair.second;
-	this->_npcs.clear();
+    for(auto pair : this->_npcs)
+        delete pair.second;
+    this->_npcs.clear();
 
-	for(auto pair : this->_mobs)
-		delete pair.second;
-	this->_mobs.clear();
+    for(auto pair : this->_mobs)
+        delete pair.second;
+    this->_mobs.clear();
 
-	for(auto pair : this->_spells)
-		delete pair.second;
-	this->_spells.clear();
+    for(auto pair : this->_spells)
+        delete pair.second;
+    this->_spells.clear();
 
-	for(auto cls : this->_classes)
-		delete cls;
-	this->_classes.clear();
+    for(auto cls : this->_classes)
+        delete cls;
+    this->_classes.clear();
 
-	for(auto itemmix : this->_itemmixes)
-		delete itemmix;
-	this->_itemmixes.clear();
+    for(auto itemmix : this->_itemmixes)
+        delete itemmix;
+    this->_itemmixes.clear();
 
     for(auto door : this->_doors)
         delete door;
     this->_doors.clear();
 
-	this->_board.clear();
+    this->_board.clear();
 }
 
 fb::game::map::effects fb::game::db::parse_map_effect(const std::string& effect)
@@ -252,50 +252,50 @@ fb::game::mob::offensive_type fb::game::db::parse_mob_offensive(const std::strin
 
 bool fb::game::db::loads()
 {
-	if(this->_initialized)
-		return false;
+    if(this->_initialized)
+        return false;
 
-	if(this->load_spell("db/spell.json") == false)
-		return false;
+    if(this->load_spell("db/spell.json") == false)
+        return false;
 
     if(this->load_door("db/door.json") == false)
         return false;
 
-	if(this->load_maps("db/map.json") == false)
-		return false;
+    if(this->load_maps("db/map.json") == false)
+        return false;
 
-	if(this->load_warp("db/warp.json") == false)
-		return false;
+    if(this->load_warp("db/warp.json") == false)
+        return false;
 
-	if(this->load_items("db/item.json") == false)
-		return false;
+    if(this->load_items("db/item.json") == false)
+        return false;
 
-	if(this->load_itemmix("db/itemmix.json") == false)
-		return false;
+    if(this->load_itemmix("db/itemmix.json") == false)
+        return false;
 
-	if(this->load_npc("db/npc.json") == false)
-		return false;
+    if(this->load_npc("db/npc.json") == false)
+        return false;
 
-	if(this->load_mob("db/mob.json") == false)
-		return false;
+    if(this->load_mob("db/mob.json") == false)
+        return false;
 
-	if(this->load_drop_item("db/item_drop.json") == false)
-		return false;
+    if(this->load_drop_item("db/item_drop.json") == false)
+        return false;
 
-	if(this->load_npc_spawn("db/npc_spawn.json") == false)
-		return false;
+    if(this->load_npc_spawn("db/npc_spawn.json") == false)
+        return false;
 
-	if(this->load_mob_spawn("db/mob_spawn.json") == false)
-		return false;
+    if(this->load_mob_spawn("db/mob_spawn.json") == false)
+        return false;
 
-	if(this->load_class() == false)
-		return false;
+    if(this->load_class() == false)
+        return false;
 
-	if(this->load_board("db/board.json") == false)
-		return false;
+    if(this->load_board("db/board.json") == false)
+        return false;
 
-	this->_initialized = true;
-	return true;
+    this->_initialized = true;
+    return true;
 }
 
 bool fb::game::db::load_maps(const std::string& db_fname)
@@ -889,29 +889,29 @@ bool fb::game::db::load_door(const std::string& db_fname)
 
 fb::game::db* fb::game::db::get()
 {
-	if(db::_instance == nullptr)
-		db::_instance = new db();
+    if(db::_instance == nullptr)
+        db::_instance = new db();
 
-	return db::_instance;
+    return db::_instance;
 }
 
 void fb::game::db::init()
 {
-	auto instance = db::get();
-	instance->loads();
+    auto instance = db::get();
+    instance->loads();
 }
 
 void fb::game::db::release()
 {
     if(db::_instance != nullptr)
-		delete db::_instance;
+        delete db::_instance;
 
-	db::_instance = nullptr;
+    db::_instance = nullptr;
 }
 
 std::map<uint16_t, fb::game::map*>& fb::game::db::maps()
 {
-	return db::get()->_maps;
+    return db::get()->_maps;
 }
 
 std::map<uint16_t, fb::game::item::core*>& fb::game::db::items()

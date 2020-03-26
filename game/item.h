@@ -220,7 +220,7 @@ public:
 
 #pragma region built-in method
 public:
-    static int					    builtin_make(lua_State* lua);
+    static int                      builtin_make(lua_State* lua);
 #pragma endregion
 
 };
@@ -882,45 +882,45 @@ public:
 class items : public container<fb::game::item>
 {
 private:
-	weapon*							_weapon;
-	armor*							_armor;
-	helmet*							_helmet;
-	shield*							_shield;
-	ring*							_rings[2];
-	auxiliary*						_auxiliaries[2];
+    weapon*                         _weapon;
+    armor*                          _armor;
+    helmet*                         _helmet;
+    shield*                         _shield;
+    ring*                           _rings[2];
+    auxiliary*                      _auxiliaries[2];
 
 public:
-	items(session& owner);
-	~items();
+    items(session& owner);
+    ~items();
 
 private:
-	void							equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index);
-	uint8_t							equipment_off(fb::game::equipment::slot slot);
+    void                            equipment_on(uint8_t index, fb::game::equipment::slot& slot, uint8_t* updated_index);
+    uint8_t                         equipment_off(fb::game::equipment::slot slot);
 
 public:
-	uint8_t							add(fb::game::item* item);
-	bool							reduce(uint8_t index, uint16_t count);
-	fb::game::item*					active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot);
-	uint8_t							inactive(equipment::slot slot);
-	uint8_t							to_index(const fb::game::item::core* item) const;
+    uint8_t                         add(fb::game::item* item);
+    bool                            reduce(uint8_t index, uint16_t count);
+    fb::game::item*                 active(uint8_t index, uint8_t* updated_index, fb::game::equipment::slot& slot);
+    uint8_t                         inactive(equipment::slot slot);
+    uint8_t                         to_index(const fb::game::item::core* item) const;
 
-	fb::game::weapon*				weapon() const;
-	fb::game::weapon*				weapon(fb::game::weapon* weapon);
+    fb::game::weapon*               weapon() const;
+    fb::game::weapon*               weapon(fb::game::weapon* weapon);
 
-	fb::game::armor*				armor() const;
-	fb::game::armor*				armor(fb::game::armor* armor);
+    fb::game::armor*                armor() const;
+    fb::game::armor*                armor(fb::game::armor* armor);
 
-	fb::game::shield*				shield() const;
-	fb::game::shield*				shield(fb::game::shield* shield);
+    fb::game::shield*               shield() const;
+    fb::game::shield*               shield(fb::game::shield* shield);
 
-	fb::game::helmet*				helmet() const;
-	fb::game::helmet*				helmet(fb::game::helmet* helmet);
+    fb::game::helmet*               helmet() const;
+    fb::game::helmet*               helmet(fb::game::helmet* helmet);
 
-	fb::game::ring*					ring(equipment::EQUIPMENT_POSITION position) const;
-	fb::game::ring*					ring(fb::game::ring* ring);
+    fb::game::ring*                 ring(equipment::EQUIPMENT_POSITION position) const;
+    fb::game::ring*                 ring(fb::game::ring* ring);
 
-	fb::game::auxiliary*			auxiliary(equipment::EQUIPMENT_POSITION position) const;
-	fb::game::auxiliary*			auxiliary(fb::game::auxiliary* auxiliary);
+    fb::game::auxiliary*            auxiliary(equipment::EQUIPMENT_POSITION position) const;
+    fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary);
 
 public:
     fb::ostream                     make_update_stream(uint8_t index) const;

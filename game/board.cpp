@@ -196,10 +196,10 @@ void fb::game::board::remove(uint32_t index)
 
 void fb::game::board::clear()
 {
-	for(auto section : this->_sections)
-		delete section;
+    for(auto section : this->_sections)
+        delete section;
 
-	this->_sections.clear();
+    this->_sections.clear();
 }
 
 fb::game::board::section* fb::game::board::operator[](uint32_t index)
@@ -218,7 +218,7 @@ fb::ostream fb::game::board::make_sections_stream() const
     for(int i = 0; i < this->_sections.size(); i++)
     {
         ostream.write_u16(i)
-			.write(this->_sections[i]->title());
+            .write(this->_sections[i]->title());
     }
 
     return ostream;
@@ -233,7 +233,7 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
         .write_u8(0x02)
         .write_u8(button_enabled::NEXT | button_enabled::WRITE)
         .write_u16(section_id)
-		.write(section->title());
+        .write(section->title());
 
 
     if(offset == 0x7FFF)
@@ -251,10 +251,10 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
 
         ostream.write_u8(0x00)
             .write_u16(article->id())
-			.write(article->writer())
+            .write(article->writer())
             .write_u8(article->month())
             .write_u8(article->day())
-			.write(article->title());
+            .write(article->title());
 
         if(--count == 0)
             break;
@@ -283,7 +283,7 @@ fb::ostream fb::game::board::make_article_stream(uint16_t section_id, uint16_t a
             .write_u8(button_enabled::NEXT | button_enabled::WRITE)
             .write_u8(0x00)
             .write_u16(article_id)
-			.write(article->writer())
+            .write(article->writer())
             .write_u8(article->month())
             .write_u8(article->day())
             .write(article->title())
@@ -331,7 +331,7 @@ fb::ostream fb::game::board::make_message_stream(const std::string& message, boo
     ostream.write_u8(0x31)
         .write_u8(refresh ? 0x06 : 0x07)     // mail 관련 0x06인 것 같다. 확인 필요
         .write_u8(success)
-		.write(message)
+        .write(message)
         .write_u8(0x00);
 
     return ostream;

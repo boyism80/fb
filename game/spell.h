@@ -77,8 +77,8 @@ public:
 class spells : public container<fb::game::spell>
 {
 public:
-	spells(life& owner);
-	~spells();
+    spells(life& owner);
+    ~spells();
 
     fb::ostream                 make_update_stream(uint8_t index) const;
     fb::ostream                 make_delete_stream(uint8_t index) const;

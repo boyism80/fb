@@ -79,7 +79,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
 }
 
 fb::game::spells::spells(life& owner) : 
-	container(owner, spell::MAX_SLOT, false)
+    container(owner, spell::MAX_SLOT, false)
 {
 }
 

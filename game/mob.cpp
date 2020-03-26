@@ -124,10 +124,10 @@ const std::vector<fb::game::mob::money>& fb::game::mob::core::items() const
 
 int fb::game::mob::core::builtin_speed(lua_State* lua)
 {
-	auto mob = *(fb::game::mob::core**)lua_touserdata(lua, 1);
+    auto mob = *(fb::game::mob::core**)lua_touserdata(lua, 1);
 
-	lua_pushinteger(lua, mob->_speed);
-	return 1;
+    lua_pushinteger(lua, mob->_speed);
+    return 1;
 }
 
 
