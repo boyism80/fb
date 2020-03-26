@@ -241,17 +241,17 @@ bool fb::game::map::find_door(const fb::game::door& door, point16_t& position, b
 {
     bool init = true;
     auto door_size = door.size();
-    for(int row = position.y; row < this->height(); row++)
+    for(int offset = position.y * this->_size.width + position.x; offset < this->_size.width * this->_size.height; offset++)
     {
-        for(int col = init ? position.x : 0; col < this->width() - door_size; col++, init = false)
-        {
-            auto pos = point16_t(col, row);
-            if(this->matched_door(door, pos, open) == false)
-                continue;
+        auto row = offset / this->_size.width;
+        auto col = offset % this->_size.width;
 
-            position = pos;
-            return true;
-        }
+        auto pos = point16_t(col, row);
+        if(this->matched_door(door, pos, open) == false)
+            continue;
+
+        position = pos;
+        return true;
     }
 
     return false;
