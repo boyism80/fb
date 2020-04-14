@@ -195,14 +195,14 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
         position.x = position.y = 0;
         while(this->find_door(*door, position, true))
         {
-            this->_doors.push_back(new map::door(this, *door, position, true));
+            this->doors.add(this, *door, position, true);
             position.x += door->size();
         }
 
         position.x = position.y = 0;
         while(this->find_door(*door, position, false))
         {
-            this->_doors.push_back(new map::door(this, *door, position, false));
+            this->doors.add(this, *door, position, false);
             position.x += door->size();
         }
     }
@@ -217,9 +217,6 @@ fb::game::map::~map()
 
     for(auto warp : this->_warps)
         delete warp;
-
-    for(auto door : this->_doors)
-        delete door;
 }
 
 bool fb::game::map::matched_door(const fb::game::door& door, const point16_t& position, bool open) const
@@ -323,21 +320,6 @@ fb::game::size16_t fb::game::map::size() const
 uint8_t fb::game::map::bgm() const
 {
     return this->_bgm;
-}
-
-fb::game::map::door* fb::game::map::find_door(const point16_t& position)
-{
-    for(auto door : this->_doors)
-    {
-        const auto& core = door->core();
-        for(int i = 0; i < core.size(); i++)
-        {
-            if(position == point16_t(door->position.x + i, door->position.y))
-                return door;
-        }
-    }
-
-    return nullptr;
 }
 
 bool fb::game::map::existable(const point16_t position) const
@@ -623,4 +605,32 @@ bool fb::game::map::door::toggle()
 bool fb::game::map::door::opened() const
 {
     return this->_opened;
+}
+
+fb::game::map::doors::doors()
+{
+}
+
+fb::game::map::doors::~doors()
+{
+    for(auto door : *this)
+        delete door;
+}
+
+void fb::game::map::doors::add(map* map, fb::game::door& core, const point16_t position, bool opened)
+{
+    this->push_back(new map::door(map, core, position, opened));
+}
+
+fb::game::map::door* fb::game::map::doors::find(const point16_t position)
+{
+    for(auto door : *this)
+    {
+        const auto& core = door->core();
+        for(int i = 0; i < core.size(); i++)
+        {
+            if(position == point16_t(door->position.x + i, door->position.y))
+                return door;
+        }
+    }
 }

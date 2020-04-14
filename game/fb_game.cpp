@@ -1866,7 +1866,7 @@ bool fb::game::acceptor::handle_door(fb::game::session& session)
         return false;
 
     auto forward = point16_t(session.x(), session.y() + (direction == fb::game::direction::TOP ? -1 : 1));
-    auto door = map->find_door(forward);
+    auto door = map->doors.find(forward);
     if(door == nullptr)
         return true;
 

@@ -161,6 +161,25 @@ public:
     bool                        toggle();
     bool                        opened() const;
 };
+
+class doors : private std::vector<door*>
+{
+public:
+    using std::vector<door*>::begin;
+    using std::vector<door*>::end;
+    using std::vector<door*>::cbegin;
+    using std::vector<door*>::cend;
+    using std::vector<door*>::rbegin;
+    using std::vector<door*>::rend;
+
+public:
+    doors();
+    ~doors();
+
+public:
+    void                        add(map* map, fb::game::door& core, const point16_t position, bool opened);
+    door*                       find(const point16_t position);
+};
 #pragma endregion
 
 
@@ -175,13 +194,13 @@ private:
     effects                     _effect;
     uint8_t                     _bgm;
     std::vector<warp*>          _warps;
-    std::vector<door*>          _doors;
 #pragma endregion
 
 
 #pragma region public field
 public:
     objects                     objects;
+    doors                       doors;
 #pragma endregion
 
 
@@ -211,7 +230,6 @@ public:
     uint16_t                    height() const;
     size16_t                    size() const;
     uint8_t                     bgm() const;
-    fb::game::map::door*        find_door(const point16_t& position);
 
     bool                        existable(const point16_t position) const;
     bool                        movable(const point16_t position) const;
