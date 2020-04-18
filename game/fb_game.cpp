@@ -142,40 +142,40 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     lua_register(lua::main::get(), "weather",   builtin_weather);
 
 
-    this->register_handle(0x10, &acceptor::handle_login);               // °ÔÀÓ¼­¹ö Á¢¼Ó ÇÚµé·¯
-    this->register_handle(0x11, &acceptor::handle_direction);           // ¹æÇâÀüÈ¯ ÇÚµé·¯
-    this->register_handle(0x06, &acceptor::handle_update_move);         // ÀÌµ¿°ú ¸Ê µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® ÇÚµé·¯
-    this->register_handle(0x32, &acceptor::handle_move);                // ÀÌµ¿ ÇÚµé·¯
-    this->register_handle(0x13, &acceptor::handle_attack);              // °ø°İ ÇÚµé·¯
-    this->register_handle(0x07, &acceptor::handle_pickup);              // ¾ÆÀÌÅÛ Áİ±â ÇÚµé·¯
-    this->register_handle(0x1D, &acceptor::handle_emotion);             // °¨Á¤Ç¥Çö ÇÚµé·¯
-    this->register_handle(0x05, &acceptor::handle_update_map);          // ¸Ê µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® ÇÚµé·¯
-    this->register_handle(0x38, &acceptor::handle_refresh);             // »õ·Î°íÄ§ ÇÚµé·¯
-    this->register_handle(0x1C, &acceptor::handle_active_item);         // ¾ÆÀÌÅÛ »ç¿ë ÇÚµé·¯
-    this->register_handle(0x1F, &acceptor::handle_inactive_item);       // ¾ÆÀÌÅÛ ÀåÂø ÇØÁ¦ ÇÚµé·¯
-    this->register_handle(0x08, &acceptor::handle_drop_item);           // ¾ÆÀÌÅÛ ¹ö¸®±â ÇÚµé·¯
-    this->register_handle(0x24, &acceptor::handle_drop_cash);           // ±İÀü ¹ö¸®±â ÇÚµé·¯
-    this->register_handle(0x09, &acceptor::handle_front_info);          // ¾Õ¹æÇâ Á¤º¸ ÇÚµé·¯
-    this->register_handle(0x2D, &acceptor::handle_self_info);           // ³ª ÀÚ½ÅÀÇ Á¤º¸ ÇÚµé·¯
-    this->register_handle(0x1B, &acceptor::handle_option_changed);      // ¿É¼Ç ¼³Á¤ ÇÚµé·¯
-    this->register_handle(0x43, &acceptor::handle_click_object);        // ¿ÀºêÁ§Æ® Å¬¸¯ ÇÚµé·¯
-    this->register_handle(0x66, &acceptor::handle_item_info);           // ÀÎº¥Åä¸® ¿ìÅ¬¸¯ ÇÚµé·¯
-    this->register_handle(0x6B, &acceptor::handle_itemmix);             // ¾ÆÀÌÅÛ Á¶ÇÕ ÇÚµé·¯
-    this->register_handle(0x4A, &acceptor::handle_trade);               // ±³È¯ ÇÚµé·¯
-    this->register_handle(0x2E, &acceptor::handle_group);               // ±×·ì ÇÚµé·¯
-    this->register_handle(0x18, &acceptor::handle_user_list);           // À¯Àú ¸®½ºÆ® ÇÚµé·¯
-    this->register_handle(0x0E, &acceptor::handle_chat);                // À¯Àú Ã¤ÆÃ ÇÚµé·¯
-    this->register_handle(0x3B, &acceptor::handle_board);               // °Ô½ÃÆÇ ¼½¼Ç ¸®½ºÆ® ÇÚµé·¯
-    this->register_handle(0x30, &acceptor::handle_swap);                // ½ºÆç ¼ø¼­ º¯°æ
-    this->register_handle(0x3A, &acceptor::handle_dialog);              // ´ÙÀÌ¾ó·Î±×
-    this->register_handle(0x39, &acceptor::handle_dialog);              // ´ÙÀÌ¾ó·Î±×
-    this->register_handle(0x17, &acceptor::handle_throw_item);          // ¾ÆÀÌÅÛ ´øÁö±â ÇÚµé·¯
-    this->register_handle(0x0F, &acceptor::handle_spell);               // ½ºÆç ÇÚµé·¯
-    this->register_handle(0x20, &acceptor::handle_door);               // ½ºÆç ÇÚµé·¯
+    this->register_handle(0x10, &acceptor::handle_login);               // ê²Œì„ì„œë²„ ì ‘ì† í•¸ë“¤ëŸ¬
+    this->register_handle(0x11, &acceptor::handle_direction);           // ë°©í–¥ì „í™˜ í•¸ë“¤ëŸ¬
+    this->register_handle(0x06, &acceptor::handle_update_move);         // ì´ë™ê³¼ ë§µ ë°ì´í„° ì—…ë°ì´íŠ¸ í•¸ë“¤ëŸ¬
+    this->register_handle(0x32, &acceptor::handle_move);                // ì´ë™ í•¸ë“¤ëŸ¬
+    this->register_handle(0x13, &acceptor::handle_attack);              // ê³µê²© í•¸ë“¤ëŸ¬
+    this->register_handle(0x07, &acceptor::handle_pickup);              // ì•„ì´í…œ ì¤ê¸° í•¸ë“¤ëŸ¬
+    this->register_handle(0x1D, &acceptor::handle_emotion);             // ê°ì •í‘œí˜„ í•¸ë“¤ëŸ¬
+    this->register_handle(0x05, &acceptor::handle_update_map);          // ë§µ ë°ì´í„° ì—…ë°ì´íŠ¸ í•¸ë“¤ëŸ¬
+    this->register_handle(0x38, &acceptor::handle_refresh);             // ìƒˆë¡œê³ ì¹¨ í•¸ë“¤ëŸ¬
+    this->register_handle(0x1C, &acceptor::handle_active_item);         // ì•„ì´í…œ ì‚¬ìš© í•¸ë“¤ëŸ¬
+    this->register_handle(0x1F, &acceptor::handle_inactive_item);       // ì•„ì´í…œ ì¥ì°© í•´ì œ í•¸ë“¤ëŸ¬
+    this->register_handle(0x08, &acceptor::handle_drop_item);           // ì•„ì´í…œ ë²„ë¦¬ê¸° í•¸ë“¤ëŸ¬
+    this->register_handle(0x24, &acceptor::handle_drop_cash);           // ê¸ˆì „ ë²„ë¦¬ê¸° í•¸ë“¤ëŸ¬
+    this->register_handle(0x09, &acceptor::handle_front_info);          // ì•ë°©í–¥ ì •ë³´ í•¸ë“¤ëŸ¬
+    this->register_handle(0x2D, &acceptor::handle_self_info);           // ë‚˜ ìì‹ ì˜ ì •ë³´ í•¸ë“¤ëŸ¬
+    this->register_handle(0x1B, &acceptor::handle_option_changed);      // ì˜µì…˜ ì„¤ì • í•¸ë“¤ëŸ¬
+    this->register_handle(0x43, &acceptor::handle_click_object);        // ì˜¤ë¸Œì íŠ¸ í´ë¦­ í•¸ë“¤ëŸ¬
+    this->register_handle(0x66, &acceptor::handle_item_info);           // ì¸ë²¤í† ë¦¬ ìš°í´ë¦­ í•¸ë“¤ëŸ¬
+    this->register_handle(0x6B, &acceptor::handle_itemmix);             // ì•„ì´í…œ ì¡°í•© í•¸ë“¤ëŸ¬
+    this->register_handle(0x4A, &acceptor::handle_trade);               // êµí™˜ í•¸ë“¤ëŸ¬
+    this->register_handle(0x2E, &acceptor::handle_group);               // ê·¸ë£¹ í•¸ë“¤ëŸ¬
+    this->register_handle(0x18, &acceptor::handle_user_list);           // ìœ ì € ë¦¬ìŠ¤íŠ¸ í•¸ë“¤ëŸ¬
+    this->register_handle(0x0E, &acceptor::handle_chat);                // ìœ ì € ì±„íŒ… í•¸ë“¤ëŸ¬
+    this->register_handle(0x3B, &acceptor::handle_board);               // ê²Œì‹œíŒ ì„¹ì…˜ ë¦¬ìŠ¤íŠ¸ í•¸ë“¤ëŸ¬
+    this->register_handle(0x30, &acceptor::handle_swap);                // ìŠ¤í  ìˆœì„œ ë³€ê²½
+    this->register_handle(0x3A, &acceptor::handle_dialog);              // ë‹¤ì´ì–¼ë¡œê·¸
+    this->register_handle(0x39, &acceptor::handle_dialog);              // ë‹¤ì´ì–¼ë¡œê·¸
+    this->register_handle(0x17, &acceptor::handle_throw_item);          // ì•„ì´í…œ ë˜ì§€ê¸° í•¸ë“¤ëŸ¬
+    this->register_handle(0x0F, &acceptor::handle_spell);               // ìŠ¤í  í•¸ë“¤ëŸ¬
+    this->register_handle(0x20, &acceptor::handle_door);               // ìŠ¤í  í•¸ë“¤ëŸ¬
 
-    this->register_timer(100, &acceptor::handle_mob_action);            // ¸÷ Çàµ¿ Å¸ÀÌ¸Ó
-    this->register_timer(1000, &acceptor::handle_mob_respawn);          // ¸÷ ¸®Á¨ Å¸ÀÌ¸Ó
-    this->register_timer(1000, &acceptor::handle_buff_timer);          // ¸÷ ¸®Á¨ Å¸ÀÌ¸Ó
+    this->register_timer(100, &acceptor::handle_mob_action);            // ëª¹ í–‰ë™ íƒ€ì´ë¨¸
+    this->register_timer(1000, &acceptor::handle_mob_respawn);          // ëª¹ ë¦¬ì   íƒ€ì´ë¨¸
+    this->register_timer(1000, &acceptor::handle_buff_timer);          // ëª¹ ë¦¬ì   íƒ€ì´ë¨¸
 }
 
 acceptor::~acceptor()
@@ -187,34 +187,34 @@ bool acceptor::handle_connected(fb::game::session& session)
 {
     auto& maps = db::maps();
     session.map(maps[315], point16_t(6, 8));
-    session.name("Ã¤½ÂÇö");
+    session.name("ì±„ìŠ¹í˜„");
     session.look(0x61);
     session.color(0x0A);
     session.money(150);
     session.sex(fb::game::sex::MAN);
-    session.legends_add(0x4A, 0x10, "°«½ÂÇö ¤»¤»");
-    session.legends_add(0x4A, 0x10, "¶ËÁø¿µ ¤»¤»");
+    session.legends_add(0x4A, 0x10, "ê°“ìŠ¹í˜„ ã…‹ã…‹");
+    session.legends_add(0x4A, 0x10, "ë˜¥ì§„ì˜ ã…‹ã…‹");
     session.base_hp(0xFFFFFFFF);
     session.hp(0xFFFFFFFF);
-    session.title("°«½ÂÇö Å¸ÀÌÆ²");
+    session.title("ê°“ìŠ¹í˜„ íƒ€ì´í‹€");
 
     auto& items = db::items();
-    session.items.add(db::name2item("¾óÀ½Ä®")->make<item>());
-    session.items.add(db::name2item("Á¤È­ÀÇ¹æÆĞ")->make<item>());
-    session.items.add(db::name2item("µµ¾¾°Ë")->make<item>());
-    session.items.add(db::name2item("³«¶ûÀÇµÎ·ç¸¶¸®2")->make<item>());
-    session.items.add(db::name2item("³²ÀÚ±â¸ğ³ë")->make<item>());
-    session.items.add(db::name2item("µµÅä¸®")->make<item>());
-    session.items.add(db::name2item("µ¿µ¿ÁÖ")->make<item>());
+    session.items.add(db::name2item("ì–¼ìŒì¹¼")->make<item>());
+    session.items.add(db::name2item("ì •í™”ì˜ë°©íŒ¨")->make<item>());
+    session.items.add(db::name2item("ë„ì”¨ê²€")->make<item>());
+    session.items.add(db::name2item("ë‚™ë‘ì˜ë‘ë£¨ë§ˆë¦¬2")->make<item>());
+    session.items.add(db::name2item("ë‚¨ìê¸°ëª¨ë…¸")->make<item>());
+    session.items.add(db::name2item("ë„í† ë¦¬")->make<item>());
+    session.items.add(db::name2item("ë™ë™ì£¼")->make<item>());
     
 
-    // Âø¿ëÇÑ »óÅÂ·Î ¼³Á¤ (³»±¸µµ µî º¯ÇÒ ¼ö ÀÖ´Â ³»¿ëµéÀº ÀúÀåÇØµÖ¾ß ÇÔ)
-    session.items.weapon(db::name2item("¾çÃ·¸ñºÀ")->make<weapon>()); // ÃÊ½ÉÀÚÀÇ ¸ñµµ
-    session.items.helmet(db::name2item("¼âÀÚÈ²±İÅõ±¸")->make<helmet>());
-    session.items.ring(db::name2item("¼âÀÚÈ²±İ¹İÁö")->make<ring>());
-    session.items.ring(db::name2item("¼âÀÚÈ²±İ¹İÁö")->make<ring>());
-    session.items.auxiliary(db::name2item("º¸¹«ÀÇ¸ñ°ÉÀÌ")->make<auxiliary>());
-    session.items.auxiliary(db::name2item("ÇØµ¶ÀÇ±Í°ÉÀÌ")->make<auxiliary>());
+    // ì°©ìš©í•œ ìƒíƒœë¡œ ì„¤ì • (ë‚´êµ¬ë„ ë“± ë³€í•  ìˆ˜ ìˆëŠ” ë‚´ìš©ë“¤ì€ ì €ì¥í•´ë‘¬ì•¼ í•¨)
+    session.items.weapon(db::name2item("ì–‘ì²¨ëª©ë´‰")->make<weapon>()); // ì´ˆì‹¬ìì˜ ëª©ë„
+    session.items.helmet(db::name2item("ì‡„ìí™©ê¸ˆíˆ¬êµ¬")->make<helmet>());
+    session.items.ring(db::name2item("ì‡„ìí™©ê¸ˆë°˜ì§€")->make<ring>());
+    session.items.ring(db::name2item("ì‡„ìí™©ê¸ˆë°˜ì§€")->make<ring>());
+    session.items.auxiliary(db::name2item("ë³´ë¬´ì˜ëª©ê±¸ì´")->make<auxiliary>());
+    session.items.auxiliary(db::name2item("í•´ë…ì˜ê·€ê±¸ì´")->make<auxiliary>());
 
     auto& spells = db::spells();
     for(auto pair : spells)
@@ -370,7 +370,7 @@ void fb::game::acceptor::handle_damage(fb::game::life& me, fb::game::life& you, 
         if(you.is(object::types::LIFE) == false)
             throw std::runtime_error(message::exception::INVALID_TARGET);
 
-        // ¸÷ Ã¼·Â ±ğ°í Ã¼·Â°ÔÀÌÁö Ç¥½Ã
+        // ëª¹ ì²´ë ¥ ê¹ê³  ì²´ë ¥ê²Œì´ì§€ í‘œì‹œ
         if(this->handle_damage(static_cast<life&>(you), damage))
         {
             if(you.type() != object::types::MOB)
@@ -429,11 +429,11 @@ void fb::game::acceptor::handle_damage(fb::game::session& session, uint32_t dama
 
 void fb::game::acceptor::handle_die(fb::game::mob& mob)
 {
-    // ¸÷ Ã¼·ÂÀ» ´Ù ±ğ¾ÒÀ¸¸é Á×ÀÎ´Ù.
+    // ëª¹ ì²´ë ¥ì„ ë‹¤ ê¹ì•˜ìœ¼ë©´ ì£½ì¸ë‹¤.
     this->send_stream(mob, mob.make_die_stream(), scope::PIVOT, true);
     mob.dead_time(::GetTickCount64());
 
-    // µå·Ó ¾ÆÀÌÅÛ ¶³±¸±â
+    // ë“œë¡­ ì•„ì´í…œ ë–¨êµ¬ê¸°
     std::vector<object*> dropped_items;
     for(auto candidate : mob.items())
     {
@@ -458,32 +458,32 @@ void fb::game::acceptor::handle_die(fb::game::session& session)
 
 void fb::game::acceptor::handle_experience(fb::game::session& session, uint32_t exp, bool limit)
 {
-    // ·¹º§ 5¸é¼­ Á÷¾÷ ¾È°¡Á³À¸¸é Á÷¾÷ °¡Áö¶ó°í ÇÑ´Ù.
+    // ë ˆë²¨ 5ë©´ì„œ ì§ì—… ì•ˆê°€ì¡Œìœ¼ë©´ ì§ì—… ê°€ì§€ë¼ê³  í•œë‹¤.
     if(session.level() >= 5 && session.cls() == 0)
         throw session::require_class_exception();
 
-    // ´ÙÀ½ ·¹º§·Î °¡±â À§ÇÑ °æÇèÄ¡
+    // ë‹¤ìŒ ë ˆë²¨ë¡œ ê°€ê¸° ìœ„í•œ ê²½í—˜ì¹˜
     auto                    next_exp = session.max_level() ? 0xFFFFFFFF : db::required_exp(session.cls(), session.level()+1);
     auto                    prev_exp = session.max_level() ? 0x00000000 : db::required_exp(session.cls(), session.level());
     auto                    exp_range = next_exp - prev_exp;
 
-    // 3.3% Á¦ÇÑÇÑ °æÇèÄ¡
+    // 3.3% ì œí•œí•œ ê²½í—˜ì¹˜
     if(limit && session.max_level() == false)
         exp = std::min(uint32_t(exp_range / 100.0f*3.3f + 1), exp);
 
 
-    // °æÇèÄ¡ »ó½Â
+    // ê²½í—˜ì¹˜ ìƒìŠ¹
     session.experience_add(exp);
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-    // °æÇèÄ¡ »ó½Â ¸Ş½ÃÁö
+    // ê²½í—˜ì¹˜ ìƒìŠ¹ ë©”ì‹œì§€
     auto                    exp_now = session.experience();
     auto                    percentage = std::min(100.0f, ((exp_now - prev_exp) / float(exp_range)) * 100.0f);
     std::stringstream       sstream;
-    sstream << "°æÇèÄ¡°¡ " << exp << '(' << int(percentage) << "%) ¿Ã¶ú½À´Ï´Ù.";
+    sstream << "ê²½í—˜ì¹˜ê°€ " << exp << '(' << int(percentage) << "%) ì˜¬ëìŠµë‹ˆë‹¤.";
     this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
 
-    // ·¹º§¾÷ È®ÀÎ
+    // ë ˆë²¨ì—… í™•ì¸
     if(session.max_level() == false && (exp_now >= next_exp))
         this->handle_level_up(session);
 }
@@ -514,7 +514,7 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
     lua_getglobal(*session.dialog_thread, "handle_click");
 
 
-    // ·ç¾Æ½ºÅ©¸³Æ®ÀÇ handle_click ÇÔ¼öÀÇ ¸®ÅÏ°ª ¼³Á¤
+    // ë£¨ì•„ìŠ¤í¬ë¦½íŠ¸ì˜ handle_click í•¨ìˆ˜ì˜ ë¦¬í„´ê°’ ì„¤ì •
     session.dialog_thread->pushobject(session);
     session.dialog_thread->pushobject(npc);
     session.dialog_thread->resume(2);
@@ -543,7 +543,7 @@ bool acceptor::handle_login(fb::game::session& session)
 
     this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-    this->send_stream(session, message::make_stream("0½Ã°£ 1ºĞ¸¸¿¡ ¹Ù¶÷À¸·Î", message::type::STATE), scope::SELF);
+    this->send_stream(session, message::make_stream("0ì‹œê°„ 1ë¶„ë§Œì— ë°”ëŒìœ¼ë¡œ", message::type::STATE), scope::SELF);
 
     this->send_stream(session, session.make_id_stream(), scope::SELF);
 
@@ -623,7 +623,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
         return true;
     }
 
-    // ¿öÇÁ À§Ä¡¶ó¸é ¿öÇÁÇÑ´Ù.
+    // ì›Œí”„ ìœ„ì¹˜ë¼ë©´ ì›Œí”„í•œë‹¤.
     const auto              warp = map->warpable(session.position());
     if(warp != nullptr)
     {
@@ -737,7 +737,7 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 uint32_t    remain = session.money_add(cash->chunk());
-                cash->chunk(remain); // ¸Ô°í ³²Àº µ·À¸·Î ¼³Á¤
+                cash->chunk(remain); // ë¨¹ê³  ë‚¨ì€ ëˆìœ¼ë¡œ ì„¤ì •
 
                 if(remain != 0)
                     this->send_stream(session, message::make_stream(message::money::FULL, message::type::STATE), scope::SELF);
@@ -840,42 +840,42 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
             switch(slot)
             {
             case fb::game::equipment::slot::WEAPON_SLOT:
-                sstream << "w:¹«±â  :";
+                sstream << "w:ë¬´ê¸°  :";
                 break;
 
             case fb::game::equipment::slot::ARMOR_SLOT:
-                sstream << "a:°©¿Ê  :";
+                sstream << "a:ê°‘ì˜·  :";
                 break;
 
             case fb::game::equipment::slot::SHIELD_SLOT:
-                sstream << "s:¹æÆĞ  :";
+                sstream << "s:ë°©íŒ¨  :";
                 break;
 
             case fb::game::equipment::slot::HELMET_SLOT:
-                sstream << "h:¸Ó¸®  :";
+                sstream << "h:ë¨¸ë¦¬  :";
                 break;
 
             case fb::game::equipment::slot::LEFT_HAND_SLOT:
-                sstream << "l:¿Ş¼Õ  :";
+                sstream << "l:ì™¼ì†  :";
                 break;
 
             case fb::game::equipment::slot::RIGHT_HAND_SLOT:
-                sstream << "r:¿À¸¥¼Õ  :";
+                sstream << "r:ì˜¤ë¥¸ì†  :";
                 break;
 
             case fb::game::equipment::slot::LEFT_AUX_SLOT:
-                sstream << "[:º¸Á¶1  :";
+                sstream << "[:ë³´ì¡°1  :";
                 break;
 
             case fb::game::equipment::slot::RIGHT_AUX_SLOT:
-                sstream << "]:º¸Á¶2  :";
+                sstream << "]:ë³´ì¡°2  :";
                 break;
             }
             sstream << item->name();
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
 
             sstream.str(std::string());
-            sstream << "°©¿Ê °­µµ  " << session.defensive_physical() <<"  " << session.regenerative() << " S  " << session.defensive_magical();
+            sstream << "ê°‘ì˜· ê°•ë„  " << session.defensive_physical() <<"  " << session.regenerative() << " S  " << session.defensive_magical();
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
 
             return true;
@@ -919,7 +919,7 @@ bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
             throw std::runtime_error(message::exception::INVENTORY_OVERFLOW);
 
 
-        // ¸¶¹ı µô·¹ÀÌ ½ºÆ®¸² ÇÊ¿ä
+        // ë§ˆë²• ë”œë ˆì´ ìŠ¤íŠ¸ë¦¼ í•„ìš”
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
         this->send_stream(session, session.items.make_unequip_stream(slot), scope::SELF);
         this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
@@ -1026,7 +1026,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     {
     case options::RIDE:
     {
-        static auto         horse_core = db::name2mob("¸»");
+        static auto         horse_core = db::name2mob("ë§");
         if(horse_core == nullptr)
             break;
 
@@ -1073,47 +1073,47 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     }
 
     case options::WHISPER:
-        sstream << "±Ó¼Ó¸»µè±â  ";
+        sstream << "ê·“ì†ë§ë“£ê¸°  ";
         break;
 
     case options::GROUP:
-        sstream << "±×·ìÇã°¡    ";
+        sstream << "ê·¸ë£¹í—ˆê°€    ";
         break;
 
     case options::ROAR:
-        sstream << "¿ÜÄ¡±âµè±â  ";
+        sstream << "ì™¸ì¹˜ê¸°ë“£ê¸°  ";
         break;
 
     case options::ROAR_WORLDS:
-        sstream << "¼¼°èÈÄ      ";
+        sstream << "ì„¸ê³„í›„      ";
         break;
 
     case options::MAGIC_EFFECT:
-        sstream << "¸¶¹ıÀÌÆåÆ®  ";
+        sstream << "ë§ˆë²•ì´í™íŠ¸  ";
         break;
 
     case options::WEATHER_EFFECT:
-        sstream << "³¯¾¾º¯È­    ";
+        sstream << "ë‚ ì”¨ë³€í™”    ";
         break;
 
     case options::FIXED_MOVE:
-        sstream << "°íÁ¤ÀÌµ¿     ";
+        sstream << "ê³ ì •ì´ë™     ";
         break;
 
     case options::TRADE:
-        sstream << "±³È¯°¡´É    ";
+        sstream << "êµí™˜ê°€ëŠ¥    ";
         break;
 
     case options::FAST_MOVE:
-        sstream << "ºü¸¥ÀÌµ¿    ";
+        sstream << "ë¹ ë¥¸ì´ë™    ";
         break;
 
     case options::EFFECT_SOUND:
-        sstream << "¼Ò¸®µè±â    ";
+        sstream << "ì†Œë¦¬ë“£ê¸°    ";
         break;
 
     case options::PK:
-        sstream << "PKº¸È£      ";
+        sstream << "PKë³´í˜¸      ";
         break;
 
     default:
@@ -1288,9 +1288,9 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     auto                        action = istream.read_u8();
     auto                        fd = istream.read_u32();
 
-    auto                        partner = this->session(fd);   // ÆÄÆ®³Ê
-    auto&                       ts_mine = session.trade;       // ³ªÀÇ °Å·¡½Ã½ºÅÛ
-    auto&                       ts_your = partner->trade;      // »ó´ë¹æÀÇ °Å·¡½Ã½ºÅÛ
+    auto                        partner = this->session(fd);   // íŒŒíŠ¸ë„ˆ
+    auto&                       ts_mine = session.trade;       // ë‚˜ì˜ ê±°ë˜ì‹œìŠ¤í…œ
+    auto&                       ts_your = partner->trade;      // ìƒëŒ€ë°©ì˜ ê±°ë˜ì‹œìŠ¤í…œ
 
     if(partner == nullptr)
         return true;
@@ -1301,20 +1301,20 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     {
         if(session.id() == partner->id())
         {
-            // ÀÚ±â ÀÚ½Å°ú °Å·¡¸¦ ÇÏ·Á°í ½ÃµµÇÏ´Â °æ¿ì
+            // ìê¸° ìì‹ ê³¼ ê±°ë˜ë¥¼ í•˜ë ¤ê³  ì‹œë„í•˜ëŠ” ê²½ìš°
             break;
         }
 
         if(session.option(options::TRADE) == false)
         {
-            // ³»°¡ ±³È¯ °ÅºÎÁß
+            // ë‚´ê°€ êµí™˜ ê±°ë¶€ì¤‘
             this->send_stream(session, message::make_stream(message::trade::REFUSED_BY_ME, message::type::STATE), scope::SELF);
             break;
         }
 
         if(partner->option(options::TRADE) == false)
         {
-            // »ó´ë¹æÀÌ ±³È¯ °ÅºÎÁß
+            // ìƒëŒ€ë°©ì´ êµí™˜ ê±°ë¶€ì¤‘
             std::stringstream sstream;
             sstream << partner->name() << message::trade::REFUSED_BY_PARTNER;
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
@@ -1323,13 +1323,13 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
         if(ts_mine.trading())
         {
-            // ³»°¡ ÀÌ¹Ì ±³È¯Áß
+            // ë‚´ê°€ ì´ë¯¸ êµí™˜ì¤‘
             break;
         }
 
         if(ts_your.trading())
         {
-            // »ó´ë¹æÀÌ ÀÌ¹Ì ±³È¯Áß
+            // ìƒëŒ€ë°©ì´ ì´ë¯¸ êµí™˜ì¤‘
             std::stringstream sstream;
             sstream << partner->name() << message::trade::PARTNER_ALREADY_TRADING;
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
@@ -1338,21 +1338,21 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
         if(session.sight(*partner) == false)
         {
-            // »ó´ë¹æÀÌ ½Ã¾ß¿¡¼­ º¸ÀÌÁö ¾ÊÀ½
+            // ìƒëŒ€ë°©ì´ ì‹œì•¼ì—ì„œ ë³´ì´ì§€ ì•ŠìŒ
             this->send_stream(session, message::make_stream(message::trade::PARTNER_INVISIBLE, message::type::STATE), scope::SELF);
             break;
         }
 
         if(session.distance_sqrt(*partner) > 16)
         {
-            // »ó´ë¹æ°úÀÇ °Å¸®°¡ ³Ê¹« ¸Ø
+            // ìƒëŒ€ë°©ê³¼ì˜ ê±°ë¦¬ê°€ ë„ˆë¬´ ë©ˆ
             std::stringstream sstream;
             sstream << partner->name() << message::trade::PARTNER_TOO_FAR;
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
             break;
         }
 
-        // ±³È¯ ½ÃÀÛ
+        // êµí™˜ ì‹œì‘
         ts_mine.begin(partner);
         this->send_stream(session, ts_your.make_dialog_stream(), scope::SELF);
 
@@ -1361,14 +1361,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         break;
     }
 
-    case 1: // ¾ÆÀÌÅÛ ¿Ã¸±¶§
+    case 1: // ì•„ì´í…œ ì˜¬ë¦´ë•Œ
     {
         auto                index = istream.read_u8() - 1;
         auto                item = session.items[index];
         if(item == nullptr)
             return true;
 
-        // ±³È¯ ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛ °Å·¡ ½Ãµµ
+        // êµí™˜ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œ ê±°ë˜ ì‹œë„
         if(item->trade_enabled() == false)
         {
             this->send_stream(session, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::POPUP), scope::SELF);
@@ -1377,37 +1377,37 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
         if((item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE) && (item->count() > 1))
         {
-            // ¹­À½ ´ÜÀ§ÀÇ ¾ÆÀÌÅÛ Çü½Ä °Å·¡ ½Ãµµ
+            // ë¬¶ìŒ ë‹¨ìœ„ì˜ ì•„ì´í…œ í˜•ì‹ ê±°ë˜ ì‹œë„
             ts_mine.select(item);
             this->send_stream(session, ts_mine.make_bundle_stream(), scope::SELF);
         }
         else
         {
-            // ÀÏ¹İ ¾ÆÀÌÅÛÀÇ °Å·¡ ½Ãµµ
+            // ì¼ë°˜ ì•„ì´í…œì˜ ê±°ë˜ ì‹œë„
 
-            uint8_t trade_index = ts_mine.add(item); // °Å·¡ÁßÀÎ ¾ÆÀÌÅÛ ¸®½ºÆ®ÀÇ ÀÎµ¦½º
+            uint8_t trade_index = ts_mine.add(item); // ê±°ë˜ì¤‘ì¸ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ì˜ ì¸ë±ìŠ¤
             if(trade_index == 0xFF)
                 return false;
 
-            // ÇöÀç ÀÎº¥Åä¸®¿¡¼­ °Å·¡ÁßÀÎ ¾ÆÀÌÅÛ ¸®½ºÆ®·Î ¾ÆÀÌÅÛ ÀÌµ¿
+            // í˜„ì¬ ì¸ë²¤í† ë¦¬ì—ì„œ ê±°ë˜ì¤‘ì¸ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ë¡œ ì•„ì´í…œ ì´ë™
             session.items.remove(index);
             this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
 
-            // ³ª¿Í »ó´ë µÑ ´Ù¿¡°Ô ¿Ã¸° ¾ÆÀÌÅÛÀ» Ç¥½ÃÇÔ
+            // ë‚˜ì™€ ìƒëŒ€ ë‘˜ ë‹¤ì—ê²Œ ì˜¬ë¦° ì•„ì´í…œì„ í‘œì‹œí•¨
             this->send_stream(session, ts_mine.make_show_stream(true, trade_index), scope::SELF);
             this->send_stream(*partner, ts_mine.make_show_stream(false, trade_index), scope::SELF);
         }
         break;
     }
 
-    case 2: // ¾ÆÀÌÅÛ °¹¼ö±îÁö ÇØ¼­ ¿Ã¸± ¶§
+    case 2: // ì•„ì´í…œ ê°¯ìˆ˜ê¹Œì§€ í•´ì„œ ì˜¬ë¦´ ë•Œ
     {
-        // ÀÌÀü¿¡ ¿Ã¸®·Á°í ½ÃµµÇÑ ¹­À½ ´ÜÀ§ÀÇ ¾ÆÀÌÅÛ
+        // ì´ì „ì— ì˜¬ë¦¬ë ¤ê³  ì‹œë„í•œ ë¬¶ìŒ ë‹¨ìœ„ì˜ ì•„ì´í…œ
         auto                selected = ts_mine.selected();
         if(selected == nullptr)
             return false;
 
-        // ¿Ã¸± °¹¼ö (Å¬¶óÀÌ¾ğÆ®°¡ ÀÔ·ÂÇÑ °ª)
+        // ì˜¬ë¦´ ê°¯ìˆ˜ (í´ë¼ì´ì–¸íŠ¸ê°€ ì…ë ¥í•œ ê°’)
         auto                count = istream.read_u16();
         if(selected->count() < count)
         {
@@ -1418,7 +1418,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         auto                index = session.items.to_index(selected->based<item::core>());
         if(selected->count() == count)
         {
-            // ¸ğµÎ ´Ù ¿Ã¸®´Â °æ¿ì, ¾ÆÀÌÅÛÀ» µû·Î º¹»çÇÏÁö ¾Ê°í ÀÖ´Â ±×´ë·Î °Å·¡¸®½ºÆ®¿¡ ¿Å°Ü¹ö¸°´Ù.
+            // ëª¨ë‘ ë‹¤ ì˜¬ë¦¬ëŠ” ê²½ìš°, ì•„ì´í…œì„ ë”°ë¡œ ë³µì‚¬í•˜ì§€ ì•Šê³  ìˆëŠ” ê·¸ëŒ€ë¡œ ê±°ë˜ë¦¬ìŠ¤íŠ¸ì— ì˜®ê²¨ë²„ë¦°ë‹¤.
             auto            trade_index = ts_mine.add(selected);
             if(index != 0xFF)
             {
@@ -1431,7 +1431,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         }
         else
         {
-            // ÀÏºÎ¸¸ ¿Ã¸®´Â °æ¿ì, ±âÁ¸ÀÇ °Í¿¡¼­ °¹¼ö¸¦ ±ğ°í »õ·Î º¹»çµÈ ¾ÆÀÌÅÛÀ» °Å·¡ ¸®½ºÆ®·Î ¿Å±ä´Ù.
+            // ì¼ë¶€ë§Œ ì˜¬ë¦¬ëŠ” ê²½ìš°, ê¸°ì¡´ì˜ ê²ƒì—ì„œ ê°¯ìˆ˜ë¥¼ ê¹ê³  ìƒˆë¡œ ë³µì‚¬ëœ ì•„ì´í…œì„ ê±°ë˜ ë¦¬ìŠ¤íŠ¸ë¡œ ì˜®ê¸´ë‹¤.
             selected->reduce(count);
             auto            came_out = selected->clone<fb::game::item>();
             came_out->count(count);
@@ -1446,13 +1446,13 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         break;
     }
 
-    case 3: // ±İÀü ¿Ã¸± ¶§
+    case 3: // ê¸ˆì „ ì˜¬ë¦´ ë•Œ
     {
-        // Å¬¶óÀÌ¾ğÆ®°¡ ÀÔ·ÂÇÑ ±İÀü ¾ç
+        // í´ë¼ì´ì–¸íŠ¸ê°€ ì…ë ¥í•œ ê¸ˆì „ ì–‘
         auto                money = istream.read_u32();
 
-        // ÀÔ·ÂÇÑ ±İÀü ¾çÀ» °è¼ÓÇØ¼­ »©¸é ¾ÈµÈ´Ù.
-        // 100Àü ÀÔ·ÂÇÑ °æ¿ì -1, -10, -100 ÀÌ·¸°Ô ±î¿©¹ö¸²
+        // ì…ë ¥í•œ ê¸ˆì „ ì–‘ì„ ê³„ì†í•´ì„œ ë¹¼ë©´ ì•ˆëœë‹¤.
+        // 100ì „ ì…ë ¥í•œ ê²½ìš° -1, -10, -100 ì´ë ‡ê²Œ ê¹Œì—¬ë²„ë¦¼
         auto                total = session.money() + ts_mine.money();
         if(money > total)
             money = total;
@@ -1466,29 +1466,29 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         break;
     }
 
-    case 4: // Ãë¼ÒÇÑ °æ¿ì
+    case 4: // ì·¨ì†Œí•œ ê²½ìš°
     {
         std::vector<uint8_t> indices;
 
-        // °Å·¡¸®½ºÆ®¿¡ ¿Ã·È´ø ¾ÆÀÌÅÛ°ú ±İÀüÀ» ¿ø»óº¹±Í½ÃÅ²´Ù.
+        // ê±°ë˜ë¦¬ìŠ¤íŠ¸ì— ì˜¬ë ¸ë˜ ì•„ì´í…œê³¼ ê¸ˆì „ì„ ì›ìƒë³µê·€ì‹œí‚¨ë‹¤.
         indices = ts_mine.restore();
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
             this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
 
-        // ¸Ş½ÃÁö Ç¥½ÃÇÏ°í °Å·¡Á¾·á
+        // ë©”ì‹œì§€ í‘œì‹œí•˜ê³  ê±°ë˜ì¢…ë£Œ
         this->send_stream(session, ts_mine.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
         ts_mine.end();
 
 
 
-        // °Å·¡¸®½ºÆ®¿¡ ¿Ã·È´ø ¾ÆÀÌÅÛ°ú ±İÀüÀ» ¿ø»óº¹±Í½ÃÅ²´Ù.
+        // ê±°ë˜ë¦¬ìŠ¤íŠ¸ì— ì˜¬ë ¸ë˜ ì•„ì´í…œê³¼ ê¸ˆì „ì„ ì›ìƒë³µê·€ì‹œí‚¨ë‹¤.
         indices = ts_your.restore();
         this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
             this->send_stream(*partner, partner->items.make_update_stream(i), scope::SELF);
 
-        // ¸Ş½ÃÁö Ç¥½ÃÇÏ°í °Å·¡Á¾·á
+        // ë©”ì‹œì§€ í‘œì‹œí•˜ê³  ê±°ë˜ì¢…ë£Œ
         this->send_stream(*partner, ts_your.make_close_stream(message::trade::CANCELLED_BY_PARTNER), scope::SELF);
         ts_your.end();
         break;
@@ -1501,11 +1501,11 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
         if(ts_your.lock())
         {
-            // »ó´ë¹æÀÌ ÀÌ¹Ì ±³È¯È®ÀÎ ´©¸¥ °æ¿ì
+            // ìƒëŒ€ë°©ì´ ì´ë¯¸ êµí™˜í™•ì¸ ëˆ„ë¥¸ ê²½ìš°
             if(ts_mine.flushable(*partner) == false || ts_your.flushable(session) == false)
             {
-                // ³ª È¤Àº »ó´ë°¡ °Å·¡¸®½ºÆ®¿¡ ¿Ã¶ó¿Â ¾ÆÀÌÅÛÀÌ³ª ±İÀüÀ» ´Ù ¹ŞÀ» ¼ö ¾ø´Â »óÈ²ÀÏ ¶§
-                // ÀÎº¥Åä¸®°¡ °¡µæ Â÷°Å³ª, ´õ ÀÌ»ó ±İÀüÀ» ¾òÀ» ¼ö ¾ø´Â °æ¿ì
+                // ë‚˜ í˜¹ì€ ìƒëŒ€ê°€ ê±°ë˜ë¦¬ìŠ¤íŠ¸ì— ì˜¬ë¼ì˜¨ ì•„ì´í…œì´ë‚˜ ê¸ˆì „ì„ ë‹¤ ë°›ì„ ìˆ˜ ì—†ëŠ” ìƒí™©ì¼ ë•Œ
+                // ì¸ë²¤í† ë¦¬ê°€ ê°€ë“ ì°¨ê±°ë‚˜, ë” ì´ìƒ ê¸ˆì „ì„ ì–»ì„ ìˆ˜ ì—†ëŠ” ê²½ìš°
                 this->send_stream(session, ts_mine.make_close_stream(message::trade::FAILED), scope::SELF);
                 this->send_stream(*partner, ts_your.make_close_stream(message::trade::FAILED), scope::SELF);
             }
@@ -1513,20 +1513,20 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             {
                 std::vector<uint8_t> indices;
                 
-                // »ó´ëÀÇ °Å·¡¸®½ºÆ® ¹°Ç°µéÀ» ÀüºÎ ¹Ş°í ¾÷µ¥ÀÌÆ®
+                // ìƒëŒ€ì˜ ê±°ë˜ë¦¬ìŠ¤íŠ¸ ë¬¼í’ˆë“¤ì„ ì „ë¶€ ë°›ê³  ì—…ë°ì´íŠ¸
                 ts_mine.flush(*partner, indices);
                 for(auto i : indices)
                     this->send_stream(*partner, partner->items.make_update_stream(i), scope::SELF);
                 this->send_stream(*partner, partner->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
-                // ³ªÀÇ °Å·¡¸®½ºÆ® ¹°Ç°µéÀ» ÀüºÎ ÁÖ°í ¾÷µ¥ÀÌÆ®
+                // ë‚˜ì˜ ê±°ë˜ë¦¬ìŠ¤íŠ¸ ë¬¼í’ˆë“¤ì„ ì „ë¶€ ì£¼ê³  ì—…ë°ì´íŠ¸
                 ts_your.flush(session, indices);
                 for(auto i : indices)
                     this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
                 this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
 
-                // ¸Ş½ÃÁö Ç¥½ÃÇÏ°í °Å·¡ Á¾·á
+                // ë©”ì‹œì§€ í‘œì‹œí•˜ê³  ê±°ë˜ ì¢…ë£Œ
                 this->send_stream(session, ts_mine.make_close_stream(message::trade::SUCCESS), scope::SELF);
                 ts_mine.end();
 
@@ -1536,7 +1536,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         }
         else
         {
-            // »ó´ë¹æÀÌ ¾ÆÁ÷ ±³È¯È®ÀÎÀ» ´©¸£Áö ¾ÊÀº °æ¿ì
+            // ìƒëŒ€ë°©ì´ ì•„ì§ êµí™˜í™•ì¸ì„ ëˆ„ë¥´ì§€ ì•Šì€ ê²½ìš°
             this->send_stream(*partner, message::make_stream(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
         }
         break;
@@ -1559,8 +1559,8 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
     delete[] buffer;
 
 
-    // ¿©±â¼­ Á¢¼ÓÇØÀÖ´Â ¼¼¼Ç ÀüÃ¼ ´ë»óÀ¸·Î ·çÇÁ¸¦ µ¹ °Ô ¾Æ´Ï¶ó
-    // DB¿¡ Á¢±ÙÇØ¼­ ÇÏ´Â ¹æ½ÄÀÌ ³ªÀ» °Í °°´Ù´Â »ı°¢ÀÌ µå´Â±¸¸¸
+    // ì—¬ê¸°ì„œ ì ‘ì†í•´ìˆëŠ” ì„¸ì…˜ ì „ì²´ ëŒ€ìƒìœ¼ë¡œ ë£¨í”„ë¥¼ ëŒ ê²Œ ì•„ë‹ˆë¼
+    // DBì— ì ‘ê·¼í•´ì„œ í•˜ëŠ” ë°©ì‹ì´ ë‚˜ì„ ê²ƒ ê°™ë‹¤ëŠ” ìƒê°ì´ ë“œëŠ”êµ¬ë§Œ
     
     return true;
 }
@@ -1662,7 +1662,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 
         auto                    section = board.sections().at(section_id);
         if(section->add(subject, content, session.name()) != nullptr)
-            this->send_stream(session, board.make_message_stream("±ÛÀ» ÀÛ¼ºÇÏ¿´½À´Ï´Ù.", true, true), scope::SELF);
+            this->send_stream(session, board.make_message_stream("ê¸€ì„ ì‘ì„±í•˜ì˜€ìŠµë‹ˆë‹¤.", true, true), scope::SELF);
         break;
     }
 
@@ -1732,15 +1732,15 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 
     switch(interaction)
     {
-    case dialog::interaction::NORMAL: // ÀÏ¹İ ´ÙÀÌ¾ó·Î±×
+    case dialog::interaction::NORMAL: // ì¼ë°˜ ë‹¤ì´ì–¼ë¡œê·¸
     {
-        istream.read(nullptr, 0x07); // 7¹ÙÀÌÆ® ¹«½Ã
+        istream.read(nullptr, 0x07); // 7ë°”ì´íŠ¸ ë¬´ì‹œ
         auto                    action = istream.read_u8();
 
         if(session.dialog_thread == nullptr)
             return true;
 
-        // ·ç¾Æ½ºÅ©¸³Æ® ´ÙÀÌ¾ó·Î±× ÇÔ¼öÀÇ ¸®ÅÏ°ª ¼³Á¤
+        // ë£¨ì•„ìŠ¤í¬ë¦½íŠ¸ ë‹¤ì´ì–¼ë¡œê·¸ í•¨ìˆ˜ì˜ ë¦¬í„´ê°’ ì„¤ì •
         session.dialog_thread->pushinteger(action);
         if(session.dialog_thread->resume(1))
         {
@@ -1773,7 +1773,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
         if(session.dialog_thread == nullptr)
             return true;
 
-        istream.read(nullptr, 0x07); // 7¹ÙÀÌÆ® ¹«½Ã
+        istream.read(nullptr, 0x07); // 7ë°”ì´íŠ¸ ë¬´ì‹œ
         auto                    action = istream.read_u8();
         if(action == 0x02) // OK button
         {
@@ -2008,7 +2008,7 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
         return;
     }
 
-    // »óÇÏÁÂ¿ì·Î Å¸°ÙÀÌ ÀÖ´ÂÁö °Ë»çÇÑ´Ù.
+    // ìƒí•˜ì¢Œìš°ë¡œ íƒ€ê²Ÿì´ ìˆëŠ”ì§€ ê²€ì‚¬í•œë‹¤.
     for(int i = 0; i < 4; i++)
     {
         auto                direction = game::direction(i);
@@ -2029,7 +2029,7 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
     }
 
 
-    // Å¸°Ù ¹æÇâÀ¸·Î ÀÌµ¿ÀÌ °¡´ÉÇÏ´Ù¸é ÀÌµ¿ÇÑ´Ù.
+    // íƒ€ê²Ÿ ë°©í–¥ìœ¼ë¡œ ì´ë™ì´ ê°€ëŠ¥í•˜ë‹¤ë©´ ì´ë™í•œë‹¤.
     auto                    x_axis = bool(std::rand()%2);
     if(x_axis)
     {
@@ -2047,7 +2047,7 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
     }
 
 
-    // ÀÌµ¿ÇÒ ¼ö ÀÖ´Â ¹æÇâÀ¸·Î ÀÏ´Ü ÀÌµ¿ÇÑ´Ù.
+    // ì´ë™í•  ìˆ˜ ìˆëŠ” ë°©í–¥ìœ¼ë¡œ ì¼ë‹¨ ì´ë™í•œë‹¤.
     auto                    random_direction = std::rand() % 4;
     for(int i = 0; i < 4; i++)
     {
@@ -2118,7 +2118,7 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
 
 void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 {
-    // ¸®Á¨µÈ ÀüÃ¼ ¸÷À» ÀúÀå
+    // ë¦¬ì  ëœ ì „ì²´ ëª¹ì„ ì €ì¥
     std::vector<object*>    spawned_mobs;
     for(auto pair : db::maps())
     {
@@ -2140,7 +2140,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     }
 
 
-    // È­¸é¿¡ º¸ÀÌ´Â ¸÷¸¸ °»½Å
+    // í™”ë©´ì— ë³´ì´ëŠ” ëª¹ë§Œ ê°±ì‹ 
     std::vector<object*> shown_mobs;
     for(auto session : this->sessions())
     {
@@ -2200,7 +2200,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(message[0] != '/')
         return false;
 
-    auto                            npc = db::name2npc("³«¶û");
+    auto                            npc = db::name2npc("ë‚™ë‘");
     std::string                     command(message.begin() + 1, message.end());
     std::vector<std::string>        splitted;
     std::istringstream              sstream(command);
@@ -2213,22 +2213,22 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     if(splitted[0] == "show")
     {
-        auto item = db::name2item("³²ÀÚ±â¸ğ³ë");
-        this->send_stream(session, item->make_dialog_stream("°«½ÂÇö´Ô »ç¶ûÇÕ´Ï´Ù.", true, true), scope::SELF);
+        auto item = db::name2item("ë‚¨ìê¸°ëª¨ë…¸");
+        this->send_stream(session, item->make_dialog_stream("ê°“ìŠ¹í˜„ë‹˜ ì‚¬ë‘í•©ë‹ˆë‹¤.", true, true), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "show short list")
     {
-        std::vector<std::string> menus = {"°«", "½Â", "Çö"};
-        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´Ô Á¸°æÇÕ´Ï´Ù.", menus), scope::SELF);
+        std::vector<std::string> menus = {"ê°“", "ìŠ¹", "í˜„"};
+        this->send_stream(session, npc->make_dialog_stream("ê°“ìŠ¹í˜„ë‹˜ ì¡´ê²½í•©ë‹ˆë‹¤.", menus), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "show long list")
     {
         std::vector<std::string> menus;
-        std::string message = "°«½ÂÇö´ÔÀº À§´ëÇÏ½Å °ÔÀÓ¼­¹ö °³¹ß°èÀÇ Å« º°ÀÌ½Ã´Ù.";
+        std::string message = "ê°“ìŠ¹í˜„ë‹˜ì€ ìœ„ëŒ€í•˜ì‹  ê²Œì„ì„œë²„ ê°œë°œê³„ì˜ í° ë³„ì´ì‹œë‹¤.";
         int i = 0;
         int mod = 0;
         for(auto c : message)
@@ -2243,7 +2243,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
             menus.push_back(std::string(message.begin(), message.begin() + i));
         }
-        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´Ô Á¸°æÇÕ´Ï´Ù.", menus), scope::SELF);
+        this->send_stream(session, npc->make_dialog_stream("ê°“ìŠ¹í˜„ë‹˜ ì¡´ê²½í•©ë‹ˆë‹¤.", menus), scope::SELF);
         return true;
     }
 
@@ -2258,7 +2258,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
             slots.push_back(i+1);
         }
-        this->send_stream(session, npc->make_dialog_stream("°«½ÂÇö´ÔÀÇ ÀÎº¥Åä¸®¸¦ º¸¿©µå¸³´Ï´Ù.", slots), scope::SELF);
+        this->send_stream(session, npc->make_dialog_stream("ê°“ìŠ¹í˜„ë‹˜ì˜ ì¸ë²¤í† ë¦¬ë¥¼ ë³´ì—¬ë“œë¦½ë‹ˆë‹¤.", slots), scope::SELF);
         return true;
     }
 
@@ -2272,7 +2272,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
             if(count++ > 100)
                 break;
         }
-        this->send_stream(session, npc->make_dialog_stream("¾Æ½Ã¹ß ´Ù ÆÇ´Ù", items), scope::SELF);
+        this->send_stream(session, npc->make_dialog_stream("ì•„ì‹œë°œ ë‹¤ íŒë‹¤", items), scope::SELF);
         return true;
     }
 
@@ -2284,7 +2284,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     if(splitted[0] == "show extend input")
     {
-        this->send_stream(session, npc->make_input_dialog_stream("¾È³ç", "Å¾", "¹ÙÅÒ", 0xFF, true), scope::SELF);
+        this->send_stream(session, npc->make_input_dialog_stream("ì•ˆë…•", "íƒ‘", "ë°”í…€", 0xFF, true), scope::SELF);
         return true;
     }
 
@@ -2445,11 +2445,11 @@ void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vec
 
 void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::map& map, const point16_t& position)
 {
-    // ÀÌÀü¿¡ º¸ÀÌ´ø ¿ÀºêÁ§Æ®µé ÀüºÎ Á¦°Å
+    // ì´ì „ì— ë³´ì´ë˜ ì˜¤ë¸Œì íŠ¸ë“¤ ì „ë¶€ ì œê±°
     for(auto i : object.showings())
         this->send_stream(object, i->make_hide_stream(), scope::SELF);
 
-    // ÀÌÀü¿¡ ³ª¸¦ º¸´ø ¿ÀºêÁ§Æ®µé¿¡°Ô¼­ ³ª¸¦ Á¦°Å
+    // ì´ì „ì— ë‚˜ë¥¼ ë³´ë˜ ì˜¤ë¸Œì íŠ¸ë“¤ì—ê²Œì„œ ë‚˜ë¥¼ ì œê±°
     for(auto i : object.showns())
         this->send_stream(*i, object.make_hide_stream(), scope::SELF);
 
@@ -2468,11 +2468,11 @@ void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::ma
         this->send_stream(session, session.make_direction_stream(), scope::SELF);
     }
 
-    // Áö±İ ³»°¡ º¼ ¼ö ÀÖ´Â ¿ÀºêÁ§Æ®¸¦ Ç¥½Ã
+    // ì§€ê¸ˆ ë‚´ê°€ ë³¼ ìˆ˜ ìˆëŠ” ì˜¤ë¸Œì íŠ¸ë¥¼ í‘œì‹œ
     for(auto i : object.showings())
         this->send_stream(object, i->make_show_stream(), scope::SELF);
 
-    // Áö±İ ³ª¸¦ º¼ ¼ö ÀÖ´Â ¿ÀºêÁ§Æ®µé¿¡°Ô ³ª¸¦ Ç¥½Ã
+    // ì§€ê¸ˆ ë‚˜ë¥¼ ë³¼ ìˆ˜ ìˆëŠ” ì˜¤ë¸Œì íŠ¸ë“¤ì—ê²Œ ë‚˜ë¥¼ í‘œì‹œ
     for(auto i : object.showns())
         this->send_stream(*i, object.make_show_stream(), scope::SELF);
 }

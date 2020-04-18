@@ -192,8 +192,8 @@ public:
     object*                     forward_object(fb::game::object::types type) const;
     std::vector<object*>        forward_objects(fb::game::object::types type) const;
 
-    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // ³»°¡ º¼ ¼ö ÀÖ´Â
-    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // ³¯ º¸°í ÀÖ´Â
+    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // ë‚´ê°€ ë³¼ ìˆ˜ ìžˆëŠ”
+    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // ë‚  ë³´ê³  ìžˆëŠ”
 
     virtual bool                alive() const;
 

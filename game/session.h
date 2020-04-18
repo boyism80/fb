@@ -47,9 +47,9 @@ private:
 
 private:
     uint8_t                     _strength, _intelligence, _dexteritry;
-    uint8_t                     _damage; // °ø°İ¼öÁ¤
-    uint8_t                     _hit; // ¸íÁß¼öÁ¤
-    uint8_t                     _regenerative; // Àç»ı·Â
+    uint8_t                     _damage; // ê³µê²©ìˆ˜ì •
+    uint8_t                     _hit; // ëª…ì¤‘ìˆ˜ì •
+    uint8_t                     _regenerative; // ì¬ìƒë ¥
 
     nation                      _nation;
     creature                    _creature;

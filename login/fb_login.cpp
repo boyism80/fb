@@ -73,7 +73,7 @@ uint32_t acceptor::compress(const uint8_t* source, uint32_t size, uint8_t* dest)
 
 fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
 {
-    // ¼­¹öÁ¤º¸¸¦ ¹ÙÀÌ³Ê¸® Çü½ÄÀ¸·Î º¯È¯
+    // ì„œë²„ì •ë³´ë¥¼ ë°”ì´ë„ˆë¦¬ í˜•ì‹ìœ¼ë¡œ ë³€í™˜
     ostream                     formats;
     char                        buffer[256];
     formats.write_u8((uint8_t)this->_gateway_list.size());
@@ -87,15 +87,15 @@ fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
                .write(buffer, len);
     }
 
-    // ¹ÙÀÌ³Ê¸® Çü½ÄÀÇ crc °è»ê
+    // ë°”ì´ë„ˆë¦¬ í˜•ì‹ì˜ crc ê³„ì‚°
     if(crc != NULL)
         *crc = crc32(0, formats.data(), formats.size());
 
-    // ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ ¾ĞÃà
+    // ë°”ì´ë„ˆë¦¬ ë°ì´í„° ì••ì¶•
     uint8_t                     compressed_buffer[1024];
     uint32_t                    compressed_size = this->compress(formats.data(), formats.size(), compressed_buffer);
 
-    // ÆĞÅ¶ Çü½ÄÀ¸·Î ÀúÀå
+    // íŒ¨í‚· í˜•ì‹ìœ¼ë¡œ ì €ì¥
     fb::ostream                 ostream;
     ostream.write_u8(0x56)
            .write_u16(compressed_size)
@@ -141,10 +141,10 @@ bool fb::login::acceptor::is_hangul(const char* str)
 
     for(uint32_t i = 0; i < size; i += 2)
     {
-        if(strncmp(str + i, "°¡", sizeof(char) * 2) == -1)
+        if(strncmp(str + i, "ê°€", sizeof(char) * 2) == -1)
             return false;
 
-        if(strncmp(str + i, "ÆR", sizeof(char) * 2) == 1)
+        if(strncmp(str + i, "í£", sizeof(char) * 2) == 1)
             return false;
     }
 
@@ -317,7 +317,7 @@ bool acceptor::handle_create_account(fb::login::session& session)
     istream&                istream  = session.in_stream();
     ostream&                ostream  = session.out_stream();
 
-    // °¢°¢ÀÇ ¿ä¼Òµé À¯È¿¼º Ã¼Å©ÇØ¾ßÇÔ
+    // ê°ê°ì˜ ìš”ì†Œë“¤ ìœ íš¨ì„± ì²´í¬í•´ì•¼í•¨
     uint8_t                 cmd      = istream.read_u8();
     uint8_t                 hair     = istream.read_u8();
     uint8_t                 sex      = istream.read_u8();
@@ -372,7 +372,7 @@ bool acceptor::handle_change_password(fb::login::session& session)
             throw id_exception(message::INVALID_NAME);
 
 
-        // TODO : Á¸ÀçÇÏ´Â ¾ÆÀÌµğÀÎÁö °Ë»ç
+        // TODO : ì¡´ì¬í•˜ëŠ” ì•„ì´ë””ì¸ì§€ ê²€ì‚¬
 
 
 
@@ -382,7 +382,7 @@ bool acceptor::handle_change_password(fb::login::session& session)
 
         char                pw[MAX_PASSWORD_SIZE] = {0,};
         istream.read(pw, pw_size);
-        // TODO : ¿Ã¹Ù¸¥ ºñ¹Ğ¹øÈ£ÀÎÁö Ã¼Å©
+        // TODO : ì˜¬ë°”ë¥¸ ë¹„ë°€ë²ˆí˜¸ì¸ì§€ ì²´í¬
 
 
 
@@ -392,7 +392,7 @@ bool acceptor::handle_change_password(fb::login::session& session)
 
         char                newpw[MAX_PASSWORD_SIZE] = {0,};
         istream.read(newpw, newpw_size);
-        // TODO : ³Ê¹« ½¬¿î ºñ¹Ğ¹øÈ£ÀÎÁö Ã¼Å©
+        // TODO : ë„ˆë¬´ ì‰¬ìš´ ë¹„ë°€ë²ˆí˜¸ì¸ì§€ ì²´í¬
 
         if(strcmp(pw, newpw) == 0)
             throw newpw_exception(message::NEW_PW_EQUALIZATION);
@@ -400,7 +400,7 @@ bool acceptor::handle_change_password(fb::login::session& session)
         uint32_t            birthday = istream.read_u32(buffer::endian::BIG);
         if(birthday < 100000 || birthday >= 1000000)
             throw btd_exception();
-        // TODO : ¿Ã¹Ù¸¥ »ı³â¿ùÀÏÀÎÁö Ã¼Å©
+        // TODO : ì˜¬ë°”ë¥¸ ìƒë…„ì›”ì¼ì¸ì§€ ì²´í¬
 
         this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_CHANGE_PASSWORD));
     }

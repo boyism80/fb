@@ -9,12 +9,12 @@
 #endif
 
 const fb::game::item::item_limit fb::game::item::DEFAULT_LIMIT;
-const fb::game::cash::core fb::game::cash::BRONZE("¿±Àü", 23 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::BRONZE_BUNDLE("¿±Àü¹¶Ä¡", 74 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::SILVER("ÀºÀü", 70 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::SILVER_BUNDLE("ÀºÀü¹¶Ä¡", 73 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::GOLD("±İÀü", 71 + 0xBFFF);
-const fb::game::cash::core fb::game::cash::GOLD_BUNDLE("±İµ¢¾î¸®", 72 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::BRONZE("ì—½ì „", 23 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::BRONZE_BUNDLE("ì—½ì „ë­‰ì¹˜", 74 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::SILVER("ì€ì „", 70 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::SILVER_BUNDLE("ì€ì „ë­‰ì¹˜", 73 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::GOLD("ê¸ˆì „", 71 + 0xBFFF);
+const fb::game::cash::core fb::game::cash::GOLD_BUNDLE("ê¸ˆë©ì–´ë¦¬", 72 + 0xBFFF);
 
 
 fb::game::item::_limit::_limit() : 
@@ -220,7 +220,7 @@ const std::string fb::game::item::name_styled() const
     sstream << this->name();
 
     if((this->attr() & item::attrs::ITEM_ATTR_BUNDLE) && this->_count > 1)
-        sstream << ' ' << this->_count << "°³";
+        sstream << ' ' << this->_count << "ê°œ";
 
     return sstream.str();
 }
@@ -235,7 +235,7 @@ std::string fb::game::item::tip_message() const
 {
     std::stringstream       sstream;
 
-    sstream << "°¡°İ: " << this->price();
+    sstream << "ê°€ê²©: " << this->price();
     const std::string& desc = this->desc();
     if(desc.empty() == false)
         sstream << std::endl << std::endl << desc;
@@ -244,7 +244,7 @@ std::string fb::game::item::tip_message() const
 
 uint16_t fb::game::item::fill(uint16_t count)
 {
-    // Ãß°¡ÇÏ°í ³²Àº °¹¼ö ¸®ÅÏ
+    // ì¶”ê°€í•˜ê³  ë‚¨ì€ ê°¯ìˆ˜ ë¦¬í„´
     uint16_t free_space = this->free_space();
     uint16_t addition = std::min(free_space, count);
 
@@ -254,7 +254,7 @@ uint16_t fb::game::item::fill(uint16_t count)
 
 uint16_t fb::game::item::reduce(uint16_t count)
 {
-    // Á¦°ÅÇÏ°í ³²Àº °¹¼ö ¸®ÅÏ
+    // ì œê±°í•˜ê³  ë‚¨ì€ ê°¯ìˆ˜ ë¦¬í„´
     this->_count -= std::min(count, this->_count);
     return this->_count;
 }
@@ -397,7 +397,7 @@ fb::game::cash::~cash()
 const std::string fb::game::cash::name_styled() const
 {
     std::stringstream sstream;
-    sstream << this->name() << ' ' << this->_chunk << "Àü";
+    sstream << this->name() << ' ' << this->_chunk << "ì „";
 
     return sstream.str();
 }
@@ -540,7 +540,7 @@ uint16_t fb::game::pack::base_durability() const
 const std::string fb::game::pack::name_styled() const
 {
     std::stringstream sstream;
-    sstream << this->name() << " [" << this->_durability << " ÀÜ]";
+    sstream << this->name() << " [" << this->_durability << " ì”]";
 
     return sstream.str();
 }
@@ -906,37 +906,37 @@ std::string fb::game::equipment::tip_message() const
     std::stringstream           sstream;
 
     sstream << this->name() << std::endl;
-    sstream << "³»±¸¼º: " << std::to_string(this->durability()) << '/' << std::to_string(this->durability_base()) << ' ' << std::fixed << std::setprecision(1) << (this->durability() / (float)this->durability_base()) * 100 << '%' << std::endl;
+    sstream << "ë‚´êµ¬ì„±: " << std::to_string(this->durability()) << '/' << std::to_string(this->durability_base()) << ' ' << std::fixed << std::setprecision(1) << (this->durability() / (float)this->durability_base()) * 100 << '%' << std::endl;
     sstream << this->mid_message();
-    sstream << "¹«Àå:   " << std::to_string(this->defensive_physical()) << " Hit:  " << std::to_string(this->hit()) << " Dam:  " << std::to_string(this->damage());
+    sstream << "ë¬´ì¥:   " << std::to_string(this->defensive_physical()) << " Hit:  " << std::to_string(this->hit()) << " Dam:  " << std::to_string(this->damage());
 
     if(this->base_hp())
-        sstream << std::left << std::setw(14) << std::endl << "Ã¼·ÂÄ¡ »ó½Â:" << std::to_string(this->base_hp());
+        sstream << std::left << std::setw(14) << std::endl << "ì²´ë ¥ì¹˜ ìƒìŠ¹:" << std::to_string(this->base_hp());
 
     if(this->base_mp())
-        sstream << std::left << std::setw(14) << std::endl << "¸¶·ÂÄ¡ »ó½Â:" << std::to_string(this->base_mp());
+        sstream << std::left << std::setw(14) << std::endl << "ë§ˆë ¥ì¹˜ ìƒìŠ¹:" << std::to_string(this->base_mp());
 
     if(this->strength())
-        sstream << std::left << std::setw(14) << std::endl << "Èû »ó½Â:" << std::to_string(this->strength());
+        sstream << std::left << std::setw(14) << std::endl << "í˜ ìƒìŠ¹:" << std::to_string(this->strength());
 
     if(this->dexteritry())
-        sstream << std::left << std::setw(14) << std::endl << "¹ÎÃ¸¼º »ó½Â:" << std::to_string(this->dexteritry());
+        sstream << std::left << std::setw(14) << std::endl << "ë¯¼ì²©ì„± ìƒìŠ¹:" << std::to_string(this->dexteritry());
 
     if(this->intelligence())
-        sstream << std::left << std::setw(14) << std::endl << "Áö·Â »ó½Â:" << std::to_string(this->intelligence());
+        sstream << std::left << std::setw(14) << std::endl << "ì§€ë ¥ ìƒìŠ¹:" << std::to_string(this->intelligence());
 
     if(this->healing_cycle())
-        sstream << std::left << std::setw(14) << std::endl << "Àç»ı·Â »ó½Â:" << std::to_string(this->healing_cycle());
+        sstream << std::left << std::setw(14) << std::endl << "ì¬ìƒë ¥ ìƒìŠ¹:" << std::to_string(this->healing_cycle());
 
     std::stringstream class_stream;
 
     class_stream << std::endl << std::setw(14) << std::left;
     auto limit = this->limit();
     if(limit.cls == 0)
-        class_stream << "Á÷¾÷Á¦ÇÑ¹«";
+        class_stream << "ì§ì—…ì œí•œë¬´";
     else
-        class_stream << db::class2name(limit.cls, 0) << "¿ë";
-    sstream << class_stream.str() << "·¹º§ " << std::to_string(limit.level) << " ÀÌ»ó";
+        class_stream << db::class2name(limit.cls, 0) << "ìš©";
+    sstream << class_stream.str() << "ë ˆë²¨ " << std::to_string(limit.level) << " ì´ìƒ";
 
     const std::string desc = this->desc();
     if(desc.empty() == false)
@@ -1078,8 +1078,8 @@ std::string fb::game::weapon::mid_message() const
 {
     std::stringstream sstream;
 
-    sstream << "ÆÄ±«·Â: ¡¡¡¡ S:¡¡" << std::to_string(this->damage_small().min) << 'm' << std::to_string(this->damage_small().max) << std::endl;
-    sstream << "¡¡¡¡¡¡  ¡¡ ¡¡L:¡¡" << std::to_string(this->damage_large().min) << 'm' << std::to_string(this->damage_large().max) << std::endl;
+    sstream << "íŒŒê´´ë ¥: ã€€ã€€ S:ã€€" << std::to_string(this->damage_small().min) << 'm' << std::to_string(this->damage_small().max) << std::endl;
+    sstream << "ã€€ã€€ã€€  ã€€ ã€€L:ã€€" << std::to_string(this->damage_large().min) << 'm' << std::to_string(this->damage_large().max) << std::endl;
     return sstream.str();
 }
 
@@ -1547,7 +1547,7 @@ uint8_t fb::game::items::add(fb::game::item* item)
         return -1;
 
 
-    // ¹øµé Çü½ÄÀÇ ¾ÆÀÌÅÛÀÎ °æ¿ì
+    // ë²ˆë“¤ í˜•ì‹ì˜ ì•„ì´í…œì¸ ê²½ìš°
     if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
         for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
@@ -1559,7 +1559,7 @@ uint8_t fb::game::items::add(fb::game::item* item)
                 continue;
 
 
-            // ¾ÆÀÌÅÛÀ» ÇÕÄ¡°í ³²Àº °¹¼ö·Î ¼³Á¤ÇÑ´Ù.
+            // ì•„ì´í…œì„ í•©ì¹˜ê³  ë‚¨ì€ ê°¯ìˆ˜ë¡œ ì„¤ì •í•œë‹¤.
             uint16_t remain = this->at(i)->fill(item->count());
             item->count(remain);
 
@@ -1567,7 +1567,7 @@ uint8_t fb::game::items::add(fb::game::item* item)
         }
     }
 
-    // ±× ÀÌ¿ÜÀÇ ¾ÆÀÌÅÛÀÎ °æ¿ì
+    // ê·¸ ì´ì™¸ì˜ ì•„ì´í…œì¸ ê²½ìš°
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
         if(this->at(i) != nullptr)

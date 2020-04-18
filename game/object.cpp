@@ -306,12 +306,12 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 {
     point16_t begin, end;
 
-    if(me.x <= fb::game::map::HALF_SCREEN_WIDTH) // ÃÖÁÂÃø
+    if(me.x <= fb::game::map::HALF_SCREEN_WIDTH) // ìµœì¢Œì¸¡
     {
         begin.x = 0;
         end.x   = fb::game::map::MAX_SCREEN_WIDTH;
     }
-    else if(me.x >= map->width() - fb::game::map::HALF_SCREEN_WIDTH) // ÃÖ¿ìÃø
+    else if(me.x >= map->width() - fb::game::map::HALF_SCREEN_WIDTH) // ìµœìš°ì¸¡
     {
         begin.x = std::max(int32_t(0), int32_t(map->width() - fb::game::map::MAX_SCREEN_WIDTH - 1));
         end.x   = std::max(int32_t(0), int32_t(map->width() - 1));
@@ -323,12 +323,12 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
     }
 
 
-    if(me.y <= fb::game::map::HALF_SCREEN_HEIGHT) // ÃÖ»ó´Ü
+    if(me.y <= fb::game::map::HALF_SCREEN_HEIGHT) // ìµœìƒë‹¨
     {
         begin.y = 0;
         end.y   = fb::game::map::MAX_SCREEN_HEIGHT;
     }
-    else if(me.y >= map->height() - fb::game::map::HALF_SCREEN_HEIGHT) // ÃÖÇÏ´Ü
+    else if(me.y >= map->height() - fb::game::map::HALF_SCREEN_HEIGHT) // ìµœí•˜ë‹¨
     {
         begin.y = std::max(int32_t(0), int32_t(map->height() - fb::game::map::MAX_SCREEN_HEIGHT - 1));
         end.y   = std::max(int32_t(0), map->height() - 1);
@@ -365,7 +365,7 @@ void fb::game::object::visibles(std::vector<object*>* shows, std::vector<object*
         }
     }
 
-    // »ó´ë ±âÁØÀ¸·Î ÇÑ ¿ÀºêÁ§Æ®
+    // ìƒëŒ€ ê¸°ì¤€ìœ¼ë¡œ í•œ ì˜¤ë¸Œì íŠ¸
     if(showns != nullptr || hiddens)
     {
         for(auto object : this->_map->objects)
@@ -713,9 +713,9 @@ fb::ostream fb::game::object::make_chat_stream(const std::string& message, chat:
 
 fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) const
 {
-    // 0x019A : Àåºñ ÇØÁ¦ »ç¿îµå
-    // 0x019B : Àåºñ ÀåÂø »ç¿îµå
-    // 0x0006 : ¼Òºñ¾ÆÀÌÅÛ »ç¿ë »ç¿îµå
+    // 0x019A : ì¥ë¹„ í•´ì œ ì‚¬ìš´ë“œ
+    // 0x019B : ì¥ë¹„ ì¥ì°© ì‚¬ìš´ë“œ
+    // 0x0006 : ì†Œë¹„ì•„ì´í…œ ì‚¬ìš© ì‚¬ìš´ë“œ
 
     fb::ostream             ostream;
     ostream.write_u8(0x19)
@@ -1294,7 +1294,7 @@ bool fb::game::life::move(fb::game::direction direction, std::vector<object*>* s
         break;
     }
 
-    // ³» ±âÁØÀ¸·Î ÇÑ ¿ÀºêÁ§Æ®
+    // ë‚´ ê¸°ì¤€ìœ¼ë¡œ í•œ ì˜¤ë¸Œì íŠ¸
     this->visibles(shows, hides, showns, hiddens);
     return true;
 }

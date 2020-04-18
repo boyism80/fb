@@ -78,7 +78,7 @@ public:
 
 #pragma region exception
 public:
-    DECLARE_EXCEPTION(full_inven_exception, "¼ÒÁöÇ°ÀÌ ²Ë Ã¡½À´Ï´Ù.")
+    DECLARE_EXCEPTION(full_inven_exception, "ì†Œì§€í’ˆì´ ê½‰ ì°¼ìŠµë‹ˆë‹¤.")
 #pragma endregion
 
 
@@ -301,7 +301,7 @@ public:
 
 //
 // class cash
-// °ÔÀÓ¸Ó´Ï
+// ê²Œì„ë¨¸ë‹ˆ
 //
 class cash : public item
 {
@@ -341,7 +341,7 @@ public:
 
 //
 // class consume
-// ¼Òºñ¾ÆÀÌÅÛ
+// ì†Œë¹„ì•„ì´í…œ
 //
 class consume : public item
 {
@@ -372,7 +372,7 @@ public:
 
 //
 // class pack
-// ¹­À½ ¾ÆÀÌÅÛ (µ¿µ¿ÁÖ °°Àº ¾ÆÀÌÅÛ)
+// ë¬¶ìŒ ì•„ì´í…œ (ë™ë™ì£¼ ê°™ì€ ì•„ì´í…œ)
 //
 class pack : public item
 {
@@ -413,12 +413,12 @@ public:
 
 //
 // class equipment
-// Àåºñ
+// ì¥ë¹„
 //
 class equipment : public item
 {
 public:
-    DECLARE_EXCEPTION(not_equipment_exception, "ÀÔÀ» ¼ö ¾ø´Â ¹°°ÇÀÔ´Ï´Ù.")
+    DECLARE_EXCEPTION(not_equipment_exception, "ì…ì„ ìˆ˜ ì—†ëŠ” ë¬¼ê±´ì…ë‹ˆë‹¤.")
 
 public:
     enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
@@ -615,7 +615,7 @@ protected:
 
 //
 // class weapon
-// ¹«±â
+// ë¬´ê¸°
 //
 class weapon : public equipment
 {
@@ -685,7 +685,7 @@ protected:
 
 //
 // class armor
-// °©¿Ê
+// ê°‘ì˜·
 //
 class armor : public equipment
 {
@@ -710,7 +710,7 @@ public:
 
 //
 // helmet
-// Åõ±¸
+// íˆ¬êµ¬
 //
 class helmet : public equipment
 {
@@ -735,7 +735,7 @@ public:
 
 //
 // class shield
-// ¹æÆĞ
+// ë°©íŒ¨
 //
 class shield : public equipment
 {
@@ -760,7 +760,7 @@ public:
 
 //
 // class ring
-// ¹İÁö
+// ë°˜ì§€
 //
 class ring : public equipment
 {
@@ -785,7 +785,7 @@ public:
 
 //
 // class auxilliary
-// º¸Á¶
+// ë³´ì¡°
 //
 class auxiliary : public equipment
 {
@@ -810,7 +810,7 @@ public:
 
 //
 // class arrow
-// È­»ì
+// í™”ì‚´
 //
 class arrow : public equipment
 {
@@ -838,14 +838,14 @@ public:
 class itemmix
 {
 public:
-    DECLARE_EXCEPTION(no_match_exception, "Á¶ÇÕÇÒ ¼ö ¾ø½À´Ï´Ù.")
+    DECLARE_EXCEPTION(no_match_exception, "ì¡°í•©í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")
 
 private:
     typedef struct _element
     {
     public:
-        item::core*                 item;       // Àç·á ¾ÆÀÌÅÛ
-        uint32_t                    count;      // °¹¼ö
+        item::core*                 item;       // ì¬ë£Œ ì•„ì´í…œ
+        uint32_t                    count;      // ê°¯ìˆ˜
 
     public:
         _element(fb::game::item::core* item, uint32_t count) : item(item), count(count) {}
@@ -853,9 +853,9 @@ private:
     } element;
 
 public:
-    std::vector<element>            require;   // Àç·á ¾ÆÀÌÅÛ
-    std::vector<element>            success;   // ¼º°ø½Ã ¾ò´Â ¾ÆÀÌÅÛ
-    std::vector<element>            failed;    // ½ÇÆĞ½Ã ¾ò´Â ¾ÆÀÌÅÛ
+    std::vector<element>            require;   // ì¬ë£Œ ì•„ì´í…œ
+    std::vector<element>            success;   // ì„±ê³µì‹œ ì–»ëŠ” ì•„ì´í…œ
+    std::vector<element>            failed;    // ì‹¤íŒ¨ì‹œ ì–»ëŠ” ì•„ì´í…œ
     float percentage;
 
 public:

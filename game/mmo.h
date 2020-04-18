@@ -95,68 +95,68 @@ namespace message
 
     namespace exception
     {
-        static const std::string RIDDING = "¸»À» Å¸°í´Â ÇÒ ¼ö ¾ø½À´Ï´Ù.";
-        static const std::string GHOST = "±Í½ÅÀº ÇÒ ¼ö ¾ø½À´Ï´Ù.";
-        static const std::string REQUIRE_CLASS = "Á÷¾÷À» ¼±ÅÃÇØ¾ß ÇÕ´Ï´Ù.";
-        static const std::string NO_CONVEYANCE = "Å» °ÍÀÌ ¾ø½À´Ï´Ù.";
-        static const std::string DISGUISE = "º¯½Å Áß¿¡´Â ÇÒ ¼ö ¾ø½À´Ï´Ù.";
-        static const std::string CANNOT_DROP_ITEM = "¹ö¸± ¼ö ¾ø´Â ¹°°ÇÀÔ´Ï´Ù.";
-        static const std::string CANNOT_THROW_ITEM = "´øÁú ¼ö ¾ø´Â ¹°°ÇÀÔ´Ï´Ù.";
-        static const std::string INVENTORY_OVERFLOW = "¼ÒÁöÇ°ÀÌ ²Ë Ã¡½À´Ï´Ù.";
-        static const std::string INVALID_TARGET = "´ë»óÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.";
+        static const std::string RIDDING = "ë§ì„ íƒ€ê³ ëŠ” í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+        static const std::string GHOST = "ê·€ì‹ ì€ í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+        static const std::string REQUIRE_CLASS = "ì§ì—…ì„ ì„ íƒí•´ì•¼ í•©ë‹ˆë‹¤.";
+        static const std::string NO_CONVEYANCE = "íƒˆ ê²ƒì´ ì—†ìŠµë‹ˆë‹¤.";
+        static const std::string DISGUISE = "ë³€ì‹  ì¤‘ì—ëŠ” í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
+        static const std::string CANNOT_DROP_ITEM = "ë²„ë¦´ ìˆ˜ ì—†ëŠ” ë¬¼ê±´ì…ë‹ˆë‹¤.";
+        static const std::string CANNOT_THROW_ITEM = "ë˜ì§ˆ ìˆ˜ ì—†ëŠ” ë¬¼ê±´ì…ë‹ˆë‹¤.";
+        static const std::string INVENTORY_OVERFLOW = "ì†Œì§€í’ˆì´ ê½‰ ì°¼ìŠµë‹ˆë‹¤.";
+        static const std::string INVALID_TARGET = "ëŒ€ìƒì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.";
     };
 
     namespace trade
     {
-        static const std::string SUCCESS = "±³È¯¿¡ ¼º°øÇß½À´Ï´Ù.";
-        static const std::string FAILED = "±³È¯¿¡ ½ÇÆĞÇß½À´Ï´Ù.";
-        static const std::string NOTIFY_LOCK_TO_PARTNER = "»ó´ë¹æÀÌ È®ÀÎÀ» ´­·¶½À´Ï´Ù.";
-        static const std::string CANCELLED_BY_ME = "³»°¡ ±³È¯À» Ãë¼ÒÇß½À´Ï´Ù.";
-        static const std::string CANCELLED_BY_PARTNER = "»ó´ë¹æÀÌ ±³È¯À» Ãë¼ÒÇß½À´Ï´Ù.";
-        static const std::string INVALID_COUNT = "°¹¼ö°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.";
-        static const std::string NOT_ALLOWED_TO_TRADE = "±³È¯ÀÌ ºÒ°¡´ÉÇÑ ¾ÆÀÌÅÛÀÔ´Ï´Ù.";
-        static const std::string REFUSED_BY_ME = "±³È¯ °ÅºÎ »óÅÂÀÔ´Ï´Ù.";
-        static const std::string REFUSED_BY_PARTNER = "´ÔÀº ±³È¯ °ÅºÎ »óÅÂÀÔ´Ï´Ù.";
-        static const std::string PARTNER_ALREADY_TRADING = "´ÔÀº ÀÌ¹Ì ±³È¯ ÁßÀÔ´Ï´Ù.";
-        static const std::string PARTNER_INVISIBLE = "´ë»óÀÌ º¸ÀÌÁö ¾Ê½À´Ï´Ù.";
-        static const std::string PARTNER_TOO_FAR = "´Ô°ú ³Ê¹« ¸Ö¸® ¶³¾îÁ® ÀÖ½À´Ï´Ù.";
+        static const std::string SUCCESS = "êµí™˜ì— ì„±ê³µí–ˆìŠµë‹ˆë‹¤.";
+        static const std::string FAILED = "êµí™˜ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.";
+        static const std::string NOTIFY_LOCK_TO_PARTNER = "ìƒëŒ€ë°©ì´ í™•ì¸ì„ ëˆŒë €ìŠµë‹ˆë‹¤.";
+        static const std::string CANCELLED_BY_ME = "ë‚´ê°€ êµí™˜ì„ ì·¨ì†Œí–ˆìŠµë‹ˆë‹¤.";
+        static const std::string CANCELLED_BY_PARTNER = "ìƒëŒ€ë°©ì´ êµí™˜ì„ ì·¨ì†Œí–ˆìŠµë‹ˆë‹¤.";
+        static const std::string INVALID_COUNT = "ê°¯ìˆ˜ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.";
+        static const std::string NOT_ALLOWED_TO_TRADE = "êµí™˜ì´ ë¶ˆê°€ëŠ¥í•œ ì•„ì´í…œì…ë‹ˆë‹¤.";
+        static const std::string REFUSED_BY_ME = "êµí™˜ ê±°ë¶€ ìƒíƒœì…ë‹ˆë‹¤.";
+        static const std::string REFUSED_BY_PARTNER = "ë‹˜ì€ êµí™˜ ê±°ë¶€ ìƒíƒœì…ë‹ˆë‹¤.";
+        static const std::string PARTNER_ALREADY_TRADING = "ë‹˜ì€ ì´ë¯¸ êµí™˜ ì¤‘ì…ë‹ˆë‹¤.";
+        static const std::string PARTNER_INVISIBLE = "ëŒ€ìƒì´ ë³´ì´ì§€ ì•ŠìŠµë‹ˆë‹¤.";
+        static const std::string PARTNER_TOO_FAR = "ë‹˜ê³¼ ë„ˆë¬´ ë©€ë¦¬ ë–¨ì–´ì ¸ ìˆìŠµë‹ˆë‹¤.";
     }
 
     namespace mix
     {
-        static const std::string SUCCESS = "¼º°øÇÏ¿´½À´Ï´Ù.";
-        static const std::string FAILED = "½ÇÆĞÇÏ¿´½À´Ï´Ù.";
+        static const std::string SUCCESS = "ì„±ê³µí•˜ì˜€ìŠµë‹ˆë‹¤.";
+        static const std::string FAILED = "ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.";
     }
 
     namespace ride
     {
-        static const std::string ON = "¸»¿¡ ÅÀ½À´Ï´Ù.";
-        static const std::string OFF = "¸»¿¡¼­ ³»·È½À´Ï´Ù.";
+        static const std::string ON = "ë§ì— íƒ”ìŠµë‹ˆë‹¤.";
+        static const std::string OFF = "ë§ì—ì„œ ë‚´ë ¸ìŠµë‹ˆë‹¤.";
     }
 
     namespace money
     {
-        static const std::string DROP = "µ·À» ¹ö·È½À´Ï´Ù.";
-        static const std::string FULL = "´õ ÀÌ»ó µ·À» °¡Áú ¼ö ¾ø½À´Ï´Ù.";
+        static const std::string DROP = "ëˆì„ ë²„ë ¸ìŠµë‹ˆë‹¤.";
+        static const std::string FULL = "ë” ì´ìƒ ëˆì„ ê°€ì§ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
     }
 
     namespace level
     {
-        static const std::string UP = "·¹º§ÀÌ ¿Ã¶ú½À´Ï´Ù";
+        static const std::string UP = "ë ˆë²¨ì´ ì˜¬ëìŠµë‹ˆë‹¤";
     }
 
     namespace board
     {
-        static const std::string ARTICLE_NOT_EXIST = "°Ô½Ã±ÛÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.";
-        static const std::string SECTION_NOT_EXIST = "¼½¼ÇÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù.";
-        static const std::string NOT_AUTH = "±ÇÇÑÀÌ ¾ø½À´Ï´Ù.";
-        static const std::string SUCCESS_DELETE = "±ÛÀÌ »èÁ¦µÇ¾ú½À´Ï´Ù.";
+        static const std::string ARTICLE_NOT_EXIST = "ê²Œì‹œê¸€ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.";
+        static const std::string SECTION_NOT_EXIST = "ì„¹ì…˜ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.";
+        static const std::string NOT_AUTH = "ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.";
+        static const std::string SUCCESS_DELETE = "ê¸€ì´ ì‚­ì œë˜ì—ˆìŠµë‹ˆë‹¤.";
     }
 
     namespace door
     {
-        static const std::string OPEN = "¹®À» ¿­¾ú½À´Ï´Ù.";
-        static const std::string CLOSE = "¹®À» ´İ¾Ò½À´Ï´Ù.";
+        static const std::string OPEN = "ë¬¸ì„ ì—´ì—ˆìŠµë‹ˆë‹¤.";
+        static const std::string CLOSE = "ë¬¸ì„ ë‹«ì•˜ìŠµë‹ˆë‹¤.";
     }
 
 

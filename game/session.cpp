@@ -365,7 +365,7 @@ void fb::game::session::money(uint32_t value)
     this->_money = value;
 }
 
-uint32_t fb::game::session::money_add(uint32_t value) // ¸Ô°í ³²Àº °ª ¸®ÅÏ
+uint32_t fb::game::session::money_add(uint32_t value) // ë¨¹ê³  ë‚¨ì€ ê°’ ë¦¬í„´
 {
     uint32_t capacity = 0xFFFFFFFF - this->_money;
     if(value > capacity)
@@ -624,10 +624,10 @@ fb::ostream fb::game::session::make_position_stream() const
 {
     fb::ostream             ostream;
     ostream.write_u8(0x04)
-        .write_u16(this->_position.x)  // ½ÇÁ¦ x ÁÂÇ¥
-        .write_u16(this->_position.y); // ½ÇÁ¦ y ÁÂÇ¥
+        .write_u16(this->_position.x)  // ì‹¤ì œ x ì¢Œí‘œ
+        .write_u16(this->_position.y); // ì‹¤ì œ y ì¢Œí‘œ
 
-                                 // ½ºÅ©¸°¿¡¼­ÀÇ x ÁÂÇ¥
+                                 // ìŠ¤í¬ë¦°ì—ì„œì˜ x ì¢Œí‘œ
     auto                    map = this->map();
     if(map->width() < map::MAX_SCREEN_WIDTH)
         ostream.write_u16(this->_position.x + map::HALF_SCREEN_WIDTH - (map->width() / 2));
@@ -638,7 +638,7 @@ fb::ostream fb::game::session::make_position_stream() const
     else
         ostream.write_u16(map::HALF_SCREEN_WIDTH);
 
-    // ½ºÅ©¸°¿¡¼­ÀÇ y ÁÂÇ¥
+    // ìŠ¤í¬ë¦°ì—ì„œì˜ y ì¢Œí‘œ
     if(map->height() < map::MAX_SCREEN_HEIGHT)
         ostream.write_u16(this->_position.y + map::HALF_SCREEN_HEIGHT - (map->height() / 2));
     else if(this->_position.y < map::HALF_SCREEN_HEIGHT)
@@ -666,7 +666,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
     }
 
     ostream.write_u32(this->id())
-        .write_u8(this->_state == fb::game::state::DISGUISE) // º¯½ÅÀ¯¹«
+        .write_u8(this->_state == fb::game::state::DISGUISE) // ë³€ì‹ ìœ ë¬´
         .write_u8(this->_sex) // sex
         .write_u8(this->_state) // state
         .write_u16(this->look()) // face
@@ -722,11 +722,11 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8(this->_defensive.physical)
         .write_u8(this->random_damage())
         .write_u8(this->hit())
-        .write("Å¬·£ Á¤º¸")
-        .write("Å¬·£ Å¸ÀÌÆ²")
+        .write("í´ëœ ì •ë³´")
+        .write("í´ëœ íƒ€ì´í‹€")
         .write(this->_title);
 
-    std::string             group_message = "±×·ì ¾øÀ½.";
+    std::string             group_message = "ê·¸ë£¹ ì—†ìŒ.";
     ostream.write(group_message);
 
     ostream.write_u8(this->option(options::GROUP));
@@ -774,31 +774,31 @@ fb::ostream fb::game::session::make_internal_info_stream() const
 fb::ostream fb::game::session::make_external_info_stream() const
 {
     //
-    // ´Ù¸¥ Ä³¸¯ÅÍ¸¦ Å¬¸¯ÇßÀ» ¶§ Ç¥ÇöµÉ Á¤º¸
+    // ë‹¤ë¥¸ ìºë¦­í„°ë¥¼ í´ë¦­í–ˆì„ ë•Œ í‘œí˜„ë  ì •ë³´
     //
 
     fb::ostream             ostream;
 
     ostream.write_u8(0x34)
         .write(this->_title)
-        .write("Å¬·£ ÀÌ¸§")
-        .write("Å¬·£ Å¸ÀÌÆ²");
+        .write("í´ëœ ì´ë¦„")
+        .write("í´ëœ íƒ€ì´í‹€");
 
-    // Å¬·¡½º ÀÌ¸§
+    // í´ë˜ìŠ¤ ì´ë¦„
     const auto              class_name = db::class2name(this->_class, this->_promotion);
     if(class_name == nullptr)
         return fb::ostream();
 
-    ostream.write(*class_name)  // Á÷¾÷
-        .write(this->_name);    // ÀÌ¸§
+    ostream.write(*class_name)  // ì§ì—…
+        .write(this->_name);    // ì´ë¦„
 
-    // Ä³¸¯ÅÍ »óÅÂ
+    // ìºë¦­í„° ìƒíƒœ
     bool                    disguise = false;
-    if(disguise) // º¯½Å»óÅÂ
+    if(disguise) // ë³€ì‹ ìƒíƒœ
     {
         ostream.write_u8(0x01);
     }
-    else // ÀÏ¹İ»óÅÂ
+    else // ì¼ë°˜ìƒíƒœ
     {
         ostream.write_u8(0x00)
             .write_u8(this->_sex)
@@ -808,50 +808,50 @@ fb::ostream fb::game::session::make_external_info_stream() const
     }
 
 
-    // ÀåºñÁ¤º¸
+    // ì¥ë¹„ì •ë³´
     std::stringstream       sstream;
-    auto                    armor = this->items.armor(); // °©¿Ê
+    auto                    armor = this->items.armor(); // ê°‘ì˜·
     ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
            .write_u8(armor != nullptr ? armor->color() : 0x00);
 
-    auto                    weapon = this->items.weapon(); // ¹«±â
+    auto                    weapon = this->items.weapon(); // ë¬´ê¸°
     ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
            .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-    auto                    shield = this->items.shield(); // ¹æÆĞ
+    auto                    shield = this->items.shield(); // ë°©íŒ¨
     ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
            .write_u8(shield != nullptr ? shield->color() : 0x00);
 
-    auto                    helmet = this->items.helmet(); // Åõ±¸
+    auto                    helmet = this->items.helmet(); // íˆ¬êµ¬
     ostream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
            .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-    auto                    ring_l = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // ¿Ş¼Õ
+    auto                    ring_l = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // ì™¼ì†
     ostream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
            .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-    auto                    ring_r = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // ¿À¸¥¼Õ
+    auto                    ring_r = this->items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // ì˜¤ë¥¸ì†
     ostream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
            .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-    auto                    aux_l = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // º¸Á¶1
+    auto                    aux_l = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // ë³´ì¡°1
     ostream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
            .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-    auto                    aux_r = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // º¸Á¶2
+    auto                    aux_r = this->items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // ë³´ì¡°2
     ostream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
            .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 
 
-    // ÀåºñÁ¤º¸ ÅØ½ºÆ®
-    sstream << " w:¹«±â  :" << (weapon != nullptr ? weapon->name() : "¾øÀ½") << std::endl;
-    sstream << " a:°©¿Ê  :" << (armor  != nullptr ? armor->name()  : "¾øÀ½") << std::endl;
-    sstream << " s:¹æÆĞ  :" << (shield != nullptr ? shield->name() : "¾øÀ½") << std::endl;
-    sstream << " h:¸Ó¸®  :" << (helmet != nullptr ? helmet->name() : "¾øÀ½") << std::endl;
-    sstream << " l:¿Ş¼Õ  :" << (ring_l != nullptr ? ring_l->name() : "¾øÀ½") << std::endl;
-    sstream << " r:¿À¸¥¼Õ:" << (ring_r != nullptr ? ring_r->name() : "¾øÀ½") << std::endl;
-    sstream << " [:º¸Á¶1 :" << (aux_l  != nullptr ? aux_l->name()  : "¾øÀ½") << std::endl;
-    sstream << " ]:º¸Á¶2 :" << (aux_r  != nullptr ? aux_r->name()  : "¾øÀ½") << std::endl;
+    // ì¥ë¹„ì •ë³´ í…ìŠ¤íŠ¸
+    sstream << " w:ë¬´ê¸°  :" << (weapon != nullptr ? weapon->name() : "ì—†ìŒ") << std::endl;
+    sstream << " a:ê°‘ì˜·  :" << (armor  != nullptr ? armor->name()  : "ì—†ìŒ") << std::endl;
+    sstream << " s:ë°©íŒ¨  :" << (shield != nullptr ? shield->name() : "ì—†ìŒ") << std::endl;
+    sstream << " h:ë¨¸ë¦¬  :" << (helmet != nullptr ? helmet->name() : "ì—†ìŒ") << std::endl;
+    sstream << " l:ì™¼ì†  :" << (ring_l != nullptr ? ring_l->name() : "ì—†ìŒ") << std::endl;
+    sstream << " r:ì˜¤ë¥¸ì†:" << (ring_r != nullptr ? ring_r->name() : "ì—†ìŒ") << std::endl;
+    sstream << " [:ë³´ì¡°1 :" << (aux_l  != nullptr ? aux_l->name()  : "ì—†ìŒ") << std::endl;
+    sstream << " ]:ë³´ì¡°2 :" << (aux_r  != nullptr ? aux_r->name()  : "ì—†ìŒ") << std::endl;
     ostream.write(sstream.str());
 
 
@@ -860,7 +860,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
         .write_u8(this->_options[fb::game::options::TRADE])
         .write_u32(0x00000000); // unknown
 
-                                // ¾÷Àû
+                                // ì—…ì 
     ostream.write_u8(this->_legends.size());
     for(auto legend : this->_legends)
     {

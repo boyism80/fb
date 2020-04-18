@@ -101,7 +101,7 @@ public:
     ~thread();
 
 public:
-    bool                        resume(int num_args) { return lua_resume(*this, nullptr, num_args) == 0; } // Á¾·áµÇ¸é true, ¾Æ´Ï¸é false
+    bool                        resume(int num_args) { return lua_resume(*this, nullptr, num_args) == 0; } // ì¢…ë£Œë˜ë©´ true, ì•„ë‹ˆë©´ false
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
 };
 
@@ -120,13 +120,13 @@ void bind_class()
 template <typename T, typename B>
 void bind_class()
 {
-    // »õ·Î¿î ¸ŞÅ¸Å×ÀÌºí Çü½ÄÀ» »ı¼º (T : -1)
+    // ìƒˆë¡œìš´ ë©”íƒ€í…Œì´ë¸” í˜•ì‹ì„ ìƒì„± (T : -1)
     luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());
     
-    // »ó¼Ó¹ŞÀ» ¸ŞÅ¸Å×ÀÌºíÀ» °¡Á®¿Â´Ù. (B : -1) (T : -2)
+    // ìƒì†ë°›ì„ ë©”íƒ€í…Œì´ë¸”ì„ ê°€ì ¸ì˜¨ë‹¤. (B : -1) (T : -2)
     luaL_getmetatable(main::get(), B::LUA_METATABLE_NAME.c_str());
 
-    // »ó¼Ó¹ŞÀ» ¸ŞÅ¸Å×ÀÌºí·Î ¼³Á¤ÇÑ´Ù. (T : -1)
+    // ìƒì†ë°›ì„ ë©”íƒ€í…Œì´ë¸”ë¡œ ì„¤ì •í•œë‹¤. (T : -1)
     lua_setmetatable(main::get(), -2);
 
     lua_pushvalue(main::get(), -1);

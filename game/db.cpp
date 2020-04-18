@@ -130,8 +130,8 @@ fb::game::item::core* fb::game::db::create_item(uint32_t id, const Json::Value& 
 
     if(types == "consume")
     {
-        std::string     bundle_type = data["bundle type"].asString();   // package Ex) µ¿µ¿ÁÖ
-                                                                        // bundle  Ex) µµÅä¸®
+        std::string     bundle_type = data["bundle type"].asString();   // package Ex) ë™ë™ì£¼
+                                                                        // bundle  Ex) ë„í† ë¦¬
         uint32_t        capacity        = data["capacity"].asInt();
         if (bundle_type == "package")
             return new fb::game::pack::core(name, icon, color, capacity);
@@ -504,7 +504,7 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
         auto                core = db::name2npc(npc_name);
         if(core == NULL)
         {
-            std::cout << "Á¸ÀçÇÏÁö ¾Ê´Â NPCÀÔ´Ï´Ù. : " << npc_name << std::endl;
+            std::cout << "ì¡´ì¬í•˜ì§€ ì•ŠëŠ” NPCì…ë‹ˆë‹¤. : " << npc_name << std::endl;
             continue;
         }
 
@@ -513,7 +513,7 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
         auto                map = db::name2map(map_name);
         if(map == NULL)
         {
-            std::cout << "Á¸ÀçÇÏÁö ¾Ê´Â ¸ÊÀÔ´Ï´Ù. : " << map_name << std::endl;
+            std::cout << "ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ë§µì…ë‹ˆë‹¤. : " << map_name << std::endl;
             continue;
         }
 
@@ -529,7 +529,7 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
             direction = fb::game::direction::LEFT;
         else
         {
-            std::cout << "NPCÀÇ ¹æÇâÀÌ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù. : " << npc_name << std::endl;
+            std::cout << "NPCì˜ ë°©í–¥ì´ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤. : " << npc_name << std::endl;
             continue;
         }
 
@@ -845,15 +845,15 @@ bool fb::game::db::load_spell(const std::string& db_fname)
 
 bool fb::game::db::load_board(const std::string& db_fname)
 {
-    db::_board.add("°øÁö»çÇ×");
-    auto section = db::_board.add("°«½ÂÇöÀÇ ¿ª»ç");
+    db::_board.add("ê³µì§€ì‚¬í•­");
+    auto section = db::_board.add("ê°“ìŠ¹í˜„ì˜ ì—­ì‚¬");
 
     for(int i = 0; i < 100; i++)
     {
         std::stringstream sstream;
-        sstream << "°«½ÂÇö ¿¬´ë±â - " << std::to_string(i);
+        sstream << "ê°“ìŠ¹í˜„ ì—°ëŒ€ê¸° - " << std::to_string(i);
 
-        section->add(sstream.str(), sstream.str(), "°«½ÂÇö");
+        section->add(sstream.str(), sstream.str(), "ê°“ìŠ¹í˜„");
     }
 
     return true;

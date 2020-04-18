@@ -329,7 +329,7 @@ fb::ostream fb::game::board::make_message_stream(const std::string& message, boo
     ostream                 ostream;
 
     ostream.write_u8(0x31)
-        .write_u8(refresh ? 0x06 : 0x07)     // mail °ü·Ã 0x06ÀÎ °Í °°´Ù. È®ÀÎ ÇÊ¿ä
+        .write_u8(refresh ? 0x06 : 0x07)     // mail ê´€ë ¨ 0x06ì¸ ê²ƒ ê°™ë‹¤. í™•ì¸ í•„ìš”
         .write_u8(success)
         .write(message)
         .write_u8(0x00);

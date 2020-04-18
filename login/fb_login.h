@@ -20,13 +20,13 @@ namespace fb { namespace login {
 #pragma region message
 namespace message
 {
-    static const char*      INVALID_NAME                = "юл╦╖юл ╠Ф╟еЁ╙ юШгугоаЖ ╬й╫ю╢о╢ы.";
-    static const char*      PASSWORD_SIZE               = "╬охё╢б 4юз юл╩С 8юз юлго";
-    static const char*      SIMPLE_PASSWORD             = "╬охё╟║ ╢э╪Ьгу╢о╢ы.";
-    static const char*      SUCCESS_REGISTER_ACCOUNT    = "╣Н╥о©о╥А, юл╬Нго╠Б╦╕ ╪╠ецго╪╪©Д.";
-    static const char*      SUCCESS_CHANGE_PASSWORD     = "╨╞╟Ф╣ф╢ы╦╝";
-    static const char*      INVALID_BIRTHDAY            = "╩ЩЁБ©Ыюоюл ©ц╧ы╦ёаЖ ╬й╫ю╢о╢ы.";
-    static const char*      NEW_PW_EQUALIZATION         = "╠Ба╦ ╬охёх╜ ╣©юогу╢о╢ы.";
+    static const char*      INVALID_NAME                = "Л²╢К╕└Л²╢ Й╦╦Й╠╟К┌≤ Л═│М∙╘М∙≤Л╖─ Л∙┼Л┼╣К▀┬К▀╓.";
+    static const char*      PASSWORD_SIZE               = "Л∙■М≤╦К┼■ 4Л·░ Л²╢Л┐│ 8Л·░ Л²╢М∙≤";
+    static const char*      SIMPLE_PASSWORD             = "Л∙■М≤╦Й╟─ К▀╗Л┬°М∙╘К▀┬К▀╓.";
+    static const char*      SUCCESS_REGISTER_ACCOUNT    = "К⌠╠К║²Л≥└Кё▄, Л²╢Л√╢М∙≤Й╦╟К╔╪ Л└═М┐²М∙≤Л└╦Л ■.";
+    static const char*      SUCCESS_CHANGE_PASSWORD     = "КЁ─Й╡╫К░░К▀╓К╕╛";
+    static const char*      INVALID_BIRTHDAY            = "Л┐²К┘└Л⌡■Л²╪Л²╢ Л≤╛К╟■К╔╢Л╖─ Л∙┼Л┼╣К▀┬К▀╓.";
+    static const char*      NEW_PW_EQUALIZATION         = "Й╦╟Л║╢ Л∙■М≤╦М≥■ К▐≥Л²╪М∙╘К▀┬К▀╓.";
 }
 #pragma endregion
 
