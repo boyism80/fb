@@ -1,12 +1,6 @@
 #include "spell.h"
 #include "fb_game.h"
 
-IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
-{"type",        fb::game::spell::builtin_type},
-{"name",        fb::game::spell::builtin_name},
-{"message",     fb::game::spell::builtin_message},
-END_LUA_EXTENSION
-
 fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
     _type(type),
     _name(name),

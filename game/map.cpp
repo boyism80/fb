@@ -2,15 +2,6 @@
 #include "session.h"
 #include "fb_game.h"
 
-IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
-{"name",        fb::game::map::builtin_name},
-{"objects",     fb::game::map::builtin_objects},
-{"width",       fb::game::map::builtin_width},
-{"height",      fb::game::map::builtin_height},
-{"area",        fb::game::map::builtin_area},
-{"movable",     fb::game::map::builtin_movable},
-END_LUA_EXTENSION
-
 static const uint16_t crc16tab[256] = 
 {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,

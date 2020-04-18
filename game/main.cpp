@@ -9,8 +9,7 @@
 #include "lua.h"
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "lua/lua51.lib")
-#pragma comment(lib, "lua/lua5.1.lib")
+#pragma comment(lib, "lua/lua5.3.5-static.lib")
 #if defined DEBUG | defined _DEBUG
 #pragma comment(lib, "json/json_vc71_libmtd.lib")
 #pragma comment(lib, "zlib/zlibd.lib")

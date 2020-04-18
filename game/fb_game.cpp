@@ -4,10 +4,126 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
+{"type",        fb::game::spell::builtin_type},
+{"name",        fb::game::spell::builtin_name},
+{"message",     fb::game::spell::builtin_message},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
+{"name",        fb::game::map::builtin_name},
+{"objects",     fb::game::map::builtin_objects},
+{"width",       fb::game::map::builtin_width},
+{"height",      fb::game::map::builtin_height},
+{"area",        fb::game::map::builtin_area},
+{"movable",     fb::game::map::builtin_movable},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::object::core, "fb.game.object.core")
+{"name",        fb::game::object::core::builtin_name},
+{"look",        fb::game::object::core::builtin_look},
+{"color",       fb::game::object::core::builtin_color},
+{"dialog",      fb::game::object::core::builtin_dialog},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::mob::core, "fb.game.mob.core")
+{"speed",       fb::game::mob::core::builtin_speed},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
+{"__eq",                fb::game::object::builtin_eq},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::npc::core, "fb.game.npc.core")
+{"input_dialog",        fb::game::npc::core::builtin_input_dialog},
+{"menu_dialog",         fb::game::npc::core::builtin_menu_dialog},
+{"item_dialog",         fb::game::npc::core::builtin_item_dialog},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
+{"__eq",                fb::game::object::builtin_eq},
+{"input_dialog",        fb::game::npc::builtin_input_dialog},
+{"menu_dialog",         fb::game::npc::builtin_menu_dialog},
+{"item_dialog",         fb::game::npc::builtin_item_dialog},
+END_LUA_EXTENSION
+
+
+IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
+{"core",        fb::game::object::builtin_core},
+{"__eq",        fb::game::object::builtin_eq},
+{"__tostring",  fb::game::object::builtin_tostring},
+{"id",          fb::game::object::builtin_id},
+{"name",        fb::game::object::builtin_name},
+{"dialog",      fb::game::object::builtin_dialog},
+{"sound",       fb::game::object::builtin_sound},
+{"position",    fb::game::object::builtin_position},
+{"direction",   fb::game::object::builtin_direction},
+{"chat",        fb::game::object::builtin_chat},
+{"message",     fb::game::object::builtin_message},
+{"buff",        fb::game::object::builtin_buff},
+{"isbuff",      fb::game::object::builtin_isbuff},
+{"unbuff",      fb::game::object::builtin_unbuff},
+{"effect",      fb::game::object::builtin_effect},
+{"map",         fb::game::object::builtin_map},
+{"mkitem",      fb::game::object::builtin_mkitem},
+{"showings",    fb::game::object::builtin_showings},
+{"showns",      fb::game::object::builtin_showns},
+{"front",       fb::game::object::builtin_front},
+END_LUA_EXTENSION
+
+
+IMPLEMENT_LUA_EXTENSION(fb::game::life::core, "fb.game.life.core")
+{"hp",          fb::game::life::core::builtin_hp},
+{"mp",          fb::game::life::core::builtin_mp},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
+{"__eq",        fb::game::object::builtin_eq},
+{"hp",          fb::game::life::builtin_hp},
+{"mp",          fb::game::life::builtin_mp},
+{"hp_inc",      fb::game::life::builtin_hp_inc},
+{"mp_inc",      fb::game::life::builtin_mp_inc},
+{"hp_dec",      fb::game::life::builtin_hp_dec},
+{"mp_dec",      fb::game::life::builtin_mp_dec},
+{"base_hp",     fb::game::life::builtin_base_hp},
+{"base_mp",     fb::game::life::builtin_base_mp},
+{"action",      fb::game::life::builtin_action},
+{"spell",       fb::game::life::builtin_spell},
+{"damage",      fb::game::life::builtin_damage},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::item::core, "fb.game.item.core")
+{"make",        fb::game::item::core::builtin_make},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
+{"__eq",            fb::game::object::builtin_eq},
+{"look",            fb::game::session::builtin_look},
+{"color",           fb::game::session::builtin_color},
+{"money",           fb::game::session::builtin_money},
+{"exp",             fb::game::session::builtin_exp},
+{"base_hp",         fb::game::session::builtin_base_hp},
+{"base_mp",         fb::game::session::builtin_base_mp},
+{"str",             fb::game::session::builtin_strength},
+{"dex",             fb::game::session::builtin_dexterity},
+{"int",             fb::game::session::builtin_intelligence},
+{"item",            fb::game::session::builtin_item},
+{"items",           fb::game::session::builtin_items},
+{"dropitem",        fb::game::session::builtin_item_drop},
+{"mkitem",          fb::game::session::builtin_mkitem},
+{"rmitem",          fb::game::session::builtin_rmitem},
+{"state",           fb::game::session::builtin_state},
+END_LUA_EXTENSION
+
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
     lua::env<acceptor>("acceptor", this);
-
     lua::bind_class<lua::luable>();
     lua::bind_class<spell, lua::luable>();
     lua::bind_class<map, lua::luable>();

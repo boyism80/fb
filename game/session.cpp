@@ -6,25 +6,6 @@
 
 using namespace fb::game;
 
-IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
-{"__eq",            fb::game::object::builtin_eq},
-{"look",            fb::game::session::builtin_look},
-{"color",           fb::game::session::builtin_color},
-{"money",           fb::game::session::builtin_money},
-{"exp",             fb::game::session::builtin_exp},
-{"base_hp",         fb::game::session::builtin_base_hp},
-{"base_mp",         fb::game::session::builtin_base_mp},
-{"str",             fb::game::session::builtin_strength},
-{"dex",             fb::game::session::builtin_dexterity},
-{"int",             fb::game::session::builtin_intelligence},
-{"item",            fb::game::session::builtin_item},
-{"items",           fb::game::session::builtin_items},
-{"dropitem",        fb::game::session::builtin_item_drop},
-{"mkitem",          fb::game::session::builtin_mkitem},
-{"rmitem",          fb::game::session::builtin_rmitem},
-{"state",           fb::game::session::builtin_state},
-END_LUA_EXTENSION
-
 session::session(SOCKET socket) : 
     life((life::core*)nullptr, socket, 0, 0, 0),
     _socket(socket),

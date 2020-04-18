@@ -8,13 +8,6 @@
 #undef small
 #endif
 
-IMPLEMENT_LUA_EXTENSION(fb::game::item::core, "fb.game.item.core")
-{"make",        fb::game::item::core::builtin_make},
-END_LUA_EXTENSION
-
-IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
-END_LUA_EXTENSION
-
 const fb::game::item::item_limit fb::game::item::DEFAULT_LIMIT;
 const fb::game::cash::core fb::game::cash::BRONZE("¿±Àü", 23 + 0xBFFF);
 const fb::game::cash::core fb::game::cash::BRONZE_BUNDLE("¿±Àü¹¶Ä¡", 74 + 0xBFFF);

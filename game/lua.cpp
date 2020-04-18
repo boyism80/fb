@@ -1,9 +1,10 @@
 #include "lua.h"
 #include "object.h"
+#include "spell.h"
+#include "map.h"
+#include "mob.h"
+#include "npc.h"
 using namespace fb::game::lua;
-
-IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
-END_LUA_EXTENSION
 
 main* main::_instance;
 
@@ -68,7 +69,7 @@ thread::~thread()
     luaL_unref(main::get(), LUA_REGISTRYINDEX, this->_ref);
 }
 
-main::main() : state(lua_open())
+main::main() : state(luaL_newstate())
 {
     luaL_openlibs(*this);
 }

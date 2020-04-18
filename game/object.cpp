@@ -5,58 +5,6 @@
 #include "fb_game.h"
 #include "builtin_function.h"
 
-IMPLEMENT_LUA_EXTENSION(fb::game::object::core, "fb.game.object.core")
-{"name",        fb::game::object::core::builtin_name},
-{"look",        fb::game::object::core::builtin_look},
-{"color",       fb::game::object::core::builtin_color},
-{"dialog",      fb::game::object::core::builtin_dialog},
-END_LUA_EXTENSION
-
-
-IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
-{"core",        fb::game::object::builtin_core},
-{"__eq",        fb::game::object::builtin_eq},
-{"__tostring",  fb::game::object::builtin_tostring},
-{"id",          fb::game::object::builtin_id},
-{"name",        fb::game::object::builtin_name},
-{"dialog",      fb::game::object::builtin_dialog},
-{"sound",       fb::game::object::builtin_sound},
-{"position",    fb::game::object::builtin_position},
-{"direction",   fb::game::object::builtin_direction},
-{"chat",        fb::game::object::builtin_chat},
-{"message",     fb::game::object::builtin_message},
-{"buff",        fb::game::object::builtin_buff},
-{"isbuff",      fb::game::object::builtin_isbuff},
-{"unbuff",      fb::game::object::builtin_unbuff},
-{"effect",      fb::game::object::builtin_effect},
-{"map",         fb::game::object::builtin_map},
-{"mkitem",      fb::game::object::builtin_mkitem},
-{"showings",    fb::game::object::builtin_showings},
-{"showns",      fb::game::object::builtin_showns},
-{"front",       fb::game::object::builtin_front},
-END_LUA_EXTENSION
-
-
-IMPLEMENT_LUA_EXTENSION(fb::game::life::core, "fb.game.life.core")
-{"hp",          fb::game::life::core::builtin_hp},
-{"mp",          fb::game::life::core::builtin_mp},
-END_LUA_EXTENSION
-
-IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
-{"__eq",        fb::game::object::builtin_eq},
-{"hp",          fb::game::life::builtin_hp},
-{"mp",          fb::game::life::builtin_mp},
-{"hp_inc",      fb::game::life::builtin_hp_inc},
-{"mp_inc",      fb::game::life::builtin_mp_inc},
-{"hp_dec",      fb::game::life::builtin_hp_dec},
-{"mp_dec",      fb::game::life::builtin_mp_dec},
-{"base_hp",     fb::game::life::builtin_base_hp},
-{"base_mp",     fb::game::life::builtin_base_mp},
-{"action",      fb::game::life::builtin_action},
-{"spell",       fb::game::life::builtin_spell},
-{"damage",      fb::game::life::builtin_damage},
-END_LUA_EXTENSION
-
 fb::game::object::core::core(const std::string& name, uint16_t look, uint8_t color) : 
     _name(name),
     _look(look),

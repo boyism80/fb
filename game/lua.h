@@ -76,6 +76,7 @@ public:
     operator                    lua_State* () const;
 };
 
+
 class main : public state
 {
 private:
@@ -100,7 +101,7 @@ public:
     ~thread();
 
 public:
-    bool                        resume(int num_args) { return lua_resume(*this, num_args) == 0; } // 종료되면 true, 아니면 false
+    bool                        resume(int num_args) { return lua_resume(*this, nullptr, num_args) == 0; } // 종료되면 true, 아니면 false
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
 };
 
@@ -113,7 +114,7 @@ void bind_class()
 
     lua_pushvalue(main::get(), -1);
     lua_setfield(main::get(), -2, "__index");
-    luaL_register(main::get(), NULL, T::LUA_METHODS);
+    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);
 }
 
 template <typename T, typename B>
@@ -130,7 +131,7 @@ void bind_class()
 
     lua_pushvalue(main::get(), -1);
     lua_setfield(main::get(), -2, "__index");
-    luaL_register(main::get(), NULL, T::LUA_METHODS);
+    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);
 }
 
 template <typename T>

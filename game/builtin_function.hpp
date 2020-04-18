@@ -48,7 +48,7 @@ int builtin_menu_dialog(lua_State* lua)
     auto message = lua_tostring(lua, 3);
 
     // Read menu list
-    auto size = lua_objlen(lua, 4);
+    auto size = lua_rawlen(lua, 4);
     std::vector<std::string> menus;
     for(int i = 0; i < size; i++)
     {
@@ -69,7 +69,7 @@ int builtin_item_dialog(lua_State* lua)
     auto message = lua_tostring(lua, 3);
 
     // Read menu list
-    auto size = lua_objlen(lua, 4);
+    auto size = lua_rawlen(lua, 4);
     std::vector<item::core*> items;
     for(int i = 0; i < size; i++)
     {

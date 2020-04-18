@@ -4,14 +4,6 @@
 #include <iostream>
 #include "mob.h"
 
-IMPLEMENT_LUA_EXTENSION(fb::game::mob::core, "fb.game.mob.core")
-{"speed",       fb::game::mob::core::builtin_speed},
-END_LUA_EXTENSION
-
-IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
-{"__eq",                fb::game::object::builtin_eq},
-END_LUA_EXTENSION
-
 fb::game::mob::core::core(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
     fb::game::life::core(name, look, color, hp, mp),
     _damage(0, 0),

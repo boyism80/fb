@@ -22,10 +22,4 @@ function handle_click(session, npc)
 		message = npc:input_dialog(session, "아무거나 입력해보세요")
 		npc:dialog(session, string.format('입력한 메시지 : %s', message))
 	end
-
-	session:action(6)
-	session:buff('무장.', 180)
-	session:effect(110)
-	session:sound(8)
-	session:message('무장을 외웠습니다.')
 end
