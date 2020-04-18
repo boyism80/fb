@@ -171,11 +171,11 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
     this->register_handle(0x0F, &acceptor::handle_spell);               // 스펠 핸들러
-    this->register_handle(0x20, &acceptor::handle_door);               // 스펠 핸들러
+    this->register_handle(0x20, &acceptor::handle_door);                // 스펠 핸들러
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
-    this->register_timer(1000, &acceptor::handle_buff_timer);          // 몹 리젠 타이머
+    this->register_timer(1000, &acceptor::handle_buff_timer);           // 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
