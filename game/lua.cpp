@@ -1,9 +1,4 @@
 #include "lua.h"
-#include "object.h"
-#include "spell.h"
-#include "map.h"
-#include "mob.h"
-#include "npc.h"
 using namespace fb::game::lua;
 
 main* main::_instance;
