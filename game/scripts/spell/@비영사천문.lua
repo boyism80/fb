@@ -31,7 +31,7 @@ end
 
 
 function handle_spell(me, spell, message)
-	local front = me:front(0xff - 0x01)
+	local front = me:front(0xff & (~0x01))
 	if front == nil then
 		return
 	end
