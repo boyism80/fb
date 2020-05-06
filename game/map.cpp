@@ -184,14 +184,14 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     for(const auto door : db::doors())
     {
         position.x = position.y = 0;
-        while(this->find_door(*door, position, true))
+        while(door->find(*this, position, true))
         {
             this->doors.add(this, *door, position, true);
             position.x += door->size();
         }
 
         position.x = position.y = 0;
-        while(this->find_door(*door, position, false))
+        while(door->find(*this, position, false))
         {
             this->doors.add(this, *door, position, false);
             position.x += door->size();
@@ -208,41 +208,6 @@ fb::game::map::~map()
 
     for(auto warp : this->_warps)
         delete warp;
-}
-
-bool fb::game::map::matched_door(const fb::game::door& door, const point16_t& position, bool open) const
-{
-    auto door_size = door.size();
-    for(int i = 0; i < door_size; i++)
-    {
-        auto now = (*this)(position.x + i, position.y)->object;
-        auto dst = open ? door[i].open : door[i].close;
-
-        if(now != dst)
-            return false;
-    }
-
-    return true;
-}
-
-bool fb::game::map::find_door(const fb::game::door& door, point16_t& position, bool open) const
-{
-    bool init = true;
-    auto door_size = door.size();
-    for(int offset = position.y * this->_size.width + position.x; offset < this->_size.width * this->_size.height; offset++)
-    {
-        auto row = offset / this->_size.width;
-        auto col = offset % this->_size.width;
-
-        auto pos = point16_t(col, row);
-        if(this->matched_door(door, pos, open) == false)
-            continue;
-
-        position = pos;
-        return true;
-    }
-
-    return false;
 }
 
 uint16_t fb::game::map::id() const
@@ -401,10 +366,10 @@ void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)
 fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
 {
     if(x > this->_size.width)
-        return NULL;
+        return nullptr;
 
     if(y > this->_size.height)
-        return NULL;
+        return nullptr;
 
     return this->_tiles + (y * this->_size.width + x);
 }
@@ -559,69 +524,4 @@ int fb::game::map::builtin_movable(lua_State* lua)
 
     lua_pushboolean(lua, map->movable(position));
     return 1;
-}
-
-fb::game::map::door::door(fb::game::map* owner, fb::game::door& core, const point16_t position, bool opened) : 
-    _owner(owner),
-    _core(core), 
-    position(position), 
-    _opened(opened)
-{
-}
-
-fb::game::map::door::~door()
-{
-}
-
-const fb::game::door& fb::game::map::door::core() const
-{
-    return this->_core;
-}
-
-bool fb::game::map::door::toggle()
-{
-    this->_opened = !this->_opened;
-
-    for(int i = 0; i < this->_core.size(); i++)
-    {
-        auto& object = (*this->_owner)(this->position.x + i, this->position.y)->object;
-        auto  door_e = this->_opened ? this->_core[i].open : this->_core[i].close;
-        
-        object = door_e;
-    }
-
-    return true;
-}
-
-bool fb::game::map::door::opened() const
-{
-    return this->_opened;
-}
-
-fb::game::map::doors::doors()
-{
-}
-
-fb::game::map::doors::~doors()
-{
-    for(auto door : *this)
-        delete door;
-}
-
-void fb::game::map::doors::add(map* map, fb::game::door& core, const point16_t position, bool opened)
-{
-    this->push_back(new map::door(map, core, position, opened));
-}
-
-fb::game::map::door* fb::game::map::doors::find(const point16_t position)
-{
-    for(auto door : *this)
-    {
-        const auto& core = door->core();
-        for(int i = 0; i < core.size(); i++)
-        {
-            if(position == point16_t(door->position.x + i, door->position.y))
-                return door;
-        }
-    }
 }

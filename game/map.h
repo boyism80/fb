@@ -8,35 +8,11 @@
 #include "stream.h"
 #include "zlib/zlib.h"
 #include "object.h"
+#include "door.h"
 
 namespace fb { namespace game {
 
 class session;
-
-typedef struct _door_element
-{
-    uint16_t                    open;
-    uint16_t                    close;
-
-    _door_element(uint16_t open, uint16_t close) : open(open), close(close) {}
-    ~_door_element() {}
-} door_element;
-
-class door : private std::vector<door_element>
-{
-public:
-    using std::vector<door_element>::begin;
-    using std::vector<door_element>::end;
-    using std::vector<door_element>::cbegin;
-    using std::vector<door_element>::cend;
-    using std::vector<door_element>::rbegin;
-    using std::vector<door_element>::rend;
-    using std::vector<door_element>::crbegin;
-    using std::vector<door_element>::crend;
-    using std::vector<door_element>::size;
-    using std::vector<door_element>::push_back;
-    using std::vector<door_element>::operator[];
-};
 
 class objects : private std::vector<fb::game::object*>
 {
@@ -141,48 +117,6 @@ public:
 #pragma endregion
 
 
-#pragma region class
-class door
-{
-private:
-    game::map*                  _owner;
-    game::door&                 _core;
-    bool                        _opened;
-
-public:
-    const point16_t             position;
-
-public:
-    door(fb::game::map* owner, fb::game::door& core, const point16_t position, bool opened);
-    ~door();
-
-public:
-    const fb::game::door&       core() const;
-    bool                        toggle();
-    bool                        opened() const;
-};
-
-class doors : private std::vector<door*>
-{
-public:
-    using std::vector<door*>::begin;
-    using std::vector<door*>::end;
-    using std::vector<door*>::cbegin;
-    using std::vector<door*>::cend;
-    using std::vector<door*>::rbegin;
-    using std::vector<door*>::rend;
-
-public:
-    doors();
-    ~doors();
-
-public:
-    void                        add(map* map, fb::game::door& core, const point16_t position, bool opened);
-    door*                       find(const point16_t position);
-};
-#pragma endregion
-
-
 #pragma region private field
 private:
     uint16_t                    _id;
@@ -208,12 +142,6 @@ public:
 public:
     map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, uint32_t size);
     ~map();
-#pragma endregion
-
-
-#pragma region private method
-    bool                        matched_door(const fb::game::door& door, const point16_t& position, bool open) const;
-    bool                        find_door(const fb::game::door& door, point16_t& position, bool open) const;
 #pragma endregion
 
 

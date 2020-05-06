@@ -77,6 +77,9 @@
     <Filter Include="Source Files\builtin_function">
       <UniqueIdentifier>{65b1a007-14ad-4712-acb3-a49994731430}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\door">
+      <UniqueIdentifier>{8f7f7d25-e205-4f78-be1b-405a381816f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp">
@@ -141,6 +144,9 @@
     </ClCompile>
     <ClCompile Include="..\share\socket.cpp">
       <Filter>Module\fb\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="door.cpp">
+      <Filter>Source Files\door</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +227,9 @@
     </ClInclude>
     <ClInclude Include="builtin_function.hpp">
       <Filter>Source Files\builtin_function</Filter>
+    </ClInclude>
+    <ClInclude Include="door.h">
+      <Filter>Source Files\door</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

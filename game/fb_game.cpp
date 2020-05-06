@@ -1988,8 +1988,8 @@ bool fb::game::acceptor::handle_door(fb::game::session& session)
 
     door->toggle();
 
-    auto door_core = door->core();
-    this->send_stream(session, map->make_update_stream(door->position.x, door->position.y, door_core.size(), 1), scope::MAP);
+    auto core = door->based();
+    this->send_stream(session, map->make_update_stream(door->position.x, door->position.y, core.size(), 1), scope::MAP);
 
     if(door->opened())
         this->send_stream(session, message::make_stream(message::door::OPEN, message::type::STATE), scope::SELF);

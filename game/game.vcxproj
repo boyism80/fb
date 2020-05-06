@@ -167,6 +167,7 @@
     <ClCompile Include="board.cpp" />
     <ClCompile Include="builtin_function.cpp" />
     <ClCompile Include="db.cpp" />
+    <ClCompile Include="door.cpp" />
     <ClCompile Include="fb_game.cpp" />
     <ClCompile Include="group.cpp" />
     <ClCompile Include="item.cpp" />
@@ -195,6 +196,7 @@
     <ClInclude Include="container.h" />
     <ClInclude Include="container.hpp" />
     <ClInclude Include="db.h" />
+    <ClInclude Include="door.h" />
     <ClInclude Include="fb_game.h" />
     <ClInclude Include="group.h" />
     <ClInclude Include="item.h" />

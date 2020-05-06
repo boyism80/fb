@@ -29,7 +29,7 @@ private:
     std::map<uint16_t, spell*>              _spells;
     std::vector<class_data*>                _classes;
     std::vector<itemmix*>                   _itemmixes;
-    std::vector<door*>                      _doors;
+    std::vector<door::core*>                _doors;
     fb::game::board                         _board;
 
 private:
@@ -79,7 +79,7 @@ public:
     static std::vector<class_data*>&        classes();
     static std::vector<itemmix*>&           itemmixes();
     static fb::game::board&                 board();
-    static std::vector<door*>&              doors();
+    static std::vector<door::core*>&        doors();
 
     static fb::game::map*                   name2map(const std::string& name);
     static fb::game::npc::core*             name2npc(const std::string& name);

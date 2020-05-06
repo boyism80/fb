@@ -872,12 +872,12 @@ bool fb::game::db::load_door(const std::string& db_fname)
 
     for(auto& door : doors)
     {
-        auto                created = new fb::game::door();
+        auto                created = new fb::game::door::core();
         for(auto& e : door)
         {
             auto            open  = e["open"].asInt();
             auto            close = e["close"].asInt();
-            created->push_back(door_element(open, close));
+            created->push_back(door::element(open, close));
         }
 
         db::_doors.push_back(created);
@@ -949,7 +949,7 @@ fb::game::board& fb::game::db::board()
     return db::get()->_board;
 }
 
-std::vector<fb::game::door*>& fb::game::db::doors()
+std::vector<fb::game::door::core*>& fb::game::db::doors()
 {
     return db::get()->_doors;
 }
