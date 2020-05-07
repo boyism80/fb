@@ -7,6 +7,7 @@
 #include "leak.h"
 #include "console.h"
 #include "resource.h"
+#include "config.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #if defined DEBUG | defined _DEBUG

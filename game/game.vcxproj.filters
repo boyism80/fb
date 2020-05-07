@@ -80,6 +80,9 @@
     <Filter Include="Source Files\door">
       <UniqueIdentifier>{8f7f7d25-e205-4f78-be1b-405a381816f6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module\fb\config">
+      <UniqueIdentifier>{f025cf0c-8ce4-4631-b805-2d11b4deb3ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp">
@@ -147,6 +150,9 @@
     </ClCompile>
     <ClCompile Include="door.cpp">
       <Filter>Source Files\door</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\config.cpp">
+      <Filter>Module\fb\config</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="door.h">
       <Filter>Source Files\door</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\config.h">
+      <Filter>Module\fb\config</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

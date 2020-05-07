@@ -7,6 +7,7 @@
 #include "console.h"
 #include "resource.h"
 #include "lua.h"
+#include "config.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "lua/lua5.3.5-static.lib")

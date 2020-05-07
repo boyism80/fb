@@ -10,19 +10,10 @@ session::~session()
 
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::login::session>(port), _gateway_crc(0)
 {
-    std::ifstream ifstream;
-    ifstream.open("conf_login.json");
-    if(ifstream.is_open() == false)
-        throw std::runtime_error("cannot load conf_login.json file");
-
-    Json::Reader reader;
-    if(reader.parse(ifstream, this->_config) == false)
-        throw std::runtime_error("cannot parse conf_login.json file");
-    ifstream.close();
-
+    const auto& config = fb::config();
 
     // Parse gateway
-    for(auto i = this->_config["gateway"].begin(); i != this->_config["gateway"].end(); i++)
+    for(auto i = config["game"]["gateway"].begin(); i != config["game"]["gateway"].end(); i++)
     {
         Json::Value value = *i;
         this->_gateway_list.push_back(std::make_unique<gateway_form>(value["name"].asCString(), value["desc"].asCString(), value["ip"].asCString(), value["port"].asInt()));
@@ -31,7 +22,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::login::session>(port), _gate
 
 
     // Parse agreement
-    for(auto i = this->_config["account option"]["forbidden"].begin(); i != this->_config["account option"]["forbidden"].end(); i++)
+    for(auto i = config["login"]["account option"]["forbidden"].begin(); i != config["login"]["account option"]["forbidden"].end(); i++)
     {
         Json::Value value = *i;
         this->_forbidden_names.push_back(value.asString());
@@ -107,7 +98,7 @@ fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
 fb::ostream acceptor::make_agreement_stream() const
 {
     uint8_t                 buffer[4096];
-    const std::string       agreement_str = this->_config["agreement"].asString();
+    const std::string       agreement_str = fb::config()["login"]["agreement"].asString();
     uint32_t                agreement_compressed_size = this->compress((const uint8_t*)agreement_str.c_str(), agreement_str.length() + 2, buffer);
     
 
@@ -289,7 +280,7 @@ bool acceptor::handle_check_id(fb::login::session& session)
         istream.read(name, name_size);
 
         // Name must be full-hangul characters
-        if(this->_config["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
+        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
             throw id_exception(message::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list
@@ -364,7 +355,7 @@ bool acceptor::handle_change_password(fb::login::session& session)
         istream.read(name, name_size);
 
         // Name must be full-hangul characters
-        if(this->_config["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
+        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
             throw id_exception(message::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list

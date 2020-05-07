@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp" />
+    <ClCompile Include="..\share\config.cpp" />
     <ClCompile Include="..\share\console.cpp" />
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
@@ -185,6 +186,7 @@
   <ItemGroup>
     <ClInclude Include="..\share\acceptor.h" />
     <ClInclude Include="..\share\acceptor.hpp" />
+    <ClInclude Include="..\share\config.h" />
     <ClInclude Include="..\share\console.h" />
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />

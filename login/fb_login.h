@@ -8,6 +8,7 @@
 #include "socket.h"
 #include "acceptor.h"
 #include "json/json.h"
+#include "config.h"
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
 #define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
@@ -100,8 +101,6 @@ public:
     typedef std::vector<std::unique_ptr<gateway_form>>  multi_server_list;
 
 private:
-    Json::Value                 _config;
-
     uint32_t                    _gateway_crc;
     multi_server_list           _gateway_list;
     ostream                     _gateway_data;

@@ -144,6 +144,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 
     this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
     this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
+    this->register_handle(0x0B, &acceptor::handle_exit);                // 접속 종료
     this->register_handle(0x06, &acceptor::handle_update_move);         // 이동과 맵 데이터 업데이트 핸들러
     this->register_handle(0x32, &acceptor::handle_move);                // 이동 핸들러
     this->register_handle(0x13, &acceptor::handle_attack);              // 공격 핸들러
@@ -589,6 +590,13 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session)
         return false;
 
     this->send_stream(session, session.make_direction_stream(), scope::PIVOT, true);
+    return true;
+}
+
+bool fb::game::acceptor::handle_exit(fb::game::session& session)
+{
+    const auto&             config = fb::config();
+    this->change_server(session, inet_addr(config["login"]["ip"].asCString()), config["login"]["port"].asInt());
     return true;
 }
 

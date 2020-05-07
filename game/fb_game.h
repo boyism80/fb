@@ -11,6 +11,7 @@
 #include "session.h"
 #include "lua.h"
 #include "db.h"
+#include "config.h"
 
 namespace fb { namespace game {
 
@@ -65,6 +66,7 @@ public:
 public:
     bool                    handle_login(fb::game::session& session);
     bool                    handle_direction(fb::game::session& session);
+    bool                    handle_exit(fb::game::session& session);
     bool                    handle_move(fb::game::session& session);
     bool                    handle_update_move(fb::game::session& session);
     bool                    handle_attack(fb::game::session& session);

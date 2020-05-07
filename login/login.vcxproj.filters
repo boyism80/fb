@@ -32,6 +32,9 @@
     <Filter Include="Module\fb\console">
       <UniqueIdentifier>{aa299de3-4336-4681-bdd7-3a179b756980}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module\fb\config">
+      <UniqueIdentifier>{b3b261fa-5d04-48ba-9302-825e482efe54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="..\share\socket.cpp">
       <Filter>Module\fb\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\config.cpp">
+      <Filter>Module\fb\config</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="..\share\console.h">
       <Filter>Module\fb\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\config.h">
+      <Filter>Module\fb\config</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
