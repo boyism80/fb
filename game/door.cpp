@@ -75,6 +75,16 @@ bool fb::game::door::opened() const
     return this->_opened;
 }
 
+bool fb::game::door::locked() const
+{
+	return this->_locked;
+}
+
+void fb::game::door::lock(bool value)
+{
+    this->_locked = value;
+}
+
 fb::game::doors::doors()
 {
 }

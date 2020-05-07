@@ -46,6 +46,7 @@ private:
     game::map*                  _owner;
     core&                       _core;
     bool                        _opened;
+    bool                        _locked;
 
 public:
     const point16_t             position;
@@ -58,6 +59,8 @@ public:
     const door::core&           based() const;
     bool                        toggle();
     bool                        opened() const;
+    bool                        locked() const;
+    void                        lock(bool value);
 };
 
 class doors : private std::vector<door*>

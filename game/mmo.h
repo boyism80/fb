@@ -157,6 +157,9 @@ namespace message
     {
         static const std::string OPEN = "문을 열었습니다.";
         static const std::string CLOSE = "문을 닫았습니다.";
+        static const std::string LOCK = "문을 잠궜습니다.";
+        static const std::string UNLOCK = "문을 열었습니다.";
+        static const std::string LOCKED = "문이 잠겼습니다.";
     }
 
 

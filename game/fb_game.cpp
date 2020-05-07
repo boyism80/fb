@@ -1994,6 +1994,12 @@ bool fb::game::acceptor::handle_door(fb::game::session& session)
     if(door == nullptr)
         return true;
 
+    if(door->locked() && session.items.find("파란열쇠") == nullptr)
+    {
+        this->send_stream(session, message::make_stream(message::door::LOCKED, message::type::STATE), scope::SELF);
+        return true;
+    }
+
     door->toggle();
 
     auto core = door->based();

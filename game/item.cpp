@@ -1729,6 +1729,21 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     return before;
 }
 
+fb::game::item* fb::game::items::find(const std::string& name) const
+{
+    for(int i = 0; i < item::MAX_SLOT; i++)
+    {
+        auto item = this->at(i);
+        if(item == nullptr)
+            continue;
+
+        if(item->name() == name)
+            return item;
+    }
+
+    return nullptr;
+}
+
 fb::ostream fb::game::items::make_update_stream(uint8_t index) const
 {
     fb::ostream             ostream;

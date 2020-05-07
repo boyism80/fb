@@ -922,6 +922,8 @@ public:
     fb::game::auxiliary*            auxiliary(equipment::EQUIPMENT_POSITION position) const;
     fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary);
 
+    fb::game::item*                 find(const std::string& name) const;
+
 public:
     fb::ostream                     make_update_stream(uint8_t index) const;
     fb::ostream                     make_update_stream(equipment::slot slot) const;
