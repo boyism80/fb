@@ -765,11 +765,11 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
                 continue;
 
             auto            below = static_cast<fb::game::item*>(object);
-            bool            item_moved = false;
+            auto            item_moved = false;
             if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
-                uint32_t    remain = session.money_add(cash->chunk());
+                auto        remain = session.money_add(cash->chunk());
                 cash->chunk(remain); // 먹고 남은 돈으로 설정
 
                 if(remain != 0)
@@ -931,11 +931,8 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
             }
         }
 
-        lua::thread         thread;
-        char                path[256];
-        sprintf(path, "scripts/item/%s.lua", item->active_script().c_str());
-
-        thread.fromfile(path, "handle_active");
+        lua::thread         thread("scripts/item/%s.lua", item->active_script().c_str());
+        thread.get("handle_active");
         thread.pushobject(session);
         thread.pushobject(*item);
         if(thread.resume(2) == false)
@@ -1957,11 +1954,8 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     if(spell == nullptr)
         return false;
 
-    char                    path[256];
-    sprintf(path, "scripts/spell/%s.lua", spell->cast().c_str());
-
-    lua::thread             thread;
-    thread.fromfile(path, "handle_spell");
+    lua::thread             thread("scripts/spell/%s.lua", spell->cast().c_str());
+    thread.get("handle_spell");
 
 
     switch(spell->type())
@@ -2018,8 +2012,8 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
 
 bool fb::game::acceptor::handle_door(fb::game::session& session)
 {
-    lua::thread             thread;
-    thread.fromfile("scripts/common/door.lua", "handle_door");
+    lua::thread             thread("scripts/common/door.lua");
+    thread.get("handle_door");
 
     thread.pushobject(session);
     if(thread.resume(1) == false)
@@ -2551,8 +2545,8 @@ void fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std
     if(buff == nullptr)
         return;
 
-    lua::thread thread;
-    thread.fromfile(buff->spell().uncast(), "handle_uncast");
+    lua::thread thread("scripts/spell/%s.lua", buff->spell().uncast());
+    thread.get("handle_uncast");
     thread.pushobject(object);
     thread.pushobject(buff->spell());
     thread.resume(2);

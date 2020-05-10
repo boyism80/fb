@@ -48,6 +48,7 @@ private:
 
 protected:
     state(lua_State* lua);
+    state(lua_State* lua, const char* format, ...);
     virtual ~state();
 
 public:
@@ -70,7 +71,7 @@ public:
     bool                        arg_boolean(int offset) { return toboolean(offset); }
     bool                        ret_boolean(int offset) { return toboolean(-offset); }
 
-    void                        fromfile(const std::string& file, const std::string& name);
+    void                        get(const std::string& name);
 
 public:
     operator                    lua_State* () const;
@@ -98,6 +99,7 @@ private:
 
 public:
     thread();
+    thread(const char* format, ...);
     ~thread();
 
 public:

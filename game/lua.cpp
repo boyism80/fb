@@ -29,6 +29,18 @@ state::state(lua_State* lua) : _lua(lua)
 {
 }
 
+fb::game::lua::state::state(lua_State* lua, const char* format, ...) : state(lua)
+{
+    va_list args;
+    va_start(args, format);
+
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    luaL_dofile(*this, buffer);
+}
+
 state::~state()
 {
 }
@@ -43,9 +55,8 @@ void fb::game::lua::state::pushobject(const fb::game::lua::luable& object)
     object.to_lua(*this);
 }
 
-void fb::game::lua::state::fromfile(const std::string& file, const std::string& name)
+void fb::game::lua::state::get(const std::string& name)
 {
-    luaL_dofile(*this, file.c_str());
     lua_getglobal(*this, name.c_str());
 }
 
@@ -58,6 +69,18 @@ thread::thread() :
     state(lua_newthread(main::get())),
     _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX))
 { }
+
+fb::game::lua::thread::thread(const char* format, ...) : thread()
+{
+    va_list args;
+    va_start(args, format);
+
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    luaL_dofile(*this, buffer);
+}
 
 thread::~thread()
 {
