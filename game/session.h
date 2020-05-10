@@ -40,6 +40,7 @@ private:
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
+    uint16_t                    _dress_color;
 
     defensive                   _defensive;
     uint32_t                    _base_hp, _base_mp;
@@ -58,6 +59,7 @@ private:
     uint8_t                     _level;
     uint8_t                     _class, _promotion;
     uint32_t                    _money;
+    uint16_t                    _disguise;
 
     bool                        _options[0x0B+1];
     std::vector<legend>         _legends;
@@ -119,6 +121,12 @@ public:
 
     uint8_t                     color() const;
     void                        color(uint16_t value);
+
+    uint8_t                     dress_color() const;
+    void                        dress_color(uint16_t value);
+
+    uint16_t                    disguise() const;
+    void                        disguise(uint16_t value);
 
     uint32_t                    defensive_physical() const;
     void                        defensive_physical(uint8_t value);
@@ -245,6 +253,7 @@ public:
     static int                  builtin_mkitem(lua_State* lua);
     static int                  builtin_rmitem(lua_State* lua);
     static int                  builtin_state(lua_State* lua);
+    static int                  builtin_disguise(lua_State* lua);
 #pragma endregion
 };
 

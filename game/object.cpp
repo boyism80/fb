@@ -1074,7 +1074,7 @@ int fb::game::object::builtin_showings(lua_State* lua)
     for(int i = 0; i < objects.size(); i++)
     {
         objects[i]->to_lua(lua);
-        lua_rawseti(lua, -2, i+1);
+        lua_rawseti(lua, -2, long long(i+1));
     }
 
     return 1;
@@ -1092,7 +1092,7 @@ int fb::game::object::builtin_showns(lua_State* lua)
     for(int i = 0; i < objects.size(); i++)
     {
         objects[i]->to_lua(lua);
-        lua_rawseti(lua, -2, i+1);
+        lua_rawseti(lua, -2, long long(i+1));
     }
 
     return 1;

@@ -9,7 +9,8 @@ using namespace fb::game;
 session::session(SOCKET socket) : 
     life((life::core*)nullptr, socket, 0, 0, 0),
     _socket(socket),
-    _look(0), _color(0),
+    _look(0), _color(0), _dress_color(0),
+    _disguise(0),
     _defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
     _nation(nation::GOGURYEO),
     _creature(creature::DRAGON),
@@ -91,6 +92,26 @@ uint8_t fb::game::session::color() const
 void fb::game::session::color(uint16_t value)
 {
     this->_color = value;
+}
+
+uint8_t fb::game::session::dress_color() const
+{
+    return this->_dress_color;
+}
+
+void fb::game::session::dress_color(uint16_t value)
+{
+    this->_dress_color = value;
+}
+
+uint16_t fb::game::session::disguise() const
+{
+    return this->_disguise;
+}
+
+void fb::game::session::disguise(uint16_t value)
+{
+    this->_disguise = value;
 }
 
 uint32_t fb::game::session::defensive_physical() const
@@ -668,44 +689,53 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
     ostream.write_u32(this->id())
         .write_u8(this->_state == fb::game::state::DISGUISE) // 변신유무
         .write_u8(this->_sex) // sex
-        .write_u8(this->_state) // state
-        .write_u16(this->look()) // face
-        .write_u8(this->color()); // hair color
+        .write_u8(this->_state); // state
 
-    auto armor = this->items.armor();
-    if(armor != nullptr)
+    if(this->_state == fb::game::state::DISGUISE)
     {
-        ostream.write_u8(armor->dress())
-            .write_u8(armor->color());
+        ostream.write_u16(this->_disguise)
+            .write_u8(this->_dress_color);
     }
     else
     {
-        ostream.write_u8(this->_sex) // sex
-            .write_u8(0x00);
-    }
+        ostream.write_u16(this->look()) // face
+            .write_u8(this->color()); // hair color
 
-    auto weapon = this->items.weapon();
-    if(weapon != nullptr)
-    {
-        ostream.write_u16(weapon->dress())
-            .write_u8(weapon->color());
-    }
-    else
-    {
-        ostream.write_u16(0xFFFF)
-            .write_u8(0x00);
-    }
+        auto armor = this->items.armor();
+        if(armor != nullptr)
+        {
+            ostream.write_u8(armor->dress())
+                .write_u8(this->_dress_color == 0 ? armor->color() : this->_dress_color);
+        }
+        else
+        {
+            ostream.write_u8(this->_sex) // sex
+                .write_u8(0x00);
+        }
 
-    auto shield = this->items.shield();
-    if(shield != nullptr)
-    {
-        ostream.write_u8(shield->dress())
-            .write_u8(shield->color());
-    }
-    else
-    {
-        ostream.write_u8(0xFF) // about shield
-            .write_u8(0x00);
+        auto weapon = this->items.weapon();
+        if(weapon != nullptr)
+        {
+            ostream.write_u16(weapon->dress())
+                .write_u8(weapon->color());
+        }
+        else
+        {
+            ostream.write_u16(0xFFFF)
+                .write_u8(0x00);
+        }
+
+        auto shield = this->items.shield();
+        if(shield != nullptr)
+        {
+            ostream.write_u8(shield->dress())
+                .write_u8(shield->color());
+        }
+        else
+        {
+            ostream.write_u8(0xFF) // about shield
+                .write_u8(0x00);
+        }
     }
 
     ostream.write_u8(0x04) // head mark
@@ -792,36 +822,36 @@ fb::ostream fb::game::session::make_external_info_stream() const
     ostream.write(*class_name)  // 직업
         .write(this->_name);    // 이름
 
-    // 캐릭터 상태
-    bool                    disguise = false;
-    if(disguise) // 변신상태
-    {
-        ostream.write_u8(0x01);
-    }
-    else // 일반상태
-    {
-        ostream.write_u8(0x00)
-            .write_u8(this->_sex)
-            .write_u8(0x00) // state
-            .write_u16(this->look())
-            .write_u8(this->color());
-    }
+    auto                    disguised = (this->_state == state::DISGUISE);
+    ostream.write_u8(disguised)
+        .write_u8(this->_sex)
+        .write_u8(this->_state);
 
+    auto                    armor = this->items.armor(); // 갑옷
+    auto                    weapon = this->items.weapon(); // 무기
+    auto                    shield = this->items.shield(); // 방패
+    if(disguised)
+    {
+        ostream.write_u16(this->_disguise)
+            .write_u8(this->_dress_color);
+    }
+    else
+    {
+        ostream.write_u16(this->look())
+            .write_u8(this->color());
+
+        ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
+            .write_u8(armor != nullptr ? armor->color() : 0x00);
+
+        ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
+            .write_u8(weapon != nullptr ? weapon->color() : 0x00);
+
+        ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
+            .write_u8(shield != nullptr ? shield->color() : 0x00);
+    }
 
     // 장비정보
     std::stringstream       sstream;
-    auto                    armor = this->items.armor(); // 갑옷
-    ostream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
-           .write_u8(armor != nullptr ? armor->color() : 0x00);
-
-    auto                    weapon = this->items.weapon(); // 무기
-    ostream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
-           .write_u8(weapon != nullptr ? weapon->color() : 0x00);
-
-    auto                    shield = this->items.shield(); // 방패
-    ostream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
-           .write_u8(shield != nullptr ? shield->color() : 0x00);
-
     auto                    helmet = this->items.helmet(); // 투구
     ostream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
            .write_u8(helmet != nullptr ? helmet->color() : 0x00);
@@ -1209,4 +1239,35 @@ int fb::game::session::builtin_state(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
     return 0;
+}
+
+int fb::game::session::builtin_disguise(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->disguise());
+        return 1;
+    }
+    else if(luaL_checkinteger(lua, 2))
+    {
+        auto value = lua_tointeger(lua, 2);
+        if(value == 0)
+        {
+            session->state(state::NORMAL);
+            session->disguise(0);
+        }
+        else
+        {
+            session->state(state::DISGUISE);
+            session->disguise(value);
+        }
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
+        acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
+        return 0;
+    }
 }
