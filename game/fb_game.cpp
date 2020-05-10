@@ -20,6 +20,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"height",              fb::game::map::builtin_height},
 {"area",                fb::game::map::builtin_area},
 {"movable",             fb::game::map::builtin_movable},
+{"door",                fb::game::map::builtin_door},
+{"doors",               fb::game::map::builtin_doors},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::object::core, "fb.game.object.core")
@@ -122,12 +124,21 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"disguise",            fb::game::session::builtin_disguise},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
+{"toggle",              fb::game::door::builtin_toggle},
+{"lock",                fb::game::door::builtin_lock},
+{"locked",              fb::game::door::builtin_locked},
+{"opened",              fb::game::door::builtin_opened},
+{"update",              fb::game::door::builtin_update},
+END_LUA_EXTENSION
+
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
     lua::bind_class<spell, lua::luable>();
     lua::bind_class<map, lua::luable>();
+    lua::bind_class<door, lua::luable>();
     lua::bind_class<object::core, lua::luable>();   lua::bind_class<object, lua::luable>();
     lua::bind_class<life::core, object::core>();    lua::bind_class<life, object>();
     lua::bind_class<mob::core, life::core>();       lua::bind_class<mob, life>();
@@ -173,7 +184,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
     this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
     this->register_handle(0x0F, &acceptor::handle_spell);               // 스펠 핸들러
-    this->register_handle(0x20, &acceptor::handle_door);                // 스펠 핸들러
+    this->register_handle(0x20, &acceptor::handle_door);                // 도어 핸들러
 
     this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
     this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
@@ -188,7 +199,7 @@ acceptor::~acceptor()
 bool acceptor::handle_connected(fb::game::session& session)
 {
     auto& maps = db::maps();
-    session.map(maps[315], point16_t(6, 8));
+    session.map(db::name2map("부여성"), point16_t(75, 153));
     session.name("채승현");
     session.look(0x61);
     session.color(0x0A);
@@ -208,6 +219,7 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.items.add(db::name2item("남자기모노")->make<item>());
     session.items.add(db::name2item("도토리")->make<item>());
     session.items.add(db::name2item("동동주")->make<item>());
+    session.items.add(db::name2item("파란열쇠")->make<item>());
     
 
     // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
@@ -317,6 +329,18 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
         break;
     }
 
+    }
+}
+
+void fb::game::acceptor::send_stream(const fb::ostream& stream, const fb::game::map& map, bool encrypt)
+{
+    const auto& sessions = this->sessions();
+    for(const auto session : sessions)
+    {
+        if(session->map() != &map)
+            continue;
+
+        session->send(stream, encrypt);
     }
 }
 
@@ -906,6 +930,16 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
                 delete item;
             }
         }
+
+        lua::thread         thread;
+        char                path[256];
+        sprintf(path, "scripts/item/%s.lua", item->active_script().c_str());
+
+        thread.fromfile(path, "handle_active");
+        thread.pushobject(session);
+        thread.pushobject(*item);
+        if(thread.resume(2) == false)
+            return true;
     }
     catch(std::exception& e)
     {
@@ -1984,34 +2018,24 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
 
 bool fb::game::acceptor::handle_door(fb::game::session& session)
 {
-    auto direction = session.direction();
-    if(direction == fb::game::direction::LEFT || direction == fb::game::direction::RIGHT)
+    lua::thread             thread;
+    thread.fromfile("scripts/common/door.lua", "handle_door");
+
+    thread.pushobject(session);
+    if(thread.resume(1) == false)
         return true;
 
-    auto map = session.map();
-    if(map == nullptr)
-        return false;
+    //auto redraw = thread.toboolean(1);
+    //if(redraw == false)
+    //    return true;
 
-    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::direction::TOP ? -1 : 1));
-    auto door = map->doors.find(forward);
-    if(door == nullptr)
-        return true;
+    //auto core = door->based();
+    //this->send_stream(session, map->make_update_stream(door->position.x, door->position.y, core.size(), 1), scope::MAP);
 
-    if(door->locked() && session.items.find("파란열쇠") == nullptr)
-    {
-        this->send_stream(session, message::make_stream(message::door::LOCKED, message::type::STATE), scope::SELF);
-        return true;
-    }
-
-    door->toggle();
-
-    auto core = door->based();
-    this->send_stream(session, map->make_update_stream(door->position.x, door->position.y, core.size(), 1), scope::MAP);
-
-    if(door->opened())
-        this->send_stream(session, message::make_stream(message::door::OPEN, message::type::STATE), scope::SELF);
-    else
-        this->send_stream(session, message::make_stream(message::door::CLOSE, message::type::STATE), scope::SELF);
+    //if(door->opened())
+    //    this->send_stream(session, message::make_stream(message::door::OPEN, message::type::STATE), scope::SELF);
+    //else
+    //    this->send_stream(session, message::make_stream(message::door::CLOSE, message::type::STATE), scope::SELF);
 
     return true;
 }

@@ -3,13 +3,20 @@
 
 #include <vector>
 #include "mmo.h"
+#include "lua.h"
 
 namespace fb { namespace game {
 
 class map;
+class session;
 
-class door
+class door : public lua::luable
 {
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+#pragma endregion
+
 public:
     typedef struct _element
     {
@@ -61,6 +68,16 @@ public:
     bool                        opened() const;
     bool                        locked() const;
     void                        lock(bool value);
+    const fb::game::map&        map() const;
+
+#pragma region built-in method
+public:
+    static int                  builtin_toggle(lua_State* lua);
+    static int                  builtin_locked(lua_State* lua);
+    static int                  builtin_lock(lua_State* lua);
+    static int                  builtin_opened(lua_State* lua);
+    static int                  builtin_update(lua_State* lua);
+#pragma endregion
 };
 
 class doors : private std::vector<door*>
@@ -72,6 +89,7 @@ public:
     using std::vector<door*>::cend;
     using std::vector<door*>::rbegin;
     using std::vector<door*>::rend;
+    using std::vector<door*>::size;
 
 public:
     doors();
@@ -80,6 +98,7 @@ public:
 public:
     void                        add(map* map, fb::game::door::core& core, const point16_t position, bool opened);
     door*                       find(const point16_t position);
+    door*                       find(const session& session);
 };
 
 } }

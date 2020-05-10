@@ -42,6 +42,7 @@ public:
 
 public:
     void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send_stream(const fb::ostream& stream, const fb::game::map& map, bool encrypt = true);
     void                    send_stream(const fb::ostream& stream, bool encrypt = true);
 
 public:

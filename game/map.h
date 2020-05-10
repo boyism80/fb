@@ -197,6 +197,8 @@ public:
     static int                  builtin_height(lua_State* lua);
     static int                  builtin_area(lua_State* lua);
     static int                  builtin_movable(lua_State* lua);
+    static int                  builtin_door(lua_State* lua);
+    static int                  builtin_doors(lua_State* lua);
 #pragma endregion
 };
 

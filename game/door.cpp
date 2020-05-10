@@ -1,7 +1,9 @@
 #include "door.h"
 #include "map.h"
+#include "session.h"
+#include "fb_game.h"
 
-bool fb::game::door::core::matched(const map& map, const point16_t& position, bool open) const
+bool fb::game::door::core::matched(const fb::game::map& map, const point16_t& position, bool open) const
 {
     auto door_size = this->size();
     for(int i = 0; i < door_size; i++)
@@ -19,7 +21,7 @@ bool fb::game::door::core::matched(const map& map, const point16_t& position, bo
     return true;
 }
 
-bool fb::game::door::core::find(const map& map, point16_t& position, bool open) const
+bool fb::game::door::core::find(const fb::game::map& map, point16_t& position, bool open) const
 {
     bool init = true;
     for(int offset = position.y * map.width() + position.x; offset < map.width() * map.height(); offset++)
@@ -42,7 +44,8 @@ fb::game::door::door(fb::game::map* owner, fb::game::door::core& core, const poi
     _owner(owner),
     _core(core), 
     position(position), 
-    _opened(opened)
+    _opened(opened),
+    _locked(false)
 {
 }
 
@@ -85,6 +88,63 @@ void fb::game::door::lock(bool value)
     this->_locked = value;
 }
 
+const fb::game::map& fb::game::door::map() const
+{
+    return *this->_owner;
+}
+
+int fb::game::door::builtin_toggle(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+
+    door->toggle();
+    lua_pushboolean(lua, door->opened());
+    return 1;
+}
+
+int fb::game::door::builtin_locked(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+
+    lua_pushboolean(lua, door->locked());
+    return 1;
+}
+
+int fb::game::door::builtin_lock(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+    auto value = lua_toboolean(lua, 2);
+
+    door->lock(value);
+    lua_pushboolean(lua, door->locked());
+    return 1;
+}
+
+int fb::game::door::builtin_opened(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+
+    lua_pushboolean(lua, door->opened());
+    return 1;
+}
+
+int fb::game::door::builtin_update(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+
+    auto core = door->based();
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+
+    const auto& map = door->map();
+    acceptor->send_stream(map.make_update_stream(door->position.x, door->position.y, core.size(), 1), map);
+    return 0;
+}
+
 fb::game::doors::doors()
 {
 }
@@ -111,4 +171,14 @@ fb::game::door* fb::game::doors::find(const point16_t position)
                 return door;
         }
     }
+}
+
+fb::game::door* fb::game::doors::find(const fb::game::session& session)
+{
+    auto direction = session.direction();
+    if(direction == fb::game::direction::LEFT || direction == fb::game::direction::RIGHT)
+        return nullptr;
+
+    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::direction::TOP ? -1 : 1));
+    return this->find(forward);
 }

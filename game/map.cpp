@@ -525,3 +525,33 @@ int fb::game::map::builtin_movable(lua_State* lua)
     lua_pushboolean(lua, map->movable(position));
     return 1;
 }
+
+int fb::game::map::builtin_door(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+
+    auto door = map->doors.find(*session);
+    if(door == nullptr)
+        lua_pushnil(lua);
+    else
+        door->to_lua(lua);
+
+    return 1;
+}
+
+int fb::game::map::builtin_doors(lua_State* lua)
+{
+    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+
+    lua_newtable(lua);
+
+    auto i = 0;
+    for(const auto& door : map->doors)
+    {
+        door->to_lua(lua);
+        lua_rawseti(lua, -2, i+1);
+    }
+    
+    return 1;
+}

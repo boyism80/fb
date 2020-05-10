@@ -1102,9 +1102,18 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
 int fb::game::session::builtin_item(lua_State* lua)
 {
     auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-    auto index = lua_tointeger(lua, 2);
+    auto item = (fb::game::item*)nullptr;
+    if(lua_isnumber(lua, 2))
+    {
+        auto index = lua_tointeger(lua, 2);
+        item = session->items[index];
+    }
+    else if(lua_isstring(lua, 2))
+    {
+        auto name = lua_tostring(lua, 2);
+        item = session->items.find(name);
+    }
 
-    auto item = session->items[index];
     if(item == nullptr)
         lua_pushnil(lua);
     else
