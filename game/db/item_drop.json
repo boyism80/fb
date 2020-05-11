@@ -1,0 +1,3996 @@
+{
+    "장닭": [
+        {
+            "percentage": 30.0,
+            "item": "닭고기"
+        }
+    ],
+    "검은닭": [
+        {
+            "percentage": 20.0,
+            "item": "닭고기"
+        }
+    ],
+    "닭왕": [
+        {
+            "percentage": 100.0,
+            "item": "진괘"
+        }
+    ],
+    "꼬마돼지": [
+        {
+            "percentage": 30.0,
+            "item": "돼지고기"
+        }
+    ],
+    "백돈": [
+        {
+            "percentage": 30.0,
+            "item": "돼지고기"
+        }
+    ],
+    "서해백": [
+        {
+            "percentage": 25.0,
+            "item": "진명삼지창"
+        }
+    ],
+    "돼지왕": [
+        {
+            "percentage": 100.0,
+            "item": "리괘"
+        }
+    ],
+    "말왕": [
+        {
+            "percentage": 5.0,
+            "item": "금덩어리"
+        }
+    ],
+    "살모사": [
+        {
+            "percentage": 30.0,
+            "item": "뱀고기"
+        }
+    ],
+    "토종뱀": [
+        {
+            "percentage": 30.0,
+            "item": "뱀고기"
+        }
+    ],
+    "꽃뱀": [
+        {
+            "percentage": 20.0,
+            "item": "뱀고기"
+        }
+    ],
+    "흑구렁이": [
+        {
+            "percentage": 20.0,
+            "item": "좋은뱀고기"
+        }
+    ],
+    "불구렁이": [
+        {
+            "percentage": 20.0,
+            "item": "좋은뱀고기"
+        }
+    ],
+    "뱀왕": [
+        {
+            "percentage": 100.0,
+            "item": "감괘"
+        }
+    ],
+    "까만소": [
+        {
+            "percentage": 30.0,
+            "item": "쇠고기"
+        }
+    ],
+    "황소": [
+        {
+            "percentage": 30.0,
+            "item": "쇠고기"
+        }
+    ],
+    "코뿔소": [
+        {
+            "percentage": 30.0,
+            "item": "쇠고기"
+        }
+    ],
+    "소왕": [
+        {
+            "percentage": 100.0,
+            "item": "선괘"
+        }
+    ],
+    "수룡": [
+        {
+            "percentage": 100.0,
+            "item": "용의비늘"
+        }
+    ],
+    "화룡": [
+        {
+            "percentage": 100.0,
+            "item": "용의비늘"
+        }
+    ],
+    "양왕": [
+        {
+            "percentage": 5.0,
+            "item": "금덩어리"
+        }
+    ],
+    "용마": [
+        {
+            "percentage": 2.0,
+            "item": "은나무가지"
+        }
+    ],
+    "용천": [
+        {
+            "percentage": 2.0,
+            "item": "은나무가지"
+        }
+    ],
+    "용랑": [
+        {
+            "percentage": 2.0,
+            "item": "은나무가지"
+        }
+    ],
+    "용겸": [
+        {
+            "percentage": 2.0,
+            "item": "은나무가지"
+        }
+    ],
+    "묵룡": [
+        {
+            "percentage": 20.0,
+            "item": "묵룡의어금니"
+        }
+    ],
+    "감룡": [
+        {
+            "percentage": 20.0,
+            "item": "감룡의어금니"
+        }
+    ],
+    "흑룡": [
+        {
+            "percentage": 20.0,
+            "item": "흑룡의어금니"
+        }
+    ],
+    "진룡": [
+        {
+            "percentage": 20.0,
+            "item": "진룡의어금니"
+        }
+    ],
+    "용왕용마": [
+        {
+            "percentage": 100.0,
+            "item": "용마제일검"
+        }
+    ],
+    "용왕용천": [
+        {
+            "percentage": 100.0,
+            "item": "용천제일검"
+        }
+    ],
+    "용왕용랑": [
+        {
+            "percentage": 100.0,
+            "item": "용랑제일봉"
+        }
+    ],
+    "용왕용겸": [
+        {
+            "percentage": 100.0,
+            "item": "용겸제일봉"
+        }
+    ],
+    "농사꾼원숭이": [
+        {
+            "percentage": 15.0,
+            "item": "초왕"
+        }
+    ],
+    "부자원숭이": [
+        {
+            "percentage": 10.0,
+            "item": "진호박"
+        }
+    ],
+    "날쌘원숭이": [
+        {
+            "percentage": 10.0,
+            "item": "진호박"
+        }
+    ],
+    "사냥꾼원숭이": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "장로원숭이": [
+        {
+            "percentage": 15.0,
+            "item": "한왕"
+        }
+    ],
+    "유인원": [
+        {
+            "percentage": 5.0,
+            "item": "보물열쇠1"
+        }
+    ],
+    "킹콩": [
+        {
+            "percentage": 5.0,
+            "item": "보물열쇠2"
+        }
+    ],
+    "콩고": [
+        {
+            "percentage": 5.0,
+            "item": "보물열쇠3"
+        }
+    ],
+    "오랑우탄": [
+        {
+            "percentage": 5.0,
+            "item": "보물열쇠4"
+        }
+    ],
+    "원숭이왕": [
+        {
+            "percentage": 100.0,
+            "item": "태괘"
+        }
+    ],
+    "붉은쥐": [
+        {
+            "percentage": 40.0,
+            "item": "쥐고기"
+        }
+    ],
+    "흑왕쥐": [
+        {
+            "percentage": 40.0,
+            "item": "쥐고기"
+        }
+    ],
+    "불왕쥐": [
+        {
+            "percentage": 40.0,
+            "item": "쥐고기"
+        }
+    ],
+    "큰쥐": [
+        {
+            "percentage": 75.0,
+            "item": "쥐고기"
+        }
+    ],
+    "쥐왕": [
+        {
+            "percentage": 100.0,
+            "item": "건괘"
+        }
+    ],
+    "불토끼": [
+        {
+            "percentage": 40.0,
+            "item": "토끼고기"
+        }
+    ],
+    "토끼부하": [
+        {
+            "percentage": 40.0,
+            "item": "토끼고기"
+        }
+    ],
+    "토끼왕": [
+        {
+            "percentage": 100.0,
+            "item": "곤괘"
+        }
+    ],
+    "범증": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        },
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        }
+    ],
+    "범수": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        }
+    ],
+    "범천": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        }
+    ],
+    "백호왕": [
+        {
+            "percentage": 100.0,
+            "item": "간괘"
+        },
+        {
+            "percentage": 20.0,
+            "item": "황금호박"
+        },
+        {
+            "percentage": 3.0,
+            "item": "수정"
+        },
+        {
+            "percentage": 3.0,
+            "item": "크리스탈"
+        },
+        {
+            "percentage": 0.3,
+            "item": "연노랑웨딩드레스"
+        },
+        {
+            "percentage": 0.3,
+            "item": "연노랑망또"
+        },
+        {
+            "percentage": 0.3,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 1.0,
+            "item": "진꼬마별봉"
+        },
+        {
+            "percentage": 1.0,
+            "item": "진아광검"
+        }
+    ],
+    "범지": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        }
+    ],
+    "범녹": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        }
+    ],
+    "범목": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 0.01,
+            "item": "연갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "올리브색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "갈색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "보라색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "자주색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "장미색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "초록색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "파란색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "하늘색망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "황금빛망또"
+        },
+        {
+            "percentage": 0.01,
+            "item": "회색망또"
+        },
+        {
+            "percentage": 0.5,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.5,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.5,
+            "item": "삼촉현창"
+        }
+    ],
+    "적호왕": [
+        {
+            "percentage": 100.0,
+            "item": "간괘"
+        },
+        {
+            "percentage": 20.0,
+            "item": "황금호박"
+        },
+        {
+            "percentage": 5.0,
+            "item": "수정"
+        },
+        {
+            "percentage": 5.0,
+            "item": "크리스탈"
+        },
+        {
+            "percentage": 0.3,
+            "item": "연노랑웨딩드레스"
+        },
+        {
+            "percentage": 0.3,
+            "item": "연노랑망또"
+        },
+        {
+            "percentage": 0.3,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 1.0,
+            "item": "진꼬마별봉"
+        },
+        {
+            "percentage": 1.0,
+            "item": "진아광검"
+        }
+    ],
+    "진백호왕": [
+        {
+            "percentage": 100.0,
+            "item": "간괘"
+        },
+        {
+            "percentage": 20.0,
+            "item": "황금호박"
+        },
+        {
+            "percentage": 3.0,
+            "item": "수정"
+        },
+        {
+            "percentage": 3.0,
+            "item": "크리스탈"
+        },
+        {
+            "percentage": 1.0,
+            "item": "연노랑웨딩드레스"
+        },
+        {
+            "percentage": 1.0,
+            "item": "연노랑망또"
+        },
+        {
+            "percentage": 1.0,
+            "item": "녹색야광망또"
+        },
+        {
+            "percentage": 1.0,
+            "item": "진꼬마별봉"
+        },
+        {
+            "percentage": 5.0,
+            "item": "진아광검"
+        }
+    ],
+    "순제": [
+        {
+            "percentage": 100.0,
+            "item": "순제의증표"
+        }
+    ],
+    "전욱": [
+        {
+            "percentage": 100.0,
+            "item": "전욱의증표"
+        }
+    ],
+    "요제": [
+        {
+            "percentage": 100.0,
+            "item": "요제의증표"
+        }
+    ],
+    "소호": [
+        {
+            "percentage": 100.0,
+            "item": "소호의증표"
+        }
+    ],
+    "눈괴물": [
+        {
+            "percentage": 30.0,
+            "item": "얼음"
+        }
+    ],
+    "북극해골": [
+        {
+            "percentage": 30.0,
+            "item": "얼음"
+        }
+    ],
+    "북극곰": [
+        {
+            "percentage": 30.0,
+            "item": "얼음"
+        }
+    ],
+    "흑다람쥐": [
+        {
+            "percentage": 5.0,
+            "item": "참나무껍질"
+        }
+    ],
+    "흑토끼": [
+        {
+            "percentage": 5.0,
+            "item": "참나무껍질"
+        }
+    ],
+    "흑암사슴": [
+        {
+            "percentage": 5.0,
+            "item": "참나무껍질"
+        }
+    ],
+    "운랑": [
+        {
+            "percentage": 100.0,
+            "item": "구름의옥"
+        }
+    ],
+    "수렴귀": [
+        {
+            "percentage": 100.0,
+            "item": "물의옥"
+        }
+    ],
+    "풍석": [
+        {
+            "percentage": 100.0,
+            "item": "산의옥"
+        }
+    ],
+    "폭염귀": [
+        {
+            "percentage": 100.0,
+            "item": "불의옥"
+        }
+    ],
+    "암흑왕": [
+        {
+            "percentage": 100.0,
+            "item": "암흑왕의봉인"
+        }
+    ],
+    "도삭산평웅": [
+        {
+            "percentage": 0.8,
+            "item": "동인각"
+        }
+    ],
+    "도삭산진웅": [
+        {
+            "percentage": 20.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산평호": [
+        {
+            "percentage": 20.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산진호": [
+        {
+            "percentage": 20.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산토끼부하": [
+        {
+            "percentage": 10.0,
+            "item": "약초잎사귀"
+        }
+    ],
+    "도삭산불토끼": [
+        {
+            "percentage": 5.0,
+            "item": "약초가지"
+        }
+    ],
+    "도삭산황소": [
+        {
+            "percentage": 0.8,
+            "item": "동인각"
+        }
+    ],
+    "도삭산까만소": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산하얀소": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산이쁘니인어": [
+        {
+            "percentage": 3.0,
+            "item": "인어의방울"
+        }
+    ],
+    "도삭산고양인어": [
+        {
+            "percentage": 3.0,
+            "item": "인어의거울"
+        }
+    ],
+    "도삭산해파리부하": [
+        {
+            "percentage": 10.0,
+            "item": "만리향씨앗"
+        }
+    ],
+    "도삭산해파리수하": [
+        {
+            "percentage": 10.0,
+            "item": "만리향씨앗"
+        }
+    ],
+    "도삭산해파리장군": [
+        {
+            "percentage": 20.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산세발문어": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산대발문어": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산장간문어": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산문어장군": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산흑묘": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산적묘": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산표황야묘": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산녹대묘": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산인묘": [
+        {
+            "percentage": 30.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산흑코뿔소": [
+        {
+            "percentage": 30.0,
+            "item": "도삭산코뿔소발톱"
+        }
+    ],
+    "도삭산백코뿔소": [
+        {
+            "percentage": 30.0,
+            "item": "도삭산코뿔소발톱"
+        }
+    ],
+    "도삭산황선코뿔소": [
+        {
+            "percentage": 30.0,
+            "item": "도삭산코뿔소이빨"
+        }
+    ],
+    "도삭산코뿔소제독": [
+        {
+            "percentage": 50.0,
+            "item": "도삭산코뿔소뿔"
+        }
+    ],
+    "도삭산적살쾡이": [
+        {
+            "percentage": 80.0,
+            "item": "도삭산살쾡이가죽"
+        }
+    ],
+    "도삭산녹살쾡이": [
+        {
+            "percentage": 80.0,
+            "item": "도삭산살쾡이가죽"
+        }
+    ],
+    "도삭산백사": [
+        {
+            "percentage": 0.8,
+            "item": "동인각"
+        }
+    ],
+    "도삭산진백사": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산독사": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산구렁이": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "도삭산흑악어": [
+        {
+            "percentage": 45.0,
+            "item": "도삭산악어비늘"
+        }
+    ],
+    "도삭산녹악어": [
+        {
+            "percentage": 45.0,
+            "item": "도삭산악어비늘"
+        }
+    ],
+    "도삭산문비도둑": [
+        {
+            "percentage": 10.0,
+            "item": "어머니의호롱불"
+        }
+    ],
+    "도삭산선비평민": [
+        {
+            "percentage": 20.0,
+            "item": "나무가면"
+        }
+    ],
+    "도삭산선비검객": [
+        {
+            "percentage": 20.0,
+            "item": "나무가면"
+        }
+    ],
+    "도삭산흉노전사": [
+        {
+            "percentage": 4.0,
+            "item": "철의가면"
+        }
+    ],
+    "도삭산흉노무사": [
+        {
+            "percentage": 2.0,
+            "item": "금의가면"
+        }
+    ],
+    "백산신": [
+        {
+            "percentage": 5.0,
+            "item": "산신의바늘"
+        }
+    ],
+    "도삭산길림장군": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서1장"
+        }
+    ],
+    "도삭산수룡": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서2장"
+        }
+    ],
+    "도삭산화룡": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서3장"
+        }
+    ],
+    "도삭산풍석": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서4장"
+        }
+    ],
+    "도삭산선우": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서5장"
+        }
+    ],
+    "도삭산해골왕": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서6장"
+        }
+    ],
+    "도삭산파괴왕": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서7장"
+        }
+    ],
+    "도삭산암흑왕": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서8장"
+        }
+    ],
+    "도삭산청의태자": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서9장"
+        }
+    ],
+    "산신대왕": [
+        {
+            "percentage": 50.0,
+            "item": "황금문서10장"
+        }
+    ],
+    "지네": [
+        {
+            "percentage": 20.0,
+            "item": "죽은지네"
+        }
+    ],
+    "가재": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "가재장": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "전갈": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "전갈장": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "서현가재": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "백현재": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "백현모"
+        }
+    ],
+    "백현장": [
+        {
+            "percentage": 30.0,
+            "item": "보라방패"
+        }
+    ],
+    "현랑장": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "철방패"
+        }
+    ],
+    "현랑전갈": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "현랑부"
+        }
+    ],
+    "거미": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "거미랑": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "사마귀": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "사마귀랑": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "서현거미": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "백현귀": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "백현모"
+        }
+    ],
+    "백현귀랑": [
+        {
+            "percentage": 30.0,
+            "item": "보라방패"
+        }
+    ],
+    "현랑귀랑": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "철방패"
+        }
+    ],
+    "현랑귀": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 30.0,
+            "item": "현랑부"
+        }
+    ],
+    "진웅": [
+        {
+            "percentage": 10.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 15.0,
+            "item": "지력의투구1"
+        }
+    ],
+    "도깨비": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "도깨비불": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "사명비": [
+        {
+            "percentage": 5.0,
+            "item": "환두대도"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "적명비": [
+        {
+            "percentage": 5.0,
+            "item": "대마령봉"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "자명비": [
+        {
+            "percentage": 5.0,
+            "item": "가시철단도"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "청명비": [
+        {
+            "percentage": 5.0,
+            "item": "삼촉현창"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "녹명비": [
+        {
+            "percentage": 5.0,
+            "item": "삼촉현창"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "도깨비왕": [
+        {
+            "percentage": 5.0,
+            "item": "도깨비방망이"
+        },
+        {
+            "percentage": 0.02,
+            "item": "금덩어리"
+        }
+    ],
+    "산돼지": [
+        {
+            "percentage": 50.0,
+            "item": "산돼지고기"
+        }
+    ],
+    "숲돼지": [
+        {
+            "percentage": 50.0,
+            "item": "숲돼지고기"
+        }
+    ],
+    "홍돼지": [
+        {
+            "percentage": 20.0,
+            "item": "철단도"
+        },
+        {
+            "percentage": 50.0,
+            "item": "철도"
+        }
+    ],
+    "독사": [
+        {
+            "percentage": 60.0,
+            "item": "뱀고기"
+        }
+    ],
+    "백사": [
+        {
+            "percentage": 60.0,
+            "item": "뱀고기"
+        },
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "진백사": [
+        {
+            "percentage": 20.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "왕구렁이": [
+        {
+            "percentage": 20.0,
+            "item": "힘의투구1"
+        }
+    ],
+    "구렁이": [
+        {
+            "percentage": 100.0,
+            "item": "좋은뱀고기"
+        }
+    ],
+    "일본밀정'검": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "연청호박"
+        }
+    ],
+    "일본밀정'유": [
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "연녹호박"
+        }
+    ],
+    "일본밀정'수": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "연자호박"
+        }
+    ],
+    "일본밀정두목": [
+        {
+            "percentage": 40.0,
+            "item": "황금호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "청순록": [
+        {
+            "percentage": 70.0,
+            "item": "사슴고기"
+        }
+    ],
+    "적순록": [
+        {
+            "percentage": 70.0,
+            "item": "사슴고기"
+        }
+    ],
+    "흑광록": [
+        {
+            "percentage": 70.0,
+            "item": "사슴고기"
+        },
+        {
+            "percentage": 5.0,
+            "item": "비철단도"
+        }
+    ],
+    "백광록": [
+        {
+            "percentage": 70.0,
+            "item": "사슴고기"
+        },
+        {
+            "percentage": 5.0,
+            "item": "비철단도"
+        }
+    ],
+    "광록지수": [
+        {
+            "percentage": 60.0,
+            "item": "비철단도"
+        }
+    ],
+    "흑여우": [
+        {
+            "percentage": 60.0,
+            "item": "여우모피"
+        }
+    ],
+    "백여우": [
+        {
+            "percentage": 60.0,
+            "item": "여우모피"
+        }
+    ],
+    "서여우": [
+        {
+            "percentage": 10.0,
+            "item": "은전"
+        },
+        {
+            "percentage": 60.0,
+            "item": "여우모피"
+        }
+    ],
+    "불여우": [
+        {
+            "percentage": 60.0,
+            "item": "여우모피"
+        }
+    ],
+    "구미호": [
+        {
+            "percentage": 60.0,
+            "item": "여우모피"
+        },
+        {
+            "percentage": 15.0,
+            "item": "사각방패"
+        }
+    ],
+    "불구미호": [
+        {
+            "percentage": 20.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 22.22222222222222,
+            "item": "철도"
+        }
+    ],
+    "유령": [
+        {
+            "percentage": 10.0,
+            "item": "호박"
+        }
+    ],
+    "초급유령": [
+        {
+            "percentage": 2.5,
+            "item": "해골죽장"
+        },
+        {
+            "percentage": 2.5,
+            "item": "현철중검"
+        },
+        {
+            "percentage": 2.5,
+            "item": "영혼마령봉"
+        },
+        {
+            "percentage": 2.5,
+            "item": "야월도"
+        }
+    ],
+    "중급유령": [
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철단도"
+        },
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철도"
+        },
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철검"
+        }
+    ],
+    "고급유령": [
+        {
+            "percentage": 2.5,
+            "item": "현철중검"
+        },
+        {
+            "percentage": 2.5,
+            "item": "해골죽장"
+        },
+        {
+            "percentage": 2.5,
+            "item": "영혼마령봉"
+        },
+        {
+            "percentage": 2.5,
+            "item": "야월도"
+        }
+    ],
+    "유령전사": [
+        {
+            "percentage": 15.0,
+            "item": "현철중검"
+        }
+    ],
+    "유령도적": [
+        {
+            "percentage": 15.0,
+            "item": "야월도"
+        }
+    ],
+    "유령마법사": [
+        {
+            "percentage": 15.0,
+            "item": "해골죽장"
+        }
+    ],
+    "불연": [
+        {
+            "percentage": 15.0,
+            "item": "영혼마령봉"
+        }
+    ],
+    "목각인형": [
+        {
+            "percentage": 15.0,
+            "item": "호박"
+        }
+    ],
+    "양철인형": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "에메랄드인형": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "인형술사": [
+        {
+            "percentage": 25.0,
+            "item": "백화검"
+        },
+        {
+            "percentage": 20.833333333333336,
+            "item": "철도"
+        }
+    ],
+    "자호": [
+        {
+            "percentage": 40.0,
+            "item": "자호의가죽"
+        }
+    ],
+    "친자호": [
+        {
+            "percentage": 40.0,
+            "item": "자호의가죽"
+        },
+        {
+            "percentage": 10.0,
+            "item": "은전"
+        }
+    ],
+    "구자호": [
+        {
+            "percentage": 20.0,
+            "item": "은전"
+        }
+    ],
+    "적호": [
+        {
+            "percentage": 40.0,
+            "item": "자호의가죽"
+        },
+        {
+            "percentage": 25.0,
+            "item": "철검"
+        }
+    ],
+    "쥐": [
+        {
+            "percentage": 75.0,
+            "item": "쥐고기"
+        }
+    ],
+    "시궁쥐": [
+        {
+            "percentage": 75.0,
+            "item": "쥐고기"
+        }
+    ],
+    "시궁창쥐": [
+        {
+            "percentage": 30.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 20.0,
+            "item": "은전"
+        }
+    ],
+    "병든쥐": [
+        {
+            "percentage": 75.0,
+            "item": "쥐고기"
+        }
+    ],
+    "박쥐": [
+        {
+            "percentage": 75.0,
+            "item": "박쥐고기"
+        }
+    ],
+    "빨간박쥐": [
+        {
+            "percentage": 75.0,
+            "item": "박쥐고기"
+        }
+    ],
+    "보라박쥐": [
+        {
+            "percentage": 75.0,
+            "item": "박쥐고기"
+        }
+    ],
+    "파란박쥐": [
+        {
+            "percentage": 75.0,
+            "item": "박쥐고기"
+        }
+    ],
+    "흡혈쥐": [
+        {
+            "percentage": 75.0,
+            "item": "쥐고기"
+        }
+    ],
+    "서생원": [
+        {
+            "percentage": 10.0,
+            "item": "인삼"
+        },
+        {
+            "percentage": 10.0,
+            "item": "산삼"
+        }
+    ],
+    "자생원": [
+        {
+            "percentage": 20.0,
+            "item": "귀환비서"
+        },
+        {
+            "percentage": 60.0,
+            "item": "은전"
+        }
+    ],
+    "다람쥐": [
+        {
+            "percentage": 3.0,
+            "item": "도토리"
+        },
+        {
+            "percentage": 50.0,
+            "item": "도토리"
+        },
+        {
+            "percentage": 50.0,
+            "item": "도토리"
+        },
+        {
+            "percentage": 40.0,
+            "item": "도토리"
+        }
+    ],
+    "토끼": [
+        {
+            "percentage": 90.0,
+            "item": "토끼고기"
+        }
+    ],
+    "암사슴": [
+        {
+            "percentage": 60.0,
+            "item": "사슴고기"
+        }
+    ],
+    "숫사슴": [
+        {
+            "percentage": 60.0,
+            "item": "녹용"
+        }
+    ],
+    "돼지": [
+        {
+            "percentage": 60.0,
+            "item": "돼지고기"
+        }
+    ],
+    "삽사리": [
+        {
+            "percentage": 50.0,
+            "item": "고기"
+        }
+    ],
+    "해골": [
+        {
+            "percentage": 10.0,
+            "item": "호박"
+        }
+    ],
+    "칼든해골": [
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철단도"
+        },
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철도"
+        },
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철검"
+        }
+    ],
+    "날쌘해골": [
+        {
+            "percentage": 2.5,
+            "item": "야월도"
+        },
+        {
+            "percentage": 2.5,
+            "item": "영혼마령봉"
+        },
+        {
+            "percentage": 2.5,
+            "item": "현철중검"
+        },
+        {
+            "percentage": 2.5,
+            "item": "해골죽장"
+        }
+    ],
+    "쾌도해골": [
+        {
+            "percentage": 2.5,
+            "item": "영혼마령봉"
+        },
+        {
+            "percentage": 2.5,
+            "item": "현철중검"
+        },
+        {
+            "percentage": 2.5,
+            "item": "해골죽장"
+        },
+        {
+            "percentage": 2.5,
+            "item": "야월도"
+        }
+    ],
+    "해골전사": [
+        {
+            "percentage": 15.0,
+            "item": "현철중검"
+        }
+    ],
+    "해골도적": [
+        {
+            "percentage": 15.0,
+            "item": "야월도"
+        }
+    ],
+    "해골마법사": [
+        {
+            "percentage": 15.0,
+            "item": "해골죽장"
+        }
+    ],
+    "불산": [
+        {
+            "percentage": 15.0,
+            "item": "영혼마령봉"
+        }
+    ],
+    "몽달귀신": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "독충": [
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "빗자루귀신": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "처녀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "불귀신": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        },
+        {
+            "percentage": 20.0,
+            "item": "호박"
+        }
+    ],
+    "갈달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "갈호박"
+        }
+    ],
+    "연갈달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "연갈호박"
+        }
+    ],
+    "연자달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "연자호박"
+        }
+    ],
+    "자달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "자호박"
+        }
+    ],
+    "연청달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "연청호박"
+        }
+    ],
+    "황달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "황호박"
+        }
+    ],
+    "적달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "적호박"
+        }
+    ],
+    "연녹달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "연녹호박"
+        }
+    ],
+    "청달걀귀신": [
+        {
+            "percentage": 20.0,
+            "item": "청호박"
+        }
+    ],
+    "황충": [
+        {
+            "percentage": 20.0,
+            "item": "황호박"
+        }
+    ],
+    "적충": [
+        {
+            "percentage": 20.0,
+            "item": "적호박"
+        }
+    ],
+    "연녹충": [
+        {
+            "percentage": 20.0,
+            "item": "연녹호박"
+        }
+    ],
+    "청충": [
+        {
+            "percentage": 20.0,
+            "item": "청호박"
+        }
+    ],
+    "회충": [
+        {
+            "percentage": 20.0,
+            "item": "회호박"
+        }
+    ],
+    "갈충": [
+        {
+            "percentage": 20.0,
+            "item": "갈호박"
+        }
+    ],
+    "연갈충": [
+        {
+            "percentage": 20.0,
+            "item": "연갈호박"
+        }
+    ],
+    "연자충": [
+        {
+            "percentage": 20.0,
+            "item": "연자호박"
+        }
+    ],
+    "자충": [
+        {
+            "percentage": 20.0,
+            "item": "자호박"
+        }
+    ],
+    "흑령": [
+        {
+            "percentage": 15.0,
+            "item": "진호박"
+        }
+    ],
+    "사령": [
+        {
+            "percentage": 1.6666666666666667,
+            "item": "철검"
+        }
+    ],
+    "원령": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "철검"
+        },
+        {
+            "percentage": 0.6,
+            "item": "금덩어리"
+        },
+        {
+            "percentage": 2.0,
+            "item": "대마령봉"
+        }
+    ],
+    "흑해골": [
+        {
+            "percentage": 10.0,
+            "item": "진호박"
+        }
+    ],
+    "사해골": [
+        {
+            "percentage": 10.0,
+            "item": "호박"
+        }
+    ],
+    "원각": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "철검"
+        },
+        {
+            "percentage": 4.0,
+            "item": "금덩어리"
+        },
+        {
+            "percentage": 5.0,
+            "item": "대마령봉"
+        }
+    ],
+    "철보장": [
+        {
+            "percentage": 8.0,
+            "item": "장인의뼈"
+        }
+    ],
+    "뇌랑": [
+        {
+            "percentage": 30.0,
+            "item": "구미호꼬리"
+        }
+    ],
+    "천오": [
+        {
+            "percentage": 1.0,
+            "item": "천년묵은가지"
+        }
+    ],
+    "독화": [
+        {
+            "percentage": 4.0,
+            "item": "백현목"
+        }
+    ],
+    "신몽": [
+        {
+            "percentage": 3.5000000000000004,
+            "item": "자현목"
+        }
+    ],
+    "엽춘": [
+        {
+            "percentage": 8.0,
+            "item": "방울뱀꼬리"
+        }
+    ],
+    "조왕": [
+        {
+            "percentage": 3.0,
+            "item": "노송의가지"
+        }
+    ],
+    "귀응": [
+        {
+            "percentage": 8.0,
+            "item": "장인의돌"
+        }
+    ],
+    "태산": [
+        {
+            "percentage": 3.0,
+            "item": "운모"
+        },
+        {
+            "percentage": 3.0,
+            "item": "마노"
+        },
+        {
+            "percentage": 3.0,
+            "item": "석영"
+        },
+        {
+            "percentage": 3.0,
+            "item": "장석"
+        }
+    ],
+    "백보": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠조각"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠가루"
+        }
+    ],
+    "최가": [
+        {
+            "percentage": 9.0,
+            "item": "청동조각"
+        }
+    ],
+    "청웅": [
+        {
+            "percentage": 7.5,
+            "item": "태독"
+        },
+        {
+            "percentage": 7.5,
+            "item": "건독"
+        },
+        {
+            "percentage": 7.5,
+            "item": "진독"
+        },
+        {
+            "percentage": 7.5,
+            "item": "곤독"
+        },
+        {
+            "percentage": 7.5,
+            "item": "선독"
+        }
+    ],
+    "황웅": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "적령초"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "월로초"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "일양초"
+        }
+    ],
+    "인면충": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠조각"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠가루"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "인면충의알"
+        }
+    ],
+    "인면벌": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠조각"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠가루"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "인면충의알"
+        }
+    ],
+    "문비": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠조각"
+        },
+        {
+            "percentage": 7.000000000000001,
+            "item": "쇠가루"
+        }
+    ],
+    "박가": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "나무막대"
+        }
+    ],
+    "왕가": [
+        {
+            "percentage": 7.000000000000001,
+            "item": "구미호꼬리"
+        }
+    ],
+    "대나무": [
+        {
+            "percentage": 10.0,
+            "item": "대나무가지"
+        }
+    ],
+    "길림장군": [
+        {
+            "percentage": 2.5,
+            "item": "운모"
+        },
+        {
+            "percentage": 2.5,
+            "item": "마노"
+        },
+        {
+            "percentage": 2.5,
+            "item": "석영"
+        },
+        {
+            "percentage": 2.5,
+            "item": "장석"
+        },
+        {
+            "percentage": 2.5,
+            "item": "장인의돌"
+        }
+    ],
+    "중월장군": [
+        {
+            "percentage": 4.5,
+            "item": "백현목"
+        },
+        {
+            "percentage": 4.5,
+            "item": "자현목"
+        }
+    ],
+    "마려": [
+        {
+            "percentage": 7.5,
+            "item": "적령초"
+        },
+        {
+            "percentage": 7.5,
+            "item": "월로초"
+        },
+        {
+            "percentage": 7.5,
+            "item": "일양초"
+        }
+    ],
+    "소천대사": [
+        {
+            "percentage": 8.0,
+            "item": "물소의뿔"
+        }
+    ],
+    "암령": [
+        {
+            "percentage": 8.0,
+            "item": "장인의돌"
+        }
+    ],
+    "야월진랑": [
+        {
+            "percentage": 10.0,
+            "item": "매의깃털"
+        },
+        {
+            "percentage": 8.0,
+            "item": "물소의뿔"
+        }
+    ],
+    "철거인": [
+        {
+            "percentage": 8.0,
+            "item": "반짝이는돌"
+        },
+        {
+            "percentage": 3.0,
+            "item": "금조각"
+        }
+    ],
+    "북천황": [
+        {
+            "percentage": 35.0,
+            "item": "금조각"
+        }
+    ],
+    "청비": [
+        {
+            "percentage": 4.0,
+            "item": "초록시약"
+        }
+    ],
+    "적비": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "빨간시약"
+        }
+    ],
+    "흑비": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "갈색시약"
+        }
+    ],
+    "겁살수": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "빨간시약"
+        }
+    ],
+    "겁살파수": [
+        {
+            "percentage": 15.0,
+            "item": "일월대도"
+        }
+    ],
+    "겁살파수꾼": [
+        {
+            "percentage": 15.0,
+            "item": "도깨비방망이"
+        }
+    ],
+    "수로몬스터": [
+        {
+            "percentage": 16.666666666666664,
+            "item": "호박"
+        },
+        {
+            "percentage": 16.666666666666664,
+            "item": "진호박"
+        }
+    ],
+    "수로보스": [
+        {
+            "percentage": 100.0,
+            "item": "금덩어리"
+        },
+        {
+            "percentage": 16.666666666666664,
+            "item": "호박"
+        },
+        {
+            "percentage": 16.666666666666664,
+            "item": "진호박"
+        }
+    ],
+    "약한눈괴물": [
+        {
+            "percentage": 20.833333333333336,
+            "item": "얼음"
+        }
+    ],
+    "녹눈괴물": [
+        {
+            "percentage": 12.5,
+            "item": "얼음"
+        },
+        {
+            "percentage": 8.333333333333332,
+            "item": "얼음"
+        }
+    ],
+    "칼찬북극해골": [
+        {
+            "percentage": 12.5,
+            "item": "얼음"
+        },
+        {
+            "percentage": 8.333333333333332,
+            "item": "얼음"
+        }
+    ],
+    "타락산타": [
+        {
+            "percentage": 16.666666666666664,
+            "item": "홍성초"
+        }
+    ],
+    "도적산타": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "금덩어리"
+        }
+    ],
+    "적북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕1"
+        }
+    ],
+    "황북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕2"
+        }
+    ],
+    "불꽃북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕3"
+        }
+    ],
+    "녹북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕4"
+        }
+    ],
+    "청북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕5"
+        }
+    ],
+    "남북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕6"
+        }
+    ],
+    "자북극사슴": [
+        {
+            "percentage": 20.0,
+            "item": "막대사탕7"
+        }
+    ],
+    "파산게": [
+        {
+            "percentage": 20.0,
+            "item": "게등껍질"
+        }
+    ],
+    "사산게": [
+        {
+            "percentage": 20.0,
+            "item": "게집게"
+        }
+    ],
+    "장간문어": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "문어의심장"
+        },
+        {
+            "percentage": 20.0,
+            "item": "문어다리"
+        }
+    ],
+    "대발문어": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "문어의심장"
+        }
+    ],
+    "세발문어": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "문어의심장"
+        }
+    ],
+    "복홍": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "복어의심장"
+        }
+    ],
+    "복순이": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "복어의심장"
+        }
+    ],
+    "복수리": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "복어의심장"
+        }
+    ],
+    "외칼이상어": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "상어의심장"
+        }
+    ],
+    "쌍칼상어": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "상어의심장"
+        }
+    ],
+    "상어장수": [
+        {
+            "percentage": 50.0,
+            "item": "상어의핵"
+        }
+    ],
+    "고양이인어": [
+        {
+            "percentage": 3.571428571428571,
+            "item": "인어의심장"
+        }
+    ],
+    "이쁘니인어": [
+        {
+            "percentage": 3.571428571428571,
+            "item": "인어의심장"
+        }
+    ],
+    "꼬리해마": [
+        {
+            "percentage": 10.0,
+            "item": "해마꼬리"
+        }
+    ],
+    "쥐방울해마": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "해마꼬리"
+        }
+    ],
+    "해마병사": [
+        {
+            "percentage": 5.0,
+            "item": "해마의심장"
+        }
+    ],
+    "인화늑대인간": [
+        {
+            "percentage": 25.0,
+            "item": "늑대의송곳니"
+        }
+    ],
+    "수화늑대인간": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "낭아투구"
+        },
+        {
+            "percentage": 25.0,
+            "item": "늑대의송곳니"
+        }
+    ],
+    "만월늑대인간": [
+        {
+            "percentage": 10.0,
+            "item": "낭아극쇄검"
+        }
+    ],
+    "파연": [
+        {
+            "percentage": 35.0,
+            "item": "진호박"
+        }
+    ],
+    "파성": [
+        {
+            "percentage": 35.0,
+            "item": "진호박"
+        }
+    ],
+    "파단": [
+        {
+            "percentage": 35.0,
+            "item": "갈호박"
+        }
+    ],
+    "파염": [
+        {
+            "percentage": 35.0,
+            "item": "진호박"
+        }
+    ],
+    "월연": [
+        {
+            "percentage": 35.0,
+            "item": "황호박"
+        }
+    ],
+    "월지": [
+        {
+            "percentage": 35.0,
+            "item": "녹호박"
+        }
+    ],
+    "월선": [
+        {
+            "percentage": 35.0,
+            "item": "자호박"
+        }
+    ],
+    "월정": [
+        {
+            "percentage": 35.0,
+            "item": "청호박"
+        }
+    ],
+    "시오": [
+        {
+            "percentage": 10.0,
+            "item": "연갈호박"
+        }
+    ],
+    "주오": [
+        {
+            "percentage": 10.0,
+            "item": "연자호박"
+        }
+    ],
+    "맹오": [
+        {
+            "percentage": 10.0,
+            "item": "연청호박"
+        }
+    ],
+    "달오": [
+        {
+            "percentage": 10.0,
+            "item": "연녹호박"
+        }
+    ],
+    "문위": [
+        {
+            "percentage": 20.0,
+            "item": "불의수정"
+        }
+    ],
+    "이광": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "요존도"
+        }
+    ],
+    "백발귀": [
+        {
+            "percentage": 12.5,
+            "item": "진호박"
+        }
+    ],
+    "적두귀": [
+        {
+            "percentage": 12.5,
+            "item": "진호박"
+        }
+    ],
+    "녹두귀": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "녹호박"
+        }
+    ],
+    "사두귀": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "녹호박"
+        }
+    ],
+    "청발귀": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "청호박"
+        }
+    ],
+    "흑발귀": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "태존도"
+        }
+    ],
+    "백향": [
+        {
+            "percentage": 12.5,
+            "item": "진호박"
+        }
+    ],
+    "마옥": [
+        {
+            "percentage": 10.0,
+            "item": "곤봉"
+        }
+    ],
+    "대장군의망령": [
+        {
+            "percentage": 15.0,
+            "item": "도깨비가죽"
+        }
+    ],
+    "파선녀": [
+        {
+            "percentage": 30.0,
+            "item": "호박"
+        }
+    ],
+    "단선녀": [
+        {
+            "percentage": 30.0,
+            "item": "호박"
+        }
+    ],
+    "하선녀": [
+        {
+            "percentage": 10.0,
+            "item": "하선녀의실타래"
+        }
+    ],
+    "견귀": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        }
+    ],
+    "견인귀": [
+        {
+            "percentage": 20.0,
+            "item": "진호박"
+        }
+    ],
+    "견원귀": [
+        {
+            "percentage": 10.0,
+            "item": "갈호박"
+        }
+    ],
+    "너구리": [
+        {
+            "percentage": 20.0,
+            "item": "너구리털"
+        }
+    ],
+    "일본원숭이": [
+        {
+            "percentage": 20.0,
+            "item": "원숭이털"
+        }
+    ],
+    "은여우": [
+        {
+            "percentage": 20.0,
+            "item": "은여우털"
+        }
+    ],
+    "어전": [
+        {
+            "percentage": 30.0,
+            "item": "어전의칼"
+        }
+    ],
+    "유성지": [
+        {
+            "percentage": 15.0,
+            "item": "유성지의보패"
+        }
+    ],
+    "이가닌자'병": [
+        {
+            "percentage": 15.0,
+            "item": "검조각"
+        },
+        {
+            "percentage": 10.0,
+            "item": "홍옥"
+        }
+    ],
+    "이가닌자'화": [
+        {
+            "percentage": 15.0,
+            "item": "이가닌자의보패"
+        }
+    ],
+    "이가닌자'마": [
+        {
+            "percentage": 15.0,
+            "item": "이가닌자의독"
+        },
+        {
+            "percentage": 4.0,
+            "item": "홍옥"
+        }
+    ],
+    "이가닌자'영": [
+        {
+            "percentage": 10.0,
+            "item": "흑룡철심"
+        }
+    ],
+    "이가닌자'수": [
+        {
+            "percentage": 15.0,
+            "item": "수리검"
+        },
+        {
+            "percentage": 10.0,
+            "item": "홍옥"
+        }
+    ],
+    "파괴왕": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "순수의강철"
+        }
+    ],
+    "동장군의망령": [
+        {
+            "percentage": 70.0,
+            "item": "표신궁고문서1"
+        }
+    ],
+    "서장군의망령": [
+        {
+            "percentage": 70.0,
+            "item": "표신궁고문서2"
+        }
+    ],
+    "남장군의망령": [
+        {
+            "percentage": 70.0,
+            "item": "표신궁고문서3"
+        }
+    ],
+    "북장군의망령": [
+        {
+            "percentage": 70.0,
+            "item": "표신궁고문서4"
+        }
+    ],
+    "중앙장군의망령": [
+        {
+            "percentage": 70.0,
+            "item": "표신궁고문서5"
+        }
+    ],
+    "표신궁합연": [
+        {
+            "percentage": 1.0,
+            "item": "금강석조각"
+        }
+    ],
+    "표신궁백향": [
+        {
+            "percentage": 0.8999999999999999,
+            "item": "금강석조각"
+        }
+    ],
+    "표신궁문려": [
+        {
+            "percentage": 0.8999999999999999,
+            "item": "금강석조각"
+        }
+    ],
+    "표신궁에주겐": [
+        {
+            "percentage": 0.8999999999999999,
+            "item": "금강석조각"
+        }
+    ],
+    "해골왕": [
+        {
+            "percentage": 10.0,
+            "item": "해골왕의뼈"
+        }
+    ],
+    "일본게": [
+        {
+            "percentage": 20.0,
+            "item": "기러기알"
+        }
+    ],
+    "두꺼비": [
+        {
+            "percentage": 20.0,
+            "item": "기러기알"
+        }
+    ],
+    "인묘": [
+        {
+            "percentage": 100.0,
+            "item": "인묘의발톱"
+        }
+    ],
+    "괴성'청": [
+        {
+            "percentage": 10.0,
+            "item": "청색구슬조각"
+        }
+    ],
+    "괴성'녹": [
+        {
+            "percentage": 10.0,
+            "item": "녹색구슬조각"
+        }
+    ],
+    "동괴성": [
+        {
+            "percentage": 10.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "괴성왕": [
+        {
+            "percentage": 20.0,
+            "item": "적색보주"
+        }
+    ],
+    "염구": [
+        {
+            "percentage": 2.5,
+            "item": "기린의피"
+        }
+    ],
+    "용고": [
+        {
+            "percentage": 1.0,
+            "item": "남도"
+        }
+    ],
+    "각단": [
+        {
+            "percentage": 1.2,
+            "item": "남도"
+        }
+    ],
+    "흑마기린": [
+        {
+            "percentage": 1.5,
+            "item": "남도"
+        },
+        {
+            "percentage": 10.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "기린염왕": [
+        {
+            "percentage": 30.0,
+            "item": "남도"
+        },
+        {
+            "percentage": 20.0,
+            "item": "청색보주"
+        }
+    ],
+    "연청산소": [
+        {
+            "percentage": 20.0,
+            "item": "연청산소의뿔"
+        }
+    ],
+    "백산소": [
+        {
+            "percentage": 20.0,
+            "item": "백산소의뿔"
+        }
+    ],
+    "황산소": [
+        {
+            "percentage": 20.0,
+            "item": "황산소의뿔"
+        }
+    ],
+    "청산소괴": [
+        {
+            "percentage": 20.0,
+            "item": "청산소괴의뿔"
+        }
+    ],
+    "적산소괴": [
+        {
+            "percentage": 20.0,
+            "item": "적산소괴의뿔"
+        }
+    ],
+    "녹산소괴": [
+        {
+            "percentage": 15.0,
+            "item": "녹산소괴의뿔"
+        }
+    ],
+    "산소괴왕": [
+        {
+            "percentage": 20.0,
+            "item": "산소괴왕의뿔"
+        }
+    ],
+    "뇌신'자": [
+        {
+            "percentage": 10.0,
+            "item": "자색구슬조각"
+        }
+    ],
+    "뇌신'태": [
+        {
+            "percentage": 10.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "뇌신왕": [
+        {
+            "percentage": 20.0,
+            "item": "회색보주"
+        }
+    ],
+    "무슈후슈'녹": [
+        {
+            "percentage": 10.0,
+            "item": "녹색구슬조각"
+        }
+    ],
+    "무슈후슈'갈": [
+        {
+            "percentage": 10.0,
+            "item": "갈색구슬조각"
+        }
+    ],
+    "무슈후슈'진녹": [
+        {
+            "percentage": 10.0,
+            "item": "녹색구슬조각"
+        }
+    ],
+    "무슈후슈'진갈": [
+        {
+            "percentage": 10.0,
+            "item": "갈색구슬조각"
+        }
+    ],
+    "무슈후슈'태": [
+        {
+            "percentage": 10.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "현왕무슈후슈": [
+        {
+            "percentage": 20.0,
+            "item": "녹색보주"
+        }
+    ],
+    "살쾡이왕": [
+        {
+            "percentage": 30.0,
+            "item": "살쾡이왕의가죽"
+        }
+    ],
+    "선비평민": [
+        {
+            "percentage": 15.0,
+            "item": "녹호박단추"
+        }
+    ],
+    "선비검객": [
+        {
+            "percentage": 15.0,
+            "item": "녹호박단추"
+        }
+    ],
+    "선비대장군": [
+        {
+            "percentage": 12.0,
+            "item": "안시도"
+        }
+    ],
+    "녹악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "흑악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "진녹악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "진적악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "진갈악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "진회악어": [
+        {
+            "percentage": 4.0,
+            "item": "악어의피"
+        }
+    ],
+    "중간왕악어": [
+        {
+            "percentage": 5.0,
+            "item": "악어의피"
+        }
+    ],
+    "악어대왕": [
+        {
+            "percentage": 10.0,
+            "item": "금덩어리"
+        }
+    ],
+    "청색염유": [
+        {
+            "percentage": 10.0,
+            "item": "청색구슬조각"
+        }
+    ],
+    "자색염유": [
+        {
+            "percentage": 10.0,
+            "item": "자색구슬조각"
+        }
+    ],
+    "염유장군": [
+        {
+            "percentage": 10.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "염유왕": [
+        {
+            "percentage": 20.0,
+            "item": "갈색보주"
+        }
+    ],
+    "장안성여왕인어": [
+        {
+            "percentage": 100.0,
+            "item": "공주의반지"
+        }
+    ],
+    "흡혈강시": [
+        {
+            "percentage": 15.0,
+            "item": "청호박단추"
+        },
+        {
+            "percentage": 15.0,
+            "item": "강시의손톱"
+        }
+    ],
+    "아기강시": [
+        {
+            "percentage": 15.0,
+            "item": "청호박단추"
+        },
+        {
+            "percentage": 15.0,
+            "item": "강시의손톱"
+        }
+    ],
+    "흑발강시": [
+        {
+            "percentage": 15.0,
+            "item": "강시의손톱"
+        }
+    ],
+    "만년원귀": [
+        {
+            "percentage": 20.0,
+            "item": "만년원귀의손톱"
+        },
+        {
+            "percentage": 15.0,
+            "item": "동인패"
+        }
+    ],
+    "외눈녹천구": [
+        {
+            "percentage": 15.0,
+            "item": "적호박단추"
+        }
+    ],
+    "외눈황천구": [
+        {
+            "percentage": 15.0,
+            "item": "적호박단추"
+        }
+    ],
+    "불의천신": [
+        {
+            "percentage": 15.0,
+            "item": "동천패"
+        }
+    ],
+    "흑천리마": [
+        {
+            "percentage": 15.0,
+            "item": "갈색구슬조각"
+        }
+    ],
+    "비영천리마": [
+        {
+            "percentage": 80.0,
+            "item": "회색구슬조각"
+        }
+    ],
+    "진왕천리마": [
+        {
+            "percentage": 30.0,
+            "item": "자색보주"
+        }
+    ],
+    "흑혈후": [
+        {
+            "percentage": 40.0,
+            "item": "후의뼈"
+        },
+        {
+            "percentage": 15.0,
+            "item": "황호박단추"
+        }
+    ],
+    "녹혈후": [
+        {
+            "percentage": 40.0,
+            "item": "후의뼈"
+        },
+        {
+            "percentage": 15.0,
+            "item": "황호박단추"
+        }
+    ],
+    "흑선문후": [
+        {
+            "percentage": 40.0,
+            "item": "후의뼈"
+        }
+    ],
+    "녹선문후": [
+        {
+            "percentage": 40.0,
+            "item": "후의뼈"
+        }
+    ],
+    "흡혈비후": [
+        {
+            "percentage": 40.0,
+            "item": "후의뼈"
+        }
+    ],
+    "마계천신": [
+        {
+            "percentage": 80.0,
+            "item": "마계천신의뼈"
+        },
+        {
+            "percentage": 15.0,
+            "item": "동지패"
+        }
+    ],
+    "선우": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "용형도"
+        }
+    ],
+    "선중": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "청형도"
+        }
+    ],
+    "선백": [
+        {
+            "percentage": 12.5,
+            "item": "백형도"
+        }
+    ],
+    "선궁": [
+        {
+            "percentage": 12.5,
+            "item": "적형도"
+        }
+    ],
+    "선계": [
+        {
+            "percentage": 12.5,
+            "item": "흑형도"
+        }
+    ],
+    "방어의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "방어의반지3"
+        }
+    ],
+    "명중의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "명중의반지3"
+        }
+    ],
+    "공격의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "공격의반지3"
+        }
+    ],
+    "체력의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "체력의반지3"
+        }
+    ],
+    "마력의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "마력의반지3"
+        }
+    ],
+    "힘의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "힘의반지3"
+        }
+    ],
+    "민첩의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "민첩의반지3"
+        }
+    ],
+    "지력의뱀": [
+        {
+            "percentage": 2.0,
+            "item": "지력의반지3"
+        }
+    ],
+    "주사": [
+        {
+            "percentage": 20.0,
+            "item": "이백세주"
+        }
+    ],
+    "대사": [
+        {
+            "percentage": 20.0,
+            "item": "삼백세주"
+        }
+    ],
+    "력사": [
+        {
+            "percentage": 2.0,
+            "item": "힘의투구4"
+        }
+    ],
+    "민사": [
+        {
+            "percentage": 2.0,
+            "item": "민첩의투구4"
+        }
+    ],
+    "지사": [
+        {
+            "percentage": 2.0,
+            "item": "지력의투구4"
+        }
+    ],
+    "용왕토끼": [
+        {
+            "percentage": 5.555555555555555,
+            "item": "풍의제일검"
+        },
+        {
+            "percentage": 5.555555555555555,
+            "item": "운의제일검"
+        }
+    ],
+    "방어의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "방어의반지1"
+        }
+    ],
+    "명중의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "명중의반지1"
+        }
+    ],
+    "공격의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "공격의반지1"
+        }
+    ],
+    "체력의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "체력의반지1"
+        }
+    ],
+    "마력의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "마력의반지1"
+        }
+    ],
+    "힘의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "힘의반지1"
+        }
+    ],
+    "민첩의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "민첩의반지1"
+        }
+    ],
+    "지력의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "지력의반지1"
+        }
+    ],
+    "날쌘다람쥐": [
+        {
+            "percentage": 80.0,
+            "item": "뇌진도"
+        },
+        {
+            "percentage": 5.0,
+            "item": "금덩어리"
+        }
+    ],
+    "고개다람쥐": [
+        {
+            "percentage": 2.5,
+            "item": "삼지창"
+        }
+    ],
+    "문지기다람쥐": [
+        {
+            "percentage": 40.0,
+            "item": "용왕다람쥐의방열쇠"
+        }
+    ],
+    "부자다람쥐": [
+        {
+            "percentage": 5.0,
+            "item": "금덩어리"
+        }
+    ],
+    "행운의다람쥐": [
+        {
+            "percentage": 2.0,
+            "item": "운의제이검"
+        }
+    ],
+    "무적다람쥐": [
+        {
+            "percentage": 2.5,
+            "item": "방어의반지3"
+        }
+    ],
+    "최강다람쥐": [
+        {
+            "percentage": 2.5,
+            "item": "힘의반지3"
+        }
+    ],
+    "용왕다람쥐": [
+        {
+            "percentage": 5.555555555555555,
+            "item": "풍의제삼검"
+        }
+    ],
+    "방어의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "방어의반지2"
+        }
+    ],
+    "명중의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "명중의반지2"
+        }
+    ],
+    "공격의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "공격의반지2"
+        }
+    ],
+    "체력의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "체력의반지2"
+        }
+    ],
+    "마력의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "마력의반지2"
+        }
+    ],
+    "힘의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "힘의반지2"
+        }
+    ],
+    "민첩의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "민첩의반지2"
+        }
+    ],
+    "지력의돼지": [
+        {
+            "percentage": 2.0,
+            "item": "지력의반지2"
+        }
+    ],
+    "돈돈돈": [
+        {
+            "percentage": 5.0,
+            "item": "금덩어리"
+        }
+    ],
+    "착한돼지": [
+        {
+            "percentage": 2.5,
+            "item": "운의제삼검"
+        }
+    ],
+    "토깽이": [
+        {
+            "percentage": 30.0,
+            "item": "토끼의간"
+        }
+    ],
+    "붉은토끼": [
+        {
+            "percentage": 3.3333333333333335,
+            "item": "빨간시약"
+        }
+    ],
+    "초록토끼": [
+        {
+            "percentage": 2.5,
+            "item": "초록시약"
+        }
+    ],
+    "갈색토끼": [
+        {
+            "percentage": 7.5,
+            "item": "갈색시약"
+        }
+    ],
+    "미친토끼": [
+        {
+            "percentage": 5.0,
+            "item": "맑은시약"
+        },
+        {
+            "percentage": 40.0,
+            "item": "팔십세주"
+        }
+    ],
+    "딱총파리": [
+        {
+            "percentage": 20.0,
+            "item": "식용벌레"
+        }
+    ],
+    "마비가시말미잘": [
+        {
+            "percentage": 20.0,
+            "item": "다랑어살코기"
+        }
+    ],
+    "철갑거북": [
+        {
+            "percentage": 60.0,
+            "item": "바다거북의알"
+        },
+        {
+            "percentage": 5.0,
+            "item": "선장의일기6"
+        }
+    ],
+    "상점가포악중성인성초": [
+        {
+            "percentage": 3.0,
+            "item": "누름막대"
+        }
+    ],
+    "상점가포악초성인성초": [
+        {
+            "percentage": 3.0,
+            "item": "좌우막대"
+        }
+    ],
+    "상점가흉폭초성인성초": [
+        {
+            "percentage": 3.0,
+            "item": "요술구슬"
+        }
+    ],
+    "상점가흉폭중성인성초": [
+        {
+            "percentage": 3.0,
+            "item": "상하막대"
+        }
+    ],
+    "초성인성초": [
+        {
+            "percentage": 8.695652173913043,
+            "item": "망고"
+        },
+        {
+            "percentage": 8.695652173913043,
+            "item": "호두"
+        }
+    ],
+    "중성인성초": [
+        {
+            "percentage": 8.695652173913043,
+            "item": "포도"
+        },
+        {
+            "percentage": 8.695652173913043,
+            "item": "야자수잎"
+        }
+    ],
+    "종성인성초": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "향료가루"
+        }
+    ],
+    "해적선원의망령": [
+        {
+            "percentage": 7.6923076923076925,
+            "item": "노회"
+        }
+    ],
+    "해적갑판장의망령": [
+        {
+            "percentage": 7.6923076923076925,
+            "item": "기름"
+        }
+    ],
+    "해적선장의망령": [
+        {
+            "percentage": 20.0,
+            "item": "정령의결정"
+        }
+    ],
+    "식인종전사": [
+        {
+            "percentage": 5.555555555555555,
+            "item": "노회"
+        }
+    ],
+    "식인종추장후계자": [
+        {
+            "percentage": 5.555555555555555,
+            "item": "향료가루"
+        },
+        {
+            "percentage": 2.0,
+            "item": "선장의일기8"
+        }
+    ],
+    "식인종추장": [
+        {
+            "percentage": 8.0,
+            "item": "번개의토템"
+        }
+    ],
+    "열독사": [
+        {
+            "percentage": 5.0,
+            "item": "독니"
+        },
+        {
+            "percentage": 2.0,
+            "item": "선장의일기9"
+        }
+    ],
+    "낭아독사": [
+        {
+            "percentage": 7.6923076923076925,
+            "item": "노회"
+        }
+    ],
+    "독사여왕": [
+        {
+            "percentage": 8.0,
+            "item": "화염의토템"
+        }
+    ],
+    "절벽초성인성초": [
+        {
+            "percentage": 8.333333333333332,
+            "item": "파수다지오"
+        },
+        {
+            "percentage": 8.333333333333332,
+            "item": "열대땅콩"
+        }
+    ],
+    "절벽중성인성초": [
+        {
+            "percentage": 10.0,
+            "item": "바나나"
+        },
+        {
+            "percentage": 6.666666666666667,
+            "item": "야자열매"
+        }
+    ],
+    "원랑": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "늑대고기"
+        },
+        {
+            "percentage": 6.666666666666667,
+            "item": "늑대의이빨"
+        }
+    ],
+    "검랑": [
+        {
+            "percentage": 6.666666666666667,
+            "item": "늑대고기"
+        },
+        {
+            "percentage": 6.666666666666667,
+            "item": "늑대의송곳니"
+        }
+    ],
+    "진인랑": [
+        {
+            "percentage": 8.0,
+            "item": "대지의토템"
+        }
+    ],
+    "시녀지주": [
+        {
+            "percentage": 16.666666666666664,
+            "item": "독거미줄"
+        }
+    ],
+    "병사지주": [
+        {
+            "percentage": 16.666666666666664,
+            "item": "거미의이빨"
+        },
+        {
+            "percentage": 2.0,
+            "item": "선장의일기7"
+        }
+    ],
+    "진여왕지주": [
+        {
+            "percentage": 8.0,
+            "item": "바람의토템"
+        }
+    ],
+    "폭염룡": [
+        {
+            "percentage": 2.0,
+            "item": "선장의일기겉표지"
+        }
+    ],
+    "폭염익룡": [
+        {
+            "percentage": 5.0,
+            "item": "염룡의꼬리"
+        }
+    ],
+    "폭염왕": [
+        {
+            "percentage": 3.0,
+            "item": "자연의인'상"
+        },
+        {
+            "percentage": 3.0,
+            "item": "자연의인'하"
+        }
+    ]
+}

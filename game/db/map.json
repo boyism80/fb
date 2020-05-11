@@ -1,0 +1,58 @@
+{
+    "14": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "부여성",
+        "parent": 14,
+        "bgm": 2
+    },
+    "315": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "부여왕초보사냥1",
+        "parent": 14,
+        "bgm": 2
+    },
+    "316": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "부여왕초보사냥2",
+        "parent": 14,
+        "bgm": 2
+    },
+    "317": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "부여왕초보사냥3",
+        "parent": 14,
+        "bgm": 2
+    }
+}
