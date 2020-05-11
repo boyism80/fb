@@ -52,7 +52,7 @@ uint16_t fb::game::objects::empty_seq()
 {
     for(int i = this->_sequence; i < 0xFFFF; i++)
     {
-        if(this->at(i) != NULL)
+        if(this->at(i) != nullptr)
             continue;
 
         this->_sequence = i + 1;
@@ -61,7 +61,7 @@ uint16_t fb::game::objects::empty_seq()
 
     for(int i = 1; i < this->_sequence; i++)
     {
-        if(this->at(i) != NULL)
+        if(this->at(i) != nullptr)
             continue;
 
         this->_sequence = i + 1;
@@ -96,14 +96,14 @@ fb::game::object* fb::game::objects::at(uint16_t id)
         return object;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 uint16_t fb::game::objects::add(fb::game::object& object)
 {
     auto                    seq = this->empty_seq();
     auto                    found = this->at(seq);
-    if(found != NULL)
+    if(found != nullptr)
     {
         this->erase(std::find(this->begin(), this->end(), found));
         delete found;
@@ -140,7 +140,7 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
             return object;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -152,7 +152,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    _tiles(NULL)
+    _tiles(nullptr)
 {
 
     std::string what;
@@ -168,7 +168,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles = new tile[map_size];
-    if(this->_tiles == NULL)
+    if(this->_tiles == nullptr)
         throw std::runtime_error(std::string("cannot allocate map memory : ") + name);
 
     memset(this->_tiles, 0, sizeof(tile) * map_size);
@@ -355,7 +355,7 @@ const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) co
         return warp;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)
@@ -428,7 +428,7 @@ fb::ostream fb::game::map::make_update_stream(uint16_t begin_x, uint16_t begin_y
         for(int col = begin_x; col < begin_x + width; col++)
         {
             map::tile* tile = (*this)(col, row);
-            if(tile == NULL)
+            if(tile == nullptr)
                 continue;
 
             ostream.write_u16(tile->id)
