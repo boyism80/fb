@@ -1241,13 +1241,20 @@ int fb::game::session::builtin_state(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-    auto value = fb::game::state(lua_tointeger(lua, 2));
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->state());
+        return 1;
+    }
+    else
+    {
+        auto value = fb::game::state(lua_tointeger(lua, 2));
+        session->state(value);
 
-    session->state(value);
-    
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
-    return 0;
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
+        return 0;
+    }
 }
 
 int fb::game::session::builtin_disguise(lua_State* lua)

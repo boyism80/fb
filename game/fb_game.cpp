@@ -722,6 +722,12 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 
         if(weapon != nullptr)
             this->send_stream(session, session.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
+
+        lua::thread         thread("scripts/common/attack.lua");
+        thread.get("handle_attack");
+        thread.pushobject(session);
+        thread.pushobject(*mob);
+        thread.resume(2);
     }
     catch(std::exception& e)
     {
@@ -805,6 +811,11 @@ bool fb::game::acceptor::handle_pickup(fb::game::session& session)
             if(gain->empty())
                 delete gain;
         }
+
+        lua::thread thread("scripts/common/pickup.lua");
+        thread.get("handle_pickup");
+        thread.pushobject(session);
+        thread.resume(1);
     }
     catch(std::exception& e)
     {
