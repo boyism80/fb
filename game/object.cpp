@@ -957,9 +957,20 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 int fb::game::object::builtin_isbuff(lua_State* lua)
 {
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto buff_name = lua_tostring(lua, 2);
-
-    lua_pushboolean(lua, object->buffs.contains(buff_name));
+    if(lua_isstring(lua, 2))
+    {
+        auto buff_name = lua_tostring(lua, 2);
+        lua_pushboolean(lua, object->buffs.contains(buff_name));
+    }
+    else if(lua_isuserdata(lua, 2))
+    {
+        auto buff = *(fb::game::spell**)lua_touserdata(lua, 2);
+        lua_pushboolean(lua, object->buffs.contains(buff));
+    }
+    else
+    {
+        lua_pushboolean(lua, false);
+    }
     return 1;
 }
 

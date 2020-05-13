@@ -85,6 +85,7 @@ public:
     static fb::game::npc::core*             name2npc(const std::string& name);
     static fb::game::mob::core*             name2mob(const std::string& name);
     static fb::game::item::core*            name2item(const std::string& name);
+    static fb::game::spell*                 name2spell(const std::string& name);
     static const std::string*               class2name(uint8_t cls, uint8_t promotion);
     static bool                             name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id);
     static itemmix*                         find_itemmix(const std::vector<item*>& items);

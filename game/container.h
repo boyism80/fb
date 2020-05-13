@@ -25,7 +25,7 @@ public:
     life&                   owner();
     const life&             owner() const;
     virtual T*              at(uint8_t index) const;
-    virtual bool            add(T& element);
+    virtual uint8_t         add(T& element);
     virtual uint8_t         add(T* element);
     virtual bool            remove(uint8_t index);
     virtual bool            swap(uint8_t src, uint8_t dest);

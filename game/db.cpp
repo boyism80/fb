@@ -502,7 +502,7 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
         auto                data = *i;
         auto                npc_name = data["npc"].asString();
         auto                core = db::name2npc(npc_name);
-        if(core == NULL)
+        if(core == nullptr)
         {
             std::cout << "존재하지 않는 NPC입니다. : " << npc_name << std::endl;
             continue;
@@ -511,7 +511,7 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
 
         auto                map_name = data["map"].asString();
         auto                map = db::name2map(map_name);
-        if(map == NULL)
+        if(map == nullptr)
         {
             std::cout << "존재하지 않는 맵입니다. : " << map_name << std::endl;
             continue;
@@ -607,13 +607,13 @@ bool fb::game::db::load_mob_spawn(const std::string& db_fname)
         auto                spawns = *db_i;
 
         fb::game::map* map = db::name2map(map_name);
-        if(map == NULL)
+        if(map == nullptr)
             continue;
 
         for(auto spawn : spawns)
         {
             auto            core = db::name2mob(spawn["name"].asString());
-            if(core == NULL)
+            if(core == nullptr)
                 continue;
 
             uint16_t        x0 = spawn["area"]["x0"].asInt();
@@ -706,7 +706,7 @@ bool fb::game::db::load_drop_item(const std::string& db_fname)
                 auto        item_name = (*i2)["item"].asString();
                 auto        item_core = db::name2item(item_name);
 
-                if(item_core == NULL)
+                if(item_core == nullptr)
                     throw std::runtime_error("invalid item name");
 
                 mob_core->dropitem_add(item_core, percentage);
@@ -737,7 +737,7 @@ bool fb::game::db::load_warp(const std::string& db_fname)
     {
         auto                map_name = i1.key().asString();
         auto                map = db::name2map(map_name);
-        if(map == NULL)
+        if(map == nullptr)
             continue;
 
         auto                warps = *i1;
@@ -745,7 +745,7 @@ bool fb::game::db::load_warp(const std::string& db_fname)
         {
             auto            next_map_name = (*i2)["map"].asString();
             auto            next_map = db::name2map(next_map_name);
-            if(next_map == NULL)
+            if(next_map == nullptr)
                 continue;
 
             const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
@@ -962,7 +962,7 @@ fb::game::map* fb::game::db::name2map(const std::string& name)
             return pair.second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 fb::game::npc::core* fb::game::db::name2npc(const std::string& name)
@@ -973,7 +973,7 @@ fb::game::npc::core* fb::game::db::name2npc(const std::string& name)
             return pair.second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
@@ -984,7 +984,7 @@ fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
             return pair.second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 fb::game::item::core* fb::game::db::name2item(const std::string& name)
@@ -995,7 +995,18 @@ fb::game::item::core* fb::game::db::name2item(const std::string& name)
             return item.second;
     }
 
-    return NULL;
+    return nullptr;
+}
+
+fb::game::spell* fb::game::db::name2spell(const std::string& name)
+{
+    for(auto spell : db::spells())
+    {
+        if(spell.second->name() == name)
+            return spell.second;
+    }
+
+    return nullptr;
 }
 
 const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
@@ -1007,7 +1018,7 @@ const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
     }
     catch(std::exception& e)
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -1041,7 +1052,7 @@ fb::game::itemmix* fb::game::db::find_itemmix(const std::vector<item*>& items)
             return itemmix;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 uint32_t fb::game::db::required_exp(uint8_t class_id, uint8_t level)

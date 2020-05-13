@@ -46,7 +46,7 @@ inline T* fb::game::container<T>::at(uint8_t index) const
     return this->_elements[index];
 }
 template<typename T>
-inline bool fb::game::container<T>::add(T& element)
+inline uint8_t fb::game::container<T>::add(T& element)
 {
     for(int i = 0; i < this->_size; i++)
     {
@@ -54,10 +54,10 @@ inline bool fb::game::container<T>::add(T& element)
             continue;
 
         this->_elements[i] = &element;
-        return true;
+        return i;
     }
 
-    return false;
+    return 0xFF;
 }
 template<typename T>
 inline uint8_t fb::game::container<T>::add(T* element)

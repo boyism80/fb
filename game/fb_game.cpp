@@ -230,13 +230,6 @@ bool acceptor::handle_connected(fb::game::session& session)
     session.items.auxiliary(db::name2item("보무의목걸이")->make<auxiliary>());
     session.items.auxiliary(db::name2item("해독의귀걸이")->make<auxiliary>());
 
-    auto& spells = db::spells();
-    for(auto pair : spells)
-    {
-        if(session.spells.add(pair.second) == -1)
-            break;
-    }
-
     return true;
 }
 
@@ -2431,6 +2424,21 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         session.state(state::NORMAL);
         this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "마법배우기")
+    {
+        auto name = splitted[1];
+        auto spell = db::name2spell(name);
+        if(spell == nullptr)
+            return true;
+
+        auto slot = session.spells.add(spell);
+        if(slot == 0xFF)
+            return true;
+
+        this->send_stream(session, session.spells.make_update_stream(slot), scope::SELF);
         return true;
     }
 
