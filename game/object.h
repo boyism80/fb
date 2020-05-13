@@ -243,6 +243,7 @@ public:
     static int                  builtin_showings(lua_State* lua);
     static int                  builtin_showns(lua_State* lua);
     static int                  builtin_front(lua_State* lua);
+    static int                  builtin_is(lua_State* lua);
 #pragma endregion
 };
 

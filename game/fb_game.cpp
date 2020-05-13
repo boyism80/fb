@@ -74,6 +74,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"showings",            fb::game::object::builtin_showings},
 {"showns",              fb::game::object::builtin_showns},
 {"front",               fb::game::object::builtin_front},
+{"is",                  fb::game::object::builtin_is},
 END_LUA_EXTENSION
 
 
@@ -2558,13 +2559,13 @@ void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::ma
         this->send_stream(*i, object.make_show_stream(), scope::SELF);
 }
 
-void fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std::string& bufname)
+bool fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std::string& bufname)
 {
     auto buff = object.buffs[bufname];
     if(buff == nullptr)
-        return;
+        return false;
 
-    lua::thread thread("scripts/spell/%s.lua", buff->spell().uncast());
+    lua::thread thread("scripts/spell/%s.lua", buff->spell().uncast().c_str());
     thread.get("handle_uncast");
     thread.pushobject(object);
     thread.pushobject(buff->spell());
@@ -2572,6 +2573,7 @@ void fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std
 
     object.buffs.remove(buff);
     this->send_stream(object, buff->make_clear_stream(), scope::SELF);
+    return true;
 }
 
 #endif

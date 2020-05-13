@@ -938,19 +938,22 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto buff_name = lua_tostring(lua, 2);
 
-    auto buff = object->buffs[buff_name];
-    if(buff == nullptr)
+    if(lua_isstring(lua, 2))
+    {
+        auto buff_name = lua_tostring(lua, 2);
+        lua_pushboolean(lua, acceptor->macro_object_unbuff(*object, buff_name));
+    }
+    else if(lua_isuserdata(lua, 2))
+    {
+        auto buff = *(fb::game::spell**)lua_touserdata(lua, 2);
+        lua_pushboolean(lua, acceptor->macro_object_unbuff(*object, buff->name()));
+    }
+    else
     {
         lua_pushboolean(lua, false);
-        return 1;
     }
 
-    acceptor->send_stream(*object, buff->make_clear_stream(), acceptor::scope::SELF);
-    object->buffs.remove(buff);
-
-    lua_pushboolean(lua, true);
     return 1;
 }
 
@@ -1121,6 +1124,16 @@ int fb::game::object::builtin_front(lua_State* lua)
     else
         front->to_lua(lua);
 
+    return 1;
+}
+
+int fb::game::object::builtin_is(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto object = *(fb::game::object**)lua_touserdata(lua, 1);
+    auto type = lua_tointeger(lua, 2);
+
+    lua_pushboolean(lua, object->is(object::types(type)));
     return 1;
 }
 

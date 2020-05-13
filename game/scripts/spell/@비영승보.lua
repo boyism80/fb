@@ -40,6 +40,10 @@ function handle_spell(me, spell)
 	if lookup(me, front, (direction + 0) % 4) or 
 	   lookup(me, front, (direction + 3) % 4) or
 	   lookup(me, front, (direction + 1) % 4) then
+
+		if me:isbuff('투명') and front:is(0x04 | 0x08) then
+			me:unbuff('투명')
+		end
 		me:action(0x01, 0x0a, 0x1e)
 		me:message('비영승보를 외웠습니다.')
 	end
