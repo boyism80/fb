@@ -124,13 +124,19 @@ int fb::game::mob::core::builtin_speed(lua_State* lua)
 
 
 
-fb::game::mob::mob(const mob::core* core) : 
+fb::game::mob::mob(const mob::core* core, bool alive) : 
     life(core),
     _action_time(0),
     _dead_time(0),
     _respawn_time(0),
     _target(NULL)
-{}
+{
+    if(alive)
+    {
+        this->heal();
+        this->heal_mp();
+    }
+}
 
 fb::game::mob::mob(const mob& right) :
     life(right),

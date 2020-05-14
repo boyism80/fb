@@ -153,7 +153,7 @@ int fb::game::item::core::builtin_make(lua_State* lua)
     auto object = core->make();
 
     auto map = *(fb::game::map**)lua_touserdata(lua, 2);
-    object->map(map);
+    map->objects.add(*object);
 
     if(lua_istable(lua, 3))
     {
@@ -355,8 +355,7 @@ fb::game::item* fb::game::item::split(object& owner, uint16_t count)
     }
 
     fb::game::map* map = owner.map();
-    item->map(map);
-    item->position(owner.position());
+    map->objects.add(*item, owner.position());
     return item;
 }
 

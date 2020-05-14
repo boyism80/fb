@@ -200,7 +200,7 @@ acceptor::~acceptor()
 bool acceptor::handle_connected(fb::game::session& session)
 {
     auto& maps = db::maps();
-    session.map(db::name2map("부여성"), point16_t(75, 153));
+    db::name2map("부여성")->objects.add(session, point16_t(75, 153));
     session.name("채승현");
     session.look(0x61);
     session.color(0x0A);
@@ -461,7 +461,7 @@ void fb::game::acceptor::handle_die(fb::game::mob& mob)
             continue;
 
         auto            item = static_cast<fb::game::item*>(candidate.item->make());
-        item->map(mob.map(), mob.position());
+        mob.map()->objects.add(*item, mob.position());
 
         dropped_items.push_back(item);
     }
@@ -1009,8 +1009,7 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
 
         session.money_reduce(chunk);
 
-        cash->map(map);
-        cash->position(session.position());
+        map->objects.add(*cash, session.position());
         this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
@@ -1090,7 +1089,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
                 session.state(fb::game::state::NORMAL);
 
                 auto horse = static_cast<fb::game::mob*>(horse_core->make());
-                horse->map(session.map(), session.position_forward());
+                session.map()->objects.add(*horse, session.position_forward());
                 horse->heal();
                 this->send_stream(*horse, horse->make_show_stream(), scope::PIVOT, true);
             }
@@ -2443,6 +2442,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+
     return false;
 }
 
@@ -2535,7 +2535,7 @@ void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::ma
     for(auto i : object.showns())
         this->send_stream(*i, object.make_hide_stream(), scope::SELF);
 
-    object.map(&map, position);
+    map.objects.add(object, position);
 
 
     if(object.type() == object::types::SESSION)

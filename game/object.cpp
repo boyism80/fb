@@ -269,23 +269,6 @@ fb::game::map* fb::game::object::map() const
     return this->_map;
 }
 
-uint16_t fb::game::object::map(fb::game::map* map)
-{
-    if(this->_map != nullptr)
-        this->_map->objects.remove(*this);
-
-    this->_map = map;
-    return this->_map->objects.add(*this);
-}
-
-uint16_t fb::game::object::map(fb::game::map* map, const point16_t& position)
-{
-    uint16_t seq = this->map(map);
-    this->position(position);
-
-    return seq;
-}
-
 bool fb::game::object::sight(const point16_t& position, bool before) const
 {
     return fb::game::object::sight(before ? this->_before : this->_position, position, this->_map);
@@ -1066,7 +1049,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     else
     {
         auto item = core->make();
-        item->map(object->_map, object->_position);
+        object->_map->objects.add(*item, object->_position);
         item->to_lua(lua);
         
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
@@ -1364,6 +1347,12 @@ void fb::game::life::heal(uint32_t value)
 {
     uint32_t space = this->base_hp() - this->_hp;
     this->hp(this->_hp + std::min(value, space));
+}
+
+void fb::game::life::heal_mp(uint32_t value)
+{
+    uint32_t space = this->base_mp() - this->_mp;
+    this->mp(this->_mp + std::min(value, space));
 }
 
 uint32_t fb::game::life::mp() const

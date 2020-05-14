@@ -142,7 +142,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    mob(const mob::core* core);
+    mob(const mob::core* core, bool alive = false);
     mob(const mob& right);
     ~mob();
 #pragma endregion

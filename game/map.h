@@ -12,11 +12,13 @@
 
 namespace fb { namespace game {
 
+class map;
 class session;
 
 class objects : private std::vector<fb::game::object*>
 {
 private:
+    map*                        _owner;
     uint16_t                    _sequence;
 
 public:
@@ -32,7 +34,7 @@ public:
     using std::vector<fb::game::object*>::operator[];
 
 public:
-    objects();
+    objects(fb::game::map* owner);
     ~objects();
 
 #pragma region private method

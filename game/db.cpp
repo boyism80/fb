@@ -538,8 +538,8 @@ bool fb::game::db::load_npc_spawn(const std::string& db_fname)
 
         auto                cloned = new npc(core);
         cloned->direction(direction);
-        cloned->map(map, position);
         cloned->script(script);
+        map->objects.add(*cloned, position);
     }
     return true;
 }
@@ -606,7 +606,7 @@ bool fb::game::db::load_mob_spawn(const std::string& db_fname)
         auto                map_name = db_i.key().asString();
         auto                spawns = *db_i;
 
-        fb::game::map* map = db::name2map(map_name);
+        auto                map = db::name2map(map_name);
         if(map == nullptr)
             continue;
 
@@ -629,7 +629,7 @@ bool fb::game::db::load_mob_spawn(const std::string& db_fname)
                 mob->spawn_point(x0, y0);
                 mob->spawn_size(x1, y1);
                 mob->respawn_time(rezen);
-                mob->map(map);
+                map->objects.add(*mob);
             }
         }
     }

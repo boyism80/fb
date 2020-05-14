@@ -40,7 +40,9 @@ static const uint16_t crc16tab[256] =
 
 
 
-fb::game::objects::objects() : _sequence(1)
+fb::game::objects::objects(fb::game::map* owner) : 
+    _sequence(1),
+    _owner(owner)
 {
 }
 
@@ -111,6 +113,7 @@ uint16_t fb::game::objects::add(fb::game::object& object)
 
     this->push_back(&object);
     object.id(seq);
+    object._map = this->_owner;
     return seq;
 }
 
@@ -152,7 +155,8 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    _tiles(nullptr)
+    _tiles(nullptr),
+    objects(this)
 {
 
     std::string what;

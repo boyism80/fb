@@ -11,12 +11,17 @@ namespace fb { namespace game {
 class map;
 class session;
 class buffs;
+class objects;
 
 class object : public lua::luable
 {
 #pragma region lua
 public:
     LUA_PROTOTYPE
+#pragma endregion
+
+#pragma region friend
+    friend fb::game::objects;
 #pragma endregion
 
 
@@ -176,8 +181,6 @@ public:
     bool                        direction(fb::game::direction value);
 
     fb::game::map*              map() const;
-    virtual uint16_t            map(fb::game::map* map);
-    virtual uint16_t            map(fb::game::map* map, const point16_t& position);
 
     bool                        sight(const point16_t& position, bool before = false) const;
     bool                        sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
@@ -362,6 +365,7 @@ public:
     virtual uint32_t            hp() const;
     virtual void                hp(uint32_t value);
     void                        heal(uint32_t value = 0xFFFFFFFF);
+    void                        heal_mp(uint32_t value = 0xFFFFFFFF);
 
     virtual uint32_t            mp() const;
     virtual void                mp(uint32_t value);
