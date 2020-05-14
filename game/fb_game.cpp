@@ -2442,6 +2442,19 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+    if(splitted[0] == "몬스터생성")
+    {
+        auto name = splitted[1];
+        auto core = db::name2mob(name);
+        if(core == nullptr)
+            return true;
+
+        auto mob = new fb::game::mob(core, true);
+        auto map = session.map();
+        map->objects.add(*mob, session.position());
+        this->send_stream(session, mob->make_show_stream(), scope::PIVOT);
+        return true;
+    }
 
     return false;
 }
