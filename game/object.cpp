@@ -733,6 +733,17 @@ fb::ostream fb::game::object::make_dialog_stream(const std::string& message, boo
     return this->_core->make_dialog_stream(message, button_prev, button_next, this->_map);
 }
 
+bool fb::game::object::operator==(const object& right) const
+{
+    return this->_map == right._map &&
+        this->id() == right.id();
+}
+
+bool fb::game::object::operator!=(const object& right) const
+{
+    return !((*this) == right);
+}
+
 int fb::game::object::builtin_core(lua_State* lua)
 {
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);

@@ -33,6 +33,10 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
+#pragma region friend
+    friend group;
+#pragma endregion
+
 
 #pragma region private field
 private:
@@ -212,8 +216,6 @@ public:
     void                        title(const std::string& value);
 
     fb::game::group*            group() const;
-    bool                        group_enter(fb::game::group* gs);
-    bool                        group_leave();
 
     void                        state_assert(fb::game::state flags) const;
     void                        state_assert(uint8_t flags) const;

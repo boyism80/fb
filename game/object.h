@@ -223,6 +223,11 @@ public:
     virtual void                handle_timer(uint64_t elapsed_milliseconds) {}
 #pragma endregion
 
+#pragma region operator
+    bool                        operator == (const object& right) const;
+    bool                        operator != (const object& right) const;
+#pragma endregion
+
 
 #pragma region build-in method
 public:

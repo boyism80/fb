@@ -3,9 +3,10 @@
 using namespace fb;
 
 template <typename T>
-fb::base_acceptor<T>::base_acceptor(uint16_t port) : socket(::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)),
-_running(false),
-_execute_thread(NULL)
+fb::base_acceptor<T>::base_acceptor(uint16_t port) : 
+    socket(::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)),
+    _running(false),
+    _execute_thread(NULL)
 {
     std::srand(static_cast<uint32_t>(std::time(0)));
 
@@ -79,7 +80,7 @@ bool fb::base_acceptor<T>::disconnect(SOCKET fd)
 
     this->handle_disconnected(*session);
     this->_session_table.erase(fd);
-    this->_sessions.erase(std::find(this->_sessions.begin(), this->_sessions.end(), session));
+    this->sessions.erase(std::find(this->sessions.begin(), this->sessions.end(), session));
     this->_sockets.remove(fd);
 
     delete session;
@@ -146,12 +147,6 @@ inline T* fb::base_acceptor<T>::session(SOCKET fd)
 }
 
 template<class T>
-inline std::vector<T*>& fb::base_acceptor<T>::sessions()
-{
-    return this->_sessions;
-}
-
-template<class T>
 template<class fn>
 void fb::base_acceptor<T>::register_timer(uint32_t interval, fn callback)
 {
@@ -169,7 +164,7 @@ bool fb::base_acceptor<T>::handle_accept()
         return false;
 
     this->_sockets.add(fd, &static_cast<socket&>(*session));
-    this->_sessions.push_back(session);
+    this->sessions.push_back(session);
     this->_session_table.insert(std::make_pair(fd, session));
 
     return this->handle_connected(*session);

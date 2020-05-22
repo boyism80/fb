@@ -201,7 +201,7 @@ bool acceptor::handle_connected(fb::game::session& session)
 {
     auto& maps = db::maps();
     db::name2map("부여성")->objects.add(session, point16_t(75, 153));
-    session.name("채승현");
+    session.name(std::to_string(session.id()));
     session.look(0x61);
     session.color(0x0A);
     session.money(150);
@@ -272,6 +272,20 @@ fb::ostream fb::game::acceptor::make_bright_stream(uint8_t value)
     return ostream;
 }
 
+fb::game::session* fb::game::acceptor::find_session(const std::string& name) const
+{
+    auto i = std::find_if(this->sessions.begin(), this->sessions.end(), 
+        [name] (const fb::game::session* session) 
+        {
+            return session->name() == name;
+        });
+
+    if(i == this->sessions.end())
+        return nullptr;
+
+    return *i;
+}
+
 fb::game::session* fb::game::acceptor::handle_allocate_session(SOCKET fd)
 {
     auto session = new fb::game::session(fd);
@@ -300,10 +314,25 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
         break;
     }
 
+    case acceptor::scope::GROUP:
+    {
+        if(object.is(object::types::SESSION) == false)
+            return;
+
+        auto& session = static_cast<fb::game::session&>(object);
+        auto group = session.group();
+        if(group == nullptr)
+            return;
+
+        for(const auto session : *group)
+            session->send(stream, encrypt);
+
+        break;
+    }
+
     case acceptor::scope::MAP:
     {
-        const auto& sessions = this->sessions();
-        for(const auto session : sessions)
+        for(const auto session : this->sessions)
         {
             if(session->map() != object.map())
                 continue;
@@ -328,8 +357,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
 
 void fb::game::acceptor::send_stream(const fb::ostream& stream, const fb::game::map& map, bool encrypt)
 {
-    const auto& sessions = this->sessions();
-    for(const auto session : sessions)
+    for(const auto session : this->sessions)
     {
         if(session->map() != &map)
             continue;
@@ -340,7 +368,7 @@ void fb::game::acceptor::send_stream(const fb::ostream& stream, const fb::game::
 
 void fb::game::acceptor::send_stream(const fb::ostream& stream, bool encrypt)
 {
-    for(const auto session : this->sessions())
+    for(const auto session : this->sessions)
         session->send(stream, encrypt);
 }
 
@@ -1123,8 +1151,27 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
         break;
 
     case options::GROUP:
+    {
+        auto group = session.group();
+        if(group != nullptr)
+        {
+            if(group->size() == 1)
+            {
+                this->send_stream(session, message::make_stream("그룹 해체", message::type::STATE), scope::GROUP);
+                fb::game::group::destroy(*group);
+            }
+            else
+            {
+                auto leader = group->leave(session);
+                std::stringstream sstream;
+                sstream << session.name() << "님 그룹 탈퇴";
+                this->send_stream(*leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+            }
+        }
+
         sstream << "그룹허가    ";
         break;
+    }
 
     case options::ROAR:
         sstream << "외치기듣기  ";
@@ -1595,19 +1642,92 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 bool fb::game::acceptor::handle_group(fb::game::session& session)
 {
     auto&                       istream = session.in_stream();
-
     auto                        cmd = istream.read_u8();
-    auto                        name_size = istream.read_u8();
+    auto                        name = istream.readstr_u8();
     
-    char*                       buffer = new char[name_size];
-    istream.read(buffer, name_size);
-    std::string                 name(buffer);
-    delete[] buffer;
 
+    try
+    {
+        std::stringstream       sstream;
+        auto                    you = this->find_session(name);
+        if(you == nullptr)
+        {
+            sstream << name << "님을 찾을 수 없습니다.";
+            throw std::runtime_error(sstream.str());
+        }
 
-    // 여기서 접속해있는 세션 전체 대상으로 루프를 돌 게 아니라
-    // DB에 접근해서 하는 방식이 나을 것 같다는 생각이 드는구만
-    
+        if(session == *you)
+        {
+            throw std::runtime_error("대상을 찾을 수 없습니다.");
+        }
+
+        if(session.option(options::GROUP) == false)
+        {
+            throw std::runtime_error("그룹 거부 상태입니다.");
+        }
+
+        if(you->option(options::GROUP) == false)
+        {
+            throw std::runtime_error("상대방이 그룹 거부 상태입니다.");
+        }
+
+        auto mine = session.group();
+        auto your = you->group();
+
+        if(mine == nullptr) // 새로 그룹 만들기
+        {
+            if(your != nullptr)
+            {
+                sstream << name << "님은 이미 그룹 참여 중입니다.";
+                throw std::runtime_error(sstream.str());
+            }
+
+            mine = fb::game::group::create(session);
+            mine->enter(*you);
+
+            sstream << session.name() << "님 그룹에 참여";
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+
+            sstream.str("");
+            sstream << name << "님 그룹에 참여";
+            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+        }
+        else // 기존 그룹에 초대하기
+        {
+            auto& leader = mine->leader();
+            if(session != leader)
+            {
+                throw std::runtime_error("그룹장만 할 수 있습니다.");
+            }
+
+            if(mine != your && your != nullptr)
+            {
+                sstream << name << "님은 다른 그룹에 참여 중입니다.";
+                throw std::runtime_error(sstream.str());
+            }
+
+            if(mine == your)
+            {
+                sstream << name << "님 그룹 탈퇴";
+                this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+                mine->leave(*you);
+                return true;
+            }
+
+            if(mine->enter(*you) == nullptr)
+            {
+                throw std::runtime_error("자리가 없습니다.");
+            }
+            
+            sstream << name << "님 그룹에 참여";
+            this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+        }
+    }
+    catch(std::exception& e)
+    {
+        this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
+    }
+
     return true;
 }
 
@@ -1619,13 +1739,12 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 
 
     fb::ostream                 ostream;
-    auto&                       sessions = this->sessions();
     ostream.write_u8(0x36)
         .write_u16(sessions.size())
         .write_u16(sessions.size())
         .write_u8(0x00);
 
-    for(const auto& i : sessions)
+    for(const auto& i : this->sessions)
     {
         const auto& name = i->name();
 
@@ -2181,7 +2300,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 
     // 화면에 보이는 몹만 갱신
     std::vector<object*> shown_mobs;
-    for(auto session : this->sessions())
+    for(auto session : this->sessions)
     {
         if(session == nullptr)
             continue;
@@ -2458,6 +2577,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     return false;
 }
+#endif
 
 item* fb::game::acceptor::macro_remove_item(fb::game::session& session, uint8_t index, int count, item::delete_attr attr)
 {
@@ -2589,4 +2709,3 @@ bool fb::game::acceptor::macro_object_unbuff(fb::game::object& object, const std
     return true;
 }
 
-#endif

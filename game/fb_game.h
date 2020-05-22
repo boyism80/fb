@@ -27,7 +27,7 @@ public:
     LUA_PROTOTYPE
 
 public:
-    enum scope { SELF, PIVOT, MAP, WORLD };
+    enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
 
 public:
     acceptor(uint16_t port);
@@ -36,6 +36,7 @@ public:
 private:
     fb::ostream             make_time_stream();
     fb::ostream             make_bright_stream(uint8_t value);
+    fb::game::session*      find_session(const std::string& name) const;
 
 public:
     fb::game::session*      handle_allocate_session(SOCKET fd);

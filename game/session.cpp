@@ -19,6 +19,7 @@ session::session(SOCKET socket) :
     _class(0),
     _promotion(0),
     _money(0),
+    _group(nullptr),
     trade(*this),
     items(*this),
     dialog_thread(nullptr)
@@ -522,24 +523,6 @@ fb::game::group* fb::game::session::group() const
     return this->_group;
 }
 
-bool fb::game::session::group_enter(fb::game::group* gs)
-{
-    if(this->_group != nullptr)
-        return false;
-
-    this->_group = gs;
-    return true;
-}
-
-bool fb::game::session::group_leave()
-{
-    if(this->_group == nullptr)
-        return false;
-
-    this->_group = nullptr;
-    return true;
-}
-
 void fb::game::session::state_assert(fb::game::state flags) const
 {
     if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
@@ -756,9 +739,30 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write("클랜 타이틀")
         .write(this->_title);
 
-    std::string             group_message = "그룹 없음.";
-    ostream.write(group_message);
+    if(this->_group != nullptr)
+    {
+        std::stringstream   sstream;
+        sstream << "그룹원" 
+            << std::endl 
+            << "  * "
+            << this->_group->leader().name()
+            << std::endl;
 
+        for(auto member : *this->_group)
+        {
+            if(this->_group->leader() == *member)
+                continue;
+
+            sstream << "    "
+                << member->name()
+                << std::endl;
+        }
+        ostream.write(sstream.str());
+    }
+    else
+    {
+        ostream.write("그룹 없음.");
+    }
     ostream.write_u8(this->option(options::GROUP));
 
 

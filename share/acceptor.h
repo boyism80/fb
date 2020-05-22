@@ -30,6 +30,21 @@ public:
     fn                      callback();
 };
 
+template <typename T>
+class session_container : private std::vector<T*>
+{
+public:
+    template <typename> friend class base_acceptor;
+
+public:
+    using std::vector<T*>::begin;
+    using std::vector<T*>::end;
+    using std::vector<T*>::size;
+
+public:
+    T*                      find(const std::string& name) const;
+};
+
 
 template <class T>
 class base_acceptor : private fb::socket
@@ -41,10 +56,12 @@ public:
 private:
     bool                    _running;
     fb::socket_map          _sockets;
-    std::vector<T*>         _sessions;
     std::map<SOCKET, T*>    _session_table;
     std::thread*            _execute_thread;
     timer_list              _timers;
+
+public:
+    session_container<T>    sessions;
     
 
 protected:
@@ -59,7 +76,6 @@ public:
     bool                    execute(bool async = false);
     void                    exit();
     T*                      session(SOCKET fd);
-    std::vector<T*>&        sessions();
 
     template <typename fn>
     void                    register_timer(uint32_t interval, fn callback);

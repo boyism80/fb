@@ -7,19 +7,29 @@ namespace fb { namespace game {
 
 class session;
 
-class group
+class group : private std::vector<session*>
 {
 private:
     session*                _leader;
-    std::vector<session*>   _members;
 
 public:
+    using std::vector<session*>::begin;
+    using std::vector<session*>::end;
+    using std::vector<session*>::size;
+
+private:
     group(session& leader);
     ~group();
 
 public:
-    bool                    add(session& session);
-    bool                    remove(session& session);
+    session*                enter(session& session);
+    session*                leave(session& session);
+    bool                    contains(session& session);
+    session&                leader() const;
+
+public:
+    static group*           create(session& leader);
+    static void             destroy(fb::game::group& group);
 };
 
 } }
