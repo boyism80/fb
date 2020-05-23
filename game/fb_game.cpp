@@ -275,7 +275,7 @@ fb::ostream fb::game::acceptor::make_bright_stream(uint8_t value)
 fb::game::session* fb::game::acceptor::find_session(const std::string& name) const
 {
     auto i = std::find_if(this->sessions.begin(), this->sessions.end(), 
-        [name] (const fb::game::session* session) 
+        [&name] (const fb::game::session* session) 
         {
             return session->name() == name;
         });

@@ -967,46 +967,50 @@ fb::game::map* fb::game::db::name2map(const std::string& name)
 
 fb::game::npc::core* fb::game::db::name2npc(const std::string& name)
 {
-    for(auto pair : db::npcs())
-    {
-        if(pair.second->name() == name)
-            return pair.second;
-    }
+    auto& db_npc = db::npcs();
+    auto i = std::find_if(db_npc.begin(), db_npc.end(), 
+        [&name](std::pair<uint16_t, npc::core*> pair)
+        {
+            return pair.second->name() == name;
+        });
 
-    return nullptr;
+    return i != db_npc.end() ? (*i).second : nullptr;
 }
 
 fb::game::mob::core* fb::game::db::name2mob(const std::string& name)
 {
-    for(auto pair : db::mobs())
-    {
-        if (pair.second->name() == name)
-            return pair.second;
-    }
+    auto& db_mob = db::mobs();
+    auto i = std::find_if(db_mob.begin(), db_mob.end(), 
+        [&name](std::pair<uint16_t, mob::core*> pair)
+        {
+            return pair.second->name() == name;
+        });
 
-    return nullptr;
+    return i != db_mob.end() ? (*i).second : nullptr;
 }
 
 fb::game::item::core* fb::game::db::name2item(const std::string& name)
 {
-    for(auto item : db::items())
-    {
-        if(item.second->name() == name)
-            return item.second;
-    }
+    auto& db_item = db::items();
+    auto i = std::find_if(db_item.begin(), db_item.end(), 
+        [&name](std::pair<uint16_t, item::core*> pair)
+        {
+            return pair.second->name() == name;
+        });
 
-    return nullptr;
+    return i != db_item.end() ? (*i).second : nullptr;
 }
 
 fb::game::spell* fb::game::db::name2spell(const std::string& name)
 {
-    for(auto spell : db::spells())
-    {
-        if(spell.second->name() == name)
-            return spell.second;
-    }
+    auto& db_spell = db::spells();
+    auto i = std::find_if(db_spell.begin(), db_spell.end(), 
+        [&name](std::pair<uint16_t, spell*> pair)
+        {
+            return pair.second->name() == name;
+        });
 
-    return nullptr;
+    return i != db_spell.end() ? (*i).second : nullptr;
 }
 
 const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
@@ -1043,16 +1047,17 @@ bool fb::game::db::name2class(const std::string& name, uint8_t* class_id, uint8_
 
 fb::game::itemmix* fb::game::db::find_itemmix(const std::vector<item*>& items)
 {
-    for(const auto itemmix : db::itemmixes())
-    {
-        if(itemmix->require.size() != items.size())
-            continue;
+    auto& db = db::itemmixes();
+    auto i = std::find_if(db.begin(), db.end(), 
+        [&items](itemmix* mx)
+        {
+            if(mx->require.size() != items.size())
+                return false;
 
-        if(itemmix->matched(items))
-            return itemmix;
-    }
+            return mx->matched(items);
+        });
 
-    return nullptr;
+    return i != db.end() ? *i : nullptr;
 }
 
 uint32_t fb::game::db::required_exp(uint8_t class_id, uint8_t level)
