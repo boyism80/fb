@@ -171,6 +171,8 @@ fb::game::door* fb::game::doors::find(const point16_t position)
                 return door;
         }
     }
+
+    return nullptr;
 }
 
 fb::game::door* fb::game::doors::find(const fb::game::session& session)

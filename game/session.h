@@ -256,6 +256,9 @@ public:
     static int                  builtin_rmitem(lua_State* lua);
     static int                  builtin_state(lua_State* lua);
     static int                  builtin_disguise(lua_State* lua);
+    static int                  builtin_class(lua_State* lua);
+    static int                  builtin_level(lua_State* lua);
+
 #pragma endregion
 };
 

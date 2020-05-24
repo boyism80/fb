@@ -123,6 +123,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"rmitem",              fb::game::session::builtin_rmitem},
 {"state",               fb::game::session::builtin_state},
 {"disguise",            fb::game::session::builtin_disguise},
+{"class",               fb::game::session::builtin_class},
+{"level",               fb::game::session::builtin_level},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
@@ -2569,6 +2571,28 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto map = session.map();
         map->objects.add(*mob, session.position());
         this->send_stream(session, mob->make_show_stream(), scope::PIVOT);
+        return true;
+    }
+
+    if(splitted[0] == "직업바꾸기")
+    {
+        auto name = splitted[1];
+        uint8_t cls, promotion;
+        if(db::name2class(name, &cls, &promotion) == false)
+            return true;
+
+        session.cls(cls);
+        session.promotion(promotion);
+        this->send_stream(session, session.make_id_stream(), scope::SELF);
+        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "레벨바꾸기")
+    {
+        auto level = std::stoi(splitted[1]);
+        session.level(level);
+        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
         return true;
     }
 

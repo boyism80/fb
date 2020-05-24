@@ -551,7 +551,9 @@ fb::ostream fb::game::session::make_id_stream() const
     ostream.write_u8(0x05)
         .write_u32(this->id())
         .write_u32(this->direction()) // side
-        .write_u32(0x00); // class
+        .write_u8(this->_class) // class
+        .write_u16(0x00)
+        .write_u8(0x00);
 
     return ostream;
 }
@@ -1287,6 +1289,67 @@ int fb::game::session::builtin_disguise(lua_State* lua)
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
+        acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
+        return 0;
+    }
+}
+
+int fb::game::session::builtin_class(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+
+    if(argc == 1)
+    {
+        auto cls = session->_class;
+        auto promotion = session->_promotion;
+
+        auto cls_name = db::class2name(cls, promotion);
+        if(cls_name == nullptr)
+        {
+            lua_pushnil(lua);
+        }
+        else
+        {
+            lua_pushstring(lua, cls_name->c_str());
+        }
+    }
+    else
+    {
+        auto cls_name = lua_tostring(lua, 2);
+        uint8_t cls, promotion;
+        if(db::name2class(cls_name, &cls, &promotion) == false)
+        {
+            lua_pushboolean(lua, false);
+        }
+        else
+        {
+            auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+            acceptor->send_stream(*session, session->make_id_stream(), acceptor::scope::SELF);
+            acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
+            lua_pushboolean(lua, true);
+        }
+    }
+
+    return 1;
+}
+
+int fb::game::session::builtin_level(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+
+    if(argc == 1)
+    {
+        lua_pushinteger(lua, session->level());
+        return 1;
+    }
+    else
+    {
+        auto level = std::max(0, std::min((int)lua_tointeger(lua, 2), 255));
+        session->level(level);
+
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
         return 0;
     }
