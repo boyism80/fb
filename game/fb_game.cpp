@@ -125,6 +125,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"disguise",            fb::game::session::builtin_disguise},
 {"class",               fb::game::session::builtin_class},
 {"level",               fb::game::session::builtin_level},
+{"group",               fb::game::session::builtin_group},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
@@ -135,6 +136,11 @@ IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
 {"update",              fb::game::door::builtin_update},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
+{"members",             fb::game::group::builtin_members},
+{"leader",              fb::game::group::builtin_leader},
+END_LUA_EXTENSION
+
 acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
 {
     lua::env<acceptor>("acceptor", this);
@@ -142,6 +148,7 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     lua::bind_class<spell, lua::luable>();
     lua::bind_class<map, lua::luable>();
     lua::bind_class<door, lua::luable>();
+    lua::bind_class<group, lua::luable>();
     lua::bind_class<object::core, lua::luable>();   lua::bind_class<object, lua::luable>();
     lua::bind_class<life::core, object::core>();    lua::bind_class<life, object>();
     lua::bind_class<mob::core, life::core>();       lua::bind_class<mob, life>();
@@ -326,7 +333,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
         if(group == nullptr)
             return;
 
-        for(const auto session : *group)
+        for(const auto session : group->members())
             session->send(stream, encrypt);
 
         break;
@@ -1157,7 +1164,7 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
         auto group = session.group();
         if(group != nullptr)
         {
-            if(group->size() == 1)
+            if(group->members().size() == 1)
             {
                 this->send_stream(session, message::make_stream("그룹 해체", message::type::STATE), scope::GROUP);
                 fb::game::group::destroy(*group);

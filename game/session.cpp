@@ -750,7 +750,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
             << this->_group->leader().name()
             << std::endl;
 
-        for(auto member : *this->_group)
+        for(auto member : this->_group->members())
         {
             if(this->_group->leader() == *member)
                 continue;
@@ -1353,4 +1353,18 @@ int fb::game::session::builtin_level(lua_State* lua)
         acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
         return 0;
     }
+}
+
+int fb::game::session::builtin_group(lua_State* lua)
+{
+    auto argc = lua_gettop(lua);
+    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+
+    auto group = session->group();
+    if(group == nullptr)
+        lua_pushnil(lua);
+    else
+        group->to_lua(lua);
+
+    return 1;
 }
