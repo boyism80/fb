@@ -16,28 +16,28 @@ public:
 #pragma endregion
 
 private:
-    session*                    _leader;
-    std::vector<session*>       _members;
+    session*                        _leader;
+    std::vector<session*>           _members;
 
 private:
     group(session& leader);
     ~group();
 
 public:
-    session*                    enter(session& session);
-    session*                    leave(session& session);
-    bool                        contains(session& session);
-    session&                    leader() const;
-    std::vector<session*>&      members();
+    session*                        enter(session& session);
+    session*                        leave(session& session);
+    bool                            contains(session& session);
+    session&                        leader() const;
+    const std::vector<session*>&    members() const;
 
 public:
-    static group*               create(session& leader);
-    static void                 destroy(fb::game::group& group);
+    static group*                   create(session& leader);
+    static void                     destroy(fb::game::group& group);
 
 #pragma region built-in methods
 public:
-    static int                  builtin_members(lua_State* lua);
-    static int                  builtin_leader(lua_State* lua);
+    static int                      builtin_members(lua_State* lua);
+    static int                      builtin_leader(lua_State* lua);
 #pragma endregion
 };
 

@@ -56,7 +56,7 @@ fb::game::session& fb::game::group::leader() const
     return *this->_leader;
 }
 
-std::vector<fb::game::session*>& fb::game::group::members()
+const std::vector<fb::game::session*>& fb::game::group::members() const
 {
     return this->_members;
 }
