@@ -13,6 +13,7 @@
 namespace fb { namespace game {
 
 class map;
+class mob;
 class session;
 
 class objects : private std::vector<fb::game::object*>
@@ -45,7 +46,8 @@ private:
 
 #pragma region public method
 public:
-    std::vector<session*>       sessions();
+    std::vector<session*>       sessions() const;
+    std::vector<mob*>           active_mobs() const;
     fb::game::object*           at(uint16_t id);
     uint16_t                    add(fb::game::object& object);
     uint16_t                    add(fb::game::object& object, const point16_t position);

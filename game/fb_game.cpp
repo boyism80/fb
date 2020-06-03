@@ -2242,22 +2242,11 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
     for(auto pair : db::maps())
     {
         auto                map = pair.second;
-        auto                sessions = map->objects.sessions();
-        if(sessions.size() == 0)
-            continue;
+        const auto&         mobs = map->objects.active_mobs();
 
-        const auto&         objects = map->objects;
-
-        for(auto object : objects)
+        for(auto mob : mobs)
         {
-            if(object->type() != object::types::MOB)
-                continue;
-
-            auto            mob = static_cast<fb::game::mob*>(object);
             if(now < mob->action_time() + mob->speed())
-                continue;
-
-            if(mob->alive() == false)
                 continue;
 
             switch(mob->offensive())

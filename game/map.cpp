@@ -1,5 +1,6 @@
 #include "map.h"
 #include "session.h"
+#include "mob.h"
 #include "fb_game.h"
 
 static const uint16_t crc16tab[256] = 
@@ -73,7 +74,7 @@ uint16_t fb::game::objects::empty_seq()
     return 0xFFFF;
 }
 
-std::vector<fb::game::session*> fb::game::objects::sessions()
+std::vector<fb::game::session*> fb::game::objects::sessions() const
 {
     std::vector<session*> sessions;
 
@@ -86,6 +87,30 @@ std::vector<fb::game::session*> fb::game::objects::sessions()
     }
 
     return sessions;
+}
+
+std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
+{
+    std::map<uint32_t, fb::game::mob*> active_table;
+    auto sessions = this->sessions();
+
+    for(auto x : *this)
+    {
+        if(x->is(object::types::MOB) == false)
+            continue;
+
+        if(x->alive() == false)
+            continue;
+
+        if(std::any_of(sessions.begin(), sessions.end(), [&x] (fb::game::session* session) { return session->sight(*x); }) == false)
+            continue;
+
+        active_table.insert(std::pair<uint32_t, fb::game::mob*>(x->id(), static_cast<fb::game::mob*>(x)));
+    }
+
+    std::vector<fb::game::mob*> actives;
+    std::transform(active_table.begin(), active_table.end(), std::back_inserter(actives), [] (auto& pair) { return pair.second; });
+    return actives;
 }
 
 fb::game::object* fb::game::objects::at(uint16_t id)
