@@ -72,15 +72,32 @@ public:
 #pragma endregion
 
 
-class session : public crtsocket
+class session : public fb::base
 {
+private:
+    fb::socket*             _socket;
+
 public:
-    session(SOCKET fd);
+    session(fb::socket* socket);
     ~session();
+
+    // override
+public:
+    void                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
+
+    // middle man
+public:
+    fb::cryptor&            crt();
+    void                    crt(const fb::cryptor& crt);
+    void                    crt(uint8_t enctype, const uint8_t* enckey);
+    fb::istream&            in_stream();
+
+public:
+    operator                fb::socket& ();
 };
 
 
-class acceptor : public fb_acceptor<session>
+class acceptor : public fb::acceptor<session>
 {
 private:
     typedef struct _gateway_form
@@ -108,12 +125,12 @@ private:
     std::vector<std::string>    _forbidden_names;
 
 public:
-    acceptor(uint16_t port);
+    acceptor(boost::asio::io_context& context, uint16_t port);
     ~acceptor();
 
     // override
 public:
-    login::session*             handle_allocate_session(SOCKET fd);
+    login::session*             handle_alloc_session(fb::socket* socket);
 
 private:
     uint32_t                    compress(const uint8_t * source, uint32_t size, uint8_t * dest) const;

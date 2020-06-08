@@ -150,6 +150,11 @@ fb::ostream::ostream(uint32_t size) : buffer(size)
 {
 }
 
+fb::ostream::ostream(const uint8_t* data, size_t size) : buffer(size)
+{
+    this->insert(this->end(), data, data + size);
+}
+
 fb::ostream::~ostream()
 {
 }

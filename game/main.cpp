@@ -26,7 +26,7 @@ BOOL WINAPI handle_console(DWORD signal)
     switch(signal)
     {
     case CTRL_C_EVENT:
-        acceptor->exit();
+        //acceptor->exit();
         puts("Please wait to exit acceptor.");
         break;
     }
@@ -42,28 +42,19 @@ int main(int argc, const char** argv)
 
     //_CrtSetBreakAlloc(157);
 
-    // Initialization
-    WSADATA                 wsa;
-    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        return 0;
-
     // Load databases
     fb::game::db::init();
 
-    // Create acceptor instance
-    acceptor = new fb::game::acceptor(10021);
-
     // Execute acceptor
-    acceptor->execute(true);
+    boost::asio::io_context io_service;
+    acceptor = new fb::game::acceptor(io_service, 10021);
+    io_service.run();
 
 
     // Wait while key pressed
     _fgetchar();
 
 
-    // Clean up
-    WSACleanup();
-    
     // Release
     delete acceptor;
     fb::game::db::release();

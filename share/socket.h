@@ -4,10 +4,15 @@
 #include <winsock2.h>
 #include <exception>
 #include <map>
+#include <deque>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include "stream.h"
 #include "cryptor.h"
 
 namespace fb {
+
+class base_acceptor;
 
 class base
 {
@@ -23,85 +28,90 @@ public:
     uint32_t                id() const { return this->_id; }
     void                    id(uint32_t value) { this->_id = value; }
 
-    virtual bool            send(const fb::ostream& stream, bool encrypt, bool wrap = true) { return true; }
+    virtual void            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
 };
 
-class socket : public base
+class socket : public boost::asio::ip::tcp::socket, public virtual base
 {
 private:
-    SOCKET                  _fd;
-    istream                 _istream;
-    ostream                 _ostream;
-
-protected:
-    socket(SOCKET socket);
-public:
-    virtual ~socket();
-
-protected:
-    bool                    valid() const;
-
-public:
-    bool                    send();
-    bool                    recv();
-    void                    close();
-
-public:
-    istream&                in_stream();
-    ostream&                out_stream();
-
-public:
-    operator                SOCKET () const;
-};
-
-class crtsocket : public socket
-{
-private:
+    base_acceptor*          _owner;
     fb::cryptor             _crt;
 
-public:
-    crtsocket(SOCKET fd);
-    crtsocket(SOCKET fd, const fb::cryptor& crt);
-    virtual ~crtsocket();
+    std::array<char, 256>   _buffer;
+    istream                 _instream;
+    std::deque<ostream*>    _deque;
 
 public:
-    bool                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
+    socket(base_acceptor* owner);
+    socket(base_acceptor* owner, const fb::cryptor& crt);
+    ~socket();
+
+private:
+    void                    handle_send(const boost::system::error_code& error, size_t bytes_transferred);
+    void                    handle_receive(const boost::system::error_code& error, size_t bytes_transferred);
+
+    void                    send();
+
+public:
+    void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    fb::cryptor&            crt();
     void                    crt(const fb::cryptor& crt);
     void                    crt(uint8_t enctype, const uint8_t* enckey);
+    void                    recv();
+    base_acceptor*          owner() const;
+    fb::istream&            in_stream();
 
-    // operator
 public:
     operator                fb::cryptor& ();
 };
 
 
-class socket_map : private std::map<SOCKET, socket*>
+template <typename T>
+class session_map : private std::map<const fb::socket*, T*>
 {
-private:
-    fd_set                  _fd_set;
-    socket*                 _root;
+public:
+    using std::map<const fb::socket*, T*>::begin;
+    using std::map<const fb::socket*, T*>::end;
+    using std::map<const fb::socket*, T*>::size;
+    using std::map<const fb::socket*, T*>::erase;
 
 public:
-    using std::map<SOCKET, socket*>::find;
-    using std::map<SOCKET, socket*>::begin;
-    using std::map<SOCKET, socket*>::end;
+    session_map();
+    ~session_map();
 
 public:
-    socket_map();
-    ~socket_map();
+    T*                      find(const fb::socket* key);
+    T*                      find(const fb::socket& key);
+    T*                      push(const fb::socket* key, T* val);
+    void                    erase(const fb::socket& key);
 
 public:
-    bool                    add(SOCKET fd, socket* socket);
-    bool                    root(SOCKET fd, socket* socket);
-    bool                    remove(SOCKET fd);
-    void                    clear();
-    socket*                 get(SOCKET fd) const;
-    bool                    contains(SOCKET fd) const;
-
-public:
-    socket*                 operator [] (SOCKET fd);
-    operator                fd_set& ();
+    T*                      operator [] (const fb::socket* key);
+    T*                      operator [] (const fb::socket& key);
 };
+
+
+template <typename T>
+class session_container : private std::vector<T*>
+{
+public:
+    template <typename> friend class acceptor;
+
+public:
+    using std::vector<T*>::begin;
+    using std::vector<T*>::end;
+    using std::vector<T*>::size;
+
+private:
+    void                    push(T* session);
+    void                    erase(T* session);
+    void                    erase(uint32_t fd);
+
+public:
+    T*                      operator [] (uint32_t fd);
+};
+
+#include "socket.hpp"
 
 }
 

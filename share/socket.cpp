@@ -1,221 +1,126 @@
 #include "socket.h"
+#include "acceptor.h"
 
-fb::socket::socket(SOCKET socket) : _fd(INVALID_SOCKET)
+fb::socket::socket(fb::base_acceptor* owner) : 
+    boost::asio::ip::tcp::socket(owner->get_executor()),
+    _owner(owner)
 {
-    this->_fd = socket;
+}
 
-    u_long opt = 1;
-    ::ioctlsocket(this->_fd, FIONBIO, &opt);
-
-    this->_istream.reserve(0x1000);
-    this->_ostream.reserve(0x1000);
+fb::socket::socket(base_acceptor* owner, const fb::cryptor& crt) : 
+    boost::asio::ip::tcp::socket(owner->get_executor()),
+    _crt(crt)
+{
 }
 
 fb::socket::~socket()
 {
-	this->_istream.emplace_back();
-	this->_ostream.emplace_back();
 }
 
-bool fb::socket::valid() const
+void fb::socket::handle_send(const boost::system::error_code& error, size_t bytes_transferred)
 {
-    return this->_fd != INVALID_SOCKET;
+    if(this->_deque.empty())
+        return;
+
+    delete[] this->_deque.front();
+    this->_deque.pop_front();
+    this->send();
 }
 
-bool fb::socket::send()
+void fb::socket::handle_receive(const boost::system::error_code& error, size_t bytes_transferred)
 {
-    if(this->_ostream.size() == 0)
-        return true;
-
-    if (this->valid() == false)
-        return false;
-
-    uint32_t                sent_size = ::send(this->_fd, (const char*)this->_ostream.data(), this->_ostream.size(), 0);
-    if(sent_size == SOCKET_ERROR && WSAGetLastError() == WSAEWOULDBLOCK)
-        return false;
-
-    if(sent_size == 0)
-        return false;
-
-    if(sent_size != SOCKET_ERROR)
-        this->_ostream.erase(this->_ostream.begin(), this->_ostream.begin() + sent_size);
-
-    return true;
-}
-
-bool fb::socket::recv()
-{
-    if (this->valid() == false)
-        return false;
-
-    uint32_t                space       = this->_istream.capacity() - this->_istream.size();
-    if(space == 0)
-        return false;
-
-    char*                   buffer      = new char[space];
-    bool                    success     = true;
-
     try
     {
-        uint32_t            recv_size   = ::recv(this->_fd, buffer, space, 0);
-        if(recv_size == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK)
-            throw std::exception();
+        if(error)
+        {
+            if(error == boost::asio::error::eof)
+                throw std::runtime_error("disconnected from client.");
+            else 
+                throw std::runtime_error(error.message());
 
-        if(recv_size == 0)
-            throw std::exception();
+            _owner->handle_disconnect(*this);
+        }
 
-        this->_istream.insert(this->_istream.end(), buffer, buffer + recv_size);
-
-        delete[] buffer;
-        return true;
+        this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
+        this->recv();
+        this->_owner->handle_receive(*this);
     }
-    catch(std::exception&)
+    catch(std::exception& e)
     {
-        delete[] buffer;
-        return false;
+        std::cout << e.what() << std::endl;
     }
-
-    delete[] buffer;
-    return success;
 }
 
-void fb::socket::close()
+void fb::socket::send()
 {
-    ::closesocket(this->_fd);
+    if(this->_deque.empty())
+        return;
+
+    auto stream = this->_deque.front();
+    boost::asio::async_write(*this, boost::asio::buffer(stream->data(), stream->size()),
+        boost::bind(&fb::socket::handle_send, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred)
+    );
 }
 
-fb::istream& fb::socket::in_stream()
+void fb::socket::send(const ostream& stream, bool encrypt, bool wrap)
 {
-    return this->_istream;
-}
+    auto clone = new ostream(stream);
 
-fb::ostream& fb::socket::out_stream()
-{
-    return this->_ostream;
-}
-
-fb::socket::operator SOCKET() const
-{
-    return this->_fd;
-}
-
-fb::socket_map::socket_map() : _root(NULL)
-{
-    FD_ZERO(&this->_fd_set);
-}
-
-fb::socket_map::~socket_map()
-{
-    this->clear();
-}
-
-bool fb::socket_map::add(SOCKET fd, fb::socket* socket)
-{
-    if(socket == NULL)
-        return false;
-
-    if (FD_ISSET(fd, &this->_fd_set))
-        return false;
-
-    FD_SET(fd, &this->_fd_set);
-    this->insert(std::pair<SOCKET, fb::socket*>(fd, socket));
-    return true;
-}
-
-bool fb::socket_map::root(SOCKET fd, socket* socket)
-{
-    if(this->add(fd, socket) == false)
-        return false;
-
-    this->_root = socket;
-    return true;
-}
-
-bool fb::socket_map::remove(SOCKET fd)
-{
-    if (FD_ISSET(fd, &this->_fd_set) == false)
-        return false;
-
-    auto base_session = this->get(fd);
-
-    FD_CLR(fd, &this->_fd_set);
-    this->erase(fd);
-    return true;
-}
-
-void fb::socket_map::clear()
-{
-    for (auto i = this->begin(); i != this->end(); i++)
-    {
-        if(i->second == this->_root)
-            continue;
-
-        delete i->second;
-    }
-
-    FD_ZERO(&this->_fd_set);
-    __super::clear();
-
-    this->add(*this->_root, this->_root);
-}
-
-fb::socket* fb::socket_map::get(SOCKET fd) const
-{
-    return __super::find(fd)->second;
-}
-
-bool fb::socket_map::contains(SOCKET fd) const
-{
-    return FD_ISSET(fd, &this->_fd_set);
-}
-
-fb::socket* fb::socket_map::operator[](SOCKET fd)
-{
-    return std::map<SOCKET, socket*>::operator[](fd);
-}
-
-fb::socket_map::operator fd_set& ()
-{
-    return this->_fd_set;
-}
-
-fb::crtsocket::crtsocket(SOCKET fd) : socket(fd)
-{
-}
-
-fb::crtsocket::crtsocket(SOCKET fd, const fb::cryptor& crt) : 
-    socket(fd), _crt(crt)
-{
-}
-
-fb::crtsocket::~crtsocket()
-{
-}
-
-bool fb::crtsocket::send(const fb::ostream& stream, bool encrypt, bool wrap)
-{
-    auto                    clone(stream);
     if(encrypt)
-        this->_crt.encrypt(clone);
+        this->_crt.encrypt(*clone);
 
     if(wrap)
-        this->_crt.wrap(clone);
+        this->_crt.wrap(*clone);
 
-    this->out_stream().write(clone);
-    return true;
+
+    this->_deque.push_back(clone);
+    this->send();
+    this->_owner->handle_send(*this);
 }
 
-void fb::crtsocket::crt(const fb::cryptor& crt)
+fb::cryptor& fb::socket::crt()
+{
+    return this->_crt;
+}
+
+void fb::socket::crt(const fb::cryptor& crt)
 {
     this->_crt = cryptor(crt);
 }
 
-void fb::crtsocket::crt(uint8_t enctype, const uint8_t* enckey)
+void fb::socket::crt(uint8_t enctype, const uint8_t* enckey)
 {
     this->_crt = cryptor(enctype, enckey);
 }
 
-fb::crtsocket::operator fb::cryptor& ()
+void fb::socket::recv()
+{
+    this->async_read_some
+    (
+        boost::asio::buffer(this->_buffer),
+        boost::bind
+        (
+            &fb::socket::handle_receive, 
+            this, 
+            boost::asio::placeholders::error, 
+            boost::asio::placeholders::bytes_transferred
+        )
+    );
+}
+
+fb::base_acceptor* fb::socket::owner() const
+{
+    return this->_owner;
+}
+
+fb::istream& fb::socket::in_stream()
+{
+    return this->_instream;
+}
+
+fb::socket::operator fb::cryptor& ()
 {
     return this->_crt;
 }

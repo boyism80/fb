@@ -3,7 +3,6 @@
 #include <iostream>
 #include "socket.h"
 #include "fb_login.h"
-#include <Windows.h>
 #include "leak.h"
 #include "console.h"
 #include "resource.h"
@@ -18,16 +17,14 @@
 #pragma comment(lib, "zlib/zlib.lib")
 #endif
 
-using namespace fb::login;
-
-acceptor*       acceptor_login;
+fb::login::acceptor*       acceptor;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
     switch(signal)
     {
     case CTRL_C_EVENT:
-        acceptor_login->exit();
+        //acceptor_login->exit();
         puts("Please wait to exit acceptor.");
         break;
     }
@@ -43,21 +40,16 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
     ::SetConsoleCtrlHandler(handle_console, true);
 
-    // Initialization
-    WSADATA                 wsa;
-    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        return 0;
-
-
     // Execute acceptor
-    acceptor_login = new acceptor(2001);
-    acceptor_login->execute(true);
+    boost::asio::io_context io_service;
+    acceptor = new fb::login::acceptor(io_service, 2001);
+
+    io_service.run();
 
     fgetchar();
 
     // Clean up
-    delete acceptor_login;
-    WSACleanup();
+    delete acceptor;
 
     return 0;
 }

@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(SolutionDir)\zlib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -184,6 +184,7 @@
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
+    <ClInclude Include="..\share\socket.hpp" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="fb_login.h" />
     <ClInclude Include="resource.h" />

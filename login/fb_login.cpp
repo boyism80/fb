@@ -1,14 +1,45 @@
 #include "fb_login.h"
 using namespace fb::login;
 
-
-session::session(SOCKET fd) : crtsocket(fd)
+session::session(fb::socket* socket) : 
+    _socket(socket)
 {}
 
 session::~session()
 {}
 
-acceptor::acceptor(uint16_t port) : fb_acceptor<fb::login::session>(port), _gateway_crc(0)
+void fb::login::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{
+    this->_socket->send(stream, encrypt, wrap);
+}
+
+fb::cryptor& fb::login::session::crt()
+{
+    return this->_socket->crt();
+}
+
+void fb::login::session::crt(const fb::cryptor& crt)
+{
+    this->_socket->crt(crt);
+}
+
+void fb::login::session::crt(uint8_t enctype, const uint8_t* enckey)
+{
+    this->_socket->crt(enctype, enckey);
+}
+
+fb::istream& fb::login::session::in_stream()
+{
+    return this->_socket->in_stream();
+}
+
+fb::login::session::operator fb::socket & ()
+{
+    return *this->_socket;
+}
+
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
+    fb::acceptor<session>(context, port), _gateway_crc(0)
 {
     const auto& config = fb::config();
 
@@ -31,13 +62,13 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::login::session>(port), _gate
 
 
     // Register event handler
-    this->register_handle(0x00, &acceptor::handle_check_version);
-    this->register_handle(0x02, &acceptor::handle_check_id);
-    this->register_handle(0x03, &acceptor::handle_login);
-    this->register_handle(0x04, &acceptor::handle_create_account);
-    this->register_handle(0x10, &acceptor::handle_agreement);
-    this->register_handle(0x26, &acceptor::handle_change_password);
-    this->register_handle(0x57, &acceptor::handle_gateway_list);
+    this->register_fn(0x00, std::bind(&acceptor::handle_check_version, this, std::placeholders::_1));
+    this->register_fn(0x02, std::bind(&acceptor::handle_check_id, this, std::placeholders::_1));
+    this->register_fn(0x03, std::bind(&acceptor::handle_login, this, std::placeholders::_1));
+    this->register_fn(0x04, std::bind(&acceptor::handle_create_account, this, std::placeholders::_1));
+    this->register_fn(0x10, std::bind(&acceptor::handle_agreement, this, std::placeholders::_1));
+    this->register_fn(0x26, std::bind(&acceptor::handle_change_password, this, std::placeholders::_1));
+    this->register_fn(0x57, std::bind(&acceptor::handle_gateway_list, this, std::placeholders::_1));
 }
 
 acceptor::~acceptor()
@@ -46,9 +77,9 @@ acceptor::~acceptor()
     std::ofstream ofstream;
 }
 
-fb::login::session* acceptor::handle_allocate_session(SOCKET fd)
+fb::login::session* acceptor::handle_alloc_session(fb::socket* socket)
 {
-    return new login::session(fd);
+    return new login::session(socket);
 }
 
 uint32_t acceptor::compress(const uint8_t* source, uint32_t size, uint8_t* dest) const
@@ -156,10 +187,10 @@ bool fb::login::acceptor::is_forbidden(const char* str)
 bool acceptor::handle_connected(fb::login::session& session)
 {
     static uint8_t data[] = {0xAA, 0x00, 0x13, 0x7E, 0x1B, 0x43, 0x4F, 0x4E, 0x4E, 0x45, 0x43, 0x54, 0x45, 0x44, 0x20, 0x53, 0x45, 0x52, 0x56, 0x45, 0x52, 0x0A};
-    session.out_stream().write(data, sizeof(data));
-
+    static ostream ostream(data, sizeof(data));
+    
+    session.send(ostream, false, false);
     std::cout << "connection request" << std::endl;
-
     return true;
 }
 
@@ -205,7 +236,6 @@ bool acceptor::handle_check_version(fb::login::session& session)
 bool acceptor::handle_gateway_list(fb::login::session& session)
 {
     istream&                istream = session.in_stream();
-    ostream&                ostream = session.out_stream();
 
     uint8_t                 cmd     = istream.read_u8();
     uint8_t                 request = istream.read_u8();
@@ -215,12 +245,12 @@ bool acceptor::handle_gateway_list(fb::login::session& session)
     case 0x00:
     {
         uint8_t             index = istream.read_u8();
-        return this->change_server(session, this->_gateway_list[index]->ip, this->_gateway_list[index]->port);
+        this->change_server(session, this->_gateway_list[index]->ip, this->_gateway_list[index]->port);
     }
 
     case 0x01:
     {
-        return this->send_stream(session, this->_gateway_data);
+        this->send_stream(session, this->_gateway_data);
     }
 
     default:
@@ -232,7 +262,6 @@ bool acceptor::handle_gateway_list(fb::login::session& session)
 bool acceptor::handle_agreement(fb::login::session& session)
 {
     istream&                istream  = session.in_stream();
-    ostream&                ostream  = session.out_stream();
                                      
     uint8_t                 cmd      = istream.read_u8();
 
@@ -257,13 +286,13 @@ bool acceptor::handle_agreement(fb::login::session& session)
 
 
     // Send agreement data
-    return this->send_stream(session, this->_agreement_data);
+    this->send_stream(session, this->_agreement_data);
+    return true;
 }
 
 bool acceptor::handle_check_id(fb::login::session& session)
 {
     istream&                istream = session.in_stream();
-    ostream&                ostream = session.out_stream();
 
     char                    name[256] = {0,};
     char                    pw[256]   = {0,};
@@ -295,18 +324,19 @@ bool acceptor::handle_check_id(fb::login::session& session)
 
         istream.read(pw, pw_size);
 
-        return this->send_stream(session, this->make_message_stream(0x00, ""));
+        this->send_stream(session, this->make_message_stream(0x00, ""));
     }
     catch(login_exception& e)
     {
-        return this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
+        this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
     }
+
+    return true;
 }
 
 bool acceptor::handle_create_account(fb::login::session& session)
 {
     istream&                istream  = session.in_stream();
-    ostream&                ostream  = session.out_stream();
 
     // 각각의 요소들 유효성 체크해야함
     uint8_t                 cmd      = istream.read_u8();
@@ -315,7 +345,8 @@ bool acceptor::handle_create_account(fb::login::session& session)
     uint8_t                 nation   = istream.read_u8();
     uint8_t                 creature = istream.read_u8();
 
-    return this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_REGISTER_ACCOUNT));
+    this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_REGISTER_ACCOUNT));
+    return true;
 }
 
 bool acceptor::handle_login(fb::login::session& session)
@@ -340,7 +371,6 @@ bool acceptor::handle_login(fb::login::session& session)
 bool acceptor::handle_change_password(fb::login::session& session)
 {
     istream&            istream = session.in_stream();
-    ostream&            ostream = session.out_stream();
 
     uint8_t             cmd         = istream.read_u8();
 

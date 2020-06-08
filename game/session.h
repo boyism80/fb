@@ -40,7 +40,7 @@ public:
 
 #pragma region private field
 private:
-    crtsocket                   _socket;
+    fb::socket*                 _socket;
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
@@ -89,28 +89,27 @@ private:
 
 #pragma region constructor / destructor
 public:
-    session(SOCKET socket);
+    session(fb::socket* socket);
     ~session();
 #pragma endregion
 
 
 #pragma region override method
 public:
-    bool                        send(const fb::ostream& stream, bool encrypt, bool wrap = true);
+    void                        send(const fb::ostream& stream, bool encrypt, bool wrap = true);
     object::types               type() const;
 #pragma endregion
 
-
-#pragma region middle-man method
-public:
-    istream&                    in_stream();
-    ostream&                    out_stream();
+#pragma region middle man
+    fb::cryptor&                crt();
+    void                        crt(const fb::cryptor& crt);
+    void                        crt(uint8_t enctype, const uint8_t* enckey);
+    fb::istream&                in_stream();
 #pragma endregion
 
 
 #pragma region operator method
 public:
-    operator                    fb::crtsocket& ();
     operator                    fb::socket& ();
 #pragma endregion
 

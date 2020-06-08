@@ -25,7 +25,7 @@ extern "C"
 
 namespace fb { namespace game { namespace lua {
 
-class luable : public fb::base
+class luable : public virtual fb::base
 {
 #pragma region lua
 public:

@@ -21,7 +21,7 @@ namespace fb { namespace game {
 #pragma region exceptions
 #pragma endregion
 
-class acceptor : public fb_acceptor<fb::game::session>
+class acceptor : public fb::acceptor<fb::game::session>
 {
 public:
     LUA_PROTOTYPE
@@ -30,7 +30,7 @@ public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
 
 public:
-    acceptor(uint16_t port);
+    acceptor(boost::asio::io_context& context, uint16_t port);
     ~acceptor();
 
 private:
@@ -39,7 +39,7 @@ private:
     fb::game::session*      find_session(const std::string& name) const;
 
 public:
-    fb::game::session*      handle_allocate_session(SOCKET fd);
+    fb::game::session*      handle_alloc_session(fb::socket* socket);
 
 public:
     void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);

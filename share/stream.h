@@ -58,6 +58,7 @@ public:
 
 public:
     ostream(uint32_t size = 1024);
+    ostream(const uint8_t* data, size_t size);
     ~ostream();
 
 public:

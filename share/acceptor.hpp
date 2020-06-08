@@ -1,282 +1,72 @@
 #include "acceptor.h"
-#include <sysinfoapi.h>
-using namespace fb;
 
 template <typename T>
-fb::base_acceptor<T>::base_acceptor(uint16_t port) : 
-    socket(::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)),
-    _running(false),
-    _execute_thread(NULL)
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port) : 
+	base_acceptor(context, port)
 {
-    std::srand(static_cast<uint32_t>(std::time(0)));
-
-    SOCKADDR_IN         address = { 0, };
-    address.sin_addr.s_addr     = INADDR_ANY;
-    address.sin_family          = AF_INET;
-    address.sin_port            = htons(port);
-    if (::bind(*this, (struct sockaddr*) & address, sizeof(address)) == SOCKET_ERROR)
-        throw "cannot bind socket";
-
-    if (::listen(*this, SOMAXCONN) == SOCKET_ERROR)
-        throw "cannot listen socket";
-
-    this->_sockets.root(*this, this);
+    this->accept();
 }
 
 template <typename T>
-fb::base_acceptor<T>::~base_acceptor()
+fb::acceptor<T>::~acceptor()
 {
-    this->exit();
-    this->close();
-
-    for(auto timer : this->_timers)
-        delete timer;
+    for(auto x : this->sessions)
+        delete x;
 }
 
 template <typename T>
-bool fb::base_acceptor<T>::do_session()
+void fb::acceptor<T>::accept()
 {
-    struct timeval timeout;
-    timeout.tv_sec  = 0;
-    timeout.tv_usec = 500000;
+	auto new_socket = new fb::socket(this);
+	this->async_accept
+	(
+        *new_socket,
+        boost::bind(&fb::acceptor<T>::handle_accept, 
+        this, 
+        new_socket,
+        boost::asio::placeholders::error)
+	);
+}
 
-    fd_set& reads = this->_sockets;
-    fd_set  copy  = reads;
-
-    if (::select(0, &copy, NULL, NULL, &timeout) == SOCKET_ERROR)
-        return false;
-
-    for (auto i = 0; i < reads.fd_count; i++)
+template <typename T>
+void fb::acceptor<T>::handle_accept(fb::socket* socket, const boost::system::error_code& error)
+{
+	try
     {
-        auto                fd = reads.fd_array[i];
-        if (FD_ISSET(fd, &copy) == false)
-            continue;
+        if(error)
+            throw std::runtime_error(error.message());
 
-        if(fd == *this)
-        {
-            this->handle_accept();
-        }
-        else
-        {
-            auto session = this->_sockets[fd];
-            this->handle_receive(*session);
-        }
+        auto session = this->handle_alloc_session(socket);
+        this->_session_map.push(socket, session);
+        this->sessions.push_back(session);
+
+        socket->recv();
+        this->accept();
+
+        this->handle_connected(*session);
     }
-
-    for(auto i = 0; i < reads.fd_count; i++)
+    catch(std::exception& e)
     {
-        this->_sockets[reads.fd_array[i]]->in_stream().flush();
-        this->_sockets[reads.fd_array[i]]->send();
-    }
-    return true;
-}
-
-template <typename T>
-bool fb::base_acceptor<T>::disconnect(SOCKET fd)
-{
-    auto session = this->session(fd);
-    if(session == nullptr)
-        return false;
-
-    this->handle_disconnected(*session);
-    this->_session_table.erase(fd);
-    this->sessions.erase(std::find(this->sessions.begin(), this->sessions.end(), session));
-    this->_sockets.remove(fd);
-
-    delete session;
-    return true;
-}
-
-template <typename T>
-bool fb::base_acceptor<T>::execute(bool async)
-{
-    if (this->_running)
-        return false;
-
-    if(async)
-    {
-        if(this->_execute_thread != NULL)
-            return false;
-
-        this->_execute_thread = new std::thread(&base_acceptor<T>::execute, this, false);
-        return true;
-    }
-    else
-    {
-        this->_running = true;
-        this->_sockets.clear();
-        while (this->_running)
-        {
-            this->do_session();
-
-            uint64_t now = ::GetTickCount64();
-            for(auto timer : this->_timers)
-            {
-                if(timer->callable(now) == false)
-                    continue;
-
-                (this->*(timer->callback()))(now);
-                timer->reset(now);
-            }
-        }
-
-        return true;
+        std::cout << e.what() << std::endl;
     }
 }
 
 template<class T>
-inline void fb::base_acceptor<T>::exit()
-{
-    this->_running = false;
-    if(this->_execute_thread != NULL)
-    {
-        this->_execute_thread->join();
-        delete this->_execute_thread;
-        this->_execute_thread = NULL;
-    }
-}
-
-template<class T>
-inline T* fb::base_acceptor<T>::session(SOCKET fd)
-{
-    auto                    found = this->_session_table.find(fd);
-    if(found == this->_session_table.end())
-        return nullptr;
-
-    return found->second;
-}
-
-template<class T>
-template<class fn>
-void fb::base_acceptor<T>::register_timer(uint32_t interval, fn callback)
-{
-    this->_timers.push_back(new fb_timer<TimerCallbackFunc>(interval, (TimerCallbackFunc)callback));
-}
-
-template <typename T>
-bool fb::base_acceptor<T>::handle_accept()
-{
-    SOCKADDR_IN             address = {0,};
-    int                     address_size = sizeof(address);
-    auto                    fd = ::accept(*this, (struct sockaddr*) & address, &address_size);
-    auto                    session = this->handle_allocate_session(fd);
-    if(session == nullptr)
-        return false;
-
-    this->_sockets.add(fd, &static_cast<socket&>(*session));
-    this->sessions.push_back(session);
-    this->_session_table.insert(std::make_pair(fd, session));
-
-    return this->handle_connected(*session);
-}
-
-template<typename T>
-inline void fb::base_acceptor<T>::handle_receive(socket& session)
-{
-    if(session.recv() == false || this->handle_parse(session) == false)
-        this->disconnect(session);
-}
-
-template<class T>
-inline T* fb::base_acceptor<T>::operator[](uint32_t fd) const
-{
-    return this->session(fd);
-}
-
-
-template<typename fn>
-inline fb::fb_timer<fn>::fb_timer(uint64_t interval, fn callback) : _begin(::GetTickCount()), _interval(interval), _callback(callback)
-{
-}
-
-template<typename fn>
-inline fb::fb_timer<fn>::fb_timer(const fb_timer& timer) : fb_timer(timer._interval, timer._callback)
-{
-}
-
-template<typename fn>
-inline fb::fb_timer<fn>::~fb_timer()
-{
-}
-
-template<typename fn>
-inline void fb::fb_timer<fn>::reset(uint64_t now)
-{
-    this->_begin = now;
-}
-
-template<typename fn>
-inline bool fb::fb_timer<fn>::callable(uint64_t now) const
-{
-    return this->_begin + this->_interval <= now;
-}
-
-template<typename fn>
-inline fn fb::fb_timer<fn>::callback()
-{
-    return this->_callback;
-}
-
-template <class T>
-fb::fb_acceptor<T>::fb_acceptor(uint16_t port) : base_acceptor<T>(port)
-{ }
-
-template <class T>
-fb::fb_acceptor<T>::~fb_acceptor()
-{ }
-
-template <class T>
-template <class fn>
-bool fb::fb_acceptor<T>::register_handle(uint8_t cmd, fn handle_login)
-{
-    auto i = this->_response_table.find(cmd);
-    if(i != this->_response_table.end())
-        return false;
-
-    this->_response_table.insert(std::make_pair(cmd, (ResponseFunc)handle_login));
-    return true;
-}
-
-template<class T>
-bool fb::fb_acceptor<T>::change_server(T& session, uint32_t ip, uint16_t port)
-{
-    fb::ostream&                ostream = session.out_stream();
-    fb::ostream                 buffer_stream;
-    auto&                       crtsocket = static_cast<fb::crtsocket&>(session);
-    auto&                       crt = static_cast<fb::cryptor&>(crtsocket);
-
-    buffer_stream.write_u8(0x03)
-        .write_u32(ip)          // ip
-        .write_u16(port)        // port
-        .write_u8(0x0C)         // backward size
-        .write_u8(crt.types())
-        .write_u8(0x09)
-        .write(crt.key(), 0x09)
-        .write_u8(0x00);
-    crt.wrap(buffer_stream);
-    ostream.write(buffer_stream);
-    return true;
-}
-
-template<class T>
-inline bool fb::fb_acceptor<T>::call_handle(T& session, uint8_t cmd)
+inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
 {
     auto i = this->_response_table.find(cmd);
     if(i == this->_response_table.end())
-        return true;
+    	return true;
 
-    return (this->*i->second)(session);
+    return i->second(session);
 }
 
-template<class T>
-inline bool fb::fb_acceptor<T>::handle_parse(socket& socket)
+template <typename T>
+void fb::acceptor<T>::handle_parse(T& session)
 {
     static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
-    auto&               istream     = socket.in_stream();
-    auto                success     = true;
-
-    auto&               crtsocket   = static_cast<fb::crtsocket&>(socket);
-    auto&               crt         = static_cast<fb::cryptor&>(crtsocket);
+    auto&               istream     = session.in_stream();
+    auto&               crt         = session.crt();
 
     while(true)
     {
@@ -312,7 +102,7 @@ inline bool fb::fb_acceptor<T>::handle_parse(socket& socket)
 
             // Call function that matched by command byte
             istream.reset();
-            if(this->call_handle(*this->session(socket), cmd) == false)
+            if(this->call_handle(session, cmd) == false)
                 throw std::exception();
 
             // Set data pointer to process next packet bytes
@@ -320,20 +110,63 @@ inline bool fb::fb_acceptor<T>::handle_parse(socket& socket)
         }
         catch(...)
         {
-            success = false;
             break;
         }
     }
 
     istream.reset();
-    return success;
+}
+
+template <typename T>
+void fb::acceptor<T>::handle_receive(fb::socket& socket)
+{
+    this->handle_parse(*this->_session_map[socket]);
+}
+
+template <typename T>
+void fb::acceptor<T>::handle_disconnected(fb::socket& socket)
+{
+    auto session = this->_session_map[socket];
+    if(session == nullptr)
+        return;
+
+    this->handle_disconnected(*session);
+    this->_session_map.erase(socket);
+    this->sessions.erase(session);
+
+    delete session;
+}
+
+template <typename T>
+void fb::acceptor<T>::register_fn(uint8_t cmd, std::function<bool(T&)> fn)
+{
+	this->_response_table.insert(std::make_pair(cmd, fn));
 }
 
 template<class T>
-inline bool fb::fb_acceptor<T>::send_stream(fb::base& session, const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::acceptor<T>::change_server(T& session, uint32_t ip, uint16_t port)
 {
-    if(stream.empty())
-        return true;
+	fb::ostream                 buffer_stream;
+	fb::cryptor&                crt = session.crt();
 
-    return session.send(stream, encrypt, wrap);
+	buffer_stream.write_u8(0x03)
+		.write_u32(ip)          // ip
+		.write_u16(port)        // port
+		.write_u8(0x0C)         // backward size
+		.write_u8(crt.types())
+		.write_u8(0x09)
+		.write(crt.key(), 0x09)
+		.write_u8(0x00);
+	crt.wrap(buffer_stream);
+
+	session.send(buffer_stream, false, false);
+}
+
+template <typename T>
+void fb::acceptor<T>::send_stream(fb::base& base, const fb::ostream& stream, bool encrypt, bool wrap)
+{
+	if(stream.empty())
+		return;
+
+	base.send(stream, encrypt, wrap);
 }

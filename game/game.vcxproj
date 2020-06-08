@@ -72,26 +72,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -191,6 +191,7 @@
     <ClInclude Include="..\share\cryptor.h" />
     <ClInclude Include="..\share\leak.h" />
     <ClInclude Include="..\share\socket.h" />
+    <ClInclude Include="..\share\socket.hpp" />
     <ClInclude Include="..\share\stream.h" />
     <ClInclude Include="board.h" />
     <ClInclude Include="builtin_function.h" />

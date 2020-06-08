@@ -29,10 +29,10 @@ public:
     uint32_t                encrypt(buffer& data);
     uint32_t                decrypt(buffer& data, uint32_t offset, uint32_t size);
     uint32_t                decrypt(buffer& data);
-    uint32_t                wrap(buffer& data, uint32_t offset);
-    uint32_t                wrap(buffer& data);
-    uint32_t                unwrap(buffer& data, uint32_t offset);
-    uint32_t                unwrap(buffer& data);
+    uint32_t                wrap(buffer& data, uint32_t offset) const;
+    uint32_t                wrap(buffer& data) const;
+    uint32_t                unwrap(buffer& data, uint32_t offset) const;
+    uint32_t                unwrap(buffer& data) const;
 
 public:
     uint8_t                 types() const;

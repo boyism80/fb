@@ -141,7 +141,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 {"leader",              fb::game::group::builtin_leader},
 END_LUA_EXTENSION
 
-acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
+    fb::acceptor<fb::game::session>(context, port)
 {
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
@@ -164,41 +165,41 @@ acceptor::acceptor(uint16_t port) : fb_acceptor<fb::game::session>(port)
     lua_register(lua::main::get(), "weather",   builtin_weather);
 
 
-    this->register_handle(0x10, &acceptor::handle_login);               // 게임서버 접속 핸들러
-    this->register_handle(0x11, &acceptor::handle_direction);           // 방향전환 핸들러
-    this->register_handle(0x0B, &acceptor::handle_exit);                // 접속 종료
-    this->register_handle(0x06, &acceptor::handle_update_move);         // 이동과 맵 데이터 업데이트 핸들러
-    this->register_handle(0x32, &acceptor::handle_move);                // 이동 핸들러
-    this->register_handle(0x13, &acceptor::handle_attack);              // 공격 핸들러
-    this->register_handle(0x07, &acceptor::handle_pickup);              // 아이템 줍기 핸들러
-    this->register_handle(0x1D, &acceptor::handle_emotion);             // 감정표현 핸들러
-    this->register_handle(0x05, &acceptor::handle_update_map);          // 맵 데이터 업데이트 핸들러
-    this->register_handle(0x38, &acceptor::handle_refresh);             // 새로고침 핸들러
-    this->register_handle(0x1C, &acceptor::handle_active_item);         // 아이템 사용 핸들러
-    this->register_handle(0x1F, &acceptor::handle_inactive_item);       // 아이템 장착 해제 핸들러
-    this->register_handle(0x08, &acceptor::handle_drop_item);           // 아이템 버리기 핸들러
-    this->register_handle(0x24, &acceptor::handle_drop_cash);           // 금전 버리기 핸들러
-    this->register_handle(0x09, &acceptor::handle_front_info);          // 앞방향 정보 핸들러
-    this->register_handle(0x2D, &acceptor::handle_self_info);           // 나 자신의 정보 핸들러
-    this->register_handle(0x1B, &acceptor::handle_option_changed);      // 옵션 설정 핸들러
-    this->register_handle(0x43, &acceptor::handle_click_object);        // 오브젝트 클릭 핸들러
-    this->register_handle(0x66, &acceptor::handle_item_info);           // 인벤토리 우클릭 핸들러
-    this->register_handle(0x6B, &acceptor::handle_itemmix);             // 아이템 조합 핸들러
-    this->register_handle(0x4A, &acceptor::handle_trade);               // 교환 핸들러
-    this->register_handle(0x2E, &acceptor::handle_group);               // 그룹 핸들러
-    this->register_handle(0x18, &acceptor::handle_user_list);           // 유저 리스트 핸들러
-    this->register_handle(0x0E, &acceptor::handle_chat);                // 유저 채팅 핸들러
-    this->register_handle(0x3B, &acceptor::handle_board);               // 게시판 섹션 리스트 핸들러
-    this->register_handle(0x30, &acceptor::handle_swap);                // 스펠 순서 변경
-    this->register_handle(0x3A, &acceptor::handle_dialog);              // 다이얼로그
-    this->register_handle(0x39, &acceptor::handle_dialog);              // 다이얼로그
-    this->register_handle(0x17, &acceptor::handle_throw_item);          // 아이템 던지기 핸들러
-    this->register_handle(0x0F, &acceptor::handle_spell);               // 스펠 핸들러
-    this->register_handle(0x20, &acceptor::handle_door);                // 도어 핸들러
+    this->register_fn(0x10, std::bind(&acceptor::handle_login, this, std::placeholders::_1));          // 게임서버 접속 핸들러
+    this->register_fn(0x11, std::bind(&acceptor::handle_direction, this, std::placeholders::_1));      // 방향전환 핸들러
+    this->register_fn(0x0B, std::bind(&acceptor::handle_exit, this, std::placeholders::_1));           // 접속 종료
+    this->register_fn(0x06, std::bind(&acceptor::handle_update_move, this, std::placeholders::_1));    // 이동과 맵 데이터 업데이트 핸들러
+    this->register_fn(0x32, std::bind(&acceptor::handle_move, this, std::placeholders::_1));           // 이동 핸들러
+    this->register_fn(0x13, std::bind(&acceptor::handle_attack, this, std::placeholders::_1));         // 공격 핸들러
+    this->register_fn(0x07, std::bind(&acceptor::handle_pickup, this, std::placeholders::_1));         // 아이템 줍기 핸들러
+    this->register_fn(0x1D, std::bind(&acceptor::handle_emotion, this, std::placeholders::_1));        // 감정표현 핸들러
+    this->register_fn(0x05, std::bind(&acceptor::handle_update_map, this, std::placeholders::_1));     // 맵 데이터 업데이트 핸들러
+    this->register_fn(0x38, std::bind(&acceptor::handle_refresh, this, std::placeholders::_1));        // 새로고침 핸들러
+    this->register_fn(0x1C, std::bind(&acceptor::handle_active_item, this, std::placeholders::_1));    // 아이템 사용 핸들러
+    this->register_fn(0x1F, std::bind(&acceptor::handle_inactive_item, this, std::placeholders::_1));  // 아이템 장착 해제 핸들러
+    this->register_fn(0x08, std::bind(&acceptor::handle_drop_item, this, std::placeholders::_1));      // 아이템 버리기 핸들러
+    this->register_fn(0x24, std::bind(&acceptor::handle_drop_cash, this, std::placeholders::_1));      // 금전 버리기 핸들러
+    this->register_fn(0x09, std::bind(&acceptor::handle_front_info, this, std::placeholders::_1));     // 앞방향 정보 핸들러
+    this->register_fn(0x2D, std::bind(&acceptor::handle_self_info, this, std::placeholders::_1));      // 나 자신의 정보 핸들러
+    this->register_fn(0x1B, std::bind(&acceptor::handle_option_changed, this, std::placeholders::_1)); // 옵션 설정 핸들러
+    this->register_fn(0x43, std::bind(&acceptor::handle_click_object, this, std::placeholders::_1));   // 오브젝트 클릭 핸들러
+    this->register_fn(0x66, std::bind(&acceptor::handle_item_info, this, std::placeholders::_1));      // 인벤토리 우클릭 핸들러
+    this->register_fn(0x6B, std::bind(&acceptor::handle_itemmix, this, std::placeholders::_1));        // 아이템 조합 핸들러
+    this->register_fn(0x4A, std::bind(&acceptor::handle_trade, this, std::placeholders::_1));          // 교환 핸들러
+    this->register_fn(0x2E, std::bind(&acceptor::handle_group, this, std::placeholders::_1));          // 그룹 핸들러
+    this->register_fn(0x18, std::bind(&acceptor::handle_user_list, this, std::placeholders::_1));      // 유저 리스트 핸들러
+    this->register_fn(0x0E, std::bind(&acceptor::handle_chat, this, std::placeholders::_1));           // 유저 채팅 핸들러
+    this->register_fn(0x3B, std::bind(&acceptor::handle_board, this, std::placeholders::_1));          // 게시판 섹션 리스트 핸들러
+    this->register_fn(0x30, std::bind(&acceptor::handle_swap, this, std::placeholders::_1));           // 스펠 순서 변경
+    this->register_fn(0x3A, std::bind(&acceptor::handle_dialog, this, std::placeholders::_1));         // 다이얼로그
+    this->register_fn(0x39, std::bind(&acceptor::handle_dialog, this, std::placeholders::_1));         // 다이얼로그
+    this->register_fn(0x17, std::bind(&acceptor::handle_throw_item, this, std::placeholders::_1));     // 아이템 던지기 핸들러
+    this->register_fn(0x0F, std::bind(&acceptor::handle_spell, this, std::placeholders::_1));          // 스펠 핸들러
+    this->register_fn(0x20, std::bind(&acceptor::handle_door, this, std::placeholders::_1));           // 도어 핸들러
 
-    this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
-    this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
-    this->register_timer(1000, &acceptor::handle_buff_timer);           // 몹 리젠 타이머
+    //this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
+    //this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
+    //this->register_timer(1000, &acceptor::handle_buff_timer);           // 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
@@ -295,9 +296,9 @@ fb::game::session* fb::game::acceptor::find_session(const std::string& name) con
     return *i;
 }
 
-fb::game::session* fb::game::acceptor::handle_allocate_session(SOCKET fd)
+fb::game::session* fb::game::acceptor::handle_alloc_session(fb::socket* socket)
 {
-    auto session = new fb::game::session(fd);
+    auto session = new fb::game::session(socket);
     return session;
 }
 
@@ -587,8 +588,7 @@ bool acceptor::handle_login(fb::game::session& session)
     auto                    key_size = istream.read_u8();
     istream.read(enc_key, key_size);
 
-    auto&                   socket = static_cast<crtsocket&>(session);
-    socket.crt(enc_type, enc_key);
+    session.crt(enc_type, enc_key);
 
     fb::ostream             ostream;
     ostream.write_u8(0x1E)
@@ -1389,7 +1389,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     auto                        cmd = istream.read_u8();
     auto                        action = istream.read_u8();
     auto                        fd = istream.read_u32();
-    auto                        you = this->session(fd);   // 파트너
+    auto                        you = this->sessions[fd];   // 파트너
 
     if(you == nullptr)
         return true;

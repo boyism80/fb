@@ -6,8 +6,8 @@
 
 using namespace fb::game;
 
-session::session(SOCKET socket) : 
-    life((life::core*)nullptr, socket, 0, 0, 0),
+session::session(fb::socket* socket) : 
+    life((life::core*)nullptr, 0, 0, 0, 0),
     _socket(socket),
     _look(0), _color(0), _dress_color(0),
     _disguise(0),
@@ -35,9 +35,9 @@ session::~session()
         delete dialog_thread;
 }
 
-bool fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
-    return this->_socket.send(stream, encrypt, wrap);
+    this->_socket->send(stream, encrypt, wrap);
 }
 
 object::types fb::game::session::type() const
@@ -45,24 +45,29 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
+fb::cryptor& fb::game::session::crt()
+{
+    return this->_socket->crt();
+}
+
+void fb::game::session::crt(const fb::cryptor& crt)
+{
+    this->_socket->crt(crt);
+}
+
+void fb::game::session::crt(uint8_t enctype, const uint8_t* enckey)
+{
+    this->_socket->crt(enctype, enckey);
+}
+
 fb::istream& fb::game::session::in_stream()
 {
-    return this->_socket.in_stream();
-}
-
-fb::ostream& fb::game::session::out_stream()
-{
-    return this->_socket.out_stream();
-}
-
-fb::game::session::operator fb::crtsocket& ()
-{
-    return this->_socket;
+    return this->_socket->in_stream();
 }
 
 fb::game::session::operator fb::socket& ()
 {
-    return static_cast<socket&>(this->_socket);
+    return *this->_socket;
 }
 
 const std::string& fb::game::session::name() const
