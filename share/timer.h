@@ -11,33 +11,33 @@ namespace fb {
 class timer : private boost::asio::steady_timer
 {
 private:
-	uint32_t						_ms;
-	std::function<void(uint64_t)>	_fn;
+    uint32_t                        _ms;
+    std::function<void(uint64_t)>   _fn;
 
 public:
-	using boost::asio::steady_timer::cancel;
+    using boost::asio::steady_timer::cancel;
 
 public:
-	timer(boost::asio::io_context& context, std::function<void(uint64_t)> fn, uint32_t ms);
-	~timer();
+    timer(boost::asio::io_context& context, std::function<void(uint64_t)> fn, uint32_t ms);
+    ~timer();
 
 private:
-	void							handle();
+    void                            handle();
 };
 
 
 class timer_container : private std::vector<timer*>
 {
 private:
-	boost::asio::io_context&		_context;
+    boost::asio::io_context&        _context;
 
 public:
-	timer_container(boost::asio::io_context& context);
-	~timer_container();
+    timer_container(boost::asio::io_context& context);
+    ~timer_container();
 
 public:
-	void							push(std::function<void(uint64_t)> fn, uint32_t ms);
-	void							cancel();
+    void                            push(std::function<void(uint64_t)> fn, uint32_t ms);
+    void                            cancel();
 };
 
 }

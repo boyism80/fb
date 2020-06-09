@@ -75,11 +75,14 @@ void fb::session_container<T>::erase(uint32_t fd)
 template <typename T>
 inline T* fb::session_container<T>::operator[](uint32_t fd)
 {
-    auto i = std::find_if(this->begin(), this->end(), 
-        [fd](T* x) 
+    auto i = std::find_if
+    (
+        this->begin(), this->end(), 
+        [fd] (T* x) 
         { 
             uint32_t x_fd = static_cast<fb::socket&>(*x).native_handle();
             return x_fd == fd; 
-        });
+        }
+    );
     return i == this->end() ? nullptr : *i;
 }

@@ -198,9 +198,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     this->register_fn(0x0F, std::bind(&acceptor::handle_spell, this, std::placeholders::_1));          // 스펠 핸들러
     this->register_fn(0x20, std::bind(&acceptor::handle_door, this, std::placeholders::_1));           // 도어 핸들러
 
-    this->_timer.push(std::bind(&acceptor::handle_mob_action, this, std::placeholders::_1), 100);            // 몹 행동 타이머
-    this->_timer.push(std::bind(&acceptor::handle_mob_respawn, this, std::placeholders::_1), 1000);          // 몹 리젠 타이머
-    this->_timer.push(std::bind(&acceptor::handle_buff_timer, this, std::placeholders::_1), 1000);           // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_action, this, std::placeholders::_1), 100);      // 몹 행동 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_respawn, this, std::placeholders::_1), 1000);    // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_buff_timer, this, std::placeholders::_1), 1000);     // 버프 타이머
 }
 
 acceptor::~acceptor()
@@ -211,7 +211,7 @@ acceptor::~acceptor()
 bool acceptor::handle_connected(fb::game::session& session)
 {
     auto& maps = db::maps();
-    db::name2map("부여성")->objects.add(session, point16_t(75, 153));
+    db::name2map("부여왕초보사냥1")->objects.add(session, point16_t(2, 2));
     session.name(std::to_string(session.id()));
     session.look(0x61);
     session.color(0x0A);

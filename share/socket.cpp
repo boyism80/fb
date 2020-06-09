@@ -26,8 +26,11 @@ void fb::socket::send(const ostream& stream, bool encrypt, bool wrap)
     if(wrap)
         this->_crt.wrap(*clone);
 
-    boost::asio::async_write(*this, boost::asio::buffer(clone->data(), clone->size()), 
-        [this, clone](const boost::system::error_code error, const size_t bytes_transferred)
+    boost::asio::async_write
+    (
+        *this, 
+        boost::asio::buffer(clone->data(), clone->size()), 
+        [this, clone] (const boost::system::error_code error, const size_t bytes_transferred)
         {
             delete clone;
         }
