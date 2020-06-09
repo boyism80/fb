@@ -12,6 +12,7 @@
 #include "lua.h"
 #include "db.h"
 #include "config.h"
+#include "timer.h"
 
 namespace fb { namespace game {
 
@@ -28,6 +29,9 @@ public:
 
 public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
+
+private:
+    timer_container         _timer;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port);

@@ -7,7 +7,7 @@
 using namespace fb::game;
 
 session::session(fb::socket* socket) : 
-    life((life::core*)nullptr, 0, 0, 0, 0),
+    life((life::core*)nullptr, socket->native_handle(), 0, 0, 0),
     _socket(socket),
     _look(0), _color(0), _dress_color(0),
     _disguise(0),

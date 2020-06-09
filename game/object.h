@@ -198,7 +198,7 @@ public:
     std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
     std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
 
-    virtual bool                alive() const;
+    virtual bool                visible() const;
 
     double                      distance(const object& right) const;
     uint32_t                    distance_sqrt(const object& right) const;
@@ -395,6 +395,7 @@ public:
     bool                        condition_contains(fb::game::condition value) const;
 
     bool                        alive() const;
+    bool                        visible() const;
     void                        kill();
 #pragma endregion
 

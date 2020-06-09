@@ -142,7 +142,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<fb::game::session>(context, port)
+    fb::acceptor<fb::game::session>(context, port),
+    _timer(context)
 {
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
@@ -197,9 +198,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     this->register_fn(0x0F, std::bind(&acceptor::handle_spell, this, std::placeholders::_1));          // 스펠 핸들러
     this->register_fn(0x20, std::bind(&acceptor::handle_door, this, std::placeholders::_1));           // 도어 핸들러
 
-    //this->register_timer(100, &acceptor::handle_mob_action);            // 몹 행동 타이머
-    //this->register_timer(1000, &acceptor::handle_mob_respawn);          // 몹 리젠 타이머
-    //this->register_timer(1000, &acceptor::handle_buff_timer);           // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_action, this, std::placeholders::_1), 100);            // 몹 행동 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_respawn, this, std::placeholders::_1), 1000);          // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_buff_timer, this, std::placeholders::_1), 1000);           // 몹 리젠 타이머
 }
 
 acceptor::~acceptor()
@@ -246,6 +247,8 @@ bool acceptor::handle_connected(fb::game::session& session)
 
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
+    this->send_stream(session, session.make_hide_stream(), scope::PIVOT, true);
+
     auto map = session.map();
     if(map != nullptr)
         map->objects.remove(session);
@@ -729,19 +732,15 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
         }
 
 
-        game::mob*          mob = nullptr;
-        for(auto front : session.forward_objects(object::types::MOB))
-        {
-            if(front->alive() == false)
-                continue;
+        auto                mobs = session.forward_objects(object::types::MOB);
+        auto                i = std::find_if(mobs.begin(), mobs.end(), 
+            [](game::object* x)
+            { return static_cast<game::mob*>(x)->alive(); });
 
-            mob = static_cast<game::mob*>(front);
-            break;
-        }
-
-        if(mob == nullptr)
+        if(i == mobs.end())
             return true;
 
+        auto                mob = static_cast<game::mob*>(*i);
 #if !defined DEBUG && !defined _DEBUG
         if(std::rand() % 3 == 0)
             return true;
@@ -1248,7 +1247,7 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
     }
 
     auto                    map = session.map();
-    auto                    other = map->objects.at(fd);
+    auto                    other = map->objects[fd];
     if(other == nullptr)
         return true;
 
@@ -1389,8 +1388,12 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
     auto                        cmd = istream.read_u8();
     auto                        action = istream.read_u8();
     auto                        fd = istream.read_u32();
-    auto                        you = this->sessions[fd];   // 파트너
 
+    auto                        map = session.map();
+    if(map == nullptr)
+        return true;
+
+    auto                        you = static_cast<game::session*>(map->objects[fd]);   // 파트너
     if(you == nullptr)
         return true;
 
@@ -1490,7 +1493,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
             // 현재 인벤토리에서 거래중인 아이템 리스트로 아이템 이동
             session.items.remove(index);
-            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::PIVOT);
+            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
 
             // 나와 상대 둘 다에게 올린 아이템을 표시함
             this->send_stream(session, session.trade.make_show_stream(true, trade_index), scope::SELF);
@@ -2644,7 +2647,7 @@ void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vec
     {
         for(auto i : *shows)
         {
-            if(i->is(object::types::MOB) && i->alive() == false)
+            if(i->is(object::types::MOB) && i->visible() == false)
                 continue;
 
             this->send_stream(object, i->make_show_stream(), scope::SELF);
@@ -2655,7 +2658,7 @@ void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vec
     {
         for(auto i : *hides)
         {
-            if(i->is(object::types::MOB) && i->alive() == false)
+            if(i->is(object::types::MOB) && i->visible() == false)
                 continue;
 
             this->send_stream(object, i->make_hide_stream(), scope::SELF);

@@ -173,6 +173,7 @@
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
+    <ClCompile Include="..\share\timer.cpp" />
     <ClCompile Include="fb_login.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -186,6 +187,7 @@
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\socket.hpp" />
     <ClInclude Include="..\share\stream.h" />
+    <ClInclude Include="..\share\timer.h" />
     <ClInclude Include="fb_login.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

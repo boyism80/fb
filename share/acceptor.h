@@ -21,7 +21,7 @@ protected:
 public:
     virtual void            handle_receive(fb::socket& socket) {}
     virtual void            handle_send(fb::socket& socket) {}
-    virtual void            handle_disconnect(fb::socket& socket) {}
+    virtual void            handle_disconnected(fb::socket& socket) {}
 };
 
 
@@ -42,7 +42,6 @@ public:
 private:
     bool                    call_handle(T& session, uint8_t cmd);
     void                    accept();
-    void                    handle_accept(fb::socket* socket, const boost::system::error_code& error);
     void                    handle_parse(T& session);
 
 protected:

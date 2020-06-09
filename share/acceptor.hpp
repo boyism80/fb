@@ -21,34 +21,28 @@ void fb::acceptor<T>::accept()
 	this->async_accept
 	(
         *new_socket,
-        boost::bind(&fb::acceptor<T>::handle_accept, 
-        this, 
-        new_socket,
-        boost::asio::placeholders::error)
+        [this, new_socket](boost::system::error_code error)
+        {
+            try
+            {
+                if(error)
+                    throw std::runtime_error(error.message());
+
+                auto session = this->handle_alloc_session(new_socket);
+                this->_session_map.push(new_socket, session);
+                this->sessions.push_back(session);
+
+                new_socket->recv();
+                this->accept();
+
+                this->handle_connected(*session);
+            }
+            catch(std::exception& e)
+            {
+                std::cout << e.what() << std::endl;
+            }
+        }
 	);
-}
-
-template <typename T>
-void fb::acceptor<T>::handle_accept(fb::socket* socket, const boost::system::error_code& error)
-{
-	try
-    {
-        if(error)
-            throw std::runtime_error(error.message());
-
-        auto session = this->handle_alloc_session(socket);
-        this->_session_map.push(socket, session);
-        this->sessions.push_back(session);
-
-        socket->recv();
-        this->accept();
-
-        this->handle_connected(*session);
-    }
-    catch(std::exception& e)
-    {
-        std::cout << e.what() << std::endl;
-    }
 }
 
 template<class T>

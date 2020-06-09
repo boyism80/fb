@@ -35,6 +35,9 @@
     <Filter Include="Module\fb\config">
       <UniqueIdentifier>{b3b261fa-5d04-48ba-9302-825e482efe54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module\fb\timer">
+      <UniqueIdentifier>{9cac6b54-ca86-4367-8a11-de4f5d73a895}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,6 +63,9 @@
     </ClCompile>
     <ClCompile Include="..\share\config.cpp">
       <Filter>Module\fb\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\share\timer.cpp">
+      <Filter>Module\fb\timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="..\share\socket.hpp">
       <Filter>Module\fb\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\share\timer.h">
+      <Filter>Module\fb\timer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

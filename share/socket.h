@@ -39,18 +39,11 @@ private:
 
     std::array<char, 256>   _buffer;
     istream                 _instream;
-    std::deque<ostream*>    _deque;
 
 public:
     socket(base_acceptor* owner);
     socket(base_acceptor* owner, const fb::cryptor& crt);
     ~socket();
-
-private:
-    void                    handle_send(const boost::system::error_code& error, size_t bytes_transferred);
-    void                    handle_receive(const boost::system::error_code& error, size_t bytes_transferred);
-
-    void                    send();
 
 public:
     void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);

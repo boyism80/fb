@@ -99,13 +99,15 @@ std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
         if(x->is(object::types::MOB) == false)
             continue;
 
-        if(x->alive() == false)
+        auto mob = static_cast<game::mob*>(x);
+
+        if(mob->alive() == false)
             continue;
 
-        if(std::any_of(sessions.begin(), sessions.end(), [&x] (fb::game::session* session) { return session->sight(*x); }) == false)
+        if(std::any_of(sessions.begin(), sessions.end(), [&mob] (fb::game::session* session) { return session->sight(*mob); }) == false)
             continue;
 
-        active_table.insert(std::pair<uint32_t, fb::game::mob*>(x->id(), static_cast<fb::game::mob*>(x)));
+        active_table.insert(std::pair<uint32_t, fb::game::mob*>(mob->id(), mob));
     }
 
     std::vector<fb::game::mob*> actives;
@@ -169,6 +171,11 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
     }
 
     return nullptr;
+}
+
+fb::game::object* fb::game::objects::operator[](uint16_t id)
+{
+    return this->at(id);
 }
 
 
@@ -322,7 +329,7 @@ bool fb::game::map::movable(const point16_t position) const
 
     for(const auto object : this->objects)
     {
-        if(object->alive() == false)
+        if(object->visible() == false)
             continue;
 
         if(object->type() == fb::game::object::types::ITEM)

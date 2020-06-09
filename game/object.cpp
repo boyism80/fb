@@ -271,6 +271,9 @@ fb::game::map* fb::game::object::map() const
 
 bool fb::game::object::sight(const point16_t& position, bool before) const
 {
+    if(this->visible() == false)
+        return false;
+
     return fb::game::object::sight(before ? this->_before : this->_position, position, this->_map);
 }
 
@@ -568,9 +571,6 @@ std::vector<fb::game::object*> fb::game::object::showings(object::types type) co
         if(type != object::types::UNKNOWN && object->is(type) == false)
             continue;
 
-        if(object->alive() == false)
-            continue;
-
         if(this->sight(*object) == false)
             continue;
 
@@ -604,7 +604,7 @@ std::vector<object*> fb::game::object::showns(object::types type) const
     return list;
 }
 
-bool fb::game::object::alive() const
+bool fb::game::object::visible() const
 {
     return true;
 }
@@ -1428,6 +1428,11 @@ bool fb::game::life::alive() const
     return this->_hp != 0;
 }
 
+bool fb::game::life::visible() const
+{
+    return this->alive();
+}
+
 void fb::game::life::kill()
 {
     this->_hp = 0;
@@ -1617,6 +1622,6 @@ int fb::game::life::builtin_damage(lua_State* lua)
     auto damage = lua_tointeger(lua, 3);
 
     acceptor->handle_damage(*me, *you, damage);
-    lua_pushboolean(lua, you->alive());
+    lua_pushboolean(lua, you->visible());
     return 1;
 }

@@ -165,6 +165,7 @@
     <ClCompile Include="..\share\cryptor.cpp" />
     <ClCompile Include="..\share\socket.cpp" />
     <ClCompile Include="..\share\stream.cpp" />
+    <ClCompile Include="..\share\timer.cpp" />
     <ClCompile Include="board.cpp" />
     <ClCompile Include="builtin_function.cpp" />
     <ClCompile Include="db.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="..\share\socket.h" />
     <ClInclude Include="..\share\socket.hpp" />
     <ClInclude Include="..\share\stream.h" />
+    <ClInclude Include="..\share\timer.h" />
     <ClInclude Include="board.h" />
     <ClInclude Include="builtin_function.h" />
     <ClInclude Include="builtin_function.hpp" />
