@@ -492,7 +492,7 @@ void fb::game::acceptor::handle_die(fb::game::mob& mob)
 {
     // 몹 체력을 다 깎았으면 죽인다.
     this->send_stream(mob, mob.make_die_stream(), scope::PIVOT, true);
-    mob.dead_time(::GetTickCount64());
+    mob.dead_time(fb::timer::now());
 
     // 드롭 아이템 떨구기
     std::vector<object*> dropped_items;

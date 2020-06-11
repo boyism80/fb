@@ -13,10 +13,14 @@ fb::timer::~timer()
 
 void fb::timer::handle()
 {
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    this->_fn(now);
+    this->_fn(now());
     this->expires_from_now(std::chrono::milliseconds(this->_ms));
     this->async_wait(boost::bind(&timer::handle, this));
+}
+
+uint64_t fb::timer::now()
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 fb::timer_container::timer_container(boost::asio::io_context& context) : 

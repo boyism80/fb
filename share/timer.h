@@ -23,6 +23,9 @@ public:
 
 private:
     void                            handle();
+
+public:
+    static uint64_t                 now();
 };
 
 
