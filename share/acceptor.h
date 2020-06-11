@@ -55,7 +55,7 @@ public:
 
 protected:
     void                    register_fn(uint8_t cmd, std::function<bool(T&)> fn);
-    void                    change_server(T& base_session, uint32_t ip, uint16_t port);
+    void                    transfer(T& base_session, uint32_t ip, uint16_t port);
 
 public:
     void                    send_stream(fb::base& base, const fb::ostream& stream, bool encrypt = true, bool wrap = true);

@@ -58,6 +58,7 @@ inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
 template <typename T>
 void fb::acceptor<T>::handle_parse(T& session)
 {
+    static uint8_t      not_crt_cmd[] = {0x00, 0x10};
     static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
     auto&               istream     = session.in_stream();
     auto&               crt         = session.crt();
@@ -91,7 +92,7 @@ void fb::acceptor<T>::handle_parse(T& session)
 
             // If command byte is not 0x10, this data must be decrypted by session's encrypt key
             uint8_t             cmd = istream.read_u8();
-            if(cmd != 0x00 && cmd != 0x10)
+            if(std::all_of(not_crt_cmd, not_crt_cmd + sizeof(not_crt_cmd)/sizeof(uint8_t), [cmd] (uint8_t x) { return cmd != x; }))
                 size = crt.decrypt(istream, istream.position(), size);
 
             // Call function that matched by command byte
@@ -138,7 +139,7 @@ void fb::acceptor<T>::register_fn(uint8_t cmd, std::function<bool(T&)> fn)
 }
 
 template<class T>
-void fb::acceptor<T>::change_server(T& session, uint32_t ip, uint16_t port)
+void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port)
 {
 	fb::ostream                 buffer_stream;
 	fb::cryptor&                crt = session.crt();

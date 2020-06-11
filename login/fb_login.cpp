@@ -43,21 +43,15 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
 {
     const auto& config = fb::config();
 
-    // Parse gateway
-    for(auto i = config["game"]["gateway"].begin(); i != config["game"]["gateway"].end(); i++)
-    {
-        Json::Value value = *i;
-        this->_gateway_list.push_back(std::make_unique<gateway_form>(value["name"].asCString(), value["desc"].asCString(), value["ip"].asCString(), value["port"].asInt()));
-    }
+    // Parse gateway 
+    for(auto x : config["game"]["gateway"])
+        this->_gateway_list.push_back(std::make_unique<gateway_form>(x["name"].asCString(), x["desc"].asCString(), x["ip"].asCString(), x["port"].asInt()));
     this->_gateway_data = this->make_gateway_stream(&this->_gateway_crc);
 
 
     // Parse agreement
-    for(auto i = config["login"]["account option"]["forbidden"].begin(); i != config["login"]["account option"]["forbidden"].end(); i++)
-    {
-        Json::Value value = *i;
-        this->_forbidden_names.push_back(value.asString());
-    }
+    for(auto x : config["login"]["account option"]["forbidden"])
+        this->_forbidden_names.push_back(x.asString());
     this->_agreement_data = this->make_agreement_stream();
 
 
@@ -110,7 +104,7 @@ fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
     }
 
     // 바이너리 형식의 crc 계산
-    if(crc != NULL)
+    if(crc != nullptr)
         *crc = crc32(0, formats.data(), formats.size());
 
     // 바이너리 데이터 압축
@@ -129,7 +123,7 @@ fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
 fb::ostream acceptor::make_agreement_stream() const
 {
     uint8_t                 buffer[4096];
-    const std::string       agreement_str = fb::config()["login"]["agreement"].asString();
+    const auto              agreement_str = fb::config()["login"]["agreement"].asString();
     uint32_t                agreement_compressed_size = this->compress((const uint8_t*)agreement_str.c_str(), agreement_str.length() + 2, buffer);
     
 
@@ -157,7 +151,7 @@ const fb::ostream acceptor::make_message_stream(int type, const char* msg) const
 
 bool fb::login::acceptor::is_hangul(const char* str)
 {
-    size_t size = strlen(str);
+    auto                    size = strlen(str);
     if(size % 2 != 0)
         return false;
 
@@ -175,13 +169,15 @@ bool fb::login::acceptor::is_hangul(const char* str)
 
 bool fb::login::acceptor::is_forbidden(const char* str)
 {
-    for(auto i = this->_forbidden_names.begin(); i != this->_forbidden_names.end(); i++)
-    {
-        if(strstr(str, i->c_str()) != NULL)
-            return true;
-    }
-
-    return false;
+    return std::any_of
+    (
+        this->_forbidden_names.begin(), 
+        this->_forbidden_names.end(), 
+        [str](std::string& x)
+        {
+            return x == str;
+        }
+    );
 }
 
 bool acceptor::handle_connected(fb::login::session& session)
@@ -202,18 +198,17 @@ bool acceptor::handle_disconnected(fb::login::session& session)
 
 bool acceptor::handle_check_version(fb::login::session& session)
 {
-    istream&                istream = session.in_stream();
-    uint8_t                 cmd     = istream.read_u8();
-
-    uint16_t                client_version  = istream.read_u16();
+    auto&                   istream = session.in_stream();
+    auto                    cmd     = istream.read_u8();
+    auto                    client_version  = istream.read_u16();
     if(client_version != 0x0226)
         return false;
 
-    uint8_t                 national_key    = istream.read_u8();
+    auto                    national_key    = istream.read_u8();
     if(national_key != 0xD7)
         return false;
 
-    uint8_t                 enc_type        = rand() % 0x09;
+    auto                    enc_type        = rand() % 0x09;
     uint8_t                 enc_key[0x09] = {0,};
 
     for(int i = 0; i < 0x09; i++)
@@ -235,17 +230,16 @@ bool acceptor::handle_check_version(fb::login::session& session)
 
 bool acceptor::handle_gateway_list(fb::login::session& session)
 {
-    istream&                istream = session.in_stream();
-
-    uint8_t                 cmd     = istream.read_u8();
-    uint8_t                 request = istream.read_u8();
+    auto&                   istream = session.in_stream();
+    auto                    cmd     = istream.read_u8();
+    auto                    request = istream.read_u8();
 
     switch(request)
     {
     case 0x00:
     {
-        uint8_t             index = istream.read_u8();
-        this->change_server(session, this->_gateway_list[index]->ip, this->_gateway_list[index]->port);
+        auto                index = istream.read_u8();
+        this->transfer(session, this->_gateway_list[index]->ip, this->_gateway_list[index]->port);
     }
 
     case 0x01:
@@ -261,17 +255,16 @@ bool acceptor::handle_gateway_list(fb::login::session& session)
 
 bool acceptor::handle_agreement(fb::login::session& session)
 {
-    istream&                istream  = session.in_stream();
-                                     
-    uint8_t                 cmd      = istream.read_u8();
+    auto&                   istream  = session.in_stream();
+    auto                    cmd      = istream.read_u8();
 
     // Read encrypt type
-    uint8_t                 enc_type = istream.read_u8();
+    auto                    enc_type = istream.read_u8();
     if(enc_type > 0x09)
         return false;
 
     // Read encrypt key size
-    uint8_t                 enc_key_size = istream.read_u8();
+    auto                    enc_key_size = istream.read_u8();
     if(enc_key_size != 0x09)
         return false;
 
@@ -292,37 +285,31 @@ bool acceptor::handle_agreement(fb::login::session& session)
 
 bool acceptor::handle_check_id(fb::login::session& session)
 {
-    istream&                istream = session.in_stream();
-
-    char                    name[256] = {0,};
-    char                    pw[256]   = {0,};
+    auto&                   istream = session.in_stream();
 
     try
     {
-        uint8_t             cmd = istream.read_u8(); // 0x02
+        auto                cmd = istream.read_u8(); // 0x02
 
 
         // Read character's name
-        uint8_t             name_size = istream.read_u8();
-        if(name_size < MIN_NAME_SIZE || name_size > MAX_NAME_SIZE)
+        auto                name = istream.readstr_u8();
+        if(name.length() < MIN_NAME_SIZE || name.length() > MAX_NAME_SIZE)
             throw id_exception(message::INVALID_NAME);
-        istream.read(name, name_size);
 
         // Name must be full-hangul characters
-        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
+        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name.c_str()) == false)
             throw id_exception(message::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list
-        if(this->is_forbidden(name))
+        if(this->is_forbidden(name.c_str()))
             throw id_exception(message::INVALID_NAME);
 
         
         // Read character's password
-        uint8_t             pw_size = istream.read_u8();
-        if(pw_size < MIN_PASSWORD_SIZE || pw_size > MAX_PASSWORD_SIZE)
+        auto                pw = istream.readstr_u8();
+        if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
             throw pw_exception(message::PASSWORD_SIZE);
-
-        istream.read(pw, pw_size);
 
         this->send_stream(session, this->make_message_stream(0x00, ""));
     }
@@ -336,14 +323,14 @@ bool acceptor::handle_check_id(fb::login::session& session)
 
 bool acceptor::handle_create_account(fb::login::session& session)
 {
-    istream&                istream  = session.in_stream();
+    auto&                   istream  = session.in_stream();
 
     // 각각의 요소들 유효성 체크해야함
-    uint8_t                 cmd      = istream.read_u8();
-    uint8_t                 hair     = istream.read_u8();
-    uint8_t                 sex      = istream.read_u8();
-    uint8_t                 nation   = istream.read_u8();
-    uint8_t                 creature = istream.read_u8();
+    auto                    cmd      = istream.read_u8();
+    auto                    hair     = istream.read_u8();
+    auto                    sex      = istream.read_u8();
+    auto                    nation   = istream.read_u8();
+    auto                    creature = istream.read_u8();
 
     this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_REGISTER_ACCOUNT));
     return true;
@@ -351,45 +338,35 @@ bool acceptor::handle_create_account(fb::login::session& session)
 
 bool acceptor::handle_login(fb::login::session& session)
 {
-    istream&                istream   = session.in_stream();
-    uint8_t                 cmd       = istream.read_u8();
+    auto&                   istream = session.in_stream();
+    auto                    cmd     = istream.read_u8();
 
-    uint8_t                 name_size = istream.read_u8();
-    char                    name[MAX_NAME_SIZE+1] = {0,};
-    istream.read(name, name_size);
-
-    uint8_t                 pw_size = istream.read_u8();
-    char                    pw[MAX_PASSWORD_SIZE] = {0,};
-    istream.read(pw, pw_size);
-
+    auto                    name    = istream.readstr_u8();
+    auto                    pw      = istream.readstr_u8();
 
     this->send_stream(session, this->make_message_stream(0x00, ""));
-    this->change_server(session, inet_addr("192.168.0.100"), 10021);
+    this->transfer(session, inet_addr("192.168.0.100"), 10021);
     return true;
 }
 
 bool acceptor::handle_change_password(fb::login::session& session)
 {
-    istream&            istream = session.in_stream();
-
-    uint8_t             cmd         = istream.read_u8();
+    auto&                   istream = session.in_stream();
+    auto                    cmd     = istream.read_u8();
 
 
     try
     {
-        uint8_t             name_size   = istream.read_u8();
-        if(name_size < MIN_NAME_SIZE || name_size > MAX_NAME_SIZE)
+        auto                name = istream.readstr_u8();
+        if(name.length() < MIN_NAME_SIZE || name.length() > MAX_NAME_SIZE)
             throw id_exception(message::INVALID_NAME);
 
-        char                name[MAX_NAME_SIZE] = {0,};
-        istream.read(name, name_size);
-
         // Name must be full-hangul characters
-        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name) == false)
+        if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name.c_str()) == false)
             throw id_exception(message::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list
-        if(this->is_forbidden(name))
+        if(this->is_forbidden(name.c_str()))
             throw id_exception(message::INVALID_NAME);
 
 
@@ -397,28 +374,23 @@ bool acceptor::handle_change_password(fb::login::session& session)
 
 
 
-        uint8_t             pw_size = istream.read_u8();
-        if(pw_size < MIN_PASSWORD_SIZE || pw_size > MAX_PASSWORD_SIZE)
+        auto                pw = istream.readstr_u8();
+        if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
             throw pw_exception(message::PASSWORD_SIZE);
 
-        char                pw[MAX_PASSWORD_SIZE] = {0,};
-        istream.read(pw, pw_size);
         // TODO : 올바른 비밀번호인지 체크
 
 
 
-        uint8_t             newpw_size = istream.read_u8();
-        if(newpw_size < MIN_PASSWORD_SIZE || newpw_size > MAX_PASSWORD_SIZE)
+        auto                new_pw = istream.readstr_u8();
+        if(new_pw.length() < MIN_PASSWORD_SIZE || new_pw.length() > MAX_PASSWORD_SIZE)
             throw newpw_exception(message::PASSWORD_SIZE);
-
-        char                newpw[MAX_PASSWORD_SIZE] = {0,};
-        istream.read(newpw, newpw_size);
         // TODO : 너무 쉬운 비밀번호인지 체크
 
-        if(strcmp(pw, newpw) == 0)
+        if(pw == new_pw)
             throw newpw_exception(message::NEW_PW_EQUALIZATION);
 
-        uint32_t            birthday = istream.read_u32(buffer::endian::BIG);
+        auto                birthday = istream.read_u32(buffer::endian::BIG);
         if(birthday < 100000 || birthday >= 1000000)
             throw btd_exception();
         // TODO : 올바른 생년월일인지 체크

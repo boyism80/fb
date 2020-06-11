@@ -655,7 +655,7 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session)
 bool fb::game::acceptor::handle_exit(fb::game::session& session)
 {
     const auto&             config = fb::config();
-    this->change_server(session, inet_addr(config["login"]["ip"].asCString()), config["login"]["port"].asInt());
+    this->transfer(session, inet_addr(config["login"]["ip"].asCString()), config["login"]["port"].asInt());
     return true;
 }
 
@@ -733,9 +733,14 @@ bool fb::game::acceptor::handle_attack(fb::game::session& session)
 
 
         auto                mobs = session.forward_objects(object::types::MOB);
-        auto                i = std::find_if(mobs.begin(), mobs.end(), 
-            [](game::object* x)
-            { return static_cast<game::mob*>(x)->alive(); });
+        auto                i = std::find_if(
+                                                mobs.begin(), 
+                                                mobs.end(), 
+                                                [] (game::object* x)
+                                                { 
+                                                    return static_cast<game::mob*>(x)->alive(); 
+                                                }
+                                            );
 
         if(i == mobs.end())
             return true;

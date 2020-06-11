@@ -94,13 +94,11 @@ uint32_t fb::game::trade::money() const
 std::vector<uint8_t> fb::game::trade::restore()
 {
     std::vector<uint8_t> indices;
-    for(auto it = this->_items.begin(); it != this->_items.end(); it++)
+    for(auto item : this->_items)
     {
-        fb::game::item* item = *it;
-
         for(int i = 0; i < item::MAX_SLOT; i++)
         {
-            fb::game::item* own_item = this->_owner->items[i];
+            auto        own_item = this->_owner->items[i];
             if(own_item == nullptr)
                 continue;
 
@@ -121,7 +119,7 @@ std::vector<uint8_t> fb::game::trade::restore()
         if(item == nullptr)
             continue;
 
-        uint8_t index = this->_owner->items.add(item);
+        auto            index = this->_owner->items.add(item);
         if(index != 0xFF)
             indices.push_back(index);
     }
