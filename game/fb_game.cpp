@@ -2101,7 +2101,7 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     {
         char                message[256];
         auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
-        istream.read(message, std::min(uint32_t(256), size)); message[size] = 0x00;
+        istream.read(message, std::min(uint64_t(256), uint64_t(size))); message[size] = 0x00;
 
         thread.pushobject(session);
         thread.pushobject(spell);

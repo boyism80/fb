@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include "json/json.h"
+#include <json/json.h>
 #include "map.h"
 #include "item.h"
 #include "npc.h"

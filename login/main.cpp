@@ -10,11 +10,21 @@
 
 #pragma comment(lib, "ws2_32.lib")
 #if defined DEBUG | defined _DEBUG
-#pragma comment(lib, "json/json_vc71_libmtd.lib")
-#pragma comment(lib, "zlib/zlibd.lib")
+#if defined _WIN64
+#pragma comment(lib, "json/x64/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/x64/zlibd.lib")
 #else
-#pragma comment(lib, "json/json_vc71_libmt.lib")
-#pragma comment(lib, "zlib/zlib.lib")
+#pragma comment(lib, "json/x86/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/x86/zlibd.lib")
+#endif
+#else
+#if defined _WIN64
+#pragma comment(lib, "json/x64/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/x64/zlib.lib")
+#else
+#pragma comment(lib, "json/x86/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/x86/zlib.lib")
+#endif
 #endif
 
 fb::login::acceptor*       acceptor;

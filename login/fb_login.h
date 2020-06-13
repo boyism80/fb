@@ -7,7 +7,7 @@
 #include <fstream>
 #include "socket.h"
 #include "acceptor.h"
-#include "json/json.h"
+#include <json/json.h>
 #include "config.h"
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2

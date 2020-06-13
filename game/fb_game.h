@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
-#include "json/json.h"
+#include <json/json.h>
 #include "acceptor.h"
 #include "session.h"
 #include "lua.h"

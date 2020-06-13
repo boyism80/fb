@@ -10,13 +10,26 @@
 #include "config.h"
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "lua/lua5.3.5-static.lib")
 #if defined DEBUG | defined _DEBUG
-#pragma comment(lib, "json/json_vc71_libmtd.lib")
-#pragma comment(lib, "zlib/zlibd.lib")
+#if defined _WIN64
+#pragma comment(lib, "json/x64/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/x64/zlibd.lib")
+#pragma comment(lib, "lua/x64/lua5.3.5-static-d.lib")
 #else
-#pragma comment(lib, "json/json_vc71_libmt.lib")
-#pragma comment(lib, "zlib/zlib.lib")
+#pragma comment(lib, "json/x86/json_vc71_libmtd.lib")
+#pragma comment(lib, "zlib/x86/zlibd.lib")
+#pragma comment(lib, "lua/x86/lua5.3.5-static-d.lib")
+#endif
+#else
+#if defined _WIN64
+#pragma comment(lib, "json/x64/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/x64/zlib.lib")
+#pragma comment(lib, "lua/x64/lua5.3.5-static.lib")
+#else
+#pragma comment(lib, "json/x86/json_vc71_libmt.lib")
+#pragma comment(lib, "zlib/x86/zlib.lib")
+#pragma comment(lib, "lua/x86/lua5.3.5-static.lib")
+#endif
 #endif
 
 fb::game::acceptor*  acceptor = nullptr;
