@@ -130,6 +130,12 @@ fb::game::object* fb::game::objects::at(uint16_t id)
 
 uint16_t fb::game::objects::add(fb::game::object& object)
 {
+    auto                    map = object.map();
+    if(map == this->_owner)
+        return object.id();
+
+    map->objects.remove(object);
+
     auto                    seq = this->empty_seq();
     auto                    found = this->at(seq);
     if(found != nullptr)

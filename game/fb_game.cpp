@@ -2686,8 +2686,6 @@ void fb::game::acceptor::macro_visible_update(fb::game::object& object, std::vec
 
 void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::map& map, const point16_t& position)
 {
-    auto before = object.map();
-    
     // 이전에 보이던 오브젝트들 전부 제거
     for(auto i : object.showings())
         this->send_stream(object, i->make_hide_stream(), scope::SELF);
@@ -2697,7 +2695,6 @@ void fb::game::acceptor::macro_object_map(fb::game::object& object, fb::game::ma
         this->send_stream(*i, object.make_hide_stream(), scope::SELF);
 
     map.objects.add(object, position);
-    before->objects.remove(object);
 
     if(object.type() == object::types::SESSION)
     {
