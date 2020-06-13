@@ -113,6 +113,24 @@ void fb::acceptor<T>::handle_parse(T& session)
 }
 
 template <typename T>
+fb::ostream fb::acceptor<T>::make_transfer_stream(const fb::cryptor& crt, uint32_t ip, uint16_t port, const fb::ostream* parameter)
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x03)
+        .write_u32(ip)                      // ip
+        .write_u16(port)                    // port
+        .write_u8(parameter != nullptr ? 0x0B + parameter->size() : 0x0B) // backward size
+        .write_u8(crt.types())
+        .write_u8(cryptor::KEY_SIZE)
+        .write(crt.key(), cryptor::KEY_SIZE);
+
+    if(parameter != nullptr)
+        ostream.write(*parameter);
+
+    return ostream;
+}
+
+template <typename T>
 void fb::acceptor<T>::handle_receive(fb::socket& socket)
 {
     this->handle_parse(*this->_session_map[socket]);
@@ -141,20 +159,21 @@ void fb::acceptor<T>::register_fn(uint8_t cmd, std::function<bool(T&)> fn)
 template<class T>
 void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port)
 {
-	fb::ostream                 buffer_stream;
-	fb::cryptor&                crt = session.crt();
+	auto&                       crt = session.crt();
+    auto                        ostream = this->make_transfer_stream(crt, ip, port);
+	crt.wrap(ostream);
 
-	buffer_stream.write_u8(0x03)
-		.write_u32(ip)          // ip
-		.write_u16(port)        // port
-		.write_u8(0x0C)         // backward size
-		.write_u8(crt.types())
-		.write_u8(0x09)
-		.write(crt.key(), 0x09)
-		.write_u8(0x00);
-	crt.wrap(buffer_stream);
+	session.send(ostream, false, false);
+}
 
-	session.send(buffer_stream, false, false);
+template<class T>
+void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port, const fb::ostream& parameter)
+{
+    auto&                       crt = session.crt();
+    auto                        ostream = this->make_transfer_stream(crt, ip, port, &parameter);
+    crt.wrap(ostream);
+
+    session.send(ostream, false, false);
 }
 
 template <typename T>

@@ -343,9 +343,11 @@ bool acceptor::handle_login(fb::login::session& session)
 
     auto                    name    = istream.readstr_u8();
     auto                    pw      = istream.readstr_u8();
-
     this->send_stream(session, this->make_message_stream(0x00, ""));
-    this->transfer(session, inet_addr("192.168.0.100"), 10021);
+
+    ostream                 parameter;
+    parameter.writestr_u8(name);
+    this->transfer(session, inet_addr("192.168.0.100"), 10021, parameter);
     return true;
 }
 

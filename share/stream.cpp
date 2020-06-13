@@ -248,6 +248,27 @@ fb::ostream& fb::ostream::write_u32(uint32_t value, buffer::endian endian)
     return *this;
 }
 
+fb::ostream& fb::ostream::writestr_u8(const std::string& value)
+{
+    this->write_u8(value.length());
+    this->write(value.c_str(), value.length());
+    return *this;
+}
+
+fb::ostream& fb::ostream::writestr_u16(const std::string& value, buffer::endian endian)
+{
+    this->write_u16(value.length());
+    this->write(value.c_str(), value.length());
+    return *this;
+}
+
+fb::ostream& fb::ostream::writestr_u32(const std::string& value, buffer::endian endian)
+{
+    this->write_u32(value.length());
+    this->write(value.c_str(), value.length());
+    return *this;
+}
+
 fb::ostream& fb::ostream::write(const void * buffer, uint32_t size)
 {
     this->insert(this->end(), (uint8_t*)buffer, (uint8_t*)buffer + size);

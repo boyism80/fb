@@ -210,38 +210,6 @@ acceptor::~acceptor()
 
 bool acceptor::handle_connected(fb::game::session& session)
 {
-    auto& maps = db::maps();
-    db::name2map("부여왕초보사냥1")->objects.add(session, point16_t(2, 2));
-    session.name(std::to_string(session.id()));
-    session.look(0x61);
-    session.color(0x0A);
-    session.money(150);
-    session.sex(fb::game::sex::MAN);
-    session.legends_add(0x4A, 0x10, "갓승현 ㅋㅋ");
-    session.legends_add(0x4A, 0x10, "똥진영 ㅋㅋ");
-    session.base_hp(0xFFFFFFFF);
-    session.hp(0xFFFFFFFF);
-    session.title("갓승현 타이틀");
-
-    auto& items = db::items();
-    session.items.add(db::name2item("얼음칼")->make<item>());
-    session.items.add(db::name2item("정화의방패")->make<item>());
-    session.items.add(db::name2item("도씨검")->make<item>());
-    session.items.add(db::name2item("낙랑의두루마리2")->make<item>());
-    session.items.add(db::name2item("남자기모노")->make<item>());
-    session.items.add(db::name2item("도토리")->make<item>());
-    session.items.add(db::name2item("동동주")->make<item>());
-    session.items.add(db::name2item("파란열쇠")->make<item>());
-    
-
-    // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-    session.items.weapon(db::name2item("양첨목봉")->make<weapon>()); // 초심자의 목도
-    session.items.helmet(db::name2item("쇄자황금투구")->make<helmet>());
-    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
-    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
-    session.items.auxiliary(db::name2item("보무의목걸이")->make<auxiliary>());
-    session.items.auxiliary(db::name2item("해독의귀걸이")->make<auxiliary>());
-
     return true;
 }
 
@@ -591,7 +559,41 @@ bool acceptor::handle_login(fb::game::session& session)
     auto                    key_size = istream.read_u8();
     istream.read(enc_key, key_size);
 
+    // Set crypt data
     session.crt(enc_type, enc_key);
+
+    // TODO: Load user data from db
+    session.name(istream.readstr_u8());
+    auto& maps = db::maps();
+    db::name2map("부여왕초보사냥1")->objects.add(session, point16_t(2, 2));
+    session.look(0x61);
+    session.color(0x0A);
+    session.money(150);
+    session.sex(fb::game::sex::MAN);
+    session.legends_add(0x4A, 0x10, "갓승현 ㅋㅋ");
+    session.legends_add(0x4A, 0x10, "똥진영 ㅋㅋ");
+    session.base_hp(0xFFFFFFFF);
+    session.hp(0xFFFFFFFF);
+    session.title("갓승현 타이틀");
+
+    auto& items = db::items();
+    session.items.add(db::name2item("얼음칼")->make<item>());
+    session.items.add(db::name2item("정화의방패")->make<item>());
+    session.items.add(db::name2item("도씨검")->make<item>());
+    session.items.add(db::name2item("낙랑의두루마리2")->make<item>());
+    session.items.add(db::name2item("남자기모노")->make<item>());
+    session.items.add(db::name2item("도토리")->make<item>());
+    session.items.add(db::name2item("동동주")->make<item>());
+    session.items.add(db::name2item("파란열쇠")->make<item>());
+
+
+    // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
+    session.items.weapon(db::name2item("양첨목봉")->make<weapon>()); // 초심자의 목도
+    session.items.helmet(db::name2item("쇄자황금투구")->make<helmet>());
+    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
+    session.items.ring(db::name2item("쇄자황금반지")->make<ring>());
+    session.items.auxiliary(db::name2item("보무의목걸이")->make<auxiliary>());
+    session.items.auxiliary(db::name2item("해독의귀걸이")->make<auxiliary>());
 
     fb::ostream             ostream;
     ostream.write_u8(0x1E)
