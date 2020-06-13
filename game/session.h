@@ -66,7 +66,6 @@ private:
     uint16_t                    _disguise;
 
     bool                        _options[0x0B+1];
-    std::vector<legend>         _legends;
 
     std::string                 _title;
 
@@ -77,6 +76,7 @@ private:
 public:
     fb::game::trade             trade;
     fb::game::items             items;
+    legend_container            legends;
     lua::thread*                dialog_thread;
 #pragma endregion
 
@@ -207,9 +207,6 @@ public:
     bool                        option(options key) const;
     void                        option(options key, bool value);
     bool                        option_toggle(options key);
-
-    const std::vector<legend>&  legends() const;
-    void                        legends_add(uint8_t look, uint8_t color, const std::string& content);
 
     const std::string&          title() const;
     void                        title(const std::string& value);

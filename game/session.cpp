@@ -503,16 +503,6 @@ bool fb::game::session::option_toggle(options key)
     return this->_options[key];
 }
 
-const std::vector<legend>& fb::game::session::legends() const
-{
-    return this->_legends;
-}
-
-void fb::game::session::legends_add(uint8_t look, uint8_t color, const std::string& content)
-{
-    this->_legends.push_back(legend(look, color, content));
-}
-
 const std::string& fb::game::session::title() const
 {
     return this->_title;
@@ -800,8 +790,8 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8(this->_options[options::TRADE])
         .write_u8(this->_options[options::PK]);
 
-    ostream.write_u8(this->_legends.size());
-    for(auto legend : this->_legends)
+    ostream.write_u8(this->legends.size());
+    for(auto legend : this->legends)
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)
@@ -902,8 +892,8 @@ fb::ostream fb::game::session::make_external_info_stream() const
         .write_u32(0x00000000); // unknown
 
                                 // 업적
-    ostream.write_u8(this->_legends.size());
-    for(auto legend : this->_legends)
+    ostream.write_u8(this->legends.size());
+    for(auto legend : this->legends)
     {
         ostream.write_u8(legend.look)
             .write_u8(legend.color)

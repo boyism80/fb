@@ -224,6 +224,22 @@ public:
     _legend(const _legend& right) : _legend(right.look, right.color, right.content) {}
 } legend;
 
+class legend_container : private std::vector<legend>
+{
+public:
+    using std::vector<legend>::begin;
+    using std::vector<legend>::end;
+    using std::vector<legend>::size;
+
+public:
+    legend_container();
+    ~legend_container();
+
+public:
+    legend_container&       push(const legend& legend);
+    legend_container&       push(uint8_t look, uint8_t color, const std::string& content);
+};
+
 
 typedef struct _defensive
 {

@@ -570,8 +570,8 @@ bool acceptor::handle_login(fb::game::session& session)
     session.color(0x0A);
     session.money(150);
     session.sex(fb::game::sex::MAN);
-    session.legends_add(0x4A, 0x10, "갓승현 ㅋㅋ");
-    session.legends_add(0x4A, 0x10, "똥진영 ㅋㅋ");
+    session.legends.push(0x4A, 0x10, "갓승현 ㅋㅋ")
+                   .push(0x4A, 0x10, "똥진영 ㅋㅋ");
     session.base_hp(0xFFFFFFFF);
     session.hp(0xFFFFFFFF);
     session.title("갓승현 타이틀");

@@ -1,4 +1,5 @@
 #include "mmo.h"
+#include "session.h"
 
 using namespace fb::game;
 
@@ -62,4 +63,24 @@ fb::ostream fb::game::weather::make_stream(type weather)
         .write_u8(0x00);
 
     return ostream;
+}
+
+fb::game::legend_container::legend_container()
+{
+}
+
+fb::game::legend_container::~legend_container()
+{
+}
+
+legend_container& fb::game::legend_container::push(const legend& legend)
+{
+    this->push_back(legend);
+    return *this;
+}
+
+legend_container& fb::game::legend_container::push(uint8_t look, uint8_t color, const std::string& content)
+{
+    this->push_back(legend(look, color, content));
+    return *this;
 }

@@ -2,7 +2,7 @@
 
 template <typename T>
 fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port) : 
-	base_acceptor(context, port)
+    base_acceptor(context, port)
 {
     this->accept();
 }
@@ -17,9 +17,9 @@ fb::acceptor<T>::~acceptor()
 template <typename T>
 void fb::acceptor<T>::accept()
 {
-	auto new_socket = new fb::socket(this);
-	this->async_accept
-	(
+    auto new_socket = new fb::socket(this);
+    this->async_accept
+    (
         *new_socket,
         [this, new_socket](boost::system::error_code error)
         {
@@ -42,7 +42,7 @@ void fb::acceptor<T>::accept()
                 std::cout << e.what() << std::endl;
             }
         }
-	);
+    );
 }
 
 template<class T>
@@ -50,7 +50,7 @@ inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
 {
     auto i = this->_response_table.find(cmd);
     if(i == this->_response_table.end())
-    	return true;
+        return true;
 
     return i->second(session);
 }
@@ -153,17 +153,17 @@ void fb::acceptor<T>::handle_disconnected(fb::socket& socket)
 template <typename T>
 void fb::acceptor<T>::register_fn(uint8_t cmd, std::function<bool(T&)> fn)
 {
-	this->_response_table.insert(std::make_pair(cmd, fn));
+    this->_response_table.insert(std::make_pair(cmd, fn));
 }
 
 template<class T>
 void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port)
 {
-	auto&                       crt = session.crt();
+    auto&                       crt = session.crt();
     auto                        ostream = this->make_transfer_stream(crt, ip, port);
-	crt.wrap(ostream);
+    crt.wrap(ostream);
 
-	session.send(ostream, false, false);
+    session.send(ostream, false, false);
 }
 
 template<class T>
@@ -179,8 +179,8 @@ void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port, const fb:
 template <typename T>
 void fb::acceptor<T>::send_stream(fb::base& base, const fb::ostream& stream, bool encrypt, bool wrap)
 {
-	if(stream.empty())
-		return;
+    if(stream.empty())
+        return;
 
-	base.send(stream, encrypt, wrap);
+    base.send(stream, encrypt, wrap);
 }
