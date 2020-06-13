@@ -116,7 +116,7 @@ fb::game::board::article* fb::game::board::section::add(const std::string& title
     auto time = std::time(0);
     auto now = std::localtime(&time);
 
-    auto allocated = new article(this->size()+1, title, content, writer, now->tm_mon + 1, now->tm_mday, color);
+    auto allocated = new article(uint16_t(this->size()+1), title, content, writer, now->tm_mon + 1, now->tm_mday, color);
     this->push_back(allocated);
 
     return allocated;
@@ -213,7 +213,7 @@ fb::ostream fb::game::board::make_sections_stream() const
 
     ostream.write_u8(0x31)
         .write_u8(0x01)
-        .write_u16(this->_sections.size());
+        .write_u16((uint16_t)this->_sections.size());
 
     for(int i = 0; i < this->_sections.size(); i++)
     {
@@ -237,11 +237,11 @@ fb::ostream fb::game::board::make_articles_stream(uint16_t section_id, uint16_t 
 
 
     if(offset == 0x7FFF)
-        offset = section->size() - 1;
-    uint16_t                reverse_offset = section->size() - (offset + 1);
+        offset = uint16_t(section->size() - 1);
+    auto                    reverse_offset = uint16_t(section->size() - (offset + 1));
 
-    int                     count = std::min(size_t(20), section->size() - reverse_offset);
-    ostream.write_u8(count);
+    auto                    count = std::min(size_t(20), section->size() - reverse_offset);
+    ostream.write_u8((uint8_t)count);
 
     for(auto i = section->rbegin() + reverse_offset; i != section->rend(); i++)
     {

@@ -68,17 +68,17 @@ uint8_t fb::game::trade::add(fb::game::item* item)
 {
     if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
-        uint8_t exists = this->contains_core(item);
+        auto exists = this->contains_core(item);
         if(exists != 0xFF)
         {
-            uint16_t count = this->_items[exists]->count() + item->count();
+            auto count = this->_items[exists]->count() + item->count();
             this->_items[exists]->count(count);
             return exists;
         }
     }
 
     this->_items.push_back(item);
-    return this->_items.size() - 1;
+    return uint8_t(this->_items.size() - 1);
 }
 
 void fb::game::trade::money(uint32_t value)
@@ -215,7 +215,7 @@ fb::ostream fb::game::trade::make_show_stream(bool mine, uint8_t index) const
 
         return ostream;
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return fb::ostream();
     }

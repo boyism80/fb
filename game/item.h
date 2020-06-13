@@ -860,7 +860,7 @@ public:
 
 public:
     itemmix(float percentage = 100.0f) : percentage(percentage) {}
-    itemmix(const struct itemmix& right) : 
+    itemmix(const class itemmix& right) : 
         require(right.require.begin(), right.require.end()),
         success(right.success.begin(), right.success.end()),
         failed(right.failed.begin(), right.failed.end()),

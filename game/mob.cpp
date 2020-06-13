@@ -253,7 +253,7 @@ uint32_t fb::game::mob::respawn_time() const
 
 void fb::game::mob::respawn_time(uint64_t ms)
 {
-    this->_respawn_time = ms;
+    this->_respawn_time = (uint32_t)ms;
 }
 
 bool fb::game::mob::spawn(uint64_t now)
@@ -286,6 +286,7 @@ bool fb::game::mob::spawn(uint64_t now)
 
     this->action_time(now);
     std::cout << "spawn mob : " << this->id() << std::endl;
+    return true;
 }
 
 fb::game::life* fb::game::mob::target() const
@@ -310,7 +311,7 @@ fb::game::life* fb::game::mob::autoset_target()
         if(object->sight(*this) == false)
             continue;
 
-        auto                distance_sqrt = std::abs(object->x() - this->x()) * std::abs(object->y() - this->y());
+        auto                distance_sqrt = (uint32_t)std::abs(object->x() - this->x()) * std::abs(object->y() - this->y());
         if(distance_sqrt > min_distance_sqrt)
             continue;
 

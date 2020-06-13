@@ -38,8 +38,6 @@ int main(int argc, const char** argv)
 
     io_service.run();
 
-    fgetchar();
-
     // Clean up
     delete acceptor;
 

@@ -1057,13 +1057,12 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
         this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         this->send_stream(*cash, cash->make_show_stream(), scope::PIVOT, true);
         this->send_stream(session, message::make_stream(message::money::DROP, message::type::STATE), scope::SELF);
-
-        return true;
     }
     catch(std::exception& e)
     {
         this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
     }
+    return true;
 }
 
 bool fb::game::acceptor::handle_front_info(fb::game::session& session)
@@ -1756,8 +1755,8 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
 
     fb::ostream                 ostream;
     ostream.write_u8(0x36)
-        .write_u16(sessions.size())
-        .write_u16(sessions.size())
+        .write_u16((uint16_t)sessions.size())
+        .write_u16((uint16_t)sessions.size())
         .write_u8(0x00);
 
     for(const auto& i : this->sessions)
@@ -2073,7 +2072,7 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
         if(message.empty() == false)
             this->send_stream(session, message::make_stream(message, message::type::STATE), scope::SELF);
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
 
     }

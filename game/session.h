@@ -44,7 +44,7 @@ private:
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
-    uint16_t                    _dress_color;
+    uint8_t                     _dress_color;
 
     defensive                   _defensive;
     uint32_t                    _base_hp, _base_mp;
@@ -123,10 +123,10 @@ public:
     void                        look(uint16_t value);
 
     uint8_t                     color() const;
-    void                        color(uint16_t value);
+    void                        color(uint8_t value);
 
     uint8_t                     dress_color() const;
-    void                        dress_color(uint16_t value);
+    void                        dress_color(uint8_t value);
 
     uint16_t                    disguise() const;
     void                        disguise(uint16_t value);
@@ -193,8 +193,8 @@ public:
     uint32_t                    money_add(uint32_t value);
     uint32_t                    money_reduce(uint32_t value);
 
-    uint32_t                    random_damage() const;
-    void                        random_damage(uint8_t value);
+    uint32_t                    damage() const;
+    void                        damage(uint8_t value);
 
     uint32_t                    random_damage(fb::game::life& life, bool& critical) const;
 

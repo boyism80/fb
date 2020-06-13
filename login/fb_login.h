@@ -133,7 +133,7 @@ public:
     login::session*             handle_alloc_session(fb::socket* socket);
 
 private:
-    uint32_t                    compress(const uint8_t * source, uint32_t size, uint8_t * dest) const;
+    uint32_t                    compress(const uint8_t * source, size_t size, uint8_t * dest) const;
     fb::ostream                 make_gateway_stream(uint32_t* crc) const;
     fb::ostream                 make_agreement_stream() const;
     const ostream               make_message_stream(int type, const char* msg) const;

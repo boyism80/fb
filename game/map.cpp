@@ -180,7 +180,7 @@ fb::game::object* fb::game::objects::operator[](uint16_t id)
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, uint32_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
     _id(id),
     _parent(parent),
     _bgm(bgm),
@@ -223,14 +223,14 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
         while(door->find(*this, position, true))
         {
             this->doors.add(this, *door, position, true);
-            position.x += door->size();
+            position.x += (uint16_t)door->size();
         }
 
         position.x = position.y = 0;
         while(door->find(*this, position, false))
         {
             this->doors.add(this, *door, position, false);
-            position.x += door->size();
+            position.x += (uint16_t)door->size();
         }
     }
 }
@@ -540,17 +540,17 @@ int fb::game::map::builtin_movable(lua_State* lua)
     if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
-        position.x = lua_tointeger(lua, -1);
+        position.x = (uint16_t)lua_tointeger(lua, -1);
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 2, 2);
-        position.y = lua_tointeger(lua, -1);
+        position.y = (uint16_t)lua_tointeger(lua, -1);
         lua_remove(lua, -1);
     }
     else if(lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
     {
-        position.x = lua_tointeger(lua, 2);
-        position.y = lua_tointeger(lua, 3);
+        position.x = (uint16_t)lua_tointeger(lua, 2);
+        position.y = (uint16_t)lua_tointeger(lua, 3);
     }
     else
     {

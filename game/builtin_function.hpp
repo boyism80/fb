@@ -33,7 +33,7 @@ int builtin_dialog(lua_State* lua)
         acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
         return lua_yield(lua, 1);
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         lua_pushnil(lua);
         return 1;
@@ -95,7 +95,7 @@ int builtin_input_dialog(lua_State* lua)
     {
         auto message_top = lua_tostring(lua, 4);
         auto message_bot = lua_tostring(lua, 5);
-        auto maxlen = argc < 6 ? 0xFF : lua_tointeger(lua, 6);
+        auto maxlen = argc < 6 ? 0xFF : (int)lua_tointeger(lua, 6);
         auto prev = argc < 7 ? false : lua_toboolean(lua, 7);
         
         acceptor->send_stream(*session, npc->make_input_dialog_stream(message, message_top, message_bot, maxlen, prev), acceptor::scope::SELF);

@@ -147,7 +147,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, uint32_t size);
+    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, size_t size);
     ~map();
 #pragma endregion
 

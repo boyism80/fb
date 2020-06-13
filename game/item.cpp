@@ -158,16 +158,16 @@ int fb::game::item::core::builtin_make(lua_State* lua)
     if(lua_istable(lua, 3))
     {
         lua_rawgeti(lua, 3, 1);
-        object->x(lua_tointeger(lua, -1));
+        object->x((uint16_t)lua_tointeger(lua, -1));
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 3, 2);
-        object->y(lua_tointeger(lua, -1));
+        object->y((uint16_t)lua_tointeger(lua, -1));
         lua_remove(lua, -1);
     }
     else
     {
-        object->position(lua_tointeger(lua, 3), lua_tointeger(lua, 4));
+        object->position((uint16_t)lua_tointeger(lua, 3), (uint16_t)lua_tointeger(lua, 4));
     }
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");

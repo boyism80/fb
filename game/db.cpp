@@ -402,7 +402,7 @@ bool fb::game::db::load_items(const std::string& db_fname)
 
                 equipment->durability(option["durability"].asInt());
                 equipment->repair_enabled(option["repair"]["enabled"].asBool());
-                equipment->repair_price(option["repair"]["price"].asDouble());
+                equipment->repair_price((float)option["repair"]["price"].asDouble());
                 equipment->rename_enabled(option["rename"]["enabled"].asBool());
                 equipment->rename_price(option["rename"]["price"].asInt());
                 equipment->hit(option["hit"].asInt());
@@ -412,8 +412,8 @@ bool fb::game::db::load_items(const std::string& db_fname)
                 equipment->dexteritry(option["dexteritry"].asInt());
                 equipment->base_hp(option["base_hp"].asInt());
                 equipment->base_mp(option["base_mp"].asInt());
-                equipment->hp_percentage(option["hp percent"].asInt());
-                equipment->mp_percentage(option["mp percent"].asInt());
+                equipment->hp_percentage((float)option["hp percent"].asInt());
+                equipment->mp_percentage((float)option["mp percent"].asInt());
                 equipment->healing_cycle(option["healing_cycle"].asInt());
                 equipment->defensive_physical(option["defensive"]["physical"].asInt());
                 equipment->defensive_magical(option["defensive"]["magical"].asInt());
@@ -664,7 +664,7 @@ bool fb::game::db::load_class(const std::string& db_fname)
                                                           ability["dexteritry"].asInt(),
                                                           ability["hp"].asInt(),
                                                           ability["mp"].asInt(),
-                                                          ability["exp"].asInt64());
+                                                          (uint32_t)ability["exp"].asInt64());
 
             cdata->add_level_ability(allocated);
         }
@@ -773,7 +773,7 @@ bool fb::game::db::load_itemmix(const std::string& db_fname)
 
     for(auto json : itemmix_list)
     {
-        float               percentage = json["percentage"].asDouble();
+        auto                percentage = (float)json["percentage"].asDouble();
         auto                itemmix = new fb::game::itemmix(percentage);
 
         for(auto require : json["require"])
@@ -1020,7 +1020,7 @@ const std::string* fb::game::db::class2name(uint8_t cls, uint8_t promotion)
     {
         return &classes[cls]->promotions[promotion];
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return nullptr;
     }
@@ -1066,7 +1066,7 @@ uint32_t fb::game::db::required_exp(uint8_t class_id, uint8_t level)
     {
         return db::classes()[class_id]->level_abilities[level]->exp;
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return 0;
     }

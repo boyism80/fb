@@ -616,8 +616,8 @@ double fb::game::object::distance(const object& right) const
 
 uint32_t fb::game::object::distance_sqrt(const object& right) const
 {
-    return std::pow(this->_position.x - right._position.x, 2) + 
-        std::pow(this->_position.y - right._position.y, 2);
+    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + 
+        (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 fb::ostream fb::game::object::make_show_stream() const
@@ -665,7 +665,7 @@ fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::objec
         return ostream;
 
     ostream.write_u8(0x07)
-        .write_u16(objects.size());
+        .write_u16((uint16_t)objects.size());
 
     for(const auto object : objects)
     {
@@ -822,17 +822,17 @@ int fb::game::object::builtin_position(lua_State* lua)
     if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
-        x = lua_tointeger(lua, -1);
+        x = (uint16_t)lua_tointeger(lua, -1);
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 2, 2);
-        y = lua_tointeger(lua, -1);
+        y = (uint16_t)lua_tointeger(lua, -1);
         lua_remove(lua, -1);
     }
     else
     {
-        x = lua_tointeger(lua, 2);
-        y = lua_tointeger(lua, 3);
+        x = (uint16_t)lua_tointeger(lua, 2);
+        y = (uint16_t)lua_tointeger(lua, 3);
     }
 
     std::vector<game::object*> shows, hides, showns, hiddens;
@@ -917,7 +917,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 2);
-    auto time = lua_tointeger(lua, 3);
+    auto time = (uint32_t)lua_tointeger(lua, 3);
 
     auto buff = object->buffs.push_back(spell, time);
     if(buff == nullptr)
@@ -975,7 +975,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto effect = lua_tointeger(lua, 2);
+    auto effect = (uint8_t)lua_tointeger(lua, 2);
 
     if(object->type() != object::types::ITEM)
         acceptor->send_stream(*object, object->make_effect_stream(effect), acceptor::scope::PIVOT);
@@ -1021,17 +1021,17 @@ int fb::game::object::builtin_map(lua_State* lua)
         if(lua_istable(lua, 3))
         {
             lua_rawgeti(lua, 3, 1);
-            position.x = lua_tointeger(lua, -1);
+            position.x = (uint16_t)lua_tointeger(lua, -1);
             lua_remove(lua, -1);
 
             lua_rawgeti(lua, 3, 2);
-            position.y = lua_tointeger(lua, -1);
+            position.y = (uint16_t)lua_tointeger(lua, -1);
             lua_remove(lua, -1);
         }
         else if(lua_isnumber(lua, 3) && lua_isnumber(lua, 4))
         {
-            position.x = lua_tointeger(lua, 3);
-            position.y = lua_tointeger(lua, 4);
+            position.x = (uint16_t)lua_tointeger(lua, 3);
+            position.y = (uint16_t)lua_tointeger(lua, 4);
         }
         else
         {
@@ -1265,7 +1265,7 @@ uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& lif
     uint32_t Xrate = life.direction() == this->direction() ? 2 : 1;
     uint32_t n = (100 - life.defensive_physical()) / 10;
     float defensive_percent = -125 + (n * (2*14.75f - (n-1)/2.0f))/2.0f;
-    uint32_t random_damage = value - (defensive_percent * (value/100.0f));
+    uint32_t random_damage = value - uint32_t(defensive_percent * (value/100.0f));
 
     return random_damage * Xrate;
 }
@@ -1507,7 +1507,7 @@ int fb::game::life::builtin_hp(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         object->hp(value);
         return 0;
     }
@@ -1525,7 +1525,7 @@ int fb::game::life::builtin_mp(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         object->mp(value);
         return 0;
     }
@@ -1553,7 +1553,7 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = lua_tointeger(lua, 2);
+    auto value = (uint32_t)lua_tointeger(lua, 2);
 
     object->hp_up(value);
     return 0;
@@ -1563,7 +1563,7 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = lua_tointeger(lua, 2);
+    auto value = (uint32_t)lua_tointeger(lua, 2);
 
     object->hp_down(value);
     return 0;
@@ -1573,7 +1573,7 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = lua_tointeger(lua, 2);
+    auto value = (uint32_t)lua_tointeger(lua, 2);
 
     object->mp_up(value);
     return 0;
@@ -1583,7 +1583,7 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = lua_tointeger(lua, 2);
+    auto value = (uint32_t)lua_tointeger(lua, 2);
 
     object->mp_down(value);
     return 0;
@@ -1596,7 +1596,7 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto life = *(fb::game::life**)lua_touserdata(lua, 1);
     auto action = lua_tointeger(lua, 2);
     auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
-    auto sound = argc < 4 ? 0x00 : lua_tointeger(lua, 4);
+    auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)lua_tointeger(lua, 4);
 
     acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
     return 0;
@@ -1607,7 +1607,7 @@ int fb::game::life::builtin_spell(lua_State* lua)
     auto argc = lua_gettop(lua);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto life = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto index = lua_tointeger(lua, 2);
+    auto index = (int)lua_tointeger(lua, 2);
 
     life->spells[index]->to_lua(lua);
     return 1;
@@ -1619,7 +1619,7 @@ int fb::game::life::builtin_damage(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto me = *(fb::game::life**)lua_touserdata(lua, 1);
     auto you = *(fb::game::life**)lua_touserdata(lua, 2);
-    auto damage = lua_tointeger(lua, 3);
+    auto damage = (uint32_t)lua_tointeger(lua, 3);
 
     acceptor->handle_damage(*me, *you, damage);
     lua_pushboolean(lua, you->visible());

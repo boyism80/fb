@@ -18,8 +18,8 @@ protected:
     uint32_t                _offset;
 
 public:
-    buffer(uint32_t size = 1024);
-    buffer(const uint8_t* data, uint32_t size);
+    buffer(size_t size = 1024);
+    buffer(const uint8_t* data, size_t size);
     virtual ~buffer();
 
 public:
@@ -29,8 +29,8 @@ public:
 class istream : public buffer
 {
 public:
-    istream(uint32_t size = 1024);
-    istream(const uint8_t* data, uint32_t size);
+    istream(size_t size = 1024);
+    istream(const uint8_t* data, size_t size);
     ~istream();
 
 public:
@@ -40,13 +40,13 @@ public:
     uint16_t                read_u16(buffer::endian endian = buffer::endian::BIG);
     int32_t                 read_32(buffer::endian endian = buffer::endian::BIG);
     uint32_t                read_u32(buffer::endian endian = buffer::endian::BIG);
-    void                    read(void* buffer, uint32_t size);
+    void                    read(void* buffer, size_t size);
 	std::string				readstr_u8();
 	std::string				readstr_u16(buffer::endian endian = buffer::endian::BIG);
     std::string             readstr_u32(buffer::endian endian = buffer::endian::BIG);
     uint32_t                readable_size() const;
     void                    reset();
-    void                    shift(uint32_t size);
+    void                    shift(size_t size);
     void                    flush();
 };
 
@@ -57,7 +57,7 @@ public:
     typedef std::vector<uint8_t>::iterator iterator;
 
 public:
-    ostream(uint32_t size = 1024);
+    ostream(size_t size = 1024);
     ostream(const uint8_t* data, size_t size);
     ~ostream();
 
@@ -71,7 +71,7 @@ public:
     ostream&                writestr_u8(const std::string& value);
     ostream&                writestr_u16(const std::string& value, buffer::endian endian = buffer::endian::BIG);
     ostream&                writestr_u32(const std::string& value, buffer::endian endian = buffer::endian::BIG);
-    ostream&                write(const void* buffer, uint32_t size);
+    ostream&                write(const void* buffer, size_t size);
     ostream&                write(const ostream& wb);
     ostream&                write(const std::string& str, bool uint16 = false);
 };

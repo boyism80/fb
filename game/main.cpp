@@ -9,7 +9,6 @@
 #include "lua.h"
 #include "config.h"
 
-
 fb::game::acceptor*  acceptor = nullptr;
 
 BOOL WINAPI handle_console(DWORD signal)
@@ -40,11 +39,6 @@ int main(int argc, const char** argv)
     boost::asio::io_context io_service;
     acceptor = new fb::game::acceptor(io_service, 10021);
     io_service.run();
-
-
-    // Wait while key pressed
-    _fgetchar();
-
 
     // Release
     delete acceptor;

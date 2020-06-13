@@ -63,7 +63,7 @@ public:
     const std::string           arg_string(int offset) { return tostring(offset); }
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
-    int                         tointeger(int offset) { return lua_tointeger(*this, offset); }
+    int                         tointeger(int offset) { return (int)lua_tointeger(*this, offset); }
     int                         arg_integer(int offset) { return tointeger(offset); }
     int                         ret_integer(int offset) { return tointeger(-offset); }
     

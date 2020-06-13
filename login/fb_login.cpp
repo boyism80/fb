@@ -76,12 +76,12 @@ fb::login::session* acceptor::handle_alloc_session(fb::socket* socket)
     return new login::session(socket);
 }
 
-uint32_t acceptor::compress(const uint8_t* source, uint32_t size, uint8_t* dest) const
+uint32_t acceptor::compress(const uint8_t* source, size_t size, uint8_t* dest) const
 {
     static uint8_t              buffer[65536];
     uint32_t                    buf_size = sizeof(buffer);
 
-    compress2(buffer, (uLongf*)&buf_size, source, size, Z_BEST_COMPRESSION);
+    compress2(buffer, (uLongf*)&buf_size, source, uint32_t(size), Z_BEST_COMPRESSION);
     memcpy(dest, buffer, buf_size);
     dest[buf_size]          = 0x00;
     return buf_size;
@@ -105,7 +105,7 @@ fb::ostream acceptor::make_gateway_stream(uint32_t* crc) const
 
     // 바이너리 형식의 crc 계산
     if(crc != nullptr)
-        *crc = crc32(0, formats.data(), formats.size());
+        *crc = crc32(0, formats.data(), (uint32_t)formats.size());
 
     // 바이너리 데이터 압축
     uint8_t                     compressed_buffer[1024];
@@ -139,12 +139,12 @@ fb::ostream acceptor::make_agreement_stream() const
 const fb::ostream acceptor::make_message_stream(int type, const char* msg) const
 {
     ostream                 ostream;
-    uint32_t                message_size = strlen(msg) + 1;
+    auto                    size = uint32_t(strlen(msg) + 1);
 
     ostream.write_u8(0x02)
            .write_u8(type)
-           .write_u8(message_size)
-           .write((const void*)msg, message_size);
+           .write_u8((uint8_t)size)
+           .write((const void*)msg, size);
 
     return ostream;
 }

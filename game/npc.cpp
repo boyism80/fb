@@ -33,7 +33,7 @@ fb::ostream fb::game::npc::core::make_dialog_stream(const std::string& message, 
         .write_u8(this->color())
         .write(message, true);
 
-    ostream.write_u16(menus.size());
+    ostream.write_u16((uint16_t)menus.size());
     for(int i = 0; i < menus.size(); i++)
     {
         ostream.write(menus[i])
@@ -61,7 +61,7 @@ fb::ostream fb::game::npc::core::make_dialog_stream(const std::string& message, 
         .write_u8(this->color())
         .write(message, true)
         .write_u16(0xFFFF)
-        .write_u8(item_slots.size());
+        .write_u8((uint8_t)item_slots.size());
 
     for(auto item_slot : item_slots)
         ostream.write_u8(item_slot);
@@ -87,7 +87,7 @@ fb::ostream fb::game::npc::core::make_dialog_stream(const std::string& message, 
         .write_u8(this->color())
         .write(message, true)
         .write_u16(pursuit)
-        .write_u16(cores.size());
+        .write_u16((uint16_t)cores.size());
 
     for(int i = 0; i < cores.size(); i++)
     {

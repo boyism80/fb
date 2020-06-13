@@ -132,7 +132,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 
 uint32_t fb::cryptor::encrypt(fb::buffer& data)
 {
-    return this->encrypt(data, 0, data.size());
+    return this->encrypt(data, 0, (uint32_t)data.size());
 }
 
 uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
@@ -182,7 +182,7 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 
 uint32_t fb::cryptor::decrypt(fb::buffer& data)
 {
-    return this->decrypt(data, 0, data.size());
+    return this->decrypt(data, 0, (uint32_t)data.size());
 }
 
 uint32_t fb::cryptor::wrap(fb::buffer& data, uint32_t offset) const

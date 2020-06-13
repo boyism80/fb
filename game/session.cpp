@@ -7,7 +7,7 @@
 using namespace fb::game;
 
 session::session(fb::socket* socket) : 
-    life((life::core*)nullptr, socket->native_handle(), 0, 0, 0),
+    life((life::core*)nullptr, (uint32_t)socket->native_handle(), 0, 0, 0),
     _socket(socket),
     _look(0), _color(0), _dress_color(0),
     _disguise(0),
@@ -95,7 +95,7 @@ uint8_t fb::game::session::color() const
     return this->_color;
 }
 
-void fb::game::session::color(uint16_t value)
+void fb::game::session::color(uint8_t value)
 {
     this->_color = value;
 }
@@ -105,7 +105,7 @@ uint8_t fb::game::session::dress_color() const
     return this->_dress_color;
 }
 
-void fb::game::session::dress_color(uint16_t value)
+void fb::game::session::dress_color(uint8_t value)
 {
     this->_dress_color = value;
 }
@@ -297,7 +297,7 @@ void fb::game::session::strength(uint8_t value)
 
 void fb::game::session::strength_up(uint8_t value)
 {
-    this->_strength + value;
+    this->_strength += value;
 }
 
 uint8_t fb::game::session::intelligence() const
@@ -422,12 +422,12 @@ uint32_t fb::game::session::money_reduce(uint32_t value)
     }
 }
 
-uint32_t fb::game::session::random_damage() const
+uint32_t fb::game::session::damage() const
 {
     return this->_damage;
 }
 
-void fb::game::session::random_damage(uint8_t value)
+void fb::game::session::damage(uint8_t value)
 {
     this->_damage = value;
 }
@@ -684,7 +684,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
         auto armor = this->items.armor();
         if(armor != nullptr)
         {
-            ostream.write_u8(armor->dress())
+            ostream.write_u8((uint8_t)armor->dress())
                 .write_u8(this->_dress_color == 0 ? armor->color() : this->_dress_color);
         }
         else
@@ -708,7 +708,7 @@ fb::ostream fb::game::session::make_visual_stream(bool light) const
         auto shield = this->items.shield();
         if(shield != nullptr)
         {
-            ostream.write_u8(shield->dress())
+            ostream.write_u8((uint8_t)shield->dress())
                 .write_u8(shield->color());
         }
         else
@@ -729,8 +729,8 @@ fb::ostream fb::game::session::make_internal_info_stream() const
     fb::ostream             ostream;
 
     ostream.write_u8(0x39)
-        .write_u8(this->_defensive.physical)
-        .write_u8(this->random_damage())
+        .write_u8((uint8_t)this->_defensive.physical)
+        .write_u8(this->damage())
         .write_u8(this->hit())
         .write("클랜 정보")
         .write("클랜 타이틀")
@@ -790,7 +790,7 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8(this->_options[options::TRADE])
         .write_u8(this->_options[options::PK]);
 
-    ostream.write_u8(this->legends.size());
+    ostream.write_u8((uint8_t)this->legends.size());
     for(auto legend : this->legends)
     {
         ostream.write_u8(legend.look)
@@ -892,7 +892,7 @@ fb::ostream fb::game::session::make_external_info_stream() const
         .write_u32(0x00000000); // unknown
 
                                 // 업적
-    ostream.write_u8(this->legends.size());
+    ostream.write_u8((uint8_t)this->legends.size());
     for(auto legend : this->legends)
     {
         ostream.write_u8(legend.look)
@@ -950,7 +950,7 @@ int fb::game::session::builtin_look(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint16_t)lua_tointeger(lua, 2);
         session->look(value);
         return 0;
     }
@@ -968,7 +968,7 @@ int fb::game::session::builtin_color(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint8_t)lua_tointeger(lua, 2);
         session->color(value);
         return 0;
     }
@@ -986,7 +986,7 @@ int fb::game::session::builtin_money(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         session->money(value);
         return 0;
     }
@@ -1004,7 +1004,7 @@ int fb::game::session::builtin_exp(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         session->experience(value);
         return 0;
     }
@@ -1022,7 +1022,7 @@ int fb::game::session::builtin_base_hp(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         session->base_hp(value);
         return 0;
     }
@@ -1040,7 +1040,7 @@ int fb::game::session::builtin_base_mp(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint32_t)lua_tointeger(lua, 2);
         session->base_mp(value);
         return 0;
     }
@@ -1058,7 +1058,7 @@ int fb::game::session::builtin_strength(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint8_t)lua_tointeger(lua, 2);
         session->strength(value);
         return 0;
     }
@@ -1076,7 +1076,7 @@ int fb::game::session::builtin_dexterity(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint8_t)lua_tointeger(lua, 2);
         session->dexteritry(value);
         return 0;
     }
@@ -1094,7 +1094,7 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
     }
     else
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint8_t)lua_tointeger(lua, 2);
         session->intelligence(value);
         return 0;
     }
@@ -1106,7 +1106,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     auto item = (fb::game::item*)nullptr;
     if(lua_isnumber(lua, 2))
     {
-        auto index = lua_tointeger(lua, 2);
+        auto index = (uint8_t)lua_tointeger(lua, 2);
         item = session->items[index];
     }
     else if(lua_isstring(lua, 2))
@@ -1144,7 +1144,7 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
 {
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-    auto index = lua_tointeger(lua, 2);
+    auto index = (uint8_t)lua_tointeger(lua, 2);
     auto drop_all = lua_toboolean(lua, 3);
 
     auto dropped = acceptor->macro_drop_item(*session, index - 1, drop_all);
@@ -1175,10 +1175,13 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     {
         auto item = core->make<fb::game::item>();
         auto slot = session->items.add(item);
+        item->to_lua(lua);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         acceptor->send_stream(*session, session->items.make_update_stream(slot), acceptor::scope::SELF);
     }
+
+    return 1;
 }
 
 int fb::game::session::builtin_rmitem(lua_State* lua)
@@ -1187,8 +1190,8 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
     {
         auto argc = lua_gettop(lua);
         auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-        auto index = 0;
-        auto count = argc < 3 ? 1 : lua_tointeger(lua, 3);
+        auto index = uint8_t(0);
+        auto count = argc < 3 ? 1 : (int)lua_tointeger(lua, 3);
 
         if(lua_isuserdata(lua, 2))
         {
@@ -1200,7 +1203,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
         else if(lua_isnumber(lua, 2))
         {
-            index = lua_tointeger(lua, 2) - 1;
+            index = (uint8_t)lua_tointeger(lua, 2) - 1;
         }
         else if(lua_isstring(lua, 2))
         {
@@ -1270,7 +1273,7 @@ int fb::game::session::builtin_disguise(lua_State* lua)
     }
     else if(luaL_checkinteger(lua, 2))
     {
-        auto value = lua_tointeger(lua, 2);
+        auto value = (uint16_t)lua_tointeger(lua, 2);
         if(value == 0)
         {
             session->state(state::NORMAL);
@@ -1286,6 +1289,11 @@ int fb::game::session::builtin_disguise(lua_State* lua)
         acceptor->send_stream(*session, session->make_visual_stream(true), acceptor::scope::PIVOT);
         acceptor->send_stream(*session, session->make_state_stream(state_level::LEVEL_MAX), acceptor::scope::SELF);
         return 0;
+    }
+    else
+    {
+        lua_pushnil(lua);
+        return 1;
     }
 }
 
