@@ -354,7 +354,7 @@ fb::game::item* fb::game::item::split(object& owner, uint16_t count)
         item = this;
     }
 
-    fb::game::map* map = owner.map();
+    auto map = owner.map();
     map->objects.add(*item, owner.position());
     return item;
 }

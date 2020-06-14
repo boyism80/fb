@@ -1,12 +1,13 @@
 #ifndef __GROUP_H__
 #define __GROUP_H__
 
-#include <vector>
 #include "lua.h"
+#include "session.h"
 
 namespace fb { namespace game {
 
 class session;
+class session::container;
 
 class group : public lua::luable
 {
@@ -17,7 +18,7 @@ public:
 
 private:
     session*                        _leader;
-    std::vector<session*>           _members;
+    session::container              _members;
 
 private:
     group(session& leader);
@@ -28,7 +29,7 @@ public:
     session*                        leave(session& session);
     bool                            contains(session& session);
     session&                        leader() const;
-    const std::vector<session*>&    members() const;
+    const session::container&       members() const;
 
 public:
     static group*                   create(session& leader);

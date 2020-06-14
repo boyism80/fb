@@ -172,6 +172,7 @@
     <ClCompile Include="..\share\timer.cpp" />
     <ClCompile Include="board.cpp" />
     <ClCompile Include="builtin_function.cpp" />
+    <ClCompile Include="clan.cpp" />
     <ClCompile Include="db.cpp" />
     <ClCompile Include="door.cpp" />
     <ClCompile Include="fb_game.cpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="board.h" />
     <ClInclude Include="builtin_function.h" />
     <ClInclude Include="builtin_function.hpp" />
+    <ClInclude Include="clan.h" />
     <ClInclude Include="container.h" />
     <ClInclude Include="container.hpp" />
     <ClInclude Include="db.h" />

@@ -117,15 +117,8 @@ std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
 
 fb::game::object* fb::game::objects::at(uint16_t id)
 {
-    for(const auto object : *this)
-    {
-        if(object->id() != id)
-            continue;
-
-        return object;
-    }
-
-    return nullptr;
+    auto i = std::find_if(this->begin(), this->end(), [id] (object* x) { return x->id() == id; });
+    return i != this->end() ? *i : nullptr;
 }
 
 uint16_t fb::game::objects::add(fb::game::object& object)
@@ -134,7 +127,8 @@ uint16_t fb::game::objects::add(fb::game::object& object)
     if(map == this->_owner)
         return object.id();
 
-    map->objects.remove(object);
+    if(map != nullptr)
+        map->objects.remove(object);
 
     auto                    seq = this->empty_seq();
     auto                    found = this->at(seq);
@@ -164,6 +158,7 @@ bool fb::game::objects::remove(fb::game::object& object)
     if(i == this->end())
         return false;
 
+    object._map = nullptr;
     this->erase(i);
     return true;
 }

@@ -3,22 +3,50 @@
 
 #include <stdint.h>
 #include <string>
+#include <algorithm>
 #include "socket.h"
 #include "acceptor.h"
-#include <algorithm>
 #include "item.h"
 #include "object.h"
 #include "spell.h"
 #include "trade.h"
-#include "group.h"
 #include "lua.h"
 
 namespace fb { namespace game {
 
 class map;
+class group;
+class clan;
 
 class session : public life
 {
+#pragma region container
+class container : private std::vector<fb::game::session*>
+{
+public:
+    using std::vector<fb::game::session*>::begin;
+    using std::vector<fb::game::session*>::end;
+    using std::vector<fb::game::session*>::size;
+    using std::vector<fb::game::session*>::operator[];
+
+public:
+    container();
+    container(const std::vector<fb::game::session*>& right);
+    ~container();
+
+public:
+    container&      push(fb::game::session& session);
+    container&      erase(fb::game::session& session);
+
+public:
+    fb::game::session*      find(const std::string& name);
+    bool                    contains(const fb::game::session& session) const;
+
+public:
+    fb::game::session*      operator [] (const std::string& name);
+};
+#pragma endregion
+
 #pragma region exception
 public:
     DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
@@ -35,6 +63,7 @@ public:
 
 #pragma region friend
     friend group;
+    friend clan;
 #pragma endregion
 
 
@@ -70,6 +99,7 @@ private:
     std::string                 _title;
 
     group*                      _group;
+    clan*                       _clan;
 #pragma endregion
 
 #pragma region public field
@@ -99,6 +129,7 @@ public:
     void                        send(const fb::ostream& stream, bool encrypt, bool wrap = true);
     object::types               type() const;
 #pragma endregion
+
 
 #pragma region middle man
     fb::cryptor&                crt();
@@ -212,6 +243,7 @@ public:
     void                        title(const std::string& value);
 
     fb::game::group*            group() const;
+    fb::game::clan*             clan() const;
 
     void                        state_assert(fb::game::state flags) const;
     void                        state_assert(uint8_t flags) const;

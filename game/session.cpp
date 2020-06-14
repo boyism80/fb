@@ -3,6 +3,8 @@
 #include "item.h"
 #include "db.h"
 #include "fb_game.h"
+#include "group.h"
+#include "clan.h"
 
 using namespace fb::game;
 
@@ -20,6 +22,7 @@ session::session(fb::socket* socket) :
     _promotion(0),
     _money(0),
     _group(nullptr),
+    _clan(nullptr),
     trade(*this),
     items(*this),
     dialog_thread(nullptr)
@@ -518,6 +521,11 @@ fb::game::group* fb::game::session::group() const
     return this->_group;
 }
 
+fb::game::clan* fb::game::session::clan() const
+{
+    return this->_clan;
+}
+
 void fb::game::session::state_assert(fb::game::state flags) const
 {
     if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
@@ -732,8 +740,8 @@ fb::ostream fb::game::session::make_internal_info_stream() const
         .write_u8((uint8_t)this->_defensive.physical)
         .write_u8(this->damage())
         .write_u8(this->hit())
-        .write("클랜 정보")
-        .write("클랜 타이틀")
+        .write(this->_clan != nullptr ? this->_clan->name() : "")
+        .write(this->_clan != nullptr ? this->_clan->title() : "")
         .write(this->_title);
 
     if(this->_group != nullptr)
@@ -1370,4 +1378,52 @@ int fb::game::session::builtin_group(lua_State* lua)
         group->to_lua(lua);
 
     return 1;
+}
+
+fb::game::session::container::container()
+{
+}
+
+fb::game::session::container::container(const std::vector<fb::game::session*>& right)
+{
+    this->insert(this->begin(), right.begin(), right.end());
+}
+
+fb::game::session::container::~container()
+{
+}
+
+session::container& fb::game::session::container::push(fb::game::session& session)
+{
+    this->push_back(&session);
+    return *this;
+}
+
+session::container& fb::game::session::container::erase(fb::game::session& session)
+{
+    std::vector<fb::game::session*>::erase(std::find(this->begin(), this->end(), &session));
+    return *this;
+}
+
+fb::game::session* fb::game::session::container::find(const std::string& name)
+{
+    auto i = std::find_if
+    (
+        this->begin(), this->end(), 
+        [&name] (fb::game::session* x) 
+        { 
+            return x->name() == name; 
+        }
+    );
+    return i != this->end() ? *i : nullptr;
+}
+
+bool fb::game::session::container::contains(const fb::game::session& session) const
+{
+    return std::find(this->cbegin(), this->cend(), &session) != this->end();
+}
+
+fb::game::session* fb::game::session::container::operator[](const std::string& name)
+{
+    return this->find(name);
 }

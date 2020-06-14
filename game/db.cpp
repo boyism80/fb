@@ -1,3 +1,4 @@
+#include "acceptor.h"
 #include "db.h"
 
 fb::game::db* fb::game::db::_instance;
@@ -887,6 +888,11 @@ bool fb::game::db::load_door(const std::string& db_fname)
     return true;
 }
 
+bool fb::game::db::load_clans()
+{
+    return true;
+}
+
 fb::game::db* fb::game::db::get()
 {
     if(db::_instance == nullptr)
@@ -952,6 +958,11 @@ fb::game::board& fb::game::db::board()
 std::vector<fb::game::door::core*>& fb::game::db::doors()
 {
     return db::get()->_doors;
+}
+
+std::vector<fb::game::clan*> fb::game::db::clans()
+{
+    return db::get()->_clans;
 }
 
 fb::game::map* fb::game::db::name2map(const std::string& name)

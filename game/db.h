@@ -12,8 +12,11 @@
 #include "spell.h"
 #include "mob.h"
 #include "board.h"
+#include "clan.h"
 
 namespace fb { namespace game {
+
+class acceptor;
 
 class db
 {
@@ -31,6 +34,7 @@ private:
     std::vector<itemmix*>                   _itemmixes;
     std::vector<door::core*>                _doors;
     fb::game::board                         _board;
+    std::vector<clan*>                      _clans;
 
 private:
     db();
@@ -69,6 +73,7 @@ private:
     bool                                    load_spell(const std::string& db_fname = "db/spell.json");
     bool                                    load_board(const std::string& db_fname = "db/board.json");
     bool                                    load_door(const std::string& db_fname = "db/door.json");
+    bool                                    load_clans();
 
 public:
     static std::map<uint16_t, map*>&        maps();
@@ -80,6 +85,7 @@ public:
     static std::vector<itemmix*>&           itemmixes();
     static fb::game::board&                 board();
     static std::vector<door::core*>&        doors();
+    static std::vector<clan*>               clans();
 
     static fb::game::map*                   name2map(const std::string& name);
     static fb::game::npc::core*             name2npc(const std::string& name);

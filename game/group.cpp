@@ -8,9 +8,7 @@ fb::game::group::group(session& leader) :
 }
 
 fb::game::group::~group()
-{
-    this->_members.clear();
-}
+{}
 
 fb::game::session* fb::game::group::enter(session& session)
 {
@@ -22,7 +20,7 @@ fb::game::session* fb::game::group::enter(session& session)
         return nullptr;
 
     session._group = this;
-    this->_members.push_back(&session);
+    this->_members.push(session);
     return &session;
 }
 
@@ -32,7 +30,7 @@ fb::game::session* fb::game::group::leave(session& session)
     if(i == this->_members.end())
         return this->_leader;
 
-    this->_members.erase(i);
+    this->_members.erase(session);
     session._group = nullptr;
 
     if(session == *this->_leader)
@@ -56,7 +54,7 @@ fb::game::session& fb::game::group::leader() const
     return *this->_leader;
 }
 
-const std::vector<fb::game::session*>& fb::game::group::members() const
+const fb::game::session::container& fb::game::group::members() const
 {
     return this->_members;
 }

@@ -86,6 +86,9 @@
     <Filter Include="Module\fb\timer">
       <UniqueIdentifier>{5f2eabcd-03b4-473a-86fa-0240e35ff004}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\clan">
+      <UniqueIdentifier>{6017569c-b978-49e2-93eb-b86d040362ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\share\acceptor.cpp">
@@ -159,6 +162,9 @@
     </ClCompile>
     <ClCompile Include="..\share\timer.cpp">
       <Filter>Module\fb\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="clan.cpp">
+      <Filter>Source Files\clan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -251,6 +257,9 @@
     </ClInclude>
     <ClInclude Include="..\share\timer.h">
       <Filter>Module\fb\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="clan.h">
+      <Filter>Source Files\clan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

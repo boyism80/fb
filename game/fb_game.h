@@ -1,18 +1,20 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
+#include <json/json.h>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <ctime>
-#include <json/json.h>
 #include "acceptor.h"
 #include "session.h"
 #include "lua.h"
 #include "db.h"
 #include "config.h"
 #include "timer.h"
+#include "group.h"
+#include "clan.h"
 
 namespace fb { namespace game {
 

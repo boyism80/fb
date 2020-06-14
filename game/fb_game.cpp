@@ -966,25 +966,26 @@ bool fb::game::acceptor::handle_active_item(fb::game::session& session)
 
 
         if(item->attr() & fb::game::item::attrs::ITEM_ATTR_CONSUME)
-        {   
+        {
             this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
             this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
             this->send_stream(session, session.make_action_stream(action::EAT, duration::DURATION_EAT), scope::SELF);
             this->send_stream(session, session.make_sound_stream(sound::type::EAT), scope::SELF);
-
-            if(item->empty())
-            {
-                this->send_stream(session, session.items.make_delete_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
-                delete item;
-            }
         }
 
+        
         lua::thread         thread("scripts/item/%s.lua", item->active_script().c_str());
         thread.get("handle_active");
         thread.pushobject(session);
         thread.pushobject(*item);
-        if(thread.resume(2) == false)
-            return true;
+        thread.resume(2);
+
+
+        if((item->attr() & fb::game::item::attrs::ITEM_ATTR_CONSUME) && item->empty())
+        {
+            this->send_stream(session, session.items.make_delete_stream(fb::game::item::delete_attr::DELETE_EAT, index), scope::SELF);
+            delete item;
+        }
     }
     catch(std::exception& e)
     {
@@ -2045,13 +2046,15 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
             throw std::exception();
 
         auto                    dropped = item->split(session);
-        item->direction(session.direction());
+        map->objects.add(*dropped);
+        std::cout << "object count : " << map->objects.size() << std::endl;
+        dropped->direction(session.direction());
         for(int i = 0; i < 7; i++)
         {
-            if(map->movable_forward(*item) == false)
+            if(map->movable_forward(*dropped) == false)
                 break;
 
-            item->position(item->position_forward());
+            dropped->position(item->position_forward());
         }
 
         if(item == dropped)
@@ -2625,6 +2628,10 @@ fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, 
 {
     try
     {
+        auto                map = session.map();
+        if(map == nullptr)
+            throw std::runtime_error("invalid map");
+
         session.state_assert(state::RIDING | state::GHOST);
 
         auto                item = session.items[index];
@@ -2635,6 +2642,7 @@ fb::game::item* fb::game::acceptor::macro_drop_item(fb::game::session& session, 
             throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
         auto                dropped = this->macro_remove_item(session, index, drop_all ? item->count() : 1);
+        map->objects.add(*dropped);
         this->send_stream(session, session.make_action_stream(action::PICKUP, duration::DURATION_PICKUP), scope::PIVOT);
         this->send_stream(session, dropped->make_show_stream(), scope::PIVOT);
         this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
