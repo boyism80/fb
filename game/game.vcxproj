@@ -72,56 +72,58 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(BOOST_SDK);$(SolutionDir)\share;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\share;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)\share;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath)</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmdd.lib;zlib\x86\zlibd.lib;lua\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmdd.lib;zlib\x64\zlibd.lib;lua\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,7 +135,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -141,6 +143,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmd.lib;zlib\x86\zlib.lib;lua\x86\lua5.3.5-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,7 +155,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -160,67 +163,78 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmd.lib;zlib\x64\zlib.lib;lua\x64\lua5.3.5-static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\share\acceptor.cpp" />
-    <ClCompile Include="..\share\config.cpp" />
-    <ClCompile Include="..\share\console.cpp" />
-    <ClCompile Include="..\share\cryptor.cpp" />
-    <ClCompile Include="..\share\socket.cpp" />
-    <ClCompile Include="..\share\stream.cpp" />
-    <ClCompile Include="..\share\timer.cpp" />
-    <ClCompile Include="board.cpp" />
-    <ClCompile Include="builtin_function.cpp" />
-    <ClCompile Include="clan.cpp" />
-    <ClCompile Include="db.cpp" />
-    <ClCompile Include="door.cpp" />
-    <ClCompile Include="fb_game.cpp" />
-    <ClCompile Include="group.cpp" />
-    <ClCompile Include="item.cpp" />
-    <ClCompile Include="lua.cpp" />
-    <ClCompile Include="spell.cpp" />
+    <ClCompile Include="..\module\acceptor\acceptor.cpp" />
+    <ClCompile Include="..\module\config\config.cpp" />
+    <ClCompile Include="..\module\console\console.cpp" />
+    <ClCompile Include="..\module\crypto\cryptor.cpp" />
+    <ClCompile Include="..\module\db\db.cpp" />
+    <ClCompile Include="..\module\service\service.cpp" />
+    <ClCompile Include="..\module\socket\socket.cpp" />
+    <ClCompile Include="..\module\stream\stream.cpp" />
+    <ClCompile Include="..\module\timer\timer.cpp" />
+    <ClCompile Include="builtin\builtin_function.cpp" />
+    <ClCompile Include="model\acceptor\acceptor.game.cpp" />
+    <ClCompile Include="model\board\board.cpp" />
+    <ClCompile Include="model\clan\clan.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="map.cpp" />
-    <ClCompile Include="mmo.cpp" />
-    <ClCompile Include="mob.cpp" />
-    <ClCompile Include="npc.cpp" />
-    <ClCompile Include="object.cpp" />
-    <ClCompile Include="session.cpp" />
-    <ClCompile Include="trade.cpp" />
+    <ClCompile Include="model\door\door.cpp" />
+    <ClCompile Include="model\group\group.cpp" />
+    <ClCompile Include="model\item\item.cpp" />
+    <ClCompile Include="model\life\life.cpp" />
+    <ClCompile Include="model\listener\listener.cpp" />
+    <ClCompile Include="model\lua\lua.cpp" />
+    <ClCompile Include="model\map\map.cpp" />
+    <ClCompile Include="model\master\master.cpp" />
+    <ClCompile Include="model\mmo\mmo.cpp" />
+    <ClCompile Include="model\mob\mob.cpp" />
+    <ClCompile Include="model\npc\npc.cpp" />
+    <ClCompile Include="model\object\object.cpp" />
+    <ClCompile Include="model\session\session.cpp" />
+    <ClCompile Include="model\spell\spell.cpp" />
+    <ClCompile Include="model\trade\trade.cpp" />
+    <ClCompile Include="service\map\service.map.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\share\acceptor.h" />
-    <ClInclude Include="..\share\acceptor.hpp" />
-    <ClInclude Include="..\share\config.h" />
-    <ClInclude Include="..\share\console.h" />
-    <ClInclude Include="..\share\cryptor.h" />
-    <ClInclude Include="..\share\leak.h" />
-    <ClInclude Include="..\share\socket.h" />
-    <ClInclude Include="..\share\socket.hpp" />
-    <ClInclude Include="..\share\stream.h" />
-    <ClInclude Include="..\share\timer.h" />
-    <ClInclude Include="board.h" />
-    <ClInclude Include="builtin_function.h" />
-    <ClInclude Include="builtin_function.hpp" />
-    <ClInclude Include="clan.h" />
-    <ClInclude Include="container.h" />
-    <ClInclude Include="container.hpp" />
-    <ClInclude Include="db.h" />
-    <ClInclude Include="door.h" />
-    <ClInclude Include="fb_game.h" />
-    <ClInclude Include="group.h" />
-    <ClInclude Include="item.h" />
-    <ClInclude Include="lua.h" />
+    <ClInclude Include="..\module\acceptor\acceptor.h" />
+    <ClInclude Include="..\module\acceptor\acceptor.hpp" />
+    <ClInclude Include="..\module\config\config.h" />
+    <ClInclude Include="..\module\console\console.h" />
+    <ClInclude Include="..\module\crypto\cryptor.h" />
+    <ClInclude Include="..\module\db\db.h" />
+    <ClInclude Include="..\module\leak.h" />
+    <ClInclude Include="..\module\service\service.h" />
+    <ClInclude Include="..\module\socket\socket.h" />
+    <ClInclude Include="..\module\socket\socket.hpp" />
+    <ClInclude Include="..\module\stream\stream.h" />
+    <ClInclude Include="..\module\timer\timer.h" />
+    <ClInclude Include="builtin\builtin_function.h" />
+    <ClInclude Include="builtin\builtin_function.hpp" />
+    <ClInclude Include="model\acceptor\acceptor.game.h" />
+    <ClInclude Include="model\board\board.h" />
+    <ClInclude Include="model\clan\clan.h" />
+    <ClInclude Include="model\container\container.h" />
+    <ClInclude Include="model\container\container.hpp" />
+    <ClInclude Include="model\door\door.h" />
+    <ClInclude Include="model\group\group.h" />
+    <ClInclude Include="model\item\item.h" />
+    <ClInclude Include="model\life\life.h" />
+    <ClInclude Include="model\listener\listener.h" />
+    <ClInclude Include="model\lua\lua.h" />
+    <ClInclude Include="model\map\map.h" />
+    <ClInclude Include="model\master\master.h" />
+    <ClInclude Include="model\mmo\mmo.h" />
+    <ClInclude Include="model\mob\mob.h" />
+    <ClInclude Include="model\npc\npc.h" />
+    <ClInclude Include="model\object\object.h" />
+    <ClInclude Include="model\session\session.h" />
+    <ClInclude Include="model\spell\spell.h" />
+    <ClInclude Include="model\trade\trade.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="spell.h" />
-    <ClInclude Include="map.h" />
-    <ClInclude Include="mob.h" />
-    <ClInclude Include="npc.h" />
-    <ClInclude Include="object.h" />
-    <ClInclude Include="session.h" />
-    <ClInclude Include="mmo.h" />
-    <ClInclude Include="trade.h" />
+    <ClInclude Include="service\map\service.map.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc" />

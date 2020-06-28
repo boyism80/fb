@@ -1,13 +1,16 @@
-#include <winsock2.h>
 #include <stdio.h>
 #include <iostream>
-#include "socket.h"
-#include "fb_login.h"
-#include "leak.h"
-#include "console.h"
+#include <mysql+++/mysql+++.h>
+#include "module/socket/socket.h"
+#include "model/acceptor/acceptor.login.h"
+#include "module/leak.h"
+#include "module/console/console.h"
 #include "resource.h"
-#include "config.h"
+#include "module/config/config.h"
 
+#pragma comment(lib, "libmysql.lib")
+
+using namespace daotk::mysql;
 
 fb::login::acceptor*       acceptor;
 
@@ -26,6 +29,14 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
+    connection my{ "localhost", "root", "tmdgus12", "fb" };
+    if (!my) {
+        std::cout << "Connection failed" << std::endl;
+        return 0;
+    }
+
+    auto row_count = my.query("select count(*) from item").get_value<int>();
+
     //_CrtSetBreakAlloc(165);
 
     ::SetConsoleIcon(IDI_BARAM);

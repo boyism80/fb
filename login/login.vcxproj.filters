@@ -5,105 +5,153 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Module">
-      <UniqueIdentifier>{3adbefa2-d8fe-42f9-b276-752e99d7860a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\fb_login">
-      <UniqueIdentifier>{837cf71d-c00a-4384-8fbe-b29307a47f1d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module\fb">
-      <UniqueIdentifier>{1d4fe16b-7273-43ee-be1e-036209f212df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module\fb\acceptor">
-      <UniqueIdentifier>{7557e573-d17a-4bf3-b4fa-10c1ba3eadb7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module\fb\cryptor">
-      <UniqueIdentifier>{17d8ddf3-62c7-445f-b179-567193cedf90}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module\fb\stream">
-      <UniqueIdentifier>{70ab22ab-531b-4872-b702-1910c30cc276}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Module\fb\socket">
-      <UniqueIdentifier>{3599787d-9cfb-4ef2-ba7e-83223bb6e247}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{de1c61f1-ec66-4b00-97cd-dd8ac3284651}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module\fb\console">
-      <UniqueIdentifier>{aa299de3-4336-4681-bdd7-3a179b756980}</UniqueIdentifier>
+    <Filter Include="model">
+      <UniqueIdentifier>{eb4d2575-42ce-443c-a2a3-f8a1770da1c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module\fb\config">
-      <UniqueIdentifier>{b3b261fa-5d04-48ba-9302-825e482efe54}</UniqueIdentifier>
+    <Filter Include="model\acceptor">
+      <UniqueIdentifier>{5d511dad-e82b-4912-8657-c05f5e52ae17}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Module\fb\timer">
-      <UniqueIdentifier>{9cac6b54-ca86-4367-8a11-de4f5d73a895}</UniqueIdentifier>
+    <Filter Include="module">
+      <UniqueIdentifier>{8f161fa2-5b43-42b4-9952-cfd7cf4c2d4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\acceptor">
+      <UniqueIdentifier>{99b45227-d89c-4a97-9592-9761a415cfe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\cryptor">
+      <UniqueIdentifier>{276fb1eb-1d56-4edb-9060-5bf1329d376c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\socket">
+      <UniqueIdentifier>{3b8a7a11-1e7c-4275-a2a5-403824d886d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\stream">
+      <UniqueIdentifier>{4648c1e5-819f-479b-9731-13363649d5a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\console">
+      <UniqueIdentifier>{5aa22d3a-4784-4958-8578-f0b174f15f34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\config">
+      <UniqueIdentifier>{62541fdc-1924-4e48-aacf-95a9700f4e8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\timer">
+      <UniqueIdentifier>{c2650f08-191e-427c-83dc-c6c0906266a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\db">
+      <UniqueIdentifier>{14b44bf6-7f41-471e-a5ca-4ea048deafcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="service">
+      <UniqueIdentifier>{f78085ba-6436-4cbc-a225-ec7729370822}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="service\auth">
+      <UniqueIdentifier>{611ed06a-00fb-4938-b1f5-1b61bca5539e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\session">
+      <UniqueIdentifier>{51046f53-2311-43e7-8fb9-84333c1086f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\service">
+      <UniqueIdentifier>{b6330a0a-95a8-45a4-b7c5-65792ab2a442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\gateway">
+      <UniqueIdentifier>{fbd87bb9-a1f7-4545-a783-3c0a73189332}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fb_login.cpp">
-      <Filter>Source Files\fb_login</Filter>
+    <ClCompile Include="model\acceptor\acceptor.login.cpp">
+      <Filter>model\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\acceptor.cpp">
-      <Filter>Module\fb\acceptor</Filter>
+    <ClCompile Include="..\module\acceptor\acceptor.cpp">
+      <Filter>module\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\cryptor.cpp">
-      <Filter>Module\fb\cryptor</Filter>
+    <ClCompile Include="..\module\crypto\cryptor.cpp">
+      <Filter>module\cryptor</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\stream.cpp">
-      <Filter>Module\fb\stream</Filter>
+    <ClCompile Include="..\module\socket\socket.cpp">
+      <Filter>module\socket</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\console.cpp">
-      <Filter>Module\fb\console</Filter>
+    <ClCompile Include="..\module\stream\stream.cpp">
+      <Filter>module\stream</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\socket.cpp">
-      <Filter>Module\fb\socket</Filter>
+    <ClCompile Include="..\module\console\console.cpp">
+      <Filter>module\console</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\config.cpp">
-      <Filter>Module\fb\config</Filter>
+    <ClCompile Include="..\module\config\config.cpp">
+      <Filter>module\config</Filter>
     </ClCompile>
-    <ClCompile Include="..\share\timer.cpp">
-      <Filter>Module\fb\timer</Filter>
+    <ClCompile Include="..\module\timer\timer.cpp">
+      <Filter>module\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\db\db.cpp">
+      <Filter>module\db</Filter>
+    </ClCompile>
+    <ClCompile Include="service\auth\auth.service.cpp">
+      <Filter>service\auth</Filter>
+    </ClCompile>
+    <ClCompile Include="model\session\session.login.cpp">
+      <Filter>model\session</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\service\service.cpp">
+      <Filter>module\service</Filter>
+    </ClCompile>
+    <ClCompile Include="model\gateway\gateway.cpp">
+      <Filter>model\gateway</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fb_login.h">
-      <Filter>Source Files\fb_login</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\acceptor.h">
-      <Filter>Module\fb\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\acceptor.hpp">
-      <Filter>Module\fb\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\cryptor.h">
-      <Filter>Module\fb\cryptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\socket.h">
-      <Filter>Module\fb\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\stream.h">
-      <Filter>Module\fb\stream</Filter>
-    </ClInclude>
-    <ClInclude Include="..\share\leak.h">
-      <Filter>Module</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="..\share\console.h">
-      <Filter>Module\fb\console</Filter>
+    <ClInclude Include="model\acceptor\acceptor.login.h">
+      <Filter>model\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="..\share\config.h">
-      <Filter>Module\fb\config</Filter>
+    <ClInclude Include="..\module\leak.h">
+      <Filter>module</Filter>
     </ClInclude>
-    <ClInclude Include="..\share\socket.hpp">
-      <Filter>Module\fb\socket</Filter>
+    <ClInclude Include="..\module\acceptor\acceptor.h">
+      <Filter>module\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="..\share\timer.h">
-      <Filter>Module\fb\timer</Filter>
+    <ClInclude Include="..\module\acceptor\acceptor.hpp">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\crypto\cryptor.h">
+      <Filter>module\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.h">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.hpp">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\stream\stream.h">
+      <Filter>module\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\console\console.h">
+      <Filter>module\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\config\config.h">
+      <Filter>module\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\timer\timer.h">
+      <Filter>module\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\db\db.h">
+      <Filter>module\db</Filter>
+    </ClInclude>
+    <ClInclude Include="service\auth\auth.service.h">
+      <Filter>service\auth</Filter>
+    </ClInclude>
+    <ClInclude Include="model\session\session.login.h">
+      <Filter>model\session</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\service\service.h">
+      <Filter>module\service</Filter>
+    </ClInclude>
+    <ClInclude Include="model\gateway\gateway.h">
+      <Filter>model\gateway</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

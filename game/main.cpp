@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <iostream>
-#include "socket.h"
-#include "fb_game.h"
-#include "db.h"
-#include "leak.h"
-#include "console.h"
+#include "module/socket/socket.h"
+#include "module/config/config.h"
+#include "module/console/console.h"
+#include "module/leak.h"
 #include "resource.h"
-#include "lua.h"
-#include "config.h"
+#include "model/acceptor/acceptor.game.h"
+#include "model/master/master.h"
+#include "model/lua/lua.h"
 
 fb::game::acceptor*  acceptor = nullptr;
 
@@ -33,17 +33,18 @@ int main(int argc, const char** argv)
     //_CrtSetBreakAlloc(157);
 
     // Load databases
-    fb::game::db::init();
 
     // Execute acceptor
     boost::asio::io_context io_service;
     acceptor = new fb::game::acceptor(io_service, 10021);
+
+    fb::game::master::get().loads(acceptor);
     io_service.run();
 
     // Release
     delete acceptor;
-    fb::game::db::release();
     fb::game::lua::release();
+    fb::game::master::release();
 
     return 0;
 }
