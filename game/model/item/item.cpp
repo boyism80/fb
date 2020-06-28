@@ -292,7 +292,7 @@ uint16_t fb::game::item::capacity() const
     return static_cast<const master*>(this->_master)->_capacity;
 }
 
-bool fb::game::item::trade_enabled() const
+bool fb::game::item::unique() const
 {
     return static_cast<const master*>(this->_master)->_trade._enabled;
 }
@@ -355,7 +355,7 @@ bool fb::game::item::active()
 
 fb::game::item* fb::game::item::split(uint16_t count)
 {
-    if(this->trade_enabled() == false)
+    if(this->unique() == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     count = std::min(count, this->count());
@@ -1499,87 +1499,6 @@ fb::game::items::~items()
 
     if(this->_auxiliaries[1])
         delete this->_auxiliaries[1];
-}
-
-void fb::game::items::equipment_on(uint8_t index)
-{
-    try
-    {
-        auto                    item = this->at(index);
-        if(item == nullptr)
-            return;
-
-        auto                    slot = equipment::slot::UNKNOWN_SLOT;
-        fb::game::item*         before = nullptr;
-        auto                    attr(fb::game::item::attrs(item->attr() & ~item::attrs::ITEM_ATTR_EQUIPMENT));
-        switch(attr)
-        {
-        case item::attrs::ITEM_ATTR_WEAPON:
-            before = this->weapon(static_cast<fb::game::weapon*>(item));
-            slot = equipment::slot::WEAPON_SLOT;
-            break;
-
-        case item::attrs::ITEM_ATTR_ARMOR:
-            before = this->armor(static_cast<fb::game::armor*>(item));
-            slot = equipment::slot::ARMOR_SLOT;
-            break;
-
-        case item::attrs::ITEM_ATTR_SHIELD:
-            before = this->shield(static_cast<fb::game::shield*>(item));
-            slot = equipment::slot::SHIELD_SLOT;
-            break;
-
-        case item::attrs::ITEM_ATTR_HELMET:
-            before = this->helmet(static_cast<fb::game::helmet*>(item));
-            slot = equipment::slot::HELMET_SLOT;
-            break;
-
-        case item::attrs::ITEM_ATTR_RING:
-            if(this->_rings[0] == nullptr)
-            {
-                slot = equipment::slot::LEFT_HAND_SLOT;
-            }
-            else
-            {
-                slot = equipment::slot::RIGHT_HAND_SLOT;
-            }
-
-            before = this->ring(static_cast<fb::game::ring*>(item));
-            break;
-
-
-        case item::attrs::ITEM_ATTR_AUXILIARY:
-            if(this->_auxiliaries[0] == nullptr)
-            {
-                slot = equipment::slot::LEFT_AUX_SLOT;
-            }
-            else
-            {
-                slot = equipment::slot::RIGHT_AUX_SLOT;
-            }
-
-            before = this->auxiliary(static_cast<fb::game::auxiliary*>(item));
-            break;
-
-        default:
-            throw equipment::not_equipment_exception();
-        }
-
-        this->remove(index);
-        this->add(before);
-
-        if(this->_listener != nullptr)
-        {
-            this->_listener->on_show(this->_owner, false);
-            this->_listener->on_updated(this->_owner, state_level::LEVEL_MAX);
-            this->_listener->on_equipment_on(this->_owner, *item, slot);
-        }
-    }
-    catch(std::exception& e)
-    {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what());
-    }
 }
 
 uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)

@@ -11,6 +11,19 @@ class item;
 
 class trade
 {
+#pragma region enum
+public:
+    enum state : uint8_t
+    {
+        REQUEST = 0x00,
+        UP_ITEM = 0x01,
+        ITEM_COUNT = 0x02,
+        UP_MONEY = 0x03,
+        CANCEL = 0x04,
+        LOCK = 0x05,
+    };
+#pragma endregion
+
 private:
     session*                _owner;
     session*                _partner;

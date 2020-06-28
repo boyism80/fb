@@ -455,7 +455,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session)
     for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
 
-    // session existed
+    // me existed
     for(auto i : session.showns())
         this->send_stream(session, i->make_show_stream(), scope::SELF);
 
@@ -753,7 +753,7 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
         items.push_back(item);
     }
 
-    // session.items.mix(indices)
+    // me.items.mix(indices)
     
     try
     {
@@ -817,14 +817,14 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
 
 // TODO : enum 정리하고 send_stream 다 빼버려
 // on_notify에 타입(현재 STATE만 받음) 추가
-bool fb::game::acceptor::handle_trade(fb::game::session& session)
+bool fb::game::acceptor::handle_trade(fb::game::session& me)
 {
-    auto&                       istream = session.in_stream();
+    auto&                       istream = me.in_stream();
     auto                        cmd = istream.read_u8();
     auto                        action = istream.read_u8();
     auto                        fd = istream.read_u32();
 
-    auto                        map = session.map();
+    auto                        map = me.map();
     if(map == nullptr)
         return true;
 
@@ -834,18 +834,22 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
 
     switch(action)
     {
-    case 0:
+    case trade::state::REQUEST:
     {
-        if(session.id() == you->id())
+        // TODO : 교환 시작
+        // me.trade.begin(you)
+
+
+        if(me.id() == you->id())
         {
             // 자기 자신과 거래를 하려고 시도하는 경우
             break;
         }
 
-        if(session.option(options::TRADE) == false)
+        if(me.option(options::TRADE) == false)
         {
             // 내가 교환 거부중
-            this->send_stream(session, message::make_stream(message::trade::REFUSED_BY_ME, message::type::STATE), scope::SELF);
+            this->send_stream(me, message::make_stream(message::trade::REFUSED_BY_ME, message::type::STATE), scope::SELF);
             break;
         }
 
@@ -854,11 +858,11 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             // 상대방이 교환 거부중
             std::stringstream sstream;
             sstream << you->name() << message::trade::REFUSED_BY_PARTNER;
-            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
+            this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
             break;
         }
 
-        if(session.trade.trading())
+        if(me.trade.trading())
         {
             // 내가 이미 교환중
             break;
@@ -869,78 +873,85 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             // 상대방이 이미 교환중
             std::stringstream sstream;
             sstream << you->name() << message::trade::PARTNER_ALREADY_TRADING;
-            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
+            this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
             break;
         }
 
-        if(session.sight(*you) == false)
+        if(me.sight(*you) == false)
         {
             // 상대방이 시야에서 보이지 않음
-            this->send_stream(session, message::make_stream(message::trade::PARTNER_INVISIBLE, message::type::STATE), scope::SELF);
+            this->send_stream(me, message::make_stream(message::trade::PARTNER_INVISIBLE, message::type::STATE), scope::SELF);
             break;
         }
 
-        if(session.distance_sqrt(*you) > 16)
+        if(me.distance_sqrt(*you) > 16)
         {
             // 상대방과의 거리가 너무 멈
             std::stringstream sstream;
             sstream << you->name() << message::trade::PARTNER_TOO_FAR;
-            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
+            this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
             break;
         }
 
         // 교환 시작
-        session.trade.begin(you);
-        this->send_stream(session, you->trade.make_dialog_stream(), scope::SELF);
+        me.trade.begin(you);
+        this->send_stream(me, you->trade.make_dialog_stream(), scope::SELF);
 
-        you->trade.begin(&session);
-        this->send_stream(*you, session.trade.make_dialog_stream(), scope::SELF);
+        you->trade.begin(&me);
+        this->send_stream(*you, me.trade.make_dialog_stream(), scope::SELF);
         break;
     }
 
-    case 1: // 아이템 올릴때
+    case trade::state::UP_ITEM: // 아이템 올릴때
     {
+        // TODO : 아이템 올리기
+        // me.trade.up(item)
+
+
         auto                index = istream.read_u8() - 1;
-        auto                item = session.items[index];
+        auto                item = me.items[index];
         if(item == nullptr)
             return true;
 
         // 교환 불가능한 아이템 거래 시도
-        if(item->trade_enabled() == false)
+        if(item->unique() == false)
         {
-            this->send_stream(session, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::POPUP), scope::SELF);
+            this->send_stream(me, message::make_stream(message::trade::NOT_ALLOWED_TO_TRADE, message::type::POPUP), scope::SELF);
             break;
         }
 
         if((item->attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE) && (item->count() > 1))
         {
             // 묶음 단위의 아이템 형식 거래 시도
-            session.trade.select(item);
-            this->send_stream(session, session.trade.make_bundle_stream(), scope::SELF);
+            me.trade.select(item);
+            this->send_stream(me, me.trade.make_bundle_stream(), scope::SELF);
         }
         else
         {
             // 일반 아이템의 거래 시도
 
-            uint8_t trade_index = session.trade.add(item); // 거래중인 아이템 리스트의 인덱스
+            uint8_t trade_index = me.trade.add(item); // 거래중인 아이템 리스트의 인덱스
             if(trade_index == 0xFF)
                 return false;
 
             // 현재 인벤토리에서 거래중인 아이템 리스트로 아이템 이동
-            session.items.remove(index);
-            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
+            me.items.remove(index);
+            this->send_stream(me, me.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
 
             // 나와 상대 둘 다에게 올린 아이템을 표시함
-            this->send_stream(session, session.trade.make_show_stream(true, trade_index), scope::SELF);
-            this->send_stream(*you, session.trade.make_show_stream(false, trade_index), scope::SELF);
+            this->send_stream(me, me.trade.make_show_stream(true, trade_index), scope::SELF);
+            this->send_stream(*you, me.trade.make_show_stream(false, trade_index), scope::SELF);
         }
         break;
     }
 
-    case 2: // 아이템 갯수까지 해서 올릴 때
+    case trade::state::ITEM_COUNT: // 아이템 갯수까지 해서 올릴 때
     {
+        // TODO : 아이템 갯수 설정
+        // me.trade.count(count)
+
         // 이전에 올리려고 시도한 묶음 단위의 아이템
-        auto                selected = session.trade.selected();
+        auto                selected = me.trade.selected();
         if(selected == nullptr)
             return false;
 
@@ -948,21 +959,21 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         auto                count = istream.read_u16();
         if(selected->count() < count)
         {
-            this->send_stream(session, message::make_stream(message::trade::INVALID_COUNT, message::type::POPUP), scope::SELF);
+            this->send_stream(me, message::make_stream(message::trade::INVALID_COUNT, message::type::POPUP), scope::SELF);
             break;
         }
-        auto                index = session.items.to_index(selected->based<item::master>());
+        auto                index = me.items.to_index(selected->based<item::master>());
         if(selected->count() == count)
         {
             // 모두 다 올리는 경우, 아이템을 따로 복사하지 않고 있는 그대로 거래리스트에 옮겨버린다.
-            auto            trade_index = session.trade.add(selected);
+            auto            trade_index = me.trade.add(selected);
             if(index != 0xFF)
             {
-                session.items.remove(index);
-                this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
+                me.items.remove(index);
+                this->send_stream(me, me.items.make_delete_stream(item::delete_attr::DELETE_NONE, index), scope::SELF);
 
-                this->send_stream(session, session.trade.make_show_stream(true, trade_index), scope::SELF);
-                this->send_stream(*you, session.trade.make_show_stream(false, trade_index), scope::SELF);
+                this->send_stream(me, me.trade.make_show_stream(true, trade_index), scope::SELF);
+                this->send_stream(*you, me.trade.make_show_stream(false, trade_index), scope::SELF);
             }
         }
         else
@@ -972,49 +983,56 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
             auto            came_out = selected->based<item::master>()->make<item>(this);
             came_out->count(count);
 
-            uint8_t trade_index = session.trade.add(came_out);
+            uint8_t trade_index = me.trade.add(came_out);
 
-            this->send_stream(session, session.items.make_update_stream(index), scope::SELF);
+            this->send_stream(me, me.items.make_update_stream(index), scope::SELF);
 
-            this->send_stream(session, session.trade.make_show_stream(true, trade_index), scope::SELF);
-            this->send_stream(*you, session.trade.make_show_stream(false, trade_index), scope::SELF);
+            this->send_stream(me, me.trade.make_show_stream(true, trade_index), scope::SELF);
+            this->send_stream(*you, me.trade.make_show_stream(false, trade_index), scope::SELF);
         }
         break;
     }
 
-    case 3: // 금전 올릴 때
+    case trade::state::UP_MONEY: // 금전 올릴 때
     {
+        // TODO : 금전 올리기
+        // me.trade.up(money)
+
         // 클라이언트가 입력한 금전 양
         auto                money = istream.read_u32();
 
         // 입력한 금전 양을 계속해서 빼면 안된다.
         // 100전 입력한 경우 -1, -10, -100 이렇게 까여버림
-        auto                total = session.money() + session.trade.money();
+        auto                total = me.money() + me.trade.money();
         if(money > total)
             money = total;
 
-        session.money(total - money);
-        session.trade.money(money);
+        me.money(total - money);
+        me.trade.money(money);
 
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-        this->send_stream(session, session.trade.make_money_stream(true), scope::SELF);
-        this->send_stream(*you, session.trade.make_money_stream(false), scope::SELF);
+        this->send_stream(me, me.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+        this->send_stream(me, me.trade.make_money_stream(true), scope::SELF);
+        this->send_stream(*you, me.trade.make_money_stream(false), scope::SELF);
         break;
     }
 
-    case 4: // 취소한 경우
+    case trade::state::CANCEL: // 취소한 경우
     {
+        // TODO : 교환 취소
+        // me.trade.cancel()
+        // 파트너는 me.trade.with() 으로 얻도록 하자
+
         std::vector<uint8_t> indices;
 
         // 거래리스트에 올렸던 아이템과 금전을 원상복귀시킨다.
-        indices = session.trade.restore();
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+        indices = me.trade.restore();
+        this->send_stream(me, me.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
         for(auto i : indices)
-            this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
+            this->send_stream(me, me.items.make_update_stream(i), scope::SELF);
 
         // 메시지 표시하고 거래종료
-        this->send_stream(session, session.trade.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
-        session.trade.end();
+        this->send_stream(me, me.trade.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
+        me.trade.end();
 
 
 
@@ -1030,19 +1048,22 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
         break;
     }
 
-    case 5:
+    case trade::state::LOCK:
     {
-        this->send_stream(session, session.trade.make_lock_stream(), scope::SELF);
-        session.trade.lock(true);
+        // TODO : 교환 확인
+        // me.trade.lock()
+
+        this->send_stream(me, me.trade.make_lock_stream(), scope::SELF);
+        me.trade.lock(true);
 
         if(you->trade.lock())
         {
             // 상대방이 이미 교환확인 누른 경우
-            if(session.trade.flushable(*you) == false || you->trade.flushable(session) == false)
+            if(me.trade.flushable(*you) == false || you->trade.flushable(me) == false)
             {
                 // 나 혹은 상대가 거래리스트에 올라온 아이템이나 금전을 다 받을 수 없는 상황일 때
                 // 인벤토리가 가득 차거나, 더 이상 금전을 얻을 수 없는 경우
-                this->send_stream(session, session.trade.make_close_stream(message::trade::FAILED), scope::SELF);
+                this->send_stream(me, me.trade.make_close_stream(message::trade::FAILED), scope::SELF);
                 this->send_stream(*you, you->trade.make_close_stream(message::trade::FAILED), scope::SELF);
             }
             else
@@ -1050,21 +1071,21 @@ bool fb::game::acceptor::handle_trade(fb::game::session& session)
                 std::vector<uint8_t> indices;
                 
                 // 상대의 거래리스트 물품들을 전부 받고 업데이트
-                session.trade.flush(*you, indices);
+                me.trade.flush(*you, indices);
                 for(auto i : indices)
                     this->send_stream(*you, you->items.make_update_stream(i), scope::SELF);
                 this->send_stream(*you, you->make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
                 // 나의 거래리스트 물품들을 전부 주고 업데이트
-                you->trade.flush(session, indices);
+                you->trade.flush(me, indices);
                 for(auto i : indices)
-                    this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
-                this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
+                    this->send_stream(me, me.items.make_update_stream(i), scope::SELF);
+                this->send_stream(me, me.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
 
 
                 // 메시지 표시하고 거래 종료
-                this->send_stream(session, session.trade.make_close_stream(message::trade::SUCCESS), scope::SELF);
-                session.trade.end();
+                this->send_stream(me, me.trade.make_close_stream(message::trade::SUCCESS), scope::SELF);
+                me.trade.end();
 
                 this->send_stream(*you, you->trade.make_close_stream(message::trade::SUCCESS), scope::SELF);
                 you->trade.end();
@@ -1464,7 +1485,7 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
         if(item == nullptr)
             throw std::exception();
 
-        if(item->trade_enabled() == false)
+        if(item->unique() == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = session.map();
@@ -2163,9 +2184,9 @@ void fb::game::acceptor::on_die(session& me)
     this->send_stream(me, me.make_visual_stream(true), scope::PIVOT);
 }
 
-void fb::game::acceptor::on_notify(session& me, const std::string& message)
+void fb::game::acceptor::on_notify(session& me, const std::string& message, game::message::type type)
 {
-    this->send_stream(me, message::make_stream(message), scope::SELF);
+    this->send_stream(me, message::make_stream(message, type), scope::SELF);
 }
 
 void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slot slot)

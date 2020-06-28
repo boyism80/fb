@@ -284,7 +284,7 @@ public:
 public:
     uint32_t                        price() const;
     uint16_t                        capacity() const;
-    bool                            trade_enabled() const;
+    bool                            unique() const;
     bool                            entrust_enabled() const;
     uint32_t                        entrust_price() const;
     const item_limit&               limit() const;
@@ -915,7 +915,6 @@ public:
     ~items();
 
 private:
-    void                            equipment_on(uint8_t index);
     uint8_t                         equipment_off(fb::game::equipment::slot slot);
 
 public:

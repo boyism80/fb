@@ -140,7 +140,7 @@ public:
     void                    on_die(session& me);
     void                    on_action(session& me, action action, duration duration, uint8_t sound);
     void                    on_updated(session& me, fb::game::state_level level);
-    void                    on_notify(session& me, const std::string& message);
+    void                    on_notify(session& me, const std::string& message, message::type type);
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
 
