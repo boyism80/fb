@@ -157,6 +157,17 @@ public:
     void                    on_active_item(session& me, item& item);
 
 
+    // listener : trade
+    void                    on_trade_begin(session& me, session& you);
+    void                    on_trade_bundle(session& me);
+    void                    on_trade_item(session& me, session& from, uint8_t index);
+    void                    on_trade_money(session& me, session& from);
+    void                    on_trade_cancel(session& me);
+    void                    on_trade_lock(session& me, bool mine);
+    void                    on_trade_failed(session& me);
+    void                    on_trade_success(session& me);
+
+
     // built-in method
 public:
     static int              builtin_name2mob(lua_State* lua);

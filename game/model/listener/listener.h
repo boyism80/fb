@@ -56,6 +56,17 @@ public:
     // equipment
     virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;
     virtual void on_equipment_off(session& me, equipment::slot slot) = 0;
+
+
+    // trade
+    virtual void on_trade_begin(session& me, session& you) = 0;
+    virtual void on_trade_bundle(session& me) = 0;
+    virtual void on_trade_item(session& me, session& from, uint8_t index) = 0;
+    virtual void on_trade_money(session& me, session& from) = 0;
+    virtual void on_trade_cancel(session& me) = 0;
+    virtual void on_trade_lock(session& me, bool mine) = 0;
+    virtual void on_trade_failed(session& me) = 0;
+    virtual void on_trade_success(session& me) = 0;
 };
 
 

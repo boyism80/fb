@@ -32,6 +32,8 @@ public:
     using std::vector<fb::game::object*>::crbegin;
     using std::vector<fb::game::object*>::crend;
     using std::vector<fb::game::object*>::size;
+    using std::vector<fb::game::object*>::at;
+    using std::vector<fb::game::object*>::operator[];
 
 public:
     objects(fb::game::map* owner);
@@ -47,15 +49,11 @@ private:
 public:
     std::vector<session*>       sessions() const;
     std::vector<mob*>           active_mobs() const;
-    fb::game::object*           at(uint16_t id);
+    fb::game::object*           find(uint16_t id);
     uint16_t                    add(fb::game::object& object);
     uint16_t                    add(fb::game::object& object, const point16_t position);
     bool                        remove(fb::game::object& object);
     fb::game::object*           exists(point16_t position) const;
-#pragma endregion
-
-#pragma region operator
-    fb::game::object*           operator [] (uint16_t id);
 #pragma endregion
 };
 

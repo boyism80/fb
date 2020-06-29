@@ -346,7 +346,7 @@ public:
 
 public:
     uint32_t                        chunk() const;
-    void                            chunk(uint32_t value);
+    fb::game::cash*                 chunk(uint32_t value);
     uint32_t                        chunk_reduce(uint32_t value);
 
     bool                            empty() const;

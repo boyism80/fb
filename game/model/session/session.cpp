@@ -25,7 +25,7 @@ session::session(fb::socket* socket, listener* listener) :
     _money(0),
     _group(nullptr),
     _clan(nullptr),
-    trade(*this),
+    trade(*this, listener),
     items(*this, listener),
     dialog_thread(nullptr)
 {
@@ -430,57 +430,65 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
     uint32_t capacity = 0xFFFFFFFF - this->_experience;
     uint32_t lack = 0;
 
-    // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
-    if(this->_class == 0)
+    try
     {
-        auto require = game::master::get().required_exp(0, 5);
-        if(this->_experience > require)
-            value = 0;
-
-        if(this->_experience + value > require)
-            value = require - this->_experience;
-    }
-
-    if(value > 0)
-    {
-        if(value > capacity)
+        // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
+        if(this->_class == 0)
         {
-            lack = value - capacity;
-            this->experience(this->_experience + capacity);
-        }
-        else
-        {
-            this->experience(this->_experience + value);
+            auto require = game::master::get().required_exp(0, 5);
+            if(this->_experience > require)
+                value = 0;
+
+            if(this->_experience + value > require)
+                value = require - this->_experience;
         }
 
-        if(notify)
+        if(value > 0)
         {
-            std::stringstream       sstream;
-            sstream << "경험치가 " << value << '(' << int(this->experience_percent()) << "%) 올랐습니다.";
+            if(value > capacity)
+            {
+                lack = value - capacity;
+                this->experience(this->_experience + capacity);
+            }
+            else
+            {
+                this->experience(this->_experience + value);
+            }
 
-            if(this->_listener != nullptr)
-                this->_listener->on_notify(*this, sstream.str());
+            if(notify)
+            {
+                std::stringstream       sstream;
+                sstream << "경험치가 " << value << '(' << int(this->experience_percent()) << "%) 올랐습니다.";
+
+                if(this->_listener != nullptr)
+                    this->_listener->on_notify(*this, sstream.str());
+            }
         }
-    }
 
-    while(true)
+        while(true)
+        {
+            if(this->max_level())
+                break;
+
+            auto require = game::master::get().required_exp(this->_class, this->_level + 1);
+            if(require == 0)
+                break;
+
+            if(this->_experience < require)
+                break;
+
+            if(this->level_up() == false)
+                break;
+        }
+
+        if(this->_class == 0 && this->_level >= 5)
+            throw require_class_exception();
+    }
+    catch(std::exception& e)
     {
-        if(this->max_level())
-            break;
-
-        auto require = game::master::get().required_exp(this->_class, this->_level + 1);
-        if(require == 0)
-            break;
-
-        if(this->_experience < require)
-            break;
-
-        if(this->level_up() == false)
-            break;
+        if(this->_listener != nullptr && notify)
+            this->_listener->on_notify(*this, e.what());
     }
-
-    if(this->_class == 0 && this->_level >= 5)
-        throw require_class_exception();
 
     return lack;
 }
@@ -528,6 +536,8 @@ uint32_t fb::game::session::money() const
 void fb::game::session::money(uint32_t value)
 {
     this->_money = value;
+    if(this->_listener != nullptr)
+        this->_listener->on_updated(*this, state_level::LEVEL_MIN);
 }
 
 uint32_t fb::game::session::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -536,16 +546,13 @@ uint32_t fb::game::session::money_add(uint32_t value) // 먹고 남은 값 리�
     uint32_t lack = 0;
     if(value > capacity)
     {
-        this->_money += capacity;
+        this->money(this->_money + capacity);
         lack = value - capacity;
     }
     else
     {
-        this->_money += value;
+        this->money(this->_money + value);
     }
-    
-    if(this->_listener != nullptr)
-        this->_listener->on_updated(*this, state_level::LEVEL_MIN);
 
     return lack;
 }
@@ -556,15 +563,12 @@ uint32_t fb::game::session::money_reduce(uint32_t value)
     if(this->_money < value)
     {
         lack = value - this->_money;
-        this->_money = 0;
+        this->money(0);
     }
     else
     {
-        this->_money -= value;
+        this->money(this->_money - value);
     }
-
-    if(this->_listener != nullptr)
-        this->_listener->on_updated(*this, state_level::LEVEL_MIN);
 
     return lack;
 }
@@ -573,6 +577,9 @@ uint32_t fb::game::session::money_drop(uint32_t value)
 {
     try
     {
+        if(value == 0)
+            return 0;
+
         this->state_assert(state::RIDING | state::GHOST);
 
 
@@ -735,70 +742,6 @@ bool fb::game::session::move(fb::game::direction direction, const point16_t& bef
         this->_listener->on_hold(*this);
 
     return object::move(direction);
-}
-
-void fb::game::session::pickup(bool boost)
-{
-    try
-    {
-        this->state_assert(state::GHOST | state::RIDING);
-        this->action(action::PICKUP, duration::DURATION_PICKUP);
-
-        const auto&         objects = this->_map->objects;
-        std::vector<item*>  gains;
-
-        // Pick up items in reverse order
-        for(auto i = objects.rbegin(); i != objects.rend(); i++)
-        {
-            auto            object = *i;
-            if(object->position() != this->position())
-                continue;
-
-            if(object->type() != object::types::ITEM)
-                continue;
-
-            auto            below = static_cast<fb::game::item*>(object);
-            auto            item_moved = false;
-            if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
-            {
-                auto        cash = static_cast<fb::game::cash*>(below);
-                auto        remain = this->money_add(cash->chunk());
-                cash->chunk(remain); // 먹고 남은 돈으로 설정
-
-                if(remain != 0)
-                    throw std::runtime_error(message::money::FULL);
-
-                if(this->_listener != nullptr)
-                    this->_listener->on_show(*cash, true);    // refresh true
-            }
-            else
-            {
-                auto            index = this->items.add(below);
-                if(index == -1)
-                    break;
-
-                item_moved = (this->items[index] == below);
-            }
-
-            if(item_moved || below->empty())
-                gains.push_back(below);
-
-            if(boost == false)
-                break;
-        }
-
-        for(auto gain : gains)
-        {
-            this->_map->objects.remove(*gain);
-            if(gain->empty())
-                delete gain;
-        }
-    }
-    catch(std::exception& e)
-    {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(*this, e.what());
-    }
 }
 
 void fb::game::session::ride(fb::game::mob& horse)

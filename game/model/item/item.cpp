@@ -294,7 +294,7 @@ uint16_t fb::game::item::capacity() const
 
 bool fb::game::item::unique() const
 {
-    return static_cast<const master*>(this->_master)->_trade._enabled;
+    return !static_cast<const master*>(this->_master)->_trade._enabled;
 }
 
 bool fb::game::item::entrust_enabled() const
@@ -355,7 +355,7 @@ bool fb::game::item::active()
 
 fb::game::item* fb::game::item::split(uint16_t count)
 {
-    if(this->unique() == false)
+    if(this->unique())
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     count = std::min(count, this->count());
@@ -423,7 +423,7 @@ uint32_t fb::game::cash::chunk() const
     return this->_chunk;
 }
 
-void fb::game::cash::chunk(uint32_t value)
+fb::game::cash* fb::game::cash::chunk(uint32_t value)
 {
     this->_chunk = value;
 
@@ -440,6 +440,22 @@ void fb::game::cash::chunk(uint32_t value)
         this->_master = &fb::game::cash::GOLD;
     else
         this->_master = &fb::game::cash::GOLD_BUNDLE;
+
+    if(this->_chunk == 0)
+    {
+        if(this->_map != nullptr)
+            this->_map->objects.remove(*this);
+
+        delete this;
+        return nullptr;
+    }
+    else
+    {
+        if(this->_listener != nullptr)
+            this->_listener->on_show(*this, true);
+
+        return this;
+    }
 }
 
 uint32_t fb::game::cash::chunk_reduce(uint32_t value)
@@ -1587,7 +1603,6 @@ uint8_t fb::game::items::add(fb::game::item* item)
     if(item == nullptr)
         return -1;
 
-
     // 번들 형식의 아이템인 경우
     if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
@@ -1601,11 +1616,14 @@ uint8_t fb::game::items::add(fb::game::item* item)
 
 
             // 아이템을 합치고 남은 갯수로 설정한다.
-            uint16_t remain = this->at(i)->fill(item->count());
+            auto remain = this->at(i)->fill(item->count());
             item->count(remain);
 
-            if(item->_listener != nullptr)
-                item->_listener->on_update_item(static_cast<session&>(this->owner()), i);
+            if(this->_listener != nullptr)
+                this->_listener->on_update_item(static_cast<session&>(this->owner()), i);
+
+            if(item->empty())
+                delete item;
 
             return i;
         }
@@ -1621,6 +1639,9 @@ uint8_t fb::game::items::add(fb::game::item* item)
         this->set(item, i);
         if(item->_listener != nullptr)
             item->_listener->on_update_item(static_cast<session&>(this->owner()), i);
+        
+        if(item->_map != nullptr)
+            item->_map->objects.remove(*item);
         return i;
     }
 
@@ -1647,10 +1668,16 @@ fb::game::item* fb::game::items::active(uint8_t index)
         if(item == nullptr)
             return nullptr;
 
-        if(item->active() == false)
+        item->active();
+        if(item->empty())
+        {
+            delete item;
+            return nullptr;
+        }
+        else
+        {
             return item;
-
-        return item;
+        }
     }
     catch(std::exception& e)
     {
@@ -1822,9 +1849,10 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, item::delete
 
         auto                    dropped = this->remove(index, count, item::delete_attr::DELETE_DROP);
         if(dropped != nullptr)
+        {
             owner._map->objects.add(*dropped, owner._position);
-
-        owner.action(action::PICKUP, duration::DURATION_PICKUP);
+            owner.action(action::PICKUP, duration::DURATION_PICKUP);
+        }
         return dropped;
     }
     catch(std::exception& e)
@@ -1848,13 +1876,12 @@ void fb::game::items::pickup(bool boost)
 
 
         std::string         message;
-        const auto&         objects = map->objects;
-        std::vector<item*>  gains;
 
         // Pick up items in reverse order
-        for(auto i = objects.rbegin(); i != objects.rend(); i++)
+        //for(auto i = objects.rbegin(); i != objects.rend(); i++)
+        for(int i = map->objects.size() - 1; i >= 0; i--)
         {
-            auto            object = *i;
+            auto            object = map->objects[i];
             if(object->position() != owner.position())
                 continue;
 
@@ -1862,19 +1889,16 @@ void fb::game::items::pickup(bool boost)
                 continue;
 
             auto            below = static_cast<fb::game::item*>(object);
-            auto            item_moved = false;
             if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = owner.money_add(cash->chunk());
                 cash->chunk(remain); // 먹고 남은 돈으로 설정
 
-                if(remain != 0)
-                    throw std::runtime_error(message::money::FULL);
-
                 if(this->_listener != nullptr)
                 {
-                    this->_listener->on_show(*cash, true);
+                    if(remain != 0)
+                        this->_listener->on_notify(this->_owner, message::money::FULL);
                     this->_listener->on_updated(owner, state_level::LEVEL_MIN);
                 }
             }
@@ -1883,26 +1907,10 @@ void fb::game::items::pickup(bool boost)
                 auto            index = owner.items.add(below);
                 if(index == -1)
                     break;
-
-                item_moved = (owner.items[index] == below);
-            }
-
-            if(item_moved || below->empty())
-            {
-                gains.push_back(below);
-                if(below->_listener != nullptr)
-                    below->_listener->on_hide(*below);
             }
 
             if(boost == false)
                 break;
-        }
-
-        for(auto gain : gains)
-        {
-            map->objects.remove(*gain);
-            if(gain->empty())
-                delete gain;
         }
 
         lua::thread thread("scripts/common/pickup.lua");

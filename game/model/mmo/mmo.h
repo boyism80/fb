@@ -108,6 +108,8 @@ namespace message
 
     namespace trade
     {
+        static const std::string NOT_TRADING = "교환중이 아닙니다.";
+        static const std::string NOT_SELECTED = "선택된 아이템이 없습니다.";
         static const std::string SUCCESS = "교환에 성공했습니다.";
         static const std::string FAILED = "교환에 실패했습니다.";
         static const std::string NOTIFY_LOCK_TO_PARTNER = "상대방이 확인을 눌렀습니다.";

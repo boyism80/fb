@@ -263,7 +263,6 @@ public:
     bool                        move(const point16_t& before);
     bool                        move(fb::game::direction direction, const point16_t& before);
 
-    void                        pickup(bool boost);
     void                        ride(fb::game::mob& horse);
     void                        ride();
     void                        unride(fb::game::listener* listener);

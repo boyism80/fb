@@ -131,7 +131,10 @@ fb::game::object::object(const object& right) :
 }
 
 fb::game::object::~object()
-{}
+{
+    if(this->_map != nullptr)
+        this->_map->objects.remove(*this);
+}
 
 const fb::game::object::master* fb::game::object::based() const
 {

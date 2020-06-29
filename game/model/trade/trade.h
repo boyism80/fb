@@ -2,12 +2,13 @@
 #define __TRADE_H__
 
 #include <vector>
-#include "module/stream/stream.h"
+#include <module/stream/stream.h>
 
 namespace fb { namespace game {
 
 class session;
 class item;
+class listener;
 
 class trade
 {
@@ -25,39 +26,39 @@ public:
 #pragma endregion
 
 private:
-    session*                _owner;
-    session*                _partner;
+    listener*               _listener;
+    session&                _owner;
+    session*                _you;
     std::vector<item*>      _items;
     item*                   _selected;
     uint32_t                _money;
     bool                    _locked;
 
 public:
-    trade(session& owner);
+    trade(session& owner, listener* listener);
     ~trade();
 
 private:
-    uint8_t                 contains_core(item* item) const;
+    uint8_t                 find(item& item) const;
+    uint8_t                 add(item& item);
+    void                    restore();
+    void                    flush();
+    bool                    flushable() const;
+    void                    end();
 
 public:
-    session*                partner() const;
+    session*                you() const;
 
-    bool                    begin(session* partner);
-    bool                    end();
+    bool                    begin(session& you);
     bool                    trading() const;
 
-    item*                   selected();
-    void                    select(item* item);
+    bool                    up(item& item);
+    bool                    up(uint8_t money);
 
-    uint8_t                 add(item* item);
-    void                    money(uint32_t value);
-    uint32_t                money() const;
-    std::vector<uint8_t>    restore();
-    void                    flush(session& session, std::vector<uint8_t>& indices);
-    bool                    flushable(session& session) const;
+    bool                    count(uint16_t count);
 
-    bool                    lock() const;
-    void                    lock(bool value);
+    bool                    cancel();
+    bool                    lock();
 
 public:
     fb::ostream             make_show_stream(bool mine, uint8_t index) const;

@@ -55,7 +55,7 @@ uint16_t fb::game::objects::empty_seq()
 {
     for(int i = this->_sequence; i < 0xFFFF; i++)
     {
-        if(this->at(i) != nullptr)
+        if(this->find(i) != nullptr)
             continue;
 
         this->_sequence = i + 1;
@@ -64,7 +64,7 @@ uint16_t fb::game::objects::empty_seq()
 
     for(int i = 1; i < this->_sequence; i++)
     {
-        if(this->at(i) != nullptr)
+        if(this->find(i) != nullptr)
             continue;
 
         this->_sequence = i + 1;
@@ -115,7 +115,7 @@ std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
     return actives;
 }
 
-fb::game::object* fb::game::objects::at(uint16_t id)
+fb::game::object* fb::game::objects::find(uint16_t id)
 {
     auto i = std::find_if(this->begin(), this->end(), [id] (object* x) { return x->id() == id; });
     return i != this->end() ? *i : nullptr;
@@ -136,7 +136,7 @@ uint16_t fb::game::objects::add(fb::game::object& object, const point16_t positi
         map->objects.remove(object);
 
     auto                    seq = this->empty_seq();
-    auto                    found = this->at(seq);
+    auto                    found = this->find(seq);
     if(found != nullptr)
     {
         this->erase(std::find(this->begin(), this->end(), found));
@@ -170,11 +170,6 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
     }
 
     return nullptr;
-}
-
-fb::game::object* fb::game::objects::operator[](uint16_t id)
-{
-    return this->at(id);
 }
 
 
