@@ -178,6 +178,7 @@
     <ClCompile Include="..\module\timer\timer.cpp" />
     <ClCompile Include="builtin\builtin_function.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.cpp" />
+    <ClCompile Include="model\acceptor\acceptor.game.handler.cpp" />
     <ClCompile Include="model\board\board.cpp" />
     <ClCompile Include="model\clan\clan.cpp" />
     <ClCompile Include="main.cpp" />

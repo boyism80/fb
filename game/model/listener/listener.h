@@ -49,9 +49,9 @@ public:
 
 
     // item
-    virtual void on_remove_item(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::DELETE_NONE) = 0;
-    virtual void on_update_item(session& me, uint8_t index) = 0;
-    virtual void on_active_item(session& me, item& item) = 0;
+    virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::DELETE_NONE) = 0;
+    virtual void on_item_update(session& me, uint8_t index) = 0;
+    virtual void on_item_active(session& me, item& item) = 0;
 
     // equipment
     virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;

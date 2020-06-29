@@ -521,7 +521,7 @@ bool fb::game::consume::active()
     
     this->_count--;
     if(this->_listener != nullptr)
-        this->_listener->on_update_item(*this->_owner, this->_owner->items.to_index(*this));
+        this->_listener->on_item_update(*this->_owner, this->_owner->items.to_index(*this));
 
     if(this->empty())
         this->_owner->items.remove(*this, -1, item::delete_attr::DELETE_EAT);
@@ -594,7 +594,7 @@ bool fb::game::pack::active()
         this->_count = 0;
     
     if(this->_listener != nullptr)
-        this->_listener->on_update_item(*this->_owner, this->_owner->items.to_index(*this));
+        this->_listener->on_item_update(*this->_owner, this->_owner->items.to_index(*this));
 
     if(this->empty())
         this->_owner->items.remove(*this, -1, item::delete_attr::DELETE_REDUCE);
@@ -1620,7 +1620,7 @@ uint8_t fb::game::items::add(fb::game::item* item)
             item->count(remain);
 
             if(this->_listener != nullptr)
-                this->_listener->on_update_item(static_cast<session&>(this->owner()), i);
+                this->_listener->on_item_update(static_cast<session&>(this->owner()), i);
 
             if(item->empty())
                 delete item;
@@ -1638,7 +1638,7 @@ uint8_t fb::game::items::add(fb::game::item* item)
         item->_owner = &this->_owner;
         this->set(item, i);
         if(item->_listener != nullptr)
-            item->_listener->on_update_item(static_cast<session&>(this->owner()), i);
+            item->_listener->on_item_update(static_cast<session&>(this->owner()), i);
         
         if(item->_map != nullptr)
             item->_map->objects.remove(*item);
@@ -1939,11 +1939,11 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::del
         container<fb::game::item>::remove(index);
         
         if(this->_listener != nullptr)
-            this->_listener->on_remove_item(owner, index, attr);
+            this->_listener->on_item_remove(owner, index, attr);
     }
 
     if(this->_listener != nullptr)
-        this->_listener->on_update_item(owner, index);
+        this->_listener->on_item_update(owner, index);
 
     return splitted;
 }

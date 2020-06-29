@@ -202,6 +202,9 @@
     <ClCompile Include="model\listener\listener.cpp">
       <Filter>model\listener</Filter>
     </ClCompile>
+    <ClCompile Include="model\acceptor\acceptor.game.handler.cpp">
+      <Filter>model\acceptor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
