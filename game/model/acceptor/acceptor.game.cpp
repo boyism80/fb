@@ -361,19 +361,12 @@ void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::
 
 void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
 {
-    if(session.dialog_thread != nullptr)
-        delete session.dialog_thread;
-
-    session.dialog_thread = new lua::thread();
-
-    luaL_dofile(*session.dialog_thread, "scripts/script.lua");
-    lua_getglobal(*session.dialog_thread, "handle_click");
-
-
-    // 루아스크립트의 handle_click 함수의 리턴값 설정
-    session.dialog_thread->pushobject(session);
-    session.dialog_thread->pushobject(npc);
-    session.dialog_thread->resume(2);
+    session.dialog
+        .from("scripts/script.lua")
+        .func("handle_click")
+        .pushobject(session)
+        .pushobject(npc)
+        .resume(2);
 }
 
 bool fb::game::acceptor::handle_login(fb::game::session& session)
@@ -1071,16 +1064,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
         istream.read(nullptr, 0x07); // 7바이트 무시
         auto                    action = istream.read_u8();
 
-        if(session.dialog_thread == nullptr)
-            return true;
-
-        // 루아스크립트 다이얼로그 함수의 리턴값 설정
-        session.dialog_thread->pushinteger(action);
-        if(session.dialog_thread->resume(1))
-        {
-            delete session.dialog_thread;
-            session.dialog_thread = nullptr;
-        }
+        session.dialog.pushinteger(action).resume(1);
         break;
     }
 
@@ -1090,41 +1074,26 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
         auto unknown2 = istream.read_u32();
         auto message = istream.readstr_u16();
 
-        if(session.dialog_thread == nullptr)
-            return true;
-
-        session.dialog_thread->pushstring(message);
-        if(session.dialog_thread->resume(1))
-        {
-            delete session.dialog_thread;
-            session.dialog_thread = nullptr;
-        }
+        session.dialog.pushstring(message).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT_EX:
     {
-        if(session.dialog_thread == nullptr)
-            return true;
-
         istream.read(nullptr, 0x07); // 7바이트 무시
         auto                    action = istream.read_u8();
         if(action == 0x02) // OK button
         {
             auto unknown1 = istream.read_u8();
             auto message = istream.readstr_u8();
-            session.dialog_thread->pushstring(message);
+            session.dialog.pushstring(message);
         }
         else
         {
-            session.dialog_thread->pushinteger(action);
+            session.dialog.pushinteger(action);
         }
 
-        if(session.dialog_thread->resume(1))
-        {
-            delete session.dialog_thread;
-            session.dialog_thread = nullptr;
-        }
+        session.dialog.resume(1);
         break;
     }
 
@@ -1133,15 +1102,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
         auto unknown = istream.read_u32();
         auto index = istream.read_u16();
 
-        if(session.dialog_thread == nullptr)
-            return true;
-
-        session.dialog_thread->pushinteger(index);
-        if(session.dialog_thread->resume(1))
-        {
-            delete session.dialog_thread;
-            session.dialog_thread = nullptr;
-        }
+        session.dialog.pushinteger(index).resume(1);
         break;
     }
 
@@ -1156,16 +1117,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
         auto pursuit = istream.read_u16();
         auto item_name = istream.readstr_u8();
 
-        if(session.dialog_thread == nullptr)
-            return true;
-
-        session.dialog_thread->pushstring(item_name);
-        if(session.dialog_thread->resume(1))
-        {
-            delete session.dialog_thread;
-            session.dialog_thread = nullptr;
-        }
-
+        session.dialog.pushstring(item_name).resume(1);
         break;
     }
 

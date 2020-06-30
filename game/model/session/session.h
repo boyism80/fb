@@ -21,7 +21,37 @@ class map;
 class clan;
 class group;
 class items;
+class session;
 class listener;
+
+namespace lua {
+
+class dialog
+{
+private:
+    session&                _owner;
+    lua::thread*            _thread;
+
+public:
+    dialog(fb::game::session& owner);
+    ~dialog();
+
+public:
+    dialog&                 pushstring(const std::string& value);
+    dialog&                 pushinteger(int value);
+    dialog&                 pushnil();
+    dialog&                 pushboolean(bool value);
+    dialog&                 pushobject(const lua::luable* object);
+    dialog&                 pushobject(const lua::luable& object);
+
+public:
+    dialog&                 from(const char* format, ...);
+    dialog&                 func(const char* format, ...);
+    bool                    resume(int argc);
+};
+
+}
+
 
 class session : public life
 {
@@ -52,6 +82,7 @@ public:
 };
 #pragma endregion
 
+
 #pragma region exception
 public:
     DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
@@ -61,10 +92,12 @@ public:
     DECLARE_EXCEPTION(disguise_exception, message::exception::DISGUISE)
 #pragma endregion
 
+
 #pragma region lua
 public:
     LUA_PROTOTYPE
 #pragma endregion
+
 
 #pragma region friend
     friend group;
@@ -113,7 +146,7 @@ public:
     fb::game::trade             trade;
     fb::game::items             items;
     legend_container            legends;
-    lua::thread*                dialog_thread;
+    lua::dialog                 dialog;
 #pragma endregion
 
 

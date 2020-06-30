@@ -27,7 +27,7 @@ session::session(fb::socket* socket, listener* listener) :
     _clan(nullptr),
     trade(*this, listener),
     items(*this, listener),
-    dialog_thread(nullptr)
+    dialog(*this)
 {
     memset(this->_options, 0, sizeof(this->_options));
 }
@@ -35,9 +35,6 @@ session::session(fb::socket* socket, listener* listener) :
 session::~session()
 {
     delete this->_master;
-
-    if(dialog_thread != nullptr)
-        delete dialog_thread;
 }
 
 void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
@@ -1681,4 +1678,112 @@ bool fb::game::session::container::contains(const fb::game::session& session) co
 fb::game::session* fb::game::session::container::operator[](const std::string& name)
 {
     return this->find(name);
+}
+
+fb::game::lua::dialog::dialog(fb::game::session& owner) : 
+    _owner(owner),
+    _thread(nullptr)
+{
+}
+
+fb::game::lua::dialog::~dialog()
+{
+    if(this->_thread != nullptr)
+        delete this->_thread;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushstring(const std::string& value)
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushstring(value);
+
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushinteger(int value)
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushinteger(value);
+
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushnil()
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushnil();
+
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushboolean(bool value)
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushboolean(value);
+
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable* object)
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushobject(object);
+
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable& object)
+{
+    if(this->_thread != nullptr)
+        this->_thread->pushobject(object);
+    
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::from(const char* format, ...)
+{
+    if(this->_thread != nullptr)
+        delete this->_thread;
+
+    this->_thread = new lua::thread();
+
+    va_list args;
+    va_start(args, format);
+
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    luaL_dofile(*this->_thread, buffer);
+    return *this;
+}
+
+fb::game::lua::dialog& fb::game::lua::dialog::func(const char* format, ...)
+{
+    if(this->_thread == nullptr)
+        return *this;
+
+    va_list args;
+    va_start(args, format);
+
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    lua_getglobal(*this->_thread, buffer);
+    return *this;
+}
+
+bool fb::game::lua::dialog::resume(int argc)
+{
+    if(this->_thread == nullptr)
+        return false;
+
+    auto success = this->_thread->resume(argc);
+    if(success == false)
+    {
+        delete this->_thread;
+        this->_thread = nullptr;
+    }
+    return success;
 }
