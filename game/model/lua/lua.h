@@ -51,13 +51,18 @@ protected:
     state(lua_State* lua, const char* format, ...);
     virtual ~state();
 
+protected:
+
 public:
-    void                        pushstring(const std::string& value) { lua_pushstring(*this, value.c_str()); }
-    void                        pushinteger(int value) { lua_pushinteger(*this, value); }
-    void                        pushnil() { lua_pushnil(*this); }
-    void                        pushboolean(bool value) { lua_pushboolean(*this, value); }
-    void                        pushobject(const luable* object);
-    void                        pushobject(const luable& object);
+    state&                      from(const char* format, ...);
+    state&                      func(const char* format, ...);
+
+    state&                      pushstring(const std::string& value);
+    state&                      pushinteger(int value);
+    state&                      pushnil();
+    state&                      pushboolean(bool value);
+    state&                      pushobject(const luable* object);
+    state&                      pushobject(const luable& object);
 
     const std::string           tostring(int offset) { return lua_tostring(*this, offset); }
     const std::string           arg_string(int offset) { return tostring(offset); }
@@ -70,8 +75,6 @@ public:
     bool                        toboolean(int offset) { return lua_toboolean(*this, offset); }
     bool                        arg_boolean(int offset) { return toboolean(offset); }
     bool                        ret_boolean(int offset) { return toboolean(-offset); }
-
-    void                        get(const std::string& name);
 
 public:
     operator                    lua_State* () const;
@@ -101,6 +104,17 @@ public:
     thread();
     thread(const char* format, ...);
     ~thread();
+
+public:
+    thread&                     from(const char* format, ...);
+    thread&                     func(const char* format, ...);
+
+    thread&                     pushstring(const std::string& value);
+    thread&                     pushinteger(int value);
+    thread&                     pushnil();
+    thread&                     pushboolean(bool value);
+    thread&                     pushobject(const luable* object);
+    thread&                     pushobject(const luable& object);
 
 public:
     bool                        resume(int num_args) { return lua_resume(*this, nullptr, num_args) == 0; } // 종료되면 true, 아니면 false

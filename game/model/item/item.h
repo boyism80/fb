@@ -966,8 +966,6 @@ public:
     fb::game::item*                 drop(uint8_t index, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
     void                            pickup(bool boost);
     bool                            throws(uint8_t index);
-
-    bool                            mix(const std::vector<uint8_t>& indices);
     
     // override
     fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);

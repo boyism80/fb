@@ -1154,8 +1154,9 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     if(spell == nullptr)
         return false;
 
-    lua::thread             thread("scripts/spell/%s.lua", spell->cast().c_str());
-    thread.get("handle_spell");
+    lua::thread             thread;
+    thread.from("scripts/spell/%s.lua", spell->cast().c_str())
+          .func("handle_spell");
 
 
     switch(spell->type())
@@ -1166,10 +1167,10 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
         istream.read(message, std::min(uint64_t(256), uint64_t(size))); message[size] = 0x00;
 
-        thread.pushobject(session);
-        thread.pushobject(spell);
-        thread.pushstring(message);
-        thread.resume(3);
+        thread.pushobject(session)
+            .pushobject(spell)
+            .pushstring(message)
+            .resume(3);
         break;
     }
 
@@ -1190,18 +1191,18 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
         if(session.sight(*target) == false)
             return true;
 
-        thread.pushobject(session);
-        thread.pushobject(spell);
-        thread.pushobject(target);
-        thread.resume(3);
+        thread.pushobject(session)
+            .pushobject(spell)
+            .pushobject(target)
+            .resume(3);
         break;
     }
 
     case spell::types::NORMAL:
     {
-        thread.pushobject(session);
-        thread.pushobject(spell);
-        thread.resume(2);
+        thread.pushobject(session)
+            .pushobject(spell)
+            .resume(2);
         break;
     }
     }
@@ -1215,11 +1216,11 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
 
 bool fb::game::acceptor::handle_door(fb::game::session& session)
 {
-    lua::thread             thread("scripts/common/door.lua");
-    thread.get("handle_door");
-
-    thread.pushobject(session);
-    thread.resume(1);
+    lua::thread()
+        .from("scripts/common/door.lua")
+        .func("handle_door")
+        .pushobject(session)
+        .resume(1);
     return true;
 }
 

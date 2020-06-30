@@ -49,11 +49,12 @@ void fb::game::acceptor::on_warp(fb::game::object& me)
 
 void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
-    lua::thread thread("scripts/spell/%s.lua", buff.spell().uncast().c_str());
-    thread.get("handle_uncast");
-    thread.pushobject(me);
-    thread.pushobject(buff.spell());
-    thread.resume(2);
+     lua::thread()
+         .from("scripts/spell/%s.lua", buff.spell().uncast().c_str())
+         .func("handle_uncast")
+         .pushobject(me)
+         .pushobject(buff.spell())
+         .resume(2);
     this->send_stream(me, buff.make_clear_stream(), scope::SELF);
 }
 
@@ -141,9 +142,10 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
     catch(std::exception&)
     {}
 
-    lua::thread         thread("scripts/common/attack.lua");
-    thread.get("handle_attack");
-    thread.pushobject(me);
+    lua::thread         thread;
+    thread.from("scripts/common/attack.lua")
+        .func("handle_attack")
+        .pushobject(me);
     if(you != nullptr)
         thread.pushobject(*you);
     else
@@ -227,11 +229,12 @@ void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot)
 
 void fb::game::acceptor::on_item_active(session& me, item& item)
 {
-    lua::thread         thread("scripts/item/%s.lua", item.active_script().c_str());
-    thread.get("handle_active");
-    thread.pushobject(me);
-    thread.pushobject(item);
-    thread.resume(2);
+    lua::thread()
+        .from("scripts/item/%s.lua", item.active_script().c_str())
+        .func("handle_active")
+        .pushobject(me)
+        .pushobject(item)
+        .resume(2);
 }
 
 void fb::game::acceptor::on_item_throws(session& me, item& item, const point16_t& to)

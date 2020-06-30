@@ -1913,10 +1913,11 @@ void fb::game::items::pickup(bool boost)
                 break;
         }
 
-        lua::thread thread("scripts/common/pickup.lua");
-        thread.get("handle_pickup");
-        thread.pushobject(owner);
-        thread.resume(1);
+        lua::thread ()
+            .from("scripts/common/pickup.lua")
+            .func("handle_pickup")
+            .pushobject(owner)
+            .resume(1);
     }
     catch(std::exception& e)
     {
@@ -1963,11 +1964,6 @@ bool fb::game::items::throws(uint8_t index)
         if(this->_listener != nullptr)
             this->_listener->on_notify(this->_owner, e.what());
     }
-}
-
-bool fb::game::items::mix(const std::vector<uint8_t>& indices)
-{
-    return false;
 }
 
 fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::delete_attr attr)
