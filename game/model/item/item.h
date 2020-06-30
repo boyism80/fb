@@ -965,6 +965,7 @@ public:
     fb::game::item*                 find(const std::string& name) const;
     fb::game::item*                 drop(uint8_t index, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
     void                            pickup(bool boost);
+    bool                            throws(uint8_t index);
 
     bool                            mix(const std::vector<uint8_t>& indices);
     

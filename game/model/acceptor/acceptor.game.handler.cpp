@@ -234,6 +234,11 @@ void fb::game::acceptor::on_item_active(session& me, item& item)
     thread.resume(2);
 }
 
+void fb::game::acceptor::on_item_throws(session& me, item& item, const point16_t& to)
+{
+    this->send_stream(me, me.make_throw_item_stream(item, to), scope::PIVOT);
+}
+
 void fb::game::acceptor::on_trade_begin(session& me, session& you)
 {
     this->send_stream(me, you.trade.make_dialog_stream(), scope::SELF);

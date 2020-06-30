@@ -315,7 +315,7 @@ public:
     fb::ostream                 make_internal_info_stream() const;
     fb::ostream                 make_external_info_stream() const;
     fb::ostream                 make_option_stream() const;
-    fb::ostream                 make_throw_item_stream(const item& item) const;
+    fb::ostream                 make_throw_item_stream(const item& item, const point16_t& to) const;
 #pragma endregion
 
 

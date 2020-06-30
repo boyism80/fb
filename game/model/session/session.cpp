@@ -1202,7 +1202,7 @@ fb::ostream fb::game::session::make_option_stream() const
     return ostream;
 }
 
-fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
+fb::ostream fb::game::session::make_throw_item_stream(const item& item, const point16_t& to) const
 {
     fb::ostream             ostream;
 
@@ -1213,8 +1213,8 @@ fb::ostream fb::game::session::make_throw_item_stream(const item& item) const
         .write_u32(item.id())
         .write_u16(this->_position.x)
         .write_u16(this->_position.y)
-        .write_u16(item.x())
-        .write_u16(item.y())
+        .write_u16(to.x)
+        .write_u16(to.y)
         .write_u32(0x00000000)
         .write_u8(0x02)
         .write_u8(0x00);

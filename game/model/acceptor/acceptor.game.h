@@ -155,6 +155,7 @@ public:
     void                    on_equipment_on(session& me, item& item, equipment::slot slot);
     void                    on_equipment_off(session& me, equipment::slot slot);
     void                    on_item_active(session& me, item& item);
+    void                    on_item_throws(session& me, item& item, const point16_t& to);
 
 
     // listener : trade

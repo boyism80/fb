@@ -1135,54 +1135,9 @@ bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
     auto&                       istream = session.in_stream();
     auto                        cmd = istream.read_u8();
     auto                        unknown = istream.read_u8();
-    auto                        slot = istream.read_u8() - 1;
+    auto                        index = istream.read_u8() - 1;
 
-    try
-    {
-        auto                    item = session.items.at(slot);
-        if(item == nullptr)
-            throw std::exception();
-
-        if(item->unique() == false)
-            throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
-
-        auto                    map = session.map();
-        if(map == nullptr)
-            throw std::exception();
-
-        auto                    dropped = item->split();
-        map->objects.add(*dropped);
-        dropped->direction(session.direction());
-        for(int i = 0; i < 7; i++)
-        {
-            if(map->movable_forward(*dropped) == false)
-                break;
-
-            dropped->position(item->position_forward());
-        }
-
-        if(item == dropped)
-        {
-            session.items.remove(slot);
-            this->send_stream(session, session.items.make_delete_stream(item::delete_attr::DELETE_THROW, slot), scope::SELF);
-        }
-        else
-        {
-            this->send_stream(session, session.items.make_update_stream(slot), scope::SELF);
-        }
-        this->send_stream(session, session.make_throw_item_stream(*item), scope::PIVOT);
-        this->send_stream(session, item->make_show_stream(), scope::PIVOT);
-    }
-    catch(std::runtime_error& e)
-    {
-        auto message = std::string(e.what());
-        if(message.empty() == false)
-            this->send_stream(session, message::make_stream(message, message::type::STATE), scope::SELF);
-    }
-    catch(std::exception&)
-    {
-
-    }
+    session.items.throws(index);
     return true;
 }
 

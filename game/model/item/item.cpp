@@ -1925,6 +1925,46 @@ void fb::game::items::pickup(bool boost)
     }
 }
 
+bool fb::game::items::throws(uint8_t index)
+{
+    try
+    {
+        auto                    item = this->_owner.items.at(index);
+        if(item == nullptr)
+            return false;
+
+        if(item->unique())
+            throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
+
+        auto                    map = this->_owner.map();
+        if(map == nullptr)
+            throw std::exception();
+
+        auto                    dropped = this->remove(index, 1, item::delete_attr::DELETE_THROW);
+        auto                    position = this->_owner.position();
+        for(int i = 0; i < 7; i++)
+        {
+            auto                before = position;
+            position.forward(this->_owner.direction());
+            if(map->movable(position) == false)
+            {
+                position = before;
+                break;
+            }
+        }
+
+        if(this->_listener != nullptr)
+            this->_listener->on_item_throws(this->_owner, *dropped, position);
+        
+        map->objects.add(*dropped, position);
+    }
+    catch(std::exception& e)
+    {
+        if(this->_listener != nullptr)
+            this->_listener->on_notify(this->_owner, e.what());
+    }
+}
+
 bool fb::game::items::mix(const std::vector<uint8_t>& indices)
 {
     return false;
