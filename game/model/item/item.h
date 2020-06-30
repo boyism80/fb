@@ -852,6 +852,25 @@ public:
 
 class itemmix
 {
+#pragma region builder
+public:
+    class builder : private std::vector<item*>
+    {
+    private:
+        session&                    _owner;
+        listener*                   _listener;
+
+    public:
+        builder(session& owner, listener* listener);
+        ~builder();
+
+    public:
+        builder&                    push(uint8_t index);
+        bool                        mix();
+    };
+
+#pragma endregion
+
 public:
     DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
 
@@ -946,6 +965,8 @@ public:
     fb::game::item*                 find(const std::string& name) const;
     fb::game::item*                 drop(uint8_t index, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
     void                            pickup(bool boost);
+
+    bool                            mix(const std::vector<uint8_t>& indices);
     
     // override
     fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);

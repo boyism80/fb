@@ -1925,6 +1925,11 @@ void fb::game::items::pickup(bool boost)
     }
 }
 
+bool fb::game::items::mix(const std::vector<uint8_t>& indices)
+{
+    return false;
+}
+
 fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::delete_attr attr)
 {
     auto& owner = static_cast<fb::game::session&>(this->owner());
@@ -2052,4 +2057,83 @@ fb::ostream fb::game::items::make_unequip_stream(equipment::slot slot) const
         .write_u8(0x00);
 
     return ostream;
+}
+
+fb::game::itemmix::builder::builder(session& owner, listener* listener) : 
+    _owner(owner),
+    _listener(listener)
+{
+}
+
+fb::game::itemmix::builder::~builder()
+{
+}
+
+fb::game::itemmix::builder& fb::game::itemmix::builder::push(uint8_t index)
+{
+    auto item = this->_owner.items[index];
+    if(item != nullptr)
+        this->push_back(item);
+    
+    return *this;
+}
+
+bool fb::game::itemmix::builder::mix()
+{
+    try
+    {
+        auto                    itemmix = game::master::get().find_itemmix(*this);
+        if(itemmix == nullptr)
+            throw itemmix::no_match_exception();
+
+        auto                    free_size = this->_owner.items.free_size();
+        if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
+            throw item::full_inven_exception();
+
+
+        for(auto require : itemmix->require)
+        {
+            auto                index = this->_owner.items.to_index(require.item);
+            if(index == 0xFF)
+                return true;
+
+            auto item = this->_owner.items.remove(index, require.count);
+            if(item != nullptr)
+                delete item;
+        }
+
+        auto                success = (std::rand() % 100) < itemmix->percentage;
+        if(success)
+        {
+            for(auto success : itemmix->success)
+            {
+                auto        item = static_cast<fb::game::item*>(success.item->make(this->_listener));
+                item->count(success.count);
+                this->_owner.items.add(item);
+            }
+
+            if(this->_listener != nullptr)
+                this->_listener->on_notify(this->_owner, game::message::mix::SUCCESS);
+        }
+        else
+        {
+            for(auto failed : itemmix->failed)
+            {
+                auto        item = static_cast<fb::game::item*>(failed.item->make(this->_listener));
+                item->count(failed.count);
+                this->_owner.items.add(item);
+            }
+
+            if(this->_listener != nullptr)
+                this->_listener->on_notify(this->_owner, game::message::mix::FAILED);
+        }
+
+        return true;
+    }
+    catch(std::exception& e)
+    { 
+        if(this->_listener != nullptr)
+            this->_listener->on_notify(this->_owner, e.what());
+        return false;
+    }
 }

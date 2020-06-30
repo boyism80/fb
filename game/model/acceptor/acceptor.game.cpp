@@ -736,78 +736,11 @@ bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
     if(count > item::MAX_SLOT - 1)
         return false;
 
-    // 여기서 index만 모은다.
-    // std::vector<uint8_t> indices
-    std::vector<item*>          items;
+    itemmix::builder            builder(session, this);
     for(int i = 0; i < count; i++)
-    {
-        auto                    index = istream.read_u8() - 1;
-        auto                    item = session.items[index];
-        if(item == nullptr)
-            return true;
+        builder.push(istream.read_u8() - 1);
 
-        items.push_back(item);
-    }
-
-    // me.items.mix(indices)
-    
-    try
-    {
-        auto                    itemmix = game::master::get().find_itemmix(items);
-        if(itemmix == nullptr)
-            throw itemmix::no_match_exception();
-
-        auto                    free_size = session.items.free_size();
-        if(int(itemmix->success.size()) - int(itemmix->require.size()) > free_size)
-            throw item::full_inven_exception();
-
-
-        for(auto require : itemmix->require)
-        {
-            auto                index = session.items.to_index(require.item);
-            if(index == 0xFF)
-                return true;
-
-            auto item = session.items.remove(index, require.count);
-            if(item != nullptr)
-                delete item;
-        }
-
-        auto                success = (std::rand() % 100) < itemmix->percentage;
-        std::string         message;
-        if(success)
-        {
-            for(auto success : itemmix->success)
-            {
-                auto        item = static_cast<fb::game::item*>(success.item->make(this));
-                item->count(success.count);
-                session.items.add(item);
-            }
-
-            message = game::message::mix::SUCCESS;
-        }
-        else
-        {
-            for(auto failed : itemmix->failed)
-            {
-                auto        item = static_cast<fb::game::item*>(failed.item->make(this));
-                item->count(failed.count);
-                session.items.add(item);
-            }
-
-            message = game::message::mix::FAILED;
-        }
-
-        this->send_stream(session, message::make_stream(message, message::type::STATE), scope::SELF);
-    }
-    catch(std::exception& e)
-    { 
-        this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
-        return true;
-    }
-
-    
-
+    builder.mix();
     return true;
 }
 
