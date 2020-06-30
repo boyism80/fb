@@ -106,7 +106,7 @@ fb::game::life::life(const master* master, listener* listener) :
     _hp(0),
     _mp(0),
     _condition(fb::game::condition::NONE),
-    spells(*this)
+    spells(*this, listener)
 {
 }
 
@@ -116,7 +116,7 @@ fb::game::life::life(master* master, listener* listener, uint32_t id, uint32_t h
     _hp(hp),
     _mp(mp),
     _condition(fb::game::condition::NONE),
-    spells(*this)
+    spells(*this, listener)
 {
 }
 
@@ -126,7 +126,7 @@ fb::game::life::life(const fb::game::object& object, listener* listener, uint32_
     _hp(hp),
     _mp(mp),
     _condition(fb::game::condition::NONE),
-    spells(*this)
+    spells(*this, listener)
 {
 }
 

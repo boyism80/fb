@@ -1,6 +1,7 @@
 #include <model/spell/spell.h>
 #include <model/acceptor/acceptor.game.h>
 #include <model/object/object.h>
+#include <model/listener/listener.h>
 
 fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
     _type(type),
@@ -73,13 +74,37 @@ int fb::game::spell::builtin_message(lua_State* lua)
     return 1;
 }
 
-fb::game::spells::spells(life& owner) : 
-    container(owner, spell::MAX_SLOT, false)
+fb::game::spells::spells(life& owner, listener* listener) : 
+    container(owner, spell::MAX_SLOT, false),
+    _listener(listener)
 {
 }
 
 fb::game::spells::~spells()
 {
+}
+
+inline bool fb::game::spells::swap(uint8_t src, uint8_t dest)
+{
+    if(fb::game::container<fb::game::spell>::swap(src, dest) == false)
+        return false;
+
+    if(this->_listener != nullptr)
+    {
+        const auto              right = this->at(src-1);
+        if(right != nullptr)
+            this->_listener->on_spell_update(this->owner(), src-1);
+        else
+            this->_listener->on_spell_remove(this->owner(), src-1);
+
+        const auto              left = this->at(dest-1);
+        if(left != nullptr)
+            this->_listener->on_spell_update(this->owner(), dest-1);
+        else
+            this->_listener->on_spell_remove(this->owner(), dest-1);
+    }
+
+    return true;
 }
 
 fb::ostream fb::game::spells::make_update_stream(uint8_t index) const

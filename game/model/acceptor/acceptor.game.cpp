@@ -1033,14 +1033,7 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
 
     case swap::type::ITEM:
     {
-        if(session.items.swap(src-1, dest-1) == false)
-            return true;
-
-        const auto              right = session.items[src-1];
-        this->send_stream(session, right ? session.items.make_update_stream(src-1) : session.items.make_delete_stream(item::delete_attr::DELETE_REMOVED, src-1), scope::SELF);
-
-        const auto              left = session.items[dest-1];
-        this->send_stream(session, left ? session.items.make_update_stream(dest-1) : session.items.make_delete_stream(item::delete_attr::DELETE_REMOVED, dest-1), scope::SELF);
+        session.items.swap(src-1, dest-1);
         break;
     }
 

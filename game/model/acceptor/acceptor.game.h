@@ -157,6 +157,10 @@ public:
     void                    on_item_active(session& me, item& item);
     void                    on_item_throws(session& me, item& item, const point16_t& to);
 
+    // listener : spell
+    void                    on_spell_update(life& me, uint8_t index);
+    void                    on_spell_remove(life& me, uint8_t index);
+
 
     // listener : trade
     void                    on_trade_begin(session& me, session& you);

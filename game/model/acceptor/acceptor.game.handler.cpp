@@ -242,6 +242,16 @@ void fb::game::acceptor::on_item_throws(session& me, item& item, const point16_t
     this->send_stream(me, me.make_throw_item_stream(item, to), scope::PIVOT);
 }
 
+void fb::game::acceptor::on_spell_update(life& me, uint8_t index)
+{
+    this->send_stream(me, me.spells.make_update_stream(index-1), scope::SELF);
+}
+
+void fb::game::acceptor::on_spell_remove(life& me, uint8_t index)
+{
+    this->send_stream(me, me.spells.make_delete_stream(index-1), scope::SELF);
+}
+
 void fb::game::acceptor::on_trade_begin(session& me, session& you)
 {
     this->send_stream(me, you.trade.make_dialog_stream(), scope::SELF);

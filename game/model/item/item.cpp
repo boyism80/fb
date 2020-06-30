@@ -1998,6 +1998,29 @@ fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, it
     return this->remove(index, count, attr);
 }
 
+inline bool fb::game::items::swap(uint8_t src, uint8_t dest)
+{
+    if(fb::game::container<fb::game::item>::swap(src, dest) == false)
+        return false;
+    
+    if(this->_listener != nullptr)
+    {
+        const auto              right = this->at(src-1);
+        if(right != nullptr)
+            this->_listener->on_item_update(this->_owner, src-1);
+        else
+            this->_listener->on_item_remove(this->_owner, src-1);
+        
+        const auto              left = this->at(dest-1);
+        if(left != nullptr)
+            this->_listener->on_item_update(this->_owner, dest-1);
+        else
+            this->_listener->on_item_remove(this->_owner, dest-1);
+    }
+
+    return true;
+}
+
 fb::ostream fb::game::items::make_update_stream(uint8_t index) const
 {
     fb::ostream             ostream;

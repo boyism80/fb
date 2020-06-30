@@ -54,6 +54,12 @@ public:
     virtual void on_item_active(session& me, item& item) = 0;
     virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
 
+    
+    // spell
+    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+
+
     // equipment
     virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;
     virtual void on_equipment_off(session& me, equipment::slot slot) = 0;

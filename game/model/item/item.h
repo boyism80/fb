@@ -970,6 +970,7 @@ public:
     // override
     fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                 remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    inline bool                     swap(uint8_t src, uint8_t dest);
 
 public:
     fb::ostream                     make_update_stream(uint8_t index) const;

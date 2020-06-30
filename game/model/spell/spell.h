@@ -10,6 +10,7 @@
 namespace fb { namespace game {
 
 class object;
+class listener;
 
 class spell : public lua::luable
 {
@@ -79,10 +80,21 @@ public:
 
 class spells : public container<fb::game::spell>
 {
+private:
+    listener*                   _listener;
+
 public:
-    spells(life& owner);
+    spells(life& owner, listener* listener);
     ~spells();
 
+    // override
+public:
+    // TODO : override add
+    // TODO : override remove
+    inline bool                 swap(uint8_t src, uint8_t dest);
+
+
+public:
     fb::ostream                 make_update_stream(uint8_t index) const;
     fb::ostream                 make_delete_stream(uint8_t index) const;
 };
