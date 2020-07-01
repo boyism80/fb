@@ -1,5 +1,4 @@
 #include <model/spell/spell.h>
-#include <model/acceptor/acceptor.game.h>
 #include <model/object/object.h>
 #include <model/listener/listener.h>
 
@@ -49,7 +48,6 @@ const std::string& fb::game::spell::message() const
 
 int fb::game::spell::builtin_type(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
 
     lua_pushinteger(lua, spell->type());
@@ -58,7 +56,6 @@ int fb::game::spell::builtin_type(lua_State* lua)
 
 int fb::game::spell::builtin_name(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
 
     lua_pushstring(lua, spell->_name.c_str());
@@ -67,7 +64,6 @@ int fb::game::spell::builtin_name(lua_State* lua)
 
 int fb::game::spell::builtin_message(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
 
     lua_pushstring(lua, spell->_message.c_str());

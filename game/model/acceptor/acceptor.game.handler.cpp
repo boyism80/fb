@@ -295,6 +295,36 @@ void fb::game::acceptor::on_trade_success(session& me)
     this->send_stream(me, me.trade.make_close_stream(message::trade::SUCCESS), scope::SELF);
 }
 
+void fb::game::acceptor::on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, object.make_dialog_stream(message, button_prev, button_next, me.map(), interaction), scope::SELF);
+}
+
+void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, npc.make_dialog_stream(message, menus, me.map(), interaction), scope::SELF);
+}
+
+void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, npc.make_dialog_stream(message, item_slots, me.map(), interaction), scope::SELF);
+}
+
+void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, npc.make_dialog_stream(message, cores, me.map(), interaction), scope::SELF);
+}
+
+void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, npc.make_input_dialog_stream(message, me.map(), interaction), scope::SELF);
+}
+
+void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+{
+    this->send_stream(me, npc.make_input_dialog_stream(message, top, bottom, maxlen, prev, me.map(), interaction), scope::SELF);
+}
+
 void fb::game::acceptor::on_trade_item(session& me, session& from, uint8_t index)
 {
     bool mine = (&me == &from);

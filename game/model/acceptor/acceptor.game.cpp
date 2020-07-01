@@ -1392,21 +1392,20 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         splitted.push_back(unit);
     }
 
-    if(splitted[0] == "show")
+    if(command == "show")
     {
-        auto item = game::master::get().name2item("남자기모노");
-        this->send_stream(session, item->make_dialog_stream("갓승현님 사랑합니다.", true, true), scope::SELF);
+        session.dialog.show(*game::master::get().name2item("남자기모노"), "갓승현님 사랑합니다.", true, true);
         return true;
     }
 
-    if(splitted[0] == "show short list")
+    if(command == "show short list")
     {
         std::vector<std::string> menus = {"갓", "승", "현"};
-        this->send_stream(session, npc->make_dialog_stream("갓승현님 존경합니다.", menus), scope::SELF);
+        session.dialog.show(*npc, "갓승현님 존경합니다.", menus);
         return true;
     }
 
-    if(splitted[0] == "show long list")
+    if(command == "show long list")
     {
         std::vector<std::string> menus;
         std::string message = "갓승현님은 위대하신 게임서버 개발계의 큰 별이시다.";
@@ -1424,11 +1423,11 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
             menus.push_back(std::string(message.begin(), message.begin() + i));
         }
-        this->send_stream(session, npc->make_dialog_stream("갓승현님 존경합니다.", menus), scope::SELF);
+        session.dialog.show(*npc, "갓승현님 존경합니다.", menus);
         return true;
     }
 
-    if(splitted[0] == "show inventory items")
+    if(command == "show inventory items")
     {
         std::vector<uint8_t> slots;
         for(int i = 0; i < item::MAX_SLOT; i++)
@@ -1439,11 +1438,11 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
             slots.push_back(i+1);
         }
-        this->send_stream(session, npc->make_dialog_stream("갓승현님의 인벤토리를 보여드립니다.", slots), scope::SELF);
+        session.dialog.show(*npc, "갓승현님의 인벤토리를 보여드립니다.", slots);
         return true;
     }
 
-    if(splitted[0] == "show item core list")
+    if(command == "show item core list")
     {
         std::vector<item::master*> items;
         int count = 0;
@@ -1453,23 +1452,23 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
             if(count++ > 100)
                 break;
         }
-        this->send_stream(session, npc->make_dialog_stream("아시발 다 판다", items), scope::SELF);
+        session.dialog.show(*npc, "아시발 다 판다", items);
         return true;
     }
 
-    if(splitted[0] == "show question")
+    if(command == "show question")
     {
-        this->send_stream(session, npc->make_input_dialog_stream("What is your name?"), scope::SELF);
+        session.dialog.input(*npc, "What is your name?");
         return true;
     }
 
-    if(splitted[0] == "show extend input")
+    if(command == "show extend input")
     {
-        this->send_stream(session, npc->make_input_dialog_stream("안녕", "탑", "바텀", 0xFF, true), scope::SELF);
+        session.dialog.input(*npc, "안녕", "탑", "바텀", 0xFF, true);
         return true;
     }
 
-    if(splitted[0] == "be ghost")
+    if(command == "be ghost")
     {
         if(session.state() == state::NORMAL)
             session.state(state::GHOST);

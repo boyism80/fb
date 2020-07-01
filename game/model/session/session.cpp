@@ -27,7 +27,7 @@ session::session(fb::socket* socket, listener* listener) :
     _clan(nullptr),
     trade(*this, listener),
     items(*this, listener),
-    dialog(*this)
+    dialog(*this, listener)
 {
     memset(this->_options, 0, sizeof(this->_options));
 }
@@ -1680,9 +1680,10 @@ fb::game::session* fb::game::session::container::operator[](const std::string& n
     return this->find(name);
 }
 
-fb::game::lua::dialog::dialog(fb::game::session& owner) : 
+fb::game::lua::dialog::dialog(fb::game::session& owner, listener* listener) : 
     _owner(owner),
-    _thread(nullptr)
+    _thread(nullptr),
+    _listener(listener)
 {
 }
 
@@ -1786,4 +1787,70 @@ bool fb::game::lua::dialog::resume(int argc)
         this->_thread = nullptr;
     }
     return success;
+}
+
+void fb::game::lua::dialog::show(const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, object, message, button_prev, button_next, interaction);
+}
+
+void fb::game::lua::dialog::show(const object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+{
+    return this->show(*object.based<object::master>(), message, button_prev, button_next, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, npc, message, menus, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+{
+    this->show(*npc.based<npc::master>(), message, menus, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+{
+    return this->show(*npc.based<npc::master>(), message, item_slots, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, npc, message, cores, interaction);
+}
+
+void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
+{
+    this->show(*npc.based<npc::master>(), message, cores, interaction);
+}
+
+void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, npc, message, interaction);
+}
+
+void fb::game::lua::dialog::input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction)
+{
+    this->input(*npc.based<npc::master>(), message, interaction);
+}
+
+void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_dialog(this->_owner, npc, message, top, bottom, maxlen, prev, interaction);
+}
+
+void fb::game::lua::dialog::input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+{
+    this->input(*npc.based<npc::master>(), message, top, bottom, maxlen, prev, interaction);
 }

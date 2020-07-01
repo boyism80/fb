@@ -14,6 +14,7 @@
 #include <model/trade/trade.h>
 #include <model/lua/lua.h>
 #include <model/mob/mob.h>
+#include <model/npc/npc.h>
 
 namespace fb { namespace game {
 
@@ -31,9 +32,10 @@ class dialog
 private:
     session&                _owner;
     lua::thread*            _thread;
+    listener*               _listener;
 
 public:
-    dialog(fb::game::session& owner);
+    dialog(fb::game::session& owner, listener* listener);
     ~dialog();
 
 public:
@@ -48,6 +50,20 @@ public:
     dialog&                 from(const char* format, ...);
     dialog&                 func(const char* format, ...);
     bool                    resume(int argc);
+
+public:
+    void                    show(const object::master& object, const std::string& message, bool button_prev = false, bool button_next = true, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const object& object, const std::string& message, bool button_prev = false, bool button_next = true, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 };
 
 }

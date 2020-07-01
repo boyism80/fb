@@ -1,10 +1,10 @@
-#include "builtin/builtin_function.h"
+#include <builtin/builtin_function.h>
+#include <model/acceptor/acceptor.game.h>
 
 using namespace fb::game;
 
 int fb::game::acceptor::builtin_name2mob(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto name = lua_tostring(lua, 1);
     auto mob = game::master::get().name2mob(name);
 
@@ -15,7 +15,6 @@ int fb::game::acceptor::builtin_name2mob(lua_State* lua)
 
 int fb::game::acceptor::builtin_name2npc(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto name = lua_tostring(lua, 1);
     auto npc = game::master::get().name2npc(name);
     
@@ -26,7 +25,6 @@ int fb::game::acceptor::builtin_name2npc(lua_State* lua)
 
 int fb::game::acceptor::builtin_name2map(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto name = lua_tostring(lua, 1);
     auto map = game::master::get().name2map(name);
 
@@ -37,7 +35,6 @@ int fb::game::acceptor::builtin_name2map(lua_State* lua)
 
 int fb::game::acceptor::builtin_name2item(lua_State* lua)
 {
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto name = lua_tostring(lua, 1);
     auto item = game::master::get().name2item(name);
 

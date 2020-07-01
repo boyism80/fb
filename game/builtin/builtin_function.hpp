@@ -1,5 +1,5 @@
-#include "builtin/builtin_function.h"
-#include "model/acceptor/acceptor.game.h"
+#include <builtin/builtin_function.h>
+#include <model/session/session.h>
 
 using namespace fb::game;
 
@@ -28,9 +28,8 @@ int builtin_dialog(lua_State* lua)
         auto message = lua_tostring(lua, 3);
         auto button_prev = argc < 4 ? false : lua_toboolean(lua, 4);
         auto button_next = argc < 5 ? false : lua_toboolean(lua, 5);
-        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-        acceptor->send_stream(*session, object->make_dialog_stream(message, button_prev, button_next), acceptor::scope::SELF);
+        session->dialog.show(*object, message, button_prev, button_next);
         return lua_yield(lua, 1);
     }
     catch(std::exception&)
@@ -56,8 +55,7 @@ int builtin_menu_dialog(lua_State* lua)
         menus.push_back(lua_tostring(lua, -1));
     }
 
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    acceptor->send_stream(*session, npc->make_dialog_stream(message, menus), acceptor::scope::SELF);
+    session->dialog.show(*npc, message, menus);
     return lua_yield(lua, 1);
 }
 
@@ -77,8 +75,7 @@ int builtin_item_dialog(lua_State* lua)
         items.push_back(*(item::master**)lua_touserdata(lua, -1));
     }
 
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    acceptor->send_stream(*session, npc->make_dialog_stream(message, items), acceptor::scope::SELF);
+    session->dialog.show(*npc, message, items);
     return lua_yield(lua, 1);
 }
 
@@ -89,7 +86,6 @@ int builtin_input_dialog(lua_State* lua)
     auto session = *(fb::game::session**)lua_touserdata(lua, 2);
     auto message = lua_tostring(lua, 3);
 
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = lua_gettop(lua);
     if(argc > 3)
     {
@@ -97,12 +93,12 @@ int builtin_input_dialog(lua_State* lua)
         auto message_bot = lua_tostring(lua, 5);
         auto maxlen = argc < 6 ? 0xFF : (int)lua_tointeger(lua, 6);
         auto prev = argc < 7 ? false : lua_toboolean(lua, 7);
-        
-        acceptor->send_stream(*session, npc->make_input_dialog_stream(message, message_top, message_bot, maxlen, prev), acceptor::scope::SELF);
+
+        session->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
     }
     else
     {
-        acceptor->send_stream(*session, npc->make_input_dialog_stream(message), acceptor::scope::SELF);
+        session->dialog.input(*npc, message);
     }
     return lua_yield(lua, 1);
 }
