@@ -440,17 +440,9 @@ bool fb::game::acceptor::handle_login(fb::game::session& session)
     this->send_stream(session, session.make_option_stream(), scope::SELF);
 
 
-    // spell slots
-    for(int i = 0; i < spell::MAX_SLOT; i++)
-        this->send_stream(session, session.spells.make_update_stream(i), scope::SELF);
-
-    // item slots
-    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
-        this->send_stream(session, session.items.make_update_stream(i), scope::SELF);
-
     // me existed
-    for(auto i : session.showns())
-        this->send_stream(session, i->make_show_stream(), scope::SELF);
+    //for(auto i : session.showns())
+    //    this->send_stream(session, i->make_show_stream(), scope::SELF);
 
     return true;
 }
@@ -1019,15 +1011,7 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
     {
     case swap::type::SPELL:
     {
-        if(session.spells.swap(src-1, dest-1) == false) // zero-based
-            return true;
-
-        const auto              right = session.spells[src-1];
-        this->send_stream(session, right ? session.spells.make_update_stream(src-1) : session.spells.make_delete_stream(src-1), scope::SELF);
-
-        const auto              left = session.spells[dest-1];
-        this->send_stream(session, left ? session.spells.make_update_stream(dest-1) : session.spells.make_delete_stream(dest-1), scope::SELF);
-
+        session.spells.swap(src-1, dest-1);
         break;
     }
 
@@ -1589,7 +1573,6 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         if(slot == 0xFF)
             return true;
 
-        this->send_stream(session, session.spells.make_update_stream(slot), scope::SELF);
         return true;
     }
 

@@ -937,6 +937,7 @@ private:
     uint8_t                         equipment_off(fb::game::equipment::slot slot);
 
 public:
+    uint8_t                         add(fb::game::item& item);
     uint8_t                         add(fb::game::item* item);
     bool                            reduce(uint8_t index, uint16_t count);
     fb::game::item*                 active(uint8_t index);

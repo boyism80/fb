@@ -89,8 +89,9 @@ public:
 
     // override
 public:
-    // TODO : override add
-    // TODO : override remove
+    uint8_t                     add(spell& element);
+    uint8_t                     add(spell* element);
+    bool                        remove(uint8_t index);
     inline bool                 swap(uint8_t src, uint8_t dest);
 
 

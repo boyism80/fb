@@ -84,6 +84,32 @@ fb::game::spells::~spells()
 {
 }
 
+uint8_t fb::game::spells::add(spell& element)
+{
+    auto index = fb::game::container<fb::game::spell>::add(element);
+    if(index != 0xFF && this->_listener != nullptr)
+        this->_listener->on_spell_update(this->owner(), index);
+
+    return index;
+}
+
+uint8_t fb::game::spells::add(spell* element)
+{
+    if(element == nullptr)
+        return 0xFF;
+
+    return this->add(*element);
+}
+
+bool fb::game::spells::remove(uint8_t index)
+{
+    auto success = fb::game::container<fb::game::spell>::remove(index);
+    if(success && this->_listener != nullptr)
+        this->_listener->on_spell_remove(this->owner(), index);
+
+    return success;
+}
+
 inline bool fb::game::spells::swap(uint8_t src, uint8_t dest)
 {
     if(fb::game::container<fb::game::spell>::swap(src, dest) == false)
@@ -91,17 +117,17 @@ inline bool fb::game::spells::swap(uint8_t src, uint8_t dest)
 
     if(this->_listener != nullptr)
     {
-        const auto              right = this->at(src-1);
+        const auto              right = this->at(src);
         if(right != nullptr)
-            this->_listener->on_spell_update(this->owner(), src-1);
+            this->_listener->on_spell_update(this->owner(), src);
         else
-            this->_listener->on_spell_remove(this->owner(), src-1);
+            this->_listener->on_spell_remove(this->owner(), src);
 
-        const auto              left = this->at(dest-1);
+        const auto              left = this->at(dest);
         if(left != nullptr)
-            this->_listener->on_spell_update(this->owner(), dest-1);
+            this->_listener->on_spell_update(this->owner(), dest);
         else
-            this->_listener->on_spell_remove(this->owner(), dest-1);
+            this->_listener->on_spell_remove(this->owner(), dest);
     }
 
     return true;

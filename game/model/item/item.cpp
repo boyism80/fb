@@ -1598,32 +1598,29 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
     }
 }
 
-uint8_t fb::game::items::add(fb::game::item* item)
+uint8_t fb::game::items::add(fb::game::item& item)
 {
-    if(item == nullptr)
-        return -1;
-
     // 번들 형식의 아이템인 경우
-    if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
+    if(item.attr() & item::attrs::ITEM_ATTR_BUNDLE)
     {
         for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
         {
             if(this->at(i) == nullptr)
                 continue;
 
-            if(item->based() != this->at(i)->based())
+            if(item.based() != this->at(i)->based())
                 continue;
 
 
             // 아이템을 합치고 남은 갯수로 설정한다.
-            auto remain = this->at(i)->fill(item->count());
-            item->count(remain);
+            auto remain = this->at(i)->fill(item.count());
+            item.count(remain);
 
             if(this->_listener != nullptr)
                 this->_listener->on_item_update(static_cast<session&>(this->owner()), i);
 
-            if(item->empty())
-                delete item;
+            if(item.empty())
+                delete &item;
 
             return i;
         }
@@ -1635,17 +1632,25 @@ uint8_t fb::game::items::add(fb::game::item* item)
         if(this->at(i) != nullptr)
             continue;
 
-        item->_owner = &this->_owner;
-        this->set(item, i);
-        if(item->_listener != nullptr)
-            item->_listener->on_item_update(static_cast<session&>(this->owner()), i);
-        
-        if(item->_map != nullptr)
-            item->_map->objects.remove(*item);
+        item._owner = &this->_owner;
+        this->set(&item, i);
+        if(item._listener != nullptr)
+            item._listener->on_item_update(static_cast<session&>(this->owner()), i);
+
+        if(item._map != nullptr)
+            item._map->objects.remove(item);
         return i;
     }
 
-    return -1;
+    return 0xFF;
+}
+
+uint8_t fb::game::items::add(fb::game::item* item)
+{
+    if(item == nullptr)
+        return 0xFF;
+
+    return this->add(*item);
 }
 
 bool fb::game::items::reduce(uint8_t index, uint16_t count)
@@ -2005,17 +2010,17 @@ inline bool fb::game::items::swap(uint8_t src, uint8_t dest)
     
     if(this->_listener != nullptr)
     {
-        const auto              right = this->at(src-1);
+        const auto              right = this->at(src);
         if(right != nullptr)
-            this->_listener->on_item_update(this->_owner, src-1);
+            this->_listener->on_item_update(this->_owner, src);
         else
-            this->_listener->on_item_remove(this->_owner, src-1);
+            this->_listener->on_item_remove(this->_owner, src);
         
-        const auto              left = this->at(dest-1);
+        const auto              left = this->at(dest);
         if(left != nullptr)
-            this->_listener->on_item_update(this->_owner, dest-1);
+            this->_listener->on_item_update(this->_owner, dest);
         else
-            this->_listener->on_item_remove(this->_owner, dest-1);
+            this->_listener->on_item_remove(this->_owner, dest);
     }
 
     return true;
