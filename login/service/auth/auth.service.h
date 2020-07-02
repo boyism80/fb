@@ -7,11 +7,16 @@
 #include <fstream>
 #include <json/json.h>
 #include <regex>
+#include <ctime>
+#include <locale>
+#include <codecvt>
 #include <module/stream/stream.h>
 #include <module/config/config.h>
 #include <model/session/session.login.h>
 #include <module/service/service.h>
 #include <model/gateway/gateway.h>
+#include <mysql+++/mysql+++.h>
+using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
 #define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
@@ -29,6 +34,7 @@ namespace message
     static const char*      SUCCESS_CHANGE_PASSWORD     = "변경됐다리";
     static const char*      INVALID_BIRTHDAY            = "생년월일이 올바르지 않습니다.";
     static const char*      NEW_PW_EQUALIZATION         = "기존 암호화 동일합니다.";
+    static const char*      ALREADY_EXISTS              = "이미 존재하는 이름입니다.";
 }
 #pragma endregion
 
@@ -77,6 +83,7 @@ namespace fb { namespace login { namespace service {
 class auth : public service
 {
 private:
+    connection*                 _connection;
     std::vector<std::string>    _forbiddens;
 
 public:
@@ -84,7 +91,7 @@ public:
     ~auth();
 
 private:
-    static bool                 is_hangul(const char* str);
+    static bool                 is_hangul(const std::string& str);
     bool                        is_forbidden(const char* str) const;
 
 public:

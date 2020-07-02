@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <iostream>
-#include <mysql+++/mysql+++.h>
-#include "module/socket/socket.h"
-#include "model/acceptor/acceptor.login.h"
-#include "module/leak.h"
-#include "module/console/console.h"
 #include "resource.h"
-#include "module/config/config.h"
-
-#pragma comment(lib, "libmysql.lib")
+#include <mysql+++/mysql+++.h>
+#include <module/socket/socket.h>
+#include <model/acceptor/acceptor.login.h>
+#include <module/leak.h>
+#include <module/console/console.h>
+#include <module/config/config.h>
 
 using namespace daotk::mysql;
 

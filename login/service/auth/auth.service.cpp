@@ -2,10 +2,9 @@
 
 fb::login::service::auth::auth()
 {
-    //
-    //this->_gateway_data = this->make_gateway_stream(&this->_gateway_crc);
-
     const auto& config = fb::config();
+
+    this->_connection = new connection("localhost", "root", "tmdgus12", "fb");
 
     // Parse agreement
     for(auto x : config["login"]["account option"]["forbidden"])
@@ -14,16 +13,21 @@ fb::login::service::auth::auth()
 
 fb::login::service::auth::~auth()
 {
+    delete this->_connection;
 }
 
-bool fb::login::service::auth::is_hangul(const char* str)
+bool fb::login::service::auth::is_hangul(const std::string& str)
 {
-    auto                    size = strlen(str);
-    if(size % 2 != 0)
-        return false;
+    auto size = (uint8_t)MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), nullptr, 0) + 1;
+    auto wide = new wchar_t[size];
+    memset(wide, 0, sizeof(wchar_t) * size);
+    MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), wide, sizeof(wchar_t) * size);
 
-    std::regex re("^.+[가-힣]$");
-    return std::regex_search(str, re);
+    std::wregex re(L"^.+[가-힣]$");
+    auto success = std::regex_search(wide, re);
+    delete[] wide;
+
+    return success;
 }
 
 bool fb::login::service::auth::is_forbidden(const char* str) const
@@ -58,7 +62,7 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw id_exception(message::INVALID_NAME);
 
     // Name must be full-hangul characters
-    if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
+    if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id) == false)
         throw id_exception(message::INVALID_NAME);
 
     // Name cannot contains subcharacters in forbidden list
@@ -74,11 +78,40 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
 void fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
 {
     this->assert_account(id, pw);
+
+    auto exists = this->_connection->query
+    (
+        "SELECT COUNT(*) FROM user WHERE name LIKE '%s'",
+        id.c_str()
+    ).get_value<int>() > 0;
+    if(exists)
+        throw id_exception(message::ALREADY_EXISTS);
+
+    std::srand(std::time(nullptr));
+    auto hp = 45 + std::rand() % 10;
+    auto mp = 45 + std::rand() % 10;
+    this->_connection->exec
+    (
+        "INSERT INTO user(name, pwd, hp, base_hp, mp, base_mp) VALUES('%s', '%s', %d, %d, %d, %d)",
+        id.c_str(), pw.c_str(), hp, hp, mp, mp
+    );
+    auto index = this->_connection->last_insert_id();
+
+    auto result = this->_connection->query("SELECT id, name FROM user")
+        .each([](int id, std::string name) 
+            {
+                std::cout << id << ' ' << name << std::endl;
+                return true;
+            });
 }
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    
+    this->_connection->exec
+    (
+        "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name LIKE '%s'",
+        hair, sex, nation, creature, id.c_str()
+    );
 }
 
 void fb::login::service::auth::login(const std::string& id, const std::string& pw)
