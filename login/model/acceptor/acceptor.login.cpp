@@ -286,6 +286,11 @@ bool acceptor::handle_change_password(fb::login::session& session)
         this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_CHANGE_PASSWORD));
         return true;
     }
+    catch(login_exception& e)
+    {
+        this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
+        return true;
+    }
     catch(std::exception& e)
     {
         return false;

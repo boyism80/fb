@@ -68,16 +68,7 @@ bool fb::login::service::auth::exists(const std::string& name) const
     (
         "SELECT COUNT(*) FROM user WHERE name LIKE '%s'",
         name.c_str()
-    ).get_value<int>() > 0;;
-}
-
-bool fb::login::service::auth::exists(const std::string& name, const std::string& pw) const
-{
-    return this->_connection->query
-    (
-        "SELECT COUNT(*) FROM user WHERE name LIKE '%s' AND pw LIKE '%s'",
-        name.c_str(), pw.c_str()
-    ).get_value<int>() > 0;;
+    ).get_value<int>() > 0;
 }
 
 void fb::login::service::auth::assert_client(fb::login::session& session)
@@ -124,7 +115,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     auto mp = 45 + std::rand() % 10;
     this->_connection->exec
     (
-        "INSERT INTO user(name, pwd, hp, base_hp, mp, base_mp) VALUES('%s', '%s', %d, %d, %d, %d)",
+        "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp) VALUES('%s', '%s', %d, %d, %d, %d)",
         id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp
     );
     auto index = this->_connection->last_insert_id();
@@ -153,8 +144,6 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
-
-
     if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
         throw id_exception(message::INVALID_NAME);
 
@@ -166,25 +155,39 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
     if(this->is_forbidden(id.c_str()))
         throw id_exception(message::INVALID_NAME);
 
-
-    if(this->exists(id))
-        throw id_exception(message::ALREADY_EXISTS);
-
-
     if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
         throw pw_exception(message::PASSWORD_SIZE);
 
+    auto found = this->_connection->query
+    (
+        "SELECT pw, birth FROM user WHERE name LIKE '%s'",
+        id.c_str()
+    );
+
+    if(found.count() == 0)
+        throw id_exception(message::NOT_FOUND_NAME);
+
+    auto found_pw = found.get_value<std::string>(0);
+    auto found_birth = found.get_value<uint32_t>(1);
+
     // TODO : 올바른 비밀번호인지 체크
-
-
+    if(this->sha256(pw) != found_pw)
+        throw pw_exception(message::INVALID_PASSWORD);
 
     if(new_pw.length() < MIN_PASSWORD_SIZE || new_pw.length() > MAX_PASSWORD_SIZE)
         throw newpw_exception(message::PASSWORD_SIZE);
+    
     // TODO : 너무 쉬운 비밀번호인지 체크
 
     if(pw == new_pw)
         throw newpw_exception(message::NEW_PW_EQUALIZATION);
 
-    if(birthday < 100000 || birthday >= 1000000)
+    if(birthday != found_birth)
         throw btd_exception();
+
+    this->_connection->exec
+    (
+        "UPDATE user SET pw='%s' WHERE name LIKE '%s'",
+        this->sha256(new_pw).c_str(), id.c_str()
+    );
 }

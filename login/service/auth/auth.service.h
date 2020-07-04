@@ -29,7 +29,9 @@ using namespace daotk::mysql;
 namespace message
 {
     static const char*      INVALID_NAME                = "이름이 길거나 적합하지 않습니다.";
+    static const char*      NOT_FOUND_NAME              = "존재하지 않는 이름입니다.";
     static const char*      PASSWORD_SIZE               = "암호는 4자 이상 8자 이하";
+    static const char*      INVALID_PASSWORD            = "비밀번호가 올바르지 않습니다.";
     static const char*      SIMPLE_PASSWORD             = "암호가 단순합니다.";
     static const char*      SUCCESS_REGISTER_ACCOUNT    = "등록완료, 이어하기를 선택하세요.";
     static const char*      SUCCESS_CHANGE_PASSWORD     = "변경됐다리";
@@ -98,7 +100,6 @@ private:
 
 public:
     bool                        exists(const std::string& name) const;
-    bool                        exists(const std::string& name, const std::string& pw) const;
 
     void                        assert_client(fb::login::session& session);
     void                        assert_account(const std::string& id, const std::string& pw) const;
