@@ -16,6 +16,7 @@
 #include <module/service/service.h>
 #include <model/gateway/gateway.h>
 #include <mysql+++/mysql+++.h>
+#include <openssl/sha.h>
 using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
@@ -93,8 +94,12 @@ public:
 private:
     static bool                 is_hangul(const std::string& str);
     bool                        is_forbidden(const char* str) const;
+    std::string                 sha256(const std::string& data) const;
 
 public:
+    bool                        exists(const std::string& name) const;
+    bool                        exists(const std::string& name, const std::string& pw) const;
+
     void                        assert_client(fb::login::session& session);
     void                        assert_account(const std::string& id, const std::string& pw) const;
     void                        create_account(const std::string& id, const std::string& pw);

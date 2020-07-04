@@ -43,6 +43,43 @@ bool fb::login::service::auth::is_forbidden(const char* str) const
     );
 }
 
+std::string fb::login::service::auth::sha256(const std::string& data) const
+{
+    auto buffer = new char[data.size()];
+    memcpy(buffer, data.c_str(), data.size());
+
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, buffer, data.size());
+
+    uint8_t hash[SHA256_DIGEST_LENGTH];
+    SHA256_Final(hash, &ctx);
+    
+    std::stringstream sstream;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+        sstream << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
+
+    return sstream.str();
+}
+
+bool fb::login::service::auth::exists(const std::string& name) const
+{
+    return this->_connection->query
+    (
+        "SELECT COUNT(*) FROM user WHERE name LIKE '%s'",
+        name.c_str()
+    ).get_value<int>() > 0;;
+}
+
+bool fb::login::service::auth::exists(const std::string& name, const std::string& pw) const
+{
+    return this->_connection->query
+    (
+        "SELECT COUNT(*) FROM user WHERE name LIKE '%s' AND pw LIKE '%s'",
+        name.c_str(), pw.c_str()
+    ).get_value<int>() > 0;;
+}
+
 void fb::login::service::auth::assert_client(fb::login::session& session)
 {
     auto&                   istream = session.in_stream();
@@ -79,12 +116,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
 {
     this->assert_account(id, pw);
 
-    auto exists = this->_connection->query
-    (
-        "SELECT COUNT(*) FROM user WHERE name LIKE '%s'",
-        id.c_str()
-    ).get_value<int>() > 0;
-    if(exists)
+    if(this->exists(id))
         throw id_exception(message::ALREADY_EXISTS);
 
     std::srand(std::time(nullptr));
@@ -93,7 +125,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     this->_connection->exec
     (
         "INSERT INTO user(name, pwd, hp, base_hp, mp, base_mp) VALUES('%s', '%s', %d, %d, %d, %d)",
-        id.c_str(), pw.c_str(), hp, hp, mp, mp
+        id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp
     );
     auto index = this->_connection->last_insert_id();
 
@@ -121,6 +153,8 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
+
+
     if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
         throw id_exception(message::INVALID_NAME);
 
@@ -133,8 +167,8 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
         throw id_exception(message::INVALID_NAME);
 
 
-    // TODO : 존재하는 아이디인지 검사
-
+    if(this->exists(id))
+        throw id_exception(message::ALREADY_EXISTS);
 
 
     if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
