@@ -10,11 +10,7 @@ const Json::Value& config()
     if(loaded == false)
     {
         std::ifstream ifstream;
-#if defined DEBUG | defined _DEBUG
-        ifstream.open("../config.json");
-#else
         ifstream.open("config.json");
-#endif
         if(ifstream.is_open() == false)
             throw std::runtime_error("cannot load conf_login.json file");
 

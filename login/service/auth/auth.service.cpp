@@ -6,8 +6,7 @@ fb::login::service::auth::auth()
 
     this->_connection = new connection("localhost", "root", "tmdgus12", "fb");
 
-    // Parse agreement
-    for(auto x : config["login"]["account option"]["forbidden"])
+    for(auto x : config["forbidden"])
         this->_forbiddens.push_back(x.asString());
 }
 
@@ -71,26 +70,13 @@ bool fb::login::service::auth::exists(const std::string& name) const
     ).get_value<int>() > 0;
 }
 
-void fb::login::service::auth::assert_client(fb::login::session& session)
-{
-    auto&                   istream = session.in_stream();
-    auto                    cmd     = istream.read_u8();
-    auto                    version = istream.read_u16();
-    if(version != 0x0226)
-        throw std::exception("클라이언트 버전이 맞지 않습니다.");
-
-    auto                    national_key    = istream.read_u8();
-    if(national_key != 0xD7)
-        throw std::exception("국가가 올바르지 않습니다.");
-}
-
 void fb::login::service::auth::assert_account(const std::string& id, const std::string& pw) const
 {
     if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
         throw id_exception(message::INVALID_NAME);
 
     // Name must be full-hangul characters
-    if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id) == false)
+    if(fb::config()["allow other language"].asBool() == false && this->is_hangul(id) == false)
         throw id_exception(message::INVALID_NAME);
 
     // Name cannot contains subcharacters in forbidden list
@@ -140,6 +126,29 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
 void fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
     this->assert_account(id, pw);
+
+    auto found = this->_connection->query
+    (
+        "SELECT id, pw, login FROM user WHERE name LIKE '%s' LIMIT 1",
+        id.c_str(), this->sha256(pw).c_str()
+    );
+
+    if(found.count() == 0)
+        throw id_exception(message::NOT_FOUND_NAME);
+
+    if(found.get_value<std::string>(1) != this->sha256(pw))
+        throw pw_exception(message::INVALID_PASSWORD);
+
+    if(found.get_value<bool>(2) == true)
+    {
+        throw id_exception(message::ALREADY_LOGIN);
+    }
+    
+    this->_connection->exec
+    (
+        "UPDATE user SET login=1 WHERE id=%d LIMIT 1",
+        found.get_value<int>(0)
+    );
 }
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)

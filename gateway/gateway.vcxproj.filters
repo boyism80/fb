@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="module">
+      <UniqueIdentifier>{da9480c5-63db-4112-a515-1bb8c83c17f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\acceptor">
+      <UniqueIdentifier>{765df936-e736-417d-b339-51ecafc39849}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\config">
+      <UniqueIdentifier>{bdadd0e5-017b-4083-8fd8-1160b104a6f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\console">
+      <UniqueIdentifier>{f25d8208-7701-47b5-b8cd-6892cf678804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\cryptor">
+      <UniqueIdentifier>{5f5dc449-903f-4a12-82d9-5ed8c8aa12bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\socket">
+      <UniqueIdentifier>{7c7a8b24-1e30-4258-b555-a9385c388b71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\stream">
+      <UniqueIdentifier>{293db8f6-343f-4c71-b3ab-6264e9f40fdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\timer">
+      <UniqueIdentifier>{bdb29e15-d1c1-4918-8063-1b01b9543b89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{bc41ca58-ba04-4b97-ae93-6517af8b1d7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\acceptor">
+      <UniqueIdentifier>{88234285-22c2-40fd-9b31-0774aced2f62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\session">
+      <UniqueIdentifier>{292bca3c-2aed-4149-8e78-43980d942e63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{4c83f9bc-379d-47b5-af8b-b8739d918e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\gateway">
+      <UniqueIdentifier>{fbdce8d7-36ef-4102-8910-aa01afd0c5c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="service">
+      <UniqueIdentifier>{175c4d88-292e-4a28-a443-6b2cce3bdfea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="service\gateway">
+      <UniqueIdentifier>{1e53ff07-9668-4c6e-a657-c5157469873c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\service">
+      <UniqueIdentifier>{37fb4326-25f1-4ad4-af2f-1421324bfd73}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\acceptor\acceptor.cpp">
+      <Filter>module\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\config\config.cpp">
+      <Filter>module\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\console\console.cpp">
+      <Filter>module\console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\crypto\cryptor.cpp">
+      <Filter>module\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\socket\socket.cpp">
+      <Filter>module\socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\stream\stream.cpp">
+      <Filter>module\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\timer\timer.cpp">
+      <Filter>module\timer</Filter>
+    </ClCompile>
+    <ClCompile Include="model\acceptor\acceptor.gateway.cpp">
+      <Filter>model\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="model\session\session.gateway.cpp">
+      <Filter>model\session</Filter>
+    </ClCompile>
+    <ClCompile Include="model\gateway\gateway.cpp">
+      <Filter>model\gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="service\gateway\service.gateway.cpp">
+      <Filter>service\gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\service\service.cpp">
+      <Filter>module\service</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\module\leak.h">
+      <Filter>module</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.h">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.hpp">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\config\config.h">
+      <Filter>module\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\console\console.h">
+      <Filter>module\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\crypto\cryptor.h">
+      <Filter>module\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.h">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.hpp">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\stream\stream.h">
+      <Filter>module\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\timer\timer.h">
+      <Filter>module\timer</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="model\acceptor\acceptor.gateway.h">
+      <Filter>model\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="model\session\session.gateway.h">
+      <Filter>model\session</Filter>
+    </ClInclude>
+    <ClInclude Include="model\gateway\gateway.h">
+      <Filter>model\gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="service\gateway\service.gateway.h">
+      <Filter>service\gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\service\service.h">
+      <Filter>module\service</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\baram.ico">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="gateway.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

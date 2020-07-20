@@ -1,7 +1,7 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
-#include "module/acceptor/acceptor.h"
+#include <module/acceptor/acceptor.h>
 #include <model/session/session.login.h>
 #include <service/auth/auth.service.h>
 #include <model/gateway/gateway.h>
@@ -25,11 +25,9 @@ public:
     ~acceptor();
 
 private:
-    bool                        load_gateways();
     bool                        load_agreement();
 
 private:
-    fb::ostream                 make_crt_stream(const fb::cryptor& crt);
     const fb::ostream           make_message_stream(int type, const char* msg) const;
 
     // override
@@ -41,8 +39,6 @@ public:
     bool                        handle_disconnected(fb::login::session& session);
 
 public:
-    bool                        handle_check_version(fb::login::session& session);
-    bool                        handle_gateway_list(fb::login::session& session);
     bool                        handle_agreement(fb::login::session& session);
     bool                        handle_create_account(fb::login::session& session);
     bool                        handle_account_complete(fb::login::session& session);

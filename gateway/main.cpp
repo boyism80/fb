@@ -1,16 +1,13 @@
 #include <stdio.h>
 #include <iostream>
 #include "resource.h"
-#include <mysql+++/mysql+++.h>
 #include <module/socket/socket.h>
-#include <model/acceptor/acceptor.login.h>
+#include <model/acceptor/acceptor.gateway.h>
 #include <module/leak.h>
 #include <module/console/console.h>
 #include <module/config/config.h>
 
-using namespace daotk::mysql;
-
-fb::login::acceptor*       acceptor;
+fb::gateway::acceptor*       acceptor;
 
 BOOL WINAPI handle_console(DWORD signal)
 {
@@ -27,14 +24,6 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
-    connection my{ "localhost", "root", "tmdgus12", "fb" };
-    if (!my) {
-        std::cout << "Connection failed" << std::endl;
-        return 0;
-    }
-
-    auto row_count = my.query("select count(*) from item").get_value<int>();
-
     //_CrtSetBreakAlloc(165);
 
     ::SetConsoleIcon(IDI_BARAM);
@@ -43,7 +32,7 @@ int main(int argc, const char** argv)
 
     // Execute acceptor
     boost::asio::io_context io_service;
-    acceptor = new fb::login::acceptor(io_service, fb::config()["port"].asInt());
+    acceptor = new fb::gateway::acceptor(io_service, fb::config()["port"].asInt());
 
     io_service.run();
 

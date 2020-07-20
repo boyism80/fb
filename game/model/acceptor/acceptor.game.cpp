@@ -145,6 +145,8 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::game::session>(context, port),
     _timer(context)
 {
+    this->_connection = new connection("localhost", "root", "tmdgus12", "fb");
+
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
     lua::bind_class<spell, lua::luable>();
@@ -205,7 +207,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
 
 acceptor::~acceptor()
 { 
-    
+    delete this->_connection;
 }
 
 bool acceptor::handle_connected(fb::game::session& session)
@@ -384,16 +386,27 @@ bool fb::game::acceptor::handle_login(fb::game::session& session)
 
     session.name(istream.readstr_u8());
 
+    auto found = this->_connection->query
+    (
+        "SELECT * FROM user WHERE name LIKE '%s' LIMIT 1",      // sql injection 대처 필요
+        session.name().c_str()
+    );
+    if(found.count() == 0)
+        return false;
+
+    found.each([&session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan, bool login)
+    {
+        session.look(look);
+        session.money(money);
+        session.sex(fb::game::sex(sex));
+        session.base_hp(base_hp);
+        session.hp(hp);
+        session.base_mp(base_mp);
+        session.mp(mp);
+        return false;
+    });
+
     game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
-    session.look(0x61);
-    session.color(0x0A);
-    session.money(150);
-    session.sex(fb::game::sex::MAN);
-    session.legends.push(0x4A, 0x10, "갓승현 ㅋㅋ")
-                   .push(0x4A, 0x10, "똥진영 ㅋㅋ");
-    session.base_hp(0xFFFFFFFF);
-    session.hp(0xFFFFFFFF);
-    session.title("갓승현 타이틀");
 
     session.items.add(game::master::get().name2item("얼음칼")->make<item>(this));
     session.items.add(game::master::get().name2item("정화의방패")->make<item>(this));
@@ -462,7 +475,7 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session)
 bool fb::game::acceptor::handle_exit(fb::game::session& session)
 {
     const auto&             config = fb::config();
-    this->transfer(session, inet_addr(config["login"]["ip"].asCString()), config["login"]["port"].asInt());
+    this->transfer(session, config["login"]["ip"].asString(), config["login"]["port"].asInt());
     return true;
 }
 

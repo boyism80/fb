@@ -50,7 +50,10 @@ inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
 {
     auto i = this->_response_table.find(cmd);
     if(i == this->_response_table.end())
+    {
+        printf("matched header not found : 0x%2X\n", cmd);
         return true;
+    }
 
     return i->second(session);
 }
@@ -168,6 +171,12 @@ void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port)
 }
 
 template<class T>
+void fb::acceptor<T>::transfer(T& session, const std::string& ip, uint16_t port)
+{
+    this->transfer(session, inet_addr(ip.c_str()), port);
+}
+
+template<class T>
 void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port, const fb::ostream& parameter)
 {
     auto&                       crt = session.crt();
@@ -175,6 +184,12 @@ void fb::acceptor<T>::transfer(T& session, uint32_t ip, uint16_t port, const fb:
     crt.wrap(ostream);
 
     session.send(ostream, false, false);
+}
+
+template<class T>
+void fb::acceptor<T>::transfer(T& session, const std::string& ip, uint16_t port, const fb::ostream& parameter)
+{
+    this->transfer(session, inet_addr(ip.c_str()), port, parameter);
 }
 
 template <typename T>

@@ -36,7 +36,7 @@ int main(int argc, const char** argv)
 
     // Execute acceptor
     boost::asio::io_context io_service;
-    acceptor = new fb::game::acceptor(io_service, 10021);
+    acceptor = new fb::game::acceptor(io_service, fb::config()["port"].asInt());
 
     fb::game::master::get().loads(acceptor);
     io_service.run();

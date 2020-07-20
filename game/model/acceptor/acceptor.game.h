@@ -17,6 +17,9 @@
 #include <model/clan/clan.h>
 #include <model/life/life.h>
 #include <model/listener/listener.h>
+#include <mysql+++/mysql+++.h>
+
+using namespace daotk::mysql;
 
 namespace fb { namespace game {
 
@@ -37,6 +40,7 @@ public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
 
 private:
+    connection*             _connection;
     timer_container         _timer;
 
 public:
