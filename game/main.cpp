@@ -32,8 +32,6 @@ int main(int argc, const char** argv)
 
     //_CrtSetBreakAlloc(157);
 
-    // Load databases
-
     // Execute acceptor
     boost::asio::io_context io_service;
     acceptor = new fb::game::acceptor(io_service, fb::config()["port"].asInt());

@@ -1,7 +1,7 @@
 {
     "000000": {
         "bgm": 0,
-        "name": "°¡»ó°è",
+        "name": "ê°€ìƒê³„",
         "option": {
             "build in": false,
             "enabled die penalty": false,
@@ -15,7 +15,7 @@
     },
     "000001": {
         "bgm": 0,
-        "name": "³«¶ûÀÇ¹æ",
+        "name": "ë‚™ë‘ì˜ë°©",
         "option": {
             "build in": false,
             "enabled die penalty": true,
@@ -29,7 +29,7 @@
     },
     "000015": {
         "bgm": 2,
-        "name": "ÁÖ¸·¿¬½ÇÀÌ³×",
+        "name": "ì£¼ë§‰ì—°ì‹¤ì´ë„¤",
         "option": {
             "build in": false,
             "enabled die penalty": false,
@@ -43,7 +43,7 @@
     },
     "000315": {
         "bgm": 2,
-        "name": "ºÎ¿©¿ÕÃÊº¸»ç³É1",
+        "name": "ë¶€ì—¬ì™•ì´ˆë³´ì‚¬ëƒ¥1",
         "option": {
             "build in": false,
             "enabled die penalty": true,

@@ -9,7 +9,7 @@
             "enabled pk": false,
             "enabled magic": true
         },
-        "name": "ºÎ¿©¼º",
+        "name": "ë¶€ì—¬ì„±",
         "parent": 14,
         "bgm": 2
     },
@@ -23,7 +23,7 @@
             "enabled pk": false,
             "enabled magic": true
         },
-        "name": "ºÎ¿©¿ÕÃÊº¸»ç³É1",
+        "name": "ë¶€ì—¬ì™•ì´ˆë³´ì‚¬ëƒ¥1",
         "parent": 14,
         "bgm": 2
     },
@@ -37,7 +37,7 @@
             "enabled pk": false,
             "enabled magic": true
         },
-        "name": "ºÎ¿©¿ÕÃÊº¸»ç³É2",
+        "name": "ë¶€ì—¬ì™•ì´ˆë³´ì‚¬ëƒ¥2",
         "parent": 14,
         "bgm": 2
     },
@@ -51,7 +51,7 @@
             "enabled pk": false,
             "enabled magic": true
         },
-        "name": "ºÎ¿©¿ÕÃÊº¸»ç³É3",
+        "name": "ë¶€ì—¬ì™•ì´ˆë³´ì‚¬ëƒ¥3",
         "parent": 14,
         "bgm": 2
     }
