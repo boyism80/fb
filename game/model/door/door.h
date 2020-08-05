@@ -2,8 +2,8 @@
 #define __DOOR_H__
 
 #include <vector>
-#include "model/mmo/mmo.h"
-#include "model/lua/lua.h"
+#include <model/mmo/mmo.h>
+#include <model/lua/lua.h>
 
 namespace fb { namespace game {
 

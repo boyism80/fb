@@ -1,4 +1,4 @@
-#include "module/stream/stream.h"
+#include <module/stream/stream.h>
 
 fb::buffer::buffer(size_t size) : _position(0), _offset(0)
 {

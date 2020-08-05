@@ -1,7 +1,7 @@
-#include "model/door/door.h"
-#include "model/map/map.h"
-#include "model/session/session.h"
-#include "model/acceptor/acceptor.game.h"
+#include <model/door/door.h>
+#include <model/map/map.h>
+#include <model/session/session.h>
+#include <model/acceptor/acceptor.game.h>
 
 bool fb::game::door::master::matched(const fb::game::map& map, const point16_t& position, bool open) const
 {

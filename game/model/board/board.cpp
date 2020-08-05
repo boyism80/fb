@@ -1,4 +1,4 @@
-#include "model/board/board.h"
+#include <model/board/board.h>
 
 
 fb::game::board::article::article(uint16_t id, const std::string& title, const std::string& content, const std::string& writer, uint8_t month, uint8_t day, uint8_t color, bool deleted) : 

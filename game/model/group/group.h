@@ -1,8 +1,8 @@
 #ifndef __GROUP_H__
 #define __GROUP_H__
 
-#include "model/lua/lua.h"
-#include "model/session/session.h"
+#include <model/lua/lua.h>
+#include <model/session/session.h>
 
 namespace fb { namespace game {
 

@@ -1,8 +1,8 @@
 #ifndef __BUILTIN_FUNCTION_H__
 #define __BUILTIN_FUNCTION_H__
 
-#include "model/mmo/mmo.h"
-#include "model/lua/lua.h"
+#include <model/mmo/mmo.h>
+#include <model/lua/lua.h>
 
 template <typename T>
 void to_lua(lua_State* lua, const T* self);

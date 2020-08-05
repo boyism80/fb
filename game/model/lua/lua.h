@@ -8,7 +8,7 @@ extern "C"
 #include "lua/lauxlib.h"
 }
 
-#include "module/socket/socket.h"
+#include <module/socket/socket.h>
 #include <vector>
 #include <string>
 

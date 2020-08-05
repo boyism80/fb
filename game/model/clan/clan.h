@@ -1,8 +1,8 @@
 #ifndef __CLAN_H__
 #define __CLAN_H__
 
-#include "model/session/session.h"
-#include "model/lua/lua.h"
+#include <model/session/session.h>
+#include <model/lua/lua.h>
 
 namespace fb { namespace game {
 

@@ -7,8 +7,8 @@
 #include <deque>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include "module/stream/stream.h"
-#include "module/crypto/cryptor.h"
+#include <module/stream/stream.h>
+#include <module/crypto/cryptor.h>
 
 namespace fb {
 
