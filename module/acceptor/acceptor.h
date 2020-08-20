@@ -5,7 +5,7 @@
 #include <map>
 #include <ctime>
 #include <boost/asio.hpp>
-#include "zlib/zlib.h"
+#include <zlib/zlib.h>
 #include <module/stream/stream.h>
 #include <module/socket/socket.h>
 #include <module/crypto/cryptor.h>
@@ -30,7 +30,7 @@ class acceptor : public base_acceptor
 {
 private:
     session_map<T>          _session_map;
-    std::map<uint8_t, std::function<bool(T&)>> _response_table;
+    std::map<uint8_t, std::function<bool(void*)>> _handler_dict;
 
 public:
     session_container<T>    sessions;
@@ -55,14 +55,15 @@ public:
     void                    handle_disconnected(fb::socket& socket);
 
 protected:
-    void                    register_fn(uint8_t cmd, std::function<bool(T&)> fn);
+    template <typename R>
+    void                    bind(uint8_t cmd, std::function<bool(T&, R&)> fn);
     void                    transfer(T& base_session, uint32_t ip, uint16_t port);
     void                    transfer(T& base_session, const std::string& ip, uint16_t port);
     void                    transfer(T& base_session, uint32_t ip, uint16_t port, const fb::ostream& parameter);
     void                    transfer(T& base_session, const std::string& ip, uint16_t port, const fb::ostream& parameter);
 
 public:
-    void                    send_stream(fb::base& base, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    send_stream(fb::base& base, const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
 };
 
 #include "acceptor.hpp"

@@ -1,4 +1,4 @@
-#include "object.h"
+#include <model/object/object.h>
 #include <model/map/map.h>
 #include <model/session/session.h>
 #include <model/mob/mob.h>
@@ -167,7 +167,12 @@ fb::game::object::types fb::game::object::type() const
     return this->_master->type();
 }
 
-fb::game::point16_t fb::game::object::position() const
+const fb::game::point16_t& fb::game::object::before() const
+{
+    return this->_before;
+}
+
+const fb::game::point16_t& fb::game::object::position() const
 {
     return this->_position;
 }
@@ -271,7 +276,7 @@ bool fb::game::object::move(fb::game::direction direction)
     return true;
 }
 
-fb::game::point16_t fb::game::object::position_forward() const
+const fb::game::point16_t& fb::game::object::position_forward() const
 {
     point16_t forward(this->_position);
     forward.forward(this->_direction);

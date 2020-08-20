@@ -160,8 +160,9 @@ public:
     virtual object::types       type() const;
 
 
-    point16_t                   position() const;
-    point16_t                   position_forward() const;
+    const point16_t&            before() const;
+    const point16_t&            position() const;
+    const point16_t&            position_forward() const;
     virtual bool                position(uint16_t x, uint16_t y);
     virtual bool                position(const point16_t position);
     bool                        move();

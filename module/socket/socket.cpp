@@ -17,26 +17,33 @@ fb::socket::~socket()
 {
 }
 
-void fb::socket::send(const ostream& stream, bool encrypt, bool wrap)
+void fb::socket::send(const ostream& stream, bool encrypt, bool wrap, bool async)
 {
-    auto clone = new ostream(stream);
+    auto clone = ostream(stream);
     if(encrypt)
-        this->_crt.encrypt(*clone);
+        this->_crt.encrypt(clone);
 
     if(wrap)
-        this->_crt.wrap(*clone);
+        this->_crt.wrap(clone);
 
-    boost::asio::async_write
-    (
-        *this, 
-        boost::asio::buffer(clone->data(), clone->size()), 
-        [this, clone] (const boost::system::error_code error, const size_t bytes_transferred)
-        {
-            delete clone;
-        }
-    );
-
-    this->_owner->handle_send(*this);
+    auto buffer = boost::asio::buffer(clone.data(), clone.size());
+    if(async)
+    {
+        boost::asio::async_write
+        (
+            *this, 
+            buffer, 
+            [this] (const boost::system::error_code error, size_t bytes_transferred)
+            {
+                this->_owner->handle_send(*this);
+            }
+        );
+    }
+    else
+    {
+        boost::asio::write(*this, buffer);
+        this->_owner->handle_send(*this);
+    }
 }
 
 fb::cryptor& fb::socket::crt()
@@ -75,7 +82,7 @@ void fb::socket::recv()
                 this->recv();
                 this->_owner->handle_receive(*this);
             }
-            catch(std::exception& e)
+            catch(std::runtime_error& e)
             {
                 std::cout << e.what() << std::endl;
                 _owner->handle_disconnected(*this);

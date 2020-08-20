@@ -19,7 +19,7 @@ public:
 
     // override
 public:
-    void                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
 
     // middle man
 public:

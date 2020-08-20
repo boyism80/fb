@@ -56,6 +56,9 @@
     <Filter Include="model\gateway">
       <UniqueIdentifier>{fbd87bb9-a1f7-4545-a783-3c0a73189332}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\common">
+      <UniqueIdentifier>{9afacddd-0b86-43c4-b782-e19aa1182dde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -152,6 +155,9 @@
     </ClInclude>
     <ClInclude Include="model\gateway\gateway.h">
       <Filter>model\gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\common\type.h">
+      <Filter>module\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

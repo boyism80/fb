@@ -7,6 +7,7 @@
 #include <model/gateway/gateway.h>
 #include <service/gateway/service.gateway.h>
 #include <zlib/zlib.h>
+#include <protocol/gateway.h>
 
 namespace fb { namespace gateway {
 
@@ -39,8 +40,8 @@ public:
     bool                        handle_disconnected(fb::gateway::session& session);
 
 public:
-    bool                        handle_check_version(fb::gateway::session& session);
-    bool                        handle_entry_list(fb::gateway::session& session);
+    bool                        handle_check_version(fb::gateway::session& session, const fb::protocol::request::gateway::assert_version&);
+    bool                        handle_entry_list(fb::gateway::session& session, const fb::protocol::request::gateway::entry_list&);
 };
 
 } }

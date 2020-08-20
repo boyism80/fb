@@ -7,9 +7,9 @@ fb::login::session::session(fb::socket* socket) :
 fb::login::session::~session()
 {}
 
-void fb::login::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::login::session::send(const fb::ostream& stream, bool encrypt, bool wrap, bool async)
 {
-    this->_socket->send(stream, encrypt, wrap);
+    this->_socket->send(stream, encrypt, wrap, async);
 }
 
 fb::cryptor& fb::login::session::crt()

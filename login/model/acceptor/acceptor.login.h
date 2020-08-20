@@ -6,6 +6,7 @@
 #include <service/auth/auth.service.h>
 #include <model/gateway/gateway.h>
 #include <zlib/zlib.h>
+#include <protocol/login.h>
 
 namespace fb { namespace login {
 
@@ -39,11 +40,11 @@ public:
     bool                        handle_disconnected(fb::login::session& session);
 
 public:
-    bool                        handle_agreement(fb::login::session& session);
-    bool                        handle_create_account(fb::login::session& session);
-    bool                        handle_account_complete(fb::login::session& session);
-    bool                        handle_login(fb::login::session& session);
-    bool                        handle_change_password(fb::login::session& session);
+    bool                        handle_agreement(fb::login::session& session, const fb::protocol::request::login::agreement&);
+    bool                        handle_create_account(fb::login::session& session, const fb::protocol::request::login::account::create&);
+    bool                        handle_account_complete(fb::login::session& session, const fb::protocol::request::login::account::complete&);
+    bool                        handle_login(fb::login::session& session, const fb::protocol::request::login::login&);
+    bool                        handle_change_password(fb::login::session& session, const fb::protocol::request::login::account::change_pw&);
 };
 
 } }

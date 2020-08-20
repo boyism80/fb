@@ -110,6 +110,9 @@
     <Filter Include="model\listener">
       <UniqueIdentifier>{2f61b8fd-120c-4c3d-8358-5e32a70032c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\common">
+      <UniqueIdentifier>{7b435e63-5d89-4eb4-a66c-a9527ab82c11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -314,6 +317,9 @@
     </ClInclude>
     <ClInclude Include="model\listener\listener.h">
       <Filter>model\listener</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\common\type.h">
+      <Filter>module\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

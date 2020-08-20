@@ -126,7 +126,7 @@ uint16_t fb::game::objects::add(fb::game::object& object)
     return add(object, point16_t());
 }
 
-uint16_t fb::game::objects::add(fb::game::object& object, const point16_t position)
+uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
 {
     auto                    map = object.map();
     if(map == this->_owner)

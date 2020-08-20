@@ -1,20 +1,29 @@
 #include <module/stream/stream.h>
 
-fb::buffer::buffer(size_t size) : _position(0), _offset(0)
+fb::buffer::buffer(size_t size) : _offset(0)
 {
     this->reserve(size);
 }
 
-fb::buffer::buffer(const uint8_t* data, size_t size) : _position(0), _offset(0), std::vector<uint8_t>(data, data + size)
+fb::buffer::buffer(const uint8_t* data, size_t size) : _offset(0), std::vector<uint8_t>(data, data + size)
 {}
+
+fb::buffer::buffer(const buffer & right) : fb::buffer((uint8_t*)right.data(), right.size())
+{
+}
 
 fb::buffer::~buffer()
 {
 }
 
-uint32_t fb::buffer::position() const
+uint32_t fb::buffer::offset() const
 {
-    return this->_position;
+    return this->_offset;
+}
+
+const void* fb::buffer::data() const
+{
+    return std::vector<uint8_t>::data();
 }
 
 fb::buffer fb::buffer::compress() const
@@ -22,14 +31,14 @@ fb::buffer fb::buffer::compress() const
     static uint8_t              buffer[65536];
     uint32_t                    size = sizeof(buffer);
 
-    compress2(buffer, (uLongf*)&size, this->data(), uint32_t(this->size()), Z_BEST_COMPRESSION);
+    compress2(buffer, (uLongf*)&size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION);
     buffer[size] = 0x00;
     return fb::buffer(buffer, size);
 }
 
 uint32_t fb::buffer::crc() const
 {
-    return crc32(0, this->data(), (uint32_t)this->size());
+    return crc32(0, vector<uint8_t>::data(), (uint32_t)this->size());
 }
 
 fb::istream::istream(size_t size) : buffer(size)
@@ -46,7 +55,7 @@ fb::istream::~istream()
 
 int8_t fb::istream::read_8()
 {
-    int8_t          value = (*this)[this->_position + this->_offset];
+    int8_t          value = (*this)[this->_offset];
     this->_offset++;
     return value;
 }
@@ -59,11 +68,11 @@ uint8_t fb::istream::read_u8()
 int16_t fb::istream::read_16(buffer::endian endian)
 {
 #ifdef _WIN32
-    int16_t         value = (*this)[this->_position + this->_offset] | (*this)[this->_position + this->_offset + 1] << 8;
+    int16_t         value = (*this)[this->_offset] | (*this)[this->_offset + 1] << 8;
     if(endian == buffer::endian::BIG)
         value = _byteswap_ushort(value);
 #else
-    int16_t         value = (*this)[this->_position + this->_offset] << 8 | (*this)[this->_position + this->_offset + 1];
+    int16_t         value = (*this)[this->_offset] << 8 | (*this)[this->_offset + 1];
     if(byte_order == buffer::byte_order::LITTLE_ENDIAN)
         value = _byteswap_ushort(value);
 #endif
@@ -79,17 +88,17 @@ uint16_t fb::istream::read_u16(buffer::endian endian)
 int32_t fb::istream::read_32(buffer::endian endian)
 {
 #ifdef _WIN32
-    int32_t         value = (*this)[this->_position + this->_offset + 0] <<  0 |
-                            (*this)[this->_position + this->_offset + 1] <<  8 |
-                            (*this)[this->_position + this->_offset + 2] << 16 |
-                            (*this)[this->_position + this->_offset + 3] << 24;
+    int32_t         value = (*this)[this->_offset + 0] <<  0 |
+                            (*this)[this->_offset + 1] <<  8 |
+                            (*this)[this->_offset + 2] << 16 |
+                            (*this)[this->_offset + 3] << 24;
     if(endian == buffer::endian::BIG)
         value = _byteswap_ulong(value);
 #else
-    int32_t         value = (*this)[this->_position + this->_offset + 0] <<  0 |
-                            (*this)[this->_position + this->_offset + 1] <<  8 |
-                            (*this)[this->_position + this->_offset + 2] << 16 |
-                            (*this)[this->_position + this->_offset + 3] << 24;
+    int32_t         value = (*this)[this->_offset + 0] <<  0 |
+                            (*this)[this->_offset + 1] <<  8 |
+                            (*this)[this->_offset + 2] << 16 |
+                            (*this)[this->_offset + 3] << 24;
     if(byte_order == buffer::byte_order::LITTLE_ENDIAN)
         value = _byteswap_ulong(value);
 #endif
@@ -105,7 +114,7 @@ uint32_t fb::istream::read_u32(buffer::endian endian)
 void fb::istream::read(void * buffer, size_t size)
 {
 	if(buffer != nullptr)
-		memcpy(buffer, this->data() + this->_position + this->_offset, size);
+		memcpy(buffer, (uint8_t*)this->data() + this->_offset, size);
     this->_offset += uint32_t(size);
 }
 
@@ -141,7 +150,7 @@ std::string fb::istream::readstr_u32(buffer::endian endian)
 
 uint32_t fb::istream::readable_size() const
 {
-    return std::max(uint32_t(0), uint32_t(this->size() - this->_position - this->_offset));
+    return std::max(uint32_t(0), uint32_t(this->size() - this->_offset));
 }
 
 void fb::istream::reset()
@@ -151,14 +160,13 @@ void fb::istream::reset()
 
 void fb::istream::shift(size_t size)
 {
-    this->_position = std::min(uint32_t(this->_position + size), uint32_t(this->capacity() - 1));
-    this->_offset = uint32_t(this->_offset > size ? this->_offset - size : 0);
+    this->_offset = std::min(uint32_t(this->_offset + size), uint32_t(this->capacity() - 1));
 }
 
 void fb::istream::flush()
 {
-    this->erase(this->begin(), this->begin() + this->_position);
-    this->_position = 0;
+    this->erase(this->begin(), this->begin() + this->_offset);
+    this->_offset = 0;
 }
 
 fb::ostream::ostream(size_t size) : buffer(size)
@@ -290,7 +298,7 @@ fb::ostream& fb::ostream::write(const void * buffer, size_t size)
     return *this;
 }
 
-fb::ostream& fb::ostream::write(const ostream& wb)
+fb::ostream& fb::ostream::write(const buffer& wb)
 {
     this->insert(this->end(), wb.begin(), wb.end());
     return *this;

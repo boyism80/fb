@@ -15,16 +15,17 @@ public:
     enum endian { LITTLE = 0, BIG = 1};
 
 protected:
-    uint32_t                _position;
     uint32_t                _offset;
 
 public:
     buffer(size_t size = 1024);
     buffer(const uint8_t* data, size_t size);
+    buffer(const buffer& right);
     virtual ~buffer();
 
 public:
-    uint32_t                position() const;
+    uint32_t                offset() const;
+    const void*             data() const;
 
 public:
     uint32_t                crc() const;
@@ -77,7 +78,7 @@ public:
     ostream&                writestr_u16(const std::string& value, buffer::endian endian = buffer::endian::BIG);
     ostream&                writestr_u32(const std::string& value, buffer::endian endian = buffer::endian::BIG);
     ostream&                write(const void* buffer, size_t size);
-    ostream&                write(const ostream& wb);
+    ostream&                write(const buffer& wb);
     ostream&                write(const std::string& str, bool uint16 = false);
 };
 

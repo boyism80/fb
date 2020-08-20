@@ -72,22 +72,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -193,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="..\module\acceptor\acceptor.h" />
     <ClInclude Include="..\module\acceptor\acceptor.hpp" />
+    <ClInclude Include="..\module\common\type.h" />
     <ClInclude Include="..\module\config\config.h" />
     <ClInclude Include="..\module\console\console.h" />
     <ClInclude Include="..\module\crypto\cryptor.h" />

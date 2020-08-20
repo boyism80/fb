@@ -53,6 +53,9 @@
     <Filter Include="module\service">
       <UniqueIdentifier>{37fb4326-25f1-4ad4-af2f-1421324bfd73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\common">
+      <UniqueIdentifier>{bfc2e009-3581-4809-8871-595a40a93557}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="..\module\service\service.h">
       <Filter>module\service</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\common\type.h">
+      <Filter>module\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

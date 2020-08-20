@@ -1,5 +1,4 @@
 #include <model/mmo/mmo.h>
-#include <model/session/session.h>
 
 using namespace fb::game;
 

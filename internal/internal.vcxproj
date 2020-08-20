@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,10 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{FCA3D8F1-0E42-4DF3-A799-33C7AF44609A}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>game</RootNamespace>
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{29CB60CC-5EE4-420B-8E14-C516E75294DA}</ProjectGuid>
+    <RootNamespace>internal</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -30,27 +29,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,27 +71,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SourcePath)</SourcePath>
+    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SourcePath)</SourcePath>
+    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SourcePath)</SourcePath>
+    <IncludePath>$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,7 +101,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmtd.lib;zlib\x86\zlibd.lib;lua\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>
+      </StackReserveSize>
+      <AdditionalDependencies>json\x86\json_vc71_libmtd.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -122,7 +120,10 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmtd.lib;zlib\x64\zlibd.lib;lua\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>
+      </StackReserveSize>
+      <AdditionalDependencies>json\x64\json_vc71_libmtd.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -142,7 +143,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmt.lib;zlib\x86\zlib.lib;lua\x86\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>
+      </StackReserveSize>
+      <AdditionalDependencies>json\x86\json_vc71_libmt.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -162,7 +166,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmt.lib;zlib\x64\zlib.lib;lua\x64\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>
+      </StackReserveSize>
+      <AdditionalDependencies>json\x64\json_vc71_libmt.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -176,33 +183,10 @@
     <ClCompile Include="..\module\socket\socket.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\timer\timer.cpp" />
-    <ClCompile Include="builtin\builtin_function.cpp" />
-    <ClCompile Include="model\acceptor\acceptor.game.cpp" />
-    <ClCompile Include="model\acceptor\acceptor.game.handler.cpp" />
-    <ClCompile Include="model\board\board.cpp" />
-    <ClCompile Include="model\clan\clan.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\door\door.cpp" />
-    <ClCompile Include="model\group\group.cpp" />
-    <ClCompile Include="model\item\item.cpp" />
-    <ClCompile Include="model\life\life.cpp" />
-    <ClCompile Include="model\listener\listener.cpp" />
-    <ClCompile Include="model\lua\lua.cpp" />
-    <ClCompile Include="model\map\map.cpp" />
-    <ClCompile Include="model\master\master.cpp" />
-    <ClCompile Include="model\mmo\mmo.cpp" />
-    <ClCompile Include="model\mob\mob.cpp" />
-    <ClCompile Include="model\npc\npc.cpp" />
-    <ClCompile Include="model\object\object.cpp" />
-    <ClCompile Include="model\session\session.cpp" />
-    <ClCompile Include="model\spell\spell.cpp" />
-    <ClCompile Include="model\trade\trade.cpp" />
-    <ClCompile Include="service\map\service.map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\acceptor\acceptor.h" />
     <ClInclude Include="..\module\acceptor\acceptor.hpp" />
-    <ClInclude Include="..\module\common\type.h" />
     <ClInclude Include="..\module\config\config.h" />
     <ClInclude Include="..\module\console\console.h" />
     <ClInclude Include="..\module\crypto\cryptor.h" />
@@ -213,36 +197,6 @@
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\timer\timer.h" />
-    <ClInclude Include="builtin\builtin_function.h" />
-    <ClInclude Include="builtin\builtin_function.hpp" />
-    <ClInclude Include="model\acceptor\acceptor.game.h" />
-    <ClInclude Include="model\board\board.h" />
-    <ClInclude Include="model\clan\clan.h" />
-    <ClInclude Include="model\container\container.h" />
-    <ClInclude Include="model\container\container.hpp" />
-    <ClInclude Include="model\door\door.h" />
-    <ClInclude Include="model\group\group.h" />
-    <ClInclude Include="model\item\item.h" />
-    <ClInclude Include="model\life\life.h" />
-    <ClInclude Include="model\listener\listener.h" />
-    <ClInclude Include="model\lua\lua.h" />
-    <ClInclude Include="model\map\map.h" />
-    <ClInclude Include="model\master\master.h" />
-    <ClInclude Include="model\mmo\mmo.h" />
-    <ClInclude Include="model\mob\mob.h" />
-    <ClInclude Include="model\npc\npc.h" />
-    <ClInclude Include="model\object\object.h" />
-    <ClInclude Include="model\session\session.h" />
-    <ClInclude Include="model\spell\spell.h" />
-    <ClInclude Include="model\trade\trade.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="service\map\service.map.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="game.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\..\Desktop\baram.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

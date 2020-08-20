@@ -37,9 +37,9 @@ session::~session()
     delete this->_master;
 }
 
-void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap, bool async)
 {
-    this->_socket->send(stream, encrypt, wrap);
+    this->_socket->send(stream, encrypt, wrap, async);
 }
 
 object::types fb::game::session::type() const

@@ -28,7 +28,7 @@ public:
     uint32_t                id() const { return this->_id; }
     void                    id(uint32_t value) { this->_id = value; }
 
-    virtual void            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
+    virtual void            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true) { }
 };
 
 class socket : public boost::asio::ip::tcp::socket, public virtual base
@@ -46,7 +46,7 @@ public:
     ~socket();
 
 public:
-    void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    send(const ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
     fb::cryptor&            crt();
     void                    crt(const fb::cryptor& crt);
     void                    crt(uint8_t enctype, const uint8_t* enckey);

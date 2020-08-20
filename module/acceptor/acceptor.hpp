@@ -48,14 +48,14 @@ void fb::acceptor<T>::accept()
 template<class T>
 inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
 {
-    auto i = this->_response_table.find(cmd);
-    if(i == this->_response_table.end())
+    auto i = this->_handler_dict.find(cmd);
+    if(i == this->_handler_dict.end())
     {
         printf("matched header not found : 0x%2X\n", cmd);
-        return true;
+        return true; 
     }
 
-    return i->second(session);
+    return i->second((void*)&session);
 }
 
 template <typename T>
@@ -63,48 +63,50 @@ void fb::acceptor<T>::handle_parse(T& session)
 {
     static uint8_t      not_crt_cmd[] = {0x00, 0x10};
     static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
-    auto&               istream     = session.in_stream();
+    auto&               in_stream   = session.in_stream();
     auto&               crt         = session.crt();
 
     while(true)
     {
         try
         {
-            if(istream.readable_size() < base_size)
+            if(in_stream.readable_size() < base_size)
                 break;
 
             // Read base head and check it is 0xAA
-            uint8_t             head = istream.read_u8();
+            auto                head = in_stream.read_u8();
             if(head != 0xAA)
                 throw std::exception();
 
 
             // Read data size and check it is greater than buffer size
-            uint16_t            size = istream.read_u16(buffer::endian::BIG);
-            if(size > istream.capacity())
+            auto                size = in_stream.read_u16(buffer::endian::BIG);
+            if(size > in_stream.capacity())
                 throw std::exception();
 
 
             // If data size is not enough to parse, do not anymore
-            if(istream.readable_size() < size)
+            if(in_stream.readable_size() < size)
                 break;
 
 
-            // Erase head and size data
-            istream.shift(base_size);
-
             // If command byte is not 0x10, this data must be decrypted by session's encrypt key
-            uint8_t             cmd = istream.read_u8();
+            auto                cmd = in_stream.read_u8();
             if(std::all_of(not_crt_cmd, not_crt_cmd + sizeof(not_crt_cmd)/sizeof(uint8_t), [cmd] (uint8_t x) { return cmd != x; }))
-                size = crt.decrypt(istream, istream.position(), size);
+                size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
             // Call function that matched by command byte
-            istream.reset();
             if(this->call_handle(session, cmd) == false)
                 throw std::exception();
 
             // Set data pointer to process next packet bytes
-            istream.shift(size);
+            in_stream.reset();
+            in_stream.shift(base_size + size);
+            in_stream.flush();
+        }
+        catch(std::exception& e)
+        {
+            break;
         }
         catch(...)
         {
@@ -112,7 +114,7 @@ void fb::acceptor<T>::handle_parse(T& session)
         }
     }
 
-    istream.reset();
+    in_stream.reset();
 }
 
 template <typename T>
@@ -155,9 +157,17 @@ void fb::acceptor<T>::handle_disconnected(fb::socket& socket)
 }
 
 template <typename T>
-void fb::acceptor<T>::register_fn(uint8_t cmd, std::function<bool(T&)> fn)
+template <typename R>
+void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(T&, R&)> fn)
 {
-    this->_response_table.insert(std::make_pair(cmd, fn));
+    this->_handler_dict[cmd] = [this, fn](void* x)
+    {
+        auto& session = *static_cast<T*>(x);
+        auto& in_stream = session.in_stream();
+        R     request;
+        request.deserialize(in_stream);
+        return fn(session, request);
+    };
 }
 
 template<class T>
@@ -193,10 +203,10 @@ void fb::acceptor<T>::transfer(T& session, const std::string& ip, uint16_t port,
 }
 
 template <typename T>
-void fb::acceptor<T>::send_stream(fb::base& base, const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::acceptor<T>::send_stream(fb::base& base, const fb::ostream& stream, bool encrypt, bool wrap, bool async)
 {
     if(stream.empty())
         return;
 
-    base.send(stream, encrypt, wrap);
+    base.send(stream, encrypt, wrap, async);
 }

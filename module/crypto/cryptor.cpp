@@ -83,7 +83,7 @@ void fb::cryptor::intercrypt(const uint8_t* source, uint8_t* dest, uint32_t size
 
 uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 {
-    const uint8_t*          data_c   = data.data() + offset;
+    const uint8_t*          data_c   = (uint8_t*)data.data() + offset;
     uint8_t*                buffer   = new uint8_t[size + 0x100];
     uint8_t                 key_size = 0x09;
 
@@ -135,7 +135,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data)
 
 uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 {
-    const uint8_t*          data_c   = data.data() + offset;
+    const uint8_t*          data_c   = (uint8_t*)data.data() + offset;
     uint8_t*                buffer   = new uint8_t[size + 0x100];
     uint8_t                 key_size = 0x09;
 
@@ -236,11 +236,20 @@ fb::cryptor& fb::cryptor::operator=(const cryptor& crt)
 
 fb::cryptor fb::cryptor::generate()
 {
+#if defined DEBUG | defined _DEBUG
+    auto                    enc_type        = 1;
+#else
     auto                    enc_type        = rand() % 0x09;
-    uint8_t                 enc_key[0x09] = {0,};
+#endif
+    uint8_t                 enc_key[0x09]   = {0,};
 
+#if defined DEBUG | defined _DEBUG
+    for(int i = 0; i < 0x09; i++)
+        enc_key[i] = i + 1;
+#else
     for(int i = 0; i < 0x09; i++)
         enc_key[i] = rand() % 255 + 1;
+#endif
 
     return cryptor(enc_type, enc_key);
 }

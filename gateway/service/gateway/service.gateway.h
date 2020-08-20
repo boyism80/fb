@@ -15,6 +15,7 @@
 #include <model/session/session.gateway.h>
 #include <module/service/service.h>
 #include <model/gateway/gateway.h>
+#include <protocol/gateway.h>
 
 namespace fb { namespace gateway { namespace service { 
 
@@ -25,7 +26,7 @@ public:
     ~gateway();
 
 public:
-    void                        assert_client(fb::gateway::session& session);
+    void                        assert_client(const fb::protocol::request::gateway::assert_version& request);
 };
 
 } } }

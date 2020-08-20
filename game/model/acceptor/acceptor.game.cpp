@@ -166,43 +166,42 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     lua_register(lua::main::get(), "name2map",  builtin_name2map);
     lua_register(lua::main::get(), "timer",     builtin_timer);
     lua_register(lua::main::get(), "weather",   builtin_weather);
+    
+    this->bind<fb::protocol::request::game::login>            (0x10, std::bind(&acceptor::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
+    this->bind<fb::protocol::request::game::direction>        (0x11, std::bind(&acceptor::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
+    this->bind<fb::protocol::request::game::exit>             (0x0B, std::bind(&acceptor::handle_exit,            this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
+    this->bind<fb::protocol::request::game::update_move>      (0x06, std::bind(&acceptor::handle_update_move,     this, std::placeholders::_1, std::placeholders::_2));   // 이동과 맵 데이터 업데이트 핸들러
+    this->bind<fb::protocol::request::game::move>             (0x32, std::bind(&acceptor::handle_move,            this, std::placeholders::_1, std::placeholders::_2));   // 이동 핸들러
+    this->bind<fb::protocol::request::game::attack>           (0x13, std::bind(&acceptor::handle_attack,          this, std::placeholders::_1, std::placeholders::_2));   // 공격 핸들러
+    this->bind<fb::protocol::request::game::pick_up>          (0x07, std::bind(&acceptor::handle_pickup,          this, std::placeholders::_1, std::placeholders::_2));   // 아이템 줍기 핸들러
+    this->bind<fb::protocol::request::game::emotion>          (0x1D, std::bind(&acceptor::handle_emotion,         this, std::placeholders::_1, std::placeholders::_2));   // 감정표현 핸들러
+    this->bind<fb::protocol::request::game::map::update>      (0x05, std::bind(&acceptor::handle_update_map,      this, std::placeholders::_1, std::placeholders::_2));   // 맵 데이터 업데이트 핸들러
+    this->bind<fb::protocol::request::game::refresh>          (0x38, std::bind(&acceptor::handle_refresh,         this, std::placeholders::_1, std::placeholders::_2));   // 새로고침 핸들러
+    this->bind<fb::protocol::request::game::item::active>     (0x1C, std::bind(&acceptor::handle_active_item,     this, std::placeholders::_1, std::placeholders::_2));   // 아이템 사용 핸들러
+    this->bind<fb::protocol::request::game::item::inactive>   (0x1F, std::bind(&acceptor::handle_inactive_item,   this, std::placeholders::_1, std::placeholders::_2));   // 아이템 장착 해제 핸들러
+    this->bind<fb::protocol::request::game::item::drop>       (0x08, std::bind(&acceptor::handle_drop_item,       this, std::placeholders::_1, std::placeholders::_2));   // 아이템 버리기 핸들러
+    this->bind<fb::protocol::request::game::item::drop_cash>  (0x24, std::bind(&acceptor::handle_drop_cash,       this, std::placeholders::_1, std::placeholders::_2));   // 금전 버리기 핸들러
+    this->bind<fb::protocol::request::game::front_info>       (0x09, std::bind(&acceptor::handle_front_info,      this, std::placeholders::_1, std::placeholders::_2));   // 앞방향 정보 핸들러
+    this->bind<fb::protocol::request::game::self_info>        (0x2D, std::bind(&acceptor::handle_self_info,       this, std::placeholders::_1, std::placeholders::_2));   // 나 자신의 정보 핸들러
+    this->bind<fb::protocol::request::game::change_option>    (0x1B, std::bind(&acceptor::handle_option_changed,  this, std::placeholders::_1, std::placeholders::_2));   // 옵션 설정 핸들러
+    this->bind<fb::protocol::request::game::click>            (0x43, std::bind(&acceptor::handle_click_object,    this, std::placeholders::_1, std::placeholders::_2));   // 오브젝트 클릭 핸들러
+    this->bind<fb::protocol::request::game::item::info>       (0x66, std::bind(&acceptor::handle_item_info,       this, std::placeholders::_1, std::placeholders::_2));   // 인벤토리 우클릭 핸들러
+    this->bind<fb::protocol::request::game::item::mix>        (0x6B, std::bind(&acceptor::handle_itemmix,         this, std::placeholders::_1, std::placeholders::_2));   // 아이템 조합 핸들러
+    this->bind<fb::protocol::request::game::trade>            (0x4A, std::bind(&acceptor::handle_trade,           this, std::placeholders::_1, std::placeholders::_2));   // 교환 핸들러
+    this->bind<fb::protocol::request::game::group>            (0x2E, std::bind(&acceptor::handle_group,           this, std::placeholders::_1, std::placeholders::_2));   // 그룹 핸들러
+    this->bind<fb::protocol::request::game::user_list>        (0x18, std::bind(&acceptor::handle_user_list,       this, std::placeholders::_1, std::placeholders::_2));   // 유저 리스트 핸들러
+    this->bind<fb::protocol::request::game::chat>             (0x0E, std::bind(&acceptor::handle_chat,            this, std::placeholders::_1, std::placeholders::_2));   // 유저 채팅 핸들러
+    this->bind<fb::protocol::request::game::board>            (0x3B, std::bind(&acceptor::handle_board,           this, std::placeholders::_1, std::placeholders::_2));   // 게시판 섹션 리스트 핸들러
+    this->bind<fb::protocol::request::game::swap>             (0x30, std::bind(&acceptor::handle_swap,            this, std::placeholders::_1, std::placeholders::_2));   // 스펠 순서 변경
+    this->bind<fb::protocol::request::game::dialog>           (0x3A, std::bind(&acceptor::handle_dialog,          this, std::placeholders::_1, std::placeholders::_2));   // 다이얼로그
+    this->bind<fb::protocol::request::game::dialog>           (0x39, std::bind(&acceptor::handle_dialog,          this, std::placeholders::_1, std::placeholders::_2));   // 다이얼로그
+    this->bind<fb::protocol::request::game::item::throws>     (0x17, std::bind(&acceptor::handle_throw_item,      this, std::placeholders::_1, std::placeholders::_2));   // 아이템 던지기 핸들러
+    this->bind<fb::protocol::request::game::spell::use>       (0x0F, std::bind(&acceptor::handle_spell,           this, std::placeholders::_1, std::placeholders::_2));   // 스펠 핸들러
+    this->bind<fb::protocol::request::game::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
 
-
-    this->register_fn(0x10, std::bind(&acceptor::handle_login, this, std::placeholders::_1));          // 게임서버 접속 핸들러
-    this->register_fn(0x11, std::bind(&acceptor::handle_direction, this, std::placeholders::_1));      // 방향전환 핸들러
-    this->register_fn(0x0B, std::bind(&acceptor::handle_exit, this, std::placeholders::_1));           // 접속 종료
-    this->register_fn(0x06, std::bind(&acceptor::handle_update_move, this, std::placeholders::_1));    // 이동과 맵 데이터 업데이트 핸들러
-    this->register_fn(0x32, std::bind(&acceptor::handle_move, this, std::placeholders::_1));           // 이동 핸들러
-    this->register_fn(0x13, std::bind(&acceptor::handle_attack, this, std::placeholders::_1));         // 공격 핸들러
-    this->register_fn(0x07, std::bind(&acceptor::handle_pickup, this, std::placeholders::_1));         // 아이템 줍기 핸들러
-    this->register_fn(0x1D, std::bind(&acceptor::handle_emotion, this, std::placeholders::_1));        // 감정표현 핸들러
-    this->register_fn(0x05, std::bind(&acceptor::handle_update_map, this, std::placeholders::_1));     // 맵 데이터 업데이트 핸들러
-    this->register_fn(0x38, std::bind(&acceptor::handle_refresh, this, std::placeholders::_1));        // 새로고침 핸들러
-    this->register_fn(0x1C, std::bind(&acceptor::handle_active_item, this, std::placeholders::_1));    // 아이템 사용 핸들러
-    this->register_fn(0x1F, std::bind(&acceptor::handle_inactive_item, this, std::placeholders::_1));  // 아이템 장착 해제 핸들러
-    this->register_fn(0x08, std::bind(&acceptor::handle_drop_item, this, std::placeholders::_1));      // 아이템 버리기 핸들러
-    this->register_fn(0x24, std::bind(&acceptor::handle_drop_cash, this, std::placeholders::_1));      // 금전 버리기 핸들러
-    this->register_fn(0x09, std::bind(&acceptor::handle_front_info, this, std::placeholders::_1));     // 앞방향 정보 핸들러
-    this->register_fn(0x2D, std::bind(&acceptor::handle_self_info, this, std::placeholders::_1));      // 나 자신의 정보 핸들러
-    this->register_fn(0x1B, std::bind(&acceptor::handle_option_changed, this, std::placeholders::_1)); // 옵션 설정 핸들러
-    this->register_fn(0x43, std::bind(&acceptor::handle_click_object, this, std::placeholders::_1));   // 오브젝트 클릭 핸들러
-    this->register_fn(0x66, std::bind(&acceptor::handle_item_info, this, std::placeholders::_1));      // 인벤토리 우클릭 핸들러
-    this->register_fn(0x6B, std::bind(&acceptor::handle_itemmix, this, std::placeholders::_1));        // 아이템 조합 핸들러
-    this->register_fn(0x4A, std::bind(&acceptor::handle_trade, this, std::placeholders::_1));          // 교환 핸들러
-    this->register_fn(0x2E, std::bind(&acceptor::handle_group, this, std::placeholders::_1));          // 그룹 핸들러
-    this->register_fn(0x18, std::bind(&acceptor::handle_user_list, this, std::placeholders::_1));      // 유저 리스트 핸들러
-    this->register_fn(0x0E, std::bind(&acceptor::handle_chat, this, std::placeholders::_1));           // 유저 채팅 핸들러
-    this->register_fn(0x3B, std::bind(&acceptor::handle_board, this, std::placeholders::_1));          // 게시판 섹션 리스트 핸들러
-    this->register_fn(0x30, std::bind(&acceptor::handle_swap, this, std::placeholders::_1));           // 스펠 순서 변경
-    this->register_fn(0x3A, std::bind(&acceptor::handle_dialog, this, std::placeholders::_1));         // 다이얼로그
-    this->register_fn(0x39, std::bind(&acceptor::handle_dialog, this, std::placeholders::_1));         // 다이얼로그
-    this->register_fn(0x17, std::bind(&acceptor::handle_throw_item, this, std::placeholders::_1));     // 아이템 던지기 핸들러
-    this->register_fn(0x0F, std::bind(&acceptor::handle_spell, this, std::placeholders::_1));          // 스펠 핸들러
-    this->register_fn(0x20, std::bind(&acceptor::handle_door, this, std::placeholders::_1));           // 도어 핸들러
-
-    this->_timer.push(std::bind(&acceptor::handle_mob_action, this, std::placeholders::_1), 100);      // 몹 행동 타이머
-    this->_timer.push(std::bind(&acceptor::handle_mob_respawn, this, std::placeholders::_1), 1000);    // 몹 리젠 타이머
-    this->_timer.push(std::bind(&acceptor::handle_buff_timer, this, std::placeholders::_1), 1000);     // 버프 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);    // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
 }
 
 acceptor::~acceptor()
@@ -371,20 +370,12 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
         .resume(2);
 }
 
-bool fb::game::acceptor::handle_login(fb::game::session& session)
+bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::protocol::request::game::login& request)
 {
-    auto&                   istream = session.in_stream();
-    uint8_t                 enc_key[0x09] = {0,};
-
-    auto                    cmd = istream.read_u8();
-    auto                    enc_type = istream.read_u8();
-    auto                    key_size = istream.read_u8();
-    istream.read(enc_key, key_size);
-
     // Set crypt data
-    session.crt(enc_type, enc_key);
+    session.crt(request.enc_type, request.enc_key);
 
-    session.name(istream.readstr_u8());
+    session.name(request.name);
 
     auto found = this->_connection->query
     (
@@ -460,41 +451,29 @@ bool fb::game::acceptor::handle_login(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_direction(fb::game::session& session)
+bool fb::game::acceptor::handle_direction(fb::game::session& session, const fb::protocol::request::game::direction& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    direction = fb::game::direction(istream.read_u8());
-
-    if(session.direction(direction) == false)
+    if(session.direction(request.direction) == false)
         return false;
 
     return true;
 }
 
-bool fb::game::acceptor::handle_exit(fb::game::session& session)
+bool fb::game::acceptor::handle_exit(fb::game::session& session, const fb::protocol::request::game::exit& request)
 {
     const auto&             config = fb::config();
     this->transfer(session, config["login"]["ip"].asString(), config["login"]["port"].asInt());
     return true;
 }
 
-bool fb::game::acceptor::handle_move(fb::game::session& session)
+bool fb::game::acceptor::handle_move(fb::game::session& session, const fb::protocol::request::game::move& request)
 {
-    auto&                   istream = session.in_stream();
-
-    fb::game::map*          map = session.map();
+    auto                    map = session.map();
     if(map == nullptr)
         return false;
 
-    auto                    cmd = istream.read_u8();
-    auto                    direction = fb::game::direction(istream.read_u8());
-    auto                    sequence = istream.read_u8();
-    auto                    x = istream.read_u16();
-    auto                    y = istream.read_u16();
-
-    point16_t               before(x, y);
-    session.move(direction, before);
+    point16_t               before(request.position);
+    session.move(request.direction, before);
 
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
@@ -503,115 +482,78 @@ bool fb::game::acceptor::handle_move(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_update_move(fb::game::session& session)
+bool fb::game::acceptor::handle_update_move(fb::game::session& session, const fb::protocol::request::game::update_move& request)
 {
-    if(this->handle_move(session) == false)
+    if(this->handle_move(session, request) == false)
         return false;
 
-    auto&                   istream = session.in_stream();
-    auto                    begin_x = istream.read_u16();
-    auto                    begin_y = istream.read_u16();
-    auto                    width = istream.read_u8();
-    auto                    height = istream.read_u8();
-    auto                    crc = istream.read_u16();
-    this->send_stream(session, session.map()->make_update_stream(begin_x, begin_y, width, height, crc), scope::SELF);
+    this->send_stream(session, session.map()->make_update_stream(request.begin.x, request.begin.y, request.size.width, request.size.height, request.crc), scope::SELF);
     return true;
 }
 
-bool fb::game::acceptor::handle_attack(fb::game::session& session)
+bool fb::game::acceptor::handle_attack(fb::game::session& session, const fb::protocol::request::game::attack& request)
 {
     session.attack();
     return true;
 }
 
-bool fb::game::acceptor::handle_pickup(fb::game::session& session)
+bool fb::game::acceptor::handle_pickup(fb::game::session& session, const fb::protocol::request::game::pick_up& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    bool                    boost = bool(istream.read_u8());
-
-    session.items.pickup(boost);
+    session.items.pickup(request.boost);
     return true;
 }
 
-bool fb::game::acceptor::handle_emotion(fb::game::session& session)
+bool fb::game::acceptor::handle_emotion(fb::game::session& session, const fb::protocol::request::game::emotion& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    emotion = istream.read_u8();
-
-    session.action(action(action::EMOTION + emotion), duration::DURATION_EMOTION);
+    session.action(action(action::EMOTION + request.emotion), duration::DURATION_EMOTION);
     return true;
 }
 
-bool fb::game::acceptor::handle_update_map(fb::game::session& session)
+bool fb::game::acceptor::handle_update_map(fb::game::session& session, const fb::protocol::request::game::map::update& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    x = istream.read_u16();
-    auto                    y = istream.read_u16();
-    auto                    width = istream.read_u8();
-    auto                    height = istream.read_u8();
-    auto                    crc = istream.read_u16();
-
-    this->send_stream(session, session.map()->make_update_stream(x, y, width, height, crc), scope::SELF);
+    this->send_stream(session, session.map()->make_update_stream(request.position.x, request.position.y, request.size.width, request.size.height, request.crc), scope::SELF);
     return true;
 }
 
-bool fb::game::acceptor::handle_refresh(fb::game::session& session)
+bool fb::game::acceptor::handle_refresh(fb::game::session& session, const fb::protocol::request::game::refresh& request)
 {
     this->send_stream(session, session.make_position_stream(), scope::SELF);
     return true;
 }
 
-bool fb::game::acceptor::handle_active_item(fb::game::session& session)
+bool fb::game::acceptor::handle_active_item(fb::game::session& session, const fb::protocol::request::game::item::active& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    index = istream.read_u8() - 1;
-
-    session.items.active(index);
+    session.items.active(request.index);
     return true;
 }
 
-bool fb::game::acceptor::handle_inactive_item(fb::game::session& session)
+bool fb::game::acceptor::handle_inactive_item(fb::game::session& session, const fb::protocol::request::game::item::inactive& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    slot(equipment::slot(istream.read_u8()));
-
-    session.items.inactive(slot);
+    session.items.inactive(request.slot);
     return true;
 }
 
-bool fb::game::acceptor::handle_drop_item(fb::game::session& session)
+bool fb::game::acceptor::handle_drop_item(fb::game::session& session, const fb::protocol::request::game::item::drop& request)
 {
-    auto&               istream = session.in_stream();
-    auto                cmd = istream.read_u8();
-    auto                index = istream.read_u8() - 1;
-    bool                drop_all = bool(istream.read_u8());
-
-    session.items.drop(index, drop_all ? -1 : 1);
+    session.items.drop(request.index, request.all ? -1 : 1);
     return true;
 }
 
-bool fb::game::acceptor::handle_drop_cash(fb::game::session& session)
+bool fb::game::acceptor::handle_drop_cash(fb::game::session& session, const fb::protocol::request::game::item::drop_cash& request)
 {
     auto                map = session.map();
     if(map == nullptr)
         return false;
 
-    auto&               istream = session.in_stream();
-    auto                cmd = istream.read_u8();
-    auto                chunk = std::min(session.money(), istream.read_u32());
-    auto                cash = new fb::game::cash(chunk, this);
+    auto                chunk = std::min(session.money(), request.chunk);
+    //auto                cash = new fb::game::cash(chunk, this);
 
     session.money_drop(chunk);
     return true;
 }
 
 // TODO : on_notify를 이용
-bool fb::game::acceptor::handle_front_info(fb::game::session& session)
+bool fb::game::acceptor::handle_front_info(fb::game::session& session, const fb::protocol::request::game::front_info& request)
 {
     auto                    map = session.map();
     if(map == nullptr)
@@ -638,7 +580,7 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_self_info(fb::game::session& session)
+bool fb::game::acceptor::handle_self_info(fb::game::session& session, const fb::protocol::request::game::self_info& request)
 {
     this->send_stream(session, session.make_internal_info_stream(), scope::SELF);
     
@@ -647,11 +589,9 @@ bool fb::game::acceptor::handle_self_info(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
+bool fb::game::acceptor::handle_option_changed(fb::game::session& session, const fb::protocol::request::game::change_option& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    option = options(istream.read_u8());
+    auto                    option = options(request.option);
 
     if(option == options::RIDE)
     {
@@ -667,25 +607,20 @@ bool fb::game::acceptor::handle_option_changed(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_click_object(fb::game::session& session)
+bool fb::game::acceptor::handle_click_object(fb::game::session& session, const fb::protocol::request::game::click& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    unknown = istream.read_u8();
-    auto                    fd = istream.read_u32();
-
-    if(fd == 0xFFFFFFFF) // Press F1
+    if(request.fd == 0xFFFFFFFF) // Press F1
     {
         return true;
     }
 
-    if(fd == 0xFFFFFFFE) // Preff F2
+    if(request.fd == 0xFFFFFFFE) // Preff F2
     {
         return true;
     }
 
     auto                    map = session.map();
-    auto                    other = map->objects.find(fd);
+    auto                    other = map->objects.find(request.fd);
     if(other == nullptr)
         return true;
 
@@ -708,56 +643,40 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session)
 }
 
 // TODO : on_item_detail
-bool fb::game::acceptor::handle_item_info(fb::game::session& session)
+bool fb::game::acceptor::handle_item_info(fb::game::session& session, const fb::protocol::request::game::item::info& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        position = istream.read_u16();
-    auto                        unknown1 = istream.read_u8();
-    auto                        unknown2 = istream.read_u8();
-    auto                        unknown3 = istream.read_u8();
-    auto                        slot = istream.read_u8() - 1;
-
-    auto                        item = session.items[slot];
+    auto                        item = session.items[request.slot];
     if(item == nullptr)
         return false;
 
-    this->send_stream(session, item->make_tip_stream(position), scope::SELF);
+    this->send_stream(session, item->make_tip_stream(request.position), scope::SELF);
     return true;
 }
 
-bool fb::game::acceptor::handle_itemmix(fb::game::session& session)
+bool fb::game::acceptor::handle_itemmix(fb::game::session& session, const fb::protocol::request::game::item::mix& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        count = istream.read_u8();
-    if(count > item::MAX_SLOT - 1)
+    if(request.indices.size() > item::MAX_SLOT - 1)
         return false;
 
     itemmix::builder            builder(session, this);
-    for(int i = 0; i < count; i++)
-        builder.push(istream.read_u8() - 1);
+    for(auto x : request.indices)
+        builder.push(x - 1);
 
     builder.mix();
     return true;
 }
 
-bool fb::game::acceptor::handle_trade(fb::game::session& me)
+bool fb::game::acceptor::handle_trade(fb::game::session& me, const fb::protocol::request::game::trade& request)
 {
-    auto&                       istream = me.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        action = istream.read_u8();
-    auto                        fd = istream.read_u32();
-
     auto                        map = me.map();
     if(map == nullptr)
         return true;
 
-    auto                        you = static_cast<game::session*>(map->objects.find(fd));   // 파트너
+    auto                        you = static_cast<game::session*>(map->objects.find(request.fd));   // 파트너
     if(you == nullptr)
         return true;
 
-    switch(action)
+    switch(request.action)
     {
     case trade::state::REQUEST:
     {
@@ -767,8 +686,7 @@ bool fb::game::acceptor::handle_trade(fb::game::session& me)
 
     case trade::state::UP_ITEM: // 아이템 올릴때
     {
-        auto                index = istream.read_u8() - 1;
-        auto                item = me.items[index];
+        auto                item = me.items[request.parameter.index];
         if(item == nullptr)
             break;
 
@@ -778,16 +696,14 @@ bool fb::game::acceptor::handle_trade(fb::game::session& me)
 
     case trade::state::ITEM_COUNT: // 아이템 갯수까지 해서 올릴 때
     {
-        auto                count = istream.read_u16();
-        me.trade.count(count);
+        me.trade.count(request.parameter.count);
         break;
     }
 
     case trade::state::UP_MONEY: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        auto                money = istream.read_u32();
-        me.trade.up(money);
+        me.trade.up(request.parameter.money);
         break;
     }
 
@@ -807,20 +723,15 @@ bool fb::game::acceptor::handle_trade(fb::game::session& me)
     return true;
 }
 
-bool fb::game::acceptor::handle_group(fb::game::session& session)
+bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::protocol::request::game::group& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        name = istream.readstr_u8();
-    
-
     try
     {
         std::stringstream       sstream;
-        auto                    you = this->find_session(name);
+        auto                    you = this->find_session(request.name);
         if(you == nullptr)
         {
-            sstream << name << "님을 찾을 수 없습니다.";
+            sstream << request.name << "님을 찾을 수 없습니다.";
             throw std::runtime_error(sstream.str());
         }
 
@@ -846,7 +757,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
         {
             if(your != nullptr)
             {
-                sstream << name << "님은 이미 그룹 참여 중입니다.";
+                sstream << request.name << "님은 이미 그룹 참여 중입니다.";
                 throw std::runtime_error(sstream.str());
             }
 
@@ -857,7 +768,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
 
             sstream.str("");
-            sstream << name << "님 그룹에 참여";
+            sstream << request.name << "님 그룹에 참여";
             this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
         }
         else // 기존 그룹에 초대하기
@@ -870,13 +781,13 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
 
             if(mine != your && your != nullptr)
             {
-                sstream << name << "님은 다른 그룹에 참여 중입니다.";
+                sstream << request.name << "님은 다른 그룹에 참여 중입니다.";
                 throw std::runtime_error(sstream.str());
             }
 
             if(mine == your)
             {
-                sstream << name << "님 그룹 탈퇴";
+                sstream << request.name << "님 그룹 탈퇴";
                 this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
                 mine->leave(*you);
                 return true;
@@ -887,7 +798,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
                 throw std::runtime_error("자리가 없습니다.");
             }
             
-            sstream << name << "님 그룹에 참여";
+            sstream << request.name << "님 그룹에 참여";
             this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
         }
     }
@@ -899,13 +810,8 @@ bool fb::game::acceptor::handle_group(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_user_list(fb::game::session& session)
+bool fb::game::acceptor::handle_user_list(fb::game::session& session, const fb::protocol::request::game::user_list& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        unknown = istream.read_u8();
-
-
     fb::ostream                 ostream;
     ostream.write_u8(0x36)
         .write_u16((uint16_t)sessions.size())
@@ -927,40 +833,27 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_chat(fb::game::session& session)
+bool fb::game::acceptor::handle_chat(fb::game::session& session, const fb::protocol::request::game::chat& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    
-    auto                        shout = istream.read_u8();
-    auto                        length = istream.read_u8();
-    static char                 message[0xFF];
-    istream.read(message, length);
-    message[length] = 0;
-
 #if defined DEBUG | defined _DEBUG
-    if(this->handle_admin(session, message))
+    if(this->handle_admin(session, request.message))
         return true;
 #endif
 
     std::stringstream           sstream;
-    if(shout)
-        sstream << session.name() << "! " << message;
+    if(request.shout)
+        sstream << session.name() << "! " << request.message;
     else
-        sstream << session.name() << ": " << message;
+        sstream << session.name() << ": " << request.message;
 
-    this->send_stream(session, session.make_chat_stream(sstream.str(), shout ? chat::SHOUT : chat::NORMAL), shout ? scope::MAP : scope::PIVOT);
+    this->send_stream(session, session.make_chat_stream(sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
 
     return true;
 }
 
-bool fb::game::acceptor::handle_board(fb::game::session& session)
+bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::protocol::request::game::board& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        action = istream.read_u8();
-
-    switch(action)
+    switch(request.action)
     {
     case 0x01: // section list
     {
@@ -970,40 +863,27 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
 
     case 0x02: // article list
     {
-        auto                    section_id = istream.read_u16();
-        auto                    offset = istream.read_u16();
-
-        this->send_stream(session, game::master::get().board.make_articles_stream(section_id, offset), scope::SELF);
+        this->send_stream(session, game::master::get().board.make_articles_stream(request.section, request.offset), scope::SELF);
         break;
     }
 
     case 0x03: // article
     {
-        auto                    section_id = istream.read_u16();
-        auto                    article_id = istream.read_u16();
-
-        this->send_stream(session, game::master::get().board.make_article_stream(section_id, article_id, session), scope::SELF);
+        this->send_stream(session, game::master::get().board.make_article_stream(request.section, request.article, session), scope::SELF);
         break;
     }
 
     case 0x04:
     {
-        auto                    section_id = istream.read_u16();
-        auto                    subject = istream.readstr_u8();
-        auto                    content = istream.readstr_u16();
-
-        auto                    section = game::master::get().board.sections().at(section_id);
-        if(section->add(subject, content, session.name()) != nullptr)
+        auto                    section = game::master::get().board.sections().at(request.section);
+        if(section->add(request.title, request.contents, session.name()) != nullptr)
             this->send_stream(session, game::master::get().board.make_message_stream("글을 작성하였습니다.", true, true), scope::SELF);
         break;
     }
 
     case 0x05: // delete
     {
-        auto                    section_id = istream.read_u16();
-        auto                    article_id = istream.read_u16();
-
-        this->send_stream(session, game::master::get().board.make_delete_stream(section_id, article_id, session), scope::SELF);
+        this->send_stream(session, game::master::get().board.make_delete_stream(request.section, request.article, session), scope::SELF);
         break;
     }
 
@@ -1012,25 +892,19 @@ bool fb::game::acceptor::handle_board(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_swap(fb::game::session& session)
+bool fb::game::acceptor::handle_swap(fb::game::session& session, const fb::protocol::request::game::swap& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        type = swap::type(istream.read_u8());
-    auto                        src = istream.read_u8();
-    auto                        dest = istream.read_u8();
-
-    switch(type)
+    switch(request.type)
     {
     case swap::type::SPELL:
     {
-        session.spells.swap(src-1, dest-1);
+        session.spells.swap(request.src-1, request.dest-1);
         break;
     }
 
     case swap::type::ITEM:
     {
-        session.items.swap(src-1, dest-1);
+        session.items.swap(request.src-1, request.dest-1);
         break;
     }
 
@@ -1041,46 +915,31 @@ bool fb::game::acceptor::handle_swap(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_dialog(fb::game::session& session)
+bool fb::game::acceptor::handle_dialog(fb::game::session& session, const fb::protocol::request::game::dialog& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        interaction = istream.read_u8();
-
-    switch(interaction)
+    switch(request.interaction)
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        istream.read(nullptr, 0x07); // 7바이트 무시
-        auto                    action = istream.read_u8();
-
-        session.dialog.pushinteger(action).resume(1);
+        session.dialog.pushinteger(request.action).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        auto unknown1 = istream.read_u16();
-        auto unknown2 = istream.read_u32();
-        auto message = istream.readstr_u16();
-
-        session.dialog.pushstring(message).resume(1);
+        session.dialog.pushstring(request.message).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT_EX:
     {
-        istream.read(nullptr, 0x07); // 7바이트 무시
-        auto                    action = istream.read_u8();
-        if(action == 0x02) // OK button
+        if(request.action == 0x02) // OK button
         {
-            auto unknown1 = istream.read_u8();
-            auto message = istream.readstr_u8();
-            session.dialog.pushstring(message);
+            session.dialog.pushstring(request.message);
         }
         else
         {
-            session.dialog.pushinteger(action);
+            session.dialog.pushinteger(request.action);
         }
 
         session.dialog.resume(1);
@@ -1089,10 +948,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 
     case dialog::interaction::MENU:
     {
-        auto unknown = istream.read_u32();
-        auto index = istream.read_u16();
-
-        session.dialog.pushinteger(index).resume(1);
+        session.dialog.pushinteger(request.index).resume(1);
         break;
     }
 
@@ -1103,11 +959,7 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
 
     case dialog::interaction::SELL:
     {
-        auto unknown = istream.read_u32();
-        auto pursuit = istream.read_u16();
-        auto item_name = istream.readstr_u8();
-
-        session.dialog.pushstring(item_name).resume(1);
+        session.dialog.pushstring(request.name).resume(1);
         break;
     }
 
@@ -1120,27 +972,18 @@ bool fb::game::acceptor::handle_dialog(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_throw_item(fb::game::session& session)
+bool fb::game::acceptor::handle_throw_item(fb::game::session& session, const fb::protocol::request::game::item::throws& request)
 {
-    auto&                       istream = session.in_stream();
-    auto                        cmd = istream.read_u8();
-    auto                        unknown = istream.read_u8();
-    auto                        index = istream.read_u8() - 1;
-
-    session.items.throws(index);
+    session.items.throws(request.index);
     return true;
 }
 
-bool fb::game::acceptor::handle_spell(fb::game::session& session)
+bool fb::game::acceptor::handle_spell(fb::game::session& session, const fb::protocol::request::game::spell::use& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd = istream.read_u8();
-    auto                    slot = istream.read_u8() - 1;
-
-    if(slot > spell::MAX_SLOT - 1)
+    if(request.slot > spell::MAX_SLOT - 1)
         return false;
 
-    auto                    spell = session.spells[slot];
+    auto                    spell = session.spells[request.slot];
     if(spell == nullptr)
         return false;
 
@@ -1148,33 +991,27 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     thread.from("scripts/spell/%s.lua", spell->cast().c_str())
           .func("handle_spell");
 
-
+    request.parse(spell->type());
     switch(spell->type())
     {
     case spell::types::INPUT:
     {
         char                message[256];
-        auto                size = istream.size() - (sizeof(uint8_t) + sizeof(uint16_t) + sizeof(uint8_t) + sizeof(uint8_t));
-        istream.read(message, std::min(uint64_t(256), uint64_t(size))); message[size] = 0x00;
 
         thread.pushobject(session)
             .pushobject(spell)
-            .pushstring(message)
+            .pushstring(request.message)
             .resume(3);
         break;
     }
 
     case spell::types::TARGET:
     {
-        auto                id = istream.read_u32();
-        auto                x = istream.read_u16();
-        auto                y = istream.read_u16();
-
         auto                map = session.map();
         if(map == nullptr)
             return false;
 
-        auto                target = map->objects.find(id);
+        auto                target = map->objects.find(request.fd);
         if(target == nullptr)
             return true;
 
@@ -1204,7 +1041,7 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session)
     return true;
 }
 
-bool fb::game::acceptor::handle_door(fb::game::session& session)
+bool fb::game::acceptor::handle_door(fb::game::session& session, const fb::protocol::request::game::door& request)
 {
     lua::thread()
         .from("scripts/common/door.lua")

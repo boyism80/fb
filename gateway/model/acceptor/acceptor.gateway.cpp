@@ -8,8 +8,8 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     this->load_entries();
 
     // Register event handler
-    this->register_fn(0x00, std::bind(&acceptor::handle_check_version, this, std::placeholders::_1));
-    this->register_fn(0x57, std::bind(&acceptor::handle_entry_list, this, std::placeholders::_1));
+    this->bind<fb::protocol::request::gateway::assert_version>  (0x00, std::bind(&acceptor::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::request::gateway::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()
@@ -77,11 +77,11 @@ bool acceptor::handle_disconnected(fb::gateway::session& session)
     return false;
 }
 
-bool acceptor::handle_check_version(fb::gateway::session& session)
+bool acceptor::handle_check_version(fb::gateway::session& session, const fb::protocol::request::gateway::assert_version& request)
 {
     try
     {
-        this->_gateway_service.assert_client(session);
+        this->_gateway_service.assert_client(request);
 
         auto crt = cryptor::generate();
         session.crt(crt);
@@ -95,18 +95,13 @@ bool acceptor::handle_check_version(fb::gateway::session& session)
     }
 }
 
-bool acceptor::handle_entry_list(fb::gateway::session& session)
+bool acceptor::handle_entry_list(fb::gateway::session& session, const fb::protocol::request::gateway::entry_list& request)
 {
-    auto&                   istream = session.in_stream();
-    auto                    cmd     = istream.read_u8();
-    auto                    request = istream.read_u8();
-
-    switch(request)
+    switch(request.action)
     {
     case 0x00:
     {
-        auto                index = istream.read_u8();
-        const auto&         entry = this->_entries[index];
+        const auto&         entry = this->_entries[request.index];
         this->transfer(session, entry->ip(), entry->port());
         return true;
     }
