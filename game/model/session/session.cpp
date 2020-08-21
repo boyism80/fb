@@ -735,10 +735,24 @@ bool fb::game::session::move(const point16_t& before)
 
 bool fb::game::session::move(fb::game::direction direction, const point16_t& before)
 {
-    if(this->_position != before && this->_listener != nullptr)
-        this->_listener->on_hold(*this);
-
-    return object::move(direction);
+    if(this->_position != before)
+    {
+        if(this->_listener != nullptr)
+            this->_listener->on_hold(*this);
+        
+        return false;
+    }
+    else if(object::move(direction) == false)
+    {
+        if(this->_listener != nullptr)
+            this->_listener->on_hold(*this);
+        
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 void fb::game::session::ride(fb::game::mob& horse)
