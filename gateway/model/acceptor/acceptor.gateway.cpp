@@ -23,7 +23,7 @@ bool fb::gateway::acceptor::load_entries()
         auto entries = fb::config()["entries"];
         for(auto i = entries.begin(); i != entries.end(); i++)
         {
-            this->_entries.push_back(new host_entry
+            this->_entries.push_back(entry
             (
                 i.key().asCString(), 
                 (*i)["desc"].asCString(), 
@@ -32,7 +32,7 @@ bool fb::gateway::acceptor::load_entries()
             ));
         }
 
-        this->_entry_stream_cache = this->_entries.make_stream();
+        response::gateway::hosts(this->_entries).serialize(this->_entry_stream_cache);
         this->_entry_crc32_cache = this->_entry_stream_cache.crc();
         return true;
     }
@@ -86,7 +86,7 @@ bool acceptor::handle_check_version(fb::gateway::session& session, const fb::pro
         auto crt = cryptor::generate();
         session.crt(crt);
 
-        this->send_stream(session, this->make_crt_stream(crt), false);
+        this->send(session, response::gateway::crt(crt, this->_entry_crc32_cache), false);
         return true;
     }
     catch(std::exception& e)
@@ -102,7 +102,7 @@ bool acceptor::handle_entry_list(fb::gateway::session& session, const fb::protoc
     case 0x00:
     {
         const auto&         entry = this->_entries[request.index];
-        this->transfer(session, entry->ip(), entry->port());
+        this->transfer(session, entry.ip(), entry.port());
         return true;
     }
 
