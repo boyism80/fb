@@ -271,7 +271,8 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        switch(interaction)
+        this->interaction = in_stream.read_u8();
+        switch(this->interaction)
         {
         case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
         {

@@ -15,5 +15,6 @@
 #include <protocol/response.game.session.h>
 #include <protocol/response.game.dialog.h>
 #include <protocol/response.game.board.h>
+#include <protocol/response.game.trade.h>
 
 #endif // !__PROTOCOL_GAME_H__

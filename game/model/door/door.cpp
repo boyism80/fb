@@ -141,7 +141,8 @@ int fb::game::door::builtin_update(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
     const auto& map = door->map();
-    acceptor->send_stream(map.make_update_stream(door->position.x, door->position.y, (uint8_t)master.size(), 1), map);
+    const auto size = size8_t((uint8_t)master.size(), 1);
+    acceptor->send(response::game::map::update(map, door->position, size), map);
     return 0;
 }
 

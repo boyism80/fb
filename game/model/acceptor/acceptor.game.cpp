@@ -236,29 +236,6 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
         pair.second->handle_timer(elapsed_milliseconds);
 }
 
-fb::ostream fb::game::acceptor::make_time_stream()
-{
-    fb::ostream             ostream;
-    auto                    hours = 25;
-    ostream.write_u8(0x20)      // cmd : 0x20
-           .write_u8(hours%24)  // hours
-           .write_u8(0x00)      // Unknown
-           .write_u8(0x00);     // Unknown
-
-    return ostream;
-}
-
-fb::ostream fb::game::acceptor::make_bright_stream(uint8_t value)
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x20)
-        .write_u8(0x00)
-        .write_u8(std::max(0, 20 - value));
-
-    return ostream;
-}
-
 fb::game::session* fb::game::acceptor::find_session(const std::string& name) const
 {
     auto i = std::find_if(this->sessions.begin(), this->sessions.end(), 
@@ -419,18 +396,8 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<auxiliary>(this));
     session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<auxiliary>(this));
 
-    // TODO
-    // 이거 뭐야
-    fb::ostream             ostream;
-    ostream.write_u8(0x1E)
-           .write_u8(0x06)
-           .write_u8(0x00);
-    this->send_stream(session, ostream, scope::SELF);
-    
-    // TODO
-    // message, time 등은 일반 game 네임스페이스에 정의
-    this->send_stream(session, this->make_time_stream(), scope::SELF);
-
+    this->send(session, response::game::init(), scope::SELF);
+    this->send(session, response::game::time(25), scope::SELF);
     this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
     this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
     this->send(session, response::game::session::id(session), scope::SELF);
@@ -481,7 +448,7 @@ bool fb::game::acceptor::handle_update_move(fb::game::session& session, const fb
     if(this->handle_move(session, request) == false)
         return false;
 
-    this->send(session, response::game::map::update(request.begin, request.size), scope::SELF);
+    this->send(session, response::game::map::update(*session.map(), request.begin, request.size), scope::SELF);
     return true;
 }
 
@@ -505,7 +472,7 @@ bool fb::game::acceptor::handle_emotion(fb::game::session& session, const fb::pr
 
 bool fb::game::acceptor::handle_update_map(fb::game::session& session, const fb::protocol::request::game::map::update& request)
 {
-    this->send(session, response::game::map::update(request.position, request.size), scope::SELF);
+    this->send(session, response::game::map::update(*session.map(), request.position, request.size), scope::SELF);
     return true;
 }
 
@@ -1330,42 +1297,42 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "weather")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, weather::make_stream(weather::type(value)), scope::SELF);
+        this->send(session, response::game::weather(weather::type(value)), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "bright")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, this->make_bright_stream(value), scope::SELF);
+        this->send(session, response::game::bright(value), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "timer")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, timer::make_stream(value), scope::SELF);
+        this->send(session, response::game::timer(value), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "effect")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, session.make_effect_stream(value), scope::SELF);
+        this->send(session, response::game::object::effect(session, value), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "action")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, session.make_action_stream(game::action(value), duration::DURATION_SPELL), scope::SELF);
+        this->send(session, response::game::session::action(session, game::action(value), duration::DURATION_SPELL), scope::SELF);
         return true;
     }
 
     if(splitted[0] == "sound")
     {
         auto value = std::stoi(splitted[1]);
-        this->send_stream(session, session.make_sound_stream(game::sound::type(value)), scope::SELF);
+        this->send(session, response::game::object::sound(session, game::sound::type(value)), scope::SELF);
         return true;
     }
 
@@ -1397,9 +1364,9 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
             return true;
 
         session.disguise(mob->look());
-        this->send_stream(session, session.make_effect_stream(0x03), scope::PIVOT);
-        this->send_stream(session, session.make_action_stream(action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
-        this->send_stream(session, session.make_sound_stream(sound::type(0x0019)), scope::PIVOT);
+        this->send(session, response::game::object::effect(session, 0x03), scope::PIVOT);
+        this->send(session, response::game::session::action(session, action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
+        this->send(session, response::game::object::sound(session, sound::type(0x0019)), scope::PIVOT);
         return true;
     }
 
@@ -1433,7 +1400,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto mob = new fb::game::mob(core, this, true);
         auto map = session.map();
         map->objects.add(*mob, session.position());
-        this->send_stream(session, mob->make_show_stream(), scope::PIVOT);
+        this->send(session, response::game::object::show(*mob), scope::PIVOT);
         return true;
     }
 
@@ -1446,8 +1413,8 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
         session.cls(cls);
         session.promotion(promotion);
-        this->send_stream(session, session.make_id_stream(), scope::SELF);
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        this->send(session, response::game::session::id(session), scope::SELF);
+        this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
         return true;
     }
 
@@ -1455,7 +1422,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     {
         auto level = std::stoi(splitted[1]);
         session.level(level);
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+        this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
         return true;
     }
 

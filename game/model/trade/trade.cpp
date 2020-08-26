@@ -121,7 +121,7 @@ bool fb::game::trade::trading() const
     return this->_you != nullptr;
 }
 
-bool fb::game::trade::up(item& item)
+bool fb::game::trade::up(fb::game::item& item)
 {
     try
     {
@@ -192,6 +192,11 @@ bool fb::game::trade::up(uint8_t money)
 
         return false;
     }
+}
+
+uint32_t fb::game::trade::money() const
+{
+    return this->_money;
 }
 
 bool fb::game::trade::count(uint16_t count)
@@ -385,92 +390,12 @@ bool fb::game::trade::lock()
     }
 }
 
-fb::ostream fb::game::trade::make_show_stream(bool mine, uint8_t index) const
+const std::vector<fb::game::item*>& fb::game::trade::items() const
 {
-    try
-    {
-        fb::ostream             ostream;
-        const auto              item = this->_items[index];
-
-        ostream.write_u8(0x42)
-            .write_u8(0x02)
-            .write_u8(mine ? 0x00 : 0x01)
-            .write_u8(index) // trade slot index
-            .write_u16(item->look())
-            .write_u8(item->color())
-            .write(item->name_trade())
-            .write_u8(0x00);
-
-        return ostream;
-    }
-    catch(std::exception&)
-    {
-        return fb::ostream();
-    }
+    return this->_items;
 }
 
-fb::ostream fb::game::trade::make_money_stream(bool mine) const
+const fb::game::item* fb::game::trade::item(uint8_t index) const
 {
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x03)
-        .write_u8(mine ? 0x00 : 0x01)
-        .write_u32(this->_money)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade::make_dialog_stream() const
-{
-    fb::ostream             ostream;
-    const auto              class_name = game::master::get().class2name(this->_owner.cls(), this->_owner.promotion());
-    if(class_name == nullptr)
-        return ostream;
-
-    std::stringstream sstream;
-    sstream << this->_owner.name() << '(' << class_name->c_str() << ')';
-
-    ostream.write_u8(0x42)
-        .write_u8(0x00)
-        .write_u32(this->_owner.id())
-        .write(sstream.str())
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade::make_bundle_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x01)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade::make_close_stream(const std::string& message) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x04)
-        .write(message, true)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::trade::make_lock_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x42)
-        .write_u8(0x05)
-        .write_u8(0x00);
-
-    return ostream;
+    return this->_items.at(index);
 }

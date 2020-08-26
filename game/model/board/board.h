@@ -105,13 +105,6 @@ public:
 
 public:
     section*                            operator [] (uint32_t index);
-
-public:
-    ostream                             make_sections_stream() const;
-    ostream                             make_articles_stream(uint16_t section_id, uint16_t offset) const;
-    ostream                             make_article_stream(uint16_t section_id, uint16_t article_id, const session& session) const;
-    ostream                             make_delete_stream(uint16_t section_id, uint16_t article_id, const session& session) const;
-    ostream                             make_message_stream(const std::string& message, bool success, bool refresh = false) const;
 };
 
 } }

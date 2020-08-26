@@ -129,38 +129,6 @@ inline bool fb::game::spells::swap(uint8_t src, uint8_t dest)
     return true;
 }
 
-fb::ostream fb::game::spells::make_update_stream(uint8_t index) const
-{
-    ostream                 ostream;
-    auto                    spell = this->at(index);
-    if(spell == nullptr)
-        return ostream;
-
-    ostream.write_u8(0x17)
-        .write_u8(index + 1)
-        .write_u8(spell->type())
-        .write(spell->name());
-
-    if(spell->type() < 3)
-        ostream.write(spell->message());
-
-    return ostream;
-}
-
-fb::ostream fb::game::spells::make_delete_stream(uint8_t index) const
-{
-    ostream                 ostream;
-    auto                    spell = this->at(index);
-    if(spell != nullptr)
-        return ostream;
-
-    ostream.write_u8(0x18)
-        .write_u8(index + 1)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::game::buff::buff(const game::spell* spell, uint32_t time) : 
     _spell(spell),
     _time(time)
@@ -194,28 +162,6 @@ void fb::game::buff::time_inc(uint32_t inc)
 void fb::game::buff::time_dec(uint32_t dec)
 {
     this->_time--;
-}
-
-fb::ostream fb::game::buff::make_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x3A)
-        .write(this->_spell->name())
-        .write_u32(this->_time);
-
-    return ostream;
-}
-
-fb::ostream fb::game::buff::make_clear_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x3A)
-        .write(this->_spell->name())
-        .write_u32(0x00);
-
-    return ostream;
 }
 
 fb::game::buff::operator const fb::game::spell& () const

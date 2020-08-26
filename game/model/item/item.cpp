@@ -172,7 +172,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
         object->position((uint16_t)lua_tointeger(lua, 3), (uint16_t)lua_tointeger(lua, 4));
     }
 
-    acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+    acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
 
     object->to_lua(lua);
     return 1;
@@ -330,19 +330,6 @@ const std::string& fb::game::item::active_script() const
 fb::game::item::attrs fb::game::item::attr() const
 {
     return static_cast<const master*>(this->_master)->attr();
-}
-
-fb::ostream fb::game::item::make_tip_stream(uint16_t position)
-{
-    fb::ostream             ostream;
-    std::string             message = this->tip_message();
-
-    ostream.write_u8(0x59)
-        .write_u16(position)
-        .write(message, true)
-        .write_u8(0x00);
-
-    return ostream;
 }
 
 bool fb::game::item::active()
@@ -908,6 +895,8 @@ bool fb::game::equipment::active()
         this->_listener->on_show(*this->_owner, false);
         this->_listener->on_equipment_on(*this->_owner, *this, slot);
     }
+
+    return true;
 }
 
 uint16_t fb::game::equipment::dress() const
@@ -1864,6 +1853,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, item::delete
     {
         if(this->_listener != nullptr)
             this->_listener->on_notify(owner, e.what());
+        return nullptr;
     }
 }
 
@@ -1963,11 +1953,13 @@ bool fb::game::items::throws(uint8_t index)
             this->_listener->on_item_throws(this->_owner, *dropped, position);
         
         map->objects.add(*dropped, position);
+        return true;
     }
     catch(std::exception& e)
     {
         if(this->_listener != nullptr)
             this->_listener->on_notify(this->_owner, e.what());
+        return false;
     }
 }
 
@@ -2024,103 +2016,6 @@ inline bool fb::game::items::swap(uint8_t src, uint8_t dest)
     }
 
     return true;
-}
-
-fb::ostream fb::game::items::make_update_stream(uint8_t index) const
-{
-    fb::ostream             ostream;
-    auto                    item = this->at(index);
-    if(item == nullptr)
-        return ostream;
-
-    ostream.write_u8(0x0F)
-        .write_u8(index + 1)
-        .write_u16(item->look())
-        .write_u8(item->color())
-        .write(item->name_styled(), false)
-        .write_u32(item->count())
-        .write_u8(0x00)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::items::make_update_stream(equipment::slot slot) const
-{
-    fb::ostream             ostream;
-    fb::game::item*         item;
-
-    switch(slot)
-    {
-    case equipment::slot::WEAPON_SLOT:
-        item = this->weapon();
-        break;
-
-    case equipment::slot::ARMOR_SLOT:
-        item = this->armor();
-        break;
-
-    case equipment::slot::SHIELD_SLOT:
-        item = this->shield();
-        break;
-
-    case equipment::slot::HELMET_SLOT:
-        item = this->helmet();
-        break;
-
-    case equipment::slot::LEFT_HAND_SLOT:
-        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
-        break;
-
-    case equipment::slot::RIGHT_HAND_SLOT:
-        item = this->ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
-
-    case equipment::slot::LEFT_AUX_SLOT:
-        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
-        break;
-
-    case equipment::slot::RIGHT_AUX_SLOT:
-        item = this->auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
-
-    default:
-        return ostream;
-    }
-
-    if(item == nullptr)
-        return ostream;
-
-    ostream.write_u8(0x37)
-        .write_u16(item->look())
-        .write_u8(item->color())
-        .write(item->name(), false);
-
-    return ostream;
-}
-
-fb::ostream fb::game::items::make_delete_stream(item::delete_attr types, uint32_t index, uint16_t count) const
-{
-    fb::ostream             ostream;
-    if(index + 1 > item::MAX_SLOT)
-        return ostream;
-
-    ostream.write_u8(0x10)
-        .write_u8(index + 1)
-        .write_u8(types)
-        .write_u16(count);
-
-    return ostream;
-}
-
-fb::ostream fb::game::items::make_unequip_stream(equipment::slot slot) const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x38)
-        .write_u8(slot)
-        .write_u8(0x00);
-
-    return ostream;
 }
 
 fb::game::itemmix::builder::builder(session& owner, listener* listener) : 

@@ -51,8 +51,6 @@ public:
     ~acceptor();
 
 private:
-    fb::ostream             make_time_stream();
-    fb::ostream             make_bright_stream(uint8_t value);
     fb::game::session*      find_session(const std::string& name) const;
 
 public:

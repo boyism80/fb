@@ -36,8 +36,6 @@ namespace timer
         INCREASE            = 0x01,
         DECREASE            = 0x02,
     };
-
-    fb::ostream             make_stream(uint32_t time, type type = timer::type::DECREASE);
 }
 
 namespace weather
@@ -49,8 +47,6 @@ namespace weather
         SNOW                = 0x02,
         BIRD                = 0x03,
     };
-
-    fb::ostream             make_stream(type weather);
 }
 
 namespace chat
@@ -156,9 +152,6 @@ namespace message
         static const std::string UNLOCK = "문을 열었습니다.";
         static const std::string LOCKED = "문이 잠겼습니다.";
     }
-
-
-    fb::ostream             make_stream(const std::string& message, message::type types = message::type::STATE);
 }
 
 enum options : uint8_t

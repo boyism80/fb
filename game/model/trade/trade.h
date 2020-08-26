@@ -54,19 +54,15 @@ public:
 
     bool                    up(item& item);
     bool                    up(uint8_t money);
+    uint32_t                money() const;
 
     bool                    count(uint16_t count);
 
     bool                    cancel();
     bool                    lock();
 
-public:
-    fb::ostream             make_show_stream(bool mine, uint8_t index) const;
-    fb::ostream             make_money_stream(bool mine) const;
-    fb::ostream             make_dialog_stream() const;
-    fb::ostream             make_bundle_stream() const;
-    fb::ostream             make_close_stream(const std::string& message) const;
-    fb::ostream             make_lock_stream() const;
+    const std::vector<item*>& items() const;
+    const item*             item(uint8_t index) const;
 };
 
 } }

@@ -296,14 +296,6 @@ public:
 #pragma endregion
 
 
-#pragma region make stream method
-
-public:
-    fb::ostream                     make_tip_stream(uint16_t position);
-
-#pragma endregion
-
-
 #pragma region event method
 
 public:
@@ -974,12 +966,6 @@ public:
     fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                 remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     inline bool                     swap(uint8_t src, uint8_t dest);
-
-public:
-    fb::ostream                     make_update_stream(uint8_t index) const;
-    fb::ostream                     make_update_stream(equipment::slot slot) const;
-    fb::ostream                     make_delete_stream(item::delete_attr types, uint32_t index, uint16_t count = 0) const;
-    fb::ostream                     make_unequip_stream(equipment::slot slot) const;
 };
 
 

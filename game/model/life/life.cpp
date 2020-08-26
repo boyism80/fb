@@ -280,44 +280,6 @@ void fb::game::life::kill()
         this->_listener->on_hide(*this);
 }
 
-fb::ostream fb::game::life::make_action_stream(fb::game::action action, fb::game::duration duration, uint8_t sound) const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x1A)
-        .write_u32(this->id())
-        .write_u8(action) // type
-        .write_u16(duration) // duration
-        .write_u8(sound); // sound
-
-    return ostream;
-}
-
-fb::ostream fb::game::life::make_show_hp_stream(uint32_t random_damage, bool critical) const
-{
-    fb::ostream             ostream;
-    uint8_t                 percentage = uint8_t((this->_hp / float(this->base_hp())) * 100);
-
-    ostream.write_u8(0x13)
-        .write_u32(this->id())
-        .write_u8(critical)
-        .write_u8(percentage)
-        .write_u32(random_damage)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::life::make_die_stream() const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x5F)
-        .write_u32(this->id())
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 int fb::game::life::builtin_hp(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
@@ -421,7 +383,7 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
     auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)lua_tointeger(lua, 4);
 
-    acceptor->send_stream(*life, life->make_action_stream(fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
+    acceptor->send(*life, response::game::life::action(*life, fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
     return 0;
 }
 

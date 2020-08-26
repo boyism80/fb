@@ -146,14 +146,6 @@ public:
 #pragma endregion
 
 
-#pragma region make stream method
-public:
-    fb::ostream                 make_action_stream(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00) const;
-    fb::ostream                 make_show_hp_stream(uint32_t random_damage, bool critical) const;
-    fb::ostream                 make_die_stream() const;
-#pragma endregion
-
-
 #pragma region built-in method
 public:
     static int                  builtin_hp(lua_State* lua);

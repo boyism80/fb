@@ -6,6 +6,21 @@
 
 namespace fb { namespace protocol { namespace response { namespace game {
 
+class init : public fb::protocol::base::response
+{
+public:
+    init()
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x1E)
+                  .write_u8(0x06)
+                  .write_u8(0x00);
+    }
+};
+
 class message : public fb::protocol::base::response
 {
 public:
@@ -76,6 +91,85 @@ public:
                   .write_u8(this->type)
                   .write_u32(this->me.id())
                   .write(this->text);
+    }
+};
+
+class time : public fb::protocol::base::response
+{
+public:
+    const uint8_t               hours;
+
+public:
+    time(uint8_t hours) : 
+        hours(hours)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x20)      // cmd : 0x20
+                  .write_u8(this->hours%24)  // hours
+                  .write_u8(0x00)      // Unknown
+                  .write_u8(0x00);     // Unknown
+    }
+};
+
+class weather : public fb::protocol::base::response
+{
+public:
+    const fb::game::weather::type   value;
+
+public:
+    weather(fb::game::weather::type value) : 
+        value(value)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x1F)
+                  .write_u8(this->value)
+                  .write_u8(0x00);
+    }
+};
+
+class bright : public fb::protocol::base::response
+{
+public:
+    const uint8_t                   value;
+
+public:
+    bright(uint8_t value) : 
+        value(value)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x20)
+                  .write_u8(0x00)
+                  .write_u8(std::max(0, 20 - this->value));
+    }
+};
+
+class timer : public fb::protocol::base::response
+{
+public:
+    const uint32_t                  time;
+    const fb::game::timer::type     type;
+
+public:
+    timer(uint32_t time, fb::game::timer::type type = fb::game::timer::type::DECREASE) : 
+        time(time), type(type)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x67)
+                  .write_u8(this->type)
+                  .write_u32(this->time)
+                  .write_u8(0x00);
     }
 };
 

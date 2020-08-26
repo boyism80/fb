@@ -16,19 +16,6 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
 acceptor::~acceptor()
 {}
 
-const fb::ostream fb::login::acceptor::make_message_stream(int type, const char* msg) const
-{
-    ostream                 ostream;
-    auto                    size = uint32_t(strlen(msg) + 1);
-
-    ostream.write_u8(0x02)
-        .write_u8(type)
-        .write_u8((uint8_t)size)
-        .write((const void*)msg, size);
-
-    return ostream;
-}
-
 fb::login::session* acceptor::handle_alloc_session(fb::socket* socket)
 {
     return new login::session(socket);

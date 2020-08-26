@@ -32,9 +32,6 @@ class gateways : public std::vector<fb::login::gateway*>
 public:
     gateways();
     ~gateways();
-
-public:
-    fb::ostream             make_stream() const;
 };
 
 } }

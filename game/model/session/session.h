@@ -319,23 +319,6 @@ public:
     bool                        alive() const;
 #pragma endregion
 
-
-#pragma region make stream method
-public:
-    fb::ostream                 make_show_stream(bool light = false) const;
-    fb::ostream                 make_id_stream() const;
-    fb::ostream                 make_state_stream(fb::game::state_level level) const;
-    fb::ostream                 make_appears_stream() const;
-    fb::ostream                 make_position_stream() const;
-    fb::ostream                 make_visual_stream(bool light) const;
-
-    fb::ostream                 make_internal_info_stream() const;
-    fb::ostream                 make_external_info_stream() const;
-    fb::ostream                 make_option_stream() const;
-    fb::ostream                 make_throw_item_stream(const item& item, const point16_t& to) const;
-#pragma endregion
-
-
 #pragma region built-in method
 public:
     static int                  builtin_look(lua_State* lua);

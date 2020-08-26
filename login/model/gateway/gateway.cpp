@@ -40,32 +40,3 @@ fb::login::gateways::~gateways()
     for(auto x : *this)
         delete x;
 }
-
-fb::ostream fb::login::gateways::make_stream() const
-{
-    // 서버정보를 바이너리 형식으로 변환
-    ostream                     formats;
-    char                        buffer[256];
-    formats.write_u8((uint8_t)this->size());
-    for(uint32_t i = 0; i < this->size(); i++)
-    {
-        auto                    gateway = this->at(i);
-        uint32_t                len = sprintf(buffer, "%s;%s", gateway->name().c_str(), gateway->dest().c_str()) + 1;
-
-        formats.write_u8(i)
-            .write_u32(gateway->ip())
-            .write_u16(gateway->port())
-            .write(buffer, len);
-    }
-
-    // 바이너리 데이터 압축
-    auto                        compressed = formats.compress();
-
-    // 패킷 형식으로 저장
-    fb::ostream                 ostream;
-    ostream.write_u8(0x56)
-        .write_u16(compressed.size())
-        .write(compressed.data(), compressed.size() + 1);
-
-    return ostream;
-}

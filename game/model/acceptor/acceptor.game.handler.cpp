@@ -2,48 +2,54 @@
 
 void fb::game::acceptor::on_direction(fb::game::object& me)
 {
-    this->send_stream(me, me.make_direction_stream(), scope::PIVOT, true);
+    this->send(me, response::game::object::direction(me), scope::PIVOT, true);
 }
 
 void fb::game::acceptor::on_show(fb::game::object& me, bool light)
 {
-    this->send_stream(me, me.make_show_stream(light), scope::PIVOT);
+    if(me.is(fb::game::object::types::SESSION))
+        this->send(me, response::game::session::show(static_cast<fb::game::session&>(me), light), scope::PIVOT);
+    else
+        this->send(me, response::game::object::show(me), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_show(fb::game::object& me, fb::game::object& you, bool light)
 {
-    this->send_stream(me, you.make_show_stream(light), scope::SELF);
+    if(you.is(fb::game::object::types::SESSION))
+        this->send(me, response::game::session::show(static_cast<fb::game::session&>(you), light), scope::SELF);
+    else
+        this->send(me, response::game::object::show(you), scope::SELF);
 }
 
 void fb::game::acceptor::on_hide(fb::game::object& me)
 {
-    this->send_stream(me, me.make_hide_stream(), scope::PIVOT);
+    this->send(me, response::game::object::hide(me), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_hide(fb::game::object& me, fb::game::object& you)
 {
-    this->send_stream(me, you.make_hide_stream(), scope::SELF);
+    this->send(me, response::game::object::hide(you), scope::SELF);
 }
 
 void fb::game::acceptor::on_move(fb::game::object& me)
 {
-    this->send_stream(me, me.make_move_stream(), scope::PIVOT, true);
+    this->send(me, response::game::object::move(me), scope::PIVOT, true);
 }
 
 void fb::game::acceptor::on_warp(fb::game::object& me)
 {
     auto map = me.map();
 
-    if(me.type() == object::types::SESSION)
+    if(me.is(object::types::SESSION))
     {
         auto& session = static_cast<game::session&>(me);
-        this->send_stream(session, session.make_id_stream(), scope::SELF);
-        this->send_stream(session, map->make_config_stream(), scope::SELF);
-        this->send_stream(session, map->make_bgm_stream(), scope::SELF);
-        this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-        this->send_stream(session, session.make_position_stream(), scope::SELF);
-        this->send_stream(session, session.make_visual_stream(false), scope::SELF);
-        this->send_stream(session, session.make_direction_stream(), scope::SELF);
+        this->send(session, response::game::session::id(session), scope::SELF);
+        this->send(session, response::game::map::config(*map), scope::SELF);
+        this->send(session, response::game::map::bgm(*map), scope::SELF);
+        this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+        this->send(session, response::game::session::position(session), scope::SELF);
+        this->send(session, response::game::session::show(session, false), scope::SELF);
+        this->send(session, response::game::object::direction(session), scope::SELF);
     }
 }
 
@@ -55,7 +61,7 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
          .pushobject(me)
          .pushobject(buff.spell())
          .resume(2);
-    this->send_stream(me, buff.make_clear_stream(), scope::SELF);
+    this->send(me, response::game::spell::unbuff(buff), scope::SELF);
 }
 
 void fb::game::acceptor::on_attack(life& me, object* you, uint32_t damage, bool critical)
@@ -64,7 +70,7 @@ void fb::game::acceptor::on_attack(life& me, object* you, uint32_t damage, bool 
 
 void fb::game::acceptor::on_damage(life& me, object* you, uint32_t damage, bool critical)
 {
-    this->send_stream(me, me.make_show_hp_stream(damage, false), scope::PIVOT);
+    this->send(me, response::game::life::show_hp(me, damage, false), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_heal_hp(life& me, uint32_t value, fb::game::object* from)
@@ -88,22 +94,22 @@ void fb::game::acceptor::on_mp(life& me, uint32_t before, uint32_t current)
 
 void fb::game::acceptor::on_action(session& me, action action, duration duration, uint8_t sound)
 {
-    this->send_stream(me, me.make_action_stream(action, duration), scope::PIVOT);
+    this->send(me, response::game::session::action(me, action, duration), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_updated(session& me, fb::game::state_level level)
 {
-    this->send_stream(me, me.make_state_stream(level), scope::SELF);
+    this->send(me, response::game::session::state(me, level), scope::SELF);
 }
 
 void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bool critical)
 {
-    this->send_stream(me, me.make_action_stream(action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
+    this->send(me, response::game::session::action(me, action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
     {
         auto            sound = weapon->sound();
-        this->send_stream(me, me.make_sound_stream(sound != 0 ? game::sound::type(sound) : game::sound::SWING), scope::PIVOT);
+        this->send(me, response::game::object::sound(me, sound != 0 ? game::sound::type(sound) : game::sound::SWING), scope::PIVOT);
     }
 
 #if !defined DEBUG && !defined _DEBUG
@@ -135,7 +141,7 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
 
 
         if (weapon != nullptr)
-            this->send_stream(me, me.make_sound_stream(sound::type::DAMAGE), scope::PIVOT);
+            this->send(me, response::game::object::sound(me, sound::type::DAMAGE), scope::PIVOT);
 
         life->hp_down(damage, &me, critical);
     }
@@ -144,8 +150,8 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
 
     lua::thread         thread;
     thread.from("scripts/common/attack.lua")
-        .func("handle_attack")
-        .pushobject(me);
+          .func("handle_attack")
+          .pushobject(me);
     if(you != nullptr)
         thread.pushobject(*you);
     else
@@ -159,24 +165,24 @@ void fb::game::acceptor::on_damage(session& me, object* you, uint32_t damage, bo
 
 void fb::game::acceptor::on_hold(session& me)
 {
-    this->send_stream(me, me.make_position_stream(), scope::SELF);
+    this->send(me, response::game::session::position(me), scope::SELF);
 }
 
 void fb::game::acceptor::on_die(session& me)
 {
     me.state(state::GHOST);
-    this->send_stream(me, me.make_visual_stream(true), scope::PIVOT);
+    this->send(me, response::game::session::show(me, true), scope::SELF);
 }
 
 void fb::game::acceptor::on_notify(session& me, const std::string& message, game::message::type type)
 {
-    this->send_stream(me, message::make_stream(message, type), scope::SELF);
+    this->send(me, response::game::message(message, type), scope::SELF);
 }
 
 void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slot slot)
 {
-    this->send_stream(me, me.items.make_update_stream(slot), scope::SELF);
-    this->send_stream(me, me.make_sound_stream(sound::type::EQUIPMENT_ON), scope::PIVOT);
+    this->send(me, response::game::item::update_slot(me, slot), scope::SELF);
+    this->send(me, response::game::object::sound(me, sound::type::EQUIPMENT_ON), scope::PIVOT);
 
     std::stringstream sstream;
     switch(slot)
@@ -215,16 +221,16 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     }
 
     sstream << item.name();
-    this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
 
     sstream.str(std::string());
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
-    this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
 }
 
 void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot)
 {
-    this->send_stream(me, me.make_sound_stream(sound::type::EQUIPMENT_OFF), scope::PIVOT);
+    this->send(me, response::game::object::sound(me, sound::type::EQUIPMENT_OFF), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_item_active(session& me, item& item)
@@ -239,96 +245,96 @@ void fb::game::acceptor::on_item_active(session& me, item& item)
 
 void fb::game::acceptor::on_item_throws(session& me, item& item, const point16_t& to)
 {
-    this->send_stream(me, me.make_throw_item_stream(item, to), scope::PIVOT);
+    this->send(me, response::game::session::throws(me, item, to), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_spell_update(life& me, uint8_t index)
 {
-    this->send_stream(me, me.spells.make_update_stream(index), scope::SELF);
+    this->send(me, response::game::spell::update(me, index), scope::SELF);
 }
 
 void fb::game::acceptor::on_spell_remove(life& me, uint8_t index)
 {
-    this->send_stream(me, me.spells.make_delete_stream(index), scope::SELF);
+    this->send(me, response::game::spell::remove(me, index), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_begin(session& me, session& you)
 {
-    this->send_stream(me, you.trade.make_dialog_stream(), scope::SELF);
+    this->send(me, response::game::trade::dialog(you), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_bundle(session& me)
 {
-    this->send_stream(me, me.trade.make_bundle_stream(), scope::SELF);
+    this->send(me, response::game::trade::bundle(), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_money(session& me, session& from)
 {
     bool mine = (&me == &from);
-    this->send_stream(me, from.trade.make_money_stream(mine), scope::SELF);
+    this->send(me, response::game::trade::money(from, mine), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_cancel(session& me)
 {
-    this->send_stream(me, me.trade.make_close_stream(message::trade::CANCELLED_BY_ME), scope::SELF);
+    this->send(me, response::game::trade::close(message::trade::CANCELLED_BY_ME), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_lock(session& me, bool mine)
 {
     if(mine)
     {
-        this->send_stream(me, me.trade.make_lock_stream(), scope::SELF);
+        this->send(me, response::game::trade::lock(), scope::SELF);
     }
     else
     {
-        this->send_stream(me, message::make_stream(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
+        this->send(me, response::game::message(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
     }
 }
 
 void fb::game::acceptor::on_trade_failed(session& me)
 {
-    this->send_stream(me, me.trade.make_close_stream(message::trade::FAILED), scope::SELF);
+    this->send(me, response::game::trade::close(message::trade::FAILED), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_success(session& me)
 {
-    this->send_stream(me, me.trade.make_close_stream(message::trade::SUCCESS), scope::SELF);
+    this->send(me, response::game::trade::close(message::trade::SUCCESS), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, object.make_dialog_stream(message, button_prev, button_next, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, npc.make_dialog_stream(message, menus, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::menu(npc, menus, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, npc.make_dialog_stream(message, item_slots, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, npc.make_dialog_stream(message, cores, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::item(npc, cores, message, 0xFFFF, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, npc.make_input_dialog_stream(message, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::input(npc, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
-    this->send_stream(me, npc.make_input_dialog_stream(message, top, bottom, maxlen, prev, me.map(), interaction), scope::SELF);
+    this->send(me, response::game::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_item(session& me, session& from, uint8_t index)
 {
     bool mine = (&me == &from);
-    this->send_stream(me, from.trade.make_show_stream(mine, index), scope::SELF);
+    this->send(me, response::game::trade::upload(from, index, mine), scope::SELF);
 }
 
 void fb::game::acceptor::on_option(session& me, fb::game::options option, bool enabled)
@@ -348,7 +354,7 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
         {
             if(group->members().size() == 1)
             {
-                this->send_stream(me, message::make_stream("그룹 해체", message::type::STATE), scope::GROUP);
+                this->send(me, response::game::message("그룹 해체", message::type::STATE), scope::GROUP);
                 fb::game::group::destroy(*group);
             }
             else
@@ -356,7 +362,7 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
                 auto leader = group->leave(me);
                 std::stringstream sstream;
                 sstream << me.name() << "님 그룹 탈퇴";
-                this->send_stream(*leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+                this->send(*leader, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
             }
         }
 
@@ -405,13 +411,13 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
     }
 
     sstream << ": " << (enabled ? "ON" : "OFF");
-    this->send_stream(me, message::make_stream(sstream.str(), message::type::STATE), scope::SELF);
-    this->send_stream(me, me.make_option_stream(), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::session::option(me), scope::SELF);
 }
 
 void fb::game::acceptor::on_level_up(session& me)
 {
-    this->send_stream(me, me.make_effect_stream(0x02), scope::PIVOT);
+    this->send(me, response::game::object::effect(me, 0x02), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
@@ -445,7 +451,7 @@ void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool c
 void fb::game::acceptor::on_die(mob& me)
 {
     // 몹 체력을 다 깎았으면 죽인다.
-    this->send_stream(me, me.make_die_stream(), scope::PIVOT, true);
+    this->send(me, response::game::life::die(me), scope::PIVOT, true);
     me.dead_time(fb::timer::now());
 
     // 드롭 아이템 떨구기
@@ -462,15 +468,15 @@ void fb::game::acceptor::on_die(mob& me)
     }
 
     if(dropped_items.size() != 0)
-        this->send_stream(me, object::make_show_stream(dropped_items), scope::PIVOT, true);
+        this->send(me, response::game::object::show(dropped_items), scope::PIVOT, true);
 }
 
 void fb::game::acceptor::on_item_remove(session& me, uint8_t index, item::delete_attr attr)
 {
-    this->send_stream(me, me.items.make_delete_stream(attr, index), scope::SELF);
+    this->send(me, response::game::item::remove(attr, index, 0), scope::SELF);
 }
 
 void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 {
-    this->send_stream(me, me.items.make_update_stream(index), scope::SELF);
+    this->send(me, response::game::item::update(me, index), scope::SELF);
 }

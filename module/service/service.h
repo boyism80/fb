@@ -11,9 +11,6 @@ class service
 protected:
     service();
     ~service();
-
-protected:
-    static fb::ostream          make_transfer_stream(const fb::cryptor& crt, uint32_t ip, uint16_t port, const fb::ostream* parameter = nullptr);
 };
 
 }

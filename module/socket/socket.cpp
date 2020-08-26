@@ -19,6 +19,9 @@ fb::socket::~socket()
 
 void fb::socket::send(const ostream& stream, bool encrypt, bool wrap, bool async)
 {
+    if(stream.size() == 0)
+        return;
+
     auto clone = ostream(stream);
     if(encrypt)
         this->_crt.encrypt(clone);

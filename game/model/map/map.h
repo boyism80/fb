@@ -186,14 +186,6 @@ public:
 #pragma endregion
 
 
-#pragma region make stream method
-public:
-    fb::ostream                 make_config_stream() const;
-    fb::ostream                 make_bgm_stream() const;
-    fb::ostream                 make_update_stream(uint16_t begin_x, uint16_t begin_y, uint8_t width, uint8_t height, uint16_t crc = 0xFFFF) const;
-#pragma endregion
-
-
 #pragma region built-in method
 public:
     static int                  builtin_name(lua_State* lua);

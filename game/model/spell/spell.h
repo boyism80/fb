@@ -93,11 +93,6 @@ public:
     uint8_t                     add(spell* element);
     bool                        remove(uint8_t index);
     inline bool                 swap(uint8_t src, uint8_t dest);
-
-
-public:
-    fb::ostream                 make_update_stream(uint8_t index) const;
-    fb::ostream                 make_delete_stream(uint8_t index) const;
 };
 
 
@@ -117,10 +112,6 @@ public:
     void                        time(uint32_t value);
     void                        time_inc(uint32_t inc);
     void                        time_dec(uint32_t dec);
-
-public:
-    fb::ostream                 make_stream() const;
-    fb::ostream                 make_clear_stream() const;
 
 public:
     operator                    const game::spell& () const;

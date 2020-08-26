@@ -11,24 +11,21 @@ namespace fb { namespace protocol { namespace response { namespace game { namesp
  class action : public fb::protocol::base::response
  {
  public:
-     const uint32_t              id;
-     const fb::game::action      value;
-     const fb::game::duration    duration;
-     const uint8_t               sound;
+     const fb::game::life&      me;
+     const fb::game::action     value;
+     const fb::game::duration   duration;
+     const uint8_t              sound;
 
  public:
-     action(const fb::game::life& life, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
-         action(life.id(), value, duration, sound)
-     {}
-     action(uint32_t id, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
-         id(id), value(value), duration(duration), sound(sound)
+     action(const fb::game::life& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
+         me(me), value(value), duration(duration), sound(sound)
      {}
 
  public:
      void serialize(fb::ostream& out_stream) const
      {
          out_stream.write_u8(0x1A)
-                   .write_u32(this->id)
+                   .write_u32(this->me.id())
                    .write_u8(this->value) // type
                    .write_u16(this->duration) // duration
                    .write_u8(this->sound); // sound
@@ -38,24 +35,21 @@ namespace fb { namespace protocol { namespace response { namespace game { namesp
 class show_hp : public fb::protocol::base::response
 {
 public:
-    const uint32_t              id;
+    const fb::game::life&       me;
     const uint32_t              damage;
     const bool                  critical;
     const uint8_t               percentage;
 
 public:
-    show_hp(const fb::game::life& life, uint32_t damage, bool critical) : 
-        show_hp(life.id(), damage, uint8_t((life.hp() / float(life.base_hp())) * 100), critical)
-    {}
-    show_hp(uint32_t id, uint32_t damage, uint8_t percentage, bool critical) : 
-        id(id), damage(damage), percentage(percentage), critical(critical)
+    show_hp(const fb::game::life& me, uint32_t damage, bool critical) : 
+        me(me), damage(damage), percentage(percentage), critical(critical)
     {}
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x13)
-                  .write_u32(this->id)
+                  .write_u32(this->me.id())
                   .write_u8(this->critical)
                   .write_u8(this->percentage)
                   .write_u32(this->damage)

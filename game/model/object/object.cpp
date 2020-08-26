@@ -57,29 +57,6 @@ void fb::game::object::master::color(uint8_t value)
     this->_color = value;
 }
 
-fb::ostream fb::game::object::master::make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map, dialog::interaction interaction) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x30)
-        .write_u8(0x00)     // unknown
-        .write_u8(interaction)     // interaction
-        .write_u32(map != nullptr ? map->id() : 0x01)
-        .write_u8(this->dialog_look_type())
-        .write_u8(0x01)
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write_u8(this->dialog_look_type())
-        .write_u16(this->look())
-        .write_u8(this->color())
-        .write_u32(0x01)
-        .write_u8(button_prev)
-        .write_u8(button_next)
-        .write(message, true);
-
-    return ostream;
-}
-
 int fb::game::object::master::builtin_name(lua_State* lua)
 {
     auto object = *(fb::game::object::master**)lua_touserdata(lua, 1);
@@ -697,138 +674,6 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
         (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
-fb::ostream fb::game::object::make_show_stream(bool light) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x07)
-        .write_u16(0x0001) // count
-        .write_u16(this->x()) // object x
-        .write_u16(this->y()) // object y
-        .write_u32(this->id()) // object id
-        .write_u16(this->look()) // npc icon code
-        .write_u8(this->color())  // color
-        .write_u8(this->direction()); // side
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::object*>& objects)
-{
-    fb::ostream             ostream;
-
-    if(objects.size() == 0)
-        return ostream;
-
-    ostream.write_u8(0x07)
-        .write_u16((uint16_t)objects.size());
-
-    for(const auto object : objects)
-    {
-        ostream.write_u16(object->x()) // object x
-            .write_u16(object->y()) // object y
-            .write_u32(object->id()) // object id
-            .write_u16(object->look()) // npc icon code
-            .write_u8(object->color())  // color
-            .write_u8(object->direction()); // side
-
-        std::cout << "show mob : " << object->id() << std::endl;
-    }
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_hide_stream() const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x0E)
-        .write_u32(this->id())
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_direction_stream() const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x11)
-        .write_u32(this->id())
-        .write_u8(this->_direction)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_chat_stream(const std::string& message, chat::type type) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x0D)
-        .write_u8(type)
-        .write_u32(this->id())
-        .write(message);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_sound_stream(fb::game::sound::type sound) const
-{
-    // 0x019A : 장비 해제 사운드
-    // 0x019B : 장비 장착 사운드
-    // 0x0006 : 소비아이템 사용 사운드
-
-    fb::ostream             ostream;
-    ostream.write_u8(0x19)
-        .write_u8(0x00)
-        .write_u8(0x03)
-        .write_u16(sound) // sound
-        .write_u8(100)
-        .write_u16(0x0004)
-        .write_u32(this->id())
-        .write_u16(0x0100)
-        .write_u16(0x0202)
-        .write_u16(0x0004)
-        .write_u16(0xCCCC);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_effect_stream(uint8_t effect) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x29)
-        .write_u32(this->id())
-        .write_u8(effect)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_move_stream(bool from_before) const
-{
-    return this->make_move_stream(this->_direction, from_before);
-}
-
-fb::ostream fb::game::object::make_move_stream(fb::game::direction direction, bool from_before) const
-{
-    fb::ostream             ostream;
-
-    ostream.write_u8(0x0C)
-        .write_u32(this->id())
-        .write_u16(from_before ? this->_before.x : this->_position.x)
-        .write_u16(from_before ? this->_before.y : this->_position.y)
-        .write_u8(direction)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const
-{
-    return this->_master->make_dialog_stream(message, button_prev, button_next, this->_map);
-}
-
 bool fb::game::object::operator==(const object& right) const
 {
     return this->_map == right._map &&
@@ -895,8 +740,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto sound = lua_tointeger(lua, 2);
 
-    acceptor->send_stream(*object, object->make_sound_stream(sound::type(sound)), acceptor::scope::PIVOT);
-
+    acceptor->send(*object, response::game::object::sound(*object, sound::type(sound)), acceptor::scope::PIVOT);
     lua_pushinteger(lua, -1);
     return 1;
 }
@@ -935,12 +779,12 @@ int fb::game::object::builtin_position(lua_State* lua)
     object->position(x, y);
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    acceptor->send_stream(*object, object->make_show_stream(), acceptor::scope::PIVOT);
+    acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
 
     if(object->is(object::types::SESSION))
     {
         auto session = static_cast<fb::game::session*>(object);
-        acceptor->send_stream(*object, session->make_position_stream(), acceptor::scope::SELF);
+        acceptor->send(*object, response::game::session::position(*session), acceptor::scope::SELF);
     }
 
     return 0;
@@ -962,7 +806,7 @@ int fb::game::object::builtin_direction(lua_State* lua)
         object->direction(direction);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-        acceptor->send_stream(*object, object->make_direction_stream(), acceptor::scope::PIVOT);
+        acceptor->send(*object, response::game::object::direction(*object), acceptor::scope::PIVOT);
         return 0;
     }
 }
@@ -989,7 +833,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    acceptor->send_stream(*object, object->make_chat_stream(sstream.str(), type), acceptor::scope::PIVOT);
+    acceptor->send(*object, response::game::object::chat(*object, type, sstream.str()), acceptor::scope::PIVOT);
     return 0;
 }
 
@@ -1002,7 +846,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto type = argc < 3 ? fb::game::message::STATE : lua_tointeger(lua, 3);
 
     if(object->type() == object::types::SESSION)
-        acceptor->send_stream(*object, fb::game::message::make_stream(message, fb::game::message::type(type)), acceptor::scope::SELF);
+        acceptor->send(*object, response::game::message(message, fb::game::message::type(type)), acceptor::scope::SELF);
 
     return 0;
 }
@@ -1018,7 +862,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
     if(buff == nullptr)
         lua_pushnil(lua);
     else
-        acceptor->send_stream(*object, buff->make_stream(), acceptor::scope::SELF);
+        acceptor->send(*object, response::game::spell::buff(*buff), acceptor::scope::SELF);
 
     return 1;
 }
@@ -1073,7 +917,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
     auto effect = (uint8_t)lua_tointeger(lua, 2);
 
     if(object->type() != object::types::ITEM)
-        acceptor->send_stream(*object, object->make_effect_stream(effect), acceptor::scope::PIVOT);
+        acceptor->send(*object, response::game::object::effect(*object, effect), acceptor::scope::PIVOT);
     return 0;
 }
 
@@ -1158,7 +1002,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
         object->_map->objects.add(*item, object->_position);
         item->to_lua(lua);
         
-        acceptor->send_stream(*item, item->make_show_stream(), acceptor::scope::PIVOT);
+        acceptor->send(*item, response::game::object::show(*item), acceptor::scope::PIVOT);
     }
 
     return 1;

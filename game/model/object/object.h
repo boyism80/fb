@@ -95,12 +95,6 @@ public:
 #pragma endregion
         
 
-#pragma region make stream method
-public:
-    fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next, fb::game::map* map = nullptr, dialog::interaction interaction = dialog::interaction::NORMAL) const;
-#pragma endregion
-
-
 #pragma region build-in method
 public:
     static int                  builtin_name(lua_State* lua);
@@ -200,20 +194,6 @@ public:
 
     double                      distance(const object& right) const;
     uint32_t                    distance_sqrt(const object& right) const;
-#pragma endregion
-
-#pragma region make stream method
-public:
-    fb::ostream                 make_direction_stream() const;
-    static fb::ostream          make_show_stream(const std::vector<fb::game::object*>& objects);
-    virtual fb::ostream         make_show_stream(bool light = false) const;
-    fb::ostream                 make_hide_stream() const;
-    fb::ostream                 make_chat_stream(const std::string& message, chat::type type = chat::NORMAL) const;
-    fb::ostream                 make_sound_stream(fb::game::sound::type sound) const;
-    fb::ostream                 make_effect_stream(uint8_t effect) const;
-    fb::ostream                 make_move_stream(bool from_before = true) const;
-    fb::ostream                 make_move_stream(fb::game::direction direction, bool from_before = true) const;
-    fb::ostream                 make_dialog_stream(const std::string& message, bool button_prev, bool button_next) const;
 #pragma endregion
 
 #pragma region handler method

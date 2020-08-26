@@ -61,7 +61,7 @@ public:
                       .write_u8(this->object->color())  // color
                       .write_u8(this->object->direction()); // side
         }
-        else if(this->object != nullptr)
+        else if(this->objects != nullptr)
         {
             out_stream.write_u8(0x07)
                       .write_u16((uint16_t)this->objects->size());
@@ -109,16 +109,13 @@ public:
 class chat : public fb::protocol::base::response
 {
 public:
-    const uint32_t              id;
+    const fb::game::object&     me;
     const uint8_t               type;
     const std::string           message;
 
 public:
-    chat(const fb::game::object& object, const uint8_t type, const std::string message) : 
-        chat(object.id(), type, message)
-    {}
-    chat(const uint32_t id, const uint8_t type, const std::string message) : 
-        id(id), type(type), message(message)
+    chat(const fb::game::object& me, const uint8_t type, const std::string message) : 
+        me(me), type(type), message(message)
     {}
 
 public:
@@ -126,7 +123,7 @@ public:
     {
         out_stream.write_u8(0x0D)
                   .write_u8(this->type)
-                  .write_u32(this->id)
+                  .write_u32(this->me.id())
                   .write(this->message);
     }
 };
@@ -140,7 +137,7 @@ public:
     const bool                  from_before;
 
 public:
-    move(const fb::game::object& object, bool from_before) : 
+    move(const fb::game::object& object, bool from_before = true) : 
         move(object.id(), object.direction(), object.before(), object.position(), from_before)
     {}
     move(const uint32_t id, fb::game::direction direction, const point16_t& before, const point16_t& current, bool from_before) : 
@@ -155,6 +152,55 @@ public:
                   .write_u16(this->from_before ? this->before.x : this->current.x)
                   .write_u16(this->from_before ? this->before.y : this->current.y)
                   .write_u8(this->direction)
+                  .write_u8(0x00);
+    }
+};
+
+class sound : public fb::protocol::base::response
+{
+public:
+    const fb::game::object&         me;
+    const fb::game::sound::type     value;
+
+public:
+    sound(const fb::game::object& me, fb::game::sound::type value) : 
+        me(me), value(value)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x19)
+                  .write_u8(0x00)
+                  .write_u8(0x03)
+                  .write_u16(this->value) // sound
+                  .write_u8(100)
+                  .write_u16(0x0004)
+                  .write_u32(this->me.id())
+                  .write_u16(0x0100)
+                  .write_u16(0x0202)
+                  .write_u16(0x0004)
+                  .write_u16(0xCCCC);
+    }
+};
+
+class effect : public fb::protocol::base::response
+{
+public:
+    const fb::game::object&         me;
+    const uint8_t                   value;
+
+public:
+    effect(const fb::game::object& me, uint8_t value) : 
+        me(me), value(value)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x29)
+                  .write_u32(this->me.id())
+                  .write_u8(this->value)
                   .write_u8(0x00);
     }
 };

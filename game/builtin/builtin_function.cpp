@@ -49,7 +49,7 @@ int fb::game::acceptor::builtin_timer(lua_State* lua)
     auto value = (uint32_t)lua_tointeger(lua, 1);
     auto decrease = lua_toboolean(lua, 2);
 
-    acceptor->send_stream(timer::make_stream(value, decrease ? timer::DECREASE : timer::INCREASE));
+    acceptor->send(response::game::timer(value, decrease ? timer::DECREASE : timer::INCREASE));
     return 0;
 }
 
@@ -58,6 +58,6 @@ int fb::game::acceptor::builtin_weather(lua_State* lua)
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto value = (uint32_t)lua_tointeger(lua, 1);
 
-    acceptor->send_stream(weather::make_stream(weather::type(value)));
+    acceptor->send(response::game::weather(weather::type(value)));
     return 0;
 }

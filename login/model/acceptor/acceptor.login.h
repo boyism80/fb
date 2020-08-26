@@ -22,9 +22,6 @@ public:
     acceptor(boost::asio::io_context& context, uint16_t port);
     ~acceptor();
 
-private:
-    const fb::ostream           make_message_stream(int type, const char* msg) const;
-
     // override
 public:
     login::session*             handle_alloc_session(fb::socket* socket);

@@ -27,66 +27,98 @@ public:
     }
 };
 
-
-class update_slot : public fb::protocol::base::response
+class update : public fb::protocol::base::response
 {
 public:
-    const uint8_t           index;
-    const uint16_t          look;
-    const uint8_t           color;
-    const std::string       name_styled;
-    const uint32_t          count;
+    const fb::game::session&    me;
+    const uint8_t               index;
 
 public:
-    update_slot(uint8_t index, uint16_t look, uint8_t color, const std::string& name_styled, uint32_t count) : 
-        index(index), 
-        look(look), 
-        color(color), 
-        name_styled(name_styled), 
-        count(count)
-    {
-
-    }
-
-    // update_slot(items, index)
-
-public:
-    void serialize(fb::ostream& out_stream) const
-    {
-        out_stream.write_u8(0x0F)
-                  .write_u8(this->index + 1)
-                  .write_u16(this->look)
-                  .write_u8(this->color)
-                  .write(this->name_styled, false)
-                  .write_u32(this->count)
-                  .write_u8(0x00)
-                  .write_u8(0x00);
-    }
-};
-
-
-class update_equipment : public fb::protocol::base::response
-{
-public:
-    const uint16_t          look;
-    const uint8_t           color;
-    const std::string       name;
-
-public:
-    update_equipment(uint16_t look, uint8_t color, const std::string& name) : 
-        look(look), color(color), name(name)
+    update(const fb::game::session& me, uint8_t index) : 
+        me(me), index(index)
     {}
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x37)
-                  .write_u16(this->look)
-                  .write_u8(this->color)
-                  .write(this->name, false);
+        auto                    item = this->me.items.at(index);
+        if(item == nullptr)
+            return;
+
+        out_stream.write_u8(0x0F)
+                  .write_u8(this->index + 1)
+                  .write_u16(item->look())
+                  .write_u8(item->color())
+                  .write(item->name_styled(), false)
+                  .write_u32(item->count())
+                  .write_u8(0x00)
+                  .write_u8(0x00);
     }
 };
 
+class update_slot : public fb::protocol::base::response
+{
+public:
+    const fb::game::session&            me;
+    const fb::game::equipment::slot     slot;
+
+public:
+    update_slot(const fb::game::session& me, fb::game::equipment::slot slot) : 
+        me(me), slot(slot)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::game::item*         item;
+
+        switch(slot)
+        {
+        case equipment::slot::WEAPON_SLOT:
+            item = this->me.items.weapon();
+            break;
+
+        case equipment::slot::ARMOR_SLOT:
+            item = this->me.items.armor();
+            break;
+
+        case equipment::slot::SHIELD_SLOT:
+            item = this->me.items.shield();
+            break;
+
+        case equipment::slot::HELMET_SLOT:
+            item = this->me.items.helmet();
+            break;
+
+        case equipment::slot::LEFT_HAND_SLOT:
+            item = this->me.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+            break;
+
+        case equipment::slot::RIGHT_HAND_SLOT:
+            item = this->me.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+            break;
+
+        case equipment::slot::LEFT_AUX_SLOT:
+            item = this->me.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+            break;
+
+        case equipment::slot::RIGHT_AUX_SLOT:
+            item = this->me.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+            break;
+
+        default:
+            return;
+        }
+
+        if(item == nullptr)
+            return;
+
+        out_stream.write_u8(0x37)
+                  .write_u16(item->look())
+                  .write_u8(item->color())
+                  .write(item->name(), false);
+    }
+};
 
 class remove : public fb::protocol::base::response
 {
@@ -95,7 +127,7 @@ public:
     const uint32_t          index;
     const uint16_t          count;
 public:
-    remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count) : 
+    remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count = 0) : 
         types(types), index(index), count(count)
     {}
 public:
