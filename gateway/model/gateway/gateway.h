@@ -7,7 +7,7 @@
 
 namespace fb { namespace gateway {
 
-class host_entry
+class entry
 {
 private:
     std::string             _name;
@@ -16,25 +16,16 @@ private:
     uint16_t                _port;
 
 public:
-    host_entry(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);
-    host_entry(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port);
-    ~host_entry();
+    entry(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);
+    entry(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port);
+    entry(const entry& right);
+    ~entry();
 
 public:
     const std::string&      name() const;
     const std::string&      dest() const;
     uint32_t                ip() const;
     uint16_t                port() const;
-};
-
-class host_entries : public std::vector<fb::gateway::host_entry*>
-{
-public:
-    host_entries();
-    ~host_entries();
-
-public:
-    fb::ostream             make_stream() const;
 };
 
 } }

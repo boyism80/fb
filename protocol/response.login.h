@@ -8,7 +8,7 @@ namespace fb { namespace protocol { namespace response { namespace login {
 class agreement : public fb::protocol::base::response
 {
 public:
-    const std::string&      contents;
+    const std::string       contents;
 
 public:
     agreement(const std::string& contents) : 
@@ -16,7 +16,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         auto compressed = fb::buffer((uint8_t*)this->contents.data(), this->contents.size()).compress();
         out_stream.write_u8(0x60)
@@ -38,7 +38,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x02)
                   .write_u8(type)

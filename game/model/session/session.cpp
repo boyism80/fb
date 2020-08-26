@@ -42,6 +42,11 @@ void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap,
     this->_socket->send(stream, encrypt, wrap, async);
 }
 
+void fb::game::session::send(const fb::protocol::base::response& response, bool encrypt, bool wrap, bool async)
+{
+    this->_socket->send(response, encrypt, wrap, async);
+}
+
 object::types fb::game::session::type() const
 {
     return object::types::SESSION;

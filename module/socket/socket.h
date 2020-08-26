@@ -9,6 +9,7 @@
 #include <boost/bind.hpp>
 #include <module/stream/stream.h>
 #include <module/crypto/cryptor.h>
+#include <protocol/protocol.h>
 
 namespace fb {
 
@@ -29,6 +30,7 @@ public:
     void                    id(uint32_t value) { this->_id = value; }
 
     virtual void            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true) { }
+    void                    send(const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true);
 };
 
 class socket : public boost::asio::ip::tcp::socket, public virtual base
@@ -46,6 +48,7 @@ public:
     ~socket();
 
 public:
+    using base::send;
     void                    send(const ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
     fb::cryptor&            crt();
     void                    crt(const fb::cryptor& crt);

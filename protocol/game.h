@@ -5,6 +5,7 @@
 #include <protocol/request.game.item.h>
 #include <protocol/request.game.map.h>
 #include <protocol/request.game.spell.h>
+#include <protocol/request.game.board.h>
 #include <protocol/response.game.h>
 #include <protocol/response.game.item.h>
 #include <protocol/response.game.map.h>
@@ -13,5 +14,6 @@
 #include <protocol/response.game.life.h>
 #include <protocol/response.game.session.h>
 #include <protocol/response.game.dialog.h>
+#include <protocol/response.game.board.h>
 
 #endif // !__PROTOCOL_GAME_H__

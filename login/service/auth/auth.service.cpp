@@ -4,7 +4,11 @@ fb::login::service::auth::auth()
 {
     const auto& config = fb::config();
 
-    this->_connection = new connection("localhost", "root", "tmdgus12", "fb");
+    this->_connection = new connection(
+        config["database"]["ip"].asString(), 
+        config["database"]["uid"].asString(), 
+        config["database"]["pwd"].asString(), 
+        config["database"]["name"].asString());
 
     for(auto x : config["forbidden"])
         this->_forbiddens.push_back(x.asString());

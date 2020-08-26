@@ -27,14 +27,6 @@ BOOL WINAPI handle_console(DWORD signal)
 
 int main(int argc, const char** argv)
 {
-    connection my{ "localhost", "root", "tmdgus12", "fb" };
-    if (!my) {
-        std::cout << "Connection failed" << std::endl;
-        return 0;
-    }
-
-    auto row_count = my.query("select count(*) from item").get_value<int>();
-
     //_CrtSetBreakAlloc(165);
 
     ::SetConsoleIcon(IDI_BARAM);

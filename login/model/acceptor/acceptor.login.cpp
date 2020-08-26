@@ -2,10 +2,9 @@
 using namespace fb::login;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<session>(context, port)
+    fb::acceptor<session>(context, port),
+    _agreement(fb::config()["agreement"].asString())
 {
-    this->load_agreement();
-
     // Register event handler
     this->bind<fb::protocol::request::login::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::request::login::agreement>               (0x10, std::bind(&acceptor::handle_agreement,           this, std::placeholders::_1, std::placeholders::_2));
@@ -16,27 +15,6 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
 
 acceptor::~acceptor()
 {}
-
-bool fb::login::acceptor::load_agreement()
-{
-    try
-    {
-        auto agreement = fb::config()["agreement"].asString();
-        auto compressed = fb::buffer((uint8_t*)agreement.data(), agreement.size()).compress();
-
-        this->_agreement_stream_cache
-            .write_u8(0x60)
-            .write_u8(0x01)
-            .write_u16((uint16_t)compressed.size())
-            .write(compressed.data(), (uint16_t)compressed.size());
-
-        return true;
-    }
-    catch(...)
-    {
-        return false;
-    }
-}
 
 const fb::ostream fb::login::acceptor::make_message_stream(int type, const char* msg) const
 {
@@ -75,7 +53,7 @@ bool acceptor::handle_agreement(fb::login::session& session, const fb::protocol:
             throw std::exception();
 
         session.crt(request.enc_type, request.enc_key);
-        this->send_stream(session, this->_agreement_stream_cache);
+        this->send(session, this->_agreement);
         return true;
     }
     catch(std::exception& e)
@@ -89,7 +67,7 @@ bool acceptor::handle_create_account(fb::login::session& session, const fb::prot
     try
     {
         this->_auth_service.create_account(request.id, request.pw);
-        this->send_stream(session, this->make_message_stream(0x00, ""));
+        this->send(session, response::login::message("", 0x00));
 
         // 일단 아이디 선점해야함
         session.created_id = request.id;
@@ -97,7 +75,7 @@ bool acceptor::handle_create_account(fb::login::session& session, const fb::prot
     }
     catch(login_exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
+        this->send(session, response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -114,7 +92,7 @@ bool acceptor::handle_account_complete(fb::login::session& session, const fb::pr
             throw std::exception();
 
         this->_auth_service.init_account(session.created_id, request.hair, request.sex, request.nation, request.creature);
-        this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_REGISTER_ACCOUNT));
+        this->send(session, response::login::message(message::SUCCESS_REGISTER_ACCOUNT, 0x00));
         session.created_id.clear();
         return true;
     }
@@ -133,7 +111,7 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
     try
     {
         this->_auth_service.login(request.id, request.pw);
-        this->send_stream(session, this->make_message_stream(0x00, ""));
+        this->send(session, response::login::message("", 0x00));
 
         fb::ostream         parameter;
         parameter.write(request.id);
@@ -142,7 +120,7 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
     }
     catch(login_exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
+        this->send(session, response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -156,12 +134,12 @@ bool acceptor::handle_change_password(fb::login::session& session, const fb::pro
     try
     {
         this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
-        this->send_stream(session, this->make_message_stream(0x00, message::SUCCESS_CHANGE_PASSWORD));
+        this->send(session, response::login::message(message::SUCCESS_CHANGE_PASSWORD, 0x00));
         return true;
     }
     catch(login_exception& e)
     {
-        this->send_stream(session, this->make_message_stream(e.exc_type(), e.what()));
+        this->send(session, response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)

@@ -25,7 +25,7 @@ namespace fb { namespace protocol { namespace response { namespace game { namesp
      {}
 
  public:
-     void serialize(fb::ostream& out_stream)
+     void serialize(fb::ostream& out_stream) const
      {
          out_stream.write_u8(0x1A)
                    .write_u32(this->id)
@@ -52,7 +52,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x13)
                   .write_u32(this->id)
@@ -76,7 +76,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x5F)
                   .write_u32(this->id)

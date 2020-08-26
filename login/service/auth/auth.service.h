@@ -50,10 +50,10 @@ private:
     uint8_t                 _exc_type;
 
 public:
-    login_exception(uint8_t exc_type, const char* make_message_stream) : std::exception(make_message_stream), _exc_type(exc_type) {}
+    login_exception(uint8_t type, const char* make_message_stream) : std::exception(make_message_stream), _exc_type(type) {}
 
 public:
-    uint8_t                 exc_type() const { return this->_exc_type; }
+    uint8_t                 type() const { return this->_exc_type; }
 };
 
 class id_exception : public login_exception

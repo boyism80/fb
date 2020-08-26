@@ -24,6 +24,8 @@ using namespace daotk::mysql;
 
 namespace fb { namespace game {
 
+using namespace fb::protocol;
+
 #pragma region message
 #pragma endregion
 
@@ -57,9 +59,9 @@ public:
     fb::game::session*      handle_alloc_session(fb::socket* socket);
 
 public:
-    void                    send_stream(fb::game::object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
-    void                    send_stream(const fb::ostream& stream, const fb::game::map& map, bool encrypt = true);
-    void                    send_stream(const fb::ostream& stream, bool encrypt = true);
+    void                    send(fb::game::object& object, const fb::protocol::base::response& response, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(const fb::protocol::base::response& response, const fb::game::map& map, bool encrypt = true);
+    void                    send(const fb::protocol::base::response& response, bool encrypt = true);
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
@@ -97,7 +99,7 @@ public:
     bool                    handle_group(fb::game::session&, const fb::protocol::request::game::group&);
     bool                    handle_user_list(fb::game::session&, const fb::protocol::request::game::user_list&);
     bool                    handle_chat(fb::game::session&, const fb::protocol::request::game::chat&);
-    bool                    handle_board(fb::game::session&, const fb::protocol::request::game::board&);
+    bool                    handle_board(fb::game::session&, const fb::protocol::request::game::board::board&);
     bool                    handle_swap(fb::game::session&, const fb::protocol::request::game::swap&);
     bool                    handle_dialog(fb::game::session&, const fb::protocol::request::game::dialog&);
     bool                    handle_throw_item(fb::game::session&, const fb::protocol::request::game::item::throws&);

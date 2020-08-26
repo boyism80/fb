@@ -11,10 +11,12 @@
 
 namespace fb { namespace gateway {
 
+using namespace fb::protocol;
+
 class acceptor : public fb::acceptor<session>
 {
 private:
-    host_entries                _entries;
+    std::vector<entry>          _entries;
     fb::ostream                 _entry_stream_cache;
     uint32_t                    _entry_crc32_cache;
 

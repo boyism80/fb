@@ -18,7 +18,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x59)
                   .write_u16(this->position)
@@ -51,7 +51,7 @@ public:
     // update_slot(items, index)
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x0F)
                   .write_u8(this->index + 1)
@@ -78,7 +78,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x37)
                   .write_u16(this->look)
@@ -99,7 +99,7 @@ public:
         types(types), index(index), count(count)
     {}
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x10)
                   .write_u8(this->index + 1)
@@ -120,7 +120,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x38)
                   .write_u8(this->slot)

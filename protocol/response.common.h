@@ -18,7 +18,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         auto backward_size = this->parameter.size() > 0 ? 0x0B + this->parameter.size() : 0x0B;
         out_stream.write_u8(0x03)

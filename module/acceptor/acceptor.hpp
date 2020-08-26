@@ -210,3 +210,14 @@ void fb::acceptor<T>::send_stream(fb::base& base, const fb::ostream& stream, boo
 
     base.send(stream, encrypt, wrap, async);
 }
+
+template<class T>
+void fb::acceptor<T>::send(fb::base& base, const fb::protocol::base::response& response, bool encrypt, bool wrap, bool async)
+{
+    fb::ostream                 out_stream;
+    response.serialize(out_stream);
+    if(out_stream.empty())
+        return;
+
+    base.send(out_stream, encrypt, wrap, async);
+}

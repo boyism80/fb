@@ -145,7 +145,12 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::game::session>(context, port),
     _timer(context)
 {
-    this->_connection = new connection("localhost", "root", "tmdgus12", "fb");
+    const auto& config = fb::config();
+    this->_connection = new connection(
+        config["database"]["ip"].asString(), 
+        config["database"]["uid"].asString(), 
+        config["database"]["pwd"].asString(), 
+        config["database"]["name"].asString());
 
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
@@ -191,7 +196,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port) :
     this->bind<fb::protocol::request::game::group>            (0x2E, std::bind(&acceptor::handle_group,           this, std::placeholders::_1, std::placeholders::_2));   // 그룹 핸들러
     this->bind<fb::protocol::request::game::user_list>        (0x18, std::bind(&acceptor::handle_user_list,       this, std::placeholders::_1, std::placeholders::_2));   // 유저 리스트 핸들러
     this->bind<fb::protocol::request::game::chat>             (0x0E, std::bind(&acceptor::handle_chat,            this, std::placeholders::_1, std::placeholders::_2));   // 유저 채팅 핸들러
-    this->bind<fb::protocol::request::game::board>            (0x3B, std::bind(&acceptor::handle_board,           this, std::placeholders::_1, std::placeholders::_2));   // 게시판 섹션 리스트 핸들러
+    this->bind<fb::protocol::request::game::board::board>     (0x3B, std::bind(&acceptor::handle_board,           this, std::placeholders::_1, std::placeholders::_2));   // 게시판 섹션 리스트 핸들러
     this->bind<fb::protocol::request::game::swap>             (0x30, std::bind(&acceptor::handle_swap,            this, std::placeholders::_1, std::placeholders::_2));   // 스펠 순서 변경
     this->bind<fb::protocol::request::game::dialog>           (0x3A, std::bind(&acceptor::handle_dialog,          this, std::placeholders::_1, std::placeholders::_2));   // 다이얼로그
     this->bind<fb::protocol::request::game::dialog>           (0x39, std::bind(&acceptor::handle_dialog,          this, std::placeholders::_1, std::placeholders::_2));   // 다이얼로그
@@ -216,7 +221,7 @@ bool acceptor::handle_connected(fb::game::session& session)
 
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
-    this->send_stream(session, session.make_hide_stream(), scope::PIVOT, true);
+    this->send(session, response::game::object::hide(session.id()), scope::PIVOT, true);
 
     auto map = session.map();
     if(map != nullptr)
@@ -274,25 +279,22 @@ fb::game::session* fb::game::acceptor::handle_alloc_session(fb::socket* socket)
     return session;
 }
 
-void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, acceptor::scope scope, bool exclude_self, bool encrypt)
+void fb::game::acceptor::send(object& object, const fb::protocol::base::response& response, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
-    if(stream.empty())
-        return;
-
     switch(scope)
     {
     case acceptor::scope::SELF:
-        object.send(stream, encrypt);
+        object.send(response, encrypt);
         break;
 
     case acceptor::scope::PIVOT:
     {
         const auto sessions = object.showns(object::types::SESSION);
         if(!exclude_self)
-            object.send(stream, encrypt);
+            object.send(response, encrypt);
 
         for(const auto session : sessions)
-            session->send(stream, encrypt);
+            session->send(response, encrypt);
         break;
     }
 
@@ -307,7 +309,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
             return;
 
         for(const auto session : group->members())
-            session->send(stream, encrypt);
+            session->send(response, encrypt);
 
         break;
     }
@@ -322,7 +324,7 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
             if(exclude_self && session == &object)
                 continue;
 
-            session->send(stream, encrypt);
+            session->send(response, encrypt);
         }
 
         break;
@@ -330,34 +332,34 @@ void fb::game::acceptor::send_stream(object& object, const fb::ostream& stream, 
 
     case acceptor::scope::WORLD:
     {
-        this->send_stream(stream, encrypt);
+        this->send(response, encrypt);
         break;
     }
 
     }
 }
 
-void fb::game::acceptor::send_stream(const fb::ostream& stream, const fb::game::map& map, bool encrypt)
+void fb::game::acceptor::send(const fb::protocol::base::response& response, const fb::game::map& map, bool encrypt)
 {
     for(const auto session : this->sessions)
     {
         if(session->map() != &map)
             continue;
 
-        session->send(stream, encrypt);
+        session->send(response, encrypt);
     }
 }
 
-void fb::game::acceptor::send_stream(const fb::ostream& stream, bool encrypt)
+void fb::game::acceptor::send(const fb::protocol::base::response& response, bool encrypt)
 {
     for(const auto session : this->sessions)
-        session->send(stream, encrypt);
+        session->send(response, encrypt);
 }
 
 // TODO : 클릭도 인터페이스로
 void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
 {
-    this->send_stream(session, message::make_stream(mob.name(), message::type::STATE), scope::SELF);
+    this->send(session, response::game::session::message(mob.name(), message::type::STATE), scope::SELF);
 }
 
 void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
@@ -417,36 +419,28 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<auxiliary>(this));
     session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<auxiliary>(this));
 
+    // TODO
+    // 이거 뭐야
     fb::ostream             ostream;
     ostream.write_u8(0x1E)
            .write_u8(0x06)
            .write_u8(0x00);
     this->send_stream(session, ostream, scope::SELF);
     
+    // TODO
+    // message, time 등은 일반 game 네임스페이스에 정의
     this->send_stream(session, this->make_time_stream(), scope::SELF);
 
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MIN), scope::SELF);
-
-    this->send_stream(session, message::make_stream("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
-
-    this->send_stream(session, session.make_id_stream(), scope::SELF);
-
-    this->send_stream(session, session.map()->make_config_stream(), scope::SELF);
-
-    this->send_stream(session, session.map()->make_bgm_stream(), scope::SELF);
-
-    this->send_stream(session, session.make_position_stream(), scope::SELF);
-
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
-
-    this->send_stream(session, session.make_show_stream(), scope::PIVOT);
-    this->send_stream(session, session.make_direction_stream(), scope::SELF);
-    this->send_stream(session, session.make_option_stream(), scope::SELF);
-
-
-    // me existed
-    //for(auto i : session.showns())
-    //    this->send_stream(session, i->make_show_stream(), scope::SELF);
+    this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
+    this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+    this->send(session, response::game::session::id(session), scope::SELF);
+    this->send(session, response::game::map::config(*session.map()), scope::SELF);
+    this->send(session, response::game::map::bgm(*session.map()), scope::SELF);
+    this->send(session, response::game::session::position(session), scope::SELF);
+    this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    this->send(session, response::game::session::show(session, false), scope::SELF);
+    this->send(session, response::game::object::direction(session), scope::SELF);
+    this->send(session, response::game::session::option(session), scope::SELF);
 
     return true;
 }
@@ -487,7 +481,7 @@ bool fb::game::acceptor::handle_update_move(fb::game::session& session, const fb
     if(this->handle_move(session, request) == false)
         return false;
 
-    this->send_stream(session, session.map()->make_update_stream(request.begin.x, request.begin.y, request.size.width, request.size.height, request.crc), scope::SELF);
+    this->send(session, response::game::map::update(request.begin, request.size), scope::SELF);
     return true;
 }
 
@@ -511,13 +505,13 @@ bool fb::game::acceptor::handle_emotion(fb::game::session& session, const fb::pr
 
 bool fb::game::acceptor::handle_update_map(fb::game::session& session, const fb::protocol::request::game::map::update& request)
 {
-    this->send_stream(session, session.map()->make_update_stream(request.position.x, request.position.y, request.size.width, request.size.height, request.crc), scope::SELF);
+    this->send(session, response::game::map::update(request.position, request.size), scope::SELF);
     return true;
 }
 
 bool fb::game::acceptor::handle_refresh(fb::game::session& session, const fb::protocol::request::game::refresh& request)
 {
-    this->send_stream(session, session.make_position_stream(), scope::SELF);
+    this->send(session, response::game::session::position(session), scope::SELF);
     return true;
 }
 
@@ -561,7 +555,7 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session, const fb:
 
     for(auto i : session.forward_sessions())
     {
-        this->send_stream(session, message::make_stream(i->name(), message::type::STATE), scope::SELF);
+        this->send(session, response::game::message(i->name(), message::type::STATE), scope::SELF);
     }
 
     for(auto i : session.forward_objects(object::types::OBJECT))
@@ -569,11 +563,11 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session, const fb:
         if(i->type() == fb::game::object::types::ITEM)
         {
             auto item = static_cast<fb::game::item*>(i);
-            this->send_stream(session, message::make_stream(item->name_styled(), message::type::STATE), scope::SELF);
+            this->send(session, response::game::message(item->name_styled(), message::type::STATE), scope::SELF);
         }
         else
         {
-            this->send_stream(session, message::make_stream(i->name(), message::type::STATE), scope::SELF);
+            this->send(session, response::game::message(i->name(), message::type::STATE), scope::SELF);
         }
     }
 
@@ -582,10 +576,10 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session, const fb:
 
 bool fb::game::acceptor::handle_self_info(fb::game::session& session, const fb::protocol::request::game::self_info& request)
 {
-    this->send_stream(session, session.make_internal_info_stream(), scope::SELF);
+    this->send(session, response::game::session::internal_info(session), scope::SELF);
     
     for(auto buff : session.buffs)
-        this->send_stream(session, buff->make_stream(), scope::SELF);
+        this->send(session, response::game::spell::buff(*buff), scope::SELF);
     return true;
 }
 
@@ -627,7 +621,7 @@ bool fb::game::acceptor::handle_click_object(fb::game::session& session, const f
     switch(other->type())
     {
     case fb::game::object::types::SESSION:
-        this->send_stream(session, static_cast<game::session*>(other)->make_external_info_stream(), scope::SELF);
+        this->send(session, response::game::session::external_info(session), scope::SELF);
         break;
 
     case fb::game::object::types::MOB:
@@ -649,7 +643,7 @@ bool fb::game::acceptor::handle_item_info(fb::game::session& session, const fb::
     if(item == nullptr)
         return false;
 
-    this->send_stream(session, item->make_tip_stream(request.position), scope::SELF);
+    this->send(session, response::game::item::tip(request.position, item->tip_message()), scope::SELF);
     return true;
 }
 
@@ -765,11 +759,11 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
             mine->enter(*you);
 
             sstream << session.name() << "님 그룹에 참여";
-            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
 
             sstream.str("");
             sstream << request.name << "님 그룹에 참여";
-            this->send_stream(session, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
         }
         else // 기존 그룹에 초대하기
         {
@@ -788,7 +782,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
             if(mine == your)
             {
                 sstream << request.name << "님 그룹 탈퇴";
-                this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+                this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
                 mine->leave(*you);
                 return true;
             }
@@ -799,12 +793,13 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
             }
             
             sstream << request.name << "님 그룹에 참여";
-            this->send_stream(leader, message::make_stream(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(leader, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
         }
     }
     catch(std::exception& e)
     {
-        this->send_stream(session, message::make_stream(e.what(), message::type::STATE), scope::SELF);
+        this->send(session, response::game::message(e.what(), message::type::STATE), scope::GROUP);
     }
 
     return true;
@@ -812,24 +807,7 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
 
 bool fb::game::acceptor::handle_user_list(fb::game::session& session, const fb::protocol::request::game::user_list& request)
 {
-    fb::ostream                 ostream;
-    ostream.write_u8(0x36)
-        .write_u16((uint16_t)sessions.size())
-        .write_u16((uint16_t)sessions.size())
-        .write_u8(0x00);
-
-    for(const auto& i : this->sessions)
-    {
-        const auto& name = i->name();
-
-        ostream.write_u8(0x10 * i->nation())
-            .write_u8(0x10 * i->promotion())
-            .write_u8((&session == i) ? 0x88 : 0x0F)
-            .write(name, false);
-    }
-
-    this->send_stream(session, ostream, scope::SELF);
-
+    this->send(session, response::game::user_list(session, this->sessions), scope::SELF);
     return true;
 }
 
@@ -846,30 +824,29 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session, const fb::proto
     else
         sstream << session.name() << ": " << request.message;
 
-    this->send_stream(session, session.make_chat_stream(sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
-
+    this->send(session, response::game::chat(session, sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     return true;
 }
 
-bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::protocol::request::game::board& request)
+bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::protocol::request::game::board::board& request)
 {
     switch(request.action)
     {
     case 0x01: // section list
     {
-        this->send_stream(session, game::master::get().board.make_sections_stream(), scope::SELF);
+        this->send(session, response::game::board::sections(), scope::SELF);
         break;
     }
 
     case 0x02: // article list
     {
-        this->send_stream(session, game::master::get().board.make_articles_stream(request.section, request.offset), scope::SELF);
+        this->send(session, response::game::board::articles(request.section, request.offset), scope::SELF);
         break;
     }
 
     case 0x03: // article
     {
-        this->send_stream(session, game::master::get().board.make_article_stream(request.section, request.article, session), scope::SELF);
+        this->send(session, response::game::board::article(request.section, request.article, session), scope::SELF);
         break;
     }
 
@@ -877,13 +854,34 @@ bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::prot
     {
         auto                    section = game::master::get().board.sections().at(request.section);
         if(section->add(request.title, request.contents, session.name()) != nullptr)
-            this->send_stream(session, game::master::get().board.make_message_stream("글을 작성하였습니다.", true, true), scope::SELF);
+            this->send(session, response::game::board::message("글을 작성하였습니다.", true, true), scope::SELF);
         break;
     }
 
     case 0x05: // delete
     {
-        this->send_stream(session, game::master::get().board.make_delete_stream(request.section, request.article, session), scope::SELF);
+        try
+        {
+            auto                    section = game::master::get().board.at(request.section);
+            if(section == nullptr)
+                throw board::section::not_found_exception();
+
+            auto                    article = section->find(request.article);
+            if(article == nullptr)
+                throw board::article::not_found_exception();
+
+            if(session.name() != article->writer())
+                throw board::auth_exception();
+
+            if(section->remove(article->id()) == false)
+                throw board::article::not_found_exception();
+
+            this->send(session, response::game::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
+        }
+        catch(std::exception& e)
+        {
+            this->send(session, response::game::board::message(e.what(), false, false), scope::SELF);
+        }
         break;
     }
 
@@ -1037,7 +1035,7 @@ bool fb::game::acceptor::handle_spell(fb::game::session& session, const fb::prot
     // 마나를 쓰니까 업데이트 해주겠지?
     // 마나 안쓰면 업데이트 안해줘도 되니까
     // 이건 hp, mp가 변경될 때 리스너
-    this->send_stream(session, session.make_state_stream(state_level::LEVEL_MAX), scope::SELF);
+    this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
     return true;
 }
 
@@ -1194,7 +1192,7 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
             shown_mobs.push_back(spawned);
         }
 
-        this->send_stream(*session, object::make_show_stream(shown_mobs), scope::SELF);
+        this->send(*session, response::game::object::show(shown_mobs), scope::SELF);
     }
 }
 
@@ -1325,7 +1323,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         else
             session.state(state::NORMAL);
 
-        this->send_stream(session, session.make_visual_stream(true), scope::PIVOT);
+        this->send(session, response::game::session::show(session, true), scope::PIVOT);
         return true;
     }
 

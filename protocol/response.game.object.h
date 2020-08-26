@@ -23,7 +23,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x11)
                   .write_u32(this->id)
@@ -34,27 +34,53 @@ public:
 
 class show : public fb::protocol::base::response
 {
-public:
-    const uint32_t              id;
-    const uint16_t              look;
-    const uint8_t               color;
-    const point16_t             position;
-    const fb::game::direction   direction;
+private:
+    const fb::game::object*                 object;
+    const std::vector<fb::game::object*>*   objects;
 
 public:
     show(const fb::game::object& object) : 
-        show(object.id(), object.look(), object.color(), object.position(), object.direction())
+        object(&object), objects(nullptr)
     {}
-    show(uint32_t id, uint16_t look, uint8_t color, const point16_t position, fb::game::direction direction) : 
-        id(id), look(look), color(color), position(position), direction(direction)
+
+    show(const std::vector<fb::game::object*>& objects) : 
+        object(nullptr), objects(&objects)
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x0E)
-                  .write_u32(this->id)
-                  .write_u8(0x00);
+        if(this->object != nullptr)
+        {
+            out_stream.write_u8(0x07)
+                      .write_u16(0x0001) // count
+                      .write_u16(this->object->x()) // object x
+                      .write_u16(this->object->y()) // object y
+                      .write_u32(this->object->id()) // object id
+                      .write_u16(this->object->look()) // npc icon code
+                      .write_u8(this->object->color())  // color
+                      .write_u8(this->object->direction()); // side
+        }
+        else if(this->object != nullptr)
+        {
+            out_stream.write_u8(0x07)
+                      .write_u16((uint16_t)this->objects->size());
+
+            for(const auto object : *this->objects)
+            {
+                out_stream.write_u16(object->x()) // object x
+                          .write_u16(object->y()) // object y
+                          .write_u32(object->id()) // object id
+                          .write_u16(object->look()) // npc icon code
+                          .write_u8(object->color())  // color
+                          .write_u8(object->direction()); // side
+            }
+        }
+        else
+        {
+            // error
+            return;
+        }
     }
 };
 
@@ -72,7 +98,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x0E)
                   .write_u32(this->id)
@@ -96,7 +122,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x0D)
                   .write_u8(this->type)
@@ -122,7 +148,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x0C)
                   .write_u32(this->id)

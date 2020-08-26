@@ -105,3 +105,10 @@ fb::socket::operator fb::cryptor& ()
 {
     return this->_crt;
 }
+
+void fb::base::send(const fb::protocol::base::response& response, bool encrypt, bool wrap, bool async)
+{
+    fb::ostream             out_stream;
+    response.serialize(out_stream);
+    this->send(out_stream, encrypt, wrap, async);
+}

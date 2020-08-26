@@ -9,6 +9,7 @@
 #include <module/stream/stream.h>
 #include <module/socket/socket.h>
 #include <module/crypto/cryptor.h>
+#include <protocol/protocol.h>
 
 namespace fb {
 
@@ -64,6 +65,7 @@ protected:
 
 public:
     void                    send_stream(fb::base& base, const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
+    void                    send(fb::base& base, const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true);
 };
 
 #include "acceptor.hpp"

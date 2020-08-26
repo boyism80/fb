@@ -713,27 +713,6 @@ fb::ostream fb::game::object::make_show_stream(bool light) const
     return ostream;
 }
 
-fb::ostream fb::game::object::make_hide_stream() const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x0E)
-        .write_u32(this->id())
-        .write_u8(0x00);
-
-    return ostream;
-}
-
-fb::ostream fb::game::object::make_direction_stream() const
-{
-    fb::ostream             ostream;
-    ostream.write_u8(0x11)
-        .write_u32(this->id())
-        .write_u8(this->_direction)
-        .write_u8(0x00);
-
-    return ostream;
-}
-
 fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::object*>& objects)
 {
     fb::ostream             ostream;
@@ -755,6 +734,27 @@ fb::ostream fb::game::object::make_show_stream(const std::vector<fb::game::objec
 
         std::cout << "show mob : " << object->id() << std::endl;
     }
+
+    return ostream;
+}
+
+fb::ostream fb::game::object::make_hide_stream() const
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x0E)
+        .write_u32(this->id())
+        .write_u8(0x00);
+
+    return ostream;
+}
+
+fb::ostream fb::game::object::make_direction_stream() const
+{
+    fb::ostream             ostream;
+    ostream.write_u8(0x11)
+        .write_u32(this->id())
+        .write_u8(this->_direction)
+        .write_u8(0x00);
 
     return ostream;
 }

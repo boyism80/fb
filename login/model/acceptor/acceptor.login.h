@@ -10,23 +10,17 @@
 
 namespace fb { namespace login {
 
+using namespace fb::protocol;
+
 class acceptor : public fb::acceptor<session>
 {
 private:
-    gateways                    _gateways;
-    fb::ostream                 _gateway_stream_cache;
-    uint32_t                    _gateway_crc32_cache;
-    fb::ostream                 _agreement_stream_cache;
-
-private:
+    response::login::agreement  _agreement;
     service::auth               _auth_service;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port);
     ~acceptor();
-
-private:
-    bool                        load_agreement();
 
 private:
     const fb::ostream           make_message_stream(int type, const char* msg) const;

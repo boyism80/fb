@@ -21,7 +21,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x30)
                   .write_u8(0x00)     // unknown
@@ -57,7 +57,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x30)
                   .write_u8(0x00)     // unknown
@@ -100,7 +100,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x2F)
                   .write_u8(0x05)
@@ -138,7 +138,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x2F)
                   .write_u8(0x03)
@@ -173,7 +173,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x30)
                   .write_u8(0x04)

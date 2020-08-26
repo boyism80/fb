@@ -23,7 +23,7 @@ protected:
     ~response() {}
 
 public:
-    virtual void            serialize(fb::ostream& out_stream) = 0;
+    virtual void            serialize(fb::ostream& out_stream) const = 0;
 };
 
 } } }

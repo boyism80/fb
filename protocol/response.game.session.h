@@ -8,6 +8,26 @@ using namespace fb::game;
 
 namespace fb { namespace protocol { namespace response { namespace game { namespace session {
 
+class message : public fb::protocol::base::response
+{
+public:
+    const std::string               text;
+    const fb::game::message::type   type;
+
+public:
+    message(const std::string& text, fb::game::message::type type) : 
+        text(text), type(type)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(0x0A)
+                  .write_u8(this->type)
+                  .write(this->text, true);
+    }
+};
+
 class show : public fb::protocol::base::response
 {
 public:
@@ -15,12 +35,12 @@ public:
     const bool                  light;
 
 public:
-    show(const fb::game::session& session, bool light) : 
+    show(const fb::game::session& session, bool light = false) : 
       session(session), light(light)
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(this->light ? 0x1D : 0x33); // cmd
         if(this->light == false)
@@ -98,7 +118,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x05)
                   .write_u32(this->session.id())
@@ -121,7 +141,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x08) // cmd
                   .write_u8(this->level);
@@ -182,7 +202,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x04)
                   .write_u16(this->session.x())  // 실제 x 좌표
@@ -223,7 +243,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         auto clan = this->session.clan();
         out_stream.write_u8(0x39)
@@ -312,7 +332,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x34)
               .write(this->session.title())
@@ -418,7 +438,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x23)
                   .write_u8(this->session.option(options::WEATHER_EFFECT)) // weather
@@ -443,7 +463,7 @@ public:
     {}
 
 public:
-    void serialize(fb::ostream& out_stream)
+    void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x16)
                   .write_u32(this->session.id())

@@ -261,7 +261,7 @@ public:
 
 #pragma region virtual method
 
-protected:
+public:
     virtual std::string             tip_message() const;
 
 public:
@@ -624,6 +624,8 @@ public:
 
 protected:
     virtual std::string             mid_message() const;
+
+public:
     virtual std::string             tip_message() const;
 };
 
