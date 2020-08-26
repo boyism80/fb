@@ -1794,13 +1794,13 @@ bool fb::game::lua::dialog::resume(int argc)
     if(this->_thread == nullptr)
         return false;
 
-    auto success = this->_thread->resume(argc);
-    if(success == false)
+    auto state = this->_thread->resume(argc);
+    if(state != LUA_YIELD)
     {
         delete this->_thread;
         this->_thread = nullptr;
     }
-    return success;
+    return state;
 }
 
 void fb::game::lua::dialog::show(const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)

@@ -8,6 +8,8 @@ function handle_click(session, npc)
 	local group = session:group()
 	if group == nil then
 		npc:dialog(session, '그룹이 없습니다.')
+		npc:dialog(session, '그룹이 없습니다.')
+		npc:dialog(session, '그룹이 없습니다.')
 	else
 		local message = '그룹원 현황\n'
 		for _, member in pairs(group:members()) do

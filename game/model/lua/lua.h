@@ -117,7 +117,7 @@ public:
     thread&                     pushobject(const luable& object);
 
 public:
-    bool                        resume(int num_args) { return lua_resume(*this, nullptr, num_args) == 0; } // 종료되면 true, 아니면 false
+    int                         resume(int num_args) { return lua_resume(*this, nullptr, num_args); }
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
 };
 
