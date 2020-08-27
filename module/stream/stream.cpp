@@ -118,6 +118,18 @@ void fb::istream::read(void * buffer, size_t size)
     this->_offset += uint32_t(size);
 }
 
+std::string fb::istream::readstr()
+{
+    auto size = strlen((const char*)this->data() + this->_offset);
+    char* buffer = new char[size + 1];
+    this->read(buffer, size + 1);
+
+    std::string text(buffer);
+    delete[] buffer;
+    this->_offset += size + 1;
+    return text;
+}
+
 std::string fb::istream::readstr_u8()
 {
 	uint8_t					size = this->read_u8();

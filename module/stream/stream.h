@@ -47,6 +47,7 @@ public:
     int32_t                 read_32(buffer::endian endian = buffer::endian::BIG);
     uint32_t                read_u32(buffer::endian endian = buffer::endian::BIG);
     void                    read(void* buffer, size_t size);
+    std::string             readstr();
 	std::string				readstr_u8();
 	std::string				readstr_u16(buffer::endian endian = buffer::endian::BIG);
     std::string             readstr_u32(buffer::endian endian = buffer::endian::BIG);

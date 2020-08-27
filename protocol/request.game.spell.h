@@ -21,7 +21,7 @@ public:
     void deserialize(fb::istream& in_stream)
     {
         this->_in_stream = in_stream;
-        this->slot = in_stream.read_u8();
+        this->slot = this->_in_stream.read_u8() - 1;
     }
 
     void parse(fb::game::spell::types type) const
@@ -30,12 +30,7 @@ public:
         {
         case fb::game::spell::types::INPUT:
         {
-            auto size = strlen((const char*)this->_in_stream.data());
-            auto raw = new char[size + 1];
-            this->_in_stream.read(raw, size);
-            raw[size] = 0x00;
-            this->message = raw;
-            delete[] raw;
+            this->message = _in_stream.readstr();
             break;
         }
 

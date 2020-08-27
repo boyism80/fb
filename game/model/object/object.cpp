@@ -779,7 +779,10 @@ int fb::game::object::builtin_position(lua_State* lua)
     object->position(x, y);
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
+    if(object->is(fb::game::object::types::SESSION))
+        acceptor->send(*object, response::game::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);
+    else
+        acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
 
     if(object->is(object::types::SESSION))
     {
