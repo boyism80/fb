@@ -13,6 +13,8 @@
 #include <model/mob/mob.h>
 #include <model/board/board.h>
 #include <model/clan/clan.h>
+#include <codecvt>
+#include <locale>
 
 namespace fb { namespace game {
 
