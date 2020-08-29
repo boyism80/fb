@@ -133,6 +133,7 @@ private:
     effects                     _effect;
     uint8_t                     _bgm;
     std::vector<warp*>          _warps;
+    std::string                 _host_id;
 #pragma endregion
 
 
@@ -145,7 +146,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, size_t size);
+    map(uint16_t id, uint16_t parent, const std::string& host_id, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, size_t size);
     ~map();
 #pragma endregion
 
@@ -171,6 +172,8 @@ public:
 
     void                        warp_add(map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
     const map::warp*            warpable(const point16_t& position) const;
+
+    const std::string&          host_id() const;
 #pragma endregion
 
 

@@ -838,6 +838,17 @@ bool fb::game::session::alive() const
     return this->_state != state::GHOST;
 }
 
+bool fb::game::session::warp(fb::game::map& map, const point16_t& position)
+{
+    if(map.existable(position) == false)
+        return false;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_warp(*this, map, position);
+
+    return true;
+}
+
 int fb::game::session::builtin_look(lua_State* lua)
 {
     auto argc = lua_gettop(lua);

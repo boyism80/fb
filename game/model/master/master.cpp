@@ -361,6 +361,7 @@ bool fb::game::master::load_maps(const std::string& db_fname)
         uint16_t            id      = std::stoi(i.key().asString());
         uint16_t            parent  = data["parent"].asInt();
         uint8_t             bgm     = data["bgm"].asInt();
+        auto                host_id = data["host"].asString();
         auto                name    = UTF8(data["name"].asString());
         auto                effect  = this->parse_map_effect(UTF8(data["effect"].asString()));
         auto                option  = this->parse_map_option(data);
@@ -377,11 +378,12 @@ bool fb::game::master::load_maps(const std::string& db_fname)
             if(this->load_map_blocks(id, blocks) == false)
                 throw std::runtime_error("cannot load map blocks");
 
-            map = new fb::game::map(id, parent, bgm, name, option, effect, map_binary.data(), map_binary.size());
+            map = new fb::game::map(id, parent, host_id, bgm, name, option, effect, map_binary.data(), map_binary.size());
             for(const auto block : blocks)
                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
             this->maps.insert(std::make_pair(id, map));
+            std::cout << "map loaded : " << map->name() << std::endl;
         }
         catch(std::exception& e)
         {

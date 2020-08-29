@@ -364,7 +364,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     if(found.count() == 0)
         return false;
 
-    found.each([&session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan, bool login)
+    found.each([this, &session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan, bool login)
     {
         session.look(look);
         session.money(money);
@@ -373,41 +373,45 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         session.hp(hp);
         session.base_mp(base_mp);
         session.mp(mp);
+
+        session.items.add(game::master::get().name2item("얼음칼")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("정화의방패")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("도씨검")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("낙랑의두루마리2")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("남자기모노")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("도토리")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("동동주")->make<fb::game::item>(this));
+        session.items.add(game::master::get().name2item("파란열쇠")->make<fb::game::item>(this));
+
+
+        // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
+        session.items.weapon(game::master::get().name2item("양첨목봉")->make<fb::game::weapon>(this));
+        session.items.helmet(game::master::get().name2item("쇄자황금투구")->make<fb::game::helmet>(this));     
+        session.items.ring(game::master::get().name2item("쇄자황금반지")->make<fb::game::ring>(this));
+        session.items.ring(game::master::get().name2item("쇄자황금반지")->make<fb::game::ring>(this));
+        session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<fb::game::auxiliary>(this));
+        session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<fb::game::auxiliary>(this));
+
+        if(game::master::get().maps[map] == nullptr)
+            game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
+        else
+            game::master::get().maps[map]->objects.add(session, point16_t(position_x, position_y));
+
+        this->send(session, response::game::init(), scope::SELF);
+        this->send(session, response::game::time(25), scope::SELF);
+        this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
+        this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+        this->send(session, response::game::session::id(session), scope::SELF);
+        this->send(session, response::game::map::config(*session.map()), scope::SELF);
+        this->send(session, response::game::map::bgm(*session.map()), scope::SELF);
+        this->send(session, response::game::session::position(session), scope::SELF);
+        this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+        this->send(session, response::game::session::show(session, false), scope::SELF);
+        this->send(session, response::game::object::direction(session), scope::SELF);
+        this->send(session, response::game::session::option(session), scope::SELF);
+
         return false;
     });
-
-    session.items.add(game::master::get().name2item("얼음칼")->make<item>(this));
-    session.items.add(game::master::get().name2item("정화의방패")->make<item>(this));
-    session.items.add(game::master::get().name2item("도씨검")->make<item>(this));
-    session.items.add(game::master::get().name2item("낙랑의두루마리2")->make<item>(this));
-    session.items.add(game::master::get().name2item("남자기모노")->make<item>(this));
-    session.items.add(game::master::get().name2item("도토리")->make<item>(this));
-    session.items.add(game::master::get().name2item("동동주")->make<item>(this));
-    session.items.add(game::master::get().name2item("파란열쇠")->make<item>(this));
-
-
-    // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-    session.items.weapon(game::master::get().name2item("양첨목봉")->make<weapon>(this)); // 초심자의 목도
-    session.items.helmet(game::master::get().name2item("쇄자황금투구")->make<helmet>(this));
-    session.items.ring(game::master::get().name2item("쇄자황금반지")->make<ring>(this));
-    session.items.ring(game::master::get().name2item("쇄자황금반지")->make<ring>(this));
-    session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<auxiliary>(this));
-    session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<auxiliary>(this));
-
-    game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
-
-    this->send(session, response::game::init(), scope::SELF);
-    this->send(session, response::game::time(25), scope::SELF);
-    this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
-    this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
-    this->send(session, response::game::session::id(session), scope::SELF);
-    this->send(session, response::game::map::config(*session.map()), scope::SELF);
-    this->send(session, response::game::map::bgm(*session.map()), scope::SELF);
-    this->send(session, response::game::session::position(session), scope::SELF);
-    this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
-    this->send(session, response::game::session::show(session, false), scope::SELF);
-    this->send(session, response::game::object::direction(session), scope::SELF);
-    this->send(session, response::game::session::option(session), scope::SELF);
 
     return true;
 }
@@ -439,14 +443,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session, const fb::proto
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
     if(warp != nullptr)
-    {
-        fb::ostream         parameter;
-        parameter.write(session.name());
-
-        auto& config = fb::config();
-        this->transfer(session, "127.0.0.1", config["port"].asInt(), parameter);
-        //warp->map->objects.add(session, warp->after);
-    }
+        session.warp(*warp->map, warp->after);
     return true;
 }
 
@@ -1358,8 +1355,8 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto map = game::master::get().name2map(name);
         if(map == nullptr)
             return true;
-
-        map->objects.add(session, point16_t(x, y));
+        
+        session.warp(*map, point16_t(x, y));
         return true;
     }
 

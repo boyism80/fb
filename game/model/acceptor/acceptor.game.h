@@ -147,6 +147,7 @@ public:
     void                    on_notify(session& me, const std::string& message, message::type type);
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
+    void                    on_warp(session& me, fb::game::map& map, const point16_t& position);
 
     // listener : mob
     void                    on_attack(mob& me, object* you, uint32_t damage, bool critical);

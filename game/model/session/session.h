@@ -317,6 +317,7 @@ public:
     void                        ride();
     void                        unride(fb::game::listener* listener);
     bool                        alive() const;
+    bool                        warp(fb::game::map& map, const point16_t& position);
 #pragma endregion
 
 #pragma region built-in method

@@ -92,24 +92,28 @@ uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& posit
 {
     auto                    map = object.map();
     if(map == this->_owner)
-        return object.id();
-
-    if(map != nullptr)
-        map->objects.remove(object);
-
-    auto                    seq = this->empty_seq();
-    auto                    found = this->find(seq);
-    if(found != nullptr)
     {
-        this->erase(std::find(this->begin(), this->end(), found));
-        delete found;
+        object.position(position);
+        return object.id();
     }
+    else
+    {
+        if(map != nullptr)
+            map->objects.remove(object);
 
-    this->push_back(&object);
-    object.id(seq);
-    object.map(this->_owner, position);
+        auto                    seq = this->empty_seq();
+        auto                    found = this->find(seq);
+        if(found != nullptr)
+        {
+            this->erase(std::find(this->begin(), this->end(), found));
+            delete found;
+        }
 
-    return seq;
+        this->push_back(&object);
+        object.id(seq);
+        object.map(this->_owner, position);
+        return seq;
+    }
 }
 
 bool fb::game::objects::remove(fb::game::object& object)
@@ -136,9 +140,10 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
     _id(id),
     _parent(parent),
+    _host_id(host_id),
     _bgm(bgm),
     _name(name),
     _option(option),
@@ -348,6 +353,11 @@ const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) co
     }
 
     return nullptr;
+}
+
+const std::string& fb::game::map::host_id() const
+{
+    return this->_host_id;
 }
 
 void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)

@@ -46,6 +46,7 @@ public:
     virtual void on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
     virtual void on_option(session& me, fb::game::options option, bool enabled) = 0;
     virtual void on_level_up(session& me) = 0;
+    virtual void on_warp(session& me, fb::game::map& map, const point16_t& position) = 0;
 
 
     // item

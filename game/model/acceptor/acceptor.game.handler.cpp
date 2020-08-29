@@ -420,6 +420,34 @@ void fb::game::acceptor::on_level_up(session& me)
     this->send(me, response::game::object::effect(me, 0x02), scope::PIVOT);
 }
 
+void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_t& position)
+{
+    fb::ostream         parameter;
+    parameter.write(me.name());
+
+    auto current_map = me.map();
+    if(current_map == nullptr)
+        return;
+
+    this->_connection->exec
+    (
+        "UPDATE user SET map=%d, position_x=%d, position_y=%d WHERE name LIKE '%s'",
+        map.id(), position.x, position.y, me.name().c_str()
+    );
+
+    auto& config = fb::config();
+    if(current_map->host_id() != map.host_id())
+    {
+        auto host = config["hosts"][map.host_id()]["host"].asString();
+        auto port = config["hosts"][map.host_id()]["port"].asInt();
+        this->transfer(me, host, port, parameter);
+    }
+    else
+    {
+        map.objects.add(me, position);
+    }
+}
+
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
 {
 }
