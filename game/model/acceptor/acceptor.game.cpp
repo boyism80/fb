@@ -376,8 +376,6 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         return false;
     });
 
-    game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
-
     session.items.add(game::master::get().name2item("얼음칼")->make<item>(this));
     session.items.add(game::master::get().name2item("정화의방패")->make<item>(this));
     session.items.add(game::master::get().name2item("도씨검")->make<item>(this));
@@ -395,6 +393,8 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     session.items.ring(game::master::get().name2item("쇄자황금반지")->make<ring>(this));
     session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<auxiliary>(this));
     session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<auxiliary>(this));
+
+    game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
 
     this->send(session, response::game::init(), scope::SELF);
     this->send(session, response::game::time(25), scope::SELF);

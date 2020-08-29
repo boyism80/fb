@@ -405,11 +405,11 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 
     // 지금 내가 볼 수 있는 오브젝트를 표시
     for(auto i : this->showings())
-        this->_listener->on_show(*this, *i, true);
+        this->_listener->on_show(*this, *i, false);
 
     // 지금 나를 볼 수 있는 오브젝트들에게 나를 표시
     for(auto i : this->showns())
-        this->_listener->on_show(*i, *this, true);
+        this->_listener->on_show(*i, *this, false);
 }
 
 void fb::game::object::map(fb::game::map* map)
