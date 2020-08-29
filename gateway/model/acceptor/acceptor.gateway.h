@@ -24,7 +24,7 @@ private:
     service::gateway            _gateway_service;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
     ~acceptor();
 
 private:

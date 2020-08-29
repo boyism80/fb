@@ -9,30 +9,19 @@
 #include <model/master/master.h>
 #include <model/lua/lua.h>
 
-BOOL WINAPI handle_console(DWORD signal)
-{
-    switch(signal)
-    {
-    case CTRL_C_EVENT:
-        //acceptor->exit();
-        puts("Please wait to exit acceptor.");
-        break;
-    }
-
-    return true;
-}
-
 int main(int argc, const char** argv)
 {
-    ::SetConsoleIcon(IDI_BARAM);
-    ::SetConsoleTitle(CONSOLE_TITLE);
-    ::SetConsoleCtrlHandler(handle_console, true);
-
     //_CrtSetBreakAlloc(157);
 
+#ifdef _WIN32
+    ::SetConsoleIcon(IDI_BARAM);
+    ::SetConsoleTitle(CONSOLE_TITLE);
+#endif
+
     // Execute acceptor
+    auto& config = fb::config();
     boost::asio::io_context io_service;
-    auto acceptor = new fb::game::acceptor(io_service, fb::config()["port"].asInt());
+    auto acceptor = new fb::game::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
 
     fb::game::master::get().loads(acceptor);
     io_service.run();

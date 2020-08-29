@@ -143,11 +143,6 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
     if(found.get_value<std::string>(1) != this->sha256(pw))
         throw pw_exception(message::INVALID_PASSWORD);
 
-    if(found.get_value<bool>(2) == true)
-    {
-        throw id_exception(message::ALREADY_LOGIN);
-    }
-    
     this->_connection->exec
     (
         "UPDATE user SET login=1 WHERE id=%d LIMIT 1",

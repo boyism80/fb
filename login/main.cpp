@@ -12,30 +12,19 @@ using namespace daotk::mysql;
 
 fb::login::acceptor*       acceptor;
 
-BOOL WINAPI handle_console(DWORD signal)
-{
-    switch(signal)
-    {
-    case CTRL_C_EVENT:
-        //acceptor_login->exit();
-        puts("Please wait to exit acceptor.");
-        break;
-    }
-
-    return true;
-}
-
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
 
+#ifdef _WIN32
     ::SetConsoleIcon(IDI_BARAM);
     ::SetConsoleTitle(CONSOLE_TITLE);
-    ::SetConsoleCtrlHandler(handle_console, true);
+#endif
 
     // Execute acceptor
     boost::asio::io_context io_service;
-    acceptor = new fb::login::acceptor(io_service, fb::config()["port"].asInt());
+    auto& config = fb::config();
+    acceptor = new fb::login::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
 
     io_service.run();
 

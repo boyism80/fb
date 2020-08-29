@@ -1,5 +1,7 @@
 #include "console.h"
 
+#ifdef _WIN32
+
 bool SetConsoleIcon(int id)
 {
 	auto hwnd = ::GetConsoleWindow();
@@ -15,12 +17,4 @@ bool SetConsoleIcon(int id)
 	return true;
 }
 
-//bool SetConsoleTitle(const std::string& title)
-//{
-//	auto hwnd = ::GetConsoleWindow();
-//	if(hwnd == nullptr)
-//		return false;
-//
-//	::SetWindowTextA(hwnd, title.c_str());
-//	return true;
-//}
+#endif

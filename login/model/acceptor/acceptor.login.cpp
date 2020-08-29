@@ -1,8 +1,8 @@
 #include <model/acceptor/acceptor.login.h>
 using namespace fb::login;
 
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<session>(context, port),
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    fb::acceptor<session>(context, port, accept_delay),
     _agreement(fb::config()["agreement"].asString())
 {
     // Register event handler

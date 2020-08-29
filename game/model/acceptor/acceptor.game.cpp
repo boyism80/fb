@@ -141,8 +141,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 {"leader",              fb::game::group::builtin_leader},
 END_LUA_EXTENSION
 
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<fb::game::session>(context, port),
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    fb::acceptor<fb::game::session>(context, port, accept_delay),
     _timer(context)
 {
     const auto& config = fb::config();
@@ -227,7 +227,7 @@ bool acceptor::handle_disconnected(fb::game::session& session)
     if(map != nullptr)
         map->objects.remove(session);
 
-    return false;
+    return true;
 }
 
 void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
@@ -439,7 +439,14 @@ bool fb::game::acceptor::handle_move(fb::game::session& session, const fb::proto
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
     if(warp != nullptr)
-        warp->map->objects.add(session, warp->after);
+    {
+        fb::ostream         parameter;
+        parameter.write(session.name());
+
+        auto& config = fb::config();
+        this->transfer(session, "127.0.0.1", config["port"].asInt(), parameter);
+        //warp->map->objects.add(session, warp->after);
+    }
     return true;
 }
 

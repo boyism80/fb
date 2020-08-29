@@ -2,8 +2,8 @@
 
 using namespace fb::gateway;
 
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<session>(context, port)
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    fb::acceptor<session>(context, port, accept_delay)
 {
     this->load_entries();
 

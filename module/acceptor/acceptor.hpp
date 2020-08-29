@@ -1,8 +1,8 @@
 #include <module/acceptor/acceptor.h>
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port) : 
-    base_acceptor(context, port)
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    base_acceptor(context, port), _accept_delay(accept_delay)
 {
     this->accept();
 }
@@ -31,11 +31,16 @@ void fb::acceptor<T>::accept()
                 auto session = this->handle_alloc_session(new_socket);
                 this->_session_map.push(new_socket, session);
                 this->sessions.push_back(session);
-
-                new_socket->recv();
+                
                 this->accept();
 
-                this->handle_connected(*session);
+                std::async(std::launch::async, 
+                    [&new_socket, &session, this]()
+                    {
+                        std::this_thread::sleep_for(std::chrono::seconds(this->_accept_delay));
+                        this->handle_connected(*session);
+                        new_socket->recv();
+                    });
             }
             catch(std::exception& e)
             {

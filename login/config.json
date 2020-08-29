@@ -1,4 +1,5 @@
 {
+    "delay":  0,
     "port": 2002,
     "allow other language": false,
     "forbidden": [ "김대중", "노무현" ],
@@ -8,10 +9,10 @@
         "port": 2004
     },
     "database": {
-    	"ip": "127.0.0.1",
-    	"port": 3306,
-    	"name": "fb",
-    	"uid": "fb",
-    	"pwd": "admin"
+        "ip": "127.0.0.1",
+        "port": 3306,
+        "name": "fb",
+        "uid": "fb",
+        "pwd": "admin"
     }
 }

@@ -3,17 +3,19 @@
 
 std::string UTF8(const std::string& utf8)
 {
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> wconv;
-    auto wide = wconv.from_bytes(utf8.c_str());
+    auto wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), nullptr, 0) + 1;
+    auto wide = new wchar_t[wide_size];
+    memset(wide, 0, wide_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), wide, wide_size);
 
-    auto mbs_size = utf8.length() * sizeof(wchar_t) + 1;
+    auto mbs_size = WideCharToMultiByte(CP_ACP, 0, wide, -1, nullptr, 0, nullptr, nullptr);
     auto mbs = new char[mbs_size];
-    
-    setlocale(LC_ALL, "ko_KR");
-    wcstombs(mbs, wide.c_str(), mbs_size);
+    memset(mbs, 0, mbs_size);
+    WideCharToMultiByte(CP_ACP, 0, wide, -1, mbs, mbs_size, nullptr, nullptr); 
 
-    auto ansi = std::string(mbs, mbs_size);
+    auto ansi = std::string(mbs);
     delete[] mbs;
+    delete[] wide;
     return ansi;
 }
 

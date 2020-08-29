@@ -30,6 +30,7 @@ template <class T>
 class acceptor : public base_acceptor
 {
 private:
+    uint8_t                 _accept_delay;
     session_map<T>          _session_map;
     std::map<uint8_t, std::function<bool(void*)>> _handler_dict;
 
@@ -37,7 +38,7 @@ public:
     session_container<T>    sessions;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
     ~acceptor();
 
 private:
