@@ -11,7 +11,8 @@
         },
         "name": "부여성",
         "parent": 14,
-        "bgm": 2
+        "bgm": 2,
+        "host": "game1"
     },
     "315": {
         "option": {
@@ -25,7 +26,8 @@
         },
         "name": "부여왕초보사냥1",
         "parent": 14,
-        "bgm": 2
+        "bgm": 2,
+        "host": "game1"
     },
     "316": {
         "option": {
@@ -39,7 +41,8 @@
         },
         "name": "부여왕초보사냥2",
         "parent": 14,
-        "bgm": 2
+        "bgm": 2,
+        "host": "game1"
     },
     "317": {
         "option": {
@@ -53,6 +56,7 @@
         },
         "name": "부여왕초보사냥3",
         "parent": 14,
-        "bgm": 2
+        "bgm": 2,
+        "host": "game1"
     }
 }
