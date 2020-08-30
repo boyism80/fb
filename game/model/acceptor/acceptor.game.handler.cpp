@@ -508,3 +508,44 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 {
     this->send(me, response::game::item::update(me, index), scope::SELF);
 }
+
+void fb::game::acceptor::on_save(session& me)
+{
+    auto map = me.map();
+    auto weapon = me.items.weapon();
+    auto helmet = me.items.helmet();
+    auto armor = me.items.armor();
+    auto shield = me.items.shield();
+    auto ring_left = me.items.ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+    auto ring_right = me.items.ring(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+    auto aux_top = me.items.auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+    auto aux_bot = me.items.auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+    auto clan = me.clan();
+
+    this->_connection->query
+    (
+        "UPDATE user SET look=%d, color=%d, sex=%d, nation=%d, creature=%d, map=%d, position_x=%d, position_y=%d, direction=%d, state=%d, class=%d, promotion=%d, exp=%d, money=%d, disguise=%s, hp=%d, base_hp=%d, additional_hp=%d, mp=%d, base_mp=%d, additional_mp=%d WHERE name LIKE '%s' LIMIT 1",
+        me.look(), 
+        me.color(), 
+        me.sex(), 
+        me.nation(), 
+        me.creature(),
+        map->id(),
+        me.x(),
+        me.y(),
+        me.direction(),
+        me.state(),
+        me.cls(),
+        me.promotion(),
+        me.experience(),
+        me.money(),
+        me.disguise().has_value() ? std::to_string(me.disguise().value()).c_str() : "NULL",
+        me.hp(),
+        me.base_hp(),
+        0,
+        me.mp(),
+        me.base_mp(),
+        0,
+        me.name().c_str()
+    );
+}

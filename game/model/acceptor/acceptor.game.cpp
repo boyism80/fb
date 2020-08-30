@@ -221,12 +221,12 @@ bool acceptor::handle_connected(fb::game::session& session)
 
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
+    this->on_save(session);
     this->send(session, response::game::object::hide(session.id()), scope::PIVOT, true);
 
     auto map = session.map();
     if(map != nullptr)
         map->objects.remove(session);
-
     return true;
 }
 
@@ -364,8 +364,10 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     if(found.count() == 0)
         return false;
 
-    found.each([this, &session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan, bool login)
+    found.each([this, &session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan)
     {
+        session.color(color);
+        session.direction(fb::game::direction(direction));
         session.look(look);
         session.money(money);
         session.sex(fb::game::sex(sex));
@@ -373,29 +375,16 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         session.hp(hp);
         session.base_mp(base_mp);
         session.mp(mp);
+        session.experience(exp);
+        session.state(fb::game::state(state));
 
-        session.items.add(game::master::get().name2item("얼음칼")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("정화의방패")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("도씨검")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("낙랑의두루마리2")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("남자기모노")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("도토리")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("동동주")->make<fb::game::item>(this));
-        session.items.add(game::master::get().name2item("파란열쇠")->make<fb::game::item>(this));
-
-
-        // 착용한 상태로 설정 (내구도 등 변할 수 있는 내용들은 저장해둬야 함)
-        session.items.weapon(game::master::get().name2item("양첨목봉")->make<fb::game::weapon>(this));
-        session.items.helmet(game::master::get().name2item("쇄자황금투구")->make<fb::game::helmet>(this));     
-        session.items.ring(game::master::get().name2item("쇄자황금반지")->make<fb::game::ring>(this));
-        session.items.ring(game::master::get().name2item("쇄자황금반지")->make<fb::game::ring>(this));
-        session.items.auxiliary(game::master::get().name2item("보무의목걸이")->make<fb::game::auxiliary>(this));
-        session.items.auxiliary(game::master::get().name2item("해독의귀걸이")->make<fb::game::auxiliary>(this));
+        if(disguise.has_value())
+            session.disguise(disguise.value());
 
         if(game::master::get().maps[map] == nullptr)
-            game::master::get().name2map("부여왕초보사냥2")->objects.add(session, point16_t(2, 2));
-        else
-            game::master::get().maps[map]->objects.add(session, point16_t(position_x, position_y));
+            return false;
+
+        game::master::get().maps[map]->objects.add(session, point16_t(position_x, position_y));
 
         this->send(session, response::game::init(), scope::SELF);
         this->send(session, response::game::time(25), scope::SELF);

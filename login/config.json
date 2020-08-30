@@ -1,5 +1,5 @@
 {
-    "delay":  0,
+    "delay": 0,
     "port": 2002,
     "allow other language": false,
     "forbidden": [ "김대중", "노무현" ],
@@ -14,5 +14,20 @@
         "name": "fb",
         "uid": "fb",
         "pwd": "admin"
+    },
+    "init": {
+        "map": 14,
+        "position": {
+            "x": 2,
+            "y": 2
+        },
+        "hp": {
+            "base": 50,
+            "range": 10
+        },
+        "mp": {
+            "base": 30,
+            "range": 10
+        }
     }
 }

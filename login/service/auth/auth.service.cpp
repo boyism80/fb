@@ -100,13 +100,15 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     if(this->exists(id))
         throw id_exception(message::ALREADY_EXISTS);
 
+    auto& config = fb::config();
+
     std::srand(std::time(nullptr));
-    auto hp = 45 + std::rand() % 10;
-    auto mp = 45 + std::rand() % 10;
+    auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
+    auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
     this->_connection->exec
     (
-        "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp) VALUES('%s', '%s', %d, %d, %d, %d)",
-        id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp
+        "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
+        id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
     );
     auto index = this->_connection->last_insert_id();
 
@@ -133,7 +135,7 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
     auto found = this->_connection->query
     (
-        "SELECT id, pw, login FROM user WHERE name LIKE '%s' LIMIT 1",
+        "SELECT id, pw FROM user WHERE name LIKE '%s' LIMIT 1",
         id.c_str(), this->sha256(pw).c_str()
     );
 
@@ -142,12 +144,6 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
     if(found.get_value<std::string>(1) != this->sha256(pw))
         throw pw_exception(message::INVALID_PASSWORD);
-
-    this->_connection->exec
-    (
-        "UPDATE user SET login=1 WHERE id=%d LIMIT 1",
-        found.get_value<int>(0)
-    );
 }
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
@@ -186,7 +182,6 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
         throw newpw_exception(message::PASSWORD_SIZE);
     
     // TODO : 너무 쉬운 비밀번호인지 체크
-
     if(pw == new_pw)
         throw newpw_exception(message::NEW_PW_EQUALIZATION);
 

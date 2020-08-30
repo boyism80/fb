@@ -99,17 +99,17 @@ void fb::game::mob::master::offensive(offensive_type value)
     this->_offensive_type = value;
 }
 
-void fb::game::mob::master::dropitem_add(const mob::money& money)
+void fb::game::mob::master::dropitem_add(const mob::drop& money)
 {
     this->_items.push_back(money);
 }
 
 void fb::game::mob::master::dropitem_add(const fb::game::item::master* item, float percentage)
 {
-    this->_items.push_back(money(item, percentage));
+    this->_items.push_back(drop(item, percentage));
 }
 
-const std::vector<fb::game::mob::money>& fb::game::mob::master::items() const
+const std::vector<fb::game::mob::drop>& fb::game::mob::master::items() const
 {
     return this->_items;
 }
@@ -353,7 +353,7 @@ fb::game::life* fb::game::mob::autoset_target()
     return this->_target;
 }
 
-const std::vector<fb::game::mob::money>& fb::game::mob::items() const
+const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
 {
     return static_cast<const master*>(this->_master)->items();
 }

@@ -40,7 +40,7 @@ public:
         _drop() : percentage(0), item(NULL) {}
         _drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) {}
         _drop(const _drop& right) : percentage(right.percentage), item(right.item) {}
-    } money;
+    } drop;
 #pragma endregion
 
 
@@ -69,7 +69,7 @@ private:
     sizes                       _size;
     uint32_t                    _speed;
     std::string                 _script_attack, _script_die;
-    std::vector<money>          _items;
+    std::vector<drop>          _items;
 #pragma endregion
 
 
@@ -114,9 +114,9 @@ public:
     offensive_type              offensive() const;
     void                        offensive(offensive_type value);
 
-    void                        dropitem_add(const mob::money& money);
+    void                        dropitem_add(const mob::drop& money);
     void                        dropitem_add(const fb::game::item::master* item, float percentage);
-    const std::vector<money>&   items() const;
+    const std::vector<drop>&   items() const;
 #pragma endregion
 
 
@@ -189,7 +189,7 @@ public:
     void                        target(fb::game::life* value);
     fb::game::life*             autoset_target();
 
-    const std::vector<money>&   items() const;
+    const std::vector<drop>&   items() const;
 #pragma endregion
 };
 
