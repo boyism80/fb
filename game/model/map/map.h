@@ -49,7 +49,7 @@ private:
 public:
     std::vector<session*>       sessions() const;
     std::vector<mob*>           active_mobs() const;
-    fb::game::object*           find(uint16_t id);
+    fb::game::object*           find(uint16_t sequence);
     uint16_t                    add(fb::game::object& object);
     uint16_t                    add(fb::game::object& object, const point16_t& position);
     bool                        remove(fb::game::object& object);

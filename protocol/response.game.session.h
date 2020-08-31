@@ -42,6 +42,10 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
+        auto map = this->session.map();
+        if(map == nullptr)
+            return;
+
         out_stream.write_u8(this->light ? 0x1D : 0x33); // cmd
         if(this->light == false)
         {
@@ -50,7 +54,7 @@ public:
                       .write_u8(this->session.direction()); // side
         }
 
-        out_stream.write_u32(this->session.id())
+        out_stream.write_u32(this->session.sequence())
                   .write_u8(this->session.state() == fb::game::state::DISGUISE) // 변신유무
                   .write_u8(this->session.sex()) // sex
                   .write_u8(this->session.state()); // state
@@ -121,7 +125,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x05)
-                  .write_u32(this->session.id())
+                  .write_u32(this->session.sequence())
                   .write_u32(this->session.direction()) // side
                   .write_u8(this->session.cls()) // class
                   .write_u16(0x00)
@@ -410,7 +414,7 @@ public:
         out_stream.write(sstream.str());
 
 
-        out_stream.write_u32(this->session.id())
+        out_stream.write_u32(this->session.sequence())
                   .write_u8(this->session.option(fb::game::options::GROUP))
                   .write_u8(this->session.option(fb::game::options::TRADE))
                   .write_u32(0x00000000); // unknown
@@ -466,10 +470,10 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x16)
-                  .write_u32(this->session.id())
+                  .write_u32(this->session.sequence())
                   .write_u16(this->item.look())
                   .write_u8(this->item.color())
-                  .write_u32(this->item.id())
+                  .write_u32(this->item.sequence())
                   .write_u16(this->session.x())
                   .write_u16(this->session.y())
                   .write_u16(this->to.x)
@@ -497,7 +501,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x1A)
-                  .write_u32(this->me.id())
+                  .write_u32(this->me.sequence())
                   .write_u8(this->value) // type
                   .write_u16(this->duration) // duration
                   .write_u8(this->sound); // sound

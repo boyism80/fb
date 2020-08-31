@@ -25,7 +25,7 @@ namespace fb { namespace protocol { namespace response { namespace game { namesp
      void serialize(fb::ostream& out_stream) const
      {
          out_stream.write_u8(0x1A)
-                   .write_u32(this->me.id())
+                   .write_u32(this->me.sequence())
                    .write_u8(this->value) // type
                    .write_u16(this->duration) // duration
                    .write_u8(this->sound); // sound
@@ -50,7 +50,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x13)
-                  .write_u32(this->me.id())
+                  .write_u32(this->me.sequence())
                   .write_u8(this->critical)
                   .write_u8(this->percentage)
                   .write_u32(this->damage)
@@ -65,7 +65,7 @@ public:
 
 public:
     die(const fb::game::life& life) : 
-        die(life.id())
+        die(life.sequence())
     {}
     die(uint32_t id) : id(id)
     {}

@@ -448,6 +448,29 @@ void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_
     }
 }
 
+void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)
+{
+    auto master = item.based<fb::game::item::master>();
+    this->_connection->exec
+    (
+        "INSERT INTO item(master, owner, slot, count, durability) VALUES(%d, %d, %d, %d, %s)",
+        master->id(), me.id(), slot, item.count(), "NULL"
+    );
+    item.id(this->_connection->last_insert_id());
+}
+
+void fb::game::acceptor::on_item_changed(session& me, fb::game::item& item, uint8_t slot)
+{
+    this->_connection->exec
+    (
+        "UPDATE item SET count=%d WHERE id=%d LIMIT 1",
+        item.count(), item.id()
+    );
+}
+
+void fb::game::acceptor::on_item_lost(session& me, uint8_t slot)
+{}
+
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
 {
 }

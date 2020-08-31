@@ -10,12 +10,12 @@
 #endif
 
 const fb::game::item::item_limit fb::game::item::DEFAULT_LIMIT;
-const fb::game::cash::master fb::game::cash::BRONZE("엽전", 23 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE("엽전뭉치", 74 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::SILVER("은전", 70 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::SILVER_BUNDLE("은전뭉치", 73 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::GOLD("금전", 71 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::GOLD_BUNDLE("금덩어리", 72 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::BRONZE(0xFFFFFFFF, "엽전", 23 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE(0xFFFFFFFF, "엽전뭉치", 74 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::SILVER(0xFFFFFFFF, "은전", 70 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::SILVER_BUNDLE(0xFFFFFFFF, "은전뭉치", 73 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::GOLD(0xFFFFFFFF, "금전", 71 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(0xFFFFFFFF, "금덩어리", 72 + 0xBFFF);
 
 
 fb::game::item::_limit::_limit() : 
@@ -40,8 +40,9 @@ fb::game::item::_limit::_limit(const _limit& right) :
 {
 }
 
-fb::game::item::master::master(const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
+fb::game::item::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const item_limit& limit) : 
     fb::game::object::master(name, look, color),
+    _id(id),
     _price(0),
     _capacity(capacity),
     _limit(limit),
@@ -57,6 +58,16 @@ fb::game::item::master::master(const fb::game::object::master& master) :
 
 fb::game::item::master::~master()
 {}
+
+uint32_t fb::game::item::master::id() const
+{
+    return this->_id;
+}
+
+void fb::game::item::master::id(uint32_t id)
+{
+    this->_id = id;
+}
 
 uint32_t fb::game::item::master::price() const
 {
@@ -245,6 +256,16 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
+uint32_t fb::game::item::id() const
+{
+    return this->_id;
+}
+
+void fb::game::item::id(uint32_t id)
+{
+    this->_id = id;
+}
+
 uint16_t fb::game::item::fill(uint16_t count)
 {
     // 추가하고 남은 갯수 리턴
@@ -365,8 +386,8 @@ fb::game::item* fb::game::item::split(uint16_t count)
 
 
 
-fb::game::cash::master::master(const std::string& name, uint16_t look, uint8_t color) : 
-    fb::game::item::master(name, look, color)
+fb::game::cash::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
+    fb::game::item::master(id, name, look, color)
 {}
 
 fb::game::cash::master::~master()
@@ -463,8 +484,8 @@ bool fb::game::cash::empty() const
 //
 // class consume::master
 //
-fb::game::consume::master::master(const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
-    fb::game::item::master(name, look, color, capacity)
+fb::game::consume::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
+    fb::game::item::master(id, name, look, color, capacity)
 {}
 
 fb::game::consume::master::~master()
@@ -520,8 +541,8 @@ bool fb::game::consume::active()
 //
 // class pack::master
 //
-fb::game::pack::master::master(const std::string& name, uint16_t look, uint8_t color, uint16_t durability) : 
-    fb::game::item::master(name, look, color),
+fb::game::pack::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t durability) : 
+    fb::game::item::master(id, name, look, color),
     _durability(durability)
 {}
 
@@ -593,8 +614,8 @@ bool fb::game::pack::active()
 // class equipment
 //
 
-fb::game::equipment::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
-    fb::game::item::master(name, look, color),
+fb::game::equipment::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
+    fb::game::item::master(id, name, look, color),
     _dress(dress),
     _durability(durability)
 {}
@@ -1047,13 +1068,13 @@ std::string fb::game::equipment::tip_message() const
 //
 // class weapon
 //
-fb::game::weapon::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color),
+fb::game::weapon::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color),
     _damage_range(range32_t(0, 0), range32_t(0, 0))
 {}
 
-fb::game::weapon::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large) : 
-    fb::game::equipment::master(name, look, dress, color),
+fb::game::weapon::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large) : 
+    fb::game::equipment::master(id, name, look, dress, color),
     _damage_range(small, large)
 {
 }
@@ -1185,8 +1206,8 @@ std::string fb::game::weapon::mid_message() const
 //
 // armor::master methods
 //
-fb::game::armor::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::armor::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::armor::master::~master()
@@ -1226,8 +1247,8 @@ fb::game::armor::~armor()
 //
 // helmet::master methods
 //
-fb::game::helmet::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::helmet::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::helmet::master::~master()
@@ -1267,8 +1288,8 @@ fb::game::helmet::~helmet()
 //
 // shield::master methods
 //
-fb::game::shield::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::shield::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::shield::master::~master()
@@ -1308,8 +1329,8 @@ fb::game::shield::~shield()
 //
 // ring::master methods
 //
-fb::game::ring::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::ring::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::ring::master::~master()
@@ -1349,8 +1370,8 @@ fb::game::ring::~ring()
 //
 // auxiliary::master methods
 //
-fb::game::auxiliary::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::auxiliary::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::auxiliary::master::~master()
@@ -1390,8 +1411,8 @@ fb::game::auxiliary::~auxiliary()
 //
 // arrow::master methods
 //
-fb::game::arrow::master::master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
-    fb::game::equipment::master(name, look, dress, color)
+fb::game::arrow::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color) : 
+    fb::game::equipment::master(id, name, look, dress, color)
 {}
 
 fb::game::arrow::master::~master()
@@ -1602,7 +1623,8 @@ uint8_t fb::game::items::add(fb::game::item& item)
 
 
             // 아이템을 합치고 남은 갯수로 설정한다.
-            auto remain = this->at(i)->fill(item.count());
+            auto exists = this->at(i);
+            auto remain = exists->fill(item.count());
             item.count(remain);
 
             if(this->_listener != nullptr)
@@ -1610,6 +1632,9 @@ uint8_t fb::game::items::add(fb::game::item& item)
 
             if(item.empty())
                 delete &item;
+
+            if(this->_listener != nullptr)
+                this->_listener->on_item_changed(this->_owner, *exists, i);
 
             return i;
         }
@@ -1628,6 +1653,10 @@ uint8_t fb::game::items::add(fb::game::item& item)
 
         if(item._map != nullptr)
             item._map->objects.remove(item);
+
+        if(this->_listener != nullptr)
+            this->_listener->on_item_get(this->_owner, item, i);
+
         return i;
     }
 
@@ -1640,6 +1669,18 @@ uint8_t fb::game::items::add(fb::game::item* item)
         return 0xFF;
 
     return this->add(*item);
+}
+
+bool items::add(fb::game::item& item, uint8_t slot)
+{
+    if(this->at(slot) != nullptr)
+        return false;
+
+    this->set(&item, slot);
+    item._owner = &this->_owner;
+    if(item._listener != nullptr)
+        item._listener->on_item_update(static_cast<session&>(this->owner()), slot);
+    return true;
 }
 
 bool fb::game::items::reduce(uint8_t index, uint16_t count)
@@ -1873,7 +1914,6 @@ void fb::game::items::pickup(bool boost)
         std::string         message;
 
         // Pick up items in reverse order
-        //for(auto i = objects.rbegin(); i != objects.rend(); i++)
         for(int i = map->objects.size() - 1; i >= 0; i--)
         {
             auto            object = map->objects[i];

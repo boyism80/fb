@@ -89,7 +89,7 @@ public:
     {
         out_stream.write_u8(0x0D)
                   .write_u8(this->type)
-                  .write_u32(this->me.id())
+                  .write_u32(this->me.sequence())
                   .write(this->text);
     }
 };

@@ -147,6 +147,7 @@ public:
 
 #pragma region protected field
 protected:
+    uint32_t                        _id;
     uint32_t                        _price;
     item_limit                      _limit;
     penalties                       _penalty;
@@ -166,7 +167,7 @@ protected:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, 
+    master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, 
         const item_limit& limit = DEFAULT_LIMIT);
     master(const fb::game::object::master& master);
     virtual ~master();
@@ -195,6 +196,8 @@ public:
 
 #pragma region public method
 public:
+    uint32_t                        id() const;
+    void                            id(uint32_t id);
     uint32_t                        price() const;
     void                            price(uint32_t value);
 
@@ -235,7 +238,7 @@ public:
 
 #pragma region private field
 private:
-
+    uint32_t                        _id;
 #pragma endregion
 
 
@@ -274,6 +277,8 @@ public:
 #pragma region public method
 
 public:
+    uint32_t                        id() const;
+    void                            id(uint32_t id);
     uint16_t                        fill(uint16_t count);
     uint16_t                        reduce(uint16_t count);
     uint16_t                        free_space() const;
@@ -315,7 +320,7 @@ public:
     class master : public fb::game::item::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
         ~master();
 
     public:
@@ -358,7 +363,7 @@ public:
         friend class consume;
 
     public:
-        master(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
+        master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
         ~master();
 
     public:
@@ -391,7 +396,7 @@ public:
         friend class pack;
 
     public:
-        master(const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+        master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
         ~master();
 
     public:
@@ -487,7 +492,7 @@ public:
         friend class equipment;
 
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
         ~master();
 
     public:
@@ -652,8 +657,8 @@ public:
         friend class fb::game::weapon;
 
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
         ~master();
 
     public:
@@ -702,7 +707,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -727,7 +732,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -752,7 +757,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -777,7 +782,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -802,7 +807,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -827,7 +832,7 @@ public:
     class master : public equipment::master
     {
     public:
-        master(const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
+        master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0);
         ~master();
 
     public:
@@ -933,6 +938,7 @@ private:
 public:
     uint8_t                         add(fb::game::item& item);
     uint8_t                         add(fb::game::item* item);
+    bool                            add(fb::game::item& item, uint8_t slot);
     bool                            reduce(uint8_t index, uint16_t count);
     fb::game::item*                 active(uint8_t index);
     uint8_t                         inactive(equipment::slot slot);

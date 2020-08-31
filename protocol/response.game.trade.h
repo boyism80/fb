@@ -28,7 +28,7 @@ public:
 
         out_stream.write_u8(0x42)
                   .write_u8(0x00)
-                  .write_u32(this->me.id())
+                  .write_u32(this->me.sequence())
                   .write(sstream.str())
                   .write_u8(0x00);
     }

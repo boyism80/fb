@@ -113,6 +113,7 @@ private:
 
 #pragma region protected field
 protected:
+    uint32_t                    _sequence;
     const master*               _master;
     point16_t                   _before;
 
@@ -143,6 +144,9 @@ private:
 
 #pragma region public method
 public:
+    uint32_t                    sequence() const { return this->_sequence; }
+    void                        sequence(uint32_t value) { this->_sequence = value; }
+
     const master*               based() const;
     template <typename T>
     const T*                    based() const { return static_cast<const T*>(this->_master); }

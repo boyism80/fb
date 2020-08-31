@@ -222,7 +222,7 @@ bool acceptor::handle_connected(fb::game::session& session)
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
     this->on_save(session);
-    this->send(session, response::game::object::hide(session.id()), scope::PIVOT, true);
+    this->send(session, response::game::object::hide(session.sequence()), scope::PIVOT, true);
 
     auto map = session.map();
     if(map != nullptr)
@@ -366,6 +366,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
 
     found.each([this, &session] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, uint32_t weapon, uint32_t weapon_color, uint32_t helmet, uint32_t helmet_color, uint32_t armor, uint32_t armor_color, uint32_t shield, uint32_t shield_color, uint32_t ring_left, uint32_t ring_left_color, uint32_t ring_right, uint32_t ring_right_color, uint32_t aux_top, uint32_t aux_top_color, uint32_t aux_bot, uint32_t aux_bot_color, std::optional<uint32_t> clan)
     {
+        session.id(id);
         session.color(color);
         session.direction(fb::game::direction(direction));
         session.look(look);
@@ -380,6 +381,8 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
 
         if(disguise.has_value())
             session.disguise(disguise.value());
+        else
+            session.disguise().reset();
 
         if(game::master::get().maps[map] == nullptr)
             return false;
@@ -400,6 +403,23 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         this->send(session, response::game::session::option(session), scope::SELF);
 
         return false;
+    });
+
+    found = this->_connection->query
+    (
+        "SELECT * FROM item WHERE owner=%d AND slot IS NOT NULL",
+        session.id()
+    );
+    found.each([this, &session] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
+    {
+        auto& items = fb::game::master::get().items;
+        auto item = items[master]->make<fb::game::item>(this);
+        if(item == nullptr)
+            return false;
+
+        item->id(id);
+        item->count(count);
+        session.items.add(*item, slot.value());
     });
 
     return true;
@@ -1416,6 +1436,14 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto level = std::stoi(splitted[1]);
         session.level(level);
         this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+        return true;
+    }
+
+    if(splitted[0] == "아이템생성")
+    {
+        auto name = splitted[1];
+        auto item = master::get().name2item(name)->make<fb::game::item>(this);
+        session.map()->objects.add(*item, session.position());
         return true;
     }
 

@@ -123,6 +123,7 @@ public:
 
 #pragma region private field
 private:
+    uint32_t                    _id;
     fb::socket*                 _socket;
     listener*                   _listener;
     std::string                 _name;
@@ -203,6 +204,8 @@ public:
 
 #pragma region public method
 public:
+    uint32_t                    id() const;
+    void                        id(uint32_t id);
     void                        attack();
     void                        action(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00);
     uint32_t                    hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);

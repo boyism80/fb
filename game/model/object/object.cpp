@@ -93,6 +93,7 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 fb::game::object::object(const fb::game::object::master* master, listener* listener, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
     luable(id),
     _listener(listener),
+    _sequence(0xFFFFFFFF),
     _master(master),
     _position(position),
     _direction(direction),
@@ -103,7 +104,7 @@ fb::game::object::object(const fb::game::object::master* master, listener* liste
 }
 
 fb::game::object::object(const object& right) :
-    object(right._master, right._listener, right.id(), right._position, right._direction, right._map)
+    object(right._master, right._listener, right.sequence(), right._position, right._direction, right._map)
 {
 }
 
@@ -677,7 +678,7 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
 bool fb::game::object::operator==(const object& right) const
 {
     return this->_map == right._map &&
-        this->id() == right.id();
+        this->sequence() == right.sequence();
 }
 
 bool fb::game::object::operator!=(const object& right) const
@@ -698,7 +699,7 @@ int fb::game::object::builtin_id(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-    lua_pushinteger(lua, object->id());
+    lua_pushinteger(lua, object->sequence());
     return 1;
 }
 
@@ -708,7 +709,7 @@ int fb::game::object::builtin_eq(lua_State* lua)
     auto me = *(fb::game::object**)lua_touserdata(lua, 1);
     auto you = *(fb::game::object**)lua_touserdata(lua, 2);
     
-    lua_pushboolean(lua, me->id() == you->id());
+    lua_pushboolean(lua, me->sequence() == you->sequence());
     return 1;
 }
 

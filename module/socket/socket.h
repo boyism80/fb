@@ -16,18 +16,12 @@ class base_acceptor;
 
 class base
 {
-private:
-    uint32_t                _id;
-
 protected:
-    base() : _id(0xFFFFFFFF) {}
-    base(uint32_t id) : _id(id) {}
+    base() {}
+    base(uint32_t id) {}
     virtual ~base() {}
 
 public:
-    uint32_t                id() const { return this->_id; }
-    void                    id(uint32_t value) { this->_id = value; }
-
     virtual void            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true) { }
     void                    send(const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true);
 };

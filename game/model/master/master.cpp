@@ -165,7 +165,7 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
     if(types == "stuff")
     {
         uint16_t        capacity        = std::max(data["capacity"].asInt(), 1);
-        return new fb::game::item::master(name, icon, color, capacity);
+        return new fb::game::item::master(id, name, icon, color, capacity);
     }
 
     if(types == "consume")
@@ -174,34 +174,34 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
                                                                         // bundle  Ex) 도토리
         uint32_t        capacity        = data["capacity"].asInt();
         if (bundle_type == "package")
-            return new fb::game::pack::master(name, icon, color, capacity);
+            return new fb::game::pack::master(id, name, icon, color, capacity);
         else
-            return new fb::game::consume::master(name, icon, color, std::max(capacity, uint32_t(1)));
+            return new fb::game::consume::master(id, name, icon, color, std::max(capacity, uint32_t(1)));
     }
 
 
 
     uint16_t look = data["equipment option"]["look"].asInt();
     if(types == "weapon")
-        return new fb::game::weapon::master(name, icon, look, color);
+        return new fb::game::weapon::master(id, name, icon, look, color);
 
     if(types == "armor")
-        return new fb::game::armor::master(name, icon, look, color);
+        return new fb::game::armor::master(id, name, icon, look, color);
 
     if(types == "helmet")
-        return new fb::game::helmet::master(name, icon, look, color);
+        return new fb::game::helmet::master(id, name, icon, look, color);
 
     if(types == "shield")
-        return new fb::game::shield::master(name, icon, look, color);
+        return new fb::game::shield::master(id, name, icon, look, color);
 
     if(types == "ring")
-        return new fb::game::ring::master(name, icon, look, color);
+        return new fb::game::ring::master(id, name, icon, look, color);
 
     if(types == "auxiliary")
-        return new fb::game::auxiliary::master(name, icon, look, color);
+        return new fb::game::auxiliary::master(id, name, icon, look, color);
 
     if(types == "arrow")
-        return new fb::game::arrow::master(name, icon, look, color);
+        return new fb::game::arrow::master(id, name, icon, look, color);
 
     return nullptr;
 }
@@ -422,7 +422,7 @@ bool fb::game::master::load_items(const std::string& db_fname)
 
 
             // Create item core
-            item = this->create_item(i.index(), data);
+            item = this->create_item(std::stoi(i.key().asString()), data);
 
             // Common options
             item->active_script(UTF8(data["script"]["active"].asString()));

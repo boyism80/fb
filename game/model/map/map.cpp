@@ -69,7 +69,7 @@ std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
         if(std::any_of(sessions.begin(), sessions.end(), [&mob] (fb::game::session* session) { return session->sight(*mob); }) == false)
             continue;
 
-        active_table.insert(std::pair<uint32_t, fb::game::mob*>(mob->id(), mob));
+        active_table.insert(std::pair<uint32_t, fb::game::mob*>(mob->sequence(), mob));
     }
 
     std::vector<fb::game::mob*> actives;
@@ -77,9 +77,9 @@ std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
     return actives;
 }
 
-fb::game::object* fb::game::objects::find(uint16_t id)
+fb::game::object* fb::game::objects::find(uint16_t sequence)
 {
-    auto i = std::find_if(this->begin(), this->end(), [id] (object* x) { return x->id() == id; });
+    auto i = std::find_if(this->begin(), this->end(), [sequence] (object* x) { return x->sequence() == sequence; });
     return i != this->end() ? *i : nullptr;
 }
 
@@ -94,7 +94,7 @@ uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& posit
     if(map == this->_owner)
     {
         object.position(position);
-        return object.id();
+        return object.sequence();
     }
     else
     {
@@ -110,7 +110,7 @@ uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& posit
         }
 
         this->push_back(&object);
-        object.id(seq);
+        object.sequence(seq);
         object.map(this->_owner, position);
         return seq;
     }

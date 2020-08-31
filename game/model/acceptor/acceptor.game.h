@@ -148,6 +148,9 @@ public:
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
     void                    on_warp(session& me, fb::game::map& map, const point16_t& position);
+    void                    on_item_get(session& me, fb::game::item& item, uint8_t slot);
+    void                    on_item_changed(session& me, fb::game::item& item, uint8_t slot);
+    void                    on_item_lost(session& me, uint8_t slot);
 
     // listener : mob
     void                    on_attack(mob& me, object* you, uint32_t damage, bool critical);

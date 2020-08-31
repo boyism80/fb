@@ -77,6 +77,16 @@ fb::game::session::operator fb::socket& ()
     return *this->_socket;
 }
 
+uint32_t fb::game::session::id() const
+{
+    return this->_id;
+}
+
+void fb::game::session::id(uint32_t id)
+{
+    this->_id = id;
+}
+
 void fb::game::session::attack()
 {
     try
