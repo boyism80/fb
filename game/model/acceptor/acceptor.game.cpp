@@ -382,7 +382,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         if(disguise.has_value())
             session.disguise(disguise.value());
         else
-            session.disguise().reset();
+            session.undisguise();
 
         if(game::master::get().maps[map] == nullptr)
             return false;
