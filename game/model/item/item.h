@@ -237,14 +237,14 @@ public:
 
 
 #pragma region private field
-private:
-    uint32_t                        _id;
+
 #pragma endregion
 
 
 #pragma region protected field
 
 protected:
+    uint32_t                        _id;
     listener*                       _listener;
     uint16_t                        _count;
     session*                        _owner;
@@ -964,9 +964,9 @@ public:
     fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary);
 
     fb::game::item*                 find(const std::string& name) const;
-    fb::game::item*                 drop(uint8_t index, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
+    fb::game::item*                 drop(uint8_t slot, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
     void                            pickup(bool boost);
-    bool                            throws(uint8_t index);
+    bool                            throws(uint8_t slot);
     
     // override
     fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);

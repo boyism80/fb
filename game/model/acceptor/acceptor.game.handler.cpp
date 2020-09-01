@@ -102,6 +102,15 @@ void fb::game::acceptor::on_updated(session& me, fb::game::state_level level)
     this->send(me, response::game::session::state(me, level), scope::SELF);
 }
 
+void fb::game::acceptor::on_money_changed(session& me, uint32_t value)
+{
+    this->_connection->query
+    (
+        "UPDATE user SET money=%d WHERE id=%d",
+        value, me.id()
+    );
+}
+
 void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bool critical)
 {
     this->send(me, response::game::session::action(me, action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
@@ -226,9 +235,15 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     sstream.str(std::string());
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
     this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
+
+    this->_connection->query
+    (
+        "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1",
+        item.id()
+    );
 }
 
-void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot)
+void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uint8_t index)
 {
     this->send(me, response::game::object::sound(me, sound::type::EQUIPMENT_OFF), scope::PIVOT);
 }
@@ -463,13 +478,19 @@ void fb::game::acceptor::on_item_changed(session& me, fb::game::item& item, uint
 {
     this->_connection->exec
     (
-        "UPDATE item SET count=%d WHERE id=%d LIMIT 1",
-        item.count(), item.id()
+        "UPDATE item SET slot=%d, count=%d WHERE id=%d LIMIT 1",
+        slot, item.count(), item.id()
     );
 }
 
 void fb::game::acceptor::on_item_lost(session& me, uint8_t slot)
-{}
+{
+    this->_connection->exec
+    (
+        "DELETE FROM item WHERE owner=%d AND slot=%d",
+        me.id(), slot
+    );
+}
 
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
 {
@@ -532,6 +553,28 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
     this->send(me, response::game::item::update(me, index), scope::SELF);
 }
 
+void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
+{
+    // 메모리상에서 변경된 이후에 호출
+    if(me.items[src] != nullptr)
+    {
+        this->_connection->query
+        (
+            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
+            src, me.items[src]->id()
+        );
+    }
+
+    if(me.items[dest] != nullptr)
+    {
+        this->_connection->query
+        (
+            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
+            dest, me.items[dest]->id()
+        );
+    }
+}
+
 void fb::game::acceptor::on_save(session& me)
 {
     auto map = me.map();
@@ -571,4 +614,22 @@ void fb::game::acceptor::on_save(session& me)
         0,
         me.name().c_str()
     );
+
+    for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
+    {
+        auto item = me.items[i];
+        if(item == nullptr)
+            continue;
+
+        this->_connection->query
+        (
+            "UPDATE item SET master=%d, owner=%d, slot=%d, count=%d, durability=%s WHERE id=%d LIMIT 1",
+            item->based<fb::game::item::master>()->id(),
+            me.id(),
+            i,
+            item->count(),
+            "NULL",
+            item->id()
+        );
+    }
 }

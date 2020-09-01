@@ -381,6 +381,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
         item = this;
     }
 
+    item->id(0xFFFFFFFF);
     return item;
 }
 
@@ -909,7 +910,12 @@ bool fb::game::equipment::active()
         throw equipment::not_equipment_exception();
     }
 
+    // 인벤토리에서는 사라지지만 소유상태는 유지되므로
+    // id를 유지시켜줘야 한다.
+    auto id = this->_id;
     this->_owner->items.remove(*this);
+    this->id(id);
+
     this->_owner->items.add(before);
     if(this->_listener != nullptr)
     {
@@ -1590,14 +1596,15 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
             throw std::runtime_error("뭐지 병신 ㅋ");
         }
 
+        auto index = this->add(item);
         if(this->_listener != nullptr)
         {
             this->_listener->on_updated(this->_owner, state_level::LEVEL_MAX);
             this->_listener->on_show(this->_owner, false);
-            this->_listener->on_equipment_off(this->_owner, slot);
+            this->_listener->on_equipment_off(this->_owner, slot, index);
         }
         
-        return this->add(item);
+        return index;
     }
     catch(std::exception& e)
     {
@@ -1655,7 +1662,12 @@ uint8_t fb::game::items::add(fb::game::item& item)
             item._map->objects.remove(item);
 
         if(this->_listener != nullptr)
-            this->_listener->on_item_get(this->_owner, item, i);
+        {
+            if(item.id() == 0xFFFFFFFF)
+                this->_listener->on_item_get(this->_owner, item, i);
+            else
+                this->_listener->on_item_changed(this->_owner, item, i);
+        }
 
         return i;
     }
@@ -1875,18 +1887,26 @@ fb::game::item* fb::game::items::find(const std::string& name) const
     return nullptr;
 }
 
-fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_attr attr)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
     try
     {
         owner.state_assert(state::RIDING | state::GHOST);
 
-        auto                    dropped = this->remove(index, count, item::delete_attr::DELETE_DROP);
+        auto                    dropped = this->remove(slot, count, item::delete_attr::DELETE_DROP);
         if(dropped != nullptr)
         {
             owner._map->objects.add(*dropped, owner._position);
             owner.action(action::PICKUP, duration::DURATION_PICKUP);
+        }
+
+        if(this->_listener != nullptr)
+        {
+            if(this->at(slot) == nullptr)
+                this->_listener->on_item_lost(this->_owner, slot);
+            else
+                this->_listener->on_item_changed(this->_owner, *this->at(slot), slot);
         }
         return dropped;
     }
@@ -1961,11 +1981,11 @@ void fb::game::items::pickup(bool boost)
     }
 }
 
-bool fb::game::items::throws(uint8_t index)
+bool fb::game::items::throws(uint8_t slot)
 {
     try
     {
-        auto                    item = this->_owner.items.at(index);
+        auto                    item = this->_owner.items.at(slot);
         if(item == nullptr)
             return false;
 
@@ -1976,7 +1996,7 @@ bool fb::game::items::throws(uint8_t index)
         if(map == nullptr)
             throw std::exception();
 
-        auto                    dropped = this->remove(index, 1, item::delete_attr::DELETE_THROW);
+        auto                    dropped = this->remove(slot, 1, item::delete_attr::DELETE_THROW);
         auto                    position = this->_owner.position();
         for(int i = 0; i < 7; i++)
         {
@@ -2053,6 +2073,8 @@ inline bool fb::game::items::swap(uint8_t src, uint8_t dest)
             this->_listener->on_item_update(this->_owner, dest);
         else
             this->_listener->on_item_remove(this->_owner, dest);
+
+        this->_listener->on_item_swap(this->_owner, src, dest);
     }
 
     return true;

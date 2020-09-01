@@ -144,6 +144,7 @@ public:
     void                    on_die(session& me);
     void                    on_action(session& me, action action, duration duration, uint8_t sound);
     void                    on_updated(session& me, fb::game::state_level level);
+    void                    on_money_changed(session& me, uint32_t value);
     void                    on_notify(session& me, const std::string& message, message::type type);
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
@@ -160,8 +161,9 @@ public:
     // listener : item
     void                    on_item_remove(session& me, uint8_t index, item::delete_attr attr);
     void                    on_item_update(session& me, uint8_t index);
+    void                    on_item_swap(session& me, uint8_t src, uint8_t dest);
     void                    on_equipment_on(session& me, item& item, equipment::slot slot);
-    void                    on_equipment_off(session& me, equipment::slot slot);
+    void                    on_equipment_off(session& me, equipment::slot slot, uint8_t index);
     void                    on_item_active(session& me, item& item);
     void                    on_item_throws(session& me, item& item, const point16_t& to);
 

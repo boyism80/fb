@@ -197,7 +197,7 @@ void fb::game::session::disguise(uint16_t value)
 
 void fb::game::session::undisguise()
 {
-    this->_disguise.reset();
+    this->_disguise = std::nullopt;
     this->state(state::NORMAL);
     if(this->_listener != nullptr)
         this->_listener->on_updated(*this, state_level::LEVEL_MAX);
@@ -549,7 +549,10 @@ void fb::game::session::money(uint32_t value)
 {
     this->_money = value;
     if(this->_listener != nullptr)
+    {
         this->_listener->on_updated(*this, state_level::LEVEL_MIN);
+        this->_listener->on_money_changed(*this, value);
+    }
 }
 
 uint32_t fb::game::session::money_add(uint32_t value) // 먹고 남은 값 리턴

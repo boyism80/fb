@@ -43,6 +43,7 @@ public:
     virtual void on_die(session& me) = 0;
     virtual void on_action(session& me, fb::game::action action, duration duration, uint8_t sound) = 0;
     virtual void on_updated(session& me, state_level level = state_level::LEVEL_MIN) = 0;
+    virtual void on_money_changed(session& me, uint32_t value) = 0;
     virtual void on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
     virtual void on_option(session& me, fb::game::options option, bool enabled) = 0;
     virtual void on_level_up(session& me) = 0;
@@ -55,6 +56,7 @@ public:
     // item
     virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::DELETE_NONE) = 0;
     virtual void on_item_update(session& me, uint8_t index) = 0;
+    virtual void on_item_swap(session& me, uint8_t src, uint8_t dest) = 0;
     virtual void on_item_active(session& me, item& item) = 0;
     virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
 
@@ -66,7 +68,7 @@ public:
 
     // equipment
     virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;
-    virtual void on_equipment_off(session& me, equipment::slot slot) = 0;
+    virtual void on_equipment_off(session& me, equipment::slot slot, uint8_t index) = 0;
 
 
     // trade
