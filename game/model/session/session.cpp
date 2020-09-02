@@ -11,6 +11,7 @@ using namespace fb::game;
 
 session::session(fb::socket* socket, listener* listener) : 
     life((life::master*)nullptr, listener, (uint32_t)socket->native_handle(), 0, 0, 0),
+    _id(0xFFFFFFFF),
     _listener(listener),
     _socket(socket),
     _look(0), _color(0), _dress_color(0),

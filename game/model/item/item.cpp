@@ -213,6 +213,7 @@ fb::game::object* fb::game::item::master::make(listener* listener) const
 
 fb::game::item::item(const fb::game::item::master* master, listener* listener) : 
     fb::game::object(master, listener),
+    _id(0xFFFFFFFF),
     _owner(nullptr),
     _listener(listener),
     _count(1)
@@ -530,7 +531,10 @@ bool fb::game::consume::active()
     
     this->_count--;
     if(this->_listener != nullptr)
+    {
         this->_listener->on_item_update(*this->_owner, this->_owner->items.to_index(*this));
+        this->_listener->on_action(*this->_owner, fb::game::action::EAT, fb::game::duration::DURATION_EAT, fb::game::sound::EAT);
+    }
 
     if(this->empty())
         this->_owner->items.remove(*this, -1, item::delete_attr::DELETE_EAT);
