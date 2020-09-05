@@ -189,6 +189,7 @@
     <ClCompile Include="model\listener\listener.cpp" />
     <ClCompile Include="model\lua\lua.cpp" />
     <ClCompile Include="model\map\map.cpp" />
+    <ClCompile Include="model\map\sector.cpp" />
     <ClCompile Include="model\master\master.cpp" />
     <ClCompile Include="model\mmo\mmo.cpp" />
     <ClCompile Include="model\mob\mob.cpp" />
@@ -227,6 +228,7 @@
     <ClInclude Include="model\listener\listener.h" />
     <ClInclude Include="model\lua\lua.h" />
     <ClInclude Include="model\map\map.h" />
+    <ClInclude Include="model\map\sector.h" />
     <ClInclude Include="model\master\master.h" />
     <ClInclude Include="model\mmo\mmo.h" />
     <ClInclude Include="model\mob\mob.h" />

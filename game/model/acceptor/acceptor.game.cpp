@@ -222,11 +222,7 @@ bool acceptor::handle_connected(fb::game::session& session)
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
     this->on_save(session);
-    this->send(session, response::game::object::hide(session.sequence()), scope::PIVOT, true);
-
-    auto map = session.map();
-    if(map != nullptr)
-        map->objects.remove(session);
+    session.map(nullptr);
     return true;
 }
 
@@ -266,12 +262,12 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::response
 
     case acceptor::scope::PIVOT:
     {
-        const auto sessions = object.showns(object::types::SESSION);
+        auto nears = object.showns(object::types::SESSION);
         if(!exclude_self)
             object.send(response, encrypt);
 
-        for(const auto session : sessions)
-            session->send(response, encrypt);
+        for(auto& x : nears)
+            x->send(response, encrypt);
         break;
     }
 
@@ -293,15 +289,12 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::response
 
     case acceptor::scope::MAP:
     {
-        for(const auto session : this->sessions)
+        for(const auto x : object.map()->objects)
         {
-            if(session->map() != object.map())
+            if(exclude_self && x == &object)
                 continue;
 
-            if(exclude_self && session == &object)
-                continue;
-
-            session->send(response, encrypt);
+            x->send(response, encrypt);
         }
 
         break;
@@ -387,16 +380,11 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
         if(game::master::get().maps[map] == nullptr)
             return false;
 
-        game::master::get().maps[map]->objects.add(session, point16_t(position_x, position_y));
-
+        session.map(game::master::get().maps[map], point16_t(position_x, position_y));
         this->send(session, response::game::init(), scope::SELF);
         this->send(session, response::game::time(25), scope::SELF);
         this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
         this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
-        this->send(session, response::game::session::id(session), scope::SELF);
-        this->send(session, response::game::map::config(*session.map()), scope::SELF);
-        this->send(session, response::game::map::bgm(*session.map()), scope::SELF);
-        this->send(session, response::game::session::position(session), scope::SELF);
         this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
         this->send(session, response::game::session::show(session, false), scope::SELF);
         this->send(session, response::game::object::direction(session), scope::SELF);
@@ -452,7 +440,7 @@ bool fb::game::acceptor::handle_move(fb::game::session& session, const fb::proto
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session.position());
     if(warp != nullptr)
-        session.warp(*warp->map, warp->after);
+        session.map(warp->map, warp->after);
     return true;
 }
 
@@ -520,7 +508,6 @@ bool fb::game::acceptor::handle_drop_cash(fb::game::session& session, const fb::
         return false;
 
     auto                chunk = std::min(session.money(), request.chunk);
-    //auto                cash = new fb::game::cash(chunk, this);
 
     session.money_drop(chunk);
     return true;
@@ -533,24 +520,17 @@ bool fb::game::acceptor::handle_front_info(fb::game::session& session, const fb:
     if(map == nullptr)
         return false;
 
-    for(auto i : session.forward_sessions())
+    auto forwards = session.forwards();
+    for(auto i = forwards.begin(); i != forwards.end(); i++)
     {
-        this->send(session, response::game::message(i->name(), message::type::STATE), scope::SELF);
+        auto object = *i;
+        auto message = object->is(object::types::ITEM) ? 
+            static_cast<fb::game::item*>(*i)->name_styled() : 
+            (*i)->name();
+        
+        this->send(session, response::game::message(message, message::type::STATE), scope::SELF);
     }
-
-    for(auto i : session.forward_objects(object::types::OBJECT))
-    {
-        if(i->type() == fb::game::object::types::ITEM)
-        {
-            auto item = static_cast<fb::game::item*>(i);
-            this->send(session, response::game::message(item->name_styled(), message::type::STATE), scope::SELF);
-        }
-        else
-        {
-            this->send(session, response::game::message(i->name(), message::type::STATE), scope::SELF);
-        }
-    }
-
+    
     return true;
 }
 
@@ -1042,7 +1022,7 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
     for(int i = 0; i < 4; i++)
     {
         auto                direction = game::direction(i);
-        if(mob->near_session(direction) != target)
+        if(mob->side(direction, fb::game::object::SESSION) != target)
             continue;
 
         if(mob->direction() != direction)
@@ -1102,10 +1082,11 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
     for(auto pair : game::master::get().maps)
     {
         auto                map = pair.second;
-        const auto&         mobs = map->objects.active_mobs();
+        const auto          mobs = map->activateds(fb::game::object::types::MOB);
 
-        for(auto mob : mobs)
+        for(auto x : mobs)
         {
+            auto mob = static_cast<fb::game::mob*>(x);
             if(now < mob->action_time() + mob->speed())
                 continue;
 
@@ -1364,8 +1345,8 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto map = game::master::get().name2map(name);
         if(map == nullptr)
             return true;
-        
-        session.warp(*map, point16_t(x, y));
+
+        session.map(map, point16_t(x, y));
         return true;
     }
 
@@ -1412,7 +1393,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
         auto mob = new fb::game::mob(core, this, true);
         auto map = session.map();
-        map->objects.add(*mob, session.position());
+        mob->map(map, session.position());
         this->send(session, response::game::object::show(*mob), scope::PIVOT);
         return true;
     }
@@ -1443,7 +1424,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     {
         auto name = splitted[1];
         auto item = master::get().name2item(name)->make<fb::game::item>(this);
-        session.map()->objects.add(*item, session.position());
+        item->map(session.map(), session.position());
         return true;
     }
 

@@ -97,7 +97,7 @@ void fb::game::session::attack()
         if(this->_map == nullptr)
             return;
 
-        auto front = this->forward_object(object::types::UNKNOWN);
+        auto front = this->forward(object::types::UNKNOWN);
         auto damage = 0;
         auto critical = false;
 
@@ -602,7 +602,7 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         auto lack = this->money_reduce(value);
 
         auto cash = new fb::game::cash(value, this->_listener);
-        this->_map->objects.add(*cash, this->_position);
+        cash->map(this->_map, this->_position);
 
         this->action(action::PICKUP, duration::DURATION_PICKUP);
 
@@ -789,7 +789,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(horse.map() != this->_map)
             throw std::runtime_error("올바르지 않은 명령입니다.");
 
-        this->_map->objects.remove(horse);
+        horse.map(nullptr);
         this->state(state::RIDING);
         horse.kill();
         horse.dead_time(fb::timer::now());
@@ -810,7 +810,7 @@ void fb::game::session::ride()
     {
         this->state_assert(state::GHOST | state::DISGUISE);
 
-        auto front = this->forward_object(object::types::MOB);
+        auto front = this->forward(object::types::MOB);
         if(front == nullptr)
             throw session::no_conveyance_exception();
 
@@ -834,7 +834,7 @@ void fb::game::session::unride(fb::game::listener* listener)
         auto master = game::master::get().name2mob("말");
         auto horse = static_cast<fb::game::mob*>(master->make(listener));
         horse->hp_up(horse->base_hp());
-        this->_map->objects.add(*horse, this->position_forward());
+        horse->map(this->_map, this->position_forward());
         
         this->state(state::NORMAL);
         if(this->_listener != nullptr)
@@ -850,17 +850,6 @@ void fb::game::session::unride(fb::game::listener* listener)
 bool fb::game::session::alive() const
 {
     return this->_state != state::GHOST;
-}
-
-bool fb::game::session::warp(fb::game::map& map, const point16_t& position)
-{
-    if(map.existable(position) == false)
-        return false;
-
-    if(this->_listener != nullptr)
-        this->_listener->on_warp(*this, map, position);
-
-    return true;
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

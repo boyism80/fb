@@ -9,15 +9,21 @@
 #include <zlib/zlib.h>
 #include <model/object/object.h>
 #include <model/door/door.h>
+#include <model/map/sector.h>
 
 namespace fb { namespace game {
 
+class object;
 class map;
 class mob;
 class session;
 
 class objects : private std::vector<fb::game::object*>
 {
+#pragma region friend
+    friend fb::game::object;
+#pragma endregion
+
 private:
     map*                        _owner;
     uint16_t                    _sequence;
@@ -41,19 +47,18 @@ public:
 
 #pragma region private method
 private:
-    uint16_t                    empty_seq();
+    uint16_t                        empty_seq();
+    uint16_t                        add(fb::game::object& object);
+    uint16_t                        add(fb::game::object& object, const point16_t& position);
+    bool                            remove(fb::game::object& object);
 #pragma endregion
 
 
 #pragma region public method
 public:
-    std::vector<session*>       sessions() const;
-    std::vector<mob*>           active_mobs() const;
-    fb::game::object*           find(uint16_t sequence);
-    uint16_t                    add(fb::game::object& object);
-    uint16_t                    add(fb::game::object& object, const point16_t& position);
-    bool                        remove(fb::game::object& object);
-    fb::game::object*           exists(point16_t position) const;
+    std::vector<object*>            filter(fb::game::object::types type) const;
+    fb::game::object*               find(uint16_t sequence);
+    fb::game::object*               exists(point16_t position) const;
 #pragma endregion
 };
 
@@ -88,10 +93,10 @@ public:
 
 
 #pragma region static const field
-    static const uint32_t       MAX_SCREEN_WIDTH   = 17;
-    static const uint32_t       HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
-    static const uint32_t       MAX_SCREEN_HEIGHT  = 15;
-    static const uint32_t       HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
+    static const uint32_t           MAX_SCREEN_WIDTH   = 17;
+    static const uint32_t           HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
+    static const uint32_t           MAX_SCREEN_HEIGHT  = 15;
+    static const uint32_t           HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
 #pragma endregion
 
 
@@ -124,23 +129,24 @@ public:
 
 #pragma region private field
 private:
-    uint16_t                    _id;
-    uint16_t                    _parent;
-    size16_t                    _size;
-    tile*                       _tiles;
-    std::string                 _name;
-    options                     _option;
-    effects                     _effect;
-    uint8_t                     _bgm;
-    std::vector<warp*>          _warps;
-    std::string                 _host_id;
+    uint16_t                        _id;
+    uint16_t                        _parent;
+    size16_t                        _size;
+    tile*                           _tiles;
+    std::string                     _name;
+    options                         _option;
+    effects                         _effect;
+    uint8_t                         _bgm;
+    std::vector<warp*>              _warps;
+    std::string                     _host_id;
+    fb::game::sectors*              _sectors;
 #pragma endregion
 
 
 #pragma region public field
 public:
-    objects                     objects;
-    doors                       doors;
+    objects                         objects;
+    doors                           doors;
 #pragma endregion
 
 
@@ -153,52 +159,57 @@ public:
 
 #pragma region public method
 public:
-    uint16_t                    id() const;
-    uint16_t                    parent() const;
-    const std::string&          name() const;
-    bool                        blocked(uint16_t x, uint16_t y) const;
-    bool                        block(uint16_t x, uint16_t y, bool option);
-    effects                     effect() const;
-    options                     option() const;
-    uint16_t                    width() const;
-    uint16_t                    height() const;
-    size16_t                    size() const;
-    uint8_t                     bgm() const;
+    uint16_t                        id() const;
+    uint16_t                        parent() const;
+    const std::string&              name() const;
+    bool                            blocked(uint16_t x, uint16_t y) const;
+    bool                            block(uint16_t x, uint16_t y, bool option);
+    effects                         effect() const;
+    options                         option() const;
+    uint16_t                        width() const;
+    uint16_t                        height() const;
+    size16_t                        size() const;
+    uint8_t                         bgm() const;
 
-    bool                        existable(const point16_t position) const;
-    bool                        movable(const point16_t position) const;
-    bool                        movable(const fb::game::object& object, fb::game::direction direction) const;
-    bool                        movable_forward(const fb::game::object& object, uint16_t step = 1) const;
+    bool                            existable(const point16_t position) const;
+    bool                            movable(const point16_t position) const;
+    bool                            movable(const fb::game::object& object, fb::game::direction direction) const;
+    bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
-    void                        warp_add(map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
-    const map::warp*            warpable(const point16_t& position) const;
+    void                            warp_add(map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
+    const map::warp*                warpable(const point16_t& position) const;
 
-    const std::string&          host_id() const;
+    const std::string&              host_id() const;
+    bool                            update(fb::game::object& object);
+    
+    std::vector<object*>            nears(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>            belows(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>            activateds(fb::game::object::types type = fb::game::object::types::UNKNOWN);
 #pragma endregion
 
 
 #pragma region event method
 public:
-    void                        handle_timer(uint64_t elapsed_milliseconds);
+    void                            handle_timer(uint64_t elapsed_milliseconds);
 #pragma endregion
 
 
 #pragma region operator method
 public:
-    tile*                       operator () (uint16_t x, uint16_t y) const;
+    tile*                           operator () (uint16_t x, uint16_t y) const;
 #pragma endregion
 
 
 #pragma region built-in method
 public:
-    static int                  builtin_name(lua_State* lua);
-    static int                  builtin_objects(lua_State* lua);
-    static int                  builtin_width(lua_State* lua);
-    static int                  builtin_height(lua_State* lua);
-    static int                  builtin_area(lua_State* lua);
-    static int                  builtin_movable(lua_State* lua);
-    static int                  builtin_door(lua_State* lua);
-    static int                  builtin_doors(lua_State* lua);
+    static int                      builtin_name(lua_State* lua);
+    static int                      builtin_objects(lua_State* lua);
+    static int                      builtin_width(lua_State* lua);
+    static int                      builtin_height(lua_State* lua);
+    static int                      builtin_area(lua_State* lua);
+    static int                      builtin_movable(lua_State* lua);
+    static int                      builtin_door(lua_State* lua);
+    static int                      builtin_doors(lua_State* lua);
 #pragma endregion
 };
 

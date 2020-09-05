@@ -17,7 +17,6 @@ public:
     virtual void on_hide(fb::game::object& me) = 0;
     virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
     virtual void on_move(fb::game::object& me) = 0;
-    virtual void on_warp(fb::game::object& me) = 0;
     virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
 
 
@@ -47,6 +46,7 @@ public:
     virtual void on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
     virtual void on_option(session& me, fb::game::options option, bool enabled) = 0;
     virtual void on_level_up(session& me) = 0;
+    virtual void on_warp(fb::game::session& me) = 0;
     virtual void on_warp(session& me, fb::game::map& map, const point16_t& position) = 0;
     virtual void on_item_get(session& me, fb::game::item& item, uint8_t slot) = 0;
     virtual void on_item_changed(session& me, fb::game::item& item, uint8_t slot) = 0;

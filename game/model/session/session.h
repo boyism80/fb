@@ -71,6 +71,9 @@ public:
 
 class session : public life
 {
+public:
+    using fb::game::object::map;
+
 #pragma region container
 class container : private std::vector<fb::game::session*>
 {
@@ -320,7 +323,6 @@ public:
     void                        ride();
     void                        unride(fb::game::listener* listener);
     bool                        alive() const;
-    bool                        warp(fb::game::map& map, const point16_t& position);
 #pragma endregion
 
 #pragma region built-in method

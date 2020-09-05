@@ -191,9 +191,9 @@ void fb::game::life::attack()
     if(this->_map == nullptr)
         return;
 
-    auto front = this->forward_object(object::types::UNKNOWN);
+    auto front = this->forward(object::types::UNKNOWN);
 
-    // TODO: ¸ó½ºÅÍ µ¥¹ÌÁö °ø½Ä Àû¿ë
+    // TODO: ëª¬ìŠ¤í„° ë°ë¯¸ì§€ ê³µì‹ ì ìš©
     if(this->_listener != nullptr)
         this->_listener->on_attack(*this, front, 1, false);
 }

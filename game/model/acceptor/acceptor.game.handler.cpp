@@ -36,23 +36,6 @@ void fb::game::acceptor::on_move(fb::game::object& me)
     this->send(me, response::game::object::move(me), scope::PIVOT, true);
 }
 
-void fb::game::acceptor::on_warp(fb::game::object& me)
-{
-    auto map = me.map();
-
-    if(me.is(object::types::SESSION))
-    {
-        auto& session = static_cast<game::session&>(me);
-        this->send(session, response::game::session::id(session), scope::SELF);
-        this->send(session, response::game::map::config(*map), scope::SELF);
-        this->send(session, response::game::map::bgm(*map), scope::SELF);
-        this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
-        this->send(session, response::game::session::position(session), scope::SELF);
-        this->send(session, response::game::session::show(session, false), scope::SELF);
-        this->send(session, response::game::object::direction(session), scope::SELF);
-    }
-}
-
 void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
      lua::thread()
@@ -435,32 +418,31 @@ void fb::game::acceptor::on_level_up(session& me)
     this->send(me, response::game::object::effect(me, 0x02), scope::PIVOT);
 }
 
+void fb::game::acceptor::on_warp(fb::game::session& me)
+{
+    auto map = me.map();
+    if(map == nullptr)
+        return;
+
+    auto& session = static_cast<game::session&>(me);
+    this->send(session, response::game::session::id(session), scope::SELF);
+    this->send(session, response::game::map::config(*map), scope::SELF);
+    this->send(session, response::game::map::bgm(*map), scope::SELF);
+    this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    this->send(session, response::game::session::position(session), scope::SELF);
+    this->send(session, response::game::session::show(session, false), scope::SELF);
+    this->send(session, response::game::object::direction(session), scope::SELF);
+}
+
 void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
 
-    auto current_map = me.map();
-    if(current_map == nullptr)
-        return;
-
-    this->_connection->exec
-    (
-        "UPDATE user SET map=%d, position_x=%d, position_y=%d WHERE name LIKE '%s'",
-        map.id(), position.x, position.y, me.name().c_str()
-    );
-
     auto& config = fb::config();
-    if(current_map->host_id() != map.host_id())
-    {
-        auto host = config["hosts"][map.host_id()]["host"].asString();
-        auto port = config["hosts"][map.host_id()]["port"].asInt();
-        this->transfer(me, host, port, parameter);
-    }
-    else
-    {
-        map.objects.add(me, position);
-    }
+    auto host = config["hosts"][map.host_id()]["host"].asString();
+    auto port = config["hosts"][map.host_id()]["port"].asInt();
+    this->transfer(me, host, port, parameter);
 }
 
 void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)
@@ -534,7 +516,7 @@ void fb::game::acceptor::on_die(mob& me)
             continue;
 
         auto            item = static_cast<fb::game::item*>(candidate.item->make(this));
-        me.map()->objects.add(*item, me.position());
+        item->map(me.map(), me.position());
 
         dropped_items.push_back(item);
     }

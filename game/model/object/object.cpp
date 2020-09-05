@@ -99,7 +99,8 @@ fb::game::object::object(const fb::game::object::master* master, listener* liste
     _direction(direction),
     _map(map),
     buffs(*this),
-    _visible(true)
+    _visible(true),
+    _sector(nullptr)
 {
 }
 
@@ -110,8 +111,7 @@ fb::game::object::object(const object& right) :
 
 fb::game::object::~object()
 {
-    if(this->_map != nullptr)
-        this->_map->objects.remove(*this);
+    this->map(nullptr);
 }
 
 const fb::game::object::master* fb::game::object::based() const
@@ -168,39 +168,32 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
 
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
-
-    for(auto x : this->_map->objects)
+    
+    // 섹터가 변경된 경우에 한해서
+    // 보이는 오브젝트와 보이지 않는 오브젝트 갱신
+    if(this->_map->update(*this))
     {
-        if(x == this)
-            continue;
+        auto befores = this->_map->nears(this->_before);
+        std::sort(befores.begin(), befores.end());
 
-        bool                before = this->sight(*x, true);
-        bool                after  = this->sight(*x);
+        auto afters = this->_map->nears(this->_position);
+        std::sort(afters.begin(), afters.end());
 
-        bool                show = (!before && after);
-        bool                hide = (before && !after);
-
-        if(show && this->_listener != nullptr)
-            this->_listener->on_show(*this, *x, true);
-        else if(hide && this->_listener != nullptr)
+        auto hides = std::vector<fb::game::object*>();
+        std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        for(auto x : hides)
+        {
             this->_listener->on_hide(*this, *x);
-    }
-
-    for(auto x : this->_map->objects)
-    {
-        if(x == this)
-            continue;
-
-        bool                before_sight = x->sight(*this, false, true);
-        bool                after_sight  = x->sight(*this);
-
-        bool                show = (!before_sight && after_sight);
-        bool                hide = (before_sight && !after_sight);
-
-        if(show && this->_listener != nullptr)
-            this->_listener->on_show(*x, *this, true);
-        else if(hide && this->_listener != nullptr)
             this->_listener->on_hide(*x, *this);
+        }
+
+        auto shows = std::vector<fb::game::object*>();
+        std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        for(auto x : shows)
+        {
+            this->_listener->on_show(*this, *x, false);
+            this->_listener->on_show(*x, *this, false);
+        }
     }
 
     return true;
@@ -348,6 +341,25 @@ bool fb::game::object::sight(const fb::game::object& object, bool before_me, boo
     return this->sight(before_you ? object._before : object._position, before_me);
 }
 
+bool fb::game::object::sector(fb::game::sector* sector)
+{
+    if(this->_sector == sector)
+        return false;
+
+    if(this->_sector != nullptr)
+        this->_sector->erase(*this);
+
+    this->_sector = sector;
+    if(sector != nullptr)
+        sector->push(*this);
+    return true;
+}
+
+fb::game::sector* fb::game::object::sector()
+{
+    return this->_sector;
+}
+
 bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
 {
     point16_t begin, end;
@@ -391,26 +403,68 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
-    // 이전에 보이던 오브젝트들 전부 제거
-    for(auto i : this->showings())
-        this->_listener->on_hide(*this, *i);
+    if(this->_map == map)
+    {
+        this->position(position);
+    }
+    else if(this->_map != nullptr && map != nullptr && this->_map->host_id() != map->host_id())
+    {
+        auto nears = this->_map->nears(this->_position);
 
-    // 이전에 나를 보던 오브젝트들에게서 나를 제거
-    for(auto i : this->showns())
-        this->_listener->on_hide(*i, *this);
+        // 이전에 나를 보던 오브젝트들에게서 나를 제거
+        for(auto i : fb::game::object::showns(nears, *this))
+            this->_listener->on_hide(*i, *this);
 
-    this->_map = map;
-    this->_position = position;
-    if(this->_listener != nullptr && map != nullptr)
-        this->_listener->on_warp(*this);
+        this->_map->objects.remove(*this);
 
-    // 지금 내가 볼 수 있는 오브젝트를 표시
-    for(auto i : this->showings())
-        this->_listener->on_show(*this, *i, false);
+        this->_map = map;
+        this->_position = position;
+        this->_listener->on_warp(static_cast<fb::game::session&>(*this), *map, position);
+    }
+    else
+    {
+        auto sector = this->_sector;
 
-    // 지금 나를 볼 수 있는 오브젝트들에게 나를 표시
-    for(auto i : this->showns())
-        this->_listener->on_show(*i, *this, false);
+        if(this->_map != nullptr)
+        {
+            auto nears = this->_map->nears(this->_position);
+            for(auto x : nears)
+            {
+                if(x == this)
+                    continue;
+
+                this->_listener->on_hide(*this, *x);
+                this->_listener->on_hide(*x, *this);
+            }
+
+            this->_map->objects.remove(*this);
+        }
+
+        this->_map = map;
+        this->_position = position;
+        if(this->_map == nullptr)
+            this->sector(nullptr);
+        else
+            map->update(*this);
+
+        if(map != nullptr)
+        {
+            map->objects.add(*this);
+            
+            if(this->is(fb::game::object::types::SESSION))
+                this->_listener->on_warp(static_cast<fb::game::session&>(*this));
+
+            auto nears = this->_map->nears(this->_position);
+            for(auto x : nears)
+            {
+                if(x == this)
+                    continue;
+
+                this->_listener->on_show(*this, *x, false);
+                this->_listener->on_show(*x, *this, false);
+            }
+        }
+    }
 }
 
 void fb::game::object::map(fb::game::map* map)
@@ -418,7 +472,7 @@ void fb::game::object::map(fb::game::map* map)
     this->map(map, point16_t(0, 0));
 }
 
-fb::game::session* fb::game::object::near_session(fb::game::direction direction) const
+fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game::object::types type) const
 {
     fb::game::map* map = this->_map;
     if(map == nullptr)
@@ -448,207 +502,129 @@ fb::game::session* fb::game::object::near_session(fb::game::direction direction)
     if(map->existable(front) == false)
         return nullptr;
 
-    for(auto session : map->objects.sessions())
-    {
-        if(session->position() == front)
-            return session;
-    }
+    auto nears = map->nears(this->_position, type);
+    auto found = std::find_if
+    (
+        nears.begin(), nears.end(), 
+        [&front] (fb::game::object* x)
+        {
+            return x->position() == front;
+        }
+    );
 
-    return nullptr;
+    return found != nears.end() ?
+        *found : nullptr;
 }
 
-std::vector<fb::game::session*> fb::game::object::near_sessions(fb::game::direction direction) const
+std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direction, fb::game::object::types type) const
 {
-    std::vector<fb::game::session*> list;
-
-    fb::game::map* map = this->_map;
-    if(map == nullptr)
-        return list;
-
-
-    point16_t front = this->position();
-    switch(direction)
+    auto result = std::vector<fb::game::object*>();
+    try
     {
-    case fb::game::direction::TOP:
-        front.y--;
-        break;
+        auto map = this->_map;
+        if(map == nullptr)
+            throw std::exception();
 
-    case fb::game::direction::BOTTOM:
-        front.y++;
-        break;
+        auto front = this->position();
+        switch(direction)
+        {
+        case fb::game::direction::TOP:
+            front.y--;
+            break;
 
-    case fb::game::direction::LEFT:
-        front.x--;
-        break;
+        case fb::game::direction::BOTTOM:
+            front.y++;
+            break;
 
-    case fb::game::direction::RIGHT:
-        front.x++;
-        break;
+        case fb::game::direction::LEFT:
+            front.x--;
+            break;
+
+        case fb::game::direction::RIGHT:
+            front.x++;
+            break;
+        }
+
+        if(map->existable(front) == false)
+            throw std::exception();
+
+        auto nears = map->nears(this->_position, type);
+        std::copy_if
+        (
+            nears.begin(), nears.end(), std::back_inserter(result),
+            [&front] (fb::game::object* x)
+            {
+                return x->position() == front;
+            }
+        );
     }
+    catch(std::exception&)
+    {}
 
-    if(map->existable(front) == false)
-        return list;
-
-    for(auto session : map->objects.sessions())
-    {
-        if(session->position() == front)
-            list.push_back(session);
-    }
-
-    return list;
+    return result;
 }
 
-fb::game::session* fb::game::object::forward_session() const
+fb::game::object* fb::game::object::forward(fb::game::object::types type) const
 {
-    return this->near_session(this->_direction);
+    return this->side(this->_direction, type);
 }
 
-std::vector<fb::game::session*> fb::game::object::forward_sessions() const
+std::vector<fb::game::object*> fb::game::object::forwards(fb::game::object::types type) const
 {
-    return this->near_sessions(this->_direction);
-}
-
-fb::game::object* fb::game::object::near_object(fb::game::direction direction, fb::game::object::types type) const
-{
-    fb::game::map* map = this->_map;
-    if(map == nullptr)
-        return nullptr;
-
-
-    point16_t front = this->position();
-    switch(direction)
-    {
-    case fb::game::direction::TOP:
-        front.y--;
-        break;
-
-    case fb::game::direction::BOTTOM:
-        front.y++;
-        break;
-
-    case fb::game::direction::LEFT:
-        front.x--;
-        break;
-
-    case fb::game::direction::RIGHT:
-        front.x++;
-        break;
-    }
-
-    if(map->existable(front) == false)
-        return nullptr;
-
-    for(auto object : map->objects)
-    {
-        if(type != fb::game::object::types::UNKNOWN && object->is(type) == false)
-            continue;
-
-        if(object->position() == front)
-            return object;
-    }
-
-    return nullptr;
-}
-
-std::vector<fb::game::object*> fb::game::object::near_objects(fb::game::direction direction, fb::game::object::types type) const
-{
-    std::vector<object*>    list;
-    if(this->_map == nullptr)
-        return list;
-
-
-    point16_t front = this->position();
-    switch(direction)
-    {
-    case fb::game::direction::TOP:
-        front.y--;
-        break;
-
-    case fb::game::direction::BOTTOM:
-        front.y++;
-        break;
-
-    case fb::game::direction::LEFT:
-        front.x--;
-        break;
-
-    case fb::game::direction::RIGHT:
-        front.x++;
-        break;
-    }
-
-    if(this->_map->existable(front) == false)
-        return list;
-
-    for(auto object : this->_map->objects)
-    {
-        if(type != fb::game::object::types::UNKNOWN && object->is(type) == false)
-            continue;
-
-        if(object->position() == front)
-            list.push_back(object);
-    }
-
-    return list;
-}
-
-fb::game::object* fb::game::object::forward_object(fb::game::object::types type) const
-{
-    return this->near_object(this->_direction, type);
-}
-
-std::vector<fb::game::object*> fb::game::object::forward_objects(fb::game::object::types type) const
-{
-    return this->near_objects(this->_direction, type);
+    return this->sides(this->_direction, type);
 }
 
 std::vector<fb::game::object*> fb::game::object::showings(object::types type) const
 {
-    std::vector<object*>    list;
     if(this->_map == nullptr)
-        return list;
+        return std::vector<fb::game::object*>();
+    else
+        return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
+}
 
-    for(auto object : this->_map->objects)
-    {
-        if(object == this)
-            continue;
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type)
+{
+    auto                    objects = std::vector<fb::game::object*>();
+    std::copy_if
+    (
+        source.begin(), source.end(), std::back_inserter(objects), 
+        [&pivot, type](fb::game::object* x)
+        {
+            return
+                *x != pivot &&
+                (type == object::types::UNKNOWN || x->is(type)) &&
+                pivot.sight(*x);
+        }
+    );
 
-        if(type != object::types::UNKNOWN && object->is(type) == false)
-            continue;
-
-        // 내가 object를 볼 수 있는가?
-        if(this->sight(*object) == false)
-            continue;
-
-        list.push_back(object);
-    }
-
-    return list;
+    return objects;
 }
 
 std::vector<object*> fb::game::object::showns(object::types type) const
 {
-    std::vector<object*> list;
-
     if(this->_map == nullptr)
-        return list;
+        return std::vector<object*>();
+    else
+        return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
+}
 
-    for(auto object : this->_map->objects)
-    {
-        if(object == this)
-            continue;
+std::vector<object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type)
+{
+    auto                    objects = std::vector<fb::game::object*>();
+    
+    std::copy_if
+    (
+        source.begin(), source.end(), std::back_inserter(objects), 
+        [&pivot, type](fb::game::object* x)
+        {
+            return
+                *x != pivot &&
+                (type == object::types::UNKNOWN || x->is(type)) &&
+                x->sight(pivot);
+        }
+    );
 
-        if(type != object::types::UNKNOWN && object->is(type) == false)
-            continue;
-
-        // object가 나를 볼 수 있는가?
-        if(object->sight(*this) == false)
-            continue;
-
-        list.push_back(object);
-    }
-
-    return list;
+    return objects;
 }
 
 bool fb::game::object::visible() const
@@ -981,7 +957,7 @@ int fb::game::object::builtin_map(lua_State* lua)
             throw std::exception();
         }
 
-        map->objects.add(*object, position);
+        object->map(map, position);
     }
     catch(...)
     { }
@@ -1003,7 +979,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     {
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         auto item = master->make(acceptor);
-        object->_map->objects.add(*item, object->_position);
+        item->map(object->_map, object->_position);
         item->to_lua(lua);
         
         acceptor->send(*item, response::game::object::show(*item), acceptor::scope::PIVOT);
@@ -1054,7 +1030,7 @@ int fb::game::object::builtin_front(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto filter = argc < 2 ? object::types::UNKNOWN : object::types(lua_tointeger(lua, 2));
 
-    auto front = object->forward_object(filter);
+    auto front = object->forward(filter);
     if(front == nullptr)
         lua_pushnil(lua);
     else

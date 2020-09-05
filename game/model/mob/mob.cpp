@@ -158,7 +158,7 @@ void fb::game::mob::attack()
     if(this->alive() == false)
         return;
 
-    auto front = this->forward_object(object::types::UNKNOWN);
+    auto front = this->forward(object::types::UNKNOWN);
     auto damage = 0;
     if(front != nullptr && front->is(object::types::LIFE) && static_cast<life*>(front)->alive())
         damage = this->random_damage(*static_cast<fb::game::life*>(front));
@@ -338,16 +338,16 @@ fb::game::life* fb::game::mob::autoset_target()
         return NULL;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto object : map->objects.sessions())
+    for(auto x : this->showings(fb::game::object::types::SESSION))
     {
-        if(object->sight(*this) == false)
+        if(x->sight(*this) == false)
             continue;
 
-        auto                distance_sqrt = (uint32_t)std::abs(object->x() - this->x()) * std::abs(object->y() - this->y());
+        auto                distance_sqrt = (uint32_t)std::abs(x->x() - this->x()) * std::abs(x->y() - this->y());
         if(distance_sqrt > min_distance_sqrt)
             continue;
 
-        this->_target = object;
+        this->_target = static_cast<fb::game::life*>(x);
     }
 
     return this->_target;

@@ -166,7 +166,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
     auto object = master->make(acceptor);
 
     auto map = *(fb::game::map**)lua_touserdata(lua, 2);
-    map->objects.add(*object);
+    object->map(map);
 
     if(lua_istable(lua, 3))
     {
@@ -454,7 +454,7 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
     if(this->_chunk == 0)
     {
         if(this->_map != nullptr)
-            this->_map->objects.remove(*this);
+            this->map(nullptr);
 
         delete this;
         return nullptr;
@@ -1663,7 +1663,7 @@ uint8_t fb::game::items::add(fb::game::item& item)
             item._listener->on_item_update(static_cast<session&>(this->owner()), i);
 
         if(item._map != nullptr)
-            item._map->objects.remove(item);
+            item.map(nullptr);
 
         if(this->_listener != nullptr)
         {
@@ -1901,7 +1901,7 @@ fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_
         auto                    dropped = this->remove(slot, count, item::delete_attr::DELETE_DROP);
         if(dropped != nullptr)
         {
-            owner._map->objects.add(*dropped, owner._position);
+            dropped->map(owner.map(), owner.position());
             owner.action(action::PICKUP, duration::DURATION_PICKUP);
         }
 
@@ -1938,15 +1938,10 @@ void fb::game::items::pickup(bool boost)
         std::string         message;
 
         // Pick up items in reverse order
-        for(int i = map->objects.size() - 1; i >= 0; i--)
+        auto belows = map->belows(this->_owner.position(), fb::game::object::types::ITEM);
+        for(int i = belows.size() - 1; i >= 0; i--)
         {
-            auto            object = map->objects[i];
-            if(object->position() != owner.position())
-                continue;
-
-            if(object->type() != object::types::ITEM)
-                continue;
-
+            auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);
             if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
             {
@@ -2016,7 +2011,7 @@ bool fb::game::items::throws(uint8_t slot)
         if(this->_listener != nullptr)
             this->_listener->on_item_throws(this->_owner, *dropped, position);
         
-        map->objects.add(*dropped, position);
+        dropped->map(map, position);
         return true;
     }
     catch(std::exception& e)

@@ -125,7 +125,6 @@ public:
     void                    on_hide(fb::game::object& me);
     void                    on_hide(fb::game::object& me, fb::game::object& you);
     void                    on_move(fb::game::object& me);
-    void                    on_warp(fb::game::object& me);
     void                    on_unbuff(fb::game::object& me, fb::game::buff& buff);
 
     // listener : life
@@ -148,6 +147,7 @@ public:
     void                    on_notify(session& me, const std::string& message, message::type type);
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
+    void                    on_warp(fb::game::session& me);
     void                    on_warp(session& me, fb::game::map& map, const point16_t& position);
     void                    on_item_get(session& me, fb::game::item& item, uint8_t slot);
     void                    on_item_changed(session& me, fb::game::item& item, uint8_t slot);

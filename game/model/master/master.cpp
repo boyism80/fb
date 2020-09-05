@@ -581,7 +581,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         auto                cloned = new npc(core, listener);
         cloned->direction(direction);
         cloned->script(script);
-        map->objects.add(*cloned, position);
+        cloned->map(map, position);
     }
     return true;
 }
@@ -671,7 +671,7 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
                 mob->spawn_point(x0, y0);
                 mob->spawn_size(x1, y1);
                 mob->respawn_time(rezen);
-                map->objects.add(*mob);
+                mob->map(map);
             }
         }
     }

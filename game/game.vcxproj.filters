@@ -208,6 +208,9 @@
     <ClCompile Include="model\acceptor\acceptor.game.handler.cpp">
       <Filter>model\acceptor</Filter>
     </ClCompile>
+    <ClCompile Include="model\map\sector.cpp">
+      <Filter>model\map</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -320,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="..\module\common\type.h">
       <Filter>module\common</Filter>
+    </ClInclude>
+    <ClInclude Include="model\map\sector.h">
+      <Filter>model\map</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

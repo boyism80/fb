@@ -58,5 +58,20 @@
         "parent": 14,
         "bgm": 2,
         "host": "game1"
+    },
+    "1917": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북방대초원1",
+        "parent": 1917,
+        "bgm": 135,
+        "host": "game4"
     }
 }

@@ -36,45 +36,19 @@ uint16_t fb::game::objects::empty_seq()
     return 0xFFFF;
 }
 
-std::vector<fb::game::session*> fb::game::objects::sessions() const
+std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
 {
-    std::vector<session*> sessions;
+    auto result = std::vector<fb::game::object*>();
+    std::copy_if
+    (
+        this->begin(), this->end(), std::back_inserter(result),
+        [] (fb::game::object* x)
+        {
+            return x->is(object::types::SESSION);
+        }
+    );
 
-    for(auto e : *this)
-    {
-        if(e->type() != object::types::SESSION)
-            continue;
-
-        sessions.push_back(static_cast<session*>(e));
-    }
-
-    return sessions;
-}
-
-std::vector<fb::game::mob*> fb::game::objects::active_mobs() const
-{
-    std::map<uint32_t, fb::game::mob*> active_table;
-    auto sessions = this->sessions();
-
-    for(auto x : *this)
-    {
-        if(x->is(object::types::MOB) == false)
-            continue;
-
-        auto mob = static_cast<game::mob*>(x);
-
-        if(mob->alive() == false)
-            continue;
-
-        if(std::any_of(sessions.begin(), sessions.end(), [&mob] (fb::game::session* session) { return session->sight(*mob); }) == false)
-            continue;
-
-        active_table.insert(std::pair<uint32_t, fb::game::mob*>(mob->sequence(), mob));
-    }
-
-    std::vector<fb::game::mob*> actives;
-    std::transform(active_table.begin(), active_table.end(), std::back_inserter(actives), [] (auto& pair) { return pair.second; });
-    return actives;
+    return result;
 }
 
 fb::game::object* fb::game::objects::find(uint16_t sequence)
@@ -90,30 +64,17 @@ uint16_t fb::game::objects::add(fb::game::object& object)
 
 uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
 {
-    auto                    map = object.map();
-    if(map == this->_owner)
+    auto                    seq = this->empty_seq();
+    auto                    found = this->find(seq);
+    if(found != nullptr)
     {
-        object.position(position);
-        return object.sequence();
+        this->erase(std::find(this->begin(), this->end(), found));
+        delete found;
     }
-    else
-    {
-        if(map != nullptr)
-            map->objects.remove(object);
 
-        auto                    seq = this->empty_seq();
-        auto                    found = this->find(seq);
-        if(found != nullptr)
-        {
-            this->erase(std::find(this->begin(), this->end(), found));
-            delete found;
-        }
-
-        this->push_back(&object);
-        object.sequence(seq);
-        object.map(this->_owner, position);
-        return seq;
-    }
+    this->push_back(&object);
+    object.sequence(seq);
+    return object.sequence();
 }
 
 bool fb::game::objects::remove(fb::game::object& object)
@@ -122,7 +83,6 @@ bool fb::game::objects::remove(fb::game::object& object)
     if(i == this->end())
         return false;
 
-    object.map(nullptr);
     this->erase(i);
     return true;
 }
@@ -194,6 +154,13 @@ fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uin
             position.x += (uint16_t)door->size();
         }
     }
+
+    // sectors
+#if defined DEBUG | defined _DEBUG
+    this->_sectors = new fb::game::sectors(this->_size, size16_t(3, 3));
+#else
+    this->_sectors = new fb::game::sectors(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+#endif
 }
 
 fb::game::map::~map()
@@ -205,6 +172,8 @@ fb::game::map::~map()
 
     for(auto warp : this->_warps)
         delete warp;
+
+    delete this->_sectors;
 }
 
 uint16_t fb::game::map::id() const
@@ -358,6 +327,48 @@ const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) co
 const std::string& fb::game::map::host_id() const
 {
     return this->_host_id;
+}
+
+bool fb::game::map::update(fb::game::object& object)
+{
+    auto sector = this->_sectors->at(object.position());
+    if(sector == nullptr)
+        return false;
+
+    return object.sector(sector);
+}
+
+std::vector<object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
+{
+    return this->_sectors->objects(pivot, type);
+}
+
+std::vector<object*> fb::game::map::belows(const point16_t& pivot, fb::game::object::types type) const
+{
+    auto objects = std::vector<fb::game::object*>();
+    try
+    {
+        auto sector = this->_sectors->at(pivot);
+        std::copy_if
+        (
+            sector->begin(), sector->end(), std::back_inserter(objects),
+            [type, &pivot] (fb::game::object* x)
+            {
+                return 
+                    (type == fb::game::object::types::UNKNOWN || x->is(type)) && 
+                    x->position() == pivot;
+            }
+        );
+    }
+    catch(std::exception&)
+    {}
+
+    return objects;
+}
+
+std::vector<object*> fb::game::map::activateds(fb::game::object::types type)
+{
+    return this->_sectors->activated_objects(type);
 }
 
 void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)

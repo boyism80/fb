@@ -14,6 +14,8 @@ class buffs;
 class objects;
 class items;
 class listener;
+class sector;
+class sectors;
 
 class object : public lua::luable
 {
@@ -23,7 +25,6 @@ public:
 #pragma endregion
 
 #pragma region friend
-    friend fb::game::objects;
     friend fb::game::buffs;
     friend fb::game::items;
 #pragma endregion
@@ -109,6 +110,7 @@ public:
 private:
     listener*                   _listener;
     bool                        _visible;
+    sector*                     _sector;
 #pragma endregion
 
 #pragma region protected field
@@ -138,8 +140,6 @@ public:
 #pragma region private method
 private:
     static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
-    void                        map(fb::game::map* map, const point16_t& position);
-    void                        map(fb::game::map* map);
 #pragma endregion
 
 #pragma region public method
@@ -175,23 +175,24 @@ public:
     direction                   direction() const;
     bool                        direction(fb::game::direction value);
 
+    virtual void                map(fb::game::map* map, const point16_t& position);
+    void                        map(fb::game::map* map);
     fb::game::map*              map() const;
+
+    bool                        sector(fb::game::sector* sector);
+    fb::game::sector*           sector();
 
     bool                        sight(const point16_t& position, bool before = false) const;
     bool                        sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
 
-    session*                    near_session(fb::game::direction direction) const;
-    std::vector<session*>       near_sessions(fb::game::direction direction) const;
-    session*                    forward_session() const;
-    std::vector<session*>       forward_sessions() const;
-
-    object*                     near_object(fb::game::direction direction, fb::game::object::types type) const;
-    std::vector<object*>        near_objects(fb::game::direction direction, fb::game::object::types type) const;
-    object*                     forward_object(fb::game::object::types type) const;
-    std::vector<object*>        forward_objects(fb::game::object::types type) const;
-
+    object*                     side(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>        sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    object*                     forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>        forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
+    static std::vector<object*> showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
     std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
+    static std::vector<object*> showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
 
     bool                        visible() const;
     void                        visible(bool value);
