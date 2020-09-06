@@ -832,8 +832,7 @@ void fb::game::session::unride(fb::game::listener* listener)
             throw std::runtime_error("말에 타고 있지 않습니다.");
 
         auto master = game::master::get().name2mob("말");
-        auto horse = static_cast<fb::game::mob*>(master->make(listener));
-        horse->hp_up(horse->base_hp());
+        auto horse = new fb::game::mob(master, this->_listener, true);
         horse->map(this->_map, this->position_forward());
         
         this->state(state::NORMAL);
