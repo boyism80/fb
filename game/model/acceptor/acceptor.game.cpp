@@ -1394,7 +1394,6 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         auto mob = new fb::game::mob(core, this, true);
         auto map = session.map();
         mob->map(map, session.position());
-        this->send(session, response::game::object::show(*mob), scope::PIVOT);
         return true;
     }
 

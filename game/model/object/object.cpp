@@ -155,7 +155,7 @@ const fb::game::point16_t& fb::game::object::position() const
     return this->_position;
 }
 
-bool fb::game::object::position(uint16_t x, uint16_t y)
+bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
 {
     if(this->_map == nullptr)
         return false;
@@ -168,9 +168,10 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
 
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
-    
-    // 섹터가 변경된 경우에 한해서
-    // 보이는 오브젝트와 보이지 않는 오브젝트 갱신
+
+    if(force && this->is(fb::game::object::types::SESSION))
+        this->_listener->on_hold(static_cast<fb::game::session&>(*this));
+
     if(this->_map->update(*this))
     {
         auto befores = this->_map->nears(this->_before);
@@ -195,13 +196,26 @@ bool fb::game::object::position(uint16_t x, uint16_t y)
             this->_listener->on_show(*x, *this, false);
         }
     }
+    else if(force)
+    {
+        for(auto x : this->_map->nears(this->_position))
+        {
+            if(x == this)
+                continue;
+
+            this->_listener->on_hide(*x, *this);
+            this->_listener->on_show(*x, *this, false);
+        }
+    }
+    else
+    {}
 
     return true;
 }
 
-bool fb::game::object::position(const point16_t position)
+bool fb::game::object::position(const point16_t position, bool force)
 {
-    return this->position(position.x, position.y);
+    return this->position(position.x, position.y, force);
 }
 
 bool fb::game::object::move()
@@ -247,26 +261,26 @@ bool fb::game::object::move(fb::game::direction direction)
     return true;
 }
 
-const fb::game::point16_t& fb::game::object::position_forward() const
+const fb::game::point16_t fb::game::object::position_forward() const
 {
-    point16_t forward(this->_position);
+    auto forward = point16_t(this->_position);
     forward.forward(this->_direction);
     if(this->_map->movable(forward))
         return forward;
 
 
-    point16_t left(this->_position);
+    auto left = point16_t(this->_position);
     left.left(this->_direction);
     if(this->_map->movable(left))
         return left;
 
 
-    point16_t right(this->_position);
+    auto right = point16_t(this->_position);
     right.right(this->_direction);
     if(this->_map->movable(right))
         return right;
 
-    point16_t backward(this->_position);
+    auto backward = point16_t(this->_position);
     backward.backward(this->_direction);
     if(this->_map->movable(backward))
         return backward;
@@ -403,17 +417,20 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
-    if(this->_map == map)
+    if(map != nullptr && this->_map == map)
     {
-        this->position(position);
+        this->position(position, true);
     }
     else if(this->_map != nullptr && map != nullptr && this->_map->host_id() != map->host_id())
     {
         auto nears = this->_map->nears(this->_position);
+        for(auto x : nears)
+        {
+            if(x == this)
+                continue;
 
-        // 이전에 나를 보던 오브젝트들에게서 나를 제거
-        for(auto i : fb::game::object::showns(nears, *this))
-            this->_listener->on_hide(*i, *this);
+            this->_listener->on_hide(*x, *this);
+        }
 
         this->_map->objects.remove(*this);
 

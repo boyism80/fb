@@ -424,14 +424,13 @@ void fb::game::acceptor::on_warp(fb::game::session& me)
     if(map == nullptr)
         return;
 
-    auto& session = static_cast<game::session&>(me);
-    this->send(session, response::game::session::id(session), scope::SELF);
-    this->send(session, response::game::map::config(*map), scope::SELF);
-    this->send(session, response::game::map::bgm(*map), scope::SELF);
-    this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
-    this->send(session, response::game::session::position(session), scope::SELF);
-    this->send(session, response::game::session::show(session, false), scope::SELF);
-    this->send(session, response::game::object::direction(session), scope::SELF);
+    this->send(me, response::game::session::id(me), scope::SELF);
+    this->send(me, response::game::map::config(*map), scope::SELF);
+    this->send(me, response::game::map::bgm(*map), scope::SELF);
+    this->send(me, response::game::session::state(me, state_level::LEVEL_MAX), scope::SELF);
+    this->send(me, response::game::session::position(me), scope::SELF);
+    this->send(me, response::game::session::show(me, false), scope::SELF);
+    this->send(me, response::game::object::direction(me), scope::SELF);
 }
 
 void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_t& position)
