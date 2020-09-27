@@ -624,6 +624,9 @@ protected:
 
 public:
     virtual std::string             tip_message() const;
+
+public:
+    static const std::string        column(equipment::slot slot);
 };
 
 
@@ -945,6 +948,8 @@ public:
     uint8_t                         to_index(const fb::game::item::master* item) const;
     uint8_t                         to_index(const fb::game::item& item) const;
 
+    fb::game::equipment*            wear(fb::game::equipment::slot slot, fb::game::equipment* item);
+
     fb::game::weapon*               weapon() const;
     fb::game::weapon*               weapon(fb::game::weapon* weapon);
 
@@ -959,9 +964,11 @@ public:
 
     fb::game::ring*                 ring(equipment::EQUIPMENT_POSITION position) const;
     fb::game::ring*                 ring(fb::game::ring* ring);
+    fb::game::ring*                 ring(fb::game::ring* ring, equipment::EQUIPMENT_POSITION position);
 
     fb::game::auxiliary*            auxiliary(equipment::EQUIPMENT_POSITION position) const;
     fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary);
+    fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position);
 
     fb::game::item*                 find(const std::string& name) const;
     fb::game::item*                 drop(uint8_t slot, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);

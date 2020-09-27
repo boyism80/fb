@@ -1074,6 +1074,39 @@ std::string fb::game::equipment::tip_message() const
     return sstream.str();
 }
 
+const std::string equipment::column(equipment::slot slot)
+{
+    switch(slot)
+    {
+    case fb::game::equipment::slot::WEAPON_SLOT:
+        return "weapon";
+
+    case fb::game::equipment::slot::ARMOR_SLOT:
+        return "armor";
+
+    case fb::game::equipment::slot::SHIELD_SLOT:
+        return "shield";
+
+    case fb::game::equipment::slot::HELMET_SLOT:
+        return "helmet";
+
+    case fb::game::equipment::slot::LEFT_HAND_SLOT:
+        return "ring_left";
+
+    case fb::game::equipment::slot::RIGHT_HAND_SLOT:
+        return "ring_right";
+
+    case fb::game::equipment::slot::LEFT_AUX_SLOT:
+        return "aux_top";
+
+    case fb::game::equipment::slot::RIGHT_AUX_SLOT:
+        return "aux_bot";
+
+    default:
+        throw std::runtime_error("invalid equipment slot");
+    }
+}
+
 
 //
 // class weapon
@@ -1772,6 +1805,47 @@ uint8_t fb::game::items::to_index(const fb::game::item& item) const
     return 0xFF;
 }
 
+fb::game::equipment* items::wear(fb::game::equipment::slot slot, fb::game::equipment* item)
+{
+    switch(slot) // equipment::slot
+    {
+    case equipment::WEAPON_SLOT:
+        this->_owner.items.weapon(static_cast<fb::game::weapon*>(item));
+        break;
+
+    case equipment::ARMOR_SLOT:
+        this->_owner.items.armor(static_cast<fb::game::armor*>(item));
+        break;
+
+    case equipment::SHIELD_SLOT:
+        this->_owner.items.shield(static_cast<fb::game::shield*>(item));
+        break;
+
+    case equipment::HELMET_SLOT:
+        this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
+        break;
+
+    case equipment::LEFT_HAND_SLOT:
+        this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        break;
+
+    case equipment::RIGHT_HAND_SLOT:
+        this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        break;
+
+    case equipment::LEFT_AUX_SLOT:
+        this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        break;
+
+    case equipment::RIGHT_AUX_SLOT:
+        this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
+        break;
+
+    default:
+        throw std::runtime_error("invalid equipment slot");
+    }
+}
+
 fb::game::weapon* fb::game::items::weapon() const
 {
     return this->_weapon;
@@ -1837,17 +1911,22 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
 {
     fb::game::ring*         before = nullptr;
 
-    if(this->_rings[0] == nullptr)
+    if(this->_rings[equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT] == nullptr)
     {
-        before = this->_rings[0];
-        this->_rings[0] = ring;
+        before = this->ring(ring, equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
     }
     else
     {
-        before = this->_rings[1];
-        this->_rings[1] = ring;
+        before = this->ring(ring, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
     ring->_owner = &this->_owner;
+    return before;
+}
+
+fb::game::ring* fb::game::items::ring(fb::game::ring* ring, equipment::EQUIPMENT_POSITION position)
+{
+    auto before = this->_rings[position];
+    this->_rings[position] = ring;
     return before;
 }
 
@@ -1859,20 +1938,24 @@ fb::game::auxiliary* fb::game::items::auxiliary(equipment::EQUIPMENT_POSITION po
 
 fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
 {
-    fb::game::auxiliary*    before = nullptr;
+    fb::game::auxiliary*         before = nullptr;
 
-    if(this->_auxiliaries[0] == nullptr)
+    if(this->_auxiliaries[equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT] == nullptr)
     {
-        before = this->_auxiliaries[0];
-        this->_auxiliaries[0] = auxiliary;
+        before = this->auxiliary(auxiliary, equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
     }
     else
     {
-        before = this->_auxiliaries[1];
-        this->_auxiliaries[1] = auxiliary;
+        before = this->auxiliary(auxiliary, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
-
     auxiliary->_owner = &this->_owner;
+    return before;
+}
+
+fb::game::auxiliary* items::auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position)
+{
+    auto before = this->_auxiliaries[position];
+    this->_auxiliaries[position] = auxiliary;
     return before;
 }
 

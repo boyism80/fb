@@ -224,10 +224,24 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
         "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1",
         item.id()
     );
+
+    auto column = equipment::column(slot);
+    this->_connection->query
+    (
+        "UPDATE user SET %s=%d WHERE id=%d",
+        column.c_str(), item.id(), me.id()
+    );
 }
 
 void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uint8_t index)
 {
+    auto column = equipment::column(slot);
+    this->_connection->query
+    (
+        "UPDATE user SET %s=NULL WHERE id=%d",
+        column.c_str(), me.id()
+    );
+
     this->send(me, response::game::object::sound(me, sound::type::EQUIPMENT_OFF), scope::PIVOT);
 }
 
@@ -571,7 +585,14 @@ void fb::game::acceptor::on_save(session& me)
 
     this->_connection->query
     (
-        "UPDATE user SET look=%d, color=%d, sex=%d, nation=%d, creature=%d, map=%d, position_x=%d, position_y=%d, direction=%d, state=%d, class=%d, promotion=%d, exp=%d, money=%d, disguise=%s, hp=%d, base_hp=%d, additional_hp=%d, mp=%d, base_mp=%d, additional_mp=%d WHERE name LIKE '%s' LIMIT 1",
+        "UPDATE user SET "
+        "   look=%d, color=%d, sex=%d, nation=%d, creature=%d, map=%d, "
+        "   position_x=%d, position_y=%d, direction=%d, state=%d, "
+        "   class=%d, promotion=%d, exp=%d, money=%d, disguise=%s, "
+        "   hp=%d, base_hp=%d, additional_hp=%d, mp=%d, base_mp=%d, additional_mp=%d "
+        "WHERE "
+        "   id=%d "
+        "LIMIT 1",
         me.look(), 
         me.color(), 
         me.sex(), 
@@ -593,7 +614,7 @@ void fb::game::acceptor::on_save(session& me)
         me.mp(),
         me.base_mp(),
         0,
-        me.name().c_str()
+        me.id()
     );
 
     for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
