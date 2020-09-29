@@ -1,10 +1,10 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
-#include <module/stream/stream.h>
-#include <model/mmo/mmo.h>
-#include <model/container/container.h>
-#include <model/lua/lua.h>
+#include "module/stream/stream.h"
+#include "model/mmo/mmo.h"
+#include "model/container/container.h"
+#include "model/lua/lua.h"
 #include <vector>
 
 namespace fb { namespace game {

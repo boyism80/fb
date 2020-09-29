@@ -1,7 +1,7 @@
 #ifndef __PROTOCOL_RESPONSE_BOARD_H__
 #define __PROTOCOL_RESPONSE_BOARD_H__
 
-#include <protocol/protocol.h>
+#include "protocol/protocol.h"
 
 namespace fb { namespace protocol { namespace request { namespace game { namespace board {
 

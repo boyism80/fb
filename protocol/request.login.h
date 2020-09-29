@@ -1,7 +1,7 @@
 #ifndef __PROTOCOL_REQUEST_LOGIN_H__
 #define __PROTOCOL_REQUEST_LOGIN_H__
 
-#include <protocol/protocol.h>
+#include "protocol/protocol.h"
 
 namespace fb { namespace protocol { namespace request { namespace login {
 

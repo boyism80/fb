@@ -1,7 +1,7 @@
 #ifndef __SECTOR_H__
 #define __SECTOR_H__
 
-#include <model/object/object.h>
+#include "model/object/object.h"
 #include <set>
 
 namespace fb { namespace game {

@@ -1,7 +1,7 @@
 #ifndef __PROTOCOL_H__
 #define __PROTOCOL_H__
 
-#include <module/common/type.h>
+#include "module/common/type.h"
 
 namespace fb { namespace protocol { namespace base {
 
@@ -28,7 +28,7 @@ public:
 
 } } }
 
-#include <protocol/request.common.h>
-#include <protocol/response.common.h>
+#include "protocol/request.common.h"
+#include "protocol/response.common.h"
 
 #endif // !__PROTOCOL_H__

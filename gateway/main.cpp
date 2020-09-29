@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <iostream>
 #include "resource.h"
-#include <module/socket/socket.h>
-#include <model/acceptor/acceptor.gateway.h>
-#include <module/leak.h>
-#include <module/console/console.h>
-#include <module/config/config.h>
+#include "module/socket/socket.h"
+#include "model/acceptor/acceptor.gateway.h"
+#include "module/leak.h"
+#include "module/console/console.h"
+#include "module/config/config.h"
 
 fb::gateway::acceptor*       acceptor;
 

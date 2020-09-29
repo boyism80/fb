@@ -71,23 +71,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -101,7 +101,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmtd.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmtd.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmtd.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,7 +135,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;json\x86\json_vc71_libmt.lib;zlib/x86/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmt.lib;zlib/x86/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,14 +154,15 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;json\x64\json_vc71_libmt.lib;zlib/x64/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;zlib/x64/zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\module\acceptor\acceptor.cpp" />
     <ClCompile Include="..\module\config\config.cpp" />
     <ClCompile Include="..\module\console\console.cpp" />
-    <ClCompile Include="..\module\crypto\cryptor.cpp" />
+    <ClCompile Include="..\module\cryptor\cryptor.cpp" />
+    <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\service\service.cpp" />
     <ClCompile Include="..\module\socket\socket.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
@@ -178,7 +179,8 @@
     <ClInclude Include="..\module\common\type.h" />
     <ClInclude Include="..\module\config\config.h" />
     <ClInclude Include="..\module\console\console.h" />
-    <ClInclude Include="..\module\crypto\cryptor.h" />
+    <ClInclude Include="..\module\cryptor\cryptor.h" />
+    <ClInclude Include="..\module\encoding\encoding.h" />
     <ClInclude Include="..\module\leak.h" />
     <ClInclude Include="..\module\service\service.h" />
     <ClInclude Include="..\module\socket\socket.h" />

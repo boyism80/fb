@@ -56,6 +56,9 @@
     <Filter Include="module\common">
       <UniqueIdentifier>{bfc2e009-3581-4809-8871-595a40a93557}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\encoding">
+      <UniqueIdentifier>{76727eff-aa6b-4ad5-8f80-88ab2a203558}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="..\module\console\console.cpp">
       <Filter>module\console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\crypto\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
     </ClCompile>
     <ClCompile Include="..\module\socket\socket.cpp">
       <Filter>module\socket</Filter>
@@ -97,6 +97,12 @@
     <ClCompile Include="..\module\service\service.cpp">
       <Filter>module\service</Filter>
     </ClCompile>
+    <ClCompile Include="..\module\cryptor\cryptor.cpp">
+      <Filter>module\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\encoding\encoding.cpp">
+      <Filter>module\encoding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\leak.h">
@@ -113,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="..\module\console\console.h">
       <Filter>module\console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\crypto\cryptor.h">
-      <Filter>module\cryptor</Filter>
     </ClInclude>
     <ClInclude Include="..\module\socket\socket.h">
       <Filter>module\socket</Filter>
@@ -149,6 +152,12 @@
     </ClInclude>
     <ClInclude Include="..\module\common\type.h">
       <Filter>module\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\cryptor\cryptor.h">
+      <Filter>module\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\encoding\encoding.h">
+      <Filter>module\encoding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

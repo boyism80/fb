@@ -5,18 +5,17 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
-#include <json/json.h>
+#include <jsoncpp/json/json.h>
 #include <regex>
 #include <ctime>
-#include <locale>
-#include <codecvt>
-#include <module/stream/stream.h>
-#include <module/config/config.h>
-#include <model/session/session.login.h>
-#include <module/service/service.h>
-#include <model/gateway/gateway.h>
 #include <mysql+++/mysql+++.h>
 #include <openssl/sha.h>
+#include "module/stream/stream.h"
+#include "module/config/config.h"
+#include "model/session/session.login.h"
+#include "module/service/service.h"
+#include "model/gateway/gateway.h"
+#include "module/encoding/encoding.h"
 using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
@@ -44,13 +43,13 @@ namespace message
 
 #pragma region exceptions
 
-class login_exception : public std::exception
+class login_exception : public std::runtime_error
 {
 private:
     uint8_t                 _exc_type;
 
 public:
-    login_exception(uint8_t type, const char* make_message_stream) : std::exception(make_message_stream), _exc_type(type) {}
+    login_exception(uint8_t type, const char* make_message_stream) : std::runtime_error(make_message_stream), _exc_type(type) {}
 
 public:
     uint8_t                 type() const { return this->_exc_type; }

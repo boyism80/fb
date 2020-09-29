@@ -1,4 +1,4 @@
-#include <model/acceptor/acceptor.game.h>
+#include "model/acceptor/acceptor.game.h"
 using namespace fb::game;
 
 IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")

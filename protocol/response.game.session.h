@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_SESSION_H__
 #define __PROTOCOL_RESPONSE_GAME_SESSION_H__
 
-#include <protocol/protocol.h>
-#include <model/session/session.h>
+#include "protocol/protocol.h"
+#include "model/session/session.h"
 
 using namespace fb::game;
 

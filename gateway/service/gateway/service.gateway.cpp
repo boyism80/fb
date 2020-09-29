@@ -11,8 +11,8 @@ fb::gateway::service::gateway::~gateway()
 void fb::gateway::service::gateway::assert_client(const fb::protocol::request::gateway::assert_version& request)
 {
     if(request.version != 0x0226)
-        throw std::exception("Å¬¶óÀÌ¾ğÆ® ¹öÀüÀÌ ¸ÂÁö ¾Ê½À´Ï´Ù.");
+        throw std::exception("í´ë¼ì´ì–¸íŠ¸ ë²„ì „ì´ ë§ì§€ ì•ŠìŠµë‹ˆë‹¤.");
 
     if(request.national_key != 0xD7)
-        throw std::exception("±¹°¡°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.");
+        throw std::exception("êµ­ê°€ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.");
 }

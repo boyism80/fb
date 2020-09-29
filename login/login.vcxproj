@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x86</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\x64</IncludePath>
+    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -105,7 +105,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>json\x86\json_vc71_libmtd.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmtd.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -124,7 +124,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>json\x64\json_vc71_libmtd.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -147,7 +147,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>json\x86\json_vc71_libmt.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmt.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -170,7 +170,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>json\x64\json_vc71_libmt.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
       <AdditionalOptions>/std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -178,8 +178,9 @@
     <ClCompile Include="..\module\acceptor\acceptor.cpp" />
     <ClCompile Include="..\module\config\config.cpp" />
     <ClCompile Include="..\module\console\console.cpp" />
-    <ClCompile Include="..\module\crypto\cryptor.cpp" />
+    <ClCompile Include="..\module\cryptor\cryptor.cpp" />
     <ClCompile Include="..\module\db\db.cpp" />
+    <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\service\service.cpp" />
     <ClCompile Include="..\module\socket\socket.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
@@ -196,8 +197,9 @@
     <ClInclude Include="..\module\common\type.h" />
     <ClInclude Include="..\module\config\config.h" />
     <ClInclude Include="..\module\console\console.h" />
-    <ClInclude Include="..\module\crypto\cryptor.h" />
+    <ClInclude Include="..\module\cryptor\cryptor.h" />
     <ClInclude Include="..\module\db\db.h" />
+    <ClInclude Include="..\module\encoding\encoding.h" />
     <ClInclude Include="..\module\leak.h" />
     <ClInclude Include="..\module\service\service.h" />
     <ClInclude Include="..\module\socket\socket.h" />

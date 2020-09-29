@@ -1,7 +1,7 @@
 #include "life.h"
-#include <model/map/map.h>
-#include <model/acceptor/acceptor.game.h>
-#include <model/listener/listener.h>
+#include "model/map/map.h"
+#include "model/acceptor/acceptor.game.h"
+#include "model/listener/listener.h"
 
 fb::game::life::master::master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
     object::master(name, look, color),

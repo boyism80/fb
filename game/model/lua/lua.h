@@ -3,12 +3,12 @@
 
 extern "C"
 {
-#include "lua/lua.h"
-#include "lua/lualib.h"
-#include "lua/lauxlib.h"
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
 }
 
-#include <module/socket/socket.h>
+#include "module/socket/socket.h"
 #include <vector>
 #include <string>
 

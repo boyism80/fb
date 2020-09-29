@@ -1,8 +1,8 @@
 #ifndef __NPC_H__
 #define __NPC_H__
 
-#include <model/item/item.h>
-#include <model/map/map.h>
+#include "model/item/item.h"
+#include "model/map/map.h"
 
 namespace fb { namespace game {
 

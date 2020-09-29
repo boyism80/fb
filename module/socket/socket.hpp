@@ -1,4 +1,4 @@
-#include <module/socket/socket.h>
+#include "module/socket/socket.h"
 
 template <typename T>
 fb::session_map<T>::session_map()
@@ -13,7 +13,7 @@ fb::session_map<T>::~session_map()
 template <typename T>
 T* fb::session_map<T>::find(const fb::socket* key)
 {
-    auto i = __super::find(key);
+    auto i = std::map<const fb::socket*, T*>::find(key);
     if(i == this->end())
         return nullptr;
 
@@ -29,14 +29,14 @@ T* fb::session_map<T>::find(const fb::socket& key)
 template <typename T>
 T* fb::session_map<T>::push(const fb::socket* key, T* val)
 {
-    __super::insert(std::make_pair(key, val));
+    std::map<const fb::socket*, T*>::insert(std::make_pair(key, val));
     return val;
 }
 
 template <typename T>
 void fb::session_map<T>::erase(const fb::socket& key)
 {
-    __super::erase(&key);
+    std::map<const fb::socket*, T*>::erase(&key);
 }
 
 template <typename T>

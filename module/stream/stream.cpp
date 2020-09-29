@@ -69,12 +69,12 @@ int16_t fb::istream::read_16(buffer::endian endian)
 {
 #ifdef _WIN32
     int16_t         value = (*this)[this->_offset] | (*this)[this->_offset + 1] << 8;
-    if(endian == buffer::endian::BIG)
+    if(endian == fb::buffer::endian::BIG)
         value = _byteswap_ushort(value);
 #else
     int16_t         value = (*this)[this->_offset] << 8 | (*this)[this->_offset + 1];
-    if(byte_order == buffer::byte_order::LITTLE_ENDIAN)
-        value = _byteswap_ushort(value);
+    if(endian == fb::buffer::endian::LITTLE)
+        value = __bswap_16(value);
 #endif
     this->_offset += sizeof(int16_t);
     return value;
@@ -92,15 +92,15 @@ int32_t fb::istream::read_32(buffer::endian endian)
                             (*this)[this->_offset + 1] <<  8 |
                             (*this)[this->_offset + 2] << 16 |
                             (*this)[this->_offset + 3] << 24;
-    if(endian == buffer::endian::BIG)
+    if(endian == fb::buffer::endian::BIG)
         value = _byteswap_ulong(value);
 #else
     int32_t         value = (*this)[this->_offset + 0] <<  0 |
                             (*this)[this->_offset + 1] <<  8 |
                             (*this)[this->_offset + 2] << 16 |
                             (*this)[this->_offset + 3] << 24;
-    if(byte_order == buffer::byte_order::LITTLE_ENDIAN)
-        value = _byteswap_ulong(value);
+    if(endian == fb::buffer::endian::LITTLE)
+        value = __bswap_32(value);
 #endif
     this->_offset += sizeof(int32_t);
     return value;
@@ -209,7 +209,7 @@ fb::ostream& fb::ostream::write_u8(uint8_t value)
 fb::ostream& fb::ostream::write_16(int16_t value, buffer::endian endian)
 {
 #ifdef _WIN32
-    if(endian == buffer::endian::LITTLE)
+    if(endian == fb::buffer::endian::LITTLE)
     {
         this->push_back(value & 0xFF);
         this->push_back(value >> 8 & 0xFF);
@@ -220,7 +220,7 @@ fb::ostream& fb::ostream::write_16(int16_t value, buffer::endian endian)
         this->push_back(value & 0xFF);
     }
 #else
-    if(endian == buffer::endian::LITTLE)
+    if(endian == fb::buffer::endian::LITTLE)
     {
         this->push_back(value >> 8 & 0xFF);
         this->push_back(value & 0xFF);
@@ -243,7 +243,7 @@ fb::ostream& fb::ostream::write_u16(uint16_t value, buffer::endian endian)
 fb::ostream& fb::ostream::write_32(int32_t value, buffer::endian endian)
 {
 #ifdef _WIN32
-    if(endian == buffer::endian::LITTLE)
+    if(endian == fb::buffer::endian::LITTLE)
     {
         this->push_back(value & 0xFF);
         this->push_back(value >> 8 & 0xFF);
@@ -258,7 +258,7 @@ fb::ostream& fb::ostream::write_32(int32_t value, buffer::endian endian)
         this->push_back(value & 0xFF);
     }
 #else
-    if(endian == buffer::endian::LITTLE)
+    if(endian == fb::buffer::endian::LITTLE)
     {
         this->push_back(value >> 24 & 0xFF);
         this->push_back(value >> 16 & 0xFF);

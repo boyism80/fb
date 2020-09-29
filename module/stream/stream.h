@@ -5,7 +5,11 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-#include <zlib/zlib.h>
+#include <zlib.h>
+#include <cstring> // std::memcpy
+#ifdef __linux__
+#include <sys/types.h>
+#endif
 
 namespace fb {
 

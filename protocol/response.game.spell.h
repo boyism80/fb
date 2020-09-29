@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_SPELL_H__
 #define __PROTOCOL_RESPONSE_GAME_SPELL_H__
 
-#include <protocol/protocol.h>
-#include <model/spell/spell.h>
+#include "protocol/protocol.h"
+#include "model/spell/spell.h"
 
 namespace fb { namespace protocol { namespace response { namespace game { namespace spell {
 

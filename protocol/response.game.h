@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_H__
 #define __PROTOCOL_RESPONSE_GAME_H__
 
-#include <protocol/protocol.h>
-#include <model/session/session.h>
+#include "protocol/protocol.h"
+#include "model/session/session.h"
 
 namespace fb { namespace protocol { namespace response { namespace game {
 

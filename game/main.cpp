@@ -1,13 +1,13 @@
 #include "resource.h"
 #include <stdio.h>
 #include <iostream>
-#include <module/socket/socket.h>
-#include <module/config/config.h>
-#include <module/console/console.h>
-#include <module/leak.h>
-#include <model/acceptor/acceptor.game.h>
-#include <model/master/master.h>
-#include <model/lua/lua.h>
+#include "module/socket/socket.h"
+#include "module/config/config.h"
+#include "module/console/console.h"
+#include "module/leak.h"
+#include "model/acceptor/acceptor.game.h"
+#include "model/master/master.h"
+#include "model/lua/lua.h"
 
 int main(int argc, const char** argv)
 {

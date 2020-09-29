@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_DIALOG_ITEM_H__
 #define __PROTOCOL_RESPONSE_DIALOG_ITEM_H__
 
-#include <protocol/protocol.h>
-#include <model/npc/npc.h>
+#include "protocol/protocol.h"
+#include "model/npc/npc.h"
 
 namespace fb { namespace protocol { namespace response { namespace game { namespace dialog {
 

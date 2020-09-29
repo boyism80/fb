@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_LIFE_H__
 #define __PROTOCOL_RESPONSE_GAME_LIFE_H__
 
-#include <protocol/protocol.h>
-#include <model/life/life.h>
+#include "protocol/protocol.h"
+#include "model/life/life.h"
 
 using namespace fb::game;
 

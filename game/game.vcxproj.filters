@@ -113,6 +113,9 @@
     <Filter Include="module\common">
       <UniqueIdentifier>{7b435e63-5d89-4eb4-a66c-a9527ab82c11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\encoding">
+      <UniqueIdentifier>{0c3ecd56-e82b-4110-8b8d-302ef1943d69}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -175,9 +178,6 @@
     <ClCompile Include="..\module\console\console.cpp">
       <Filter>module\console</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\crypto\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
-    </ClCompile>
     <ClCompile Include="..\module\db\db.cpp">
       <Filter>module\db</Filter>
     </ClCompile>
@@ -210,6 +210,12 @@
     </ClCompile>
     <ClCompile Include="model\map\sector.cpp">
       <Filter>model\map</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\cryptor\cryptor.cpp">
+      <Filter>module\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\encoding\encoding.cpp">
+      <Filter>module\encoding</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -285,9 +291,6 @@
     <ClInclude Include="..\module\console\console.h">
       <Filter>module\console</Filter>
     </ClInclude>
-    <ClInclude Include="..\module\crypto\cryptor.h">
-      <Filter>module\cryptor</Filter>
-    </ClInclude>
     <ClInclude Include="..\module\db\db.h">
       <Filter>module\db</Filter>
     </ClInclude>
@@ -326,6 +329,12 @@
     </ClInclude>
     <ClInclude Include="model\map\sector.h">
       <Filter>model\map</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\cryptor\cryptor.h">
+      <Filter>module\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\encoding\encoding.h">
+      <Filter>module\encoding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

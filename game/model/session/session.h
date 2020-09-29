@@ -7,14 +7,14 @@
 #include <optional>
 #include <sstream>
 #include <iostream>
-#include <module/socket/socket.h>
-#include <model/item/item.h>
-#include <model/object/object.h>
-#include <model/spell/spell.h>
-#include <model/trade/trade.h>
-#include <model/lua/lua.h>
-#include <model/mob/mob.h>
-#include <model/npc/npc.h>
+#include "module/socket/socket.h"
+#include "model/item/item.h"
+#include "model/object/object.h"
+#include "model/spell/spell.h"
+#include "model/trade/trade.h"
+#include "model/lua/lua.h"
+#include "model/mob/mob.h"
+#include "model/npc/npc.h"
 
 namespace fb { namespace game {
 

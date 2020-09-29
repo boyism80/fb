@@ -1,8 +1,8 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
-#include <model/life/life.h>
-#include <model/item/item.h>
+#include "model/life/life.h"
+#include "model/item/item.h"
 
 
 namespace fb { namespace game {

@@ -1,3 +1,5 @@
+#include "model/master/master.h"
+#include "model/session/session.h"
 
 fb::game::master* fb::game::master::_instance;
 fb::game::master& fb::game::master::get()

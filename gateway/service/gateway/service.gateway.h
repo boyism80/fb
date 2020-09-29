@@ -5,17 +5,17 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
-#include <json/json.h>
+#include <jsoncpp/json/json.h>
 #include <regex>
 #include <ctime>
 #include <locale>
 #include <codecvt>
-#include <module/stream/stream.h>
-#include <module/config/config.h>
-#include <model/session/session.gateway.h>
-#include <module/service/service.h>
-#include <model/gateway/gateway.h>
-#include <protocol/gateway.h>
+#include "module/stream/stream.h"
+#include "module/config/config.h"
+#include "model/session/session.gateway.h"
+#include "module/service/service.h"
+#include "model/gateway/gateway.h"
+#include "protocol/gateway.h"
 
 namespace fb { namespace gateway { namespace service { 
 

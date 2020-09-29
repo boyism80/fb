@@ -59,6 +59,9 @@
     <Filter Include="module\common">
       <UniqueIdentifier>{9afacddd-0b86-43c4-b782-e19aa1182dde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\encoding">
+      <UniqueIdentifier>{e7ba9b8c-c651-4d44-938d-4472a5dca163}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -69,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="..\module\acceptor\acceptor.cpp">
       <Filter>module\acceptor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\crypto\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
     </ClCompile>
     <ClCompile Include="..\module\socket\socket.cpp">
       <Filter>module\socket</Filter>
@@ -103,6 +103,12 @@
     <ClCompile Include="model\gateway\gateway.cpp">
       <Filter>model\gateway</Filter>
     </ClCompile>
+    <ClCompile Include="..\module\cryptor\cryptor.cpp">
+      <Filter>module\cryptor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\encoding\encoding.cpp">
+      <Filter>module\encoding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -119,9 +125,6 @@
     </ClInclude>
     <ClInclude Include="..\module\acceptor\acceptor.hpp">
       <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\crypto\cryptor.h">
-      <Filter>module\cryptor</Filter>
     </ClInclude>
     <ClInclude Include="..\module\socket\socket.h">
       <Filter>module\socket</Filter>
@@ -158,6 +161,12 @@
     </ClInclude>
     <ClInclude Include="..\module\common\type.h">
       <Filter>module\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\cryptor\cryptor.h">
+      <Filter>module\cryptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\encoding\encoding.h">
+      <Filter>module\encoding</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

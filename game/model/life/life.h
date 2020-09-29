@@ -1,7 +1,7 @@
 #ifndef __LIFE_H__
 #define __LIFE_H__
 
-#include <model/object/object.h>
+#include "model/object/object.h"
 
 namespace fb { namespace game {
 

@@ -5,10 +5,10 @@
 #include <map>
 #include <deque>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <module/stream/stream.h>
-#include <module/crypto/cryptor.h>
-#include <protocol/protocol.h>
+#include <boost/bind/bind.hpp>
+#include "module/stream/stream.h"
+#include "module/cryptor/cryptor.h"
+#include "protocol/protocol.h"
 
 namespace fb {
 

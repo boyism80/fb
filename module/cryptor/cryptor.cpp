@@ -1,4 +1,4 @@
-#include <module/crypto/cryptor.h>
+#include "module/cryptor/cryptor.h"
 
 #pragma region hex table for encryption and decryption
 uint32_t fb::cryptor::HEX_TABLE[10][0x100] = 
@@ -24,7 +24,7 @@ fb::cryptor::cryptor(uint8_t types, const uint8_t* key) : _key(NULL), _sequence(
 {
     this->_key = new uint8_t[0x09 * 4];
     for(int i = 0; i < 4; i++)
-        memcpy(this->_key + 0x09 * i, key, 0x09);
+        std::memcpy(this->_key + 0x09 * i, key, 0x09);
 }
 
 fb::cryptor::cryptor(const cryptor& crt) : cryptor(crt._type, crt._key)
@@ -228,7 +228,7 @@ uint8_t* fb::cryptor::key() const
 fb::cryptor& fb::cryptor::operator=(const cryptor& crt)
 {
     for(int i = 0; i < 4; i++)
-        memcpy(this->_key + 0x09 * i, (const void*)crt._key, 0x09);
+        std::memcpy(this->_key + 0x09 * i, (const void*)crt._key, 0x09);
     this->_type = crt._type;
 
     return *this;

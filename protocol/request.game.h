@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_REQUEST_GAME_H__
 #define __PROTOCOL_REQUEST_GAME_H__
 
-#include <protocol/protocol.h>
-#include <model/trade/trade.h>
+#include "protocol/protocol.h"
+#include "model/trade/trade.h"
 
 using namespace fb::game;
 

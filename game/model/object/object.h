@@ -1,10 +1,10 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-#include <module/stream/stream.h>
-#include <model/mmo/mmo.h>
-#include <model/spell/spell.h>
-#include <model/lua/lua.h>
+#include "module/stream/stream.h"
+#include "model/mmo/mmo.h"
+#include "model/spell/spell.h"
+#include "model/lua/lua.h"
 
 namespace fb { namespace game {
 

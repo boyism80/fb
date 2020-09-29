@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_REQUEST_GAME_ITEM_H__
 #define __PROTOCOL_REQUEST_GAME_ITEM_H__
 
-#include <protocol/protocol.h>
-#include <model/item/item.h>
+#include "protocol/protocol.h"
+#include "model/item/item.h"
 
 using namespace fb::game;
 

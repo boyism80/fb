@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_OBJECT_H__
 #define __PROTOCOL_RESPONSE_GAME_OBJECT_H__
 
-#include <protocol/protocol.h>
-#include <model/object/object.h>
+#include "protocol/protocol.h"
+#include "model/object/object.h"
 
 using namespace fb::game;
 

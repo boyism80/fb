@@ -1,6 +1,6 @@
-#include <model/spell/spell.h>
-#include <model/object/object.h>
-#include <model/listener/listener.h>
+#include "model/spell/spell.h"
+#include "model/object/object.h"
+#include "model/listener/listener.h"
 
 fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
     _type(type),

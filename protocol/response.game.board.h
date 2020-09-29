@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_REQUEST_BOARD_H__
 #define __PROTOCOL_REQUEST_BOARD_H__
 
-#include <protocol/protocol.h>
-#include <model/master/master.h>
+#include "protocol/protocol.h"
+#include "model/master/master.h"
 
 namespace fb { namespace protocol { namespace response { namespace game { namespace board {
 

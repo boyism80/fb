@@ -1,7 +1,7 @@
 #ifndef __PROTOCOL_REQUEST_GAME_MAP_H__
 #define __PROTOCOL_REQUEST_GAME_MAP_H__
 
-#include <protocol/protocol.h>
+#include "protocol/protocol.h"
 
 namespace fb { namespace protocol { namespace request { namespace game { namespace map {
 

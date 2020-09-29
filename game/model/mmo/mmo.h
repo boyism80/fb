@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <module/socket/socket.h>
-#include <module/stream/stream.h>
-#include <module/common/type.h>
+#include "module/socket/socket.h"
+#include "module/stream/stream.h"
+#include "module/common/type.h"
 
 #define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\
                                         {\

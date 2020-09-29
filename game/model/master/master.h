@@ -5,14 +5,15 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <json/json.h>
-#include <model/map/map.h>
-#include <model/item/item.h>
-#include <model/npc/npc.h>
-#include <model/spell/spell.h>
-#include <model/mob/mob.h>
-#include <model/board/board.h>
-#include <model/clan/clan.h>
+#include <jsoncpp/json/json.h>
+#include "model/map/map.h"
+#include "model/item/item.h"
+#include "model/npc/npc.h"
+#include "model/spell/spell.h"
+#include "model/mob/mob.h"
+#include "model/board/board.h"
+#include "model/clan/clan.h"
+#include "module/encoding/encoding.h"
 #include <codecvt>
 #include <locale>
 

@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GATEWAY_H__
 #define __PROTOCOL_RESPONSE_GATEWAY_H__
 
-#include <protocol/protocol.h>
-#include <model/gateway/gateway.h>
+#include "protocol/protocol.h"
+#include "model/gateway/gateway.h"
 
 namespace fb { namespace protocol { namespace response { namespace gateway {
 
@@ -42,7 +42,7 @@ public:
 
     void serialize(fb::ostream& out_stream) const
     {
-        // ¼­¹öÁ¤º¸¸¦ ¹ÙÀÌ³Ê¸® Çü½ÄÀ¸·Î º¯È¯
+        // ì„œë²„ì •ë³´ë¥¼ ë°”ì´ë„ˆë¦¬ í˜•ì‹ìœ¼ë¡œ ë³€í™˜
         fb::ostream                 formats;
         char                        buffer[256];
         formats.write_u8((uint8_t)this->entries.size());
@@ -57,10 +57,10 @@ public:
                 .write(buffer, len);
         }
 
-        // ¹ÙÀÌ³Ê¸® µ¥ÀÌÅÍ ¾ĞÃà
+        // ë°”ì´ë„ˆë¦¬ ë°ì´í„° ì••ì¶•
         auto                        compressed = formats.compress();
 
-        // ÆĞÅ¶ Çü½ÄÀ¸·Î ÀúÀå
+        // íŒ¨í‚· í˜•ì‹ìœ¼ë¡œ ì €ì¥
         out_stream.write_u8(0x56)
                   .write_u16(compressed.size())
                   .write(compressed.data(), compressed.size() + 1);

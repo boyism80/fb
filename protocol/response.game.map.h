@@ -1,8 +1,8 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_MAP_H__
 #define __PROTOCOL_RESPONSE_GAME_MAP_H__
 
-#include <protocol/protocol.h>
-#include <model/map/map.h>
+#include "protocol/protocol.h"
+#include "model/map/map.h"
 
 static const uint16_t crc16tab[256] = 
 {
