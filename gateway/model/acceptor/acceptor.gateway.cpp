@@ -25,8 +25,8 @@ bool fb::gateway::acceptor::load_entries()
         {
             this->_entries.push_back(entry
             (
-                i.key().asCString(), 
-                (*i)["desc"].asCString(), 
+                utf8(i.key().asCString()), 
+                utf8((*i)["desc"].asCString()), 
                 (*i)["ip"].asCString(), 
                 (*i)["port"].asInt()
             ));

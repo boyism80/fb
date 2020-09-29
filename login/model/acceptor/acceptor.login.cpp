@@ -3,7 +3,7 @@ using namespace fb::login;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
     fb::acceptor<session>(context, port, accept_delay),
-    _agreement(fb::config()["agreement"].asString())
+    _agreement(utf8(fb::config()["agreement"].asString()))
 {
     // Register event handler
     this->bind<fb::protocol::request::login::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));

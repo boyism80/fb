@@ -3,9 +3,15 @@ apt-get upgrade -y
 apt-get install make -y
 apt-get install libjsoncpp-dev -y
 apt-get install lua5.3-dev -y
-apt-get install zlib1g-dev -y
 apt-get install libmysqlcppconn-dev -y
 apt-get install libmysqlclient-dev -y
+
+wget http://ftp.superuser.co.kr/pub/etc/zlib-1.1.4.tar.gz
+tar xvfz zlib-1.1.4.tar.gz
+cd zlib-1.1.4
+./configure && make && make install
+cd ..
+rm -rf zlib-1.1.4*
 
 apt-get install wget -y
 wget -O boost_1_74_0.tar.gz https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip

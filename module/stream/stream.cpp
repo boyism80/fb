@@ -5,8 +5,11 @@ fb::buffer::buffer(size_t size) : _offset(0)
     this->reserve(size);
 }
 
-fb::buffer::buffer(const uint8_t* data, size_t size) : _offset(0), std::vector<uint8_t>(data, data + size)
-{}
+fb::buffer::buffer(const uint8_t* data, size_t size) : _offset(0)
+{
+    std::vector<uint8_t>::reserve(size);
+    std::vector<uint8_t>::assign(data, data + size);
+}
 
 fb::buffer::buffer(const buffer & right) : fb::buffer((uint8_t*)right.data(), right.size())
 {
@@ -28,11 +31,13 @@ const void* fb::buffer::data() const
 
 fb::buffer fb::buffer::compress() const
 {
-    static uint8_t              buffer[65536];
+    uint8_t                     buffer[1024];
     uint32_t                    size = sizeof(buffer);
 
-    compress2(buffer, (uLongf*)&size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION);
-    buffer[size] = 0x00;
+    if(compress2(buffer, (uLongf*)&size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
+        throw std::runtime_error("cannot compress data");
+    
+    buffer[size] = 0;
     return fb::buffer(buffer, size);
 }
 

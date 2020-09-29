@@ -8,6 +8,7 @@
 #include <service/gateway/service.gateway.h>
 #include <zlib.h>
 #include "protocol/gateway.h"
+#include "module/encoding/encoding.h"
 
 namespace fb { namespace gateway {
 
