@@ -55,9 +55,9 @@ public:
 
 #pragma region protected field
 protected:
-    std::string                 _name;
-    uint16_t                    _look;
-    uint8_t                     _color;
+    std::string                         _name;
+    uint16_t                            _look;
+    uint8_t                             _color;
 #pragma endregion
 
 
@@ -76,57 +76,56 @@ public:
 
 #pragma region protected method
 protected:
-    uint8_t                     dialog_look_type() const;
-    //virtual void              handle_lua_field(lua_State* lua) const;
+    uint8_t                             dialog_look_type() const;
 #pragma endregion
 
 
 #pragma region public method
 public:
-    virtual object::types       type() const;
+    virtual object::types               type() const;
 
-    const std::string&          name() const;
-    void                        name(const std::string& value);
+    const std::string&                  name() const;
+    void                                name(const std::string& value);
 
-    uint16_t                    look() const;
-    void                        look(uint16_t value);
+    uint16_t                            look() const;
+    void                                look(uint16_t value);
 
-    uint8_t                     color() const;
-    void                        color(uint8_t value);
+    uint8_t                             color() const;
+    void                                color(uint8_t value);
 #pragma endregion
         
 
 #pragma region build-in method
 public:
-    static int                  builtin_name(lua_State* lua);
-    static int                  builtin_look(lua_State* lua);
-    static int                  builtin_color(lua_State* lua);
-    static int                  builtin_dialog(lua_State* lua);
+    static int                          builtin_name(lua_State* lua);
+    static int                          builtin_look(lua_State* lua);
+    static int                          builtin_color(lua_State* lua);
+    static int                          builtin_dialog(lua_State* lua);
 #pragma endregion
 };
 #pragma endregion
 
 #pragma region private field
 private:
-    listener*                   _listener;
-    bool                        _visible;
-    sector*                     _sector;
+    listener*                           _listener;
+    bool                                _visible;
+    fb::game::sector*                   _sector;
 #pragma endregion
 
 #pragma region protected field
 protected:
-    uint32_t                    _sequence;
-    const master*               _master;
-    point16_t                   _before;
+    uint32_t                            _sequence;
+    const fb::game::object::master*     _master;
+    point16_t                           _before;
 
-    point16_t                   _position;
-    fb::game::direction         _direction;
-    fb::game::map*              _map;
+    point16_t                           _position;
+    fb::game::direction                 _direction;
+    fb::game::map*                      _map;
 #pragma endregion
 
 #pragma region public field
 public:
-    buffs                       buffs;
+    fb::game::buffs                     buffs;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -139,101 +138,101 @@ public:
 
 #pragma region private method
 private:
-    static bool                 sight(const point16_t me, const point16_t you, const fb::game::map* map);
+    static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
 #pragma region public method
 public:
-    uint32_t                    sequence() const { return this->_sequence; }
-    void                        sequence(uint32_t value) { this->_sequence = value; }
+    uint32_t                            sequence() const { return this->_sequence; }
+    void                                sequence(uint32_t value) { this->_sequence = value; }
 
-    const master*               based() const;
+    const master*                       based() const;
     template <typename T>
-    const T*                    based() const { return static_cast<const T*>(this->_master); }
-    bool                        is(object::types type);
+    const T*                            based() const { return static_cast<const T*>(this->_master); }
+    bool                                is(object::types type);
 
-    virtual const std::string&  name() const;
-    virtual uint16_t            look() const;
-    virtual uint8_t             color() const;
-    virtual object::types       type() const;
+    virtual const std::string&          name() const;
+    virtual uint16_t                    look() const;
+    virtual uint8_t                     color() const;
+    virtual object::types               type() const;
 
 
-    const point16_t&            before() const;
-    const point16_t&            position() const;
-    const point16_t             position_forward() const;
-    virtual bool                position(uint16_t x, uint16_t y, bool force = false);
-    virtual bool                position(const point16_t position, bool force = false);
-    bool                        move();
-    bool                        move(fb::game::direction direction);
+    const point16_t&                    before() const;
+    const point16_t&                    position() const;
+    const point16_t                     position_forward() const;
+    virtual bool                        position(uint16_t x, uint16_t y, bool force = false);
+    virtual bool                        position(const point16_t position, bool force = false);
+    bool                                move();
+    bool                                move(fb::game::direction direction);
 
-    uint16_t                    x() const;
-    bool                        x(uint16_t value);
+    uint16_t                            x() const;
+    bool                                x(uint16_t value);
 
-    uint16_t                    y() const;
-    bool                        y(uint16_t value);
+    uint16_t                            y() const;
+    bool                                y(uint16_t value);
 
-    direction                   direction() const;
-    bool                        direction(fb::game::direction value);
+    fb::game::direction                 direction() const;
+    bool                                direction(fb::game::direction value);
 
-    virtual void                map(fb::game::map* map, const point16_t& position);
-    void                        map(fb::game::map* map);
-    fb::game::map*              map() const;
+    virtual void                        map(fb::game::map* map, const point16_t& position);
+    void                                map(fb::game::map* map);
+    fb::game::map*                      map() const;
 
-    bool                        sector(fb::game::sector* sector);
-    fb::game::sector*           sector();
+    bool                                sector(fb::game::sector* sector);
+    fb::game::sector*                   sector();
 
-    bool                        sight(const point16_t& position, bool before = false) const;
-    bool                        sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
+    bool                                sight(const point16_t& position, bool before = false) const;
+    bool                                sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
 
-    object*                     side(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>        sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    object*                     forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>        forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>        showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
-    static std::vector<object*> showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
-    std::vector<object*>        showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
-    static std::vector<object*> showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
+    object*                             side(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    object*                             forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
+    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
+    std::vector<object*>                showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
+    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
 
-    bool                        visible() const;
-    void                        visible(bool value);
+    bool                                visible() const;
+    void                                visible(bool value);
 
-    double                      distance(const object& right) const;
-    uint32_t                    distance_sqrt(const object& right) const;
+    double                              distance(const object& right) const;
+    uint32_t                            distance_sqrt(const object& right) const;
 #pragma endregion
 
 #pragma region handler method
 public:
-    virtual void                handle_timer(uint64_t elapsed_milliseconds) {}
+    virtual void                        handle_timer(uint64_t elapsed_milliseconds) {}
 #pragma endregion
 
 #pragma region operator
-    bool                        operator == (const object& right) const;
-    bool                        operator != (const object& right) const;
+    bool                                operator == (const object& right) const;
+    bool                                operator != (const object& right) const;
 #pragma endregion
 
 #pragma region build-in method
 public:
-    static int                  builtin_core(lua_State* lua);
-    static int                  builtin_id(lua_State* lua);
-    static int                  builtin_eq(lua_State* lua);
-    static int                  builtin_tostring(lua_State* lua);
-    static int                  builtin_name(lua_State* lua);
-    static int                  builtin_dialog(lua_State* lua);
-    static int                  builtin_sound(lua_State* lua);
-    static int                  builtin_position(lua_State* lua);
-    static int                  builtin_direction(lua_State* lua);
-    static int                  builtin_chat(lua_State* lua);
-    static int                  builtin_message(lua_State* lua);
-    static int                  builtin_buff(lua_State* lua);
-    static int                  builtin_unbuff(lua_State* lua);
-    static int                  builtin_isbuff(lua_State* lua);
-    static int                  builtin_effect(lua_State* lua);
-    static int                  builtin_map(lua_State* lua);
-    static int                  builtin_mkitem(lua_State* lua);
-    static int                  builtin_showings(lua_State* lua);
-    static int                  builtin_showns(lua_State* lua);
-    static int                  builtin_front(lua_State* lua);
-    static int                  builtin_is(lua_State* lua);
+    static int                          builtin_core(lua_State* lua);
+    static int                          builtin_id(lua_State* lua);
+    static int                          builtin_eq(lua_State* lua);
+    static int                          builtin_tostring(lua_State* lua);
+    static int                          builtin_name(lua_State* lua);
+    static int                          builtin_dialog(lua_State* lua);
+    static int                          builtin_sound(lua_State* lua);
+    static int                          builtin_position(lua_State* lua);
+    static int                          builtin_direction(lua_State* lua);
+    static int                          builtin_chat(lua_State* lua);
+    static int                          builtin_message(lua_State* lua);
+    static int                          builtin_buff(lua_State* lua);
+    static int                          builtin_unbuff(lua_State* lua);
+    static int                          builtin_isbuff(lua_State* lua);
+    static int                          builtin_effect(lua_State* lua);
+    static int                          builtin_map(lua_State* lua);
+    static int                          builtin_mkitem(lua_State* lua);
+    static int                          builtin_showings(lua_State* lua);
+    static int                          builtin_showns(lua_State* lua);
+    static int                          builtin_front(lua_State* lua);
+    static int                          builtin_is(lua_State* lua);
 #pragma endregion
 };
 

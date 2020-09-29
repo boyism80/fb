@@ -119,8 +119,8 @@ public:
 
 
 #pragma region friend
-    friend group;
-    friend clan;
+    friend fb::game::group;
+    friend fb::game::clan;
 #pragma endregion
 
 
@@ -144,10 +144,10 @@ private:
     uint8_t                     _hit; // 명중수정
     uint8_t                     _regenerative; // 재생력
 
-    nation                      _nation;
-    creature                    _creature;
-    sex                         _sex;
-    state                       _state;
+    fb::game::nation            _nation;
+    fb::game::creature          _creature;
+    fb::game::sex               _sex;
+    fb::game::state             _state;
     uint8_t                     _level;
     uint8_t                     _class, _promotion;
     uint32_t                    _money;
@@ -157,8 +157,8 @@ private:
 
     std::string                 _title;
 
-    group*                      _group;
-    clan*                       _clan;
+    fb::game::group*            _group;
+    fb::game::clan*             _clan;
 #pragma endregion
 
 #pragma region public field

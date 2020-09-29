@@ -7,7 +7,7 @@ inline fb::game::container<T>::container(life& owner, uint8_t size, bool auto_re
     _auto_release(auto_release)
 {
     this->_elements = new T*[size];
-    memset(this->_elements, NULL, sizeof(T*) * size);
+    std::memset(this->_elements, 0, sizeof(T*) * size);
 }
 template<typename T>
 inline fb::game::container<T>::~container()

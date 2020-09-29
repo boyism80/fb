@@ -121,7 +121,7 @@ fb::game::life::life(master* master, listener* listener, uint32_t id, uint32_t h
 }
 
 fb::game::life::life(const fb::game::object& object, listener* listener, uint32_t hp, uint32_t mp, uint32_t exp) : 
-    object(object),
+    fb::game::object(object),
     _listener(listener),
     _hp(hp),
     _mp(mp),

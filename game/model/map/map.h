@@ -25,8 +25,8 @@ class objects : private std::vector<fb::game::object*>
 #pragma endregion
 
 private:
-    map*                        _owner;
-    uint16_t                    _sequence;
+    map*                            _owner;
+    uint16_t                        _sequence;
 
 public:
     using std::vector<fb::game::object*>::begin;
@@ -74,14 +74,14 @@ public:
 public:
     enum options : uint8_t 
     { 
-        NO_OPTION = 0x00,
-        BUILD_IN = 0x01,
-        DISABLE_TALK = 0x02,
-        DISABLE_WHISPER = 0x04,
-        DISABLE_MAGIC = 0x08,
-        HUNTING_GROUND = 0x10,
-        ENABLE_PK = 0x20,
-        DISABLE_DIE_PENALTY = 0x30 
+        NO_OPTION                   = 0x00,
+        BUILD_IN                    = 0x01,
+        DISABLE_TALK                = 0x02,
+        DISABLE_WHISPER             = 0x04,
+        DISABLE_MAGIC               = 0x08,
+        HUNTING_GROUND              = 0x10,
+        ENABLE_PK                   = 0x20,
+        DISABLE_DIE_PENALTY         = 0x30 
     };
     enum effects : uint8_t 
     { 
@@ -104,17 +104,17 @@ public:
 public:
     typedef struct _tile
     {
-        uint16_t id;
-        uint16_t object;
-        bool blocked;
+        uint16_t                    id;
+        uint16_t                    object;
+        bool                        blocked;
     } tile;
 
     typedef struct _warp
     {
     public:
-        map* map;
-        const point16_t before, after;
-        const range8_t limit;
+        fb::game::map*              map;
+        const point16_t             before, after;
+        const range8_t              limit;
 
     public:
         _warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t limit) : 
@@ -145,8 +145,8 @@ private:
 
 #pragma region public field
 public:
-    objects                         objects;
-    doors                           doors;
+    fb::game::objects               objects;
+    fb::game::doors                 doors;
 #pragma endregion
 
 

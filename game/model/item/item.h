@@ -25,36 +25,36 @@ public:
 
     enum delete_attr : uint8_t
     {
-        DELETE_REMOVED              = 0x00,
-        DELETE_DROP                 = 0x01,
-        DELETE_EAT                  = 0x02,
-        DELETE_SMOKE                = 0x03,
-        DELETE_THROW                = 0x04,
-        DELETE_SHOOT                = 0x05,
-        DELETE_REDUCE               = 0x06,
-        DELETE_STICK                = 0x07,
-        DELETE_DECAY                = 0x08,
-        DELETE_GIVE                 = 0x09,
-        DELETE_SELL                 = 0x0A,
-        DELETE_NONE                 = 0x0C,
-        DELETE_DESTROY              = 0x0D,
+        DELETE_REMOVED                  = 0x00,
+        DELETE_DROP                     = 0x01,
+        DELETE_EAT                      = 0x02,
+        DELETE_SMOKE                    = 0x03,
+        DELETE_THROW                    = 0x04,
+        DELETE_SHOOT                    = 0x05,
+        DELETE_REDUCE                   = 0x06,
+        DELETE_STICK                    = 0x07,
+        DELETE_DECAY                    = 0x08,
+        DELETE_GIVE                     = 0x09,
+        DELETE_SELL                     = 0x0A,
+        DELETE_NONE                     = 0x0C,
+        DELETE_DESTROY                  = 0x0D,
     };
 
     enum attrs : uint32_t
     {
-        ITEM_ATTR_NONE              = 0x00000000,
-        ITEM_ATTR_EQUIPMENT         = 0x00000001,
-        ITEM_ATTR_WEAPON            = 0x00000002,
-        ITEM_ATTR_ARMOR             = 0x00000004,
-        ITEM_ATTR_SHIELD            = 0x00000008,
-        ITEM_ATTR_HELMET            = 0x00000010,
-        ITEM_ATTR_RING              = 0x00000020,
-        ITEM_ATTR_AUXILIARY         = 0x00000040,
-        ITEM_ATTR_CONSUME           = 0x00000080,
-        ITEM_ATTR_PACK              = 0x00000100,
-        ITEM_ATTR_BUNDLE            = 0x00000200,
-        ITEM_ATTR_SCRIPT            = 0x00000400,
-        ITEM_ATTR_CASH              = 0x00000800,
+        ITEM_ATTR_NONE                  = 0x00000000,
+        ITEM_ATTR_EQUIPMENT             = 0x00000001,
+        ITEM_ATTR_WEAPON                = 0x00000002,
+        ITEM_ATTR_ARMOR                 = 0x00000004,
+        ITEM_ATTR_SHIELD                = 0x00000008,
+        ITEM_ATTR_HELMET                = 0x00000010,
+        ITEM_ATTR_RING                  = 0x00000020,
+        ITEM_ATTR_AUXILIARY             = 0x00000040,
+        ITEM_ATTR_CONSUME               = 0x00000080,
+        ITEM_ATTR_PACK                  = 0x00000100,
+        ITEM_ATTR_BUNDLE                = 0x00000200,
+        ITEM_ATTR_SCRIPT                = 0x00000400,
+        ITEM_ATTR_CASH                  = 0x00000800,
     };
 #pragma endregion
 
@@ -69,7 +69,7 @@ public:
     typedef struct _trade
     {
     private:
-        bool _enabled;
+        bool                            _enabled;
 
         friend class item;
 
@@ -77,15 +77,15 @@ public:
         explicit _trade(bool enabled = true) : _enabled(enabled) {}
 
     public:
-        bool enabled() const { return this->_enabled; }
-        void enabled(bool value) { this->_enabled = value; }
+        bool                            enabled() const { return this->_enabled; }
+        void                            enabled(bool value) { this->_enabled = value; }
     } trade;
 
     typedef struct _entrust
     {
     private:
-        bool _enabled;
-        uint32_t _price;
+        bool                            _enabled;
+        uint32_t                        _price;
 
         friend class item;
 
@@ -93,21 +93,21 @@ public:
         explicit _entrust(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
 
     public:
-        bool enabled() const { return this->_enabled; }
-        void enabled(bool value) { this->_enabled = value; }
+        bool                            enabled() const { return this->_enabled; }
+        void                            enabled(bool value) { this->_enabled = value; }
         
-        uint32_t price() const { return this->_price; }
-        void price(uint32_t value) { this->_price = value; }
+        uint32_t                        price() const { return this->_price; }
+        void                            price(uint32_t value) { this->_price = value; }
     } entrust;
 
     typedef struct _limit
     {
-        uint8_t                     level;
-        uint8_t                     strength;
-        uint8_t                     dexteritry;
-        uint8_t                     intelligence;
-        uint8_t                     cls, promotion;
-        fb::game::sex               sex;
+        uint8_t                         level;
+        uint8_t                         strength;
+        uint8_t                         dexteritry;
+        uint8_t                         intelligence;
+        uint8_t                         cls, promotion;
+        fb::game::sex                   sex;
 
     public:
         _limit();
@@ -130,8 +130,8 @@ public:
 
 #pragma region static const field
     
-    static const item_limit         DEFAULT_LIMIT;
-    static const uint32_t           MAX_SLOT = 52;
+    static const item_limit             DEFAULT_LIMIT;
+    static const uint32_t               MAX_SLOT = 52;
 
 #pragma endregion
 
@@ -147,16 +147,16 @@ public:
 
 #pragma region protected field
 protected:
-    uint32_t                        _id;
-    uint32_t                        _price;
-    item_limit                      _limit;
-    penalties                       _penalty;
-    uint16_t                        _capacity;
-    item::trade                     _trade;
-    item::entrust                   _entrust;
-    bool                            _bundle;
-    std::string                     _tooltip, _desc;
-    std::string                     _active_script;
+    uint32_t                            _id;
+    uint32_t                            _price;
+    item_limit                          _limit;
+    penalties                           _penalty;
+    uint16_t                            _capacity;
+    item::trade                         _trade;
+    item::entrust                       _entrust;
+    bool                                _bundle;
+    std::string                         _tooltip, _desc;
+    std::string                         _active_script;
 #pragma endregion
 
 
@@ -176,14 +176,14 @@ public:
 
 #pragma region override method
 public:
-    object::types                   type() const { return object::ITEM; }
+    fb::game::object::types             type() const { return object::ITEM; }
 #pragma endregion
 
 
 #pragma region virtual method
 public:
-    virtual attrs                   attr() const;
-    virtual object*                 make(listener* listener) const;
+    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::object*           make(listener* listener) const;
 #pragma endregion
 
 
@@ -196,40 +196,40 @@ public:
 
 #pragma region public method
 public:
-    uint32_t                        id() const;
-    void                            id(uint32_t id);
-    uint32_t                        price() const;
-    void                            price(uint32_t value);
+    uint32_t                            id() const;
+    void                                id(uint32_t id);
+    uint32_t                            price() const;
+    void                                price(uint32_t value);
 
-    uint16_t                        capacity() const;
-    void                            capacity(uint16_t value);
+    uint16_t                            capacity() const;
+    void                                capacity(uint16_t value);
 
-    bool                            trade() const;
-    void                            trade(bool value);
+    bool                                trade() const;
+    void                                trade(bool value);
 
-    bool                            entrust_enabled() const;
-    void                            entrust_enabled(bool value);
+    bool                                entrust_enabled() const;
+    void                                entrust_enabled(bool value);
 
-    uint32_t                        entrust_price() const;
-    void                            entrust_price(uint32_t value);
+    uint32_t                            entrust_price() const;
+    void                                entrust_price(uint32_t value);
 
-    const item_limit&               limit() const;
-    void                            limit(const item::item_limit& value);
+    const item_limit&                   limit() const;
+    void                                limit(const item::item_limit& value);
 
-    penalties                       penalty() const;
-    void                            penalty(penalties value);
+    penalties                           penalty() const;
+    void                                penalty(penalties value);
 
-    const std::string&              desc() const;
-    void                            desc(const std::string& value);
+    const std::string&                  desc() const;
+    void                                desc(const std::string& value);
 
-    const std::string&              active_script() const;
-    void                            active_script(const std::string& value);
+    const std::string&                  active_script() const;
+    void                                active_script(const std::string& value);
 
 #pragma endregion
 
 #pragma region built-in method
 public:
-    static int                      builtin_make(lua_State* lua);
+    static int                          builtin_make(lua_State* lua);
 #pragma endregion
 
 };
@@ -244,10 +244,10 @@ public:
 #pragma region protected field
 
 protected:
-    uint32_t                        _id;
-    listener*                       _listener;
-    uint16_t                        _count;
-    session*                        _owner;
+    uint32_t                            _id;
+    listener*                           _listener;
+    uint16_t                            _count;
+    session*                            _owner;
 
 #pragma endregion
 
@@ -265,11 +265,11 @@ public:
 #pragma region virtual method
 
 public:
-    virtual std::string             tip_message() const;
+    virtual std::string                 tip_message() const;
 
 public:
-    virtual const std::string       name_styled() const;
-    virtual const std::string       name_trade() const;
+    virtual const std::string           name_styled() const;
+    virtual const std::string           name_trade() const;
 
 #pragma endregion
 
@@ -277,26 +277,26 @@ public:
 #pragma region public method
 
 public:
-    uint32_t                        id() const;
-    void                            id(uint32_t id);
-    uint16_t                        fill(uint16_t count);
-    uint16_t                        reduce(uint16_t count);
-    uint16_t                        free_space() const;
-    uint16_t                        count() const;
-    void                            count(uint16_t value);
-    virtual bool                    empty() const;
+    uint32_t                            id() const;
+    void                                id(uint32_t id);
+    uint16_t                            fill(uint16_t count);
+    uint16_t                            reduce(uint16_t count);
+    uint16_t                            free_space() const;
+    uint16_t                            count() const;
+    void                                count(uint16_t value);
+    virtual bool                        empty() const;
 
 public:
-    uint32_t                        price() const;
-    uint16_t                        capacity() const;
-    bool                            unique() const;
-    bool                            entrust_enabled() const;
-    uint32_t                        entrust_price() const;
-    const item_limit&               limit() const;
-    penalties                       penalty() const;
-    const std::string&              desc() const;
-    const std::string&              active_script() const;
-    attrs                           attr() const;
+    uint32_t                            price() const;
+    uint16_t                            capacity() const;
+    bool                                unique() const;
+    bool                                entrust_enabled() const;
+    uint32_t                            entrust_price() const;
+    const item_limit&                   limit() const;
+    penalties                           penalty() const;
+    const std::string&                  desc() const;
+    const std::string&                  active_script() const;
+    attrs                               attr() const;
 
 #pragma endregion
 
@@ -304,8 +304,8 @@ public:
 #pragma region event method
 
 public:
-    virtual bool                    active();
-    virtual item*                   split(uint16_t count = 1);
+    virtual bool                        active();
+    virtual item*                       split(uint16_t count = 1);
 
 #pragma endregion
 };
@@ -324,29 +324,29 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
-    static const master             BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
+    static const master                 BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
 
 private:
-    uint32_t                        _chunk;
+    uint32_t                            _chunk;
 
 public:
     cash(uint32_t chunk, listener* listener);
     ~cash();
 
 public:
-    virtual const std::string       name_styled() const;
+    virtual const std::string           name_styled() const;
 
 public:
-    uint32_t                        chunk() const;
-    fb::game::cash*                 chunk(uint32_t value);
-    uint32_t                        chunk_reduce(uint32_t value);
+    uint32_t                            chunk() const;
+    fb::game::cash*                     chunk(uint32_t value);
+    uint32_t                            chunk_reduce(uint32_t value);
 
-    bool                            empty() const;
+    bool                                empty() const;
 };
 
 
@@ -367,8 +367,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -377,7 +377,7 @@ public:
     ~consume();
 
 public:
-    bool                            active();
+    bool                                active();
 };
 
 
@@ -391,7 +391,7 @@ public:
     class master : public fb::game::item::master
     {
     private:
-        uint16_t                    _durability;
+        uint16_t                        _durability;
 
         friend class pack;
 
@@ -400,12 +400,12 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 private:
-    uint16_t                        _durability;
+    uint16_t                            _durability;
 
 public:
     pack(const master* master, listener* listener);
@@ -413,12 +413,12 @@ public:
     ~pack();
 
 public:
-    uint16_t                        durability() const;
-    uint16_t                        base_durability() const;
+    uint16_t                            durability() const;
+    uint16_t                            base_durability() const;
 
 public:
-    const std::string               name_styled() const;
-    bool                            active();
+    const std::string                   name_styled() const;
+    bool                                active();
 };
 
 
@@ -438,8 +438,8 @@ public:
     typedef struct _repair
     {
     private:
-        bool _enabled;
-        float _price;
+        bool                            _enabled;
+        float                           _price;
 
         friend class equipment;
 
@@ -447,18 +447,18 @@ public:
         explicit _repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) {}
 
     public:
-        bool enabled() const { return this->_enabled; }
-        void enabled(bool value) { this->_enabled = value; }
+        bool                            enabled() const { return this->_enabled; }
+        void                            enabled(bool value) { this->_enabled = value; }
 
-        float price() const { return this->_price; }
-        void price(float value) { this->_price = value; }
+        float                           price() const { return this->_price; }
+        void                            price(float value) { this->_price = value; }
     } repair;
 
     typedef struct _rename
     {
     private:
-        bool        _enabled;
-        uint32_t    _price;
+        bool                            _enabled;
+        uint32_t                        _price;
 
         friend class equipment;
 
@@ -466,28 +466,28 @@ public:
         explicit _rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
 
     public:
-        bool enabled() const { return this->_enabled; }
-        void enabled(bool value) { this->_enabled = value; }
+        bool                            enabled() const { return this->_enabled; }
+        void                            enabled(bool value) { this->_enabled = value; }
 
-        uint32_t price() const { return this->_price; }
-        void price(uint32_t value) { this->_price = value; }
+        uint32_t                        price() const { return this->_price; }
+        void                            price(uint32_t value) { this->_price = value; }
     } rename;
 
     class master : public fb::game::item::master
     {
     protected:
-        uint16_t                    _dress;
-        uint16_t                    _durability;
-        equipment::repair           _repair;
-        equipment::rename           _rename;
-        std::string                 _dress_script, _undress_script;
+        uint16_t                        _dress;
+        uint16_t                        _durability;
+        fb::game::equipment::repair     _repair;
+        fb::game::equipment::rename     _rename;
+        std::string                     _dress_script, _undress_script;
 
-        uint8_t                     _hit, _damage;
-        uint8_t                     _strength, _intelligence, _dexteritry;
-        uint32_t                    _base_hp, _base_mp;
-        float                       _hp_percentage, _mp_percentage;
-        uint8_t                     _healing_cycle;
-        defensive                   _defensive;
+        uint8_t                         _hit, _damage;
+        uint8_t                         _strength, _intelligence, _dexteritry;
+        uint32_t                        _base_hp, _base_mp;
+        float                           _hp_percentage, _mp_percentage;
+        uint8_t                         _healing_cycle;
+        defensive                       _defensive;
 
         friend class equipment;
 
@@ -496,137 +496,137 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
 
     public:
-        uint16_t                    dress() const;
+        uint16_t                        dress() const;
 
-        uint16_t                    durability() const;
-        void                        durability(uint16_t value);
+        uint16_t                        durability() const;
+        void                            durability(uint16_t value);
 
-        bool                        repair_enabled() const;
-        void                        repair_enabled(bool value);
+        bool                            repair_enabled() const;
+        void                            repair_enabled(bool value);
 
-        float                       repair_price() const;
-        void                        repair_price(float value);
+        float                           repair_price() const;
+        void                            repair_price(float value);
 
-        bool                        rename_enabled() const;
-        void                        rename_enabled(bool value);
+        bool                            rename_enabled() const;
+        void                            rename_enabled(bool value);
 
-        uint32_t                    rename_price() const;
-        void                        rename_price(uint32_t value);
+        uint32_t                        rename_price() const;
+        void                            rename_price(uint32_t value);
 
-        int16_t                     defensive_physical() const;
-        void                        defensive_physical(int16_t value);
+        int16_t                         defensive_physical() const;
+        void                            defensive_physical(int16_t value);
 
-        int16_t                     defensive_magical() const;
-        void                        defensive_magical(int16_t value);
+        int16_t                         defensive_magical() const;
+        void                            defensive_magical(int16_t value);
 
 
-        uint8_t                     hit() const;
-        void                        hit(uint8_t value);
+        uint8_t                         hit() const;
+        void                            hit(uint8_t value);
 
-        uint8_t                     damage() const;
-        void                        damage(uint8_t value);
+        uint8_t                         damage() const;
+        void                            damage(uint8_t value);
 
-        uint8_t                     strength() const;
-        void                        strength(uint8_t value);
+        uint8_t                         strength() const;
+        void                            strength(uint8_t value);
 
-        uint8_t                     intelligence() const;
-        void                        intelligence(uint8_t value);
+        uint8_t                         intelligence() const;
+        void                            intelligence(uint8_t value);
 
-        uint8_t                     dexteritry() const;
-        void                        dexteritry(uint8_t value);
+        uint8_t                         dexteritry() const;
+        void                            dexteritry(uint8_t value);
 
-        uint32_t                    base_hp() const;
-        void                        base_hp(uint32_t value);
+        uint32_t                        base_hp() const;
+        void                            base_hp(uint32_t value);
 
-        uint32_t                    base_mp() const;
-        void                        base_mp(uint32_t value);
+        uint32_t                        base_mp() const;
+        void                            base_mp(uint32_t value);
 
-        float                       hp_percentage() const;
-        void                        hp_percentage(float value);
+        float                           hp_percentage() const;
+        void                            hp_percentage(float value);
 
-        float                       mp_percentage() const;
-        void                        mp_percentage(float value);
+        float                           mp_percentage() const;
+        void                            mp_percentage(float value);
 
-        uint8_t                     healing_cycle() const;
-        void                        healing_cycle(uint8_t value);
+        uint8_t                         healing_cycle() const;
+        void                            healing_cycle(uint8_t value);
 
-        const std::string&          dress_script() const;
-        void                        dress_script(const std::string& value);
+        const std::string&              dress_script() const;
+        void                            dress_script(const std::string& value);
 
-        const std::string&          undress_script() const;
-        void                        undress_script(const std::string& value);
+        const std::string&              undress_script() const;
+        void                            undress_script(const std::string& value);
 
     };
 
     enum slot : uint8_t
     {
-        UNKNOWN_SLOT                = 0,
-        WEAPON_SLOT                 = 1,
-        ARMOR_SLOT                  = 2,
-        SHIELD_SLOT                 = 3,
-        HELMET_SLOT                 = 4,
-        LEFT_HAND_SLOT              = 7,
-        RIGHT_HAND_SLOT             = 8,
-        LEFT_AUX_SLOT               = 20,
-        RIGHT_AUX_SLOT              = 21,
+        UNKNOWN_SLOT                    = 0,
+        WEAPON_SLOT                     = 1,
+        ARMOR_SLOT                      = 2,
+        SHIELD_SLOT                     = 3,
+        HELMET_SLOT                     = 4,
+        LEFT_HAND_SLOT                  = 7,
+        RIGHT_HAND_SLOT                 = 8,
+        LEFT_AUX_SLOT                   = 20,
+        RIGHT_AUX_SLOT                  = 21,
     };
 
 protected:
-    uint16_t                        _durability;
+    uint16_t                            _durability;
 
 public:
-    equipment(const equipment::master* master, listener* listener);
-    equipment(const equipment& right);
+    equipment(const fb::game::equipment::master* master, listener* listener);
+    equipment(const fb::game::equipment& right);
     virtual ~equipment();
 
 public:
-    const std::string               name_trade() const;
-    bool                            active();
+    const std::string                   name_trade() const;
+    bool                                active();
 
 public:
-    uint16_t                        dress() const;
+    uint16_t                            dress() const;
 
-    uint16_t                        durability() const;
-    uint16_t                        durability_base() const;
+    uint16_t                            durability() const;
+    uint16_t                            durability_base() const;
 
-    bool                            repair_enabled() const;
-    float                           repair_price() const;
+    bool                                repair_enabled() const;
+    float                               repair_price() const;
 
-    bool                            rename_enabled() const;
-    uint32_t                        rename_price() const;
+    bool                                rename_enabled() const;
+    uint32_t                            rename_price() const;
 
-    int16_t                         defensive_physical() const;
-    int16_t                         defensive_magical() const;
+    int16_t                             defensive_physical() const;
+    int16_t                             defensive_magical() const;
 
 
-    uint8_t                         hit() const;
-    uint8_t                         damage() const;
+    uint8_t                             hit() const;
+    uint8_t                             damage() const;
     
-    uint8_t                         strength() const;
-    uint8_t                         intelligence() const;
-    uint8_t                         dexteritry() const;
+    uint8_t                             strength() const;
+    uint8_t                             intelligence() const;
+    uint8_t                             dexteritry() const;
 
-    uint32_t                        base_hp() const;
-    uint32_t                        base_mp() const;
+    uint32_t                            base_hp() const;
+    uint32_t                            base_mp() const;
 
-    float                           hp_percentage() const;
-    float                           mp_percentage() const;
+    float                               hp_percentage() const;
+    float                               mp_percentage() const;
 
-    uint8_t                         healing_cycle() const;
+    uint8_t                             healing_cycle() const;
 
 
 protected:
-    virtual std::string             mid_message() const;
+    virtual std::string                 mid_message() const;
 
 public:
-    virtual std::string             tip_message() const;
+    virtual std::string                 tip_message() const;
 
 public:
-    static const std::string        column(equipment::slot slot);
+    static const std::string            column(equipment::slot slot);
 };
 
 
@@ -640,7 +640,7 @@ public:
     typedef struct _damage_range
     {
     public:
-        range32_t                   small, large;
+        range32_t                       small, large;
 
     public:
         _damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) {}
@@ -653,9 +653,9 @@ public:
     class master : public equipment::master
     {
     private:
-        damage_range                _damage_range;
-        uint16_t                    _sound;
-        std::string                 _spell;
+        damage_range                    _damage_range;
+        uint16_t                        _sound;
+        std::string                     _spell;
 
         friend class fb::game::weapon;
 
@@ -665,38 +665,38 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
-        weapon::types               weapon_type() const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
+        fb::game::weapon::types         weapon_type() const;
 
-        const range32_t&            damage_small() const;
-        void                        damage_small(uint32_t min, uint32_t max);
-        const range32_t&            damage_large() const;
-        void                        damage_large(uint32_t min, uint32_t max);
+        const range32_t&                damage_small() const;
+        void                            damage_small(uint32_t min, uint32_t max);
+        const range32_t&                damage_large() const;
+        void                            damage_large(uint32_t min, uint32_t max);
 
-        uint16_t                    sound() const;
-        void                        sound(uint16_t value);
+        uint16_t                        sound() const;
+        void                            sound(uint16_t value);
 
-        const std::string&          spell() const;
-        void                        spell(const std::string& value);
+        const std::string&              spell() const;
+        void                            spell(const std::string& value);
 
     };
 
 
 public:
-    weapon(const master* master, listener* listener);
-    weapon(const weapon& right);
+    weapon(const fb::game::weapon::master* master, listener* listener);
+    weapon(const fb::game::weapon& right);
     ~weapon();
 
 public:
-    weapon::types                   weapon_type() const;
-    const range32_t&                damage_small() const;
-    const range32_t&                damage_large() const;
-    uint16_t                        sound() const;
-    const std::string&              spell() const;
+    fb::game::weapon::types             weapon_type() const;
+    const range32_t&                    damage_small() const;
+    const range32_t&                    damage_large() const;
+    uint16_t                            sound() const;
+    const std::string&                  spell() const;
 
 protected:
-    std::string                     mid_message() const;
+    std::string                         mid_message() const;
 };
 
 
@@ -714,13 +714,13 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
-    armor(const master* master, listener* listener);
-    armor(const armor& right);
+    armor(const fb::game::armor::master* master, listener* listener);
+    armor(const fb::game::armor& right);
     ~armor();
 };
 
@@ -739,8 +739,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -764,8 +764,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -789,8 +789,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -814,8 +814,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -839,8 +839,8 @@ public:
         ~master();
 
     public:
-        virtual attrs               attr() const;
-        virtual object*             make(listener* listener) const;
+        virtual fb::game::item::attrs   attr() const;
+        virtual fb::game::object*       make(listener* listener) const;
     };
 
 public:
@@ -859,16 +859,16 @@ public:
     class builder : private std::vector<item*>
     {
     private:
-        session&                    _owner;
-        listener*                   _listener;
+        session&                        _owner;
+        listener*                       _listener;
 
     public:
         builder(session& owner, listener* listener);
         ~builder();
 
     public:
-        builder&                    push(uint8_t index);
-        bool                        mix();
+        builder&                        push(uint8_t index);
+        bool                            mix();
     };
 
 #pragma endregion
@@ -880,8 +880,8 @@ private:
     typedef struct _element
     {
     public:
-        item::master*               item;       // 재료 아이템
-        uint32_t                    count;      // 갯수
+        fb::game::item::master*         item;       // 재료 아이템
+        uint32_t                        count;      // 갯수
 
     public:
         _element(fb::game::item::master* item, uint32_t count) : item(item), count(count) {}
@@ -889,9 +889,9 @@ private:
     } element;
 
 public:
-    std::vector<element>            require;   // 재료 아이템
-    std::vector<element>            success;   // 성공시 얻는 아이템
-    std::vector<element>            failed;    // 실패시 얻는 아이템
+    std::vector<element>                require;   // 재료 아이템
+    std::vector<element>                success;   // 성공시 얻는 아이템
+    std::vector<element>                failed;    // 실패시 얻는 아이템
     float percentage;
 
 public:
@@ -907,10 +907,10 @@ private:
     bool contains(const item* item) const;
 
 public:
-    void                            require_add(fb::game::item::master* item, uint32_t count);
-    void                            success_add(fb::game::item::master* item, uint32_t count);
-    void                            failed_add(fb::game::item::master* item, uint32_t count);
-    bool                            matched(const std::vector<item*>& items) const;
+    void                                require_add(fb::game::item::master* item, uint32_t count);
+    void                                success_add(fb::game::item::master* item, uint32_t count);
+    void                                failed_add(fb::game::item::master* item, uint32_t count);
+    bool                                matched(const std::vector<item*>& items) const;
 };
 
 
@@ -918,67 +918,67 @@ public:
 class items : public container<fb::game::item>
 {
 private:
-    fb::game::session&              _owner;
+    fb::game::session&                  _owner;
 
 protected:
-    listener*                       _listener;
+    listener*                           _listener;
 
 private:
-    weapon*                         _weapon;
-    armor*                          _armor;
-    helmet*                         _helmet;
-    shield*                         _shield;
-    ring*                           _rings[2];
-    auxiliary*                      _auxiliaries[2];
+    fb::game::weapon*                   _weapon;
+    fb::game::armor*                    _armor;
+    fb::game::helmet*                   _helmet;
+    fb::game::shield*                   _shield;
+    fb::game::ring*                     _rings[2];
+    fb::game::auxiliary*                _auxiliaries[2];
 
 public:
     items(session& owner, listener* listener);
     ~items();
 
 private:
-    uint8_t                         equipment_off(fb::game::equipment::slot slot);
+    uint8_t                             equipment_off(fb::game::equipment::slot slot);
 
 public:
-    uint8_t                         add(fb::game::item& item);
-    uint8_t                         add(fb::game::item* item);
-    bool                            add(fb::game::item& item, uint8_t slot);
-    bool                            reduce(uint8_t index, uint16_t count);
-    fb::game::item*                 active(uint8_t index);
-    uint8_t                         inactive(equipment::slot slot);
-    uint8_t                         to_index(const fb::game::item::master* item) const;
-    uint8_t                         to_index(const fb::game::item& item) const;
+    uint8_t                             add(fb::game::item& item);
+    uint8_t                             add(fb::game::item* item);
+    bool                                add(fb::game::item& item, uint8_t slot);
+    bool                                reduce(uint8_t index, uint16_t count);
+    fb::game::item*                     active(uint8_t index);
+    uint8_t                             inactive(equipment::slot slot);
+    uint8_t                             to_index(const fb::game::item::master* item) const;
+    uint8_t                             to_index(const fb::game::item& item) const;
 
-    fb::game::equipment*            wear(fb::game::equipment::slot slot, fb::game::equipment* item);
+    fb::game::equipment*                wear(fb::game::equipment::slot slot, fb::game::equipment* item);
 
-    fb::game::weapon*               weapon() const;
-    fb::game::weapon*               weapon(fb::game::weapon* weapon);
+    fb::game::weapon*                   weapon() const;
+    fb::game::weapon*                   weapon(fb::game::weapon* weapon);
 
-    fb::game::armor*                armor() const;
-    fb::game::armor*                armor(fb::game::armor* armor);
+    fb::game::armor*                    armor() const;
+    fb::game::armor*                    armor(fb::game::armor* armor);
 
-    fb::game::shield*               shield() const;
-    fb::game::shield*               shield(fb::game::shield* shield);
+    fb::game::shield*                   shield() const;
+    fb::game::shield*                   shield(fb::game::shield* shield);
 
-    fb::game::helmet*               helmet() const;
-    fb::game::helmet*               helmet(fb::game::helmet* helmet);
+    fb::game::helmet*                   helmet() const;
+    fb::game::helmet*                   helmet(fb::game::helmet* helmet);
 
-    fb::game::ring*                 ring(equipment::EQUIPMENT_POSITION position) const;
-    fb::game::ring*                 ring(fb::game::ring* ring);
-    fb::game::ring*                 ring(fb::game::ring* ring, equipment::EQUIPMENT_POSITION position);
+    fb::game::ring*                     ring(equipment::EQUIPMENT_POSITION position) const;
+    fb::game::ring*                     ring(fb::game::ring* ring);
+    fb::game::ring*                     ring(fb::game::ring* ring, equipment::EQUIPMENT_POSITION position);
 
-    fb::game::auxiliary*            auxiliary(equipment::EQUIPMENT_POSITION position) const;
-    fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary);
-    fb::game::auxiliary*            auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position);
+    fb::game::auxiliary*                auxiliary(equipment::EQUIPMENT_POSITION position) const;
+    fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary);
+    fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position);
 
-    fb::game::item*                 find(const std::string& name) const;
-    fb::game::item*                 drop(uint8_t slot, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
-    void                            pickup(bool boost);
-    bool                            throws(uint8_t slot);
+    fb::game::item*                     find(const std::string& name) const;
+    fb::game::item*                     drop(uint8_t slot, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
+    void                                pickup(bool boost);
+    bool                                throws(uint8_t slot);
     
     // override
-    fb::game::item*                 remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
-    fb::game::item*                 remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
-    inline bool                     swap(uint8_t src, uint8_t dest);
+    fb::game::item*                     remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    bool                                swap(uint8_t src, uint8_t dest);
 };
 
 

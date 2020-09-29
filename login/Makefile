@@ -3,7 +3,7 @@ BUILD           = bin
 STD             = -std=c++17
 TARGET          = $(BUILD)/login 
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto
-INC             = -I.. -I. -I../protocol -I../plugin -I/usr/include/mysql -I./model/acceptor -I./model/gateway -I./model/session -I../module/acceptor -I../module/common -I../module/config -I../module/console -I../module/cryptor -I../module/db -I../module/mmo -I../module/service -I../module/socket -I../module/stream -I../module/timer
+INC             = -I.. -I. -I../plugin -I/usr/include/mysql
 
 all: main config acceptor console cryptor db svc socket stream timer encoding acceptor gateway acceptor.login session.login auth.service
 	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/acceptor.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/socket.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)

@@ -106,7 +106,7 @@ bool fb::game::spells::remove(uint8_t index)
     return success;
 }
 
-inline bool fb::game::spells::swap(uint8_t src, uint8_t dest)
+bool fb::game::spells::swap(uint8_t src, uint8_t dest)
 {
     if(fb::game::container<fb::game::spell>::swap(src, dest) == false)
         return false;

@@ -2137,7 +2137,7 @@ fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, it
     return this->remove(index, count, attr);
 }
 
-inline bool fb::game::items::swap(uint8_t src, uint8_t dest)
+bool fb::game::items::swap(uint8_t src, uint8_t dest)
 {
     if(fb::game::container<fb::game::item>::swap(src, dest) == false)
         return false;

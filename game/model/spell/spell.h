@@ -39,7 +39,7 @@ public:
 
 #pragma region private field
 private:
-    types                       _type;
+    fb::game::spell::types      _type;
     std::string                 _name;
     std::string                 _cast, _uncast, _concast;
     std::string                 _message;
@@ -48,14 +48,14 @@ private:
 
 #pragma region constructor / destructor
 public:
-    spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
+    spell(fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
 #pragma endregion
 
 
 #pragma region public method
 public:
-    types                       type() const;
+    fb::game::spell::types      type() const;
     const std::string&          name() const;
     const std::string&          cast() const;
     const std::string&          uncast() const;
@@ -92,14 +92,14 @@ public:
     uint8_t                     add(spell& element);
     uint8_t                     add(spell* element);
     bool                        remove(uint8_t index);
-    inline bool                 swap(uint8_t src, uint8_t dest);
+    bool                        swap(uint8_t src, uint8_t dest);
 };
 
 
 class buff
 {
 private:
-    const spell*                _spell;
+    const fb::game::spell*      _spell;
     uint32_t                    _time;
 
 public:
@@ -107,15 +107,15 @@ public:
     ~buff();
 
 public:
-    const game::spell&          spell() const;
+    const fb::game::spell&      spell() const;
     uint32_t                    time() const;
     void                        time(uint32_t value);
     void                        time_inc(uint32_t inc);
     void                        time_dec(uint32_t dec);
 
 public:
-    operator                    const game::spell& () const;
-    operator                    const game::spell* () const;
+    operator                    const fb::game::spell& () const;
+    operator                    const fb::game::spell* () const;
 };
 
 

@@ -7,7 +7,6 @@
 namespace fb { namespace game {
 
 class session;
-class session::container;
 
 class group : public lua::luable
 {
@@ -32,7 +31,7 @@ public:
     const session::container&       members() const;
 
 public:
-    static group*                   create(session& leader);
+    static fb::game::group*         create(session& leader);
     static void                     destroy(fb::game::group& group);
 
 #pragma region built-in methods

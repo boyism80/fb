@@ -653,7 +653,7 @@ uint32_t fb::game::session::random_damage(fb::game::life& life, bool& critical) 
         critical = false;
     }
 
-    return __super::random_damage(damage, life);
+    return fb::game::life::random_damage(damage, life);
 }
 
 uint32_t fb::game::session::hit() const
@@ -781,7 +781,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         this->state_assert(state::GHOST | state::DISGUISE);
 
         if(this->state() == fb::game::state::RIDING)
-            throw std::exception("이미 타고 있습니다.");
+            throw std::runtime_error("이미 타고 있습니다.");
 
         if(horse.based<fb::game::mob::master>() != game::master::get().name2mob("말"))
             throw session::no_conveyance_exception();

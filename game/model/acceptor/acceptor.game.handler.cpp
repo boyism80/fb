@@ -503,13 +503,14 @@ void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool c
     else if(you != nullptr && you->is(object::types::SESSION))
     {
         auto&                   slayer = static_cast<fb::game::session&>(*you);
+        auto                    range = master::get().required_exp(slayer.cls(), slayer.level());
         // 3.3% 제한한 경험치
         auto                    exp = me.experience();
 #if defined DEBUG | defined _DEBUG
         exp *= 100;
 #else
-        if (me.max_level() == false)
-            exp = std::min(uint32_t(exp_range / 100.0f * 3.3f + 1), exp);
+        if (slayer.max_level() == false)
+            exp = std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
 #endif
         slayer.experience_add(exp, true);
     }

@@ -1,8 +1,6 @@
 #include "model/session/session.h"
 #include "model/map/map.h"
 #include "model/listener/listener.h"
-#include <sysinfoapi.h>
-#include <iostream>
 #include "mob.h"
 
 fb::game::mob::master::master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
@@ -223,7 +221,7 @@ uint32_t fb::game::mob::random_damage(fb::game::life& life) const
     uint32_t difference = std::abs(this->damage_max() - this->damage_min());
     uint32_t random_damage = this->damage_min() + (std::rand() % difference);
 
-    return __super::random_damage(random_damage, life);
+    return fb::game::life::random_damage(random_damage, life);
 }
 
 const fb::game::point16_t& fb::game::mob::spawn_point() const
