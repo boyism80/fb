@@ -21,16 +21,8 @@ fb::login::service::auth::~auth()
 
 bool fb::login::service::auth::is_hangul(const std::string& str)
 {
-    auto size = (uint8_t)MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), nullptr, 0) + 1;
-    auto wide = new wchar_t[size];
-    memset(wide, 0, sizeof(wchar_t) * size);
-    MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), wide, sizeof(wchar_t) * size);
-
     std::wregex re(L"^.+[가-힣]$");
-    auto success = std::regex_search(wide, re);
-    delete[] wide;
-
-    return success;
+    return std::regex_search(wcs(str), re);
 }
 
 bool fb::login::service::auth::is_forbidden(const char* str) const
