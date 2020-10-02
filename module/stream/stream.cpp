@@ -31,14 +31,16 @@ const void* fb::buffer::data() const
 
 fb::buffer fb::buffer::compress() const
 {
-    uint8_t                     buffer[1024];
-    uint32_t                    size = sizeof(buffer);
+    uint32_t                    src_size = this->size();
+    uint32_t                    dst_size = this->size();
+    uint8_t*                    buffer = new uint8_t[dst_size];
 
-    if(compress2(buffer, (uLongf*)&size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
+    if(compress2(buffer, (uLongf*)&dst_size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
         throw std::runtime_error("cannot compress data");
     
-    buffer[size] = 0;
-    return fb::buffer(buffer, size);
+    auto compressed = fb::buffer(buffer, dst_size);
+    delete[] buffer;
+    return compressed;
 }
 
 uint32_t fb::buffer::crc() const
