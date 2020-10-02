@@ -3,7 +3,7 @@ BUILD           = bin
 STD             = -std=c++17
 TARGET          = $(BUILD)/game 
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3
-INC             = -I.. -I. -I../plugin -I/usr/include/mysql
+INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
 all: config acceptor console cryptor db svc socket stream timer encoding acceptor.game acceptor.game.handler board clan door group item life listener lua sector map master mmo mob npc object session.game spell trade main builtin
 	$(CXX) $(BUILD)/config.o $(BUILD)/acceptor.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/socket.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/master.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)

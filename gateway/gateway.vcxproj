@@ -71,23 +71,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x86;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\x64;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin;$(SolutionDir)\plugin\zlib;$(SolutionDir)\plugin\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -96,6 +96,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -111,6 +112,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +130,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +150,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/source-charset:utf-8 /std:c++latest %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

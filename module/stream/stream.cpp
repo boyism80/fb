@@ -32,7 +32,7 @@ const void* fb::buffer::data() const
 fb::buffer fb::buffer::compress() const
 {
     uint32_t                    src_size = this->size();
-    uint32_t                    dst_size = this->size();
+    uint32_t                    dst_size = this->size() * 2;
     uint8_t*                    buffer = new uint8_t[dst_size];
 
     if(compress2(buffer, (uLongf*)&dst_size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
@@ -216,28 +216,14 @@ fb::ostream& fb::ostream::write_u8(uint8_t value)
 fb::ostream& fb::ostream::write_16(int16_t value, buffer::endian endian)
 {
 #ifdef _WIN32
-    if(endian == fb::buffer::endian::LITTLE)
-    {
-        this->push_back(value & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-    }
-    else
-    {
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value & 0xFF);
-    }
+    if(endian == fb::buffer::endian::BIG)
+        value = _byteswap_ushort(value);
 #else
-    if(endian == fb::buffer::endian::LITTLE)
-    {
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value & 0xFF);
-    }
-    else
-    {
-        this->push_back(value & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-    }
+    if(endian == fb::buffer::endian::BIG)
+        value = __bswap_16(value);
 #endif
+    this->push_back(value & 0xFF);
+    this->push_back(value >> 8 & 0xFF);
     return *this;
 }
 
@@ -250,37 +236,16 @@ fb::ostream& fb::ostream::write_u16(uint16_t value, buffer::endian endian)
 fb::ostream& fb::ostream::write_32(int32_t value, buffer::endian endian)
 {
 #ifdef _WIN32
-    if(endian == fb::buffer::endian::LITTLE)
-    {
-        this->push_back(value & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value >> 16 & 0xFF);
-        this->push_back(value >> 24 & 0xFF);
-    }
-    else
-    {
-        this->push_back(value >> 24 & 0xFF);
-        this->push_back(value >> 16 & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value & 0xFF);
-    }
+    if(endian == fb::buffer::endian::BIG)
+        value = _byteswap_ulong(value);
 #else
-    if(endian == fb::buffer::endian::LITTLE)
-    {
-        this->push_back(value >> 24 & 0xFF);
-        this->push_back(value >> 16 & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value & 0xFF);
-    }
-    else
-    {
-        this->push_back(value & 0xFF);
-        this->push_back(value >> 8 & 0xFF);
-        this->push_back(value >> 16 & 0xFF);
-        this->push_back(value >> 24 & 0xFF);
-    }
+    if(endian == fb::buffer::endian::BIG)
+        value = __bswap_32(value);
 #endif
-    
+    this->push_back(value & 0xFF);
+    this->push_back(value >> 8 & 0xFF);
+    this->push_back(value >> 16 & 0xFF);
+    this->push_back(value >> 24 & 0xFF);
     return *this;
 }
 

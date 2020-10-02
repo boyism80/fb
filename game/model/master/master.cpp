@@ -99,11 +99,7 @@ fb::game::map::options fb::game::master::parse_map_option(const Json::Value& dat
 bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 {
     char                    fname[256];
-#if defined DEBUG | defined _DEBUG
-    sprintf(fname, "../maps/%06d.map", id);
-#else
     sprintf(fname, "maps/%06d.map", id);
-#endif
 
     std::ifstream           map_file(fname, std::ios::binary);
     if(map_file.is_open() == false)
@@ -118,11 +114,7 @@ bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 bool fb::game::master::load_map_blocks(uint16_t id, Json::Value& buffer)
 {
     char                    fname[256];
-#if defined DEBUG | defined _DEBUG
-    sprintf(fname, "../maps/%06d.block", id);
-#else
     sprintf(fname, "maps/%06d.block", id);
-#endif
     
 
     std::ifstream           file(fname);
@@ -139,8 +131,8 @@ bool fb::game::master::load_map_blocks(uint16_t id, Json::Value& buffer)
 
 fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::Value& data)
 {
-    std::string         types           = utf8(data["type"].asString());
-    std::string         name            = utf8(data["name"].asString());
+    std::string         types           = cp949(data["type"].asString());
+    std::string         name            = cp949(data["name"].asString());
     uint16_t            icon            = data["icon"].asInt() + 0xBFFF;
     uint8_t             color           = data["color"].asInt();
 
@@ -152,7 +144,7 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
 
     if(types == "consume")
     {
-        std::string     bundle_type = utf8(data["bundle type"].asString());   // package Ex) 동동주
+        std::string     bundle_type = cp949(data["bundle type"].asString());   // package Ex) 동동주
                                                                         // bundle  Ex) 도토리
         uint32_t        capacity        = data["capacity"].asInt();
         if (bundle_type == "package")
@@ -214,7 +206,7 @@ fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value&
 
     if(data["limit"].isMember("sex"))
     {
-        auto sex = utf8(data["limit"]["sex"].asString());
+        auto sex = cp949(data["limit"]["sex"].asString());
         if(sex == "man")
             limit.sex = fb::game::sex::MAN;
         else if(sex == "woman")
@@ -344,8 +336,8 @@ bool fb::game::master::load_maps(const std::string& db_fname)
         uint16_t            parent  = data["parent"].asInt();
         uint8_t             bgm     = data["bgm"].asInt();
         auto                host_id = data["host"].asString();
-        auto                name    = utf8(data["name"].asString());
-        auto                effect  = this->parse_map_effect(utf8(data["effect"].asString()));
+        auto                name    = cp949(data["name"].asString());
+        auto                effect  = this->parse_map_effect(cp949(data["effect"].asString()));
         auto                option  = this->parse_map_option(data);
 
         try
@@ -401,20 +393,19 @@ bool fb::game::master::load_items(const std::string& db_fname)
         try
         {
             auto                data = *i;
-
-
+            
             // Create item core
             item = this->create_item(std::stoi(i.key().asString()), data);
 
             // Common options
-            item->active_script(utf8(data["script"]["active"].asString()));
+            item->active_script(cp949(data["script"]["active"].asString()));
             item->price(data["price"].asInt());
             item->trade(data["trade"]["enabled"].asBool());
             item->entrust_enabled(data["entrust"]["enabled"].asBool());
             item->entrust_price(data["entrust"]["price"].asInt());
-            item->desc(utf8(data["desc"].asString()));
+            item->desc(cp949(data["desc"].asString()));
             item->limit(master::parse_item_limit(data));
-            item->penalty(master::parse_item_penalty(utf8(data["death penalty"].asString())));
+            item->penalty(master::parse_item_penalty(cp949(data["death penalty"].asString())));
 
 
 
@@ -441,8 +432,8 @@ bool fb::game::master::load_items(const std::string& db_fname)
                 equipment->healing_cycle(option["healing_cycle"].asInt());
                 equipment->defensive_physical(option["defensive"]["physical"].asInt());
                 equipment->defensive_magical(option["defensive"]["magical"].asInt());
-                equipment->dress_script(utf8(data["script"]["dress"].asString()));
-                equipment->undress_script(utf8(data["script"]["undress"].asString()));
+                equipment->dress_script(cp949(data["script"]["dress"].asString()));
+                equipment->undress_script(cp949(data["script"]["undress"].asString()));
             }
 
 
@@ -455,7 +446,7 @@ bool fb::game::master::load_items(const std::string& db_fname)
                 weapon->damage_small(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt());
                 weapon->damage_large(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt());
                 weapon->sound(option["sound"].asInt());
-                weapon->spell(utf8(option["spell"].asString()));
+                weapon->spell(cp949(option["spell"].asString()));
             }
 
 
@@ -466,12 +457,12 @@ bool fb::game::master::load_items(const std::string& db_fname)
         {
             if(item != nullptr)
             {
-                std::cout << item->name() << " : " << e.what();
+                std::cout << item->name() << " : " << e.what() << std::endl;
                 delete item;
             }
             else
             {
-                std::cout << "What the fuck? : " << e.what();
+                std::cout << "What the fuck? : " << e.what() << std::endl;
             }
         }
     }
@@ -497,7 +488,7 @@ bool fb::game::master::load_npc(const std::string& db_fname)
         uint32_t            id = std::stoi(i.key().asString());
         Json::Value         json = *i;
 
-        std::string         name = utf8(json["name"].asString());
+        std::string         name = cp949(json["name"].asString());
         uint16_t            look = json["look"].asInt() + 0x7FFF;
         uint8_t             color = json["color"].asInt();
 
@@ -524,7 +515,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
     for(auto i = spawns.begin(); i != spawns.end(); i++)
     {
         auto                data = *i;
-        auto                npc_name = utf8(data["npc"].asString());
+        auto                npc_name = cp949(data["npc"].asString());
         auto                core = this->name2npc(npc_name);
         if(core == nullptr)
         {
@@ -533,7 +524,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         }
 
 
-        auto                map_name = utf8(data["map"].asString());
+        auto                map_name = cp949(data["map"].asString());
         auto                map = this->name2map(map_name);
         if(map == nullptr)
         {
@@ -541,7 +532,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
             continue;
         }
 
-        auto                direction_str = utf8(data["direction"].asString());
+        auto                direction_str = cp949(data["direction"].asString());
         auto                direction = fb::game::direction::BOTTOM;
         if(direction_str == "top")
             direction = fb::game::direction::TOP;
@@ -558,7 +549,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         }
 
         point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
-        auto                script = utf8(data["script"].asString());
+        auto                script = cp949(data["script"].asString());
 
         auto                cloned = new npc(core, listener);
         cloned->direction(direction);
@@ -587,7 +578,7 @@ bool fb::game::master::load_mob(const std::string& db_fname)
         uint16_t            id = std::stoi(i.key().asString());
         auto                data = *i;
 
-        auto                name = utf8(data["name"].asString());
+        auto                name = cp949(data["name"].asString());
         auto                equals = (name == "다람쥐");
         uint16_t            look = data["look"].asInt() + 0x7FFF;
         uint8_t             color = data["color"].asInt();
@@ -600,11 +591,11 @@ bool fb::game::master::load_mob(const std::string& db_fname)
         mob->experience(data["experience"].asInt());
         mob->damage_min(data["damage"]["min"].asInt());
         mob->damage_max(data["damage"]["max"].asInt());
-        mob->offensive(master::parse_mob_offensive(utf8(data["offensive"].asString())));
-        mob->size(master::parse_mob_size(utf8(data["size"].asString())));
+        mob->offensive(master::parse_mob_offensive(cp949(data["offensive"].asString())));
+        mob->size(master::parse_mob_size(cp949(data["size"].asString())));
         mob->speed(data["speed"].asInt());
-        mob->script_attack(utf8(data["script"]["attack"].asString()));
-        mob->script_die(utf8(data["script"]["die"].asString()));
+        mob->script_attack(cp949(data["script"]["attack"].asString()));
+        mob->script_die(cp949(data["script"]["die"].asString()));
 
         this->mobs.insert(std::make_pair(id, mob));
     }
@@ -628,7 +619,7 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
 
     for(auto db_i = spawns.begin(); db_i != spawns.end(); db_i++)
     {
-        auto                map_name = utf8(db_i.key().asString());
+        auto                map_name = cp949(db_i.key().asString());
         auto                spawns = *db_i;
 
         auto                map = this->name2map(map_name);
@@ -637,7 +628,7 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
 
         for(auto spawn : spawns)
         {
-            auto            core = this->name2mob(utf8(spawn["name"].asString()));
+            auto            core = this->name2mob(cp949(spawn["name"].asString()));
             if(core == nullptr)
                 continue;
 
@@ -695,7 +686,7 @@ bool fb::game::master::load_class(const std::string& db_fname)
         }
 
         for(auto promotion: (*i1)["promotions"])
-            cdata->add_promotion(utf8(promotion.asString()));
+            cdata->add_promotion(cp949(promotion.asString()));
 
 
         this->classes.push_back(cdata);
@@ -717,7 +708,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname)
 
     for(auto i1 = drops.begin(); i1 != drops.end(); i1++)
     {
-        auto                mob_name = utf8(i1.key().asString());
+        auto                mob_name = cp949(i1.key().asString());
         auto                mob_core = this->name2mob(mob_name);
         try
         {
@@ -728,7 +719,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname)
             for(auto i2 = items.begin(); i2 != items.end(); i2++)
             {
                 float       percentage = (*i2)["percentage"].asFloat();
-                auto        item_name = utf8((*i2)["item"].asString());
+                auto        item_name = cp949((*i2)["item"].asString());
                 auto        item_core = this->name2item(item_name);
 
                 if(item_core == nullptr)
@@ -760,7 +751,7 @@ bool fb::game::master::load_warp(const std::string& db_fname)
 
     for(auto i1 = warps.begin(); i1 != warps.end(); i1++)
     {
-        auto                map_name = utf8(i1.key().asString());
+        auto                map_name = cp949(i1.key().asString());
         auto                map = this->name2map(map_name);
         if(map == nullptr)
             continue;
@@ -768,7 +759,7 @@ bool fb::game::master::load_warp(const std::string& db_fname)
         auto                warps = *i1;
         for(auto i2 = warps.begin(); i2 != warps.end(); i2++)
         {
-            auto            next_map_name = utf8((*i2)["map"].asString());
+            auto            next_map_name = cp949((*i2)["map"].asString());
             auto            next_map = this->name2map(next_map_name);
             if(next_map == nullptr)
                 continue;
@@ -803,21 +794,21 @@ bool fb::game::master::load_itemmix(const std::string& db_fname)
 
         for(auto require : json["require"])
         {
-            auto            item = this->name2item(utf8(require["item"].asString()));
+            auto            item = this->name2item(cp949(require["item"].asString()));
             uint32_t        count = require["count"].asInt();
             itemmix->require_add(item, count);
         }
 
         for(auto success: json["success"])
         {
-            auto            item = this->name2item(utf8(success["item"].asString()));
+            auto            item = this->name2item(cp949(success["item"].asString()));
             uint32_t        count = success["count"].asInt();
             itemmix->success_add(item, count);
         }
 
         for(auto failed: json["failed"])
         {
-            auto            item = this->name2item(utf8(failed["item"].asString()));
+            auto            item = this->name2item(cp949(failed["item"].asString()));
             uint32_t        count = failed["count"].asInt();
             itemmix->failed_add(item, count);
         }
@@ -844,21 +835,21 @@ bool fb::game::master::load_spell(const std::string& db_fname)
     {
         uint16_t            id = std::stoi(i.key().asString());
         const auto          data = (*i);
-        const auto          name = utf8(data["name"].asString());
+        const auto          name = cp949(data["name"].asString());
         uint8_t             type = data["type"].asInt();
 
         std::string         cast, uncast, concast, message;
         if (data.isMember("cast"))
-            cast = utf8(data["cast"].asString());
+            cast = cp949(data["cast"].asString());
 
         if (data.isMember("uncast"))
-            uncast = utf8(data["uncast"].asString());
+            uncast = cp949(data["uncast"].asString());
 
         if (data.isMember("concast"))
-            concast = utf8(data["concast"].asString());
+            concast = cp949(data["concast"].asString());
 
         if (data.isMember("message"))
-            message = utf8(data["message"].asString());
+            message = cp949(data["message"].asString());
 
         this->spells.insert(std::make_pair(id, new spell(spell::types(type), name, cast, uncast, concast, message)));
     }

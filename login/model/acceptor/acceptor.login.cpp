@@ -3,7 +3,7 @@ using namespace fb::login;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
     fb::acceptor<session>(context, port, accept_delay),
-    _agreement(utf8(fb::config()["agreement"].asString()))
+    _agreement(cp949(fb::config()["agreement"].asString()))
 {
     // Register event handler
     this->bind<fb::protocol::request::login::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
@@ -53,16 +53,16 @@ bool acceptor::handle_create_account(fb::login::session& session, const fb::prot
 {
     try
     {
-        this->_auth_service.create_account(request.id, request.pw);
+        this->_auth_service.create_account(UTF8(request.id), UTF8(request.pw));
         this->send(session, response::login::message("", 0x00));
 
         // 일단 아이디 선점해야함
-        session.created_id = request.id;
+        session.created_id = UTF8(request.id);
         return true;
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        this->send(session, response::login::message(CP949(e.what()), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -97,7 +97,7 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
 {
     try
     {
-        this->_auth_service.login(request.id, request.pw);
+        this->_auth_service.login(UTF8(request.id), UTF8(request.pw));
         this->send(session, response::login::message("", 0x00));
 
         fb::ostream         parameter;
@@ -107,7 +107,7 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        this->send(session, response::login::message(CP949(e.what()), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -120,13 +120,13 @@ bool acceptor::handle_change_password(fb::login::session& session, const fb::pro
 {
     try
     {
-        this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
+        this->_auth_service.change_pw(UTF8(request.name), UTF8(request.pw), UTF8(request.new_pw), request.birthday);
         this->send(session, response::login::message(message::SUCCESS_CHANGE_PASSWORD, 0x00));
         return true;
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        this->send(session, response::login::message(CP949(e.what()), e.type()));
         return true;
     }
     catch(std::exception& e)
