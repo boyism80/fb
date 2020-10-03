@@ -19,10 +19,32 @@ fb::login::service::auth::~auth()
     delete this->_connection;
 }
 
+// 참고자료
+// https://gala04.tistory.com/entry/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4-%EC%A3%BC%EC%84%B8%EC%9A%94
 bool fb::login::service::auth::is_hangul(const std::string& str)
 {
-    std::wregex re(L"^.+[가-힣]$");
-    return std::regex_search(wcs(str), re);
+    auto cp949 = CP949(str);
+    auto len = cp949.length();
+    if(len % 2 > 0)
+        return false;
+
+    auto raw = cp949.c_str();
+    for(int i = 0; i < len; i += 2)
+    {
+        uint8_t e1 = raw[i+0];
+        uint8_t e2 = raw[i+1];
+
+        if(isascii(e1))
+            return false;
+
+        if(e1 < 0xB0 || e1 > 0xC8)
+            return false;
+
+        if(e2 < 0xA1 || e2 > 0xFE)
+            return false;
+    }
+
+    return true;
 }
 
 bool fb::login::service::auth::is_forbidden(const char* str) const
@@ -61,14 +83,15 @@ bool fb::login::service::auth::exists(const std::string& name) const
 {
     return this->_connection->query
     (
-        "SELECT COUNT(*) FROM user WHERE name LIKE '%s'",
+        "SELECT COUNT(*) FROM user WHERE name='%s'",
         name.c_str()
     ).get_value<int>() > 0;
 }
 
 void fb::login::service::auth::assert_account(const std::string& id, const std::string& pw) const
 {
-    if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
+    auto name_size = CP949(id).length();
+    if(name_size < MIN_NAME_SIZE || name_size > MAX_NAME_SIZE)
         throw id_exception(message::INVALID_NAME);
 
     // Name must be full-hangul characters
@@ -107,7 +130,6 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     auto result = this->_connection->query("SELECT id, name FROM user")
         .each([](int id, std::string name) 
             {
-                std::cout << id << ' ' << name << std::endl;
                 return true;
             });
 }
@@ -116,7 +138,7 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
 {
     this->_connection->exec
     (
-        "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name LIKE '%s'",
+        "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name='%s'",
         hair, sex, nation, creature, id.c_str()
     );
 }
@@ -127,14 +149,14 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
     auto found = this->_connection->query
     (
-        "SELECT id, pw FROM user WHERE name LIKE '%s' LIMIT 1",
+        "SELECT pw FROM user WHERE name='%s' LIMIT 1",
         id.c_str(), this->sha256(pw).c_str()
     );
 
     if(found.count() == 0)
         throw id_exception(message::NOT_FOUND_NAME);
 
-    if(found.get_value<std::string>(1) != this->sha256(pw))
+    if(found.get_value<std::string>(0) != this->sha256(pw))
         throw pw_exception(message::INVALID_PASSWORD);
 }
 
@@ -156,7 +178,7 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
 
     auto found = this->_connection->query
     (
-        "SELECT pw, birth FROM user WHERE name LIKE '%s'",
+        "SELECT pw, birth FROM user WHERE name='%s'",
         id.c_str()
     );
 
@@ -182,7 +204,7 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
 
     this->_connection->exec
     (
-        "UPDATE user SET pw='%s' WHERE name LIKE '%s'",
+        "UPDATE user SET pw='%s' WHERE name='%s'",
         this->sha256(new_pw).c_str(), id.c_str()
     );
 }

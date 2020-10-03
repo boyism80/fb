@@ -8,7 +8,7 @@
 #include <jsoncpp/json/json.h>
 #include <regex>
 #include <ctime>
-#include <mysql+++/mysql+++.h>
+#include "mysql+++/mysql+++.h"
 #include <openssl/sha.h>
 #include "module/stream/stream.h"
 #include "module/config/config.h"

@@ -121,7 +121,7 @@ bool acceptor::handle_change_password(fb::login::session& session, const fb::pro
     try
     {
         this->_auth_service.change_pw(UTF8(request.name), UTF8(request.pw), UTF8(request.new_pw), request.birthday);
-        this->send(session, response::login::message(message::SUCCESS_CHANGE_PASSWORD, 0x00));
+        this->send(session, response::login::message(CP949(message::SUCCESS_CHANGE_PASSWORD), 0x00));
         return true;
     }
     catch(login_exception& e)

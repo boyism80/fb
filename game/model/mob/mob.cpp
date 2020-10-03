@@ -315,7 +315,6 @@ bool fb::game::mob::spawn(uint64_t now)
     }
 
     this->action_time(now);
-    std::cout << "spawn mob : " << this->sequence() << std::endl;
     return true;
 }
 

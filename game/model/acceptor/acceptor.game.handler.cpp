@@ -584,8 +584,10 @@ void fb::game::acceptor::on_save(session& me)
     auto aux_bot = me.items.auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     auto clan = me.clan();
 
-    this->_connection->query
+    char buffer[1024] = {0,};
+    sprintf
     (
+        buffer, 
         "UPDATE user SET "
         "   look=%d, color=%d, sex=%d, nation=%d, creature=%d, map=%d, "
         "   position_x=%d, position_y=%d, direction=%d, state=%d, "
@@ -617,6 +619,8 @@ void fb::game::acceptor::on_save(session& me)
         0,
         me.id()
     );
+
+    this->_connection->query(buffer);
 
     for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
     {

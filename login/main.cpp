@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "resource.h"
-#include <mysql+++/mysql+++.h>
+#include "mysql+++/mysql+++.h"
 #include "module/socket/socket.h"
 #include "model/acceptor/acceptor.login.h"
 #include "module/leak.h"

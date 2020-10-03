@@ -17,7 +17,7 @@
 #include "model/clan/clan.h"
 #include "model/life/life.h"
 #include "model/listener/listener.h"
-#include <mysql+++/mysql+++.h>
+#include "mysql+++/mysql+++.h"
 #include "protocol/game.h"
 
 using namespace daotk::mysql;
@@ -113,9 +113,7 @@ public:
     void                    handle_mob_respawn(uint64_t now);
     void                    handle_buff_timer(uint64_t now);
 
-#if defined DEBUG | defined _DEBUG
     bool                    handle_admin(fb::game::session& session, const std::string& message);
-#endif
 
 public:
     // listener : object

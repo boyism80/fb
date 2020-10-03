@@ -347,7 +347,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     // Set crypt data
     session.crt(request.enc_type, request.enc_key);
 
-    session.name(request.name);
+    session.name(UTF8(request.name));
 
     auto found = this->_connection->query
     (
@@ -429,7 +429,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     this->send(session, response::game::init(), scope::SELF);
     this->send(session, response::game::time(25), scope::SELF);
     this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
-    this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+    this->send(session, response::game::message(CP949("0시간 1분만에 바람으로"), message::type::STATE), scope::SELF);
     this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
     this->send(session, response::game::session::show(session, false), scope::SELF);
     this->send(session, response::game::object::direction(session), scope::SELF);
@@ -797,16 +797,14 @@ bool fb::game::acceptor::handle_user_list(fb::game::session& session, const fb::
 
 bool fb::game::acceptor::handle_chat(fb::game::session& session, const fb::protocol::request::game::chat& request)
 {
-#if defined DEBUG | defined _DEBUG
     if(this->handle_admin(session, request.message))
         return true;
-#endif
 
     std::stringstream           sstream;
     if(request.shout)
-        sstream << session.name() << "! " << request.message;
+        sstream << CP949(session.name()) << "! " << request.message;
     else
-        sstream << session.name() << ": " << request.message;
+        sstream << CP949(session.name()) << ": " << request.message;
 
     this->send(session, response::game::chat(session, sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     return true;
@@ -1208,7 +1206,6 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
     }
 }
 
-#if defined DEBUG | defined _DEBUG
 bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::string& message)
 {
     if(message[0] != '/')
@@ -1453,4 +1450,3 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     return false;
 }
-#endif

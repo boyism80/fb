@@ -102,10 +102,10 @@ int32_t fb::istream::read_32(buffer::endian endian)
     if(endian == fb::buffer::endian::BIG)
         value = _byteswap_ulong(value);
 #else
-    int32_t         value = (*this)[this->_offset + 0] <<  0 |
-                            (*this)[this->_offset + 1] <<  8 |
-                            (*this)[this->_offset + 2] << 16 |
-                            (*this)[this->_offset + 3] << 24;
+    int32_t         value = (*this)[this->_offset + 0] << 24 |
+                            (*this)[this->_offset + 1] << 16 |
+                            (*this)[this->_offset + 2] <<  8 |
+                            (*this)[this->_offset + 3] <<  0;
     if(endian == fb::buffer::endian::LITTLE)
         value = __bswap_32(value);
 #endif

@@ -31,6 +31,7 @@ std::string cp949(const std::string& utf8)
 
     iconv_t cd = iconv_open("EUC-KR", "UTF-8");
     iconv(cd, &src, &src_size, &dst, &dst_size);
+    iconv_close(cd);
 
     auto cp949 = std::string(dst_head);
     delete[] dst_head;
@@ -69,6 +70,7 @@ std::string utf8(const std::string& cp949)
 
     iconv_t cd = iconv_open("UTF-8", "EUC-KR");
     iconv(cd, &src, &src_size, &dst, &dst_size);
+    iconv_close(cd);
 
     auto utf8 = std::string(dst_head);
     delete[] dst_head;
@@ -92,24 +94,4 @@ std::string UTF8(const std::string& cp949)
 #else
     return cp949;
 #endif
-}
-
-std::wstring wcs(const std::string& mbs)
-{
-#ifdef _WIN32
-    auto size = (uint8_t)MultiByteToWideChar(CP_ACP, 0, mbs.c_str(), mbs.size(), nullptr, 0) + 1;
-    auto buffer = new wchar_t[size];
-    std::memset(buffer, 0, sizeof(wchar_t) * size);
-    MultiByteToWideChar(CP_ACP, 0, mbs.c_str(), mbs.size(), buffer, sizeof(wchar_t) * size);
-#else
-    setlocale(LC_ALL, "Korean");
-    auto size = mbs.length() + 1;
-    auto buffer = new wchar_t[size];
-    mbstowcs(buffer, mbs.c_str(), sizeof(wchar_t) * mbs.length());
-#endif
-
-    std::wstring wide(buffer);
-    delete[] buffer;
-    
-    return wide;
 }

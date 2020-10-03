@@ -357,14 +357,14 @@ bool fb::game::master::load_maps(const std::string& db_fname)
                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
             this->maps.insert(std::make_pair(id, map));
-            std::cout << "map loaded : " << map->name() << std::endl;
+            std::cout << "맵을 로드했습니다 : " << UTF8(map->name()) << std::endl;
         }
         catch(std::exception& e)
         {
             if(map != nullptr)
                 delete map;
 
-            std::cout << name << " : " << e.what() << std::endl;
+            std::cout << UTF8(name) << " : " << e.what() << std::endl;
         }
     }
 
@@ -519,7 +519,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         auto                core = this->name2npc(npc_name);
         if(core == nullptr)
         {
-            std::cout << "존재하지 않는 NPC입니다. : " << npc_name << std::endl;
+            std::cout << "존재하지 않는 NPC입니다. : " << UTF8(npc_name) << std::endl;
             continue;
         }
 
@@ -528,7 +528,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         auto                map = this->name2map(map_name);
         if(map == nullptr)
         {
-            std::cout << "존재하지 않는 맵입니다. : " << map_name << std::endl;
+            std::cout << "존재하지 않는 맵입니다. : " << UTF8(map_name) << std::endl;
             continue;
         }
 
@@ -544,7 +544,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
             direction = fb::game::direction::LEFT;
         else
         {
-            std::cout << "NPC의 방향이 올바르지 않습니다. : " << npc_name << std::endl;
+            std::cout << "NPC의 방향이 올바르지 않습니다. : " << UTF8(npc_name) << std::endl;
             continue;
         }
 
@@ -713,7 +713,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname)
         try
         {
             if(mob_core == nullptr)
-                throw std::runtime_error("invalid mob name");
+                throw std::runtime_error("올바르지 않은 몹 이름입니다");
 
             auto            items = (*i1);
             for(auto i2 = items.begin(); i2 != items.end(); i2++)
@@ -723,14 +723,14 @@ bool fb::game::master::load_drop_item(const std::string& db_fname)
                 auto        item_core = this->name2item(item_name);
 
                 if(item_core == nullptr)
-                    throw std::runtime_error("invalid item name");
+                    throw std::runtime_error("올바르지 않은 아이템 이름입니다");
 
                 mob_core->dropitem_add(item_core, percentage);
             }
         }
         catch(std::exception& e)
         {
-            std::cout << e.what() << " : " << mob_name;
+            std::cout << e.what() << " : " << UTF8(mob_name) << std::endl;
         }
     }
 
