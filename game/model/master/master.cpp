@@ -16,7 +16,7 @@ void fb::game::master::release()
         delete fb::game::master::_instance;
 }
 
-fb::game::master::master() : _initialized(false)
+fb::game::master::master()
 {}
 
 fb::game::master::~master()
@@ -54,6 +54,24 @@ fb::game::master::~master()
     this->doors.clear();
 
     this->board.clear();
+}
+
+bool fb::game::master::load_json(const std::string& fname, Json::Value& json)
+{
+    std::ifstream           ifstream;
+    ifstream.open(fname);
+    if(ifstream.is_open() == false)
+        return false;
+
+    Json::Reader            reader;
+    if(reader.parse(ifstream, json) == false)
+    {
+        ifstream.close();
+        return false;
+    }
+    
+    ifstream.close();
+    return true;
 }
 
 fb::game::map::effects fb::game::master::parse_map_effect(const std::string& effect)
@@ -264,136 +282,77 @@ fb::game::mob::offensive_type fb::game::master::parse_mob_offensive(const std::s
     throw std::runtime_error("invalid offensive type");
 }
 
-bool fb::game::master::loads(listener* listener)
+bool fb::game::master::load_maps(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    if(this->_initialized)
-        return false;
-
-    if(this->load_spell("db/spell.json") == false)
-        return false;
-
-    if(this->load_door("db/door.json") == false)
-        return false;
-
-    if(this->load_maps("db/map.json") == false)
-        return false;
-
-    if(this->load_warp("db/warp.json") == false)
-        return false;
-
-    if(this->load_items("db/item.json") == false)
-        return false;
-
-    if(this->load_itemmix("db/itemmix.json") == false)
-        return false;
-
-    if(this->load_npc("db/npc.json") == false)
-        return false;
-
-    if(this->load_mob("db/mob.json") == false)
-        return false;
-
-    if(this->load_drop_item("db/item_drop.json") == false)
-        return false;
-
-    if(this->load_npc_spawn("db/npc_spawn.json", listener) == false)
-        return false;
-
-    if(this->load_mob_spawn("db/mob_spawn.json", listener) == false)
-        return false;
-
-    if(this->load_class() == false)
-        return false;
-
-    if(this->load_board("db/board.json") == false)
-        return false;
-
-    this->_initialized = true;
-    return true;
-}
-
-bool fb::game::master::load_maps(const std::string& db_fname)
-{
-    std::ifstream           map_db;
-    map_db.open(db_fname);
-    if(map_db.is_open() == false)
-        return false;
-
     Json::Value             maps;
-    Json::Reader            reader;
-    if(reader.parse(map_db, maps) == false)
+    if(this->load_json(db_fname, maps) == false)
         return false;
-    map_db.close();
 
-
+    auto                    count = maps.size();
+    auto                    read = 0;
     for(auto i = maps.begin(); i != maps.end(); i++)
     {
         auto                data = *i;
+        uint16_t            id = std::stoi(i.key().asString());
+        auto                name = cp949(data["name"].asString());
         fb::game::map*      map = nullptr;
-
-        // Parse common data
-        uint16_t            id      = std::stoi(i.key().asString());
-        uint16_t            parent  = data["parent"].asInt();
-        uint8_t             bgm     = data["bgm"].asInt();
-        auto                host_id = data["host"].asString();
-        auto                name    = cp949(data["name"].asString());
-        auto                effect  = this->parse_map_effect(cp949(data["effect"].asString()));
-        auto                option  = this->parse_map_option(data);
 
         try
         {
+            // Parse common data
+            uint16_t        parent  = data["parent"].asInt();
+            uint8_t         bgm     = data["bgm"].asInt();
+            auto            host_id = data["host"].asString();
+            auto            effect  = this->parse_map_effect(cp949(data["effect"].asString()));
+            auto            option  = this->parse_map_option(data);
+
             // Load binary
             std::vector<char> map_binary;
             if(this->load_map_data(id, map_binary) == false)
-                throw std::runtime_error("cannot load map data");
+                throw std::runtime_error("맵 데이터를 읽을 수 없습니다.");
 
             // Load blocks
             Json::Value     blocks;
             if(this->load_map_blocks(id, blocks) == false)
-                throw std::runtime_error("cannot load map blocks");
+                throw std::runtime_error("맵 블록 데이터를 읽을 수 없습니다.");
 
             map = new fb::game::map(id, parent, host_id, bgm, name, option, effect, map_binary.data(), map_binary.size());
             for(const auto block : blocks)
                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
             this->maps.insert(std::make_pair(id, map));
-            std::cout << "맵을 로드했습니다 : " << UTF8(map->name()) << std::endl;
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(map->name()), percentage);
         }
         catch(std::exception& e)
         {
             if(map != nullptr)
                 delete map;
 
-            std::cout << UTF8(name) << " : " << e.what() << std::endl;
+            error(UTF8(name), e.what());
         }
     }
 
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_items(const std::string& db_fname)
+bool fb::game::master::load_items(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    // Load item db
-    std::ifstream           item_db;
-    item_db.open(db_fname);
-    if(item_db.is_open() == false)
+    Json::Value                     items;
+    if(this->load_json(db_fname, items) == false)
         return false;
 
-    // Parse json
-    Json::Value             items;
-    Json::Reader            reader;
-    if(reader.parse(item_db, items) == false)
-        return false;
-    item_db.close();
-
+    auto                            count = items.size();
+    auto                            read = 0;
     for(auto i = items.begin(); i != items.end(); i++)
     {
-        fb::game::item::master*   item = nullptr;
+        fb::game::item::master*     item = nullptr;
+        auto                        data = *i;
 
         try
         {
-            auto                data = *i;
-            
             // Create item core
             item = this->create_item(std::stoi(i.key().asString()), data);
 
@@ -452,267 +411,284 @@ bool fb::game::master::load_items(const std::string& db_fname)
 
             uint32_t            id = std::stoi(i.key().asString());
             this->items.insert(std::make_pair(id, item));
+
+            auto                percentage = (++read * 100) / double(count);
+            callback(UTF8(data["name"].asString()), percentage);
         }
         catch(std::exception& e)
         {
+            error(UTF8(data["name"].asString()), e.what());
+
             if(item != nullptr)
-            {
-                std::cout << item->name() << " : " << e.what() << std::endl;
                 delete item;
-            }
-            else
-            {
-                std::cout << "What the fuck? : " << e.what() << std::endl;
-            }
         }
     }
 
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_npc(const std::string& db_fname)
+bool fb::game::master::load_npc(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           npc_db;
-    npc_db.open(db_fname);
-    if(npc_db.is_open() == false)
-        return false;
-
     Json::Value             npcs;
-    Json::Reader            reader;
-    if(reader.parse(npc_db, npcs) == false)
+    if(this->load_json(db_fname, npcs) == false)
         return false;
-    npc_db.close();
 
+    auto                    count = npcs.size();
+    auto                    read = 0;
     for(auto i = npcs.begin(); i != npcs.end(); i++)
     {
+        auto                data = *i;
         uint32_t            id = std::stoi(i.key().asString());
-        Json::Value         json = *i;
+        auto                name = cp949(data["name"].asString());
 
-        std::string         name = cp949(json["name"].asString());
-        uint16_t            look = json["look"].asInt() + 0x7FFF;
-        uint8_t             color = json["color"].asInt();
+        try
+        {
+            uint16_t        look = data["look"].asInt() + 0x7FFF;
+            uint8_t         color = data["color"].asInt();
 
-        this->npcs.insert(std::make_pair(id, new npc::master(name, look, color)));
+            this->npcs.insert(std::make_pair(id, new npc::master(name, look, color)));
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
+        }
     }
 
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::listener* listener)
+bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           db_spawns;
-    db_spawns.open(db_fname);
-    if(db_spawns.is_open() == false)
-        return false;
-
     Json::Value             spawns;
-    Json::Reader            reader;
-    if(reader.parse(db_spawns, spawns) == false)
+    if(this->load_json(db_fname, spawns) == false)
         return false;
-    db_spawns.close();
 
-
+    auto                    count = spawns.size();
+    auto                    read = 0;
     for(auto i = spawns.begin(); i != spawns.end(); i++)
     {
         auto                data = *i;
-        auto                npc_name = cp949(data["npc"].asString());
-        auto                core = this->name2npc(npc_name);
-        if(core == nullptr)
-        {
-            std::cout << "존재하지 않는 NPC입니다. : " << UTF8(npc_name) << std::endl;
-            continue;
-        }
-
-
-        auto                map_name = cp949(data["map"].asString());
-        auto                map = this->name2map(map_name);
-        if(map == nullptr)
-        {
-            std::cout << "존재하지 않는 맵입니다. : " << UTF8(map_name) << std::endl;
-            continue;
-        }
-
-        auto                direction_str = cp949(data["direction"].asString());
-        auto                direction = fb::game::direction::BOTTOM;
-        if(direction_str == "top")
-            direction = fb::game::direction::TOP;
-        else if(direction_str == "right")
-            direction = fb::game::direction::RIGHT;
-        else if(direction_str == "bottom")
-            direction = fb::game::direction::BOTTOM;
-        else if(direction_str == "left")
-            direction = fb::game::direction::LEFT;
-        else
-        {
-            std::cout << "NPC의 방향이 올바르지 않습니다. : " << UTF8(npc_name) << std::endl;
-            continue;
-        }
-
-        point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
-        auto                script = cp949(data["script"].asString());
-
-        auto                cloned = new npc(core, listener);
-        cloned->direction(direction);
-        cloned->script(script);
-        cloned->map(map, position);
-    }
-    return true;
-}
-
-bool fb::game::master::load_mob(const std::string& db_fname)
-{
-    std::ifstream           db_mob;
-    db_mob.open(db_fname);
-    if(db_mob.is_open() == false)
-        return false;
-
-    Json::Value             mobs;
-    Json::Reader            reader;
-    if(reader.parse(db_mob, mobs) == false)
-        return false;
-    db_mob.close();
-
-
-    for(auto i = mobs.begin(); i != mobs.end(); i++)
-    {
-        uint16_t            id = std::stoi(i.key().asString());
-        auto                data = *i;
-
-        auto                name = cp949(data["name"].asString());
-        auto                equals = (name == "다람쥐");
-        uint16_t            look = data["look"].asInt() + 0x7FFF;
-        uint8_t             color = data["color"].asInt();
-        uint32_t            base_hp = data["hp"].asInt();
-        uint32_t            base_mp = data["mp"].asInt();
-
-        auto mob = new fb::game::mob::master(name, look, color, base_hp, base_mp);
-        mob->defensive_physical(data["defensive"]["physical"].asInt());
-        mob->defensive_magical(data["defensive"]["magical"].asInt());
-        mob->experience(data["experience"].asInt());
-        mob->damage_min(data["damage"]["min"].asInt());
-        mob->damage_max(data["damage"]["max"].asInt());
-        mob->offensive(master::parse_mob_offensive(cp949(data["offensive"].asString())));
-        mob->size(master::parse_mob_size(cp949(data["size"].asString())));
-        mob->speed(data["speed"].asInt());
-        mob->script_attack(cp949(data["script"]["attack"].asString()));
-        mob->script_die(cp949(data["script"]["die"].asString()));
-
-        this->mobs.insert(std::make_pair(id, mob));
-    }
-
-    return true;
-}
-
-bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::listener* listener)
-{
-    std::ifstream           db_spawns;
-    db_spawns.open(db_fname);
-    if(db_spawns.is_open() == false)
-        return false;
-
-    Json::Value             spawns;
-    Json::Reader            reader;
-    if(reader.parse(db_spawns, spawns) == false)
-        return false;
-    db_spawns.close();
-
-
-    for(auto db_i = spawns.begin(); db_i != spawns.end(); db_i++)
-    {
-        auto                map_name = cp949(db_i.key().asString());
-        auto                spawns = *db_i;
-
-        auto                map = this->name2map(map_name);
-        if(map == nullptr)
-            continue;
-
-        for(auto spawn : spawns)
-        {
-            auto            core = this->name2mob(cp949(spawn["name"].asString()));
-            if(core == nullptr)
-                continue;
-
-            uint16_t        x0 = spawn["area"]["x0"].asInt();
-            uint16_t        x1 = spawn["area"]["x1"].asInt();
-            uint16_t        y0 = spawn["area"]["y0"].asInt();
-            uint16_t        y1 = spawn["area"]["y1"].asInt();
-            uint16_t        count = spawn["count"].asInt();
-            uint32_t        rezen = spawn["rezen time"].asInt();
-
-            for(int i = 0; i < count; i++)
-            {
-                auto        mob = static_cast<fb::game::mob*>(core->make(listener));
-                mob->spawn_point(x0, y0);
-                mob->spawn_size(x1, y1);
-                mob->respawn_time(rezen);
-                mob->map(map);
-            }
-        }
-    }
-    return true;
-}
-
-bool fb::game::master::load_class(const std::string& db_fname)
-{
-    std::ifstream           db_classes;
-    db_classes.open(db_fname);
-    if(db_classes.is_open() == false)
-        return false;
-
-    Json::Value             classes;
-    Json::Reader            reader;
-    if(reader.parse(db_classes, classes) == false)
-        return false;
-    db_classes.close();
-
-    for(auto i1 = classes.begin(); i1 != classes.end(); i1++)
-    {
-        uint8_t             class_id = i1.key().asInt();
-        auto                cdata = new class_data();
-
-        auto                levels = (*i1)["levels"];
-        for(auto i2 = levels.begin(); i2 != levels.end(); i2++)
-        {
-            uint32_t        key = i2.key().asInt();
-            auto            ability = *i2;
-            auto            allocated = new level_ability(ability["strength"].asInt(),
-                ability["intelligence"].asInt(),
-                ability["dexteritry"].asInt(),
-                ability["hp"].asInt(),
-                ability["mp"].asInt(),
-                (uint32_t)ability["exp"].asInt64());
-
-            cdata->add_level_ability(allocated);
-        }
-
-        for(auto promotion: (*i1)["promotions"])
-            cdata->add_promotion(cp949(promotion.asString()));
-
-
-        this->classes.push_back(cdata);
-    }
-
-    return true;
-}
-
-bool fb::game::master::load_drop_item(const std::string& db_fname)
-{
-    std::ifstream           db_drop(db_fname);
-    if(db_drop.is_open() == false)
-        return false;
-
-    Json::Value             drops;
-    Json::Reader            reader;
-    if(reader.parse(db_drop, drops) == false)
-        return false;
-
-    for(auto i1 = drops.begin(); i1 != drops.end(); i1++)
-    {
-        auto                mob_name = cp949(i1.key().asString());
-        auto                mob_core = this->name2mob(mob_name);
+        auto                name = cp949(data["npc"].asString());
         try
         {
-            if(mob_core == nullptr)
+            auto                core = this->name2npc(name);
+            if(core == nullptr)
+                throw std::runtime_error("존재하지 않는 NPC입니다.");
+
+
+            auto                map_name = cp949(data["map"].asString());
+            auto                map = this->name2map(map_name);
+            if(map == nullptr)
+                throw std::runtime_error("존재하지 않는 맵입니다.");
+
+            auto                direction_str = cp949(data["direction"].asString());
+            auto                direction = fb::game::direction::BOTTOM;
+            if(direction_str == "top")
+                direction = fb::game::direction::TOP;
+            else if(direction_str == "right")
+                direction = fb::game::direction::RIGHT;
+            else if(direction_str == "bottom")
+                direction = fb::game::direction::BOTTOM;
+            else if(direction_str == "left")
+                direction = fb::game::direction::LEFT;
+            else
+                throw std::runtime_error("NPC의 방향이 올바르지 않습니다.");
+
+            point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
+            if(position.x > map->width() || position.y > map->height())
+                throw std::runtime_error("NPC의 위치가 올바르지 않습니다.");
+            auto                script = cp949(data["script"].asString());
+
+            auto                cloned = new npc(core, listener);
+            cloned->direction(direction);
+            cloned->script(script);
+            cloned->map(map, position);
+
+            auto                percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
+        }
+    }
+
+    complete(count);
+    return true;
+}
+
+bool fb::game::master::load_mob(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
+{
+    Json::Value             mobs;
+    if(this->load_json(db_fname, mobs) == false)
+        return false;
+
+    auto                    count = mobs.size();
+    auto                    read = 0;
+    for(auto i = mobs.begin(); i != mobs.end(); i++)
+    {
+        auto                data = *i;
+        uint16_t            id = std::stoi(i.key().asString());
+        auto                name = cp949(data["name"].asString());
+
+        try
+        {
+            uint16_t        look = data["look"].asInt() + 0x7FFF;
+            uint8_t         color = data["color"].asInt();
+            uint32_t        base_hp = data["hp"].asInt();
+            uint32_t        base_mp = data["mp"].asInt();
+
+            auto mob = new fb::game::mob::master(name, look, color, base_hp, base_mp);
+            mob->defensive_physical(data["defensive"]["physical"].asInt());
+            mob->defensive_magical(data["defensive"]["magical"].asInt());
+            mob->experience(data["experience"].asInt());
+            mob->damage_min(data["damage"]["min"].asInt());
+            mob->damage_max(data["damage"]["max"].asInt());
+            mob->offensive(master::parse_mob_offensive(cp949(data["offensive"].asString())));
+            mob->size(master::parse_mob_size(cp949(data["size"].asString())));
+            mob->speed(data["speed"].asInt());
+            mob->script_attack(cp949(data["script"]["attack"].asString()));
+            mob->script_die(cp949(data["script"]["die"].asString()));
+
+            this->mobs.insert(std::make_pair(id, mob));
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
+        }
+    }
+
+    complete(count);
+    return true;
+}
+
+bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
+{
+    Json::Value             spawns;
+    if(this->load_json(db_fname, spawns) == false)
+        return false;
+
+    auto                    count = spawns.size();
+    auto                    read = 0;
+    for(auto db_i = spawns.begin(); db_i != spawns.end(); db_i++)
+    {
+        auto                name = cp949(db_i.key().asString());
+        auto                spawns = *db_i;
+
+        try
+        {
+            auto                map = this->name2map(name);
+            if(map == nullptr)
+                continue;
+
+            for(auto spawn : spawns)
+            {
+                auto            core = this->name2mob(cp949(spawn["name"].asString()));
+                if(core == nullptr)
+                    continue;
+
+                uint16_t        x0 = spawn["area"]["x0"].asInt();
+                uint16_t        x1 = spawn["area"]["x1"].asInt();
+                uint16_t        y0 = spawn["area"]["y0"].asInt();
+                uint16_t        y1 = spawn["area"]["y1"].asInt();
+                uint16_t        count = spawn["count"].asInt();
+                uint32_t        rezen = spawn["rezen time"].asInt();
+
+                for(int i = 0; i < count; i++)
+                {
+                    auto        mob = static_cast<fb::game::mob*>(core->make(listener));
+                    mob->spawn_point(x0, y0);
+                    mob->spawn_size(x1, y1);
+                    mob->respawn_time(rezen);
+                    mob->map(map);
+                }
+            }
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
+        }
+    }
+
+    complete(count);
+    return true;
+}
+
+bool fb::game::master::load_class(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
+{
+    Json::Value             classes;
+    if(this->load_json(db_fname, classes) == false)
+        return false;
+
+    auto                    count = classes.size();
+    auto                    read = 0;
+    for(auto i1 = classes.begin(); i1 != classes.end(); i1++)
+    {
+        uint8_t             id = i1.key().asInt();      // class id
+        try
+        {
+            auto            data = new class_data();
+
+            auto                levels = (*i1)["levels"];
+            for(auto i2 = levels.begin(); i2 != levels.end(); i2++)
+            {
+                uint32_t    key = i2.key().asInt();
+                auto        ability = *i2;
+                auto        allocated = new level_ability(ability["strength"].asInt(),
+                                                          ability["intelligence"].asInt(),
+                                                          ability["dexteritry"].asInt(),
+                                                          ability["hp"].asInt(),
+                                                          ability["mp"].asInt(),
+                                                          (uint32_t)ability["exp"].asInt64());
+
+                data->add_level_ability(allocated);
+            }
+
+            for(auto promotion: (*i1)["promotions"])
+                data->add_promotion(cp949(promotion.asString()));
+
+
+            this->classes.push_back(data);
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(std::to_string(id), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(std::to_string(id), e.what());
+        }
+    }
+
+    complete(count);
+    return true;
+}
+
+bool fb::game::master::load_drop_item(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
+{
+    Json::Value             drops;
+    if(this->load_json(db_fname, drops) == false)
+        return false;
+
+    auto                    count = drops.size();
+    auto                    read = 0;
+    for(auto i1 = drops.begin(); i1 != drops.end(); i1++)
+    {
+        auto                name = cp949(i1.key().asString());
+        auto                core = this->name2mob(name);
+        try
+        {
+            if(core == nullptr)
                 throw std::runtime_error("올바르지 않은 몹 이름입니다");
 
             auto            items = (*i1);
@@ -725,140 +701,163 @@ bool fb::game::master::load_drop_item(const std::string& db_fname)
                 if(item_core == nullptr)
                     throw std::runtime_error("올바르지 않은 아이템 이름입니다");
 
-                mob_core->dropitem_add(item_core, percentage);
+                core->dropitem_add(item_core, percentage);
             }
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
         }
         catch(std::exception& e)
         {
-            std::cout << e.what() << " : " << UTF8(mob_name) << std::endl;
+            error(UTF8(name), e.what());
         }
     }
 
-    db_drop.close();
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_warp(const std::string& db_fname)
+bool fb::game::master::load_warp(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           db_warp(db_fname);
-    if(db_warp.is_open() == false)
-        return false;
-
     Json::Value             warps;
-    Json::Reader            reader;
-    if(reader.parse(db_warp, warps) == false)
+    if(this->load_json(db_fname, warps) == false)
         return false;
 
+    auto                    count = warps.size();
+    auto                    read = 0;
     for(auto i1 = warps.begin(); i1 != warps.end(); i1++)
     {
-        auto                map_name = cp949(i1.key().asString());
-        auto                map = this->name2map(map_name);
-        if(map == nullptr)
-            continue;
+        auto                name = cp949(i1.key().asString());
 
-        auto                warps = *i1;
-        for(auto i2 = warps.begin(); i2 != warps.end(); i2++)
+        try
         {
-            auto            next_map_name = cp949((*i2)["map"].asString());
-            auto            next_map = this->name2map(next_map_name);
-            if(next_map == nullptr)
+            auto            map = this->name2map(name);
+            if(map == nullptr)
                 continue;
 
-            const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
-            const point16_t after((*i2)["after"]["x"].asInt(), (*i2)["after"]["y"].asInt());
-            const range8_t  limit((*i2)["limit"]["min"].asInt(), (*i2)["limit"]["max"].asInt());
+            auto            warps = *i1;
+            for(auto i2 = warps.begin(); i2 != warps.end(); i2++)
+            {
+                auto        next_map_name = cp949((*i2)["map"].asString());
+                auto        next_map = this->name2map(next_map_name);
+                if(next_map == nullptr)
+                    continue;
 
-            map->warp_add(next_map, before, after, limit);
+                const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
+                const point16_t after((*i2)["after"]["x"].asInt(), (*i2)["after"]["y"].asInt());
+                const range8_t  limit((*i2)["limit"]["min"].asInt(), (*i2)["limit"]["max"].asInt());
+
+                map->warp_add(next_map, before, after, limit);
+            }
+
+            auto            percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
         }
     }
 
-    db_warp.close();
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_itemmix(const std::string& db_fname)
+bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           db_mix(db_fname);
-    if(db_mix.is_open() == false)
-        return false;
-
     Json::Value             itemmix_list;
-    Json::Reader            reader;
-    if(reader.parse(db_mix, itemmix_list) == false)
+    if(this->load_json(db_fname, itemmix_list) == false)
         return false;
 
-    for(auto json : itemmix_list)
+    auto                    count = itemmix_list.size();
+    auto                    read = 0;
+    for(auto data : itemmix_list)
     {
-        auto                percentage = (float)json["percentage"].asDouble();
-        auto                itemmix = new fb::game::itemmix(percentage);
-
-        for(auto require : json["require"])
+        try
         {
-            auto            item = this->name2item(cp949(require["item"].asString()));
-            uint32_t        count = require["count"].asInt();
-            itemmix->require_add(item, count);
-        }
+            auto            percentage = (float)data["percentage"].asDouble();
+            auto            itemmix = new fb::game::itemmix(percentage);
 
-        for(auto success: json["success"])
+            for(auto require : data["require"])
+            {
+                auto        item = this->name2item(cp949(require["item"].asString()));
+                uint32_t    count = require["count"].asInt();
+                itemmix->require_add(item, count);
+            }
+
+            for(auto success: data["success"])
+            {
+                auto        item = this->name2item(cp949(success["item"].asString()));
+                uint32_t    count = success["count"].asInt();
+                itemmix->success_add(item, count);
+            }
+
+            for(auto failed: data["failed"])
+            {
+                auto        item = this->name2item(cp949(failed["item"].asString()));
+                uint32_t    count = failed["count"].asInt();
+                itemmix->failed_add(item, count);
+            }
+
+            this->itemmixes.push_back(itemmix);
+        }
+        catch(std::exception& e)
         {
-            auto            item = this->name2item(cp949(success["item"].asString()));
-            uint32_t        count = success["count"].asInt();
-            itemmix->success_add(item, count);
+            // error
         }
-
-        for(auto failed: json["failed"])
-        {
-            auto            item = this->name2item(cp949(failed["item"].asString()));
-            uint32_t        count = failed["count"].asInt();
-            itemmix->failed_add(item, count);
-        }
-
-        this->itemmixes.push_back(itemmix);
     }
 
-    db_mix.close();
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_spell(const std::string& db_fname)
+bool fb::game::master::load_spell(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           db_spell(db_fname);
-    if(db_spell.is_open() == false)
-        return false;
-
     Json::Value             spells;
-    Json::Reader            reader;
-    if(reader.parse(db_spell, spells) == false)
+    if(this->load_json(db_fname, spells) == false)
         return false;
 
+    auto                    count = spells.size();
+    auto                    read = 0;
     for(auto i = spells.begin(); i != spells.end(); i++)
     {
         uint16_t            id = std::stoi(i.key().asString());
         const auto          data = (*i);
         const auto          name = cp949(data["name"].asString());
-        uint8_t             type = data["type"].asInt();
 
-        std::string         cast, uncast, concast, message;
-        if (data.isMember("cast"))
-            cast = cp949(data["cast"].asString());
+        try
+        {
+            uint8_t         type = data["type"].asInt();
 
-        if (data.isMember("uncast"))
-            uncast = cp949(data["uncast"].asString());
+            std::string         cast, uncast, concast, message;
+            if (data.isMember("cast"))
+                cast = cp949(data["cast"].asString());
 
-        if (data.isMember("concast"))
-            concast = cp949(data["concast"].asString());
+            if (data.isMember("uncast"))
+                uncast = cp949(data["uncast"].asString());
 
-        if (data.isMember("message"))
-            message = cp949(data["message"].asString());
+            if (data.isMember("concast"))
+                concast = cp949(data["concast"].asString());
 
-        this->spells.insert(std::make_pair(id, new spell(spell::types(type), name, cast, uncast, concast, message)));
+            if (data.isMember("message"))
+                message = cp949(data["message"].asString());
+
+            this->spells.insert(std::make_pair(id, new spell(spell::types(type), name, cast, uncast, concast, message)));
+
+            auto percentage = (++read * 100) / double(count);
+            callback(UTF8(name), percentage);
+        }
+        catch(std::exception& e)
+        {
+            error(UTF8(name), e.what());
+        }
     }
 
-    db_spell.close();
+    complete(count);
     return true;
 }
 
-bool fb::game::master::load_board(const std::string& db_fname)
+bool fb::game::master::load_board(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
     master::board.add("공지사항");
     auto section = this->board.add("갓승현의 역사");
@@ -874,15 +873,10 @@ bool fb::game::master::load_board(const std::string& db_fname)
     return true;
 }
 
-bool fb::game::master::load_door(const std::string& db_fname)
+bool fb::game::master::load_door(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    std::ifstream           db_door(db_fname);
-    if(db_door.is_open() == false)
-        return false;
-
     Json::Value             doors;
-    Json::Reader            reader;
-    if(reader.parse(db_door, doors) == false)
+    if(this->load_json(db_fname, doors) == false)
         return false;
 
     for(auto& door : doors)
@@ -898,7 +892,6 @@ bool fb::game::master::load_door(const std::string& db_fname)
         this->doors.push_back(created);
     }
 
-    db_door.close();
     return true;
 }
 

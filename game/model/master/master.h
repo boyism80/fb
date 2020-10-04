@@ -24,10 +24,12 @@ class session;
 class master
 {
 private:
-    static master*                              _instance;
+    typedef std::function<void(const std::string&, double)> handle_callback;
+    typedef std::function<void(const std::string&, const std::string&)> handle_error;
+    typedef std::function<void(uint32_t)> handle_complete;
 
 private:
-    bool                                        _initialized;
+    static master*                              _instance;
 
 public:
     std::map<uint16_t, map*>                    maps;
@@ -49,6 +51,8 @@ public:
     friend class db;
 
 private:
+    bool                                        load_json(const std::string& fname, Json::Value& json);
+
     static fb::game::map::effects               parse_map_effect(const std::string& effect);
     static fb::game::map::options               parse_map_option(const Json::Value& data);
     static bool                                 load_map_data(uint16_t id, std::vector<char>& buffer);
@@ -61,23 +65,20 @@ private:
     static fb::game::mob::sizes                 parse_mob_size(const std::string& size);
     static fb::game::mob::offensive_type        parse_mob_offensive(const std::string& offensive);
 
-private:
-    bool                                        load_maps(const std::string& db_fname = "db/map.json");
-    bool                                        load_items(const std::string& db_fname = "db/item.json");
-    bool                                        load_npc(const std::string& db_fname = "db/npc.json");
-    bool                                        load_npc_spawn(const std::string& db_fname = "db/npc_spawn.json", fb::game::listener* listener = nullptr);
-    bool                                        load_mob(const std::string& db_fname = "db/mob.json");
-    bool                                        load_mob_spawn(const std::string& db_fname = "db/mob_spawn.json", fb::game::listener* listener = nullptr);
-    bool                                        load_class(const std::string& db_fname = "db/class.json");
-    bool                                        load_drop_item(const std::string& db_fname = "db/item_drop.json");
-    bool                                        load_warp(const std::string& db_fname = "db/warp.json");
-    bool                                        load_itemmix(const std::string& db_fname = "db/itemmix.json");
-    bool                                        load_spell(const std::string& db_fname = "db/spell.json");
-    bool                                        load_board(const std::string& db_fname = "db/board.json");
-    bool                                        load_door(const std::string& db_fname = "db/door.json");
-
 public:
-    bool                                        loads(listener*);
+    bool                                        load_maps(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_items(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_npc(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_npc_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_mob(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_mob_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_class(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_drop_item(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_warp(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_itemmix(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_spell(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_board(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
+    bool                                        load_door(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete);
 
 public:
     fb::game::map*                              name2map(const std::string& name);

@@ -117,16 +117,16 @@ fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uin
     fb::istream istream((uint8_t*)data, size);
     this->_size.width = istream.read_u16();
     if(this->_size.width == 0)
-        throw std::runtime_error(std::string("cannot read map size : ") + name);
+        throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
 
     this->_size.height = istream.read_u16();
     if(this->_size.height == 0)
-        throw std::runtime_error(std::string("cannot read map size : ") + name);
+        throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles = new tile[map_size];
     if(this->_tiles == nullptr)
-        throw std::runtime_error(std::string("cannot allocate map memory : ") + name);
+        throw std::runtime_error("맵 타일 메모리를 할당할 수 없습니다.");
 
     memset(this->_tiles, 0, sizeof(tile) * map_size);
     for(uint32_t i = 0; i < map_size; i++)
