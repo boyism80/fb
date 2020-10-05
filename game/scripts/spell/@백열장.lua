@@ -1,6 +1,6 @@
 function handle_spell(me, spell, you)
-	if you:isbuff('¹é¿­Àå') then
-		me:message('ÀÌ¹Ì °É·Á ÀÖ½À´Ï´Ù.')
+	if you:isbuff('ë°±ì—´ì¥') then
+		me:message('ì´ë¯¸ ê±¸ë ¤ ìˆìŠµë‹ˆë‹¤.')
 		return
 	end
 
@@ -8,8 +8,8 @@ function handle_spell(me, spell, you)
 	me:state(0x05)
 	me:effect(0x14)
 	me:buff(spell, 5)
-	me:message('¹é¿­ÀåÀ» ¿Ü¿ü½À´Ï´Ù.')
+	me:message('ë°±ì—´ì¥ì„ ì™¸ì› ìŠµë‹ˆë‹¤.')
 	if(me ~= you) then
-		you:message(string.format('%s´ÔÀÌ ¹é¿­ÀåÀ» ¿Ü¿öÁÖ¼Ì½À´Ï´Ù.', me:name()))
+		you:message(string.format('%së‹˜ì´ ë°±ì—´ì¥ì„ ì™¸ì›Œì£¼ì…¨ìŠµë‹ˆë‹¤.', me:name()))
 	end
 end

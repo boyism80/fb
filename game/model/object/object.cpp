@@ -61,7 +61,7 @@ int fb::game::object::master::builtin_name(lua_State* lua)
 {
     auto object = *(fb::game::object::master**)lua_touserdata(lua, 1);
 
-    lua_pushstring(lua, object->_name.c_str());
+    lua_push_utf8(lua, object->_name.c_str());
     return 1;
 }
 
@@ -710,7 +710,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
 {
     auto me = *(fb::game::object**)lua_touserdata(lua, 1);
 
-    lua_pushstring(lua, me->name().c_str());
+    lua_push_utf8(lua, me->name().c_str());
     return 1;
 }
 
@@ -719,7 +719,7 @@ int fb::game::object::builtin_name(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-    lua_pushstring(lua, object->name().c_str());
+    lua_push_utf8(lua, object->name().c_str());
     return 1;
 }
 
@@ -813,7 +813,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
     auto argc = lua_gettop(lua);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto message = lua_tostring(lua, 2);
+    auto message = lua_cp949(lua, 2);
     auto type = argc < 3 ? chat::type::NORMAL : chat::type(lua_tointeger(lua, 3));
     auto decorate = argc < 4 ? true : lua_toboolean(lua, 4);
 
@@ -839,7 +839,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto argc = lua_gettop(lua);
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto message = lua_tostring(lua, 2);
+    auto message = lua_cp949(lua, 2);
     auto type = argc < 3 ? fb::game::message::STATE : lua_tointeger(lua, 3);
 
     if(object->type() == object::types::SESSION)
@@ -871,7 +871,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 
     if(lua_isstring(lua, 2))
     {
-        auto buff_name = lua_tostring(lua, 2);
+        auto buff_name = lua_cp949(lua, 2);
         lua_pushboolean(lua, object->buffs.remove(buff_name));
     }
     else if(lua_isuserdata(lua, 2))
@@ -892,7 +892,7 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     if(lua_isstring(lua, 2))
     {
-        auto buff_name = lua_tostring(lua, 2);
+        auto buff_name = lua_cp949(lua, 2);
         lua_pushboolean(lua, object->buffs.contains(buff_name));
     }
     else if(lua_isuserdata(lua, 2))
@@ -944,7 +944,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(lua_isstring(lua, 2))
         {
-            game::master::get().name2map(lua_tostring(lua, 2));
+            game::master::get().name2map(lua_cp949(lua, 2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -985,7 +985,7 @@ int fb::game::object::builtin_map(lua_State* lua)
 int fb::game::object::builtin_mkitem(lua_State* lua)
 {
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
-    auto name = lua_tostring(lua, 2);
+    auto name = lua_cp949(lua, 2);
 
     auto master = game::master::get().name2item(name);
     if(master == nullptr)

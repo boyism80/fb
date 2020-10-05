@@ -1,4 +1,4 @@
-CXX             = g++
+CXX             = g++ -g
 BUILD           = bin
 STD             = -std=c++17
 TARGET          = $(BUILD)/login 

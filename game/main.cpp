@@ -46,6 +46,31 @@ bool load_db(console& c, fb::game::listener* listener)
     char buffer[256] = {0,};
 
     auto& master = fb::game::master::get();
+
+    if(master.load_door("db/door.json", 
+        [&] (const std::string& name, double percentage)
+        {
+            sprintf(buffer, fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
+            c.puts(buffer, 0, current_line);
+            clear(c, buffer, current_line);
+        }, 
+        [&] (const std::string& name, const std::string& error)
+        {
+            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
+            c.puts(buffer, 0, current_line + (++current_error_line));
+        }, 
+        [&] (uint32_t count)
+        {
+            sprintf(buffer, fb::game::message::assets::DOOR_ALL_LOADED, count);
+            c.puts(buffer, 0, current_line);
+            clear(c, buffer, current_line);
+        }) == false)
+    {
+        return false;
+    }
+
+    current_line =  current_line + current_error_line + 1;
+    current_error_line = 0;
 #if defined DEBUG | defined _DEBUG
     if(master.load_maps("db/map-temp.json", 
 #else
@@ -65,30 +90,6 @@ bool load_db(console& c, fb::game::listener* listener)
         [&] (uint32_t count)
         {
             sprintf(buffer, fb::game::message::assets::MAP_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
-        }) == false)
-    {
-        return false;
-    }
-
-    current_line =  current_line + current_error_line + 1;
-    current_error_line = 0;
-    if(master.load_door("db/door.json", 
-        [&] (const std::string& name, double percentage)
-        {
-            sprintf(buffer, fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
-        }, 
-        [&] (const std::string& name, const std::string& error)
-        {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
-        }, 
-        [&] (uint32_t count)
-        {
-            sprintf(buffer, fb::game::message::assets::DOOR_ALL_LOADED, count);
             c.puts(buffer, 0, current_line);
             clear(c, buffer, current_line);
         }) == false)

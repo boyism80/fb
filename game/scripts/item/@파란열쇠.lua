@@ -8,8 +8,8 @@ function handle_active(session, item)
 
 	local locked = door:lock(not door:locked())
 	if locked then
-		session:message('¹®À» Àá±É½À´Ï´Ù.')
+		session:message('ë¬¸ì„ ì ê¶œìŠµë‹ˆë‹¤.')
 	else
-		session:message('¹®À» ¿­¾ú½À´Ï´Ù.')
+		session:message('ë¬¸ì„ ì—´ì—ˆìŠµë‹ˆë‹¤.')
 	end
 end

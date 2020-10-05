@@ -58,7 +58,7 @@ int fb::game::spell::builtin_name(lua_State* lua)
 {
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
 
-    lua_pushstring(lua, spell->_name.c_str());
+    lua_push_utf8(lua, spell->_name.c_str());
     return 1;
 }
 
@@ -66,7 +66,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
 {
     auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
 
-    lua_pushstring(lua, spell->_message.c_str());
+    lua_push_utf8(lua, spell->_message.c_str());
     return 1;
 }
 

@@ -9,6 +9,7 @@ extern "C"
 }
 
 #include "module/socket/socket.h"
+#include "module/encoding/encoding.h"
 #include <vector>
 #include <string>
 
@@ -22,6 +23,11 @@ extern "C"
 
 #define END_LUA_EXTENSION                   {NULL, NULL}\
                                             };
+
+
+// global
+std::string                     lua_cp949(lua_State* lua, int i);
+void                            lua_push_utf8(lua_State* lua, const std::string& v);
 
 namespace fb { namespace game { namespace lua {
 
@@ -64,7 +70,7 @@ public:
     state&                      pushobject(const luable* object);
     state&                      pushobject(const luable& object);
 
-    const std::string           tostring(int offset) { return lua_tostring(*this, offset); }
+    const std::string           tostring(int offset) { return lua_cp949(*this, offset); }
     const std::string           arg_string(int offset) { return tostring(offset); }
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
@@ -169,7 +175,6 @@ T* env(const char* key)
 
     return ret;
 }
-
 
 } } }
 

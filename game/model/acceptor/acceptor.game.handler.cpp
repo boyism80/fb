@@ -213,11 +213,11 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     }
 
     sstream << item.name();
-    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
 
     sstream.str(std::string());
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
-    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
 
     this->_connection->query
     (
@@ -315,32 +315,32 @@ void fb::game::acceptor::on_trade_success(session& me)
 
 void fb::game::acceptor::on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::common(object, cp949(message), button_prev, button_next, interaction), scope::SELF);
+    this->send(me, response::game::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::menu(npc, menus, cp949(message), interaction), scope::SELF);
+    this->send(me, response::game::dialog::menu(npc, menus, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::slot(npc, item_slots, cp949(message), interaction), scope::SELF);
+    this->send(me, response::game::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::item(npc, cores, cp949(message), 0xFFFF, interaction), scope::SELF);
+    this->send(me, response::game::dialog::item(npc, cores, message, 0xFFFF, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::input(npc, cp949(message), interaction), scope::SELF);
+    this->send(me, response::game::dialog::input(npc, message, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::input_ext(npc, cp949(message), cp949(top), cp949(bottom), maxlen, prev, interaction), scope::SELF);
+    this->send(me, response::game::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_item(session& me, session& from, uint8_t index)
@@ -423,7 +423,7 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
     }
 
     sstream << ": " << (enabled ? "ON" : "OFF");
-    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
     this->send(me, response::game::session::option(me), scope::SELF);
 }
 

@@ -5,18 +5,18 @@ function handle_door(session)
 		return
 	end
 
-	local key = session:item('ÆÄ¶õ¿­¼è')
+	local key = session:item('íŒŒë€ì—´ì‡ ')
 	local locked = door:locked()
 	if door:locked() and key == nil then
-		session:message('¹®ÀÌ Àá°ÜÀÖ½À´Ï´Ù.')
+		session:message('ë¬¸ì´ ì ê²¨ìˆìŠµë‹ˆë‹¤.')
 		return
 	end
 
 	local opened = door:toggle()
 	if opened then
-		session:message('¹®À» ¿­¾ú½À´Ï´Ù.')
+		session:message('ë¬¸ì„ ì—´ì—ˆìŠµë‹ˆë‹¤.')
 	else
-		session:message('¹®À» ´İ¾Ò½À´Ï´Ù.')
+		session:message('ë¬¸ì„ ë‹«ì•˜ìŠµë‹ˆë‹¤.')
 	end
 	door:update()
 end

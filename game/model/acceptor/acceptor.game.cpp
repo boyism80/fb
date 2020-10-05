@@ -347,7 +347,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     // Set crypt data
     session.crt(request.enc_type, request.enc_key);
 
-    session.name(UTF8(request.name));
+    session.name(request.name);
 
     auto found = this->_connection->query
     (
@@ -429,7 +429,7 @@ bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::prot
     this->send(session, response::game::init(), scope::SELF);
     this->send(session, response::game::time(25), scope::SELF);
     this->send(session, response::game::session::state(session, state_level::LEVEL_MIN), scope::SELF);
-    this->send(session, response::game::message(CP949("0시간 1분만에 바람으로"), message::type::STATE), scope::SELF);
+    this->send(session, response::game::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
     this->send(session, response::game::session::state(session, state_level::LEVEL_MAX), scope::SELF);
     this->send(session, response::game::session::show(session, false), scope::SELF);
     this->send(session, response::game::object::direction(session), scope::SELF);
@@ -802,9 +802,9 @@ bool fb::game::acceptor::handle_chat(fb::game::session& session, const fb::proto
 
     std::stringstream           sstream;
     if(request.shout)
-        sstream << CP949(session.name()) << "! " << request.message;
+        sstream << session.name() << "! " << request.message;
     else
-        sstream << CP949(session.name()) << ": " << request.message;
+        sstream << session.name() << ": " << request.message;
 
     this->send(session, response::game::chat(session, sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     return true;
@@ -1212,7 +1212,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return false;
 
     auto                            npc = game::master::get().name2npc("낙랑");
-    std::string                     command(message.begin() + 1, message.end());
+    std::string                     command = std::string(message.begin() + 1, message.end());
     std::vector<std::string>        splitted;
     std::istringstream              sstream(command);
     std::string                     unit;

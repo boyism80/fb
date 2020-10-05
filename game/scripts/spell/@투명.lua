@@ -1,6 +1,6 @@
 function handle_spell(me, spell)
 	if me:isbuff(spell) then
-		me:message('ÀÌ¹Ì °É·Á ÀÖ½À´Ï´Ù.')
+		me:message('ì´ë¯¸ ê±¸ë ¤ ìˆìŠµë‹ˆë‹¤.')
 		return
 	end
 
@@ -8,5 +8,5 @@ function handle_spell(me, spell)
 	me:state(0x05)
 	me:effect(0x14)
 	me:buff(spell, 2)
-	me:message('Åõ¸íÀ» ¿Ü¿ü½À´Ï´Ù.')
+	me:message('íˆ¬ëª…ì„ ì™¸ì› ìŠµë‹ˆë‹¤.')
 end

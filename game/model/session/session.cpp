@@ -1024,7 +1024,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     }
     else if(lua_isstring(lua, 2))
     {
-        auto name = lua_tostring(lua, 2);
+        auto name = lua_cp949(lua, 2);
         item = session->items.find(name);
     }
 
@@ -1073,7 +1073,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
 {
     auto argc = lua_gettop(lua);
     auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-    auto name = lua_tostring(lua, 2);
+    auto name = lua_cp949(lua, 2);
     auto store = argc < 3 ? true : lua_toboolean(lua, 3);
 
     if(store == false)
@@ -1120,8 +1120,8 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
         else if(lua_isstring(lua, 2))
         {
-            auto name = lua_tostring(lua, 2);
-            if(name == nullptr)
+            auto name = lua_cp949(lua, 2);
+            if(name.empty())
                 throw std::exception();
 
             auto master = game::master::get().name2item(name);
@@ -1203,12 +1203,12 @@ int fb::game::session::builtin_class(lua_State* lua)
         }
         else
         {
-            lua_pushstring(lua, cls_name->c_str());
+            lua_push_utf8(lua, cls_name->c_str());
         }
     }
     else
     {
-        auto cls_name = lua_tostring(lua, 2);
+        auto cls_name = lua_cp949(lua, 2);
         uint8_t cls, promotion;
         if(game::master::get().name2class(cls_name, &cls, &promotion) == false)
         {

@@ -3,6 +3,20 @@ using namespace fb::game::lua;
 
 main* main::_instance;
 
+std::string lua_cp949(lua_State* lua, int i)
+{
+    auto x = lua_tostring(lua, i);
+    if(x == nullptr)
+        return std::string();
+
+    return CP949(x, PLATFORM::Windows);
+}
+
+void lua_push_utf8(lua_State* lua, const std::string& v)
+{
+    lua_pushstring(lua, UTF8(v, PLATFORM::Windows).c_str());
+}
+
 void fb::game::lua::luable::to_lua(lua_State* lua) const
 {
     auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));

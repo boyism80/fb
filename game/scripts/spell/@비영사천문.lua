@@ -41,6 +41,6 @@ function handle_spell(me, spell, message)
 	   lookup(me, front, (direction + 3) % 4) or
 	   lookup(me, front, (direction + 1) % 4) then
 		me:action(0x01, 0x0a, 0x1e)
-		me:message('ºñ¿µ½Âº¸¸¦ ¿Ü¿ü½À´Ï´Ù.')
+		me:message('ë¹„ì˜ìŠ¹ë³´ë¥¼ ì™¸ì› ìŠµë‹ˆë‹¤.')
 	end
 end

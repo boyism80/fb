@@ -79,7 +79,7 @@ public:
 
 private:
     static bool                 is_hangul(const std::string& str);
-    bool                        is_forbidden(const char* str) const;
+    bool                        is_forbidden(const std::string& str) const;
     std::string                 sha256(const std::string& data) const;
 
 public:

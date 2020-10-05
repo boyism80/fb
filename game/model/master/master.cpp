@@ -58,8 +58,6 @@ fb::game::master::~master()
 
 bool fb::game::master::load_json(const std::string& fname, Json::Value& json)
 {
-    auto&                   config = fb::config::get();
-
     std::ifstream           ifstream;
     ifstream.open(fname);
     if(ifstream.is_open() == false)
@@ -118,8 +116,6 @@ fb::game::map::options fb::game::master::parse_map_option(const Json::Value& dat
 
 bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 {
-    auto&                   config = fb::config::get();
-
     char                    fname[256];
     sprintf(fname, "maps/%06d.map", id);
 
@@ -135,8 +131,6 @@ bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 
 bool fb::game::master::load_map_blocks(uint16_t id, Json::Value& buffer)
 {
-    auto&                   config = fb::config::get();
-
     char                    fname[256];
     sprintf(fname, "maps/%06d.block", id);
     
@@ -155,8 +149,8 @@ bool fb::game::master::load_map_blocks(uint16_t id, Json::Value& buffer)
 
 fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::Value& data)
 {
-    std::string         types           = cp949(data["type"].asString());
-    std::string         name            = cp949(data["name"].asString());
+    std::string         types           = CP949(data["type"].asString(), PLATFORM::Windows);
+    std::string         name            = CP949(data["name"].asString(), PLATFORM::Windows);
     uint16_t            icon            = data["icon"].asInt() + 0xBFFF;
     uint8_t             color           = data["color"].asInt();
 
@@ -168,7 +162,7 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
 
     if(types == "consume")
     {
-        std::string     bundle_type = cp949(data["bundle type"].asString());   // package Ex) 동동주
+        std::string     bundle_type = CP949(data["bundle type"].asString(), PLATFORM::Windows);   // package Ex) 동동주
                                                                         // bundle  Ex) 도토리
         uint32_t        capacity        = data["capacity"].asInt();
         if (bundle_type == "package")
@@ -206,8 +200,6 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
 
 fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value& data)
 {
-    auto&                   config = fb::config::get();
-
     fb::game::item::item_limit limit;
     if(data.isMember("limit") == false)
         return limit;
@@ -232,7 +224,7 @@ fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value&
 
     if(data["limit"].isMember("sex"))
     {
-        auto sex = cp949(data["limit"]["sex"].asString());
+        auto sex = CP949(data["limit"]["sex"].asString(), PLATFORM::Windows);
         if(sex == "man")
             limit.sex = fb::game::sex::MAN;
         else if(sex == "woman")
@@ -246,8 +238,6 @@ fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value&
 
 fb::game::item::penalties fb::game::master::parse_item_penalty(const std::string& penalty)
 {
-    auto&                   config = fb::config::get();
-
     if(penalty.empty())
         return fb::game::item::penalties::NONE;
 
@@ -263,8 +253,6 @@ fb::game::item::penalties fb::game::master::parse_item_penalty(const std::string
 
 fb::game::mob::sizes fb::game::master::parse_mob_size(const std::string& size)
 {
-    auto&                   config = fb::config::get();
-
     if(size == "small")
         return mob::sizes::SMALL;
 
@@ -276,8 +264,6 @@ fb::game::mob::sizes fb::game::master::parse_mob_size(const std::string& size)
 
 fb::game::mob::offensive_type fb::game::master::parse_mob_offensive(const std::string& offensive)
 {
-    auto&                   config = fb::config::get();
-
     if(offensive == "containment")
         return mob::offensive_type::CONTAINMENT;
 
@@ -298,8 +284,6 @@ fb::game::mob::offensive_type fb::game::master::parse_mob_offensive(const std::s
 
 bool fb::game::master::load_maps(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             maps;
     if(this->load_json(db_fname, maps) == false)
         return false;
@@ -310,7 +294,7 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
     {
         auto                data = *i;
         uint16_t            id = std::stoi(i.key().asString());
-        auto                name = cp949(data["name"].asString());
+        auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
         fb::game::map*      map = nullptr;
 
         try
@@ -319,7 +303,7 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
             uint16_t        parent  = data["parent"].asInt();
             uint8_t         bgm     = data["bgm"].asInt();
             auto            host_id = data["host"].asString();
-            auto            effect  = this->parse_map_effect(cp949(data["effect"].asString()));
+            auto            effect  = this->parse_map_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
             auto            option  = this->parse_map_option(data);
 
             // Load binary
@@ -339,14 +323,14 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
             this->maps.insert(std::make_pair(id, map));
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(map->name()), percentage);
+            callback((map->name()), percentage);
         }
         catch(std::exception& e)
         {
             if(map != nullptr)
                 delete map;
 
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -356,8 +340,6 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
 
 bool fb::game::master::load_items(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value                     items;
     if(this->load_json(db_fname, items) == false)
         return false;
@@ -368,7 +350,7 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
     {
         fb::game::item::master*     item = nullptr;
         auto                        data = *i;
-        auto                        name = cp949(data["name"].asString());
+        auto                        name = CP949(data["name"].asString(), PLATFORM::Windows);
 
         try
         {
@@ -376,14 +358,14 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
             item = this->create_item(std::stoi(i.key().asString()), data);
 
             // Common options
-            item->active_script(cp949(data["script"]["active"].asString()));
+            item->active_script(CP949(data["script"]["active"].asString(), PLATFORM::Windows));
             item->price(data["price"].asInt());
             item->trade(data["trade"]["enabled"].asBool());
             item->entrust_enabled(data["entrust"]["enabled"].asBool());
             item->entrust_price(data["entrust"]["price"].asInt());
-            item->desc(cp949(data["desc"].asString()));
+            item->desc(CP949(data["desc"].asString(), PLATFORM::Windows));
             item->limit(master::parse_item_limit(data));
-            item->penalty(master::parse_item_penalty(cp949(data["death penalty"].asString())));
+            item->penalty(master::parse_item_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)));
 
 
 
@@ -410,8 +392,8 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
                 equipment->healing_cycle(option["healing_cycle"].asInt());
                 equipment->defensive_physical(option["defensive"]["physical"].asInt());
                 equipment->defensive_magical(option["defensive"]["magical"].asInt());
-                equipment->dress_script(cp949(data["script"]["dress"].asString()));
-                equipment->undress_script(cp949(data["script"]["undress"].asString()));
+                equipment->dress_script(CP949(data["script"]["dress"].asString(), PLATFORM::Windows));
+                equipment->undress_script(CP949(data["script"]["undress"].asString(), PLATFORM::Windows));
             }
 
 
@@ -424,7 +406,7 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
                 weapon->damage_small(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt());
                 weapon->damage_large(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt());
                 weapon->sound(option["sound"].asInt());
-                weapon->spell(cp949(option["spell"].asString()));
+                weapon->spell(CP949(option["spell"].asString(), PLATFORM::Windows));
             }
 
 
@@ -432,11 +414,11 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
             this->items.insert(std::make_pair(id, item));
 
             auto                percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
 
             if(item != nullptr)
                 delete item;
@@ -449,8 +431,6 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_npc(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             npcs;
     if(this->load_json(db_fname, npcs) == false)
         return false;
@@ -461,7 +441,7 @@ bool fb::game::master::load_npc(const std::string& db_fname, master::handle_call
     {
         auto                data = *i;
         uint32_t            id = std::stoi(i.key().asString());
-        auto                name = cp949(data["name"].asString());
+        auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
         try
         {
@@ -471,11 +451,11 @@ bool fb::game::master::load_npc(const std::string& db_fname, master::handle_call
             this->npcs.insert(std::make_pair(id, new npc::master(name, look, color)));
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -485,8 +465,6 @@ bool fb::game::master::load_npc(const std::string& db_fname, master::handle_call
 
 bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             spawns;
     if(this->load_json(db_fname, spawns) == false)
         return false;
@@ -496,7 +474,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
     for(auto i = spawns.begin(); i != spawns.end(); i++)
     {
         auto                data = *i;
-        auto                name = cp949(data["npc"].asString());
+        auto                name = CP949(data["npc"].asString(), PLATFORM::Windows);
         try
         {
             auto                core = this->name2npc(name);
@@ -504,12 +482,12 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
                 throw std::runtime_error(fb::game::message::assets::INVALID_NPC_NAME);
 
 
-            auto                map_name = cp949(data["map"].asString());
+            auto                map_name = CP949(data["map"].asString(), PLATFORM::Windows);
             auto                map = this->name2map(map_name);
             if(map == nullptr)
                 throw std::runtime_error(fb::game::message::assets::INVALID_MAP_NAME);
 
-            auto                direction_str = cp949(data["direction"].asString());
+            auto                direction_str = CP949(data["direction"].asString(), PLATFORM::Windows);
             auto                direction = fb::game::direction::BOTTOM;
             if(direction_str == "top")
                 direction = fb::game::direction::TOP;
@@ -525,7 +503,7 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
             point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
             if(position.x > map->width() || position.y > map->height())
                 throw std::runtime_error(fb::game::message::assets::INVALID_NPC_POSITION);
-            auto                script = cp949(data["script"].asString());
+            auto                script = CP949(data["script"].asString(), PLATFORM::Windows);
 
             auto                cloned = new npc(core, listener);
             cloned->direction(direction);
@@ -533,11 +511,11 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
             cloned->map(map, position);
 
             auto                percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -547,8 +525,6 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
 
 bool fb::game::master::load_mob(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             mobs;
     if(this->load_json(db_fname, mobs) == false)
         return false;
@@ -559,7 +535,7 @@ bool fb::game::master::load_mob(const std::string& db_fname, master::handle_call
     {
         auto                data = *i;
         uint16_t            id = std::stoi(i.key().asString());
-        auto                name = cp949(data["name"].asString());
+        auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
         try
         {
@@ -574,20 +550,20 @@ bool fb::game::master::load_mob(const std::string& db_fname, master::handle_call
             mob->experience(data["experience"].asInt());
             mob->damage_min(data["damage"]["min"].asInt());
             mob->damage_max(data["damage"]["max"].asInt());
-            mob->offensive(master::parse_mob_offensive(cp949(data["offensive"].asString())));
-            mob->size(master::parse_mob_size(cp949(data["size"].asString())));
+            mob->offensive(master::parse_mob_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)));
+            mob->size(master::parse_mob_size(CP949(data["size"].asString(), PLATFORM::Windows)));
             mob->speed(data["speed"].asInt());
-            mob->script_attack(cp949(data["script"]["attack"].asString()));
-            mob->script_die(cp949(data["script"]["die"].asString()));
+            mob->script_attack(CP949(data["script"]["attack"].asString(), PLATFORM::Windows));
+            mob->script_die(CP949(data["script"]["die"].asString(), PLATFORM::Windows));
 
             this->mobs.insert(std::make_pair(id, mob));
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -597,8 +573,6 @@ bool fb::game::master::load_mob(const std::string& db_fname, master::handle_call
 
 bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             spawns;
     if(this->load_json(db_fname, spawns) == false)
         return false;
@@ -607,7 +581,7 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
     auto                    read = 0;
     for(auto db_i = spawns.begin(); db_i != spawns.end(); db_i++)
     {
-        auto                name = cp949(db_i.key().asString());
+        auto                name = CP949(db_i.key().asString(), PLATFORM::Windows);
         auto                spawns = *db_i;
 
         try
@@ -618,7 +592,7 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
 
             for(auto spawn : spawns)
             {
-                auto            core = this->name2mob(cp949(spawn["name"].asString()));
+                auto            core = this->name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
                 if(core == nullptr)
                     continue;
 
@@ -640,11 +614,11 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
             }
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -654,8 +628,6 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
 
 bool fb::game::master::load_class(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             classes;
     if(this->load_json(db_fname, classes) == false)
         return false;
@@ -669,7 +641,7 @@ bool fb::game::master::load_class(const std::string& db_fname, master::handle_ca
         {
             auto            data = new class_data();
 
-            auto                levels = (*i1)["levels"];
+            auto            levels = (*i1)["levels"];
             for(auto i2 = levels.begin(); i2 != levels.end(); i2++)
             {
                 uint32_t    key = i2.key().asInt();
@@ -685,7 +657,7 @@ bool fb::game::master::load_class(const std::string& db_fname, master::handle_ca
             }
 
             for(auto promotion: (*i1)["promotions"])
-                data->add_promotion(cp949(promotion.asString()));
+                data->add_promotion(CP949(promotion.asString(), PLATFORM::Windows));
 
 
             this->classes.push_back(data);
@@ -705,8 +677,6 @@ bool fb::game::master::load_class(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_drop_item(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             drops;
     if(this->load_json(db_fname, drops) == false)
         return false;
@@ -715,7 +685,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
     auto                    read = 0;
     for(auto i1 = drops.begin(); i1 != drops.end(); i1++)
     {
-        auto                name = cp949(i1.key().asString());
+        auto                name = CP949(i1.key().asString(), PLATFORM::Windows);
         auto                core = this->name2mob(name);
         try
         {
@@ -726,7 +696,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
             for(auto i2 = items.begin(); i2 != items.end(); i2++)
             {
                 float       percentage = (*i2)["percentage"].asFloat();
-                auto        item_name = cp949((*i2)["item"].asString());
+                auto        item_name = CP949((*i2)["item"].asString(), PLATFORM::Windows);
                 auto        item_core = this->name2item(item_name);
 
                 if(item_core == nullptr)
@@ -736,11 +706,11 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
             }
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -750,8 +720,6 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
 
 bool fb::game::master::load_warp(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             warps;
     if(this->load_json(db_fname, warps) == false)
         return false;
@@ -760,7 +728,7 @@ bool fb::game::master::load_warp(const std::string& db_fname, master::handle_cal
     auto                    read = 0;
     for(auto i1 = warps.begin(); i1 != warps.end(); i1++)
     {
-        auto                name = cp949(i1.key().asString());
+        auto                name = CP949(i1.key().asString(), PLATFORM::Windows);
 
         try
         {
@@ -771,7 +739,7 @@ bool fb::game::master::load_warp(const std::string& db_fname, master::handle_cal
             auto            warps = *i1;
             for(auto i2 = warps.begin(); i2 != warps.end(); i2++)
             {
-                auto        next_map_name = cp949((*i2)["map"].asString());
+                auto        next_map_name = CP949((*i2)["map"].asString(), PLATFORM::Windows);
                 auto        next_map = this->name2map(next_map_name);
                 if(next_map == nullptr)
                     continue;
@@ -784,11 +752,11 @@ bool fb::game::master::load_warp(const std::string& db_fname, master::handle_cal
             }
 
             auto            percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -798,8 +766,6 @@ bool fb::game::master::load_warp(const std::string& db_fname, master::handle_cal
 
 bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             itemmix_list;
     if(this->load_json(db_fname, itemmix_list) == false)
         return false;
@@ -815,21 +781,21 @@ bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_
 
             for(auto require : data["require"])
             {
-                auto        item = this->name2item(cp949(require["item"].asString()));
+                auto        item = this->name2item(CP949(require["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
             for(auto success: data["success"])
             {
-                auto        item = this->name2item(cp949(success["item"].asString()));
+                auto        item = this->name2item(CP949(success["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
             for(auto failed: data["failed"])
             {
-                auto        item = this->name2item(cp949(failed["item"].asString()));
+                auto        item = this->name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = failed["count"].asInt();
                 itemmix->failed_add(item, count);
             }
@@ -848,8 +814,6 @@ bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_
 
 bool fb::game::master::load_spell(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             spells;
     if(this->load_json(db_fname, spells) == false)
         return false;
@@ -860,7 +824,7 @@ bool fb::game::master::load_spell(const std::string& db_fname, master::handle_ca
     {
         uint16_t            id = std::stoi(i.key().asString());
         const auto          data = (*i);
-        const auto          name = cp949(data["name"].asString());
+        const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
 
         try
         {
@@ -868,25 +832,25 @@ bool fb::game::master::load_spell(const std::string& db_fname, master::handle_ca
 
             std::string         cast, uncast, concast, message;
             if (data.isMember("cast"))
-                cast = cp949(data["cast"].asString());
+                cast = CP949(data["cast"].asString(), PLATFORM::Windows);
 
             if (data.isMember("uncast"))
-                uncast = cp949(data["uncast"].asString());
+                uncast = CP949(data["uncast"].asString(), PLATFORM::Windows);
 
             if (data.isMember("concast"))
-                concast = cp949(data["concast"].asString());
+                concast = CP949(data["concast"].asString(), PLATFORM::Windows);
 
             if (data.isMember("message"))
-                message = cp949(data["message"].asString());
+                message = CP949(data["message"].asString(), PLATFORM::Windows);
 
             this->spells.insert(std::make_pair(id, new spell(spell::types(type), name, cast, uncast, concast, message)));
 
             auto percentage = (++read * 100) / double(count);
-            callback(UTF8(name), percentage);
+            callback(name, percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(name), e.what());
+            error(name, e.what());
         }
     }
 
@@ -896,8 +860,6 @@ bool fb::game::master::load_spell(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_board(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     master::board.add("공지사항");
     auto section = this->board.add("갓승현의 역사");
 
@@ -914,8 +876,6 @@ bool fb::game::master::load_board(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_door(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
-    auto&                   config = fb::config::get();
-
     Json::Value             doors;
     if(this->load_json(db_fname, doors) == false)
         return false;

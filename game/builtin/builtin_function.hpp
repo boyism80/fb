@@ -1,4 +1,4 @@
-#include <builtin/builtin_function.h>
+#include "builtin/builtin_function.h"
 #include "model/session/session.h"
 
 using namespace fb::game;
@@ -25,7 +25,7 @@ int builtin_dialog(lua_State* lua)
 
         auto object = *(T**)lua_touserdata(lua, 1);
         auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-        auto message = lua_tostring(lua, 3);
+        auto message = lua_cp949(lua, 3);
         auto button_prev = argc < 4 ? false : lua_toboolean(lua, 4);
         auto button_next = argc < 5 ? false : lua_toboolean(lua, 5);
 
@@ -44,7 +44,7 @@ int builtin_menu_dialog(lua_State* lua)
 {
     auto npc = *(T**)lua_touserdata(lua, 1);
     auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
+    auto message = lua_cp949(lua, 3);
 
     // Read menu list
     auto size = lua_rawlen(lua, 4);
@@ -52,7 +52,7 @@ int builtin_menu_dialog(lua_State* lua)
     for(int i = 0; i < size; i++)
     {
         lua_rawgeti(lua, 4, i+1);
-        menus.push_back(lua_tostring(lua, -1));
+        menus.push_back(lua_cp949(lua, -1));
     }
 
     session->dialog.show(*npc, message, menus);
@@ -64,7 +64,7 @@ int builtin_item_dialog(lua_State* lua)
 {
     auto npc = *(T**)lua_touserdata(lua, 1);
     auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
+    auto message = lua_cp949(lua, 3);
 
     // Read menu list
     auto size = lua_rawlen(lua, 4);
@@ -84,13 +84,13 @@ int builtin_input_dialog(lua_State* lua)
 {
     auto npc = *(T**)lua_touserdata(lua, 1);
     auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_tostring(lua, 3);
+    auto message = lua_cp949(lua, 3);
 
     auto argc = lua_gettop(lua);
     if(argc > 3)
     {
-        auto message_top = lua_tostring(lua, 4);
-        auto message_bot = lua_tostring(lua, 5);
+        auto message_top = lua_cp949(lua, 4);
+        auto message_bot = lua_cp949(lua, 5);
         auto maxlen = argc < 6 ? 0xFF : (int)lua_tointeger(lua, 6);
         auto prev = argc < 7 ? false : lua_toboolean(lua, 7);
 

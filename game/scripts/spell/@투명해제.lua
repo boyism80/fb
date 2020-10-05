@@ -1,4 +1,4 @@
 function handle_uncast(me, spell)
 	me:state(0x00)
-	me:message('Åõ¸í ÇØÁ¦')
+	me:message('íˆ¬ëª… í•´ì œ')
 end

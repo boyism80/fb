@@ -391,7 +391,7 @@ int fb::game::map::builtin_name(lua_State* lua)
 {
     auto map = *(fb::game::map**)lua_touserdata(lua, 1);
 
-    lua_pushstring(lua, map->name().c_str());
+    lua_push_utf8(lua, map->name().c_str());
     return 1;
 }
 

@@ -1,6 +1,6 @@
 function handle_pickup(session)
     if session:state() == 0x05 then
         session:state(0x00)
-        session:unbuff('Åõ¸í')
+        session:unbuff('íˆ¬ëª…')
     end
 end
