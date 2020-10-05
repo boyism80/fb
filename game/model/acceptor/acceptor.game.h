@@ -19,6 +19,7 @@
 #include "model/listener/listener.h"
 #include "mysql+++/mysql+++.h"
 #include "protocol/game.h"
+#include "module/string/string.h"
 
 using namespace daotk::mysql;
 

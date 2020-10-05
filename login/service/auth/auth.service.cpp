@@ -2,7 +2,7 @@
 
 fb::login::service::auth::auth()
 {
-    const auto& config = fb::config();
+    const auto& config = fb::config::get();
 
     this->_connection = new connection(
         config["database"]["ip"].asString(), 
@@ -92,20 +92,20 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
 {
     auto name_size = CP949(id).length();
     if(name_size < MIN_NAME_SIZE || name_size > MAX_NAME_SIZE)
-        throw id_exception(message::INVALID_NAME);
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
     // Name must be full-hangul characters
-    if(fb::config()["allow other language"].asBool() == false && this->is_hangul(id) == false)
-        throw id_exception(message::INVALID_NAME);
+    if(fb::config::get()["allow other language"].asBool() == false && this->is_hangul(id) == false)
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
     // Name cannot contains subcharacters in forbidden list
     if(this->is_forbidden(id.c_str()))
-        throw id_exception(message::INVALID_NAME);
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
 
     // Read character's password
     if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
-        throw pw_exception(message::PASSWORD_SIZE);
+        throw pw_exception(CP949(fb::login::message::account::PASSWORD_SIZE));
 }
 
 void fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
@@ -113,9 +113,9 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     this->assert_account(id, pw);
 
     if(this->exists(id))
-        throw id_exception(message::ALREADY_EXISTS);
+        throw id_exception(CP949(fb::login::message::account::ALREADY_EXISTS));
 
-    auto& config = fb::config();
+    auto& config = fb::config::get();
 
     std::srand(std::time(nullptr));
     auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
@@ -154,27 +154,27 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
     );
 
     if(found.count() == 0)
-        throw id_exception(message::NOT_FOUND_NAME);
+        throw id_exception(CP949(fb::login::message::account::NOT_FOUND_NAME));
 
     if(found.get_value<std::string>(0) != this->sha256(pw))
-        throw pw_exception(message::INVALID_PASSWORD);
+        throw pw_exception(CP949(fb::login::message::account::INVALID_PASSWORD));
 }
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
     if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
-        throw id_exception(message::INVALID_NAME);
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
     // Name must be full-hangul characters
-    if(fb::config()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
-        throw id_exception(message::INVALID_NAME);
+    if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
     // Name cannot contains subcharacters in forbidden list
     if(this->is_forbidden(id.c_str()))
-        throw id_exception(message::INVALID_NAME);
+        throw id_exception(CP949(fb::login::message::account::INVALID_NAME));
 
     if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
-        throw pw_exception(message::PASSWORD_SIZE);
+        throw pw_exception(CP949(fb::login::message::account::PASSWORD_SIZE));
 
     auto found = this->_connection->query
     (
@@ -183,21 +183,21 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
     );
 
     if(found.count() == 0)
-        throw id_exception(message::NOT_FOUND_NAME);
+        throw id_exception(CP949(fb::login::message::account::NOT_FOUND_NAME));
 
     auto found_pw = found.get_value<std::string>(0);
     auto found_birth = found.get_value<uint32_t>(1);
 
     // TODO : 올바른 비밀번호인지 체크
     if(this->sha256(pw) != found_pw)
-        throw pw_exception(message::INVALID_PASSWORD);
+        throw pw_exception(CP949(fb::login::message::account::INVALID_PASSWORD));
 
     if(new_pw.length() < MIN_PASSWORD_SIZE || new_pw.length() > MAX_PASSWORD_SIZE)
-        throw newpw_exception(message::PASSWORD_SIZE);
+        throw newpw_exception(CP949(fb::login::message::account::PASSWORD_SIZE));
     
     // TODO : 너무 쉬운 비밀번호인지 체크
     if(pw == new_pw)
-        throw newpw_exception(message::NEW_PW_EQUALIZATION);
+        throw newpw_exception(CP949(fb::login::message::account::NEW_PW_EQUALIZATION));
 
     if(birthday != found_birth)
         throw btd_exception();

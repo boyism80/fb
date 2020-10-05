@@ -20,7 +20,7 @@ bool fb::gateway::acceptor::load_entries()
     try
     {
         // Load gateway list
-        auto entries = fb::config()["entries"];
+        auto entries = fb::config::get()["entries"];
         for(auto i = entries.begin(); i != entries.end(); i++)
         {
             this->_entries.push_back(entry

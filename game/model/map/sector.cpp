@@ -139,31 +139,63 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
 
     auto is_left = index % this->_columns == 0;
     if(!is_left)
-        sectors.push_back(this->at(index - 1));
+    {
+        auto sector = this->at(index - 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     auto is_right = index % this->_columns == this->_columns - 1;
     if(!is_right)
-        sectors.push_back(this->at(index + 1));
+    {
+        auto sector = this->at(index + 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     auto is_top = index < this->_columns;
     if(!is_top)
-        sectors.push_back(this->at(index - this->_columns));
+    {
+        auto sector = this->at(index - this->_columns);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     auto is_bottom = index > this->_columns * (this->_rows-1) - 1;
     if(!is_bottom)
-        sectors.push_back(this->at(index + this->_columns));
+    {
+        auto sector = this->at(index + this->_columns);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     if(!is_left && !is_top)
-        sectors.push_back(this->at(index - this->_columns - 1));
+    {
+        auto sector = this->at(index - this->_columns - 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     if(!is_right && !is_top)
-        sectors.push_back(this->at(index - this->_columns + 1));
+    {
+        auto sector = this->at(index - this->_columns + 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     if(!is_left && !is_bottom)
-        sectors.push_back(this->at(index + this->_columns - 1));
+    {
+        auto sector = this->at(index + this->_columns - 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     if(!is_right && !is_bottom)
-        sectors.push_back(this->at(index + this->_columns + 1));
+    {
+        auto sector = this->at(index + this->_columns + 1);
+        if(sector != nullptr)
+            sectors.push_back(sector);
+    }
 
     return sectors;
 }

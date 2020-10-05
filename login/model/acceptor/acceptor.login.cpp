@@ -3,7 +3,7 @@ using namespace fb::login;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
     fb::acceptor<session>(context, port, accept_delay),
-    _agreement(cp949(fb::config()["agreement"].asString()))
+    _agreement(cp949(fb::config::get()["agreement"].asString()))
 {
     // Register event handler
     this->bind<fb::protocol::request::login::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
@@ -79,7 +79,7 @@ bool acceptor::handle_account_complete(fb::login::session& session, const fb::pr
             throw std::exception();
 
         this->_auth_service.init_account(session.created_id, request.hair, request.sex, request.nation, request.creature);
-        this->send(session, response::login::message(message::SUCCESS_REGISTER_ACCOUNT, 0x00));
+        this->send(session, response::login::message(CP949(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT), 0x00));
         session.created_id.clear();
         return true;
     }
@@ -102,7 +102,7 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
 
         fb::ostream         parameter;
         parameter.write(request.id);
-        this->transfer(session, fb::config()["game"]["ip"].asString(), fb::config()["game"]["port"].asInt(), parameter);
+        this->transfer(session, fb::config::get()["game"]["ip"].asString(), fb::config::get()["game"]["port"].asInt(), parameter);
         return true;
     }
     catch(login_exception& e)
@@ -121,7 +121,7 @@ bool acceptor::handle_change_password(fb::login::session& session, const fb::pro
     try
     {
         this->_auth_service.change_pw(UTF8(request.name), UTF8(request.pw), UTF8(request.new_pw), request.birthday);
-        this->send(session, response::login::message(CP949(message::SUCCESS_CHANGE_PASSWORD), 0x00));
+        this->send(session, response::login::message(CP949(fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
         return true;
     }
     catch(login_exception& e)

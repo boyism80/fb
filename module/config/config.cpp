@@ -1,8 +1,6 @@
 #include "config.h"
 
-namespace fb {
-
-const Json::Value& config()
+const Json::Value& fb::config::get()
 {
     static Json::Value  instance;
     static bool			loaded = false;
@@ -21,6 +19,4 @@ const Json::Value& config()
     }
 
     return instance;
-}
-
 }

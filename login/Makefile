@@ -2,7 +2,7 @@ CXX             = g++
 BUILD           = bin
 STD             = -std=c++17
 TARGET          = $(BUILD)/login 
-LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto
+LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
 all: main config acceptor console cryptor db svc socket stream timer encoding acceptor gateway acceptor.login session.login auth.service

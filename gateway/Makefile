@@ -2,7 +2,7 @@ CXX             = g++
 BUILD           = bin
 STD             = -std=c++17
 TARGET          = $(BUILD)/gateway
-LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto
+LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
 all: config acceptor console cryptor db svc socket stream timer encoding acceptor.gateway gateway session.gateway service.gateway main

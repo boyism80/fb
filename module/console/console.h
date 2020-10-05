@@ -3,12 +3,14 @@
 
 #ifdef  _WIN32
 #include <Windows.h>
-#include <string>
-
 #define	CONSOLE_TITLE	"Private kingdom of the wind - http://cshyeon.com"
-
 bool SetConsoleIcon(int id);
+#else
+#include <ncursesw/curses.h>
 #endif
+#include <string>
+#include <cstring>
+#include "module/encoding/encoding.h"
 
 class console
 {
@@ -16,7 +18,9 @@ private:
     static console*         _ist;
 
 private:
+#ifdef _WIN32
     HANDLE                  _stdout;
+#endif
     uint16_t                _width, _height;
 
 private:

@@ -213,11 +213,11 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     }
 
     sstream << item.name();
-    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
 
     sstream.str(std::string());
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
-    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
 
     this->_connection->query
     (
@@ -288,7 +288,7 @@ void fb::game::acceptor::on_trade_money(session& me, session& from)
 
 void fb::game::acceptor::on_trade_cancel(session& me)
 {
-    this->send(me, response::game::trade::close(message::trade::CANCELLED_BY_ME), scope::SELF);
+    this->send(me, response::game::trade::close(fb::game::message::trade::CANCELLED_BY_ME), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_lock(session& me, bool mine)
@@ -299,48 +299,48 @@ void fb::game::acceptor::on_trade_lock(session& me, bool mine)
     }
     else
     {
-        this->send(me, response::game::message(message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
+        this->send(me, response::game::message(fb::game::message::trade::NOTIFY_LOCK_TO_PARTNER, message::type::POPUP), scope::SELF);
     }
 }
 
 void fb::game::acceptor::on_trade_failed(session& me)
 {
-    this->send(me, response::game::trade::close(message::trade::FAILED), scope::SELF);
+    this->send(me, response::game::trade::close(fb::game::message::trade::FAILED), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_success(session& me)
 {
-    this->send(me, response::game::trade::close(message::trade::SUCCESS), scope::SELF);
+    this->send(me, response::game::trade::close(fb::game::message::trade::SUCCESS), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
+    this->send(me, response::game::dialog::common(object, cp949(message), button_prev, button_next, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::menu(npc, menus, message, interaction), scope::SELF);
+    this->send(me, response::game::dialog::menu(npc, menus, cp949(message), interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
+    this->send(me, response::game::dialog::slot(npc, item_slots, cp949(message), interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::item(npc, cores, message, 0xFFFF, interaction), scope::SELF);
+    this->send(me, response::game::dialog::item(npc, cores, cp949(message), 0xFFFF, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::input(npc, message, interaction), scope::SELF);
+    this->send(me, response::game::dialog::input(npc, cp949(message), interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
-    this->send(me, response::game::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
+    this->send(me, response::game::dialog::input_ext(npc, cp949(message), cp949(top), cp949(bottom), maxlen, prev, interaction), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_item(session& me, session& from, uint8_t index)
@@ -423,7 +423,7 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
     }
 
     sstream << ": " << (enabled ? "ON" : "OFF");
-    this->send(me, response::game::message(sstream.str(), message::type::STATE), scope::SELF);
+    this->send(me, response::game::message(CP949(sstream.str()), message::type::STATE), scope::SELF);
     this->send(me, response::game::session::option(me), scope::SELF);
 }
 
@@ -452,7 +452,7 @@ void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_
     fb::ostream         parameter;
     parameter.write(me.name());
 
-    auto& config = fb::config();
+    auto& config = fb::config::get();
     auto host = config["hosts"][map.host_id()]["host"].asString();
     auto port = config["hosts"][map.host_id()]["port"].asInt();
     this->transfer(me, host, port, parameter);

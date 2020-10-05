@@ -16,6 +16,8 @@
 #include "module/encoding/encoding.h"
 #include <codecvt>
 #include <locale>
+#include "module/config/config.h"
+#include "module/string/string.h"
 
 namespace fb { namespace game {
 

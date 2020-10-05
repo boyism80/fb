@@ -23,3 +23,4 @@ cd boost_1_74_0
 ./b2 install
 
 apt-get install libssl-dev -y
+apt-get install libncurses5-dev libncursesw5-dev -y

@@ -9,7 +9,11 @@
 
 namespace fb {
 
-const Json::Value& config();
+class config
+{
+public:
+    static const Json::Value& get();
+};
 
 }
 

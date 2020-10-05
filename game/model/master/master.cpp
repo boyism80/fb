@@ -58,6 +58,8 @@ fb::game::master::~master()
 
 bool fb::game::master::load_json(const std::string& fname, Json::Value& json)
 {
+    auto&                   config = fb::config::get();
+
     std::ifstream           ifstream;
     ifstream.open(fname);
     if(ifstream.is_open() == false)
@@ -116,6 +118,8 @@ fb::game::map::options fb::game::master::parse_map_option(const Json::Value& dat
 
 bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 {
+    auto&                   config = fb::config::get();
+
     char                    fname[256];
     sprintf(fname, "maps/%06d.map", id);
 
@@ -131,6 +135,8 @@ bool fb::game::master::load_map_data(uint16_t id, std::vector<char>& buffer)
 
 bool fb::game::master::load_map_blocks(uint16_t id, Json::Value& buffer)
 {
+    auto&                   config = fb::config::get();
+
     char                    fname[256];
     sprintf(fname, "maps/%06d.block", id);
     
@@ -200,6 +206,8 @@ fb::game::item::master* fb::game::master::create_item(uint32_t id, const Json::V
 
 fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value& data)
 {
+    auto&                   config = fb::config::get();
+
     fb::game::item::item_limit limit;
     if(data.isMember("limit") == false)
         return limit;
@@ -230,7 +238,7 @@ fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value&
         else if(sex == "woman")
             limit.sex = fb::game::sex::WOMAN;
         else
-            throw std::runtime_error("invalid sex limit");
+            throw std::runtime_error(fb::game::message::assets::INVALID_SEX);
     }
 
     return limit;
@@ -238,6 +246,8 @@ fb::game::item::item_limit fb::game::master::parse_item_limit(const Json::Value&
 
 fb::game::item::penalties fb::game::master::parse_item_penalty(const std::string& penalty)
 {
+    auto&                   config = fb::config::get();
+
     if(penalty.empty())
         return fb::game::item::penalties::NONE;
 
@@ -248,22 +258,26 @@ fb::game::item::penalties fb::game::master::parse_item_penalty(const std::string
     if(penalty == "destroy")
         return fb::game::item::penalties::DESTRUCTION;
 
-    throw std::runtime_error("invalid death penalty");
+    throw std::runtime_error(fb::game::message::assets::INVALID_DEATH_PENALTY);
 }
 
 fb::game::mob::sizes fb::game::master::parse_mob_size(const std::string& size)
 {
+    auto&                   config = fb::config::get();
+
     if(size == "small")
         return mob::sizes::SMALL;
 
     if(size == "large")
         return mob::sizes::LARGE;
 
-    throw std::runtime_error("invalid mob size");
+    throw std::runtime_error(fb::game::message::assets::INVALID_MOB_SIZE);
 }
 
 fb::game::mob::offensive_type fb::game::master::parse_mob_offensive(const std::string& offensive)
 {
+    auto&                   config = fb::config::get();
+
     if(offensive == "containment")
         return mob::offensive_type::CONTAINMENT;
 
@@ -279,11 +293,13 @@ fb::game::mob::offensive_type fb::game::master::parse_mob_offensive(const std::s
     if(offensive == "run away")
         return mob::offensive_type::RUN_AWAY;
 
-    throw std::runtime_error("invalid offensive type");
+    throw std::runtime_error(fb::game::message::assets::INVALID_MOB_OFFENSIVE);
 }
 
 bool fb::game::master::load_maps(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             maps;
     if(this->load_json(db_fname, maps) == false)
         return false;
@@ -309,12 +325,12 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
             // Load binary
             std::vector<char> map_binary;
             if(this->load_map_data(id, map_binary) == false)
-                throw std::runtime_error("맵 데이터를 읽을 수 없습니다.");
+                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_DATA);
 
             // Load blocks
             Json::Value     blocks;
             if(this->load_map_blocks(id, blocks) == false)
-                throw std::runtime_error("맵 블록 데이터를 읽을 수 없습니다.");
+                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
 
             map = new fb::game::map(id, parent, host_id, bgm, name, option, effect, map_binary.data(), map_binary.size());
             for(const auto block : blocks)
@@ -340,6 +356,8 @@ bool fb::game::master::load_maps(const std::string& db_fname, master::handle_cal
 
 bool fb::game::master::load_items(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value                     items;
     if(this->load_json(db_fname, items) == false)
         return false;
@@ -350,6 +368,7 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
     {
         fb::game::item::master*     item = nullptr;
         auto                        data = *i;
+        auto                        name = cp949(data["name"].asString());
 
         try
         {
@@ -413,11 +432,11 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
             this->items.insert(std::make_pair(id, item));
 
             auto                percentage = (++read * 100) / double(count);
-            callback(UTF8(data["name"].asString()), percentage);
+            callback(UTF8(name), percentage);
         }
         catch(std::exception& e)
         {
-            error(UTF8(data["name"].asString()), e.what());
+            error(UTF8(name), e.what());
 
             if(item != nullptr)
                 delete item;
@@ -430,6 +449,8 @@ bool fb::game::master::load_items(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_npc(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             npcs;
     if(this->load_json(db_fname, npcs) == false)
         return false;
@@ -464,6 +485,8 @@ bool fb::game::master::load_npc(const std::string& db_fname, master::handle_call
 
 bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             spawns;
     if(this->load_json(db_fname, spawns) == false)
         return false;
@@ -478,13 +501,13 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
         {
             auto                core = this->name2npc(name);
             if(core == nullptr)
-                throw std::runtime_error("존재하지 않는 NPC입니다.");
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_NAME);
 
 
             auto                map_name = cp949(data["map"].asString());
             auto                map = this->name2map(map_name);
             if(map == nullptr)
-                throw std::runtime_error("존재하지 않는 맵입니다.");
+                throw std::runtime_error(fb::game::message::assets::INVALID_MAP_NAME);
 
             auto                direction_str = cp949(data["direction"].asString());
             auto                direction = fb::game::direction::BOTTOM;
@@ -497,11 +520,11 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
             else if(direction_str == "left")
                 direction = fb::game::direction::LEFT;
             else
-                throw std::runtime_error("NPC의 방향이 올바르지 않습니다.");
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
             point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
             if(position.x > map->width() || position.y > map->height())
-                throw std::runtime_error("NPC의 위치가 올바르지 않습니다.");
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_POSITION);
             auto                script = cp949(data["script"].asString());
 
             auto                cloned = new npc(core, listener);
@@ -524,6 +547,8 @@ bool fb::game::master::load_npc_spawn(const std::string& db_fname, fb::game::lis
 
 bool fb::game::master::load_mob(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             mobs;
     if(this->load_json(db_fname, mobs) == false)
         return false;
@@ -572,6 +597,8 @@ bool fb::game::master::load_mob(const std::string& db_fname, master::handle_call
 
 bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::listener* listener, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             spawns;
     if(this->load_json(db_fname, spawns) == false)
         return false;
@@ -627,6 +654,8 @@ bool fb::game::master::load_mob_spawn(const std::string& db_fname, fb::game::lis
 
 bool fb::game::master::load_class(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             classes;
     if(this->load_json(db_fname, classes) == false)
         return false;
@@ -676,6 +705,8 @@ bool fb::game::master::load_class(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_drop_item(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             drops;
     if(this->load_json(db_fname, drops) == false)
         return false;
@@ -689,7 +720,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
         try
         {
             if(core == nullptr)
-                throw std::runtime_error("올바르지 않은 몹 이름입니다");
+                throw std::runtime_error(fb::game::message::assets::INVALID_MOB_NAME);
 
             auto            items = (*i1);
             for(auto i2 = items.begin(); i2 != items.end(); i2++)
@@ -699,7 +730,7 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
                 auto        item_core = this->name2item(item_name);
 
                 if(item_core == nullptr)
-                    throw std::runtime_error("올바르지 않은 아이템 이름입니다");
+                    throw std::runtime_error(fb::game::message::assets::INVALID_ITEM_NAME);
 
                 core->dropitem_add(item_core, percentage);
             }
@@ -719,6 +750,8 @@ bool fb::game::master::load_drop_item(const std::string& db_fname, master::handl
 
 bool fb::game::master::load_warp(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             warps;
     if(this->load_json(db_fname, warps) == false)
         return false;
@@ -765,6 +798,8 @@ bool fb::game::master::load_warp(const std::string& db_fname, master::handle_cal
 
 bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             itemmix_list;
     if(this->load_json(db_fname, itemmix_list) == false)
         return false;
@@ -813,6 +848,8 @@ bool fb::game::master::load_itemmix(const std::string& db_fname, master::handle_
 
 bool fb::game::master::load_spell(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             spells;
     if(this->load_json(db_fname, spells) == false)
         return false;
@@ -859,6 +896,8 @@ bool fb::game::master::load_spell(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_board(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     master::board.add("공지사항");
     auto section = this->board.add("갓승현의 역사");
 
@@ -875,6 +914,8 @@ bool fb::game::master::load_board(const std::string& db_fname, master::handle_ca
 
 bool fb::game::master::load_door(const std::string& db_fname, master::handle_callback callback, master::handle_error error, master::handle_complete complete)
 {
+    auto&                   config = fb::config::get();
+
     Json::Value             doors;
     if(this->load_json(db_fname, doors) == false)
         return false;

@@ -15,6 +15,7 @@
 #include "model/lua/lua.h"
 #include "model/mob/mob.h"
 #include "model/npc/npc.h"
+#include "module/string/string.h"
 
 namespace fb { namespace game {
 
@@ -104,11 +105,11 @@ public:
 
 #pragma region exception
 public:
-    DECLARE_EXCEPTION(require_class_exception, message::exception::REQUIRE_CLASS)
-    DECLARE_EXCEPTION(ghost_exception, message::exception::GHOST)
-    DECLARE_EXCEPTION(ridding_exception, message::exception::RIDDING)
-    DECLARE_EXCEPTION(no_conveyance_exception, message::exception::NO_CONVEYANCE)
-    DECLARE_EXCEPTION(disguise_exception, message::exception::DISGUISE)
+    DECLARE_EXCEPTION(require_class_exception, fb::game::message::exception::REQUIRE_CLASS)
+    DECLARE_EXCEPTION(ghost_exception, fb::game::message::exception::GHOST)
+    DECLARE_EXCEPTION(ridding_exception, fb::game::message::exception::RIDDING)
+    DECLARE_EXCEPTION(no_conveyance_exception, fb::game::message::exception::NO_CONVEYANCE)
+    DECLARE_EXCEPTION(disguise_exception, fb::game::message::exception::DISGUISE)
 #pragma endregion
 
 

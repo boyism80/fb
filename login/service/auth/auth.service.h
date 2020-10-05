@@ -16,6 +16,7 @@
 #include "module/service/service.h"
 #include "model/gateway/gateway.h"
 #include "module/encoding/encoding.h"
+#include "module/string/string.h"
 using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
@@ -23,23 +24,6 @@ using namespace daotk::mysql;
 #define MIN_PASSWORD_SIZE   4
 #define MAX_PASSWORD_SIZE   8
 #define MAX_NXCLUB_SIZE     14
-
-#pragma region message
-namespace message
-{
-    static const char*      INVALID_NAME                = "이름이 길거나 적합하지 않습니다.";
-    static const char*      ALREADY_LOGIN               = "이미 접속중입니다.";
-    static const char*      NOT_FOUND_NAME              = "존재하지 않는 이름입니다.";
-    static const char*      PASSWORD_SIZE               = "암호는 4자 이상 8자 이하";
-    static const char*      INVALID_PASSWORD            = "비밀번호가 올바르지 않습니다.";
-    static const char*      SIMPLE_PASSWORD             = "암호가 단순합니다.";
-    static const char*      SUCCESS_REGISTER_ACCOUNT    = "등록완료, 이어하기를 선택하세요.";
-    static const char*      SUCCESS_CHANGE_PASSWORD     = "변경됐다리";
-    static const char*      INVALID_BIRTHDAY            = "생년월일이 올바르지 않습니다.";
-    static const char*      NEW_PW_EQUALIZATION         = "기존 암호화 동일합니다.";
-    static const char*      ALREADY_EXISTS              = "이미 존재하는 이름입니다.";
-}
-#pragma endregion
 
 #pragma region exceptions
 
@@ -49,7 +33,7 @@ private:
     uint8_t                 _exc_type;
 
 public:
-    login_exception(uint8_t type, const char* make_message_stream) : std::runtime_error(make_message_stream), _exc_type(type) {}
+    login_exception(uint8_t type, const std::string& what) : std::runtime_error(what), _exc_type(type) {}
 
 public:
     uint8_t                 type() const { return this->_exc_type; }
@@ -58,25 +42,25 @@ public:
 class id_exception : public login_exception
 {
 public:
-    id_exception(const char* make_message_stream) : login_exception(0x0E, make_message_stream) {}
+    id_exception(const std::string& what) : login_exception(0x0E, what) {}
 };
 
 class pw_exception : public login_exception
 {
 public:
-    pw_exception(const char* make_message_stream) : login_exception(0x0F, make_message_stream) {}
+    pw_exception(const std::string& what) : login_exception(0x0F, what) {}
 };
 
 class newpw_exception : public login_exception
 {
 public:
-    newpw_exception(const char* make_message_stream) : login_exception(0x05, make_message_stream) {}
+    newpw_exception(const std::string& what) : login_exception(0x05, what) {}
 };
 
 class btd_exception : public login_exception
 {
 public:
-    btd_exception() : login_exception(0x1F, message::INVALID_BIRTHDAY) {}
+    btd_exception() : login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY) {}
 };
 
 #pragma endregion

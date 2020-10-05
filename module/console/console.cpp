@@ -1,9 +1,8 @@
 #include "console.h"
 
-#ifdef _WIN32
-
 console* console::_ist;
 
+#ifdef _WIN32
 bool SetConsoleIcon(int id)
 {
 	auto hwnd = ::GetConsoleWindow();
@@ -18,10 +17,14 @@ bool SetConsoleIcon(int id)
 	::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
 	return true;
 }
+#endif
 
-console::console() : 
-    _stdout(GetStdHandle(STD_OUTPUT_HANDLE))
+console::console() 
+#ifdef _WIN32
+    : _stdout(GetStdHandle(STD_OUTPUT_HANDLE))
+#endif
 {
+#ifdef _WIN32
     // get size
     CONSOLE_SCREEN_BUFFER_INFO		screen;
     GetConsoleScreenBufferInfo(this->_stdout, &screen);
@@ -32,7 +35,11 @@ console::console() :
     GetConsoleCursorInfo(this->_stdout, &cursor);
     cursor.bVisible = false;
     SetConsoleCursorInfo(this->_stdout, &cursor);
-
+#else
+    initscr();
+    getmaxyx(stdscr, this->_height, this->_width);
+    noecho();
+#endif
 }
 
 console::~console()
@@ -47,8 +54,8 @@ bool console::line(uint16_t x, uint16_t y, uint16_t width, char content, char si
     int  offset = 0;
     char buffer[256] = {0,};
 
-    buffer[offset] = side;                      offset++;
-    memset(buffer+offset, content, width-1);    offset += (width-1);
+    buffer[offset] = side;                          offset++;
+    std::memset(buffer+offset, content, width-1);   offset += (width-1);
     buffer[offset] = side;
 
     this->puts(buffer, x, y);
@@ -57,9 +64,14 @@ bool console::line(uint16_t x, uint16_t y, uint16_t width, char content, char si
 
 bool console::puts(const std::string& text, uint16_t x, uint16_t y)
 {
+#ifdef _WIN32
     COORD					coord	= {(short)x, (short)y};
     DWORD					written;
     return WriteConsoleOutputCharacterA(this->_stdout, text.c_str(), text.length(), coord, &written) ? true : false;
+#else
+    mvprintw(y, x, CP949(text).c_str());
+    refresh();
+#endif
 }
 
 bool console::clear(uint16_t row, uint16_t width)
@@ -104,6 +116,8 @@ void console::release()
 {
     if(_ist != nullptr)
         delete _ist;
-}
 
+#ifdef __linux__
+    endwin();
 #endif
+}

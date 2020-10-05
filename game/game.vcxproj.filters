@@ -116,6 +116,9 @@
     <Filter Include="module\encoding">
       <UniqueIdentifier>{0c3ecd56-e82b-4110-8b8d-302ef1943d69}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\string">
+      <UniqueIdentifier>{6f6c874a-a48f-4ff3-9d38-27c6e00ecd16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -335,6 +338,9 @@
     </ClInclude>
     <ClInclude Include="..\module\encoding\encoding.h">
       <Filter>module\encoding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\string\string.h">
+      <Filter>module\string</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

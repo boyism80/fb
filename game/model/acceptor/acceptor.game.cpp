@@ -145,7 +145,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     fb::acceptor<fb::game::session>(context, port, accept_delay),
     _timer(context)
 {
-    const auto& config = fb::config();
+    const auto& config = fb::config::get();
     this->_connection = new connection(
         config["database"]["ip"].asString(), 
         config["database"]["uid"].asString(), 
@@ -447,7 +447,7 @@ bool fb::game::acceptor::handle_direction(fb::game::session& session, const fb::
 
 bool fb::game::acceptor::handle_exit(fb::game::session& session, const fb::protocol::request::game::exit& request)
 {
-    const auto&             config = fb::config();
+    const auto&             config = fb::config::get();
     this->transfer(session, config["login"]["ip"].asString(), config["login"]["port"].asInt());
     return true;
 }
@@ -709,23 +709,23 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
         auto                    you = this->find_session(request.name);
         if(you == nullptr)
         {
-            sstream << request.name << "님을 찾을 수 없습니다.";
+            sstream << request.name << fb::game::message::group::CANNOT_FIND_TARGET;
             throw std::runtime_error(sstream.str());
         }
 
         if(session == *you)
         {
-            throw std::runtime_error("대상을 찾을 수 없습니다.");
+            throw std::runtime_error(fb::game::message::group::CANNOT_FIND_TARGET);
         }
 
         if(session.option(options::GROUP) == false)
         {
-            throw std::runtime_error("그룹 거부 상태입니다.");
+            throw std::runtime_error(fb::game::message::group::DISABLED_MINE);
         }
 
         if(you->option(options::GROUP) == false)
         {
-            throw std::runtime_error("상대방이 그룹 거부 상태입니다.");
+            throw std::runtime_error(fb::game::message::group::DISABLED_TARGET);
         }
 
         auto mine = session.group();
@@ -735,18 +735,18 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
         {
             if(your != nullptr)
             {
-                sstream << request.name << "님은 이미 그룹 참여 중입니다.";
+                sstream << request.name << fb::game::message::group::ALREADY_JOINED;
                 throw std::runtime_error(sstream.str());
             }
 
             mine = fb::game::group::create(session);
             mine->enter(*you);
 
-            sstream << session.name() << "님 그룹에 참여";
+            sstream << session.name() << fb::game::message::group::JOINED;
             this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
 
             sstream.str("");
-            sstream << request.name << "님 그룹에 참여";
+            sstream << request.name << fb::game::message::group::JOINED;
             this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
         }
         else // 기존 그룹에 초대하기
@@ -754,18 +754,18 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
             auto& leader = mine->leader();
             if(session != leader)
             {
-                throw std::runtime_error("그룹장만 할 수 있습니다.");
+                throw std::runtime_error(fb::game::message::group::NOT_OWNER);
             }
 
             if(mine != your && your != nullptr)
             {
-                sstream << request.name << "님은 다른 그룹에 참여 중입니다.";
+                sstream << request.name << fb::game::message::group::ALREADY_JOINED;
                 throw std::runtime_error(sstream.str());
             }
 
             if(mine == your)
             {
-                sstream << request.name << "님 그룹 탈퇴";
+                sstream << request.name << fb::game::message::group::LEFT;
                 this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
                 mine->leave(*you);
                 return true;
@@ -773,10 +773,10 @@ bool fb::game::acceptor::handle_group(fb::game::session& session, const fb::prot
 
             if(mine->enter(*you) == nullptr)
             {
-                throw std::runtime_error("자리가 없습니다.");
+                throw std::runtime_error(fb::game::message::group::FULL_MEMBER);
             }
             
-            sstream << request.name << "님 그룹에 참여";
+            sstream << request.name << fb::game::message::group::JOINED;
             this->send(session, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
             this->send(leader, response::game::message(sstream.str(), message::type::STATE), scope::GROUP);
         }
@@ -836,7 +836,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::prot
     {
         auto                    section = game::master::get().board.sections().at(request.section);
         if(section->add(request.title, request.contents, session.name()) != nullptr)
-            this->send(session, response::game::board::message("글을 작성하였습니다.", true, true), scope::SELF);
+            this->send(session, response::game::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
         break;
     }
 
@@ -858,7 +858,7 @@ bool fb::game::acceptor::handle_board(fb::game::session& session, const fb::prot
             if(section->remove(article->id()) == false)
                 throw board::article::not_found_exception();
 
-            this->send(session, response::game::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
+            this->send(session, response::game::board::message(fb::game::message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }
         catch(std::exception& e)
         {
@@ -1091,7 +1091,7 @@ void fb::game::acceptor::handle_containment_mob_action(fb::game::mob* mob)
             target = mob->autoset_target();
 
         if(target == nullptr)
-            throw std::runtime_error("no target");
+            throw std::runtime_error(fb::game::message::group::CANNOT_FIND_TARGET);
     }
     catch(std::exception&)
     { }

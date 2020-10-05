@@ -7,6 +7,7 @@
 #include "module/stream/stream.h"
 #include "model/session/session.h"
 #include "model/mmo/mmo.h"
+#include "module/string/string.h"
 
 namespace fb { namespace game {
 
@@ -20,7 +21,7 @@ public:
     class article
     {
     public:
-        DECLARE_EXCEPTION(not_found_exception, message::board::ARTICLE_NOT_EXIST)
+        DECLARE_EXCEPTION(not_found_exception, fb::game::message::board::ARTICLE_NOT_EXIST)
 
     private:
         uint16_t                        _id;
@@ -52,7 +53,7 @@ public:
     class section : private std::vector<article*>
     {
     public:
-        DECLARE_EXCEPTION(not_found_exception, message::board::SECTION_NOT_EXIST)
+        DECLARE_EXCEPTION(not_found_exception, fb::game::message::board::SECTION_NOT_EXIST)
 
     public:
         using std::vector<article*>::operator[];
@@ -86,7 +87,7 @@ public:
 #pragma endregion
 
 public:
-    DECLARE_EXCEPTION(auth_exception, message::board::NOT_AUTH)
+    DECLARE_EXCEPTION(auth_exception, fb::game::message::board::NOT_AUTH)
 
 private:
     std::vector<section*>               _sections;

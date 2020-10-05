@@ -7,13 +7,13 @@ DIALOG_RESULT_NEXT = 2
 function handle_click(session, npc)
 	local group = session:group()
 	if group == nil then
-		if npc:dialog(session, '±×·ìÀÌ ¾ø½À´Ï´Ù. QUITÀ» ´©¸£¼¼¿ä', true, true) == DIALOG_RESULT_QUIT then
-			npc:dialog(session, '±×·¸Áö')
+		if npc:dialog(session, 'ê·¸ë£¹ì´ ì—†ìŠµë‹ˆë‹¤. QUITì„ ëˆ„ë¥´ì„¸ìš”', true, true) == DIALOG_RESULT_QUIT then
+			npc:dialog(session, 'ê·¸ë ‡ì§€')
 		else
-			npc:dialog(session, '¸» Á¸³ª ¾Èµé¾îÃÄ¸Ô³×')
+			npc:dialog(session, 'ë§ ì¡´ë‚˜ ì•ˆë“¤ì–´ì³ë¨¹ë„¤')
 		end
 	else
-		local message = '±×·ì¿ø ÇöÈ²\n'
+		local message = 'ê·¸ë£¹ì› í˜„í™©\n'
 		for _, member in pairs(group:members()) do
 			message = message .. member:name() .. '\n'
 		end

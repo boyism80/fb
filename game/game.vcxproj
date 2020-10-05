@@ -215,6 +215,7 @@
     <ClInclude Include="..\module\socket\socket.h" />
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
+    <ClInclude Include="..\module\string\string.h" />
     <ClInclude Include="..\module\timer\timer.h" />
     <ClInclude Include="builtin\builtin_function.h" />
     <ClInclude Include="builtin\builtin_function.hpp" />
