@@ -76,18 +76,17 @@ void fb::socket::recv()
                 if(error)
                 {
                     if(error == boost::asio::error::eof)
-                        throw std::runtime_error("disconnected from client.");
+                        throw std::exception();
                     else 
-                        throw std::runtime_error(error.message());
+                        throw std::exception();
                 }
 
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->recv();
                 this->_owner->handle_receive(*this);
             }
-            catch(std::runtime_error& e)
+            catch(std::exception& e)
             {
-                std::cout << e.what() << std::endl;
                 _owner->handle_disconnected(*this);
             }
         }

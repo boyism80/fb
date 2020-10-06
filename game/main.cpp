@@ -10,22 +10,23 @@
 #include "module/console/console.h"
 #include "module/string/string.h"
 
-void clear(console& c, char* buffer, int current_line)
+void clear(fb::console& c, uint32_t x, int y)
 {
-    static int prev_size = 0;
-
-    auto current_size = strlen(buffer);
-    if(prev_size > current_size)
+    static int prev = 0;
+    static char buffer[256];
+    
+    if(prev > x)
     {
-        std::memset(buffer, ' ', prev_size - current_size);
-        buffer[prev_size - current_size] = 0;
-        c.puts(buffer, current_size, current_line);
+        auto len = c.width() - x;
+        std::memset(buffer, ' ', len);
+        buffer[len] = 0;
+        c.move(x, y).puts(buffer);
     }
 
-    prev_size = current_size;
+    prev = x;
 }
 
-bool load_db(console& c, fb::game::listener* listener)
+bool load_db(fb::console& c, fb::game::listener* listener)
 {
     auto& config = fb::config::get();
 
@@ -33,44 +34,42 @@ bool load_db(console& c, fb::game::listener* listener)
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.puts(header, (c.width()-1 - strlen(header)) / 2, 2);
+    c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.puts(github, c.width()-1 - strlen(github) - 3, 4);
+    c.move(c.width()-1 - strlen(github) - 3, 4).puts(github);
 
     auto madeby = "made by cshyeon";
-    c.puts(madeby, c.width()-1 - strlen(madeby) - 3, 5);
+    c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
 
+    c.current_line(height + 1);
     auto current_line = height;
-    auto current_error_line = 0;
-    char buffer[256] = {0,};
 
     auto& master = fb::game::master::get();
 
     if(master.load_door("db/door.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::DOOR_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::DOOR_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line =  current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
 #if defined DEBUG | defined _DEBUG
     if(master.load_maps("db/map-temp.json", 
 #else
@@ -78,285 +77,273 @@ bool load_db(console& c, fb::game::listener* listener)
 #endif
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::MAP_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MAP_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_spell("db/spell.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::SPELL_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::SPELL_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_warp("db/warp.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::WARP_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::WARP_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_items("db/item.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::ITEM_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::ITEM_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_itemmix("db/itemmix.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::ITEM_MIX_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_npc("db/npc.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::NPC_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::NPC_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_mob("db/mob.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::MOB_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MOB_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_drop_item("db/item_drop.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::DROP_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::DROP_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_npc_spawn("db/npc_spawn.json", listener, 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_mob_spawn("db/mob_spawn.json", listener, 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_class("db/class.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::CLASS_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::CLASS_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
     }
 
-    current_line = current_line + current_error_line + 1;
-    current_error_line = 0;
+    current_line = c.current_line();
+    c.next();
     if(master.load_board("db/board.json", 
         [&] (const std::string& name, double percentage)
         {
-            sprintf(buffer, fb::game::message::assets::BOARD_LOADED, percentage, name.c_str());
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::BOARD_LOADED, percentage, name.c_str());
+            clear(c, n, current_line);
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            sprintf(buffer, "    - %s (%s)", error.c_str(), name.c_str());
-            c.puts(buffer, 0, current_line + (++current_error_line));
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
-            sprintf(buffer, fb::game::message::assets::BOARD_ALL_LOADED, count);
-            c.puts(buffer, 0, current_line);
-            clear(c, buffer, current_line);
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::BOARD_ALL_LOADED, count);
+            clear(c, n, current_line);
         }) == false)
     {
         return false;
@@ -369,7 +356,7 @@ int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(157);
 
-    auto& c = console::get();
+    auto& c = fb::console::get();
 
 #ifdef _WIN32
     ::SetConsoleIcon(IDI_BARAM);

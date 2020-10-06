@@ -67,13 +67,16 @@ bool acceptor::handle_connected(fb::gateway::session& session)
     static ostream ostream(data, sizeof(data));
 
     session.send(ostream, false, false);
-    std::cout << "connection request" << std::endl;
+
+    auto& c = fb::console::get();
+    c.puts("님이 접속했습니다.");
     return true;
 }
 
 bool acceptor::handle_disconnected(fb::gateway::session& session)
 {
-    std::cout << "disconnection request" << std::endl;
+    auto& c = fb::console::get();
+    c.puts("님의 연결을 끊었습니다.");
     return false;
 }
 

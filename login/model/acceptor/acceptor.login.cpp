@@ -23,12 +23,15 @@ fb::login::session* acceptor::handle_alloc_session(fb::socket* socket)
 
 bool acceptor::handle_connected(fb::login::session& session)
 {
+    auto& c = fb::console::get();
+    c.puts("님이 접속했습니다.");
     return true;
 }
 
 bool acceptor::handle_disconnected(fb::login::session& session)
 {
-    std::cout << "disconnection request" << std::endl;
+    auto& c = fb::console::get();
+    c.puts("님의 연결을 끊었습니다.");
     return false;
 }
 

@@ -205,7 +205,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::request::game::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
 
     this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
-    this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);    // 몹 리젠 타이머
+    this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
     this->_timer.push(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
 }
 
@@ -221,6 +221,9 @@ bool acceptor::handle_connected(fb::game::session& session)
 
 bool acceptor::handle_disconnected(fb::game::session& session)
 {
+    auto& c = fb::console::get();
+    c.puts("%s님이 접속을 종료했습니다.", session.name().c_str());
+
     this->on_save(session);
     session.map(nullptr);
     return true;
@@ -344,14 +347,17 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
 
 bool fb::game::acceptor::handle_login(fb::game::session& session, const fb::protocol::request::game::login& request)
 {
+    auto& c = fb::console::get();
+
     // Set crypt data
     session.crt(request.enc_type, request.enc_key);
 
     session.name(request.name);
+    c.puts("%s님이 접속했습니다.", request.name.c_str());
 
     auto found = this->_connection->query
     (
-        "SELECT * FROM user WHERE name LIKE '%s' LIMIT 1",      // sql injection 대처 필요
+        "SELECT * FROM user WHERE name='%s' LIMIT 1",      // sql injection 대처 필요
         session.name().c_str()
     );
     if(found.count() == 0)

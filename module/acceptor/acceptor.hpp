@@ -56,7 +56,8 @@ inline bool fb::acceptor<T>::call_handle(T& session, uint8_t cmd)
     auto i = this->_handler_dict.find(cmd);
     if(i == this->_handler_dict.end())
     {
-        printf("matched header not found : 0x%2X\n", cmd);
+        auto& c = fb::console::get();
+        c.puts("정의되지 않은 요청입니다. [0x%2X]", cmd);
         return true; 
     }
 

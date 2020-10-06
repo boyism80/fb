@@ -16,18 +16,20 @@ int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
 
-    auto& c = console::get();
+    auto& c = fb::console::get();
     auto height = 8;
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [LOGIN]";
-    c.puts(header, (c.width()-1 - strlen(header)) / 2, 2);
+    c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.puts(github, c.width()-1 - strlen(github) - 3, 4);
+    c.move(c.width()-1 - strlen(github) - 3, 4).puts(github);
 
     auto madeby = "made by cshyeon";
-    c.puts(madeby, c.width()-1 - strlen(madeby) - 3, 5);
+    c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
+
+    c.current_line(height + 1);
 
 #ifdef _WIN32
     ::SetConsoleIcon(IDI_BARAM);

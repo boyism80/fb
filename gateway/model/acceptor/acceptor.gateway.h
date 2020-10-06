@@ -9,6 +9,7 @@
 #include <zlib.h>
 #include "protocol/gateway.h"
 #include "module/encoding/encoding.h"
+#include "module/console/console.h"
 
 namespace fb { namespace gateway {
 

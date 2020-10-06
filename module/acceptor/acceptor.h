@@ -9,6 +9,7 @@
 #include "module/stream/stream.h"
 #include "module/socket/socket.h"
 #include "module/cryptor/cryptor.h"
+#include "module/console/console.h"
 #include "protocol/protocol.h"
 
 namespace fb {

@@ -3,10 +3,11 @@
 
 #include "module/acceptor/acceptor.h"
 #include "model/session/session.login.h"
-#include <service/auth/auth.service.h>
+#include "service/auth/auth.service.h"
 #include "model/gateway/gateway.h"
 #include <zlib.h>
 #include "protocol/login.h"
+#include "module/console/console.h"
 
 namespace fb { namespace login {
 

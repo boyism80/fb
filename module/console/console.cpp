@@ -1,6 +1,6 @@
 #include "console.h"
 
-console* console::_ist;
+fb::console* fb::console::_ist;
 
 #ifdef _WIN32
 bool SetConsoleIcon(int id)
@@ -19,12 +19,11 @@ bool SetConsoleIcon(int id)
 }
 #endif
 
-console::console() 
-#ifdef _WIN32
-    : _stdout(GetStdHandle(STD_OUTPUT_HANDLE))
-#endif
+fb::console::console() : _x(0), _y(0)
 {
 #ifdef _WIN32
+    this->_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
     // get size
     CONSOLE_SCREEN_BUFFER_INFO		screen;
     GetConsoleScreenBufferInfo(this->_stdout, &screen);
@@ -42,11 +41,33 @@ console::console()
 #endif
 }
 
-console::~console()
+fb::console::~console()
 {
 }
 
-bool console::line(uint16_t x, uint16_t y, uint16_t width, char content, char side)
+std::string fb::console::format(const std::string& f, va_list* args)
+{
+    char*					buffer	= NULL;
+    std::string             result;
+
+    int size = _vscprintf(f.c_str(), *args) + 1;
+    if(size == -1)
+        throw std::exception();
+
+    buffer = new char[size];
+    if(buffer == NULL)
+        throw std::exception();
+
+    if(vsprintf(buffer, f.c_str(), *args) == -1)
+        throw std::exception();
+
+    result.assign(buffer);
+    delete[] buffer;
+
+    return result;
+}
+
+bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, char side)
 {
     if(width < 3)
         return false;
@@ -58,28 +79,55 @@ bool console::line(uint16_t x, uint16_t y, uint16_t width, char content, char si
     std::memset(buffer+offset, content, width-1);   offset += (width-1);
     buffer[offset] = side;
 
-    this->puts(buffer, x, y);
+    this->move(x, y).puts(buffer);
     return true;
 }
 
-bool console::puts(const std::string& text, uint16_t x, uint16_t y)
+fb::console& fb::console::move(uint16_t x, uint16_t y)
 {
-#ifdef _WIN32
-    COORD					coord	= {(short)x, (short)y};
-    DWORD					written;
-    return WriteConsoleOutputCharacterA(this->_stdout, text.c_str(), text.length(), coord, &written) ? true : false;
-#else
-    mvprintw(y, x, CP949(text).c_str());
-    refresh();
-#endif
+    this->_x = x;
+    this->_y = y;
+    return *this;
 }
 
-bool console::clear(uint16_t row, uint16_t width)
+uint32_t fb::console::puts(const char* format, ...)
+{
+    va_list					args;
+
+    va_start(args, format);
+    auto                    combined = this->format(format, &args);
+    va_end(args);
+
+    if(this->_x.has_value() == false)
+        this->_x = 0;
+
+    if(this->_y.has_value() == false)
+        this->_y = this->_current_line++;
+
+#ifdef _WIN32
+    COORD					coord	= {(short)this->_x.value(), (short)this->_y.value()};
+    DWORD					written;
+    auto                    result = WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), coord, &written) == 0 ? 0 : combined.length();
+
+#else
+    mvprintw(this->_y.value(), this->_x.value(), CP949(combined).c_str());
+    refresh();
+
+    auto                    result = combined.length();
+#endif
+
+    this->_x.reset();
+    this->_y.reset();
+
+    return result;
+}
+
+bool fb::console::clear(uint16_t row, uint16_t width)
 {
     return false;
 }
 
-bool console::box(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
+bool fb::console::box(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 {
     if(height < 3)
         return false;
@@ -94,17 +142,34 @@ bool console::box(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
     return true;
 }
 
-uint16_t console::width() const
+uint16_t fb::console::width() const
 {
     return this->_width;
 }
 
-uint16_t console::height() const
+uint16_t fb::console::height() const
 {
     return this->_height;
 }
 
-console& console::get()
+uint32_t fb::console::current_line() const
+{
+    return this->_current_line;
+}
+
+fb::console& fb::console::current_line(uint32_t row)
+{
+    this->_current_line = row;
+    return *this;
+}
+
+fb::console& fb::console::next()
+{
+    this->_current_line++;
+    return *this;
+}
+
+fb::console& fb::console::get()
 {
     if(_ist == nullptr)
         _ist = new console();
@@ -112,7 +177,7 @@ console& console::get()
     return *_ist;
 }
 
-void console::release()
+void fb::console::release()
 {
     if(_ist != nullptr)
         delete _ist;
