@@ -3,7 +3,7 @@
 using namespace fb::gateway;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<session>(context, port, accept_delay)
+    fb::acceptor<fb::gateway::session>(context, port, accept_delay)
 {
     this->load_entries();
 
@@ -56,40 +56,40 @@ fb::ostream fb::gateway::acceptor::make_crt_stream(const fb::cryptor& crt)
     return ostream;
 }
 
-fb::gateway::session* fb::gateway::acceptor::handle_alloc_session(fb::socket* socket)
+fb::gateway::session* fb::gateway::acceptor::handle_accepted(fb::socket<fb::gateway::session>& socket)
 {
-    return new fb::gateway::session(socket);
+    return new fb::gateway::session();
 }
 
-bool acceptor::handle_connected(fb::gateway::session& session)
+bool acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
     static uint8_t data[] = {0xAA, 0x00, 0x13, 0x7E, 0x1B, 0x43, 0x4F, 0x4E, 0x4E, 0x45, 0x43, 0x54, 0x45, 0x44, 0x20, 0x53, 0x45, 0x52, 0x56, 0x45, 0x52, 0x0A};
     static ostream ostream(data, sizeof(data));
 
-    session.send(ostream, false, false);
+    socket.send(ostream, false, false);
 
     auto& c = fb::console::get();
-    c.puts("님이 접속했습니다.");
+    c.puts("%s님이 접속했습니다.", socket.IP().c_str());
     return true;
 }
 
-bool acceptor::handle_disconnected(fb::gateway::session& session)
+bool acceptor::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
     auto& c = fb::console::get();
-    c.puts("님의 연결을 끊었습니다.");
+    c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 
-bool acceptor::handle_check_version(fb::gateway::session& session, const fb::protocol::request::gateway::assert_version& request)
+bool acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::assert_version& request)
 {
     try
     {
         this->_gateway_service.assert_client(request);
 
         auto crt = cryptor::generate();
-        session.crt(crt);
+        socket.crt(crt);
 
-        this->send(session, response::gateway::crt(crt, this->_entry_crc32_cache), false);
+        this->send(socket, response::gateway::crt(crt, this->_entry_crc32_cache), false);
         return true;
     }
     catch(std::exception& e)
@@ -98,20 +98,20 @@ bool acceptor::handle_check_version(fb::gateway::session& session, const fb::pro
     }
 }
 
-bool acceptor::handle_entry_list(fb::gateway::session& session, const fb::protocol::request::gateway::entry_list& request)
+bool acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::entry_list& request)
 {
     switch(request.action)
     {
     case 0x00:
     {
         const auto&         entry = this->_entries[request.index];
-        this->transfer(session, entry.ip(), entry.port());
+        this->transfer(socket, entry.ip(), entry.port());
         return true;
     }
 
     case 0x01:
     {
-        this->send_stream(session, this->_entry_stream_cache);
+        this->send_stream(socket, this->_entry_stream_cache);
         return true;
     }
 

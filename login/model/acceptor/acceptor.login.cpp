@@ -16,34 +16,34 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
 acceptor::~acceptor()
 {}
 
-fb::login::session* acceptor::handle_alloc_session(fb::socket* socket)
+fb::login::session* acceptor::handle_accepted(fb::socket<fb::login::session>& socket)
 {
-    return new login::session(socket);
+    return new fb::login::session();
 }
 
-bool acceptor::handle_connected(fb::login::session& session)
+bool acceptor::handle_connected(fb::socket<fb::login::session>& socket)
 {
     auto& c = fb::console::get();
-    c.puts("님이 접속했습니다.");
+    c.puts("%s님이 접속했습니다.", socket.IP().c_str());
     return true;
 }
 
-bool acceptor::handle_disconnected(fb::login::session& session)
+bool acceptor::handle_disconnected(fb::socket<fb::login::session>& socket)
 {
     auto& c = fb::console::get();
-    c.puts("님의 연결을 끊었습니다.");
+    c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 
-bool acceptor::handle_agreement(fb::login::session& session, const fb::protocol::request::login::agreement& request)
+bool acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::agreement& request)
 {
     try
     {
         if(cryptor::validate(request.enc_type, request.enc_key, request.enc_key_size) == false)
             throw std::exception();
 
-        session.crt(request.enc_type, request.enc_key);
-        this->send(session, this->_agreement);
+        socket.crt(request.enc_type, request.enc_key);
+        socket.send(this->_agreement);
         return true;
     }
     catch(std::exception& e)
@@ -52,20 +52,22 @@ bool acceptor::handle_agreement(fb::login::session& session, const fb::protocol:
     }
 }
 
-bool acceptor::handle_create_account(fb::login::session& session, const fb::protocol::request::login::account::create& request)
+bool acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::create& request)
 {
     try
     {
         this->_auth_service.create_account(request.id, request.pw);
-        this->send(session, response::login::message("", 0x00));
+        this->send(socket, response::login::message("", 0x00));
 
         // 일단 아이디 선점해야함
-        session.created_id = request.id;
+
+        auto session = socket.data();
+        session->created_id = request.id;
         return true;
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        socket.send(response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -74,16 +76,18 @@ bool acceptor::handle_create_account(fb::login::session& session, const fb::prot
     }
 }
 
-bool acceptor::handle_account_complete(fb::login::session& session, const fb::protocol::request::login::account::complete& request)
+bool acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::complete& request)
 {
     try
     {
-        if(session.created_id.empty())
+        auto session = socket.data();
+
+        if(session->created_id.empty())
             throw std::exception();
 
-        this->_auth_service.init_account(session.created_id, request.hair, request.sex, request.nation, request.creature);
-        this->send(session, response::login::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
-        session.created_id.clear();
+        this->_auth_service.init_account(session->created_id, request.hair, request.sex, request.nation, request.creature);
+        socket.send(response::login::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
+        session->created_id.clear();
         return true;
     }
     catch(login_exception& e)
@@ -96,21 +100,21 @@ bool acceptor::handle_account_complete(fb::login::session& session, const fb::pr
     }
 }
 
-bool acceptor::handle_login(fb::login::session& session, const fb::protocol::request::login::login& request)
+bool acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::login& request)
 {
     try
     {
         this->_auth_service.login(request.id, request.pw);
-        this->send(session, response::login::message("", 0x00));
+        socket.send(response::login::message("", 0x00));
 
         fb::ostream         parameter;
         parameter.write(request.id);
-        this->transfer(session, fb::config::get()["game"]["ip"].asString(), fb::config::get()["game"]["port"].asInt(), parameter);
+        this->transfer(socket, fb::config::get()["game"]["ip"].asString(), fb::config::get()["game"]["port"].asInt(), parameter);
         return true;
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        socket.send(response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -119,17 +123,17 @@ bool acceptor::handle_login(fb::login::session& session, const fb::protocol::req
     }
 }
 
-bool acceptor::handle_change_password(fb::login::session& session, const fb::protocol::request::login::account::change_pw& request)
+bool acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::change_pw& request)
 {
     try
     {
         this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
-        this->send(session, response::login::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        socket.send(response::login::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
         return true;
     }
     catch(login_exception& e)
     {
-        this->send(session, response::login::message(e.what(), e.type()));
+        socket.send(response::login::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)

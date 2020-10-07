@@ -172,9 +172,6 @@
     <ClCompile Include="model\board\board.cpp">
       <Filter>model\board</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\acceptor\acceptor.cpp">
-      <Filter>module\acceptor</Filter>
-    </ClCompile>
     <ClCompile Include="..\module\config\config.cpp">
       <Filter>module\config</Filter>
     </ClCompile>
@@ -183,9 +180,6 @@
     </ClCompile>
     <ClCompile Include="..\module\db\db.cpp">
       <Filter>module\db</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\socket\socket.cpp">
-      <Filter>module\socket</Filter>
     </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>

@@ -45,28 +45,29 @@ class user_list : public fb::protocol::base::response
 {
 public:
     const fb::game::session&                        me;
-    const session_container<fb::game::session>&     users;
+    const socket_container<fb::game::session>&      sockets;
 
 public:
-    user_list(const fb::game::session& me, const session_container<fb::game::session>& users) : 
-        me(me), users(users)
+    user_list(const fb::game::session& me, const socket_container<fb::game::session>& sockets) : 
+        me(me), sockets(sockets)
     {}
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(0x36)
-                  .write_u16((uint16_t)users.size())
-                  .write_u16((uint16_t)users.size())
+                  .write_u16((uint16_t)sockets.size())
+                  .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
-        for(const auto& i : this->users)
+        for(auto& socket : this->sockets)
         {
-            const auto& name = i->name();
+            auto user = socket->data();
+            auto& name = user->name();
 
-            out_stream.write_u8(0x10 * i->nation())
-                      .write_u8(0x10 * i->promotion())
-                      .write_u8((&this->me == i) ? 0x88 : 0x0F)
+            out_stream.write_u8(0x10 * user->nation())
+                      .write_u8(0x10 * user->promotion())
+                      .write_u8((&this->me == user) ? 0x88 : 0x0F)
                       .write(name, false);
         }
     }

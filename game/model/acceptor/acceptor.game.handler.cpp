@@ -447,7 +447,7 @@ void fb::game::acceptor::on_warp(fb::game::session& me)
     this->send(me, response::game::object::direction(me), scope::SELF);
 }
 
-void fb::game::acceptor::on_warp(session& me, fb::game::map& map, const point16_t& position)
+void fb::game::acceptor::on_warp(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());

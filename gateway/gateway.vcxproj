@@ -162,13 +162,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\module\acceptor\acceptor.cpp" />
     <ClCompile Include="..\module\config\config.cpp" />
     <ClCompile Include="..\module\console\console.cpp" />
     <ClCompile Include="..\module\cryptor\cryptor.cpp" />
     <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\service\service.cpp" />
-    <ClCompile Include="..\module\socket\socket.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\timer\timer.cpp" />
     <ClCompile Include="main.cpp" />

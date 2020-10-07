@@ -1,19 +1,19 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
-#include "module/acceptor/acceptor.h"
-#include "model/session/session.login.h"
 #include "service/auth/auth.service.h"
+#include "model/session/session.login.h"
 #include "model/gateway/gateway.h"
 #include <zlib.h>
 #include "protocol/login.h"
 #include "module/console/console.h"
+#include "module/acceptor/acceptor.h"
 
 namespace fb { namespace login {
 
 using namespace fb::protocol;
 
-class acceptor : public fb::acceptor<session>
+class acceptor : public fb::acceptor<fb::login::session>
 {
 private:
     response::login::agreement  _agreement;
@@ -25,18 +25,18 @@ public:
 
     // override
 public:
-    login::session*             handle_alloc_session(fb::socket* socket);
+    login::session*             handle_accepted(fb::socket<fb::login::session>& socket);
 
 public:
-    bool                        handle_connected(fb::login::session& session);
-    bool                        handle_disconnected(fb::login::session& session);
+    bool                        handle_connected(fb::socket<fb::login::session>& session);
+    bool                        handle_disconnected(fb::socket<fb::login::session>& session);
 
 public:
-    bool                        handle_agreement(fb::login::session& session, const fb::protocol::request::login::agreement&);
-    bool                        handle_create_account(fb::login::session& session, const fb::protocol::request::login::account::create&);
-    bool                        handle_account_complete(fb::login::session& session, const fb::protocol::request::login::account::complete&);
-    bool                        handle_login(fb::login::session& session, const fb::protocol::request::login::login&);
-    bool                        handle_change_password(fb::login::session& session, const fb::protocol::request::login::account::change_pw&);
+    bool                        handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::agreement&);
+    bool                        handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::create&);
+    bool                        handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::complete&);
+    bool                        handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::login&);
+    bool                        handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::change_pw&);
 };
 
 } }

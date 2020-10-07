@@ -31,7 +31,7 @@ void                            lua_push_utf8(lua_State* lua, const std::string&
 
 namespace fb { namespace game { namespace lua {
 
-class luable : public virtual fb::base
+class luable
 {
 #pragma region lua
 public:

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+#include "mysql+++/mysql+++.h"
 #include "module/acceptor/acceptor.h"
 #include "module/config/config.h"
 #include "module/timer/timer.h"
@@ -17,7 +18,6 @@
 #include "model/clan/clan.h"
 #include "model/life/life.h"
 #include "model/listener/listener.h"
-#include "mysql+++/mysql+++.h"
 #include "protocol/game.h"
 #include "module/string/string.h"
 

@@ -47,21 +47,21 @@ fb::console::~console()
 
 std::string fb::console::format(const std::string& f, va_list* args)
 {
-    char*					buffer	= NULL;
-    std::string             result;
-
-    int size = _vscprintf(f.c_str(), *args) + 1;
+    va_list clone;
+    va_copy(clone, *args);
+    auto size = vsnprintf(nullptr, 0, f.c_str(), clone) + 1;
     if(size == -1)
         throw std::exception();
+    va_end(clone);
 
-    buffer = new char[size];
-    if(buffer == NULL)
+    auto buffer = new char[size];
+    if(buffer == nullptr)
         throw std::exception();
 
     if(vsprintf(buffer, f.c_str(), *args) == -1)
         throw std::exception();
 
-    result.assign(buffer);
+    auto result = std::string(buffer);
     delete[] buffer;
 
     return result;

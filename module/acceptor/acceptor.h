@@ -8,65 +8,51 @@
 #include <zlib.h>
 #include "module/stream/stream.h"
 #include "module/socket/socket.h"
-#include "module/cryptor/cryptor.h"
 #include "module/console/console.h"
 #include "protocol/protocol.h"
 
 namespace fb {
 
-class base_acceptor : public boost::asio::ip::tcp::acceptor
-{
-protected:
-    base_acceptor(boost::asio::io_context& context, uint16_t port);
-    ~base_acceptor();
-
-public:
-    virtual void            handle_receive(fb::socket& socket) {}
-    virtual void            handle_send(fb::socket& socket) {}
-    virtual void            handle_disconnected(fb::socket& socket) {}
-};
-
-
 template <class T>
-class acceptor : public base_acceptor
+class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
     uint8_t                 _accept_delay;
-    session_map<T>          _session_map;
-    std::map<uint8_t, std::function<bool(void*)>> _handler_dict;
+    std::map<uint8_t, std::function<bool(fb::socket<T>&)>> _handler_dict;
 
 public:
-    session_container<T>    sessions;
+    fb::socket_container<T> sockets;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
     ~acceptor();
 
 private:
-    bool                    call_handle(T& session, uint8_t cmd);
+    bool                    call_handle(fb::socket<T>& session, uint8_t cmd);
     void                    accept();
-    void                    handle_parse(T& session);
+    void                    handle_parse(fb::socket<T>& session);
 
 protected:
-    virtual T*              handle_alloc_session(fb::socket* socket) = 0;
-    virtual bool            handle_connected(T& session) { return true; }
-    virtual bool            handle_disconnected(T& session) { return true; }
+    virtual T*              handle_accepted(fb::socket<T>& socket) = 0;
+    virtual bool            handle_connected(fb::socket<T>& session) { return true; }
+    virtual bool            handle_disconnected(fb::socket<T>& session) { return true; }
 
 public:
-    void                    handle_receive(fb::socket& socket);
-    void                    handle_disconnected(fb::socket& socket);
+    void                    handle_receive(fb::socket<T>& socket);
+    void                    handle_closed(fb::socket<T>& socket);
+    virtual void            handle_send(fb::socket<T>& socket) {}
 
 protected:
     template <typename R>
-    void                    bind(uint8_t cmd, std::function<bool(T&, R&)> fn);
-    void                    transfer(T& base_session, uint32_t ip, uint16_t port);
-    void                    transfer(T& base_session, const std::string& ip, uint16_t port);
-    void                    transfer(T& base_session, uint32_t ip, uint16_t port, const fb::ostream& parameter);
-    void                    transfer(T& base_session, const std::string& ip, uint16_t port, const fb::ostream& parameter);
+    void                    bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn);
+    void                    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port);
+    void                    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port);
+    void                    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, const fb::ostream& parameter);
+    void                    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, const fb::ostream& parameter);
 
 public:
-    void                    send_stream(fb::base& base, const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
-    void                    send(fb::base& base, const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true);
+    void                    send_stream(fb::socket<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
+    void                    send(fb::socket<T>& socket, const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true);
 };
 
 #include "acceptor.hpp"

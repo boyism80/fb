@@ -5,31 +5,11 @@
 
 namespace fb { namespace gateway {
 
-class session : public fb::base
+class session
 {
-private:
-    fb::socket*             _socket;
-
 public:
-    std::string             created_id;
-
-public:
-    session(fb::socket* socket);
+    session();
     ~session();
-
-    // override
-public:
-    void                    send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true);
-
-    // middle man
-public:
-    fb::cryptor&            crt();
-    void                    crt(const fb::cryptor& crt);
-    void                    crt(uint8_t enctype, const uint8_t* enckey);
-    fb::istream&            in_stream();
-
-public:
-    operator                fb::socket& ();
 };
 
 } }

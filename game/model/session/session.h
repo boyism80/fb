@@ -128,7 +128,7 @@ public:
 #pragma region private field
 private:
     uint32_t                    _id;
-    fb::socket*                 _socket;
+    fb::socket<session>&        _socket;
     listener*                   _listener;
     std::string                 _name;
     uint16_t                    _look;
@@ -179,7 +179,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    session(fb::socket* socket, listener* listener);
+    session(fb::socket<fb::game::session>& socket, listener* listener);
     ~session();
 #pragma endregion
 
@@ -192,20 +192,10 @@ public:
 #pragma endregion
 
 
-#pragma region middle man
-    fb::cryptor&                crt();
-    void                        crt(const fb::cryptor& crt);
-    void                        crt(uint8_t enctype, const uint8_t* enckey);
-    fb::istream&                in_stream();
-#pragma endregion
-
-
 #pragma region operator method
 public:
-    operator                    fb::socket& ();
+    operator                    fb::socket<fb::game::session>& ();
 #pragma endregion
-
-
 #pragma region public method
 public:
     uint32_t                    id() const;

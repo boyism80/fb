@@ -9,8 +9,8 @@
 
 using namespace fb::game;
 
-session::session(fb::socket* socket, listener* listener) : 
-    life((life::master*)nullptr, listener, (uint32_t)socket->native_handle(), 0, 0, 0),
+session::session(fb::socket<fb::game::session>& socket, listener* listener) : 
+    life((life::master*)nullptr, listener, (uint32_t)socket.native_handle(), 0, 0, 0),
     _id(0xFFFFFFFF),
     _listener(listener),
     _socket(socket),
@@ -40,12 +40,12 @@ session::~session()
 
 void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap, bool async)
 {
-    this->_socket->send(stream, encrypt, wrap, async);
+    this->_socket.send(stream, encrypt, wrap, async);
 }
 
 void fb::game::session::send(const fb::protocol::base::response& response, bool encrypt, bool wrap, bool async)
 {
-    this->_socket->send(response, encrypt, wrap, async);
+    this->_socket.send(response, encrypt, wrap, async);
 }
 
 object::types fb::game::session::type() const
@@ -53,31 +53,11 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
-fb::cryptor& fb::game::session::crt()
-{
-    return this->_socket->crt();
-}
 
-void fb::game::session::crt(const fb::cryptor& crt)
+fb::game::session::operator fb::socket<fb::game::session>& ()
 {
-    this->_socket->crt(crt);
+    return this->_socket;
 }
-
-void fb::game::session::crt(uint8_t enctype, const uint8_t* enckey)
-{
-    this->_socket->crt(enctype, enckey);
-}
-
-fb::istream& fb::game::session::in_stream()
-{
-    return this->_socket->in_stream();
-}
-
-fb::game::session::operator fb::socket& ()
-{
-    return *this->_socket;
-}
-
 uint32_t fb::game::session::id() const
 {
     return this->_id;

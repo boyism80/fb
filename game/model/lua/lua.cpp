@@ -31,7 +31,7 @@ fb::game::lua::luable::luable()
 {
 }
 
-fb::game::lua::luable::luable(uint32_t id) : base(id)
+fb::game::lua::luable::luable(uint32_t id)
 {
 }
 

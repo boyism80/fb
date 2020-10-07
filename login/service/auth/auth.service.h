@@ -1,6 +1,7 @@
 #ifndef __AUTH_SERVICE_H
 #define __AUTH_SERVICE_H
 
+#include "mysql+++/mysql+++.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -8,7 +9,6 @@
 #include <jsoncpp/json/json.h>
 #include <regex>
 #include <ctime>
-#include "mysql+++/mysql+++.h"
 #include <openssl/sha.h>
 #include "module/stream/stream.h"
 #include "module/config/config.h"
@@ -17,6 +17,7 @@
 #include "model/gateway/gateway.h"
 #include "module/encoding/encoding.h"
 #include "module/string/string.h"
+
 using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2

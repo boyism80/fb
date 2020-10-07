@@ -64,17 +64,11 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\acceptor\acceptor.cpp">
-      <Filter>module\acceptor</Filter>
-    </ClCompile>
     <ClCompile Include="..\module\config\config.cpp">
       <Filter>module\config</Filter>
     </ClCompile>
     <ClCompile Include="..\module\console\console.cpp">
       <Filter>module\console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\socket\socket.cpp">
-      <Filter>module\socket</Filter>
     </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>

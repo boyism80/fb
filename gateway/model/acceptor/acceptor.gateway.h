@@ -15,7 +15,7 @@ namespace fb { namespace gateway {
 
 using namespace fb::protocol;
 
-class acceptor : public fb::acceptor<session>
+class acceptor : public fb::acceptor<fb::gateway::session>
 {
 private:
     std::vector<entry>          _entries;
@@ -37,15 +37,15 @@ private:
 
     // override
 public:
-    fb::gateway::session*       handle_alloc_session(fb::socket* socket);
+    fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket);
 
 public:
-    bool                        handle_connected(fb::gateway::session& session);
-    bool                        handle_disconnected(fb::gateway::session& session);
+    bool                        handle_connected(fb::socket<fb::gateway::session>& session);
+    bool                        handle_disconnected(fb::socket<fb::gateway::session>& session);
 
 public:
-    bool                        handle_check_version(fb::gateway::session& session, const fb::protocol::request::gateway::assert_version&);
-    bool                        handle_entry_list(fb::gateway::session& session, const fb::protocol::request::gateway::entry_list&);
+    bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::request::gateway::assert_version&);
+    bool                        handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::request::gateway::entry_list&);
 };
 
 } }

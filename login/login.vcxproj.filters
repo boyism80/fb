@@ -70,12 +70,6 @@
     <ClCompile Include="model\acceptor\acceptor.login.cpp">
       <Filter>model\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\acceptor\acceptor.cpp">
-      <Filter>module\acceptor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\socket\socket.cpp">
-      <Filter>module\socket</Filter>
-    </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
     </ClCompile>

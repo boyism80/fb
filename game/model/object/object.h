@@ -143,6 +143,9 @@ private:
 
 #pragma region public method
 public:
+    virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true, bool async = true) { }
+    virtual void                        send(const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true, bool async = true) { }
+
     uint32_t                            sequence() const { return this->_sequence; }
     void                                sequence(uint32_t value) { this->_sequence = value; }
 
