@@ -55,7 +55,7 @@ private:
     fb::game::session*      find_session(const std::string& name) const;
 
 public:
-    fb::game::session*      handle_alloc_session(fb::socket* socket);
+    fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
 
 public:
     void                    send(fb::game::object& object, const fb::protocol::base::response& response, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
@@ -68,42 +68,42 @@ public:
 
     // game event method
 public:
-    bool                    handle_connected(fb::game::session& session);
-    bool                    handle_disconnected(fb::game::session& session);
+    bool                    handle_connected(fb::socket<fb::game::session>& session);
+    bool                    handle_disconnected(fb::socket<fb::game::session>& session);
     void                    handle_timer(uint64_t elapsed_milliseconds);
 
     // game event method
 public:
-    bool                    handle_login(fb::game::session&, const fb::protocol::request::game::login&);
-    bool                    handle_direction(fb::game::session&, const fb::protocol::request::game::direction&);
-    bool                    handle_exit(fb::game::session&, const fb::protocol::request::game::exit&);
-    bool                    handle_move(fb::game::session&, const fb::protocol::request::game::move&);
-    bool                    handle_update_move(fb::game::session&, const fb::protocol::request::game::update_move&);
-    bool                    handle_attack(fb::game::session&, const fb::protocol::request::game::attack&);
-    bool                    handle_pickup(fb::game::session&, const fb::protocol::request::game::pick_up&);
-    bool                    handle_emotion(fb::game::session&, const fb::protocol::request::game::emotion&);
-    bool                    handle_update_map(fb::game::session&, const fb::protocol::request::game::map::update&);
-    bool                    handle_refresh(fb::game::session&, const fb::protocol::request::game::refresh&);
-    bool                    handle_active_item(fb::game::session&, const fb::protocol::request::game::item::active&);
-    bool                    handle_inactive_item(fb::game::session&, const fb::protocol::request::game::item::inactive&);
-    bool                    handle_drop_item(fb::game::session&, const fb::protocol::request::game::item::drop&);
-    bool                    handle_drop_cash(fb::game::session&, const fb::protocol::request::game::item::drop_cash&);
-    bool                    handle_front_info(fb::game::session&, const fb::protocol::request::game::front_info&);
-    bool                    handle_self_info(fb::game::session&, const fb::protocol::request::game::self_info&);
-    bool                    handle_option_changed(fb::game::session&, const fb::protocol::request::game::change_option&);
-    bool                    handle_click_object(fb::game::session&, const fb::protocol::request::game::click&);
-    bool                    handle_item_info(fb::game::session&, const fb::protocol::request::game::item::info&);
-    bool                    handle_itemmix(fb::game::session&, const fb::protocol::request::game::item::mix&);
-    bool                    handle_trade(fb::game::session&, const fb::protocol::request::game::trade&);
-    bool                    handle_group(fb::game::session&, const fb::protocol::request::game::group&);
-    bool                    handle_user_list(fb::game::session&, const fb::protocol::request::game::user_list&);
-    bool                    handle_chat(fb::game::session&, const fb::protocol::request::game::chat&);
-    bool                    handle_board(fb::game::session&, const fb::protocol::request::game::board::board&);
-    bool                    handle_swap(fb::game::session&, const fb::protocol::request::game::swap&);
-    bool                    handle_dialog(fb::game::session&, const fb::protocol::request::game::dialog&);
-    bool                    handle_throw_item(fb::game::session&, const fb::protocol::request::game::item::throws&);
-    bool                    handle_spell(fb::game::session&, const fb::protocol::request::game::spell::use&);
-    bool                    handle_door(fb::game::session&, const fb::protocol::request::game::door&);
+    bool                    handle_login(fb::socket<fb::game::session>&, const fb::protocol::request::game::login&);
+    bool                    handle_direction(fb::socket<fb::game::session>&, const fb::protocol::request::game::direction&);
+    bool                    handle_exit(fb::socket<fb::game::session>&, const fb::protocol::request::game::exit&);
+    bool                    handle_move(fb::socket<fb::game::session>&, const fb::protocol::request::game::move&);
+    bool                    handle_update_move(fb::socket<fb::game::session>&, const fb::protocol::request::game::update_move&);
+    bool                    handle_attack(fb::socket<fb::game::session>&, const fb::protocol::request::game::attack&);
+    bool                    handle_pickup(fb::socket<fb::game::session>&, const fb::protocol::request::game::pick_up&);
+    bool                    handle_emotion(fb::socket<fb::game::session>&, const fb::protocol::request::game::emotion&);
+    bool                    handle_update_map(fb::socket<fb::game::session>&, const fb::protocol::request::game::map::update&);
+    bool                    handle_refresh(fb::socket<fb::game::session>&, const fb::protocol::request::game::refresh&);
+    bool                    handle_active_item(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::active&);
+    bool                    handle_inactive_item(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::inactive&);
+    bool                    handle_drop_item(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::drop&);
+    bool                    handle_drop_cash(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::drop_cash&);
+    bool                    handle_front_info(fb::socket<fb::game::session>&, const fb::protocol::request::game::front_info&);
+    bool                    handle_self_info(fb::socket<fb::game::session>&, const fb::protocol::request::game::self_info&);
+    bool                    handle_option_changed(fb::socket<fb::game::session>&, const fb::protocol::request::game::change_option&);
+    bool                    handle_click_object(fb::socket<fb::game::session>&, const fb::protocol::request::game::click&);
+    bool                    handle_item_info(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::info&);
+    bool                    handle_itemmix(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::mix&);
+    bool                    handle_trade(fb::socket<fb::game::session>&, const fb::protocol::request::game::trade&);
+    bool                    handle_group(fb::socket<fb::game::session>&, const fb::protocol::request::game::group&);
+    bool                    handle_user_list(fb::socket<fb::game::session>&, const fb::protocol::request::game::user_list&);
+    bool                    handle_chat(fb::socket<fb::game::session>&, const fb::protocol::request::game::chat&);
+    bool                    handle_board(fb::socket<fb::game::session>&, const fb::protocol::request::game::board::board&);
+    bool                    handle_swap(fb::socket<fb::game::session>&, const fb::protocol::request::game::swap&);
+    bool                    handle_dialog(fb::socket<fb::game::session>&, const fb::protocol::request::game::dialog&);
+    bool                    handle_throw_item(fb::socket<fb::game::session>&, const fb::protocol::request::game::item::throws&);
+    bool                    handle_spell(fb::socket<fb::game::session>&, const fb::protocol::request::game::spell::use&);
+    bool                    handle_door(fb::socket<fb::game::session>&, const fb::protocol::request::game::door&);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
