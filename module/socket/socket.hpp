@@ -41,15 +41,12 @@ void fb::socket<T>::send(const ostream& stream, bool encrypt, bool wrap, bool as
             *this, 
             buffer, 
             [this] (const boost::system::error_code error, size_t bytes_transferred)
-            {
-                this->_owner.handle_send(*this);
-            }
+            {}
         );
     }
     else
     {
         boost::asio::write(*this, buffer);
-        this->_owner.handle_send(*this);
     }
 }
 

@@ -365,7 +365,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
 
     auto found = this->_connection->query
     (
-        "SELECT * FROM user WHERE name='%s' LIMIT 1",      // sql injection 대처 필요
+        "SELECT * FROM user WHERE name='%s' LIMIT 1",
         session->name().c_str()
     );
     if(found.count() == 0)
@@ -401,43 +401,40 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         else
             session->undisguise();
 
+        this->_connection->query("SELECT * FROM item WHERE owner=%d",session->id()).each
+        (
+            [this, &session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
+            {
+                auto& items = fb::game::master::get().items;
+                auto item = items[master]->make<fb::game::item>(this);
+                if(item == nullptr)
+                    return true;
+
+                item->id(id);
+                item->count(count);
+                if(slot.has_value())
+                {
+                    session->items.add(*item, slot.value());
+                }
+                else
+                {
+                    auto found = std::find_if(equipments.begin(), equipments.end(), 
+                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
+                        {
+                            return x.second.has_value() && x.second.value() == id;
+                        });
+
+                    if(found != equipments.end())
+                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
+                }
+                return true;
+            });
+
         if(game::master::get().maps[map] == nullptr)
             return false;
 
         session->map(game::master::get().maps[map], point16_t(position_x, position_y));
         return false;
-    });
-
-    found = this->_connection->query
-    (
-        "SELECT * FROM item WHERE owner=%d",
-        session->id()
-    );
-    found.each([this, &session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
-    {
-        auto& items = fb::game::master::get().items;
-        auto item = items[master]->make<fb::game::item>(this);
-        if(item == nullptr)
-            return true;
-
-        item->id(id);
-        item->count(count);
-        if(slot.has_value())
-        {
-            session->items.add(*item, slot.value());
-        }
-        else
-        {
-            auto found = std::find_if(equipments.begin(), equipments.end(), 
-                [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
-                {
-                    return x.second.has_value() && x.second.value() == id;
-                });
-
-            if(found != equipments.end())
-                session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
-        }
-        return true;
     });
 
     this->send(*session, response::game::init(), scope::SELF);
@@ -1219,7 +1216,8 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
             shown_mobs.push_back(spawned);
         }
 
-        this->send(*session, response::game::object::show(shown_mobs), scope::SELF);
+        if(shown_mobs.size() > 0)
+            this->send(*session, response::game::object::show(shown_mobs), scope::SELF);
     }
 }
 

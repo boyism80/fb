@@ -31,6 +31,7 @@ private:
     bool                    call_handle(fb::socket<T>& session, uint8_t cmd);
     void                    accept();
     void                    handle_parse(fb::socket<T>& session);
+    void                    handle_accept_timer(const boost::system::error_code& e, fb::socket<T>* socket, boost::asio::steady_timer* timer);
 
 protected:
     virtual T*              handle_accepted(fb::socket<T>& socket) = 0;
@@ -40,7 +41,6 @@ protected:
 public:
     void                    handle_receive(fb::socket<T>& socket);
     void                    handle_closed(fb::socket<T>& socket);
-    virtual void            handle_send(fb::socket<T>& socket) {}
 
 protected:
     template <typename R>

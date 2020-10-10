@@ -37,14 +37,9 @@ void fb::acceptor<T>::accept()
                 this->sockets.push(*socket);
                 
                 this->accept();
-
-                std::async(std::launch::async, 
-                    [this, socket]()
-                    {
-                        std::this_thread::sleep_for(std::chrono::seconds(this->_accept_delay));
-                        this->handle_connected(*socket);
-                        socket->recv();
-                    });
+                this->handle_connected(*socket);
+                auto timer = new boost::asio::steady_timer(this->get_executor(), std::chrono::seconds(this->_accept_delay));
+                timer->async_wait(boost::bind(&acceptor<T>::handle_accept_timer, this, boost::asio::placeholders::error, socket, timer));
             }
             catch(std::exception& e)
             {
@@ -125,6 +120,13 @@ void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
     }
 
     in_stream.reset();
+}
+
+template<class T>
+void fb::acceptor<T>::handle_accept_timer(const boost::system::error_code& e, fb::socket<T>* socket, boost::asio::steady_timer* timer)
+{
+    socket->recv();
+    delete timer;
 }
 
 template <typename T>
