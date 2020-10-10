@@ -156,11 +156,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uin
     }
 
     // sectors
-#if defined DEBUG | defined _DEBUG
-    this->_sectors = new fb::game::sectors(this->_size, size16_t(3, 3));
-#else
     this->_sectors = new fb::game::sectors(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
-#endif
 }
 
 fb::game::map::~map()

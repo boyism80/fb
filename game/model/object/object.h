@@ -192,9 +192,9 @@ public:
     object*                             forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>                showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
-    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
+    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before = false);
     std::vector<object*>                showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
-    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN);
+    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before = false);
 
     bool                                visible() const;
     void                                visible(bool value);

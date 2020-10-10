@@ -172,43 +172,44 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
     if(force && this->is(fb::game::object::types::SESSION))
         this->_listener->on_hold(static_cast<fb::game::session&>(*this));
 
-    if(this->_map->update(*this))
+    this->_map->update(*this);
     {
-        auto befores = this->_map->nears(this->_before);
+        auto befores = fb::game::object::showings(this->_map->nears(this->_before), *this, fb::game::object::UNKNOWN, true);
         std::sort(befores.begin(), befores.end());
 
-        auto afters = this->_map->nears(this->_position);
+        auto afters = fb::game::object::showings(this->_map->nears(this->_position), *this, fb::game::object::UNKNOWN, false);
         std::sort(afters.begin(), afters.end());
+
 
         auto hides = std::vector<fb::game::object*>();
         std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
         for(auto x : hides)
-        {
             this->_listener->on_hide(*this, *x);
-            this->_listener->on_hide(*x, *this);
-        }
 
         auto shows = std::vector<fb::game::object*>();
         std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for(auto x : shows)
-        {
             this->_listener->on_show(*this, *x, false);
-            this->_listener->on_show(*x, *this, false);
-        }
     }
-    else if(force)
-    {
-        for(auto x : this->_map->nears(this->_position))
-        {
-            if(x == this)
-                continue;
 
+    {
+        auto befores = fb::game::object::showns(this->_map->nears(this->_before), *this, fb::game::object::UNKNOWN, true);
+        std::sort(befores.begin(), befores.end());
+
+        auto afters = fb::game::object::showns(this->_map->nears(this->_position), *this, fb::game::object::UNKNOWN, false);
+        std::sort(afters.begin(), afters.end());
+
+
+        auto hides = std::vector<fb::game::object*>();
+        std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        for(auto x : hides)
             this->_listener->on_hide(*x, *this);
+
+        auto shows = std::vector<fb::game::object*>();
+        std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        for(auto x : shows)
             this->_listener->on_show(*x, *this, false);
-        }
     }
-    else
-    {}
 
     return true;
 }
@@ -599,18 +600,18 @@ std::vector<fb::game::object*> fb::game::object::showings(object::types type) co
         return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type)
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before)
 {
     auto                    objects = std::vector<fb::game::object*>();
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&pivot, type](fb::game::object* x)
+        [&pivot, type, before](fb::game::object* x)
         {
             return
                 *x != pivot &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                pivot.sight(*x);
+                pivot.sight(*x, before);
         }
     );
 
@@ -625,19 +626,19 @@ std::vector<object*> fb::game::object::showns(object::types type) const
         return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
 }
 
-std::vector<object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type)
+std::vector<object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before)
 {
     auto                    objects = std::vector<fb::game::object*>();
     
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&pivot, type](fb::game::object* x)
+        [&pivot, type, before](fb::game::object* x)
         {
             return
                 *x != pivot &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                x->sight(pivot);
+                x->sight(pivot, before);
         }
     );
 
