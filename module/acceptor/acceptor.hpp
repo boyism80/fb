@@ -1,15 +1,16 @@
 #include <module/acceptor/acceptor.h>
 
-template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+template <template<class> class S, class T>
+fb::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    _context(context),
     _accept_delay(accept_delay)
 {
     this->accept();
 }
 
-template <typename T>
-fb::acceptor<T>::~acceptor()
+template <template<class> class S, class T>
+fb::acceptor<S, T>::~acceptor()
 {
     for(auto x : this->sockets)
     {
@@ -19,10 +20,10 @@ fb::acceptor<T>::~acceptor()
     }
 }
 
-template <typename T>
-void fb::acceptor<T>::accept()
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::accept()
 {
-    auto socket = new fb::socket<T>(*this);
+    auto socket = new S<T>(this->_context, std::bind(&fb::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
     this->async_accept
     (
         *socket,
@@ -38,8 +39,8 @@ void fb::acceptor<T>::accept()
                 
                 this->accept();
                 this->handle_connected(*socket);
-                auto timer = new boost::asio::steady_timer(this->get_executor(), std::chrono::seconds(this->_accept_delay));
-                timer->async_wait(boost::bind(&acceptor<T>::handle_accept_timer, this, boost::asio::placeholders::error, socket, timer));
+                auto timer = new boost::asio::steady_timer(this->_context, std::chrono::seconds(this->_accept_delay));
+                timer->async_wait(boost::bind(&acceptor<S, T>::handle_accept_timer, this, boost::asio::placeholders::error, socket, timer));
             }
             catch(std::exception& e)
             {
@@ -49,8 +50,8 @@ void fb::acceptor<T>::accept()
     );
 }
 
-template<class T>
-inline bool fb::acceptor<T>::call_handle(fb::socket<T>& socket, uint8_t cmd)
+template <template<class> class S, class T>
+inline bool fb::acceptor<S, T>::call_handle(S<T>& socket, uint8_t cmd)
 {
     auto i = this->_handler_dict.find(cmd);
     if(i == this->_handler_dict.end())
@@ -63,8 +64,8 @@ inline bool fb::acceptor<T>::call_handle(fb::socket<T>& socket, uint8_t cmd)
     return i->second(socket);
 }
 
-template <typename T>
-void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::handle_parse(S<T>& socket)
 {
     static uint8_t      not_crt_cmd[] = {0x00, 0x10};
     static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
@@ -122,33 +123,35 @@ void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
     in_stream.reset();
 }
 
-template<class T>
-void fb::acceptor<T>::handle_accept_timer(const boost::system::error_code& e, fb::socket<T>* socket, boost::asio::steady_timer* timer)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::handle_accept_timer(const boost::system::error_code& e, S<T>* socket, boost::asio::steady_timer* timer)
 {
     socket->recv();
     delete timer;
 }
 
-template <typename T>
-void fb::acceptor<T>::handle_receive(fb::socket<T>& socket)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::handle_receive(fb::base_socket<T>& socket)
 {
-    this->handle_parse(socket);
+    auto& casted = static_cast<S<T>&>(socket);
+    this->handle_parse(casted);
 }
 
-template <typename T>
-void fb::acceptor<T>::handle_closed(fb::socket<T>& socket)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::handle_closed(fb::base_socket<T>& socket)
 {
-    this->handle_disconnected(socket);
-    this->sockets.erase(socket);
+    auto& casted = static_cast<S<T>&>(socket);
+    this->handle_disconnected(casted);
+    this->sockets.erase(casted);
 
-    delete &socket;
+    delete &casted;
 }
 
-template <typename T>
+template <template<class> class S, class T>
 template <typename R>
-void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn)
+void fb::acceptor<S, T>::bind(uint8_t cmd, std::function<bool(S<T>&, R&)> fn)
 {
-    this->_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
+    this->_handler_dict[cmd] = [this, fn](S<T>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     request;
@@ -157,8 +160,8 @@ void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> 
     };
 }
 
-template<class T>
-void fb::acceptor<T>::transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port)
 {
     auto&                       crt = socket.crt();
     fb::ostream                 data;
@@ -173,14 +176,14 @@ void fb::acceptor<T>::transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port
     socket.send(out_stream, false, false);
 }
 
-template<class T>
-void fb::acceptor<T>::transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port)
 {
     this->transfer(socket, inet_addr(ip.c_str()), port);
 }
 
-template<class T>
-void fb::acceptor<T>::transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, const fb::ostream& parameter)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port, const fb::ostream& parameter)
 {
     auto&                       crt = socket.crt();
     fb::ostream                 data;
@@ -196,28 +199,28 @@ void fb::acceptor<T>::transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port
     socket.send(out_stream, false, false);
 }
 
-template<class T>
-void fb::acceptor<T>::transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, const fb::ostream& parameter)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port, const fb::ostream& parameter)
 {
     this->transfer(socket, inet_addr(ip.c_str()), port, parameter);
 }
 
-template <typename T>
-void fb::acceptor<T>::send_stream(fb::socket<T>& socket, const fb::ostream& stream, bool encrypt, bool wrap, bool async)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::send_stream(S<T>& socket, const fb::ostream& stream, bool encrypt, bool wrap)
 {
     if(stream.empty())
         return;
 
-    socket.send(stream, encrypt, wrap, async);
+    socket.send(stream, encrypt, wrap);
 }
 
-template<class T>
-void fb::acceptor<T>::send(fb::socket<T>& socket, const fb::protocol::base::response& response, bool encrypt, bool wrap, bool async)
+template <template<class> class S, class T>
+void fb::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::response& response, bool encrypt, bool wrap)
 {
     fb::ostream                 out_stream;
     response.serialize(out_stream);
     if(out_stream.empty())
         return;
 
-    socket.send(out_stream, encrypt, wrap, async);
+    socket.send(out_stream, encrypt, wrap);
 }

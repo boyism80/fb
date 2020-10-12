@@ -2,7 +2,7 @@
 using namespace fb::login;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<session>(context, port, accept_delay),
+    fb::acceptor<fb::socket, fb::login::session>(context, port, accept_delay),
     _agreement(CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both))
 {
     // Register event handler

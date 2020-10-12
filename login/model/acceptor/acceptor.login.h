@@ -13,7 +13,7 @@ namespace fb { namespace login {
 
 using namespace fb::protocol;
 
-class acceptor : public fb::acceptor<fb::login::session>
+class acceptor : public fb::acceptor<fb::socket, fb::login::session>
 {
 private:
     response::login::agreement  _agreement;
@@ -25,7 +25,7 @@ public:
 
     // override
 public:
-    login::session*             handle_accepted(fb::socket<fb::login::session>& socket);
+    fb::login::session*         handle_accepted(fb::socket<fb::login::session>& socket);
 
 public:
     bool                        handle_connected(fb::socket<fb::login::session>& session);

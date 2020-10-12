@@ -43,12 +43,15 @@ public:
 
 class user_list : public fb::protocol::base::response
 {
-public:
-    const fb::game::session&                        me;
-    const socket_container<fb::game::session>&      sockets;
+private:
+    typedef socket_container<fb::socket, fb::game::session> container;
 
 public:
-    user_list(const fb::game::session& me, const socket_container<fb::game::session>& sockets) : 
+    const fb::game::session&                me;
+    const container&                        sockets;
+
+public:
+    user_list(const fb::game::session& me, const container& sockets) : 
         me(me), sockets(sockets)
     {}
 

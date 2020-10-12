@@ -3,8 +3,13 @@
 using namespace fb::gateway;
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::gateway::session>(context, port, accept_delay)
+    fb::acceptor<fb::socket, fb::gateway::session>(context, port, accept_delay)
 {
+    static const char* message = "CONNECTED SERVER\n";
+    this->_connection_cache.write_u8(0x7E)
+                           .write_u8(0x1B)
+                           .write((const void*)message, strlen(message));
+
     this->load_entries();
 
     // Register event handler
@@ -63,10 +68,7 @@ fb::gateway::session* fb::gateway::acceptor::handle_accepted(fb::socket<fb::gate
 
 bool acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
-    static uint8_t data[] = {0xAA, 0x00, 0x13, 0x7E, 0x1B, 0x43, 0x4F, 0x4E, 0x4E, 0x45, 0x43, 0x54, 0x45, 0x44, 0x20, 0x53, 0x45, 0x52, 0x56, 0x45, 0x52, 0x0A};
-    static ostream ostream(data, sizeof(data));
-
-    socket.send(ostream, false, false);
+    socket.send(this->_connection_cache, false);
 
     auto& c = fb::console::get();
     c.puts("%s님이 접속했습니다.", socket.IP().c_str());
