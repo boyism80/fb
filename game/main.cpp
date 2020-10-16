@@ -375,6 +375,6 @@ int main(int argc, const char** argv)
     delete acceptor;
     fb::game::lua::release();
     fb::game::master::release();
-    c.release();
+    fb::console::release();
     return 0;
 }

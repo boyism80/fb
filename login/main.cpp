@@ -41,7 +41,7 @@ int main(int argc, const char** argv)
 
     // Clean up
     delete acceptor;
-    c.release();
+    fb::console::release();
 
     return 0;
 }
