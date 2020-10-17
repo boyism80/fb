@@ -1,10 +1,9 @@
-#include "resource.h"
-#include "model/acceptor/acceptor.login.h"
+#include "model/acceptor/acceptor.internal.h"
 #include "module/leak.h"
 #include "module/console/console.h"
 #include "module/config/config.h"
 
-fb::login::acceptor*       acceptor;
+fb::internal::acceptor*       acceptor;
 
 int main(int argc, const char** argv)
 {
@@ -14,7 +13,7 @@ int main(int argc, const char** argv)
     auto height = 8;
     c.box(0, 0, c.width()-1, height);
 
-    auto header = "The Kingdom of the wind [LOGIN]";
+    auto header = "The Kingdom of the wind [INTERNAL]";
     c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
@@ -25,21 +24,16 @@ int main(int argc, const char** argv)
 
     c.current_line(height + 1);
 
-#ifdef _WIN32
-    ::SetConsoleIcon(IDI_BARAM);
-    ::SetConsoleTitle(CONSOLE_TITLE);
-#endif
-
     // Execute acceptor
     boost::asio::io_context io_service;
     auto& config = fb::config::get();
-    acceptor = new fb::login::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
+    acceptor = new fb::internal::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
 
     io_service.run();
 
     // Clean up
     delete acceptor;
-    fb::console::release();
+    c.release();
 
     return 0;
 }

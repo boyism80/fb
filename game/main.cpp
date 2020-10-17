@@ -1,6 +1,4 @@
 #include "resource.h"
-#include <stdio.h>
-#include <iostream>
 #include "module/socket/socket.h"
 #include "module/config/config.h"
 #include "module/leak.h"

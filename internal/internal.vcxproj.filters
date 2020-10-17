@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{e5b2b40d-f6f6-4233-b0b8-831e75d95bb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module">
+      <UniqueIdentifier>{9bc0340c-ec88-474a-9265-4c71da65b5d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\acceptor">
+      <UniqueIdentifier>{c0782472-6022-4203-924b-84deb62180f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\common">
+      <UniqueIdentifier>{23bd5465-bedc-41cf-a8b0-4772d0155602}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\config">
+      <UniqueIdentifier>{eb9ea458-7232-4101-bf04-91f120d8fa31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\console">
+      <UniqueIdentifier>{6a99e277-3e2f-4282-9006-d684cc7257e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\encoding">
+      <UniqueIdentifier>{b647434d-f11c-4940-9c6b-b567b6aa8d9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\socket">
+      <UniqueIdentifier>{8195c072-f441-42b6-930b-d8c378d94359}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\stream">
+      <UniqueIdentifier>{181a5a45-e2f1-467c-8ddb-c802bd0317ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\acceptor">
+      <UniqueIdentifier>{9094eaa8-9f52-45f6-a60c-675735a1003f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\session">
+      <UniqueIdentifier>{983e47f2-2b66-45e3-8676-bfd04f187602}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\config\config.cpp">
+      <Filter>module\config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\console\console.cpp">
+      <Filter>module\console</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\encoding\encoding.cpp">
+      <Filter>module\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\stream\stream.cpp">
+      <Filter>module\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="model\acceptor\acceptor.internal.cpp">
+      <Filter>model\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="model\session\session.internal.cpp">
+      <Filter>model\session</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\module\acceptor\acceptor.h">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.hpp">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\common\type.h">
+      <Filter>module\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\config\config.h">
+      <Filter>module\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\console\console.h">
+      <Filter>module\console</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\encoding\encoding.h">
+      <Filter>module\encoding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\stream\stream.h">
+      <Filter>module\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.hpp">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\socket\socket.h">
+      <Filter>module\socket</Filter>
+    </ClInclude>
+    <ClInclude Include="model\acceptor\acceptor.internal.h">
+      <Filter>model\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="model\session\session.internal.h">
+      <Filter>model\session</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
