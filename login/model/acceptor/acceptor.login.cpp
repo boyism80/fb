@@ -1,8 +1,7 @@
-#include "model/acceptor/acceptor.login.h"
-using namespace fb::login;
+#include "acceptor.login.h"
 
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::socket, fb::login::session>(context, port, accept_delay),
+fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    fb::acceptor<fb::login::session>(context, port, accept_delay),
     _agreement(CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both))
 {
     // Register event handler
@@ -13,29 +12,29 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::request::login::account::change_pw>      (0x26, std::bind(&acceptor::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
 }
 
-acceptor::~acceptor()
+fb::login::acceptor::~acceptor()
 {}
 
-fb::login::session* acceptor::handle_accepted(fb::socket<fb::login::session>& socket)
+fb::login::session* fb::login::acceptor::handle_accepted(fb::socket<fb::login::session>& socket)
 {
     return new fb::login::session();
 }
 
-bool acceptor::handle_connected(fb::socket<fb::login::session>& socket)
+bool fb::login::acceptor::handle_connected(fb::socket<fb::login::session>& socket)
 {
     auto& c = fb::console::get();
     c.puts("%s님이 접속했습니다.", socket.IP().c_str());
     return true;
 }
 
-bool acceptor::handle_disconnected(fb::socket<fb::login::session>& socket)
+bool fb::login::acceptor::handle_disconnected(fb::socket<fb::login::session>& socket)
 {
     auto& c = fb::console::get();
     c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 
-bool acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::agreement& request)
+bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::agreement& request)
 {
     try
     {
@@ -52,7 +51,7 @@ bool acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb
     }
 }
 
-bool acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::create& request)
+bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::create& request)
 {
     try
     {
@@ -76,7 +75,7 @@ bool acceptor::handle_create_account(fb::socket<fb::login::session>& socket, con
     }
 }
 
-bool acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::complete& request)
+bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::complete& request)
 {
     try
     {
@@ -100,7 +99,7 @@ bool acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, c
     }
 }
 
-bool acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::login& request)
+bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::login& request)
 {
     try
     {
@@ -123,7 +122,7 @@ bool acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::pr
     }
 }
 
-bool acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::change_pw& request)
+bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::change_pw& request)
 {
     try
     {

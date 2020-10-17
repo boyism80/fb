@@ -13,7 +13,7 @@ namespace fb { namespace login {
 
 using namespace fb::protocol;
 
-class acceptor : public fb::acceptor<fb::socket, fb::login::session>
+class acceptor : public fb::acceptor<fb::login::session>
 {
 private:
     response::login::agreement  _agreement;

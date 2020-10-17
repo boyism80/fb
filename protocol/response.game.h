@@ -44,7 +44,7 @@ public:
 class user_list : public fb::protocol::base::response
 {
 private:
-    typedef socket_container<fb::socket, fb::game::session> container;
+    typedef fb::base::socket_container<fb::socket, fb::game::session> container;
 
 public:
     const fb::game::session&                me;

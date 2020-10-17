@@ -114,12 +114,6 @@
     <ClInclude Include="..\module\leak.h">
       <Filter>module</Filter>
     </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.h">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.hpp">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
     <ClInclude Include="..\module\socket\socket.h">
       <Filter>module\socket</Filter>
     </ClInclude>
@@ -161,6 +155,12 @@
     </ClInclude>
     <ClInclude Include="..\module\encoding\encoding.h">
       <Filter>module\encoding</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.h">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.hpp">
+      <Filter>module\acceptor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

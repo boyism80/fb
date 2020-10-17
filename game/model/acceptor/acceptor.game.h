@@ -34,7 +34,7 @@ using namespace fb::protocol;
 #pragma endregion
 
 class acceptor : 
-    public fb::acceptor<fb::socket, fb::game::session>, 
+    public fb::acceptor<fb::game::session>, 
     public fb::game::listener
 {
 public:

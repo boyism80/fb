@@ -1,9 +1,7 @@
 #include "model/acceptor/acceptor.gateway.h"
 
-using namespace fb::gateway;
-
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::socket, fb::gateway::session>(context, port, accept_delay)
+fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+    fb::acceptor<fb::gateway::session>(context, port, accept_delay)
 {
     static const char* message = "CONNECTED SERVER\n";
     this->_connection_cache.write_u8(0x7E)
@@ -17,7 +15,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::request::gateway::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
 }
 
-acceptor::~acceptor()
+fb::gateway::acceptor::~acceptor()
 {}
 
 bool fb::gateway::acceptor::load_entries()
@@ -66,7 +64,7 @@ fb::gateway::session* fb::gateway::acceptor::handle_accepted(fb::socket<fb::gate
     return new fb::gateway::session();
 }
 
-bool acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
+bool fb::gateway::acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
     socket.send(this->_connection_cache, false);
 
@@ -75,14 +73,14 @@ bool acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
     return true;
 }
 
-bool acceptor::handle_disconnected(fb::socket<fb::gateway::session>& socket)
+bool fb::gateway::acceptor::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
     auto& c = fb::console::get();
     c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 
-bool acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::assert_version& request)
+bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::assert_version& request)
 {
     try
     {
@@ -100,7 +98,7 @@ bool acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, co
     }
 }
 
-bool acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::entry_list& request)
+bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::entry_list& request)
 {
     switch(request.action)
     {

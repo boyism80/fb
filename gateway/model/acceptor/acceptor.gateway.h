@@ -15,7 +15,7 @@ namespace fb { namespace gateway {
 
 using namespace fb::protocol;
 
-class acceptor : public fb::acceptor<fb::socket, fb::gateway::session>
+class acceptor : public fb::acceptor<fb::gateway::session>
 {
 private:
     std::vector<entry>          _entries;

@@ -142,7 +142,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::socket, fb::game::session>(context, port, accept_delay),
+    fb::acceptor<fb::game::session>(context, port, accept_delay),
     _timer(context)
 {
     const auto& config = fb::config::get();

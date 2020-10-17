@@ -276,12 +276,6 @@
     <ClInclude Include="model\board\board.h">
       <Filter>model\board</Filter>
     </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.h">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.hpp">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
     <ClInclude Include="..\module\config\config.h">
       <Filter>module\config</Filter>
     </ClInclude>
@@ -335,6 +329,12 @@
     </ClInclude>
     <ClInclude Include="..\module\string\string.h">
       <Filter>module\string</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.h">
+      <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\acceptor\acceptor.hpp">
+      <Filter>module\acceptor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
