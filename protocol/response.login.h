@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace response { namespace login {
+namespace fb { namespace protocol { namespace login { namespace response {
 
-class agreement : public fb::protocol::base::response
+class agreement : public fb::protocol::base::header
 {
 public:
     const std::string       contents;
@@ -26,7 +26,7 @@ public:
     }
 };
 
-class message : public fb::protocol::base::response
+class message : public fb::protocol::base::header
 {
 public:
     const std::string       text;

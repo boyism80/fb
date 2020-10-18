@@ -129,7 +129,7 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dest)
     return true;
 }
 
-fb::game::buff::buff(const game::spell* spell, uint32_t time) : 
+fb::game::buff::buff(const fb::game::spell* spell, uint32_t time) : 
     _spell(spell),
     _time(time)
 {
@@ -209,7 +209,7 @@ bool fb::game::buffs::push_back(buff* buff)
     return true;
 }
 
-fb::game::buff* fb::game::buffs::push_back(const game::spell* spell, uint32_t time)
+fb::game::buff* fb::game::buffs::push_back(const fb::game::spell* spell, uint32_t time)
 {
     if(this->contains(spell))
         return nullptr;
@@ -232,7 +232,7 @@ bool fb::game::buffs::remove(const std::string& name)
     return true;
 }
 
-bool fb::game::buffs::remove(const game::spell* spell)
+bool fb::game::buffs::remove(const fb::game::spell* spell)
 {
     return this->remove(spell->name());
 }

@@ -6,9 +6,9 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace request { namespace game { namespace item {
+namespace fb { namespace protocol { namespace game { namespace request { namespace item {
 
-class active : public fb::protocol::base::request
+class active : public fb::protocol::base::header
 {
 public:
     uint8_t                 index;
@@ -21,7 +21,7 @@ public:
 };
 
 
-class inactive : public fb::protocol::base::request
+class inactive : public fb::protocol::base::header
 {
 public:
     equipment::slot         slot;
@@ -34,7 +34,7 @@ public:
 };
 
 
-class drop : public fb::protocol::base::request
+class drop : public fb::protocol::base::header
 {
 public:
     uint8_t                 index;
@@ -49,7 +49,7 @@ public:
 };
 
 
-class drop_cash : public fb::protocol::base::request
+class drop_cash : public fb::protocol::base::header
 {
 public:
     uint32_t                chunk;
@@ -61,7 +61,7 @@ public:
     }
 };
 
-class mix : public fb::protocol::base::request
+class mix : public fb::protocol::base::header
 {
 public:
     std::vector<uint8_t>    indices;
@@ -76,7 +76,7 @@ public:
 };
 
 
-class throws : public fb::protocol::base::request
+class throws : public fb::protocol::base::header
 {
 public:
     bool                    all;
@@ -91,7 +91,7 @@ public:
 };
 
 
-class info : public fb::protocol::base::request
+class info : public fb::protocol::base::header
 {
 public:
     uint8_t                 position;

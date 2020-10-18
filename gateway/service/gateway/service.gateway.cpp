@@ -8,7 +8,7 @@ fb::gateway::service::gateway::~gateway()
 {
 }
 
-void fb::gateway::service::gateway::assert_client(const fb::protocol::request::gateway::assert_version& request)
+void fb::gateway::service::gateway::assert_client(const fb::protocol::gateway::request::assert_version& request)
 {
     if(request.version != 0x0226)
         throw std::runtime_error("클라이언트 버전이 맞지 않습니다.");

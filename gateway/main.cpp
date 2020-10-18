@@ -6,12 +6,18 @@
 #include "module/leak.h"
 #include "module/console/console.h"
 #include "module/config/config.h"
+#include "protocol/internal.h"
 
 fb::gateway::acceptor*       acceptor;
 
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
+
+#ifdef _WIN32
+    ::SetConsoleIcon(IDI_BARAM);
+    ::SetConsoleTitle(CONSOLE_TITLE);
+#endif
 
     auto& c = fb::console::get();
     auto height = 8;
@@ -28,15 +34,34 @@ int main(int argc, const char** argv)
 
     c.current_line(height+ 1 );
 
-#ifdef _WIN32
-    ::SetConsoleIcon(IDI_BARAM);
-    ::SetConsoleTitle(CONSOLE_TITLE);
-#endif
-
     // Execute acceptor
     boost::asio::io_context io_service;
     auto& config = fb::config::get();
-    acceptor = new fb::gateway::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
+
+    const auto connection = INTERNAL_CONNECTION
+    {
+        config["internal"]["ip"].asString(),
+        (uint16_t)config["internal"]["port"].asInt(),
+        [&] (fb::base::socket<>& socket, bool success)
+        {
+            if(success)
+            {
+                for(auto x : config["id"])
+                    socket.send(fb::protocol::internal::request::subscribe(x.asString()));
+            }
+        },
+        [&] ()
+        {
+            // on disconnected
+        }
+    };
+    acceptor = new fb::gateway::acceptor
+    (
+        io_service, 
+        config["port"].asInt(), 
+        config["delay"].asInt(),
+        connection
+    );
 
     io_service.run();
 

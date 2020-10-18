@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by game.rc
+// Used by internal.rc
 //
 #define IDI_BARAM                       101
 

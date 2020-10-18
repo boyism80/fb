@@ -183,7 +183,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
         object->position((uint16_t)lua_tointeger(lua, 3), (uint16_t)lua_tointeger(lua, 4));
     }
 
-    acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
+    acceptor->send(*object, fb::protocol::game::response::object::show(*object), acceptor::scope::PIVOT);
 
     object->to_lua(lua);
     return 1;
@@ -1064,7 +1064,7 @@ std::string fb::game::equipment::tip_message() const
     if(limit.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << game::master::get().class2name(limit.cls, 0) << "용";
+        class_stream << fb::game::master::get().class2name(limit.cls, 0) << "용";
     sstream << class_stream.str() << "레벨 " << std::to_string(limit.level) << " 이상";
 
     const std::string desc = this->desc();
@@ -2185,7 +2185,7 @@ bool fb::game::itemmix::builder::mix()
 {
     try
     {
-        auto                    itemmix = game::master::get().find_itemmix(*this);
+        auto                    itemmix = fb::game::master::get().find_itemmix(*this);
         if(itemmix == nullptr)
             throw itemmix::no_match_exception();
 
@@ -2216,7 +2216,7 @@ bool fb::game::itemmix::builder::mix()
             }
 
             if(this->_listener != nullptr)
-                this->_listener->on_notify(this->_owner, game::message::mix::SUCCESS);
+                this->_listener->on_notify(this->_owner, fb::game::message::mix::SUCCESS);
         }
         else
         {
@@ -2228,7 +2228,7 @@ bool fb::game::itemmix::builder::mix()
             }
 
             if(this->_listener != nullptr)
-                this->_listener->on_notify(this->_owner, game::message::mix::FAILED);
+                this->_listener->on_notify(this->_owner, fb::game::message::mix::FAILED);
         }
 
         return true;

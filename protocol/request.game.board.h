@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace request { namespace game { namespace board {
+namespace fb { namespace protocol { namespace game { namespace request { namespace board {
 
-class board : public fb::protocol::base::request
+class board : public fb::protocol::base::header
 {
 public:
     uint8_t                 action;

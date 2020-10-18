@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/item/item.h"
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace item {
+namespace fb { namespace protocol { namespace game { namespace response { namespace item {
 
-class tip : public fb::protocol::base::response
+class tip : public fb::protocol::base::header
 {
 public:
     const uint16_t          position;
@@ -27,7 +27,7 @@ public:
     }
 };
 
-class update : public fb::protocol::base::response
+class update : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    me;
@@ -56,7 +56,7 @@ public:
     }
 };
 
-class update_slot : public fb::protocol::base::response
+class update_slot : public fb::protocol::base::header
 {
 public:
     const fb::game::session&            me;
@@ -120,7 +120,7 @@ public:
     }
 };
 
-class remove : public fb::protocol::base::response
+class remove : public fb::protocol::base::header
 {
 public:
     const fb::game::item::delete_attr types;
@@ -141,7 +141,7 @@ public:
 };
 
 
-class unequip : public fb::protocol::base::response
+class unequip : public fb::protocol::base::header
 {
 public:
     const equipment::slot   slot;

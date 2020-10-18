@@ -1,15 +1,15 @@
 #include "acceptor.login.h"
 
-fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::login::session>(context, port, accept_delay),
+fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
+    fb::acceptor<fb::login::session>(context, port, accept_delay, internal_connection),
     _agreement(CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both))
 {
     // Register event handler
-    this->bind<fb::protocol::request::login::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::request::login::agreement>               (0x10, std::bind(&acceptor::handle_agreement,           this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::request::login::account::create>         (0x02, std::bind(&acceptor::handle_create_account,      this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::request::login::account::complete>       (0x04, std::bind(&acceptor::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::request::login::account::change_pw>      (0x26, std::bind(&acceptor::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::agreement>               (0x10, std::bind(&acceptor::handle_agreement,           this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::create>         (0x02, std::bind(&acceptor::handle_create_account,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::complete>       (0x04, std::bind(&acceptor::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::change_pw>      (0x26, std::bind(&acceptor::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::login::acceptor::~acceptor()
@@ -34,7 +34,7 @@ bool fb::login::acceptor::handle_disconnected(fb::socket<fb::login::session>& so
     return false;
 }
 
-bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::agreement& request)
+bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::agreement& request)
 {
     try
     {
@@ -51,12 +51,12 @@ bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socke
     }
 }
 
-bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::create& request)
+bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::create& request)
 {
     try
     {
         this->_auth_service.create_account(request.id, request.pw);
-        this->send(socket, response::login::message("", 0x00));
+        this->send(socket, fb::protocol::login::response::message("", 0x00));
 
         // 일단 아이디 선점해야함
 
@@ -66,7 +66,7 @@ bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& 
     }
     catch(login_exception& e)
     {
-        socket.send(response::login::message(e.what(), e.type()));
+        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -75,7 +75,7 @@ bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& 
     }
 }
 
-bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::complete& request)
+bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::complete& request)
 {
     try
     {
@@ -85,7 +85,7 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
             throw std::exception();
 
         this->_auth_service.init_account(session->created_id, request.hair, request.sex, request.nation, request.creature);
-        socket.send(response::login::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
+        socket.send(fb::protocol::login::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
         session->created_id.clear();
         return true;
     }
@@ -99,21 +99,23 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
     }
 }
 
-bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::login& request)
+bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
     try
     {
         this->_auth_service.login(request.id, request.pw);
-        socket.send(response::login::message("", 0x00));
+        socket.send(fb::protocol::login::response::message("", 0x00));
 
         fb::ostream         parameter;
         parameter.write(request.id);
         this->transfer(socket, fb::config::get()["game"]["ip"].asString(), fb::config::get()["game"]["port"].asInt(), parameter);
+
+        this->_internal->send(fb::protocol::internal::request::login(request.id));
         return true;
     }
     catch(login_exception& e)
     {
-        socket.send(response::login::message(e.what(), e.type()));
+        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)
@@ -122,17 +124,17 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
     }
 }
 
-bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::request::login::account::change_pw& request)
+bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
     try
     {
         this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
-        socket.send(response::login::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
         return true;
     }
     catch(login_exception& e)
     {
-        socket.send(response::login::message(e.what(), e.type()));
+        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         return true;
     }
     catch(std::exception& e)

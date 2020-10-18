@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace request { namespace game { namespace map {
+namespace fb { namespace protocol { namespace game { namespace request { namespace map {
 
-class update : public fb::protocol::base::request
+class update : public fb::protocol::base::header
 {
 public:
     point16_t               position;

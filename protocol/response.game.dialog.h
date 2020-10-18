@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/npc/npc.h"
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace dialog {
+namespace fb { namespace protocol { namespace game { namespace response { namespace dialog {
 
-class common : public fb::protocol::base::response
+class common : public fb::protocol::base::header
 {
 public:
     const fb::game::object::master&     object;
@@ -45,7 +45,7 @@ public:
     }
 };
 
-class menu : public fb::protocol::base::response
+class menu : public fb::protocol::base::header
 {
 public:
     const fb::game::npc::master&        npc;
@@ -97,7 +97,7 @@ public:
     }
 };
 
-class slot : public fb::protocol::base::response
+class slot : public fb::protocol::base::header
 {
 public:
     const fb::game::npc::master&        npc;
@@ -138,7 +138,7 @@ public:
     }
 };
 
-class item : public fb::protocol::base::response
+class item : public fb::protocol::base::header
 {
 public:
     const fb::game::npc::master&                npc;
@@ -190,7 +190,7 @@ public:
 };
 
 
-class input : public fb::protocol::base::response
+class input : public fb::protocol::base::header
 {
 public:
     const fb::game::npc::master&        npc;
@@ -226,7 +226,7 @@ public:
     }
 };
 
-class input_ext : public fb::protocol::base::response
+class input_ext : public fb::protocol::base::header
 {
 public:
     const fb::game::npc::master&        npc;

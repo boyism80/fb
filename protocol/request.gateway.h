@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace request { namespace gateway {
+namespace fb { namespace protocol { namespace gateway { namespace request {
 
-class assert_version : public fb::protocol::base::request
+class assert_version : public fb::protocol::base::header
 {
 public:
     uint16_t                version;
@@ -19,7 +19,7 @@ public:
 };
 
 
-class entry_list : public fb::protocol::base::request
+class entry_list : public fb::protocol::base::header
 {
 public:
     uint8_t                 action;

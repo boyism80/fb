@@ -9,23 +9,47 @@
 
 namespace fb { namespace internal {
 
-using namespace fb::protocol;
-
-class acceptor : public fb::base::acceptor<fb::base::socket, fb::internal::session>
+class acceptor : public fb::base::acceptor<fb::internal::socket, fb::internal::session>
 {
+private:
+    typedef std::function<bool(fb::internal::socket<fb::internal::session>&)> handler;
+    typedef std::map<std::string, fb::internal::socket<fb::internal::session>*> subscriber_container;
+
+private:
+    std::map<uint8_t, handler>  _handler_dict;
+    subscriber_container        _subscribers;
+    std::map<std::string, bool> _users;
+
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
     ~acceptor();
 
 protected:
-    void                        handle_parse(fb::base::socket<fb::internal::session>& socket);
+    void                        handle_parse(fb::internal::socket<fb::internal::session>& socket);
     
 public:
-    internal::session*          handle_accepted(fb::base::socket<fb::internal::session>& socket);
+    fb::internal::session*      handle_accepted(fb::internal::socket<fb::internal::session>& socket);
 
 public:
-    bool                        handle_connected(fb::base::socket<fb::internal::session>& session);
-    bool                        handle_disconnected(fb::base::socket<fb::internal::session>& session);
+    bool                        handle_connected(fb::internal::socket<fb::internal::session>& session);
+    bool                        handle_disconnected(fb::internal::socket<fb::internal::session>& session);
+
+public:
+    template <typename R>
+    void                        bind(std::function<bool(fb::internal::socket<fb::internal::session>&, R&)> fn)
+    {
+        _handler_dict[R::id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        {
+            auto&   in_stream = socket.in_stream();
+            R       header;
+            header.deserialize(in_stream);
+            return fn(socket, header);
+        };
+    }
+
+public:
+    bool                        handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
+    bool                        handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
 };
 
 } }

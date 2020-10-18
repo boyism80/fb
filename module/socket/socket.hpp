@@ -1,10 +1,10 @@
 #include "socket.h"
 
 template<typename T>
-fb::base::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+fb::base::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
     boost::asio::ip::tcp::socket(context),
     _data(nullptr),
-    _handle_receive(handle_receive),
+    _handle_received(handle_received),
     _handle_closed(handle_closed)
 {
 }
@@ -15,9 +15,16 @@ fb::base::socket<T>::~socket()
 }
 
 template<typename T>
-inline void fb::base::socket<T>::send(const ostream& stream)
+inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
-    auto buffer = boost::asio::buffer(stream.data(), stream.size());
+    auto clone = stream;
+    if(encrypt)
+        this->on_encrypt(clone);
+
+    if(wrap)
+        this->on_wrap(clone);
+
+    auto buffer = boost::asio::buffer(clone.data(), clone.size());
     boost::asio::async_write
     (
         *this, 
@@ -28,11 +35,11 @@ inline void fb::base::socket<T>::send(const ostream& stream)
 }
 
 template<typename T>
-inline void fb::base::socket<T>::send(const fb::protocol::base::response& response)
+inline void fb::base::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
     fb::ostream             out_stream;
     response.serialize(out_stream);
-    this->send(out_stream);
+    this->send(out_stream, encrypt, wrap);
 }
 
 template <typename T>
@@ -46,16 +53,11 @@ void fb::base::socket<T>::recv()
             try
             {
                 if(error)
-                {
-                    if(error == boost::asio::error::eof)
-                        throw std::exception();
-                    else 
-                        throw std::exception();
-                }
-
+                    throw std::exception();
+                
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
+                this->_handle_received(*this);
                 this->recv();
-                this->_handle_receive(*this);
             }
             catch(std::exception& e)
             {
@@ -98,14 +100,14 @@ std::string fb::base::socket<T>::IP() const
 // fb::socket
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed) : 
-    fb::base::socket<T>(context, handle_receive, handle_closed)
+fb::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+    fb::base::socket<T>(context, handle_received, handle_closed)
 {
 }
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed) : 
-    fb::socket<T>(context, handle_receive, handle_closed)
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+    fb::socket<T>(context, handle_received, handle_closed)
 {
     this->_crt = crt;
 }
@@ -125,30 +127,6 @@ template<typename T>
 inline void fb::socket<T>::on_wrap(fb::ostream& out)
 {
     this->_crt.wrap(out);
-}
-
-template <typename T>
-void fb::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
-{
-    if(stream.size() == 0)
-        return;
-
-    auto clone = fb::ostream(stream);
-    if(encrypt)
-        this->on_encrypt(clone);
-
-    if(wrap)
-        this->on_wrap(clone);
-
-    fb::base::socket<T>::send(clone);
-}
-
-template<typename T>
-void fb::socket<T>::send(const fb::protocol::base::response& response, bool encrypt, bool wrap)
-{
-    fb::ostream             out_stream;
-    response.serialize(out_stream);
-    this->send(out_stream, encrypt, wrap);
 }
 
 template <typename T>
@@ -176,6 +154,24 @@ fb::socket<T>::operator fb::cryptor& ()
 }
 
 
+
+// fb::internal::socket
+template <typename T>
+fb::internal::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+    fb::base::socket<T>(context, handle_received, handle_closed)
+{}
+
+template <typename T>
+fb::internal::socket<T>::~socket()
+{}
+
+template <typename T>
+void fb::internal::socket<T>::on_wrap(fb::ostream& out)
+{
+    auto                size = out.size();
+    const uint8_t       header[] = {uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
+    out.insert(out.begin(), header, header + sizeof(header));
+}
 
 
 

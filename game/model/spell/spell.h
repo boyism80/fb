@@ -145,9 +145,9 @@ public:
     bool                        contains(const spell* spell) const;
     bool                        contains(const std::string& name) const;
     bool                        push_back(buff* buff);
-    buff*                       push_back(const game::spell* spell, uint32_t time);
+    buff*                       push_back(const fb::game::spell* spell, uint32_t time);
     bool                        remove(const std::string& name);
-    bool                        remove(const game::spell* spell);
+    bool                        remove(const fb::game::spell* spell);
     void                        remove(buff* buff);
 
 public:

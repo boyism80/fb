@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/spell/spell.h"
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace spell {
+namespace fb { namespace protocol { namespace game { namespace response { namespace spell {
 
-class buff : public fb::protocol::base::response
+class buff : public fb::protocol::base::header
 {
 public:
     const std::string       name;
@@ -29,7 +29,7 @@ public:
     }
 };
 
-class unbuff : public fb::protocol::base::response
+class unbuff : public fb::protocol::base::header
 {
 public:
     const fb::game::buff&       buff;
@@ -48,7 +48,7 @@ public:
     }
 };
 
-class update : public fb::protocol::base::response
+class update : public fb::protocol::base::header
 {
 public:
     const fb::game::life&           me;
@@ -76,7 +76,7 @@ public:
     }
 };
 
-class remove : public fb::protocol::base::response
+class remove : public fb::protocol::base::header
 {
 public:
     const fb::game::life&           me;

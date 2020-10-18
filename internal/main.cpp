@@ -1,3 +1,4 @@
+#include "resource.h"
 #include "model/acceptor/acceptor.internal.h"
 #include "module/leak.h"
 #include "module/console/console.h"
@@ -8,6 +9,11 @@ fb::internal::acceptor*       acceptor;
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
+
+#ifdef _WIN32
+    ::SetConsoleIcon(IDI_BARAM);
+    ::SetConsoleTitle(CONSOLE_TITLE);
+#endif
 
     auto& c = fb::console::get();
     auto height = 8;

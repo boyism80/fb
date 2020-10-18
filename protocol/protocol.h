@@ -3,27 +3,30 @@
 
 #include "module/common/type.h"
 
-namespace fb { namespace protocol { namespace base {
+#define BIND_ID(n) static constexpr uint8_t id = (n);
 
-class request
+namespace fb { namespace protocol { namespace internal {
+
+enum id : uint8_t
 {
-protected:
-    request() {}
-    ~request() {}
-
-public:
-    virtual void            deserialize(fb::istream& in_stream) = 0;
+    SUBSCRIBE,
+    LOGIN,
+    LOGOUT,
 };
 
+} } }
 
-class response
+namespace fb { namespace protocol { namespace base {
+
+class header
 {
 protected:
-    response() {}
-    ~response() {}
+    header() {}
+    ~header() {}
 
 public:
-    virtual void            serialize(fb::ostream& out_stream) const = 0;
+    virtual void            serialize(fb::ostream& out_stream) const {}
+    virtual void            deserialize(fb::istream& in_stream) {}
 };
 
 } } }

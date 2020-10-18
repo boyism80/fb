@@ -187,7 +187,7 @@ public:
 #pragma region override method
 public:
     void                        send(const fb::ostream& stream, bool encrypt, bool wrap = true);
-    void                        send(const fb::protocol::base::response& response, bool encrypt, bool wrap = true);
+    void                        send(const fb::protocol::base::header& response, bool encrypt, bool wrap = true);
     object::types               type() const;
 #pragma endregion
 

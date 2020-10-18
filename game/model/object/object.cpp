@@ -735,7 +735,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto sound = lua_tointeger(lua, 2);
 
-    acceptor->send(*object, response::game::object::sound(*object, sound::type(sound)), acceptor::scope::PIVOT);
+    acceptor->send(*object, fb::protocol::game::response::object::sound(*object, sound::type(sound)), acceptor::scope::PIVOT);
     lua_pushinteger(lua, -1);
     return 1;
 }
@@ -770,19 +770,19 @@ int fb::game::object::builtin_position(lua_State* lua)
         y = (uint16_t)lua_tointeger(lua, 3);
     }
 
-    std::vector<game::object*> shows, hides, showns, hiddens;
+    std::vector<fb::game::object*> shows, hides, showns, hiddens;
     object->position(x, y);
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     if(object->is(fb::game::object::types::SESSION))
-        acceptor->send(*object, response::game::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);
+        acceptor->send(*object, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);
     else
-        acceptor->send(*object, response::game::object::show(*object), acceptor::scope::PIVOT);
+        acceptor->send(*object, fb::protocol::game::response::object::show(*object), acceptor::scope::PIVOT);
 
     if(object->is(object::types::SESSION))
     {
         auto session = static_cast<fb::game::session*>(object);
-        acceptor->send(*object, response::game::session::position(*session), acceptor::scope::SELF);
+        acceptor->send(*object, fb::protocol::game::response::session::position(*session), acceptor::scope::SELF);
     }
 
     return 0;
@@ -800,11 +800,11 @@ int fb::game::object::builtin_direction(lua_State* lua)
     }
     else
     {
-        auto direction = game::direction(lua_tointeger(lua, 2));
+        auto direction = fb::game::direction(lua_tointeger(lua, 2));
         object->direction(direction);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-        acceptor->send(*object, response::game::object::direction(*object), acceptor::scope::PIVOT);
+        acceptor->send(*object, fb::protocol::game::response::object::direction(*object), acceptor::scope::PIVOT);
         return 0;
     }
 }
@@ -831,7 +831,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    acceptor->send(*object, response::game::object::chat(*object, type, sstream.str()), acceptor::scope::PIVOT);
+    acceptor->send(*object, fb::protocol::game::response::object::chat(*object, type, sstream.str()), acceptor::scope::PIVOT);
     return 0;
 }
 
@@ -844,7 +844,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto type = argc < 3 ? fb::game::message::STATE : lua_tointeger(lua, 3);
 
     if(object->type() == object::types::SESSION)
-        acceptor->send(*object, response::game::message(message, fb::game::message::type(type)), acceptor::scope::SELF);
+        acceptor->send(*object, fb::protocol::game::response::message(message, fb::game::message::type(type)), acceptor::scope::SELF);
 
     return 0;
 }
@@ -860,7 +860,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
     if(buff == nullptr)
         lua_pushnil(lua);
     else
-        acceptor->send(*object, response::game::spell::buff(*buff), acceptor::scope::SELF);
+        acceptor->send(*object, fb::protocol::game::response::spell::buff(*buff), acceptor::scope::SELF);
 
     return 1;
 }
@@ -915,7 +915,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
     auto effect = (uint8_t)lua_tointeger(lua, 2);
 
     if(object->type() != object::types::ITEM)
-        acceptor->send(*object, response::game::object::effect(*object, effect), acceptor::scope::PIVOT);
+        acceptor->send(*object, fb::protocol::game::response::object::effect(*object, effect), acceptor::scope::PIVOT);
     return 0;
 }
 
@@ -945,7 +945,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(lua_isstring(lua, 2))
         {
-            game::master::get().name2map(lua_cp949(lua, 2));
+            fb::game::master::get().name2map(lua_cp949(lua, 2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -988,7 +988,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto name = lua_cp949(lua, 2);
 
-    auto master = game::master::get().name2item(name);
+    auto master = fb::game::master::get().name2item(name);
     if(master == nullptr)
     {
         lua_pushnil(lua);
@@ -1000,7 +1000,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
         item->map(object->_map, object->_position);
         item->to_lua(lua);
         
-        acceptor->send(*item, response::game::object::show(*item), acceptor::scope::PIVOT);
+        acceptor->send(*item, fb::protocol::game::response::object::show(*item), acceptor::scope::PIVOT);
     }
 
     return 1;

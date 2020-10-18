@@ -1,6 +1,11 @@
 {
+    "id": ["game0", "game1", "game2", "game3", "game4", "game5", "game6", "game7", "game8", "game9", "game10"],
     "delay":  5,
     "port": 2004,
+    "internal": {
+        "ip": "192.168.0.100",
+        "port": 3000
+    },
     "login": {
         "ip": "192.168.0.100",
         "port": 2002

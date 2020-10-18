@@ -7,6 +7,7 @@
 #include "model/lua/lua.h"
 #include "module/console/console.h"
 #include "module/string/string.h"
+#include "protocol/internal.h"
 
 void clear(fb::console& c, uint32_t x, int y)
 {
@@ -353,18 +354,41 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(157);
-
-    auto& c = fb::console::get();
-
 #ifdef _WIN32
     ::SetConsoleIcon(IDI_BARAM);
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
+    auto& c = fb::console::get();
+
     // Execute acceptor
     auto& config = fb::config::get();
     boost::asio::io_context io_service;
-    auto acceptor = new fb::game::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
+
+    const auto connection = INTERNAL_CONNECTION
+    {
+        config["internal"]["ip"].asString(),
+        (uint16_t)config["internal"]["port"].asInt(),
+        [&] (fb::base::socket<>& socket, bool success)
+        {
+            if(success)
+            {
+                for(auto x : config["id"])
+                    socket.send(fb::protocol::internal::request::subscribe(x.asString()));
+            }
+        },
+        [&] ()
+        {
+            // on disconnected
+        }
+    };
+    auto acceptor = new fb::game::acceptor
+    (
+        io_service, 
+        config["port"].asInt(), 
+        config["delay"].asInt(),
+        connection
+    );
 
     load_db(c, acceptor);
     io_service.run();

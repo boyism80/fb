@@ -6,9 +6,9 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace life {
+namespace fb { namespace protocol { namespace game { namespace response { namespace life {
 
- class action : public fb::protocol::base::response
+ class action : public fb::protocol::base::header
  {
  public:
      const fb::game::life&      me;
@@ -32,7 +32,7 @@ namespace fb { namespace protocol { namespace response { namespace game { namesp
      }
  };
 
-class show_hp : public fb::protocol::base::response
+class show_hp : public fb::protocol::base::header
 {
 public:
     const fb::game::life&       me;
@@ -58,7 +58,7 @@ public:
     }
 };
 
-class die : public fb::protocol::base::response
+class die : public fb::protocol::base::header
 {
 public:
     const uint32_t              id;

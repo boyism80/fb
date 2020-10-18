@@ -138,7 +138,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uin
 
     // compare linear doors
     point16_t position;
-    for(const auto door : game::master::get().doors)
+    for(const auto door : fb::game::master::get().doors)
     {
         position.x = position.y = 0;
         while(door->find(*this, position, true))

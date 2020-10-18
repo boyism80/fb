@@ -19,6 +19,7 @@ class acceptor : public boost::asio::ip::tcp::acceptor
 protected:
     boost::asio::io_context&    _context;
     uint8_t                     _accept_delay;
+    fb::internal::socket<>*     _internal;
 
 public:
     fb::base::socket_container<S, T>  sockets;
@@ -49,11 +50,18 @@ protected:
 
 public:
     void                        send_stream(S<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
-    void                        send(S<T>& socket, const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true);
+    void                        send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
 };
 
 } }
 
+typedef struct __INTERNAL_CONNECTION_TAG
+{
+    std::string                                     ip;
+    uint16_t                                        port;
+    std::function<void(fb::base::socket<>&, bool)>  handle_connected;
+    std::function<void()>                           handle_disconnected;
+} INTERNAL_CONNECTION;
 
 namespace fb {
 
@@ -65,12 +73,14 @@ private:
 
 private:
     std::map<uint8_t, handler>  _handler_dict;
+    const INTERNAL_CONNECTION   _internal_connection;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
     ~acceptor();
 
 private:
+    void                        connect_internal();
     bool                        call(fb::socket<T>& socket, uint8_t cmd);
 
 protected:

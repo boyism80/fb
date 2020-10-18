@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/master/master.h"
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace board {
+namespace fb { namespace protocol { namespace game { namespace response { namespace board {
 
-class sections : public fb::protocol::base::response
+class sections : public fb::protocol::base::header
 {
 public:
     const std::vector<fb::game::board::section*>&        data;
@@ -31,7 +31,7 @@ public:
 };
 
 
-class articles : public fb::protocol::base::response
+class articles : public fb::protocol::base::header
 {
 public:
     const uint16_t              section_id;
@@ -83,7 +83,7 @@ public:
     }
 };
 
-class article : public fb::protocol::base::response
+class article : public fb::protocol::base::header
 {
 public:
     const uint16_t              section_id;
@@ -121,7 +121,7 @@ public:
 };
 
 
-class message : public fb::protocol::base::response
+class message : public fb::protocol::base::header
 {
 public:
     const std::string       text;

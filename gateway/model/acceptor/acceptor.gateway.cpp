@@ -1,7 +1,7 @@
 #include "model/acceptor/acceptor.gateway.h"
 
-fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::acceptor<fb::gateway::session>(context, port, accept_delay)
+fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
+    fb::acceptor<fb::gateway::session>(context, port, accept_delay, internal_connection)
 {
     static const char* message = "CONNECTED SERVER\n";
     this->_connection_cache.write_u8(0x7E)
@@ -11,8 +11,8 @@ fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port,
     this->load_entries();
 
     // Register event handler
-    this->bind<fb::protocol::request::gateway::assert_version>  (0x00, std::bind(&acceptor::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::request::gateway::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::assert_version>  (0x00, std::bind(&acceptor::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::gateway::acceptor::~acceptor()
@@ -35,7 +35,7 @@ bool fb::gateway::acceptor::load_entries()
             ));
         }
 
-        response::gateway::hosts(this->_entries).serialize(this->_entry_stream_cache);
+        fb::protocol::gateway::response::hosts(this->_entries).serialize(this->_entry_stream_cache);
         this->_entry_crc32_cache = this->_entry_stream_cache.crc();
         return true;
     }
@@ -80,7 +80,7 @@ bool fb::gateway::acceptor::handle_disconnected(fb::socket<fb::gateway::session>
     return false;
 }
 
-bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::assert_version& request)
+bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
 {
     try
     {
@@ -89,7 +89,7 @@ bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session
         auto crt = cryptor::generate();
         socket.crt(crt);
 
-        this->send(socket, response::gateway::crt(crt, this->_entry_crc32_cache), false);
+        this->send(socket, fb::protocol::gateway::response::crt(crt, this->_entry_crc32_cache), false);
         return true;
     }
     catch(std::exception& e)
@@ -98,7 +98,7 @@ bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session
     }
 }
 
-bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::request::gateway::entry_list& request)
+bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
 {
     switch(request.action)
     {

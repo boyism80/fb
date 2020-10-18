@@ -4,7 +4,8 @@ template <template<class> class S, class T>
 fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
-    _accept_delay(accept_delay)
+    _accept_delay(accept_delay),
+    _internal(nullptr)
 {
     this->accept();
 }
@@ -18,6 +19,9 @@ fb::base::acceptor<S, T>::~acceptor()
             delete x->data();
         delete x;
     }
+
+    if(this->_internal == nullptr)
+        delete this->_internal;
 }
 
 template <template<class> class S, class T>
@@ -129,7 +133,7 @@ void fb::base::acceptor<S, T>::send_stream(S<T>& socket, const fb::ostream& stre
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::response& response, bool encrypt, bool wrap)
+void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
     fb::ostream                 out_stream;
     response.serialize(out_stream);
@@ -143,9 +147,12 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::resp
 
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::base::acceptor<fb::socket, T>(context, port, accept_delay)
-{}
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
+    fb::base::acceptor<fb::socket, T>(context, port, accept_delay),
+    _internal_connection(internal_connection)
+{
+    this->connect_internal();
+}
 
 template <typename T>
 fb::acceptor<T>::~acceptor()
@@ -166,12 +173,53 @@ bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 }
 
 template <typename T>
+void fb::acceptor<T>::connect_internal()
+{
+    if(this->_internal != nullptr)
+        delete this->_internal;
+
+    this->_internal = new fb::internal::socket<>
+        (
+            this->_context,
+            [&] (fb::base::socket<>& socket)
+            {
+                puts("internal received");
+            },
+
+            [&] (fb::base::socket<>& socket)
+            {
+                this->_internal_connection.handle_disconnected();
+                this->connect_internal();
+            }
+        );
+    
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(this->_internal_connection.ip), this->_internal_connection.port);
+    this->_internal->async_connect
+    (
+        endpoint,
+        [&] (const boost::system::error_code& error)
+        {
+            if(error)
+            {
+                this->_internal_connection.handle_connected(*this->_internal, false);
+                this->connect_internal();
+            }
+            else
+            {
+                this->_internal_connection.handle_connected(*this->_internal, true);
+                this->_internal->recv();
+            }
+        }
+    );
+}
+
+template <typename T>
 void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 {
-    static uint8_t      not_crt_cmd[] = {0x00, 0x10};
-    static uint8_t      base_size   = sizeof(uint8_t) + sizeof(uint16_t);
-    auto&               in_stream   = socket.in_stream();
-    auto&               crt         = socket.crt();
+    static constexpr uint8_t    not_crt_cmd[] = {0x00, 0x10};
+    static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
+    auto&                       in_stream     = socket.in_stream();
+    auto&                       crt           = socket.crt();
 
     while(true)
     {
@@ -231,8 +279,8 @@ void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> 
     this->_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
     {
         auto& in_stream = socket.in_stream();
-        R     request;
-        request.deserialize(in_stream);
-        return fn(socket, request);
+        R     header;
+        header.deserialize(in_stream);
+        return fn(socket, header);
     };
 }

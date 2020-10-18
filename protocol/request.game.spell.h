@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/spell/spell.h"
 
-namespace fb { namespace protocol { namespace request { namespace game { namespace spell {
+namespace fb { namespace protocol { namespace game { namespace request { namespace spell {
 
-class use : public fb::protocol::base::request
+class use : public fb::protocol::base::header
 {
 private:
     mutable fb::istream             _in_stream;

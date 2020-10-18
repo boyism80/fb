@@ -12,11 +12,11 @@
 
 namespace fb { namespace base {
 
-template <typename T>
+template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket
 {
 private:
-    std::function<void(fb::base::socket<T>&)> _handle_receive;
+    std::function<void(fb::base::socket<T>&)> _handle_received;
     std::function<void(fb::base::socket<T>&)> _handle_closed;
 
 protected:
@@ -24,13 +24,17 @@ protected:
     istream                 _instream;
     T*                      _data;
 
-public:
+protected:
     socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
     ~socket();
 
+protected:
+    virtual void            on_encrypt(fb::ostream& out) {}
+    virtual void            on_wrap(fb::ostream& out) {}
+
 public:
-    void                    send(const ostream& stream);
-    void                    send(const fb::protocol::base::response& response);
+    void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 
     void                    recv();
     fb::istream&            in_stream();
@@ -77,24 +81,36 @@ public:
     socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
     ~socket();
     
-private:
-    virtual void            on_encrypt(fb::ostream& out);
-    virtual void            on_wrap(fb::ostream& out);
+protected:
+    void                    on_encrypt(fb::ostream& out);
+    void                    on_wrap(fb::ostream& out);
 
 public:
     fb::cryptor&            crt();
     void                    crt(const fb::cryptor& crt);
     void                    crt(uint8_t enctype, const uint8_t* enckey);
 
-    void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
-    void                    send(const fb::protocol::base::response& response, bool encrypt = true, bool wrap = true);
-
 public:
     operator                fb::cryptor& ();
 };
 
-#include "socket.hpp"
-
 }
+
+namespace fb { namespace internal {
+
+template <typename T = void*>
+class socket : public fb::base::socket<T>
+{
+public:
+    socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
+    ~socket();
+
+protected:
+    void                    on_wrap(fb::ostream& out);
+};
+
+} }
+
+#include "socket.hpp"
 
 #endif // !__SOCKET_H__

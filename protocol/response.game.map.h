@@ -40,9 +40,9 @@ static const uint16_t crc16tab[256] =
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace map {
+namespace fb { namespace protocol { namespace game { namespace response { namespace map {
 
-class update : public fb::protocol::base::response
+class update : public fb::protocol::base::header
 {
 public:
     const fb::game::map&    map;
@@ -95,7 +95,7 @@ public:
     }
 };
 
-class bgm : public fb::protocol::base::response
+class bgm : public fb::protocol::base::header
 {
 public:
     const fb::game::map&            map;
@@ -123,7 +123,7 @@ public:
     }
 };
 
-class config : public fb::protocol::base::response
+class config : public fb::protocol::base::header
 {
 public:
     const fb::game::map&            map;

@@ -43,7 +43,7 @@ void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
     this->_socket.send(stream, encrypt, wrap);
 }
 
-void fb::game::session::send(const fb::protocol::base::response& response, bool encrypt, bool wrap)
+void fb::game::session::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
     this->_socket.send(response, encrypt, wrap);
 }
@@ -289,12 +289,12 @@ bool fb::game::session::level_up()
 
     this->level(this->_level + 1);
     
-    this->strength_up(game::master::get().classes[this->_class]->level_abilities[this->_level]->strength);
-    this->intelligence_up(game::master::get().classes[this->_class]->level_abilities[this->_level]->intelligence);
-    this->dexteritry_up(game::master::get().classes[this->_class]->level_abilities[this->_level]->dexteritry);
+    this->strength_up(fb::game::master::get().classes[this->_class]->level_abilities[this->_level]->strength);
+    this->intelligence_up(fb::game::master::get().classes[this->_class]->level_abilities[this->_level]->intelligence);
+    this->dexteritry_up(fb::game::master::get().classes[this->_class]->level_abilities[this->_level]->dexteritry);
 
-    this->base_hp_up(game::master::get().classes[this->_class]->level_abilities[this->_level]->base_hp + std::rand() % 10);
-    this->base_mp_up(game::master::get().classes[this->_class]->level_abilities[this->_level]->base_mp + std::rand() % 10);
+    this->base_hp_up(fb::game::master::get().classes[this->_class]->level_abilities[this->_level]->base_hp + std::rand() % 10);
+    this->base_mp_up(fb::game::master::get().classes[this->_class]->level_abilities[this->_level]->base_mp + std::rand() % 10);
 
     this->hp(this->base_hp());
     this->mp(this->base_mp());
@@ -428,7 +428,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
         if(this->_class == 0)
         {
-            auto require = game::master::get().required_exp(0, 5);
+            auto require = fb::game::master::get().required_exp(0, 5);
             if(this->_experience > require)
                 value = 0;
 
@@ -463,7 +463,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             if(this->max_level())
                 break;
 
-            auto require = game::master::get().required_exp(this->_class, this->_level + 1);
+            auto require = fb::game::master::get().required_exp(this->_class, this->_level + 1);
             if(require == 0)
                 break;
 
@@ -509,13 +509,13 @@ uint32_t fb::game::session::experience_remained() const
     if(this->_class == 0 && this->_level >= 5)
         return 0;
 
-    return game::master::get().required_exp(this->_class, this->_level+1) - this->experience();
+    return fb::game::master::get().required_exp(this->_class, this->_level+1) - this->experience();
 }
 
 float fb::game::session::experience_percent() const
 {
-    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : game::master::get().required_exp(this->cls(), this->level()+1);
-    auto                    prev_exp = this->max_level() ? 0x00000000 : game::master::get().required_exp(this->cls(), this->level());
+    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::master::get().required_exp(this->cls(), this->level()+1);
+    auto                    prev_exp = this->max_level() ? 0x00000000 : fb::game::master::get().required_exp(this->cls(), this->level());
     auto                    exp_range = next_exp - prev_exp;
 
     return std::min(100.0f, ((this->_experience - prev_exp) / float(exp_range)) * 100.0f);
@@ -763,7 +763,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(this->state() == fb::game::state::RIDING)
             throw std::runtime_error("이미 타고 있습니다.");
 
-        if(horse.based<fb::game::mob::master>() != game::master::get().name2mob("말"))
+        if(horse.based<fb::game::mob::master>() != fb::game::master::get().name2mob("말"))
             throw session::no_conveyance_exception();
 
         if(horse.map() != this->_map)
@@ -811,7 +811,7 @@ void fb::game::session::unride(fb::game::listener* listener)
         if(this->state() != fb::game::state::RIDING)
             throw std::runtime_error("말에 타고 있지 않습니다.");
 
-        auto master = game::master::get().name2mob("말");
+        auto master = fb::game::master::get().name2mob("말");
         auto horse = new fb::game::mob(master, this->_listener, true);
         horse->map(this->_map, this->position_forward());
         
@@ -1059,7 +1059,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(store == false)
         return object::builtin_mkitem(lua);
 
-    auto master = game::master::get().name2item(name);
+    auto master = fb::game::master::get().name2item(name);
     if(master == nullptr)
     {
         lua_pushnil(lua);
@@ -1071,7 +1071,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
         auto slot = session->items.add(item);
         item->to_lua(lua);
 
-        acceptor->send(*session, response::game::item::update(*session, slot), acceptor::scope::SELF);
+        acceptor->send(*session, fb::protocol::game::response::item::update(*session, slot), acceptor::scope::SELF);
     }
 
     return 1;
@@ -1104,7 +1104,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(name.empty())
                 throw std::exception();
 
-            auto master = game::master::get().name2item(name);
+            auto master = fb::game::master::get().name2item(name);
             if(master == nullptr)
                 throw std::exception();
 
@@ -1176,7 +1176,7 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls = session->_class;
         auto promotion = session->_promotion;
 
-        auto cls_name = game::master::get().class2name(cls, promotion);
+        auto cls_name = fb::game::master::get().class2name(cls, promotion);
         if(cls_name == nullptr)
         {
             lua_pushnil(lua);
@@ -1190,15 +1190,15 @@ int fb::game::session::builtin_class(lua_State* lua)
     {
         auto cls_name = lua_cp949(lua, 2);
         uint8_t cls, promotion;
-        if(game::master::get().name2class(cls_name, &cls, &promotion) == false)
+        if(fb::game::master::get().name2class(cls_name, &cls, &promotion) == false)
         {
             lua_pushboolean(lua, false);
         }
         else
         {
             auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-            acceptor->send(*session, response::game::session::id(*session), acceptor::scope::SELF);
-            acceptor->send(*session, response::game::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
+            acceptor->send(*session, fb::protocol::game::response::session::id(*session), acceptor::scope::SELF);
+            acceptor->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
             lua_pushboolean(lua, true);
         }
     }
@@ -1222,7 +1222,7 @@ int fb::game::session::builtin_level(lua_State* lua)
         session->level(level);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-        acceptor->send(*session, response::game::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
+        acceptor->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
         return 0;
     }
 }

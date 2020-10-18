@@ -26,7 +26,7 @@ public:
     ~gateway();
 
 public:
-    void                        assert_client(const fb::protocol::request::gateway::assert_version& request);
+    void                        assert_client(const fb::protocol::gateway::request::assert_version& request);
 };
 
 } } }

@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/trade/trade.h"
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace trade {
+namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
 
-class dialog : public fb::protocol::base::response
+class dialog : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;
@@ -34,7 +34,7 @@ public:
     }
 };
 
-class upload : public fb::protocol::base::response
+class upload : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    me;
@@ -62,7 +62,7 @@ public:
     }
 };
 
-class bundle : public fb::protocol::base::response
+class bundle : public fb::protocol::base::header
 {
 public:
     bundle()
@@ -77,7 +77,7 @@ public:
     }
 };
 
-class money : public fb::protocol::base::response
+class money : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    me;
@@ -99,7 +99,7 @@ public:
     }
 };
 
-class close : public fb::protocol::base::response
+class close : public fb::protocol::base::header
 {
 public:
     const std::string&          message;
@@ -119,7 +119,7 @@ public:
     }
 };
 
-class lock : public fb::protocol::base::response
+class lock : public fb::protocol::base::header
 {
 public:
     lock()

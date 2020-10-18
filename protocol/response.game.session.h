@@ -6,9 +6,9 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace session {
+namespace fb { namespace protocol { namespace game { namespace response { namespace session {
 
-class message : public fb::protocol::base::response
+class message : public fb::protocol::base::header
 {
 public:
     const std::string               text;
@@ -28,7 +28,7 @@ public:
     }
 };
 
-class show : public fb::protocol::base::response
+class show : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -111,7 +111,7 @@ public:
     }
 };
 
-class id : public fb::protocol::base::response
+class id : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -133,7 +133,7 @@ public:
     }
 };
 
-class state : public fb::protocol::base::response
+class state : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -195,7 +195,7 @@ public:
     }
 };
 
-class position : public fb::protocol::base::response
+class position : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -236,7 +236,7 @@ public:
     }
 };
 
-class internal_info : public fb::protocol::base::response
+class internal_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -325,7 +325,7 @@ public:
     }
 };
 
-class external_info : public fb::protocol::base::response
+class external_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -431,7 +431,7 @@ public:
     }
 };
 
-class option : public fb::protocol::base::response
+class option : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -454,7 +454,7 @@ public:
     }
 };
 
-class throws : public fb::protocol::base::response
+class throws : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
@@ -484,7 +484,7 @@ public:
     }
 };
 
-class action : public fb::protocol::base::response
+class action : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;

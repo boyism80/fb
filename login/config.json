@@ -1,6 +1,11 @@
 {
+    "id": ["login"],
     "delay": 0,
     "port": 2002,
+    "internal": {
+        "ip": "192.168.0.100",
+        "port": 3000
+    },
     "allow other language": false,
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",

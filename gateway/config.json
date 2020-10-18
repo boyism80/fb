@@ -1,6 +1,11 @@
 {
+    "id": ["gateway"],
     "delay":  0,
     "port": 2001,
+    "internal": {
+        "ip": "192.168.0.100",
+        "port": 3000
+    },
     "entries": {
         "채승현": {
             "desc": "채승현은 신이다.",

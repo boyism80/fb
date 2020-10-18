@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace request { namespace login { namespace account {
+namespace fb { namespace protocol { namespace login { namespace request { namespace account {
 
-class create : public fb::protocol::base::request
+class create : public fb::protocol::base::header
 {
 public:
     std::string             id;
@@ -20,7 +20,7 @@ public:
 };
 
 
-class complete : public fb::protocol::base::request
+class complete : public fb::protocol::base::header
 {
 public:
     uint8_t                 hair;
@@ -39,7 +39,7 @@ public:
 };
 
 
-class change_pw : public fb::protocol::base::request
+class change_pw : public fb::protocol::base::header
 {
 public:
     std::string             name;

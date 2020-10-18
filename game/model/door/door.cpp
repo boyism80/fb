@@ -142,7 +142,7 @@ int fb::game::door::builtin_update(lua_State* lua)
 
     const auto& map = door->map();
     const auto size = size8_t((uint8_t)master.size(), 1);
-    acceptor->send(response::game::map::update(map, door->position, size), map);
+    acceptor->send(fb::protocol::game::response::map::update(map, door->position, size), map);
     return 0;
 }
 

@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/session/session.h"
 
-namespace fb { namespace protocol { namespace response { namespace game {
+namespace fb { namespace protocol { namespace game { namespace response {
 
-class init : public fb::protocol::base::response
+class init : public fb::protocol::base::header
 {
 public:
     init()
@@ -21,7 +21,7 @@ public:
     }
 };
 
-class message : public fb::protocol::base::response
+class message : public fb::protocol::base::header
 {
 public:
     const std::string                       text;
@@ -41,7 +41,7 @@ public:
     }
 };
 
-class user_list : public fb::protocol::base::response
+class user_list : public fb::protocol::base::header
 {
 private:
     typedef fb::base::socket_container<fb::socket, fb::game::session> container;
@@ -76,7 +76,7 @@ public:
     }
 };
 
-class chat : public fb::protocol::base::response
+class chat : public fb::protocol::base::header
 {
 public:
     const fb::game::object&     me;
@@ -98,7 +98,7 @@ public:
     }
 };
 
-class time : public fb::protocol::base::response
+class time : public fb::protocol::base::header
 {
 public:
     const uint8_t               hours;
@@ -118,7 +118,7 @@ public:
     }
 };
 
-class weather : public fb::protocol::base::response
+class weather : public fb::protocol::base::header
 {
 public:
     const fb::game::weather::type   value;
@@ -137,7 +137,7 @@ public:
     }
 };
 
-class bright : public fb::protocol::base::response
+class bright : public fb::protocol::base::header
 {
 public:
     const uint8_t                   value;
@@ -156,7 +156,7 @@ public:
     }
 };
 
-class timer : public fb::protocol::base::response
+class timer : public fb::protocol::base::header
 {
 public:
     const uint32_t                  time;

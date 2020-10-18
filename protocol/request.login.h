@@ -3,9 +3,9 @@
 
 #include "protocol/protocol.h"
 
-namespace fb { namespace protocol { namespace request { namespace login {
+namespace fb { namespace protocol { namespace login { namespace request {
 
-class login : public fb::protocol::base::request
+class login : public fb::protocol::base::header
 {
 public:
     std::string             id;
@@ -20,7 +20,7 @@ public:
 };
 
 
-class agreement : public fb::protocol::base::request
+class agreement : public fb::protocol::base::header
 {
 public:
     uint8_t                 enc_type;

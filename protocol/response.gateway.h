@@ -4,9 +4,9 @@
 #include "protocol/protocol.h"
 #include "model/gateway/gateway.h"
 
-namespace fb { namespace protocol { namespace response { namespace gateway {
+namespace fb { namespace protocol { namespace gateway { namespace response {
 
-class crt : public fb::protocol::base::response
+class crt : public fb::protocol::base::header
 {
 public:
     const fb::cryptor       cryptor;
@@ -30,7 +30,7 @@ public:
     }
 };
 
-class hosts : public fb::protocol::base::response
+class hosts : public fb::protocol::base::header
 {
 public:
     const std::vector<fb::gateway::entry>&  entries;

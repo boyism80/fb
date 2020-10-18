@@ -5,7 +5,7 @@
 
 namespace fb { namespace protocol { namespace response {
 
-class transfer : public fb::protocol::base::response
+class transfer : public fb::protocol::base::header
 {
 public:
     const uint32_t          ip;

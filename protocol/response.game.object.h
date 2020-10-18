@@ -6,9 +6,9 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace response { namespace game { namespace object {
+namespace fb { namespace protocol { namespace game { namespace response { namespace object {
 
-class direction : public fb::protocol::base::response
+class direction : public fb::protocol::base::header
 {
 public:
     const uint32_t              sequence;
@@ -32,7 +32,7 @@ public:
     }
 };
 
-class show : public fb::protocol::base::response
+class show : public fb::protocol::base::header
 {
 private:
     const fb::game::object*                 object;
@@ -92,7 +92,7 @@ public:
     }
 };
 
-class hide : public fb::protocol::base::response
+class hide : public fb::protocol::base::header
 {
 public:
     const uint32_t              id;
@@ -114,7 +114,7 @@ public:
     }
 };
 
-class chat : public fb::protocol::base::response
+class chat : public fb::protocol::base::header
 {
 public:
     const fb::game::object&     me;
@@ -136,7 +136,7 @@ public:
     }
 };
 
-class move : public fb::protocol::base::response
+class move : public fb::protocol::base::header
 {
 public:
     const uint32_t              id;
@@ -164,7 +164,7 @@ public:
     }
 };
 
-class sound : public fb::protocol::base::response
+class sound : public fb::protocol::base::header
 {
 public:
     const fb::game::object&         me;
@@ -192,7 +192,7 @@ public:
     }
 };
 
-class effect : public fb::protocol::base::response
+class effect : public fb::protocol::base::header
 {
 public:
     const fb::game::object&         me;

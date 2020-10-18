@@ -383,7 +383,7 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
     auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)lua_tointeger(lua, 4);
 
-    acceptor->send(*life, response::game::life::action(*life, fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
+    acceptor->send(*life, fb::protocol::game::response::life::action(*life, fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
     return 0;
 }
 

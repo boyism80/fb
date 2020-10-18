@@ -13,8 +13,6 @@
 
 namespace fb { namespace gateway {
 
-using namespace fb::protocol;
-
 class acceptor : public fb::acceptor<fb::gateway::session>
 {
 private:
@@ -27,7 +25,7 @@ private:
     service::gateway            _gateway_service;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
     ~acceptor();
 
 private:
@@ -45,8 +43,8 @@ public:
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session);
 
 public:
-    bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::request::gateway::assert_version&);
-    bool                        handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::request::gateway::entry_list&);
+    bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
+    bool                        handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
 };
 
 } }

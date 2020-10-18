@@ -6,9 +6,9 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace request { namespace game {
+namespace fb { namespace protocol { namespace game { namespace request {
 
-class login : public fb::protocol::base::request
+class login : public fb::protocol::base::header
 {
 public:
     uint8_t                 enc_type;
@@ -28,7 +28,7 @@ public:
 };
 
 
-class direction : public fb::protocol::base::request
+class direction : public fb::protocol::base::header
 {
 public:
     fb::game::direction     direction;
@@ -40,14 +40,14 @@ public:
     }
 };
 
-class exit : public fb::protocol::base::request
+class exit : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream) {}
 };
 
 
-class move : public fb::protocol::base::request
+class move : public fb::protocol::base::header
 {
 public:
     fb::game::direction     direction;
@@ -65,7 +65,7 @@ public:
 };
 
 
-class update_move : public fb::protocol::request::game::move
+class update_move : public fb::protocol::game::request::move
 {
 public:
     point16_t               begin;
@@ -75,7 +75,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        fb::protocol::request::game::move::deserialize(in_stream);
+        fb::protocol::game::request::move::deserialize(in_stream);
 
         this->begin.x = in_stream.read_u16();
         this->begin.y = in_stream.read_u16();
@@ -85,14 +85,14 @@ public:
     }
 };
 
-class attack : public fb::protocol::base::request
+class attack : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream) {}
 };
 
 
-class pick_up : public fb::protocol::base::request
+class pick_up : public fb::protocol::base::header
 {
 public:
     bool                    boost;
@@ -105,7 +105,7 @@ public:
 };
 
 
-class emotion : public fb::protocol::base::request
+class emotion : public fb::protocol::base::header
 {
 public:
     uint8_t                 emotion;
@@ -118,26 +118,26 @@ public:
 };
 
 
-class refresh : public fb::protocol::base::request
+class refresh : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream) {}
 };
 
-class front_info : public fb::protocol::base::request
+class front_info : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream) {}
 };
 
-class self_info : public fb::protocol::base::request
+class self_info : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream) {}
 };
 
 
-class change_option : public fb::protocol::base::request
+class change_option : public fb::protocol::base::header
 {
 public:
     fb::game::options       option;
@@ -150,7 +150,7 @@ public:
 };
 
 
-class click : public fb::protocol::base::request
+class click : public fb::protocol::base::header
 {
 public:
     uint32_t                fd;
@@ -164,7 +164,7 @@ public:
 };
 
 
-class trade : public fb::protocol::base::request
+class trade : public fb::protocol::base::header
 {
 public:
     typedef union
@@ -203,7 +203,7 @@ public:
 };
 
 
-class group : public fb::protocol::base::request
+class group : public fb::protocol::base::header
 {
 public:
     std::string             name;
@@ -216,7 +216,7 @@ public:
 };
 
 
-class user_list : public fb::protocol::base::request
+class user_list : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream)
@@ -226,7 +226,7 @@ public:
 };
 
 
-class chat : public fb::protocol::base::request
+class chat : public fb::protocol::base::header
 {
 public:
     bool                    shout;
@@ -241,7 +241,7 @@ public:
 };
 
 
-class swap : public fb::protocol::base::request
+class swap : public fb::protocol::base::header
 {
 public:
     fb::game::swap::type    type;
@@ -258,7 +258,7 @@ public:
 };
 
 
-class dialog : public fb::protocol::base::request
+class dialog : public fb::protocol::base::header
 {
 public:
     uint8_t                 interaction;
@@ -320,7 +320,7 @@ public:
 };
 
 
-class door : public fb::protocol::base::request
+class door : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream)
