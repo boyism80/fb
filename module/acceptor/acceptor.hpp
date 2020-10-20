@@ -15,9 +15,9 @@ fb::base::acceptor<S, T>::~acceptor()
 {
     for(auto x : this->sockets)
     {
-        if(x->data() != nullptr)
-            delete x->data();
-        delete x;
+        if(x.second->data() != nullptr)
+            delete x.second->data();
+        delete x.second;
     }
 
     if(this->_internal == nullptr)
@@ -161,8 +161,8 @@ fb::acceptor<T>::~acceptor()
 template <typename T>
 bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 {
-    auto i = this->_handler_dict.find(cmd);
-    if(i == this->_handler_dict.end())
+    auto i = this->_public_handler_dict.find(cmd);
+    if(i == this->_public_handler_dict.end())
     {
         auto& c = fb::console::get();
         c.puts("정의되지 않은 요청입니다. [0x%2X]", cmd);
@@ -183,7 +183,7 @@ void fb::acceptor<T>::connect_internal()
             this->_context,
             [&] (fb::base::socket<>& socket)
             {
-                puts("internal received");
+                fb::internal::parse<void*, std::map<uint8_t, fb::acceptor<T>::private_handler>>(static_cast<fb::internal::socket<>&>(socket), this->_private_handler_dict);
             },
 
             [&] (fb::base::socket<>& socket)
@@ -276,7 +276,20 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn)
 {
-    this->_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
+    this->_public_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
+    {
+        auto& in_stream = socket.in_stream();
+        R     header;
+        header.deserialize(in_stream);
+        return fn(socket, header);
+    };
+}
+
+template <typename T>
+template <typename R>
+void fb::acceptor<T>::bind(std::function<bool(fb::internal::socket<>&, R&)> fn)
+{
+    this->_private_handler_dict[R::id] = [this, fn](fb::internal::socket<>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;

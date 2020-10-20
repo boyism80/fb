@@ -47,15 +47,15 @@ template <template<class> class S, class T>
 class acceptor;
 
 template <template<class> class S, class T>
-class socket_container : private std::vector<S<T>*>
+class socket_container : private std::map<uint32_t, S<T>*>
 {
 public:
     friend class acceptor<S, T>;
 
 public:
-    using std::vector<S<T>*>::begin;
-    using std::vector<S<T>*>::end;
-    using std::vector<S<T>*>::size;
+    using std::map<uint32_t, S<T>*>::begin;
+    using std::map<uint32_t, S<T>*>::end;
+    using std::map<uint32_t, S<T>*>::size;
 
 private:
     void                    push(S<T>& session);

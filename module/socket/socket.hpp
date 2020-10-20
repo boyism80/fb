@@ -180,32 +180,27 @@ void fb::internal::socket<T>::on_wrap(fb::ostream& out)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(S<T>& session)
 {
-    this->push_back(&session);
+    std::map<uint32_t, S<T>*>::insert(std::pair<uint32_t, S<T>*>(session.native_handle(), &session));
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
-    std::vector<S<T>*>::erase(std::find(this->begin(), this->end(), &session));
+    std::map<uint32_t, S<T>*>::erase(session.native_handle());
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(uint32_t fd)
 {
-    this->erase(this->operator[](fd));
+    std::map<uint32_t, S<T>*>::erase(fd);
 }
 
 template <template<class> class S, class T>
 inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
 {
-    auto i = std::find_if
-    (
-        this->begin(), this->end(), 
-        [fd] (S<T>* x) 
-        { 
-            uint32_t x_fd = x->native_handle();
-            return x_fd == fd; 
-        }
-    );
-    return i == this->end() ? nullptr : *i;
+    auto found = std::map<uint32_t, S<T>*>::find(fd);
+    if(found == this->end())
+        return nullptr;
+
+    return found->second;
 }

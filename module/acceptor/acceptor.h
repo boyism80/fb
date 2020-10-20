@@ -63,17 +63,63 @@ typedef struct __INTERNAL_CONNECTION_TAG
     std::function<void()>                           handle_disconnected;
 } INTERNAL_CONNECTION;
 
+namespace fb { namespace internal {
+
+template <typename T, typename D>
+void parse(fb::internal::socket<T>& socket, D& dict)
+{
+    static constexpr uint8_t base_size = sizeof(uint16_t);
+    auto& in_stream = socket.in_stream();
+
+    while(true)
+    {
+        try
+        {
+            if(in_stream.readable_size() < base_size)
+                throw std::exception();
+
+            auto size = in_stream.read_u16();
+            if(size > in_stream.capacity())
+                throw std::exception();
+
+            if(in_stream.readable_size() < size)
+                throw std::exception();
+
+            auto cmd = in_stream.read_8();
+            auto found = dict.find(cmd);
+            if(found == dict.end())
+                throw std::exception();
+
+            found->second(socket);
+
+            in_stream.reset();
+            in_stream.shift(base_size + size);
+            in_stream.flush();
+        }
+        catch(...)
+        {
+            break;
+        }
+    }
+
+    in_stream.reset();
+}
+
+} }
+
 namespace fb {
 
 template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    typedef std::function<bool(fb::socket<T>&)> handler;
+    typedef std::function<bool(fb::socket<T>&)>             public_handler;
+    typedef std::function<bool(fb::internal::socket<>&)>    private_handler;
 
 private:
-    std::map<uint8_t, handler>  _handler_dict;
-    const INTERNAL_CONNECTION   _internal_connection;
+    std::map<uint8_t, public_handler>   _public_handler_dict;
+    std::map<uint8_t, private_handler>  _private_handler_dict;
+    const INTERNAL_CONNECTION           _internal_connection;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
@@ -89,6 +135,9 @@ protected:
 public:
     template <typename R>
     void                        bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn);
+
+    template <typename R>
+    void                        bind(std::function<bool(fb::internal::socket<>&, R&)> fb);
 };
 
 }

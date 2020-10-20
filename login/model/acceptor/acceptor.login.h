@@ -24,18 +24,21 @@ public:
 
     // override
 public:
-    fb::login::session*         handle_accepted(fb::socket<fb::login::session>& socket);
+    fb::login::session*         handle_accepted(fb::socket<fb::login::session>&);
 
 public:
-    bool                        handle_connected(fb::socket<fb::login::session>& session);
-    bool                        handle_disconnected(fb::socket<fb::login::session>& session);
+    bool                        handle_connected(fb::socket<fb::login::session>&);
+    bool                        handle_disconnected(fb::socket<fb::login::session>&);
 
 public:
-    bool                        handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::agreement&);
-    bool                        handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::create&);
-    bool                        handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::complete&);
-    bool                        handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login&);
-    bool                        handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw&);
+    bool                        handle_private_login(fb::internal::socket<>&, const fb::protocol::internal::response::login&);
+
+public:
+    bool                        handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
+    bool                        handle_create_account(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::create&);
+    bool                        handle_account_complete(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::complete&);
+    bool                        handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
+    bool                        handle_change_password(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::change_pw&);
 };
 
 } }

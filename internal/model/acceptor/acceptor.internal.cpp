@@ -14,41 +14,7 @@ fb::internal::acceptor::~acceptor()
 
 void fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket)
 {
-    static constexpr uint8_t base_size = sizeof(uint16_t);
-    auto& in_stream = socket.in_stream();
-
-    while(true)
-    {
-        try
-        {
-            if(in_stream.readable_size() < base_size)
-                throw std::exception();
-
-            auto size = in_stream.read_u16();
-            if(size > in_stream.capacity())
-                throw std::exception();
-
-            if(in_stream.readable_size() < size)
-                throw std::exception();
-
-            auto cmd = in_stream.read_8();
-            auto found = this->_handler_dict.find(cmd);
-            if(found == this->_handler_dict.end())
-                throw std::exception();
-
-            found->second(socket);
-
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
-        }
-        catch(...)
-        {
-            break;
-        }
-    }
-
-    in_stream.reset();
+    fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::acceptor::handler>>(socket, this->_handler_dict);
 }
 
 fb::internal::session* fb::internal::acceptor::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
@@ -91,6 +57,17 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
 
 bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
 {
-    this->_users[request.name] = true;
+    auto found = this->_users.find(request.name);
+    if(found == this->_users.end())
+    {
+        this->send(socket, fb::protocol::internal::response::login(request.name, true, "192.168.0.100", 2004, request.fd));
+        this->_users[request.name] = new fb::internal::user("game1");
+    }
+    else
+    {
+        this->send(socket, fb::protocol::internal::response::login(request.name, false, "", 0, request.fd));
+        delete this->_users[request.name];
+        this->_users[request.name] = nullptr;
+    }
     return true;
 }

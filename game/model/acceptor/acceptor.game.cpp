@@ -241,15 +241,15 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 fb::game::session* fb::game::acceptor::find_session(const std::string& name) const
 {
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (fb::socket<fb::game::session>* socket) 
+        [&name] (std::pair<uint32_t, fb::socket<fb::game::session>*> pair) 
         {
-            return socket->data()->name() == name;
+            return pair.second->data()->name() == name;
         });
 
     if(i == this->sockets.end())
         return nullptr;
 
-    return (*i)->data();
+    return i->second->data();
 }
 
 fb::game::session* fb::game::acceptor::handle_accepted(fb::socket<fb::game::session>& socket)
@@ -317,9 +317,9 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
 void fb::game::acceptor::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
-    for(const auto socket : this->sockets)
+    for(auto pair : this->sockets)
     {
-        auto session = socket->data();
+        auto session = pair.second->data();
         if(session->map() != &map)
             continue;
 
@@ -329,9 +329,9 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, const 
 
 void fb::game::acceptor::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    for(const auto socket : this->sockets)
+    for(const auto pair : this->sockets)
     {
-        auto session = socket->data();
+        auto session = pair.second->data();
         session->send(response, encrypt);
     }
 }
@@ -1201,10 +1201,10 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
 
     // 화면에 보이는 몹만 갱신
     std::vector<object*> shown_mobs;
-    for(auto socket : this->sockets)
+    for(auto pair : this->sockets)
     {
-        auto session = socket->data();
-        if(socket == nullptr)
+        auto session = pair.second->data();
+        if(session == nullptr)
             continue;
 
         shown_mobs.clear();
