@@ -3,6 +3,7 @@
 
 #include "protocol/protocol.h"
 #include "model/session/session.h"
+#include "model/table/table.game.h"
 
 using namespace fb::game;
 
@@ -289,7 +290,7 @@ public:
         uint32_t                remained_exp = this->session.experience_remained();
         out_stream.write_u32(remained_exp);
 
-        auto                    class_name = fb::game::table::class2name(this->session.cls(), this->session.promotion());
+        auto                    class_name = fb::game::table::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 
@@ -344,7 +345,7 @@ public:
               .write("클랜 타이틀");
 
         // 클래스 이름
-        const auto              class_name = fb::game::table::class2name(this->session.cls(), this->session.promotion());
+        const auto              class_name = fb::game::table::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 

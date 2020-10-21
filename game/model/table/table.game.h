@@ -34,14 +34,17 @@ public:
     using std::map<uint16_t, fb::game::map*>::operator[];
 
 private:
-    static fb::game::map::effects               to_effect(const std::string& effect);
-    static fb::game::map::options               to_option(const Json::Value& data);
-    static bool                                 load_data(uint16_t id, std::vector<char>& buffer);
-    static bool                                 load_blocks(uint16_t id, Json::Value& buffer);
+    static fb::game::map::effects           to_effect(const std::string& effect);
+    static fb::game::map::options           to_option(const Json::Value& data);
+    static bool                             load_data(uint16_t id, std::vector<char>& buffer);
+    static bool                             load_blocks(uint16_t id, Json::Value& buffer);
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                    load_warps(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_warps(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::map*                          name2map(const std::string& name);
 };
 
 class item : private std::map<uint16_t, fb::game::item::master*>
@@ -58,12 +61,15 @@ public:
     using std::map<uint16_t, fb::game::item::master*>::operator[];
 
 private:
-    static fb::game::item::master*               create(uint32_t id, const Json::Value& data);
-    static fb::game::item::item_limit           to_limit(const Json::Value& data);
-    static fb::game::item::penalties            to_penalty(const std::string& penalty);
+    static fb::game::item::master*          create(uint32_t id, const Json::Value& data);
+    static fb::game::item::item_limit       to_limit(const Json::Value& data);
+    static fb::game::item::penalties        to_penalty(const std::string& penalty);
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::item::master*                 name2item(const std::string& name);
 };
 
 class npc : private std::map<uint16_t, fb::game::npc::master*>
@@ -80,8 +86,11 @@ public:
     using std::map<uint16_t, fb::game::npc::master*>::operator[];
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::npc::master*                  name2npc(const std::string& name);
 };
 
 class mob : private std::map<uint16_t, fb::game::mob::master*>
@@ -98,13 +107,16 @@ public:
     using std::map<uint16_t, fb::game::mob::master*>::operator[];
 
 private:
-    static fb::game::mob::sizes                 to_size(const std::string& size);
-    static fb::game::mob::offensive_type        to_offensive(const std::string& offensive);
+    static fb::game::mob::sizes             to_size(const std::string& size);
+    static fb::game::mob::offensive_type    to_offensive(const std::string& offensive);
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                    load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::mob::master*                  name2mob(const std::string& name);
 };
 
 class spell : private std::map<uint16_t, fb::game::spell*>
@@ -121,7 +133,10 @@ public:
     using std::map<uint16_t, fb::game::spell*>::operator[];
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::spell*                        name2spell(const std::string& name);
 };
 
 class cls : private std::vector<fb::game::class_data*>
@@ -138,7 +153,12 @@ public:
     using std::vector<fb::game::class_data*>::operator[];
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    const std::string*                      class2name(uint8_t cls, uint8_t promotion);
+    bool                                    name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id);
+    uint32_t                                exp(uint8_t class_id, uint8_t level);
 };
 
 class mix : private std::vector<fb::game::itemmix*>
@@ -155,7 +175,10 @@ public:
     using std::vector<fb::game::itemmix*>::operator[];
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::itemmix*                      find(const std::vector<fb::game::item*>& items);
 };
 
 class door : private std::vector<fb::game::door::master*>
@@ -172,7 +195,7 @@ public:
     using std::vector<fb::game::door::master*>::operator[];
 
 public:
-    bool                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 };
 
 }
@@ -182,31 +205,20 @@ class session;
 class table
 {
 public:
-    static std::vector<clan*>                   clans;
-    static fb::game::board                      board;
-    static fb::game::container::map             maps;
-    static fb::game::container::item            items;
-    static fb::game::container::npc             npcs;
-    static fb::game::container::mob             mobs;
-    static fb::game::container::spell           spells;
-    static fb::game::container::cls             classes;
-    static fb::game::container::mix             mixes;
-    static fb::game::container::door            doors;
+    static std::vector<clan*>               clans;
+    static fb::game::board                  board;
+    static fb::game::container::map         maps;
+    static fb::game::container::item        items;
+    static fb::game::container::npc         npcs;
+    static fb::game::container::mob         mobs;
+    static fb::game::container::spell       spells;
+    static fb::game::container::cls         classes;
+    static fb::game::container::mix         mixes;
+    static fb::game::container::door        doors;
 
 private:
     table();
     ~table();
-
-public:
-    static fb::game::map*                       name2map(const std::string& name);
-    static fb::game::npc::master*                name2npc(const std::string& name);
-    static fb::game::mob::master*                name2mob(const std::string& name);
-    static fb::game::item::master*               name2item(const std::string& name);
-    static fb::game::spell*                     name2spell(const std::string& name);
-    static const std::string*                   class2name(uint8_t cls, uint8_t promotion);
-    static bool                                 name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id);
-    static fb::game::itemmix*                   find_itemmix(const std::vector<item*>& items);
-    static uint32_t                             required_exp(uint8_t class_id, uint8_t level);
 };
 
 } }

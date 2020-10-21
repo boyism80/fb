@@ -1,8 +1,8 @@
 #ifndef __SERVICE_H__
 #define __SERVICE_H__
 
-#include "module/stream/stream.h"
 #include "module/cryptor/cryptor.h"
+#include "module/stream/stream.h"
 
 namespace fb {
 

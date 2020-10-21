@@ -12,14 +12,14 @@
 #include "module/config/config.h"
 #include "module/timer/timer.h"
 #include "model/session/session.h"
-#include "model/lua/lua.h"
-#include "model/table/table.game.h"
 #include "model/group/group.h"
 #include "model/clan/clan.h"
 #include "model/life/life.h"
 #include "model/listener/listener.h"
 #include "protocol/game.h"
 #include "module/string/string.h"
+#include "model/lua/lua.h"
+#include "model/table/table.game.h"
 
 using namespace daotk::mysql;
 

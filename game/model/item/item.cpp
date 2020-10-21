@@ -1,9 +1,8 @@
-#include "item.h"
 #include "model/session/session.h"
+#include "model/acceptor/acceptor.game.h"
 #include "model/map/map.h"
 #include "model/table/table.game.h"
-#include "model/acceptor/acceptor.game.h"
-#include "model/listener/listener.h"
+#include "item.h"
 
 #ifdef small
 #undef small
@@ -1064,7 +1063,7 @@ std::string fb::game::equipment::tip_message() const
     if(limit.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::table::class2name(limit.cls, 0) << "용";
+        class_stream << fb::game::table::classes.class2name(limit.cls, 0) << "용";
     sstream << class_stream.str() << "레벨 " << std::to_string(limit.level) << " 이상";
 
     const std::string desc = this->desc();
@@ -2185,7 +2184,7 @@ bool fb::game::itemmix::builder::mix()
 {
     try
     {
-        auto                    itemmix = fb::game::table::find_itemmix(*this);
+        auto                    itemmix = fb::game::table::mixes.find(*this);
         if(itemmix == nullptr)
             throw itemmix::no_match_exception();
 

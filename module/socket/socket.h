@@ -6,9 +6,9 @@
 #include <deque>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
-#include "module/stream/stream.h"
-#include "module/cryptor/cryptor.h"
 #include "protocol/protocol.h"
+#include "module/cryptor/cryptor.h"
+#include "module/stream/stream.h"
 
 namespace fb { namespace base {
 

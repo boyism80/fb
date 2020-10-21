@@ -1,7 +1,7 @@
 #include "model/session/session.h"
 #include "model/trade/trade.h"
-#include "model/table/table.game.h"
 #include "model/listener/listener.h"
+#include "model/table/table.game.h"
 
 fb::game::trade::trade(session& owner, listener* listener) : 
     _owner(owner),

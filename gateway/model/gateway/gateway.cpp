@@ -1,4 +1,5 @@
 #include "gateway.h"
+#include "module/socket/socket.h" // 헤더에 박으면 WinSock.h has already been included
 
 fb::gateway::entry::entry(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) : 
     _name(name), _desc(desc), _ip(ip), _port(port)

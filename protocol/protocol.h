@@ -2,6 +2,7 @@
 #define __PROTOCOL_H__
 
 #include "module/common/type.h"
+#include "module/stream/stream.h"
 
 #define BIND_ID(n) static constexpr uint8_t id = (n);
 

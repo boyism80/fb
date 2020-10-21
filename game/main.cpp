@@ -3,11 +3,11 @@
 #include "module/config/config.h"
 #include "module/leak.h"
 #include "model/acceptor/acceptor.game.h"
-#include "model/table/table.game.h"
-#include "model/lua/lua.h"
 #include "module/string/string.h"
 #include "protocol/internal.h"
+#include "model/lua/lua.h"
 #include "module/console/console.h"
+#include "model/table/table.game.h"
 
 bool load_db(fb::console& c, fb::game::listener* listener)
 {

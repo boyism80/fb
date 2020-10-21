@@ -1,6 +1,4 @@
 #include "model/map/map.h"
-#include "model/session/session.h"
-#include "model/mob/mob.h"
 #include "model/acceptor/acceptor.game.h"
 
 fb::game::objects::objects(fb::game::map* owner) : 

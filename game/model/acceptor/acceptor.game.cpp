@@ -1253,7 +1253,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(message[0] != '/')
         return false;
 
-    auto                            npc = fb::game::table::name2npc("낙랑");
+    auto                            npc = fb::game::table::npcs.name2npc("낙랑");
     std::string                     command = std::string(message.begin() + 1, message.end());
     std::vector<std::string>        splitted;
     std::istringstream              sstream(command);
@@ -1266,7 +1266,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     if(command == "show")
     {
-        session.dialog.show(*fb::game::table::name2item("남자기모노"), "갓승현님 사랑합니다.", true, true);
+        session.dialog.show(*fb::game::table::items.name2item("남자기모노"), "갓승현님 사랑합니다.", true, true);
         return true;
     }
 
@@ -1405,7 +1405,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         if(splitted.size() > 3)
             y = std::stoi(splitted[3]);
 
-        auto map = fb::game::table::name2map(name);
+        auto map = fb::game::table::maps.name2map(name);
         if(map == nullptr)
             return true;
 
@@ -1416,7 +1416,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "변신")
     {
         auto name = splitted[1];
-        auto mob = fb::game::table::name2mob(name);
+        auto mob = fb::game::table::mobs.name2mob(name);
         if(mob == nullptr)
             return true;
 
@@ -1436,7 +1436,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "마법배우기")
     {
         auto name = splitted[1];
-        auto spell = fb::game::table::name2spell(name);
+        auto spell = fb::game::table::spells.name2spell(name);
         if(spell == nullptr)
             return true;
 
@@ -1450,7 +1450,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "몬스터생성")
     {
         auto name = splitted[1];
-        auto core = fb::game::table::name2mob(name);
+        auto core = fb::game::table::mobs.name2mob(name);
         if(core == nullptr)
             return true;
 
@@ -1464,7 +1464,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     {
         auto name = splitted[1];
         uint8_t cls, promotion;
-        if(fb::game::table::name2class(name, &cls, &promotion) == false)
+        if(fb::game::table::classes.name2class(name, &cls, &promotion) == false)
             return true;
 
         session.cls(cls);
@@ -1485,7 +1485,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "아이템생성")
     {
         auto name = splitted[1];
-        auto item = fb::game::table::name2item(name)->make<fb::game::item>(this);
+        auto item = fb::game::table::items.name2item(name)->make<fb::game::item>(this);
         item->map(session.map(), session.position());
         return true;
     }

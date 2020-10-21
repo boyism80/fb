@@ -12,10 +12,10 @@
 #include "model/object/object.h"
 #include "model/spell/spell.h"
 #include "model/trade/trade.h"
-#include "model/lua/lua.h"
 #include "model/mob/mob.h"
 #include "model/npc/npc.h"
 #include "module/string/string.h"
+#include "model/lua/lua.h"
 
 namespace fb { namespace game {
 

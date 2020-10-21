@@ -945,7 +945,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(lua_isstring(lua, 2))
         {
-            fb::game::table::name2map(lua_cp949(lua, 2));
+            fb::game::table::maps.name2map(lua_cp949(lua, 2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -988,7 +988,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto name = lua_cp949(lua, 2);
 
-    auto master = fb::game::table::name2item(name);
+    auto master = fb::game::table::items.name2item(name);
     if(master == nullptr)
     {
         lua_pushnil(lua);

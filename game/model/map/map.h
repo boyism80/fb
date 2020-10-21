@@ -5,11 +5,10 @@
 #include <string>
 #include <stdexcept>
 #include <sstream>
-#include "module/stream/stream.h"
 #include <zlib.h>
-#include "model/object/object.h"
 #include "model/door/door.h"
 #include "model/map/sector.h"
+#include "module/stream/stream.h"
 
 namespace fb { namespace game {
 

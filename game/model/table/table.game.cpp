@@ -1,5 +1,5 @@
-#include "table.game.h"
 #include "model/session/session.h"
+#include "table.game.h"
 
 std::vector<fb::game::clan*>            fb::game::table::clans;
 fb::game::board                         fb::game::table::board;
@@ -18,9 +18,9 @@ fb::game::table::table()
 fb::game::table::~table()
 {}
 
-fb::game::map* fb::game::table::name2map(const std::string& name)
+fb::game::map* fb::game::container::map::name2map(const std::string& name)
 {
-    for(auto pair : maps)
+    for(auto pair : *this)
     {
         if(pair.second->name() == name)
             return pair.second;
@@ -29,56 +29,55 @@ fb::game::map* fb::game::table::name2map(const std::string& name)
     return nullptr;
 }
 
-fb::game::npc::master* fb::game::table::name2npc(const std::string& name)
+fb::game::npc::master* fb::game::container::npc::name2npc(const std::string& name)
 {
-    auto i = std::find_if(npcs.begin(), npcs.end(), 
-        [&name](std::pair<uint16_t, npc::master*> pair)
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](std::pair<uint16_t, fb::game::npc::master*> pair)
         {
             return pair.second->name() == name;
         });
 
-    return i != npcs.end() ? (*i).second : nullptr;
+    return i != this->end() ? (*i).second : nullptr;
 }
 
-fb::game::mob::master* fb::game::table::name2mob(const std::string& name)
+fb::game::mob::master* fb::game::container::mob::name2mob(const std::string& name)
 {
-    auto i = std::find_if(mobs.begin(), mobs.end(), 
-        [&name](std::pair<uint16_t, mob::master*> pair)
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](std::pair<uint16_t, fb::game::mob::master*> pair)
         {
             return pair.second->name() == name;
         });
 
-    return i != mobs.end() ? (*i).second : nullptr;
+    return i != this->end() ? (*i).second : nullptr;
 }
 
-fb::game::item::master* fb::game::table::name2item(const std::string& name)
+fb::game::item::master* fb::game::container::item::name2item(const std::string& name)
 {
-    auto& db_item = items;
-    auto i = std::find_if(db_item.begin(), db_item.end(), 
-        [&name](std::pair<uint16_t, item::master*> pair)
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](std::pair<uint16_t, fb::game::item::master*> pair)
         {
             return pair.second->name() == name;
         });
 
-    return i != db_item.end() ? (*i).second : nullptr;
+    return i != this->end() ? (*i).second : nullptr;
 }
 
-fb::game::spell* fb::game::table::name2spell(const std::string& name)
+fb::game::spell* fb::game::container::spell::name2spell(const std::string& name)
 {
-    auto i = std::find_if(spells.begin(), spells.end(), 
-        [&name](std::pair<uint16_t, spell*> pair)
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](std::pair<uint16_t, fb::game::spell*> pair)
         {
             return pair.second->name() == name;
         });
 
-    return i != spells.end() ? (*i).second : nullptr;
+    return i != this->end() ? (*i).second : nullptr;
 }
 
-const std::string* fb::game::table::class2name(uint8_t cls, uint8_t promotion)
+const std::string* fb::game::container::cls::class2name(uint8_t cls, uint8_t promotion)
 {
     try
     {
-        return &classes[cls]->promotions[promotion];
+        return &this->operator[](cls)->promotions[promotion];
     }
     catch(std::exception&)
     {
@@ -86,13 +85,13 @@ const std::string* fb::game::table::class2name(uint8_t cls, uint8_t promotion)
     }
 }
 
-bool fb::game::table::name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id)
+bool fb::game::container::cls::name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id)
 {
-    for(int i1 = 0; i1 < classes.size(); i1++)
+    for(int i1 = 0; i1 < this->size(); i1++)
     {
-        for(int i2 = 0; i2 < classes[i1]->promotions.size(); i2++)
+        for(int i2 = 0; i2 < this->operator[](i1)->promotions.size(); i2++)
         {
-            if(classes[i1]->promotions[i2] != name)
+            if(this->operator[](i1)->promotions[i2] != name)
                 continue;
 
             *class_id = i1;
@@ -104,21 +103,7 @@ bool fb::game::table::name2class(const std::string& name, uint8_t* class_id, uin
     return false;
 }
 
-fb::game::itemmix* fb::game::table::find_itemmix(const std::vector<item*>& items)
-{
-    auto i = std::find_if(mixes.begin(), mixes.end(), 
-        [&items](itemmix* mx)
-        {
-            if(mx->require.size() != items.size())
-                return false;
-
-            return mx->matched(items);
-        });
-
-    return i != mixes.end() ? *i : nullptr;
-}
-
-uint32_t fb::game::table::required_exp(uint8_t class_id, uint8_t level)
+uint32_t fb::game::container::cls::exp(uint8_t class_id, uint8_t level)
 {
     try
     {
@@ -128,7 +113,7 @@ uint32_t fb::game::table::required_exp(uint8_t class_id, uint8_t level)
         if(level > 99)
             return 0;
 
-        return classes[class_id]->level_abilities[level]->exp;
+        return this->operator[](class_id)->level_abilities[level]->exp;
     }
     catch(std::exception&)
     {
@@ -366,7 +351,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
         [&] (Json::Value::iterator& i, double percentage)
         {
             auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            auto                map = fb::game::table::name2map(name);
+            auto                map = fb::game::table::maps.name2map(name);
             if (map == nullptr)
                 return;
 
@@ -374,7 +359,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
             for (auto i2 = warps.begin(); i2 != warps.end(); i2++)
             {
                 auto        next_map_name = CP949((*i2)["map"].asString(), PLATFORM::Windows);
-                auto        next_map = fb::game::table::name2map(next_map_name);
+                auto        next_map = fb::game::table::maps.name2map(next_map_name);
                 if (next_map == nullptr)
                     continue;
 
@@ -522,13 +507,13 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::lis
             auto                spawns = *i;
             auto                name = CP949(spawns["npc"].asString(), PLATFORM::Windows);
 
-            auto                map = fb::game::table::name2map(name);
+            auto                map = fb::game::table::maps.name2map(name);
             if (map == nullptr)
                 return;
 
             for (auto spawn : spawns)
             {
-                auto            core = fb::game::table::name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
+                auto            core = fb::game::table::mobs.name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
                 if (core == nullptr)
                     continue;
 
@@ -646,7 +631,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
         [&] (Json::Value::iterator& i, double percentage)
         {
             auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            auto                core = fb::game::table::name2mob(name);
+            auto                core = fb::game::table::mobs.name2mob(name);
             if (core == nullptr)
                 throw std::runtime_error(fb::game::message::assets::INVALID_MOB_NAME);
 
@@ -654,7 +639,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
             {
                 float       percentage = x["percentage"].asFloat();
                 auto        item_name = CP949(x["item"].asString(), PLATFORM::Windows);
-                auto        item_core = fb::game::table::name2item(item_name);
+                auto        item_core = fb::game::table::items.name2item(item_name);
 
                 if (item_core == nullptr)
                     throw std::runtime_error(fb::game::message::assets::INVALID_ITEM_NAME);
@@ -685,13 +670,13 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::lis
             auto                name = CP949(i.key().asString(), PLATFORM::Windows);
             auto                spawns = *i;
 
-            auto                map = fb::game::table::name2map(name);
+            auto                map = fb::game::table::maps.name2map(name);
             if (map == nullptr)
                 return;
 
             for (auto spawn : spawns)
             {
-                auto            core = fb::game::table::name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
+                auto            core = fb::game::table::mobs.name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
                 if (core == nullptr)
                     continue;
 
@@ -823,21 +808,21 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
 
             for(auto require : data["require"])
             {
-                auto        item = fb::game::table::name2item(CP949(require["item"].asString(), PLATFORM::Windows));
+                auto        item = fb::game::table::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
             for(auto success: data["success"])
             {
-                auto        item = fb::game::table::name2item(CP949(success["item"].asString(), PLATFORM::Windows));
+                auto        item = fb::game::table::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
             for(auto failed: data["failed"])
             {
-                auto        item = fb::game::table::name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
+                auto        item = fb::game::table::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = failed["count"].asInt();
                 itemmix->failed_add(item, count);
             }
@@ -854,6 +839,20 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
 
     complete(count);
     return true;
+}
+
+fb::game::itemmix* fb::game::container::mix::find(const std::vector<fb::game::item*>& items)
+{
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&items](itemmix* mx)
+        {
+            if(mx->require.size() != items.size())
+                return false;
+
+            return mx->matched(items);
+        });
+
+    return i != this->end() ? *i : nullptr;
 }
 
 bool fb::game::container::door::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)

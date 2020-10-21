@@ -4,10 +4,10 @@
 #include <string>
 #include <vector>
 #include <ctime>
-#include "module/stream/stream.h"
 #include "model/session/session.h"
 #include "model/mmo/mmo.h"
 #include "module/string/string.h"
+#include "module/stream/stream.h"
 
 namespace fb { namespace game {
 
