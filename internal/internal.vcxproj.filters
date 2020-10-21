@@ -42,6 +42,12 @@
     <Filter Include="model\session">
       <UniqueIdentifier>{983e47f2-2b66-45e3-8676-bfd04f187602}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\table">
+      <UniqueIdentifier>{3132eab1-bd45-4a08-b01c-be433fbbb83a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\table">
+      <UniqueIdentifier>{817dfb2c-989e-4779-a312-1e121a1a9089}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -64,6 +70,12 @@
     </ClCompile>
     <ClCompile Include="model\session\session.internal.cpp">
       <Filter>model\session</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\table\table.cpp">
+      <Filter>module\table</Filter>
+    </ClCompile>
+    <ClCompile Include="model\table\table.internal.cpp">
+      <Filter>model\table</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,7 +112,15 @@
     <ClInclude Include="..\module\acceptor\acceptor.hpp">
       <Filter>module\acceptor</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\table\table.h">
+      <Filter>module\table</Filter>
+    </ClInclude>
+    <ClInclude Include="model\table\table.internal.h">
+      <Filter>model\table</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="internal.rc">

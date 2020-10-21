@@ -13,7 +13,7 @@
 #include "module/timer/timer.h"
 #include "model/session/session.h"
 #include "model/lua/lua.h"
-#include "model/master/master.h"
+#include "model/table/table.game.h"
 #include "model/group/group.h"
 #include "model/clan/clan.h"
 #include "model/life/life.h"

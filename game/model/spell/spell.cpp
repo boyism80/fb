@@ -71,7 +71,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
 }
 
 fb::game::spells::spells(life& owner, listener* listener) : 
-    container(owner, spell::MAX_SLOT, false),
+    base_container(owner, spell::MAX_SLOT, false),
     _listener(listener)
 {
 }
@@ -82,7 +82,7 @@ fb::game::spells::~spells()
 
 uint8_t fb::game::spells::add(spell& element)
 {
-    auto index = fb::game::container<fb::game::spell>::add(element);
+    auto index = fb::game::base_container<fb::game::spell>::add(element);
     if(index != 0xFF && this->_listener != nullptr)
         this->_listener->on_spell_update(this->owner(), index);
 
@@ -99,7 +99,7 @@ uint8_t fb::game::spells::add(spell* element)
 
 bool fb::game::spells::remove(uint8_t index)
 {
-    auto success = fb::game::container<fb::game::spell>::remove(index);
+    auto success = fb::game::base_container<fb::game::spell>::remove(index);
     if(success && this->_listener != nullptr)
         this->_listener->on_spell_remove(this->owner(), index);
 
@@ -108,7 +108,7 @@ bool fb::game::spells::remove(uint8_t index)
 
 bool fb::game::spells::swap(uint8_t src, uint8_t dest)
 {
-    if(fb::game::container<fb::game::spell>::swap(src, dest) == false)
+    if(fb::game::base_container<fb::game::spell>::swap(src, dest) == false)
         return false;
 
     if(this->_listener != nullptr)

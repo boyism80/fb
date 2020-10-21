@@ -8,8 +8,8 @@
 #include <zlib.h>
 #include "module/stream/stream.h"
 #include "module/socket/socket.h"
-#include "module/console/console.h"
 #include "protocol/protocol.h"
+#include "module/console/console.h"
 
 namespace fb { namespace base {
 

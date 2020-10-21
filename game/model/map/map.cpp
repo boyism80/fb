@@ -100,10 +100,9 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
     _id(id),
     _parent(parent),
-    _host_id(host_id),
     _bgm(bgm),
     _name(name),
     _option(option),
@@ -138,7 +137,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, const std::string& host_id, uin
 
     // compare linear doors
     point16_t position;
-    for(const auto door : fb::game::master::get().doors)
+    for(const auto door : fb::game::table::doors)
     {
         position.x = position.y = 0;
         while(door->find(*this, position, true))
@@ -318,11 +317,6 @@ const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) co
     }
 
     return nullptr;
-}
-
-const std::string& fb::game::map::host_id() const
-{
-    return this->_host_id;
 }
 
 bool fb::game::map::update(fb::game::object& object)

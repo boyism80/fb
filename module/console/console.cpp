@@ -122,9 +122,20 @@ uint32_t fb::console::puts(const char* format, ...)
     return result;
 }
 
-bool fb::console::clear(uint16_t row, uint16_t width)
+bool fb::console::clear(uint16_t x, uint16_t y)
 {
-    return false;
+    static int prev = 0;
+    static char buffer[256];
+
+    if(prev > x)
+    {
+        auto len = this->width() - x;
+        std::memset(buffer, ' ', len);
+        buffer[len] = 0;
+        this->move(x, y).puts(buffer);
+    }
+
+    prev = x;
 }
 
 bool fb::console::box(uint16_t x, uint16_t y, uint16_t width, uint16_t height)

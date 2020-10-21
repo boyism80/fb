@@ -89,9 +89,6 @@
     <Filter Include="model\map">
       <UniqueIdentifier>{33a7a961-c741-4238-91c0-548909eab46d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\master">
-      <UniqueIdentifier>{59c41d02-9ce3-4f59-a1df-eaf88504e3d2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model\mmo">
       <UniqueIdentifier>{c5f700bf-779d-4df8-aec0-0557a8bf0d3c}</UniqueIdentifier>
     </Filter>
@@ -119,6 +116,12 @@
     <Filter Include="module\string">
       <UniqueIdentifier>{6f6c874a-a48f-4ff3-9d38-27c6e00ecd16}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\table">
+      <UniqueIdentifier>{8d1f2c21-f89e-4a6f-8fb5-151844843ffd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="module\table">
+      <UniqueIdentifier>{18e5d454-c67b-4543-af94-76fcb696175e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -144,9 +147,6 @@
     </ClCompile>
     <ClCompile Include="model\map\map.cpp">
       <Filter>model\map</Filter>
-    </ClCompile>
-    <ClCompile Include="model\master\master.cpp">
-      <Filter>model\master</Filter>
     </ClCompile>
     <ClCompile Include="model\mmo\mmo.cpp">
       <Filter>model\mmo</Filter>
@@ -214,6 +214,12 @@
     <ClCompile Include="..\module\encoding\encoding.cpp">
       <Filter>module\encoding</Filter>
     </ClCompile>
+    <ClCompile Include="model\table\table.game.cpp">
+      <Filter>model\table</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\table\table.cpp">
+      <Filter>module\table</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -248,9 +254,6 @@
     </ClInclude>
     <ClInclude Include="model\map\map.h">
       <Filter>model\map</Filter>
-    </ClInclude>
-    <ClInclude Include="model\master\master.h">
-      <Filter>model\master</Filter>
     </ClInclude>
     <ClInclude Include="model\mmo\mmo.h">
       <Filter>model\mmo</Filter>
@@ -335,6 +338,12 @@
     </ClInclude>
     <ClInclude Include="..\module\acceptor\acceptor.hpp">
       <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="model\table\table.game.h">
+      <Filter>model\table</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\table\table.h">
+      <Filter>module\table</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

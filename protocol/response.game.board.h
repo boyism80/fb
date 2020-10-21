@@ -2,7 +2,7 @@
 #define __PROTOCOL_REQUEST_BOARD_H__
 
 #include "protocol/protocol.h"
-#include "model/master/master.h"
+#include "model/table/table.game.h"
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace board {
 
@@ -12,7 +12,7 @@ public:
     const std::vector<fb::game::board::section*>&        data;
 public:
     sections() : 
-        data(fb::game::master::get().board.sections())
+        data(fb::game::table::board.sections())
     {}
 
 public:
@@ -45,7 +45,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto              section = fb::game::master::get().board.sections()[section_id];
+        const auto              section = fb::game::table::board.sections()[section_id];
 
         out_stream.write_u8(0x31)
             .write_u8(0x02)
@@ -98,7 +98,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto                    section = fb::game::master::get().board.at(section_id);
+        auto                    section = fb::game::table::board.at(section_id);
         if(section == nullptr)
             throw fb::game::board::section::not_found_exception();
 

@@ -422,23 +422,23 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
     {
         this->position(position, true);
     }
-    else if(this->_map != nullptr && map != nullptr && this->_map->host_id() != map->host_id())
-    {
-        auto nears = this->_map->nears(this->_position);
-        for(auto x : nears)
-        {
-            if(x == this)
-                continue;
+    //else if(this->_map != nullptr && map != nullptr && this->_map->host_id() != map->host_id())
+    //{
+    //    auto nears = this->_map->nears(this->_position);
+    //    for(auto x : nears)
+    //    {
+    //        if(x == this)
+    //            continue;
 
-            this->_listener->on_hide(*x, *this);
-        }
+    //        this->_listener->on_hide(*x, *this);
+    //    }
 
-        this->_map->objects.remove(*this);
+    //    this->_map->objects.remove(*this);
 
-        this->_map = map;
-        this->_position = position;
-        this->_listener->on_warp(static_cast<fb::game::session&>(*this), *map, position);
-    }
+    //    this->_map = map;
+    //    this->_position = position;
+    //    this->_listener->on_warp(static_cast<fb::game::session&>(*this), *map, position);
+    //}
     else
     {
         auto sector = this->_sector;
@@ -945,7 +945,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(lua_isstring(lua, 2))
         {
-            fb::game::master::get().name2map(lua_cp949(lua, 2));
+            fb::game::table::name2map(lua_cp949(lua, 2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -988,7 +988,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     auto object = *(fb::game::object**)lua_touserdata(lua, 1);
     auto name = lua_cp949(lua, 2);
 
-    auto master = fb::game::master::get().name2item(name);
+    auto master = fb::game::table::name2item(name);
     if(master == nullptr)
     {
         lua_pushnil(lua);

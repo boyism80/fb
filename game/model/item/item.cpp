@@ -1,7 +1,7 @@
 #include "item.h"
 #include "model/session/session.h"
 #include "model/map/map.h"
-#include "model/master/master.h"
+#include "model/table/table.game.h"
 #include "model/acceptor/acceptor.game.h"
 #include "model/listener/listener.h"
 
@@ -1064,7 +1064,7 @@ std::string fb::game::equipment::tip_message() const
     if(limit.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::master::get().class2name(limit.cls, 0) << "용";
+        class_stream << fb::game::table::class2name(limit.cls, 0) << "용";
     sstream << class_stream.str() << "레벨 " << std::to_string(limit.level) << " 이상";
 
     const std::string desc = this->desc();
@@ -1534,7 +1534,7 @@ bool fb::game::itemmix::matched(const std::vector<item*>& items) const
 }
 
 fb::game::items::items(session& owner, listener* listener) :
-    container(owner, item::MAX_SLOT),
+    base_container(owner, item::MAX_SLOT),
     _owner(static_cast<fb::game::session&>(owner)),
     _listener(listener),
     _weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(nullptr)
@@ -2116,7 +2116,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::del
 
     if(item == splitted)
     {
-        container<fb::game::item>::remove(index);
+        base_container<fb::game::item>::remove(index);
         
         if(this->_listener != nullptr)
             this->_listener->on_item_remove(owner, index, attr);
@@ -2139,7 +2139,7 @@ fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, it
 
 bool fb::game::items::swap(uint8_t src, uint8_t dest)
 {
-    if(fb::game::container<fb::game::item>::swap(src, dest) == false)
+    if(fb::game::base_container<fb::game::item>::swap(src, dest) == false)
         return false;
     
     if(this->_listener != nullptr)
@@ -2185,7 +2185,7 @@ bool fb::game::itemmix::builder::mix()
 {
     try
     {
-        auto                    itemmix = fb::game::master::get().find_itemmix(*this);
+        auto                    itemmix = fb::game::table::find_itemmix(*this);
         if(itemmix == nullptr)
             throw itemmix::no_match_exception();
 

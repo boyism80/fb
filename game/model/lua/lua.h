@@ -8,10 +8,10 @@ extern "C"
 #include <lua5.3/lauxlib.h>
 }
 
-#include "module/socket/socket.h"
-#include "module/encoding/encoding.h"
 #include <vector>
 #include <string>
+#include "module/socket/socket.h"
+#include "module/encoding/encoding.h"
 
 #define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\
                                             static const std::string        LUA_METATABLE_NAME;\

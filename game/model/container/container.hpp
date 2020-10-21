@@ -1,7 +1,7 @@
 #include "model/container/container.h"
 
 template<typename T>
-inline fb::game::container<T>::container(life& owner, uint8_t size, bool auto_release) : 
+inline fb::game::base_container<T>::base_container(life& owner, uint8_t size, bool auto_release) : 
     _owner(owner),
     _size(size),
     _auto_release(auto_release)
@@ -10,7 +10,7 @@ inline fb::game::container<T>::container(life& owner, uint8_t size, bool auto_re
     std::memset(this->_elements, 0, sizeof(T*) * size);
 }
 template<typename T>
-inline fb::game::container<T>::~container()
+inline fb::game::base_container<T>::~base_container()
 {
     if(this->_auto_release)
     {
@@ -21,24 +21,24 @@ inline fb::game::container<T>::~container()
     delete[] this->_elements;
 }
 template<typename T>
-inline T* fb::game::container<T>::set(T* element, int position)
+inline T* fb::game::base_container<T>::set(T* element, int position)
 {
     auto before = this->_elements[position];
     this->_elements[position] = element;
     return before;
 }
 template<typename T>
-inline fb::game::life& fb::game::container<T>::owner()
+inline fb::game::life& fb::game::base_container<T>::owner()
 {
     return this->_owner;
 }
 template<typename T>
-inline const fb::game::life& fb::game::container<T>::owner() const
+inline const fb::game::life& fb::game::base_container<T>::owner() const
 {
     return this->_owner;
 }
 template<typename T>
-inline T* fb::game::container<T>::at(uint8_t index) const
+inline T* fb::game::base_container<T>::at(uint8_t index) const
 {
     if(index > this->_size - 1)
         return nullptr;
@@ -46,7 +46,7 @@ inline T* fb::game::container<T>::at(uint8_t index) const
     return this->_elements[index];
 }
 template<typename T>
-inline uint8_t fb::game::container<T>::add(T& element)
+inline uint8_t fb::game::base_container<T>::add(T& element)
 {
     for(int i = 0; i < this->_size; i++)
     {
@@ -60,12 +60,12 @@ inline uint8_t fb::game::container<T>::add(T& element)
     return 0xFF;
 }
 template<typename T>
-inline uint8_t fb::game::container<T>::add(T* element)
+inline uint8_t fb::game::base_container<T>::add(T* element)
 {
     return this->add(*element);
 }
 template<typename T>
-inline bool fb::game::container<T>::remove(uint8_t index)
+inline bool fb::game::base_container<T>::remove(uint8_t index)
 {
     auto                    element = this->at(index);
     if(element == nullptr)
@@ -75,7 +75,7 @@ inline bool fb::game::container<T>::remove(uint8_t index)
     return true;
 }
 template<typename T>
-inline bool fb::game::container<T>::swap(uint8_t src, uint8_t dest)
+inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dest)
 {
     if(src == dest)
         return false;
@@ -87,7 +87,7 @@ inline bool fb::game::container<T>::swap(uint8_t src, uint8_t dest)
     return true;
 }
 template<typename T>
-inline bool fb::game::container<T>::free() const
+inline bool fb::game::base_container<T>::free() const
 {
     for(int i = 0; i < this->_size; i++)
     {
@@ -98,7 +98,7 @@ inline bool fb::game::container<T>::free() const
     return false;
 }
 template<typename T>
-inline uint8_t fb::game::container<T>::free_size() const
+inline uint8_t fb::game::base_container<T>::free_size() const
 {
     uint8_t                 count = 0;
     for(int i = 0; i < this->_size; i++)
@@ -110,12 +110,12 @@ inline uint8_t fb::game::container<T>::free_size() const
     return count;
 }
 template<typename T>
-inline T* fb::game::container<T>::operator[](int index)
+inline T* fb::game::base_container<T>::operator[](int index)
 {
     return this->at(index);
 }
 template<typename T>
-inline const T* fb::game::container<T>::operator[](int index) const
+inline const T* fb::game::base_container<T>::operator[](int index) const
 {
     return this->at(index);
 }

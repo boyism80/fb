@@ -39,7 +39,7 @@ private:
 public:
     fb::console&            move(uint16_t x, uint16_t y);
     uint32_t                puts(const char* format, ...);
-    bool                    clear(uint16_t row, uint16_t width);
+    bool                    clear(uint16_t x, uint16_t y);
     bool                    line(uint16_t x, uint16_t y, uint16_t width, char content, char side = '+');
     bool                    box(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
     uint16_t                width() const;

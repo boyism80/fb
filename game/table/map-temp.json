@@ -11,8 +11,7 @@
         },
         "name": "백호지하수로1층",
         "parent": 2200,
-        "bgm": 138,
-        "host": "game9"
+        "bgm": 138
     },
     "14": {
         "option": {
@@ -26,8 +25,7 @@
         },
         "name": "부여성",
         "parent": 14,
-        "bgm": 2,
-        "host": "game1"
+        "bgm": 2
     },
     "315": {
         "option": {
@@ -41,8 +39,7 @@
         },
         "name": "부여왕초보사냥1",
         "parent": 14,
-        "bgm": 2,
-        "host": "game1"
+        "bgm": 2
     },
     "316": {
         "option": {
@@ -56,8 +53,7 @@
         },
         "name": "부여왕초보사냥2",
         "parent": 14,
-        "bgm": 2,
-        "host": "game1"
+        "bgm": 2
     },
     "317": {
         "option": {
@@ -71,8 +67,7 @@
         },
         "name": "부여왕초보사냥3",
         "parent": 14,
-        "bgm": 2,
-        "host": "game1"
+        "bgm": 2
     },
     "1917": {
         "option": {
@@ -86,8 +81,7 @@
         },
         "name": "북방대초원1",
         "parent": 1917,
-        "bgm": 135,
-        "host": "game4"
+        "bgm": 135
     },
     "2200": {
         "option": {
@@ -101,7 +95,6 @@
         },
         "name": "백호지하수로",
         "parent": 2200,
-        "bgm": 138,
-        "host": "game9"
+        "bgm": 138
     }
 }

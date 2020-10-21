@@ -174,6 +174,7 @@
     <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\service\service.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
+    <ClCompile Include="..\module\table\table.cpp" />
     <ClCompile Include="..\module\timer\timer.cpp" />
     <ClCompile Include="builtin\builtin_function.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.cpp" />
@@ -189,13 +190,13 @@
     <ClCompile Include="model\lua\lua.cpp" />
     <ClCompile Include="model\map\map.cpp" />
     <ClCompile Include="model\map\sector.cpp" />
-    <ClCompile Include="model\master\master.cpp" />
     <ClCompile Include="model\mmo\mmo.cpp" />
     <ClCompile Include="model\mob\mob.cpp" />
     <ClCompile Include="model\npc\npc.cpp" />
     <ClCompile Include="model\object\object.cpp" />
     <ClCompile Include="model\session\session.cpp" />
     <ClCompile Include="model\spell\spell.cpp" />
+    <ClCompile Include="model\table\table.game.cpp" />
     <ClCompile Include="model\trade\trade.cpp" />
     <ClCompile Include="service\map\service.map.cpp" />
   </ItemGroup>
@@ -214,6 +215,7 @@
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\string\string.h" />
+    <ClInclude Include="..\module\table\table.h" />
     <ClInclude Include="..\module\timer\timer.h" />
     <ClInclude Include="builtin\builtin_function.h" />
     <ClInclude Include="builtin\builtin_function.hpp" />
@@ -230,13 +232,13 @@
     <ClInclude Include="model\lua\lua.h" />
     <ClInclude Include="model\map\map.h" />
     <ClInclude Include="model\map\sector.h" />
-    <ClInclude Include="model\master\master.h" />
     <ClInclude Include="model\mmo\mmo.h" />
     <ClInclude Include="model\mob\mob.h" />
     <ClInclude Include="model\npc\npc.h" />
     <ClInclude Include="model\object\object.h" />
     <ClInclude Include="model\session\session.h" />
     <ClInclude Include="model\spell\spell.h" />
+    <ClInclude Include="model\table\table.game.h" />
     <ClInclude Include="model\trade\trade.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="service\map\service.map.h" />

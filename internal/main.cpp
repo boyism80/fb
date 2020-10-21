@@ -1,5 +1,6 @@
 #include "resource.h"
 #include "model/acceptor/acceptor.internal.h"
+#include "model/table/table.internal.h"
 #include "module/leak.h"
 #include "module/console/console.h"
 #include "module/config/config.h"
@@ -29,6 +30,28 @@ int main(int argc, const char** argv)
     c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
 
     c.current_line(height + 1);
+    auto current_line = height;
+
+    fb::internal::table::hosts.load
+    (
+        "table/host.json", 
+        [&] (const std::string& name, double percentage)
+        {
+            auto n = c.move(0, current_line)
+                .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str());
+            c.clear(n, current_line);
+        },
+        [&] (const std::string& name, const std::string& error)
+        {
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+        },
+        [&] (uint32_t count)
+        {
+            auto n = c.move(0, current_line)
+                .puts(" * [100%%] 총 %d개의 호스트 정보를 읽었습니다.", count);
+            c.clear(n, current_line);
+        }
+    );
 
     // Execute acceptor
     boost::asio::io_context io_service;

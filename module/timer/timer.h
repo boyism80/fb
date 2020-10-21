@@ -1,7 +1,6 @@
 #ifndef __FB_TIMER_H__
 #define __FB_TIMER_H__
 
-#include <iostream>
 #include <boost/bind/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>

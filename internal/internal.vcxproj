@@ -178,9 +178,11 @@
     <ClCompile Include="..\module\console\console.cpp" />
     <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
+    <ClCompile Include="..\module\table\table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\acceptor\acceptor.internal.cpp" />
     <ClCompile Include="model\session\session.internal.cpp" />
+    <ClCompile Include="model\table\table.internal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\acceptor\acceptor.h" />
@@ -192,8 +194,10 @@
     <ClInclude Include="..\module\socket\socket.h" />
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
+    <ClInclude Include="..\module\table\table.h" />
     <ClInclude Include="model\acceptor\acceptor.internal.h" />
     <ClInclude Include="model\session\session.internal.h" />
+    <ClInclude Include="model\table\table.internal.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

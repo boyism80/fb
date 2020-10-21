@@ -453,9 +453,9 @@ void fb::game::acceptor::on_warp(fb::game::session& me, fb::game::map& map, cons
     parameter.write(me.name());
 
     auto& config = fb::config::get();
-    auto host = config["hosts"][map.host_id()]["host"].asString();
-    auto port = config["hosts"][map.host_id()]["port"].asInt();
-    this->transfer(me, host, port, parameter);
+    //auto host = config["hosts"][map.host_id()]["host"].asString();
+    //auto port = config["hosts"][map.host_id()]["port"].asInt();
+    this->transfer(me, "192.168.0.100", 2004, parameter);
 }
 
 void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)
@@ -503,7 +503,7 @@ void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool c
     else if(you != nullptr && you->is(object::types::SESSION))
     {
         auto&                   slayer = static_cast<fb::game::session&>(*you);
-        auto                    range = master::get().required_exp(slayer.cls(), slayer.level());
+        auto                    range = fb::game::table::required_exp(slayer.cls(), slayer.level());
         // 3.3% 제한한 경험치
         auto                    exp = me.experience();
 #if defined DEBUG | defined _DEBUG

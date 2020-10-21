@@ -8,7 +8,7 @@ namespace fb { namespace game {
 class life;
 
 template <typename T>
-class container
+class base_container
 {
 private:
     life&                   _owner;
@@ -17,8 +17,8 @@ private:
     bool                    _auto_release;
 
 protected:
-    container(life& owner, uint8_t size, bool auto_release = true);
-    ~container();
+    base_container(life& owner, uint8_t size, bool auto_release = true);
+    ~base_container();
 
 protected:
     T*                      set(T* element, int position);

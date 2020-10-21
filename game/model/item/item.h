@@ -915,7 +915,7 @@ public:
 
 
 
-class items : public container<fb::game::item>
+class items : public fb::game::base_container<fb::game::item>
 {
 private:
     fb::game::session&                  _owner;

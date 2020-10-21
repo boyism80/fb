@@ -78,7 +78,7 @@ public:
 };
 
 
-class spells : public container<fb::game::spell>
+class spells : public fb::game::base_container<fb::game::spell>
 {
 private:
     listener*                   _listener;
