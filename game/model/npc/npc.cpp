@@ -1,7 +1,7 @@
 #include "model/npc/npc.h"
 #include "model/acceptor/acceptor.game.h"
 #include "model/listener/listener.h"
-#include <builtin/builtin_function.h>
+#include "builtin/builtin_function.h"
 
 using namespace fb::game;
 
@@ -20,22 +20,22 @@ fb::game::object* fb::game::npc::master::make(listener* listener) const
 int fb::game::npc::master::builtin_input_dialog(lua_State* lua)
 {
     // Ex) npc::input_dialog(session, "message")
-    return ::builtin_input_dialog<npc::master>(lua);
+    return ::builtin_input_dialog<fb::game::npc::master>(lua);
 }
 
 int fb::game::npc::master::builtin_menu_dialog(lua_State* lua)
 {
     // Ex) npc::menu_dialog(session, "hello", {"hello 1", "hello 2", "hello 3"})
-    return ::builtin_menu_dialog<npc::master>(lua);
+    return ::builtin_menu_dialog<fb::game::npc::master>(lua);
 }
 
 int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
 {
     // Ex) npc::menu_dialog(session, "hello", {item1, item2, item3})
-    return ::builtin_item_dialog<npc::master>(lua);
+    return ::builtin_item_dialog<fb::game::npc::master>(lua);
 }
 
-fb::game::npc::npc(const master* master, listener* listener) : 
+fb::game::npc::npc(const fb::game::npc::master* master, listener* listener) : 
     fb::game::object(master, listener),
     _listener(listener)
 {

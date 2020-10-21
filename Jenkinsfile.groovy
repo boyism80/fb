@@ -7,7 +7,8 @@ pipeline {
                     steps{ 
                         dir('internal') {
                             sh 'mkdir -p bin'
-                            sh 'make'
+                            sh 'make clean'
+                            sh 'make -j4'
                         }
                     }
                 }
@@ -15,7 +16,8 @@ pipeline {
                     steps{ 
                         dir('gateway') {
                             sh 'mkdir -p bin'
-                            sh 'make'
+                            sh 'make clean'
+                            sh 'make -j4'
                         }
                     }
                 }
@@ -23,7 +25,8 @@ pipeline {
                     steps{ 
                         dir('login') {
                             sh 'mkdir -p bin'
-                            sh 'make'
+                            sh 'make clean'
+                            sh 'make -j4'
                         }
                     }
                 }
@@ -31,7 +34,8 @@ pipeline {
                     steps{ 
                         dir('game') {
                             sh 'mkdir -p bin'
-                            sh 'make'
+                            sh 'make clean'
+                            sh 'make -j4'
                         }
                     }
                 }

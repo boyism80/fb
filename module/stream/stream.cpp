@@ -1,5 +1,4 @@
-#include "module/stream/stream.h"
-#include "module/encoding/encoding.h"
+#include "stream.h"
 
 fb::buffer::buffer(size_t size) : _offset(0)
 {

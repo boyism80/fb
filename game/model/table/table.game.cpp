@@ -1,6 +1,5 @@
 #include "table.game.h"
 #include "model/session/session.h"
-#include "table.game.h"
 
 std::vector<fb::game::clan*>            fb::game::table::clans;
 fb::game::board                         fb::game::table::board;
