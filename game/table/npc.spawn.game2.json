@@ -1,0 +1,3422 @@
+[
+    {
+        "direction": "bottom",
+        "map": 6518,
+        "npc": 62,
+        "position": {
+            "x": 3,
+            "y": 4
+        },
+        "script": "방물장수"
+    },
+    {
+        "direction": "bottom",
+        "map": 23,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 24,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 30,
+        "npc": 172,
+        "position": {
+            "x": 24,
+            "y": 4
+        },
+        "script": "금고주인"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 175,
+        "position": {
+            "x": 56,
+            "y": 39
+        },
+        "script": "고구려무도가"
+    },
+    {
+        "direction": "bottom",
+        "map": 10263,
+        "npc": 89,
+        "position": {
+            "x": 10,
+            "y": 4
+        },
+        "script": "문파대리인"
+    },
+    {
+        "direction": "bottom",
+        "map": 1809,
+        "npc": 169,
+        "position": {
+            "x": 35,
+            "y": 3
+        },
+        "script": "고구려선원"
+    },
+    {
+        "direction": "bottom",
+        "map": 2309,
+        "npc": 159,
+        "position": {
+            "x": 23,
+            "y": 34
+        },
+        "script": "장돌뱅이"
+    },
+    {
+        "direction": "bottom",
+        "map": 614,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 25,
+        "npc": 217,
+        "position": {
+            "x": 7,
+            "y": 5
+        },
+        "script": "벽돌장수"
+    },
+    {
+        "direction": "bottom",
+        "map": 2385,
+        "npc": 221,
+        "position": {
+            "x": 22,
+            "y": 7
+        },
+        "script": "혼례식도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 2385,
+        "npc": 222,
+        "position": {
+            "x": 15,
+            "y": 6
+        },
+        "script": "주례사"
+    },
+    {
+        "direction": "bottom",
+        "map": 2535,
+        "npc": 181,
+        "position": {
+            "x": 10,
+            "y": 15
+        },
+        "script": "안도"
+    },
+    {
+        "direction": "bottom",
+        "map": 26,
+        "npc": 14,
+        "position": {
+            "x": 3,
+            "y": 3
+        },
+        "script": "국내포목"
+    },
+    {
+        "direction": "bottom",
+        "map": 26,
+        "npc": 173,
+        "position": {
+            "x": 5,
+            "y": 3
+        },
+        "script": "비단장수"
+    },
+    {
+        "direction": "bottom",
+        "map": 30,
+        "npc": 63,
+        "position": {
+            "x": 6,
+            "y": 4
+        },
+        "script": "소소"
+    },
+    {
+        "direction": "right",
+        "map": 29,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "왈숙네"
+    },
+    {
+        "direction": "right",
+        "map": 30,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "왈숙네"
+    },
+    {
+        "direction": "right",
+        "map": 31,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "왈숙네"
+    },
+    {
+        "direction": "bottom",
+        "map": 25,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "털보"
+    },
+    {
+        "direction": "bottom",
+        "map": 27,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "떼보"
+    },
+    {
+        "direction": "bottom",
+        "map": 28,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 33,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 35,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 37,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 39,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 2313,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 35,
+        "position": {
+            "x": 46,
+            "y": 114
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 37,
+        "position": {
+            "x": 194,
+            "y": 124
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 38,
+        "position": {
+            "x": 101,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 50,
+        "position": {
+            "x": 197,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 42,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 44,
+        "position": {
+            "x": 29,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 46,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "전갈굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 48,
+        "position": {
+            "x": 41,
+            "y": 25
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 888,
+        "npc": 30,
+        "position": {
+            "x": 14,
+            "y": 5
+        },
+        "script": "고구려왕"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 180,
+        "position": {
+            "x": 21,
+            "y": 132
+        },
+        "script": "나무꾼"
+    },
+    {
+        "direction": "bottom",
+        "map": 30,
+        "npc": 105,
+        "position": {
+            "x": 25,
+            "y": 8
+        },
+        "script": "주막행자"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 135,
+        "position": {
+            "x": 112,
+            "y": 217
+        },
+        "script": "남문행자"
+    },
+    {
+        "direction": "bottom",
+        "map": 1809,
+        "npc": 136,
+        "position": {
+            "x": 26,
+            "y": 4
+        },
+        "script": "선착행자"
+    },
+    {
+        "direction": "bottom",
+        "map": 22,
+        "npc": 189,
+        "position": {
+            "x": 112,
+            "y": 93
+        },
+        "script": "영채"
+    },
+    {
+        "direction": "right",
+        "map": 8016,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8017,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8018,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8016,
+        "npc": 63,
+        "position": {
+            "x": 6,
+            "y": 4
+        },
+        "script": "소소"
+    },
+    {
+        "direction": "bottom",
+        "map": 8005,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8006,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8011,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8015,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8024,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8022,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8023,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8000,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8014,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8003,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8021,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8025,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8043,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8044,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8045,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8043,
+        "npc": 63,
+        "position": {
+            "x": 6,
+            "y": 4
+        },
+        "script": "소소"
+    },
+    {
+        "direction": "bottom",
+        "map": 8032,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8033,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8038,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8042,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8051,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8049,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8050,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8028,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8041,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8030,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8048,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8052,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8070,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8071,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8072,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8059,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8060,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8065,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8069,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8078,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8076,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8077,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8055,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8068,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8057,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8075,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8079,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8097,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8098,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8099,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8086,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8087,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8092,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8096,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8105,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8103,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8104,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8082,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8095,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8084,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8102,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8106,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8124,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8125,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8126,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8113,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8114,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8119,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8123,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8132,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8130,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8131,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8109,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8122,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8111,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8129,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8133,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8151,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8152,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8153,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8140,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8141,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8146,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8150,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8159,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8157,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8158,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8136,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8149,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8138,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8156,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8160,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8178,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8179,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8180,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8167,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8168,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8173,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8177,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8186,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8184,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8185,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8163,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8176,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8165,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8183,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8187,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8205,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8206,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8207,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8194,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8195,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8200,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8204,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8213,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8211,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8212,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8190,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8203,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8192,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8210,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8214,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8232,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8233,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8234,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8221,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8222,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8227,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8231,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8240,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8238,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8239,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8217,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8230,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8219,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8237,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8241,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "right",
+        "map": 8259,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8260,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "right",
+        "map": 8261,
+        "npc": 8,
+        "position": {
+            "x": 6,
+            "y": 8
+        },
+        "script": "타성주모"
+    },
+    {
+        "direction": "bottom",
+        "map": 8248,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8249,
+        "npc": 19,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8254,
+        "npc": 19,
+        "position": {
+            "x": 3,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 8258,
+        "npc": 9,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "떡쇠"
+    },
+    {
+        "direction": "bottom",
+        "map": 8267,
+        "npc": 11,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8265,
+        "npc": 13,
+        "position": {
+            "x": 4,
+            "y": 5
+        },
+        "script": "예쁜이"
+    },
+    {
+        "direction": "bottom",
+        "map": 8266,
+        "npc": 15,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 8244,
+        "npc": 22,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업전사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8257,
+        "npc": 20,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도적"
+    },
+    {
+        "direction": "bottom",
+        "map": 8246,
+        "npc": 24,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8264,
+        "npc": 26,
+        "position": {
+            "x": 6,
+            "y": 6
+        },
+        "script": "직업도사"
+    },
+    {
+        "direction": "bottom",
+        "map": 8268,
+        "npc": 28,
+        "position": {
+            "x": 6,
+            "y": 5
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 72
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 44,
+        "position": {
+            "x": 29,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 47,
+        "position": {
+            "x": 41,
+            "y": 25
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3178,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 36,
+        "position": {
+            "x": 129,
+            "y": 25
+        },
+        "script": "사슴굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 47,
+        "position": {
+            "x": 41,
+            "y": 24
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3176,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 165
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 44,
+        "position": {
+            "x": 29,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 47,
+        "position": {
+            "x": 41,
+            "y": 25
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3174,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 39,
+        "position": {
+            "x": 21,
+            "y": 165
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 44,
+        "position": {
+            "x": 29,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3173,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 63
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 35,
+        "position": {
+            "x": 45,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 36
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 47,
+        "position": {
+            "x": 41,
+            "y": 24
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3177,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 59
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 35,
+        "position": {
+            "x": 46,
+            "y": 111
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 72
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 31
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3172,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 27
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 47,
+        "position": {
+            "x": 41,
+            "y": 24
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3170,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 31
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 44,
+        "position": {
+            "x": 44,
+            "y": 29
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3175,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 35,
+        "position": {
+            "x": 44,
+            "y": 113
+        },
+        "script": "쥐굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 37,
+        "position": {
+            "x": 193,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 164
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 31
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 44,
+        "position": {
+            "x": 44,
+            "y": 29
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3179,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 34,
+        "position": {
+            "x": 37,
+            "y": 173
+        },
+        "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 37,
+        "position": {
+            "x": 192,
+            "y": 123
+        },
+        "script": "돼지굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 38,
+        "position": {
+            "x": 198,
+            "y": 71
+        },
+        "script": "곰굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 39,
+        "position": {
+            "x": 18,
+            "y": 165
+        },
+        "script": "여우굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 50,
+        "position": {
+            "x": 194,
+            "y": 140
+        },
+        "script": "자호굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 41,
+        "position": {
+            "x": 149,
+            "y": 18
+        },
+        "script": "해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 44,
+        "position": {
+            "x": 32,
+            "y": 31
+        },
+        "script": "흑해골굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 45,
+        "position": {
+            "x": 78,
+            "y": 35
+        },
+        "script": "사마귀굴도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 44,
+        "position": {
+            "x": 44,
+            "y": 29
+        },
+        "script": "백륜동도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 51,
+        "position": {
+            "x": 136,
+            "y": 204
+        },
+        "script": "비밀세작도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 3171,
+        "npc": 49,
+        "position": {
+            "x": 37,
+            "y": 65
+        },
+        "script": "흉가도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": 1746,
+        "npc": 198,
+        "position": {
+            "x": 9,
+            "y": 20
+        },
+        "script": "부여고균도매표상"
+    },
+    {
+        "direction": "bottom",
+        "map": 1746,
+        "npc": 196,
+        "position": {
+            "x": 17,
+            "y": 36
+        },
+        "script": "고구려섬선원"
+    },
+    {
+        "direction": "bottom",
+        "map": 1747,
+        "npc": 197,
+        "position": {
+            "x": 7,
+            "y": 5
+        },
+        "script": "고구려섬뱃사공"
+    },
+    {
+        "direction": "bottom",
+        "map": 1809,
+        "npc": 206,
+        "position": {
+            "x": 58,
+            "y": 16
+        },
+        "script": "고구려-일본섬선원"
+    },
+    {
+        "direction": "bottom",
+        "map": 6491,
+        "npc": 207,
+        "position": {
+            "x": 7,
+            "y": 5
+        },
+        "script": "고구려-일본섬뱃사공"
+    },
+    {
+        "direction": "bottom",
+        "map": 906,
+        "npc": 145,
+        "position": {
+            "x": 30,
+            "y": 2
+        },
+        "script": "말단선원"
+    },
+    {
+        "direction": "bottom",
+        "map": 616,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8007,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8034,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8061,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8088,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8115,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8142,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8169,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8196,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8223,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 8250,
+        "npc": 158,
+        "position": {
+            "x": 12,
+            "y": 8
+        },
+        "script": "무두"
+    },
+    {
+        "direction": "bottom",
+        "map": 614,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8011,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8038,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8065,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8092,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8119,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8146,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8173,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8200,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8227,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    },
+    {
+        "direction": "bottom",
+        "map": 8254,
+        "npc": 214,
+        "position": {
+            "x": 7,
+            "y": 8
+        },
+        "script": "열쇠교환상"
+    }
+]

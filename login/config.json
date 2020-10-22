@@ -1,5 +1,5 @@
 {
-    "id": ["login"],
+    "id": "login",
     "delay": 0,
     "port": 2002,
     "internal": {

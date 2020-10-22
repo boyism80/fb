@@ -1,0 +1,2822 @@
+{
+    "1811": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "동쪽해안가",
+        "parent": 1811,
+        "bgm": 142,
+        "id": "1811"
+    },
+    "1812": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1812"
+    },
+    "1813": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1813"
+    },
+    "1814": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1814"
+    },
+    "1815": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1815"
+    },
+    "1816": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1816"
+    },
+    "1817": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1817"
+    },
+    "1818": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1818"
+    },
+    "1819": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구5",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1819"
+    },
+    "1820": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구6",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1820"
+    },
+    "1821": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "본성입구7",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1821"
+    },
+    "1824": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "비밀통로................",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "1824"
+    },
+    "1825": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "숲지대1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1825"
+    },
+    "1826": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "숲지대2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1826"
+    },
+    "1827": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "숲지대3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1827"
+    },
+    "1828": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "숲지대4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1828"
+    },
+    "1829": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "유성지의방",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "1829"
+    },
+    "1830": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "이가닌자'마의집",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1830"
+    },
+    "1831": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "이가닌자'병의집",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1831"
+    },
+    "1832": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "이가닌자'수의집",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1832"
+    },
+    "1833": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "이가닌자'영의집",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1833"
+    },
+    "1834": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "이가닌자'화의집",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1834"
+    },
+    "1835": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본대장간",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1835"
+    },
+    "1836": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신궁",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1836"
+    },
+    "1838": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "일본우성황",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1838"
+    },
+    "1839": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "일본좌성황",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1839"
+    },
+    "1840": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본주막",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1840"
+    },
+    "1841": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "일본푸줏간",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "1841"
+    },
+    "1842": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "파괴왕의제단",
+        "parent": 1836,
+        "bgm": 138,
+        "id": "1842"
+    },
+    "1843": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "하선녀의방",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "1843"
+    },
+    "1844": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해골왕의방",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "1844"
+    },
+    "1966": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전입구",
+        "parent": 1836,
+        "bgm": 1,
+        "id": "1966"
+    },
+    "1987": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전1",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1987"
+    },
+    "1988": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전2",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1988"
+    },
+    "1989": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전3",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1989"
+    },
+    "1990": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전4",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1990"
+    },
+    "1991": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전5",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1991"
+    },
+    "1992": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전6",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1992"
+    },
+    "1993": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전7",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1993"
+    },
+    "1994": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전8",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1994"
+    },
+    "1995": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본신전9",
+        "parent": 1836,
+        "bgm": 154,
+        "id": "1995"
+    },
+    "2007": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "요제의방",
+        "parent": 1836,
+        "bgm": 151,
+        "id": "2007"
+    },
+    "2122": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2122"
+    },
+    "2123": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2123"
+    },
+    "2124": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2124"
+    },
+    "2125": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2125"
+    },
+    "2126": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방5",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2126"
+    },
+    "2127": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방6",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2127"
+    },
+    "2128": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방7",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2128"
+    },
+    "2129": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방8",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2129"
+    },
+    "2130": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방9",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2130"
+    },
+    "2131": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방10",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2131"
+    },
+    "2132": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방11",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2132"
+    },
+    "2133": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방12",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2133"
+    },
+    "2134": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방13",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2134"
+    },
+    "2135": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방14",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2135"
+    },
+    "2136": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방15",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2136"
+    },
+    "2137": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "백향의방16",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2137"
+    },
+    "2138": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2138"
+    },
+    "2139": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2139"
+    },
+    "2140": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2140"
+    },
+    "2141": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2141"
+    },
+    "2142": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방5",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2142"
+    },
+    "2143": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방6",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2143"
+    },
+    "2144": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방7",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2144"
+    },
+    "2145": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방8",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2145"
+    },
+    "2146": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "닌자의방9",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2146"
+    },
+    "2147": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방1",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2147"
+    },
+    "2148": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방2",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2148"
+    },
+    "2149": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방3",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2149"
+    },
+    "2150": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방4",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2150"
+    },
+    "2151": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방5",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2151"
+    },
+    "2152": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방6",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2152"
+    },
+    "2153": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방7",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2153"
+    },
+    "2154": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방8",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2154"
+    },
+    "2155": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방9",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2155"
+    },
+    "2156": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방10",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2156"
+    },
+    "2157": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방11",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2157"
+    },
+    "2158": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방12",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2158"
+    },
+    "2159": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방13",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2159"
+    },
+    "2160": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방14",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2160"
+    },
+    "2161": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방15",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2161"
+    },
+    "2162": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방16",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2162"
+    },
+    "2163": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "선녀의방17",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2163"
+    },
+    "2164": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2164"
+    },
+    "2165": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2165"
+    },
+    "2166": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2166"
+    },
+    "2167": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2167"
+    },
+    "2168": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방5",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2168"
+    },
+    "2169": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방6",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2169"
+    },
+    "2170": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방7",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2170"
+    },
+    "2171": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방8",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2171"
+    },
+    "2172": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방9",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2172"
+    },
+    "2173": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "무사의방10",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2173"
+    },
+    "2174": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "진의방",
+        "parent": 1836,
+        "bgm": 113,
+        "id": "2174"
+    },
+    "2178": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방1",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2178"
+    },
+    "2179": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방2",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2179"
+    },
+    "2180": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방3",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2180"
+    },
+    "2181": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방4",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2181"
+    },
+    "2182": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방5",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2182"
+    },
+    "2183": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방6",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2183"
+    },
+    "2184": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방7",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2184"
+    },
+    "2185": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방8",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2185"
+    },
+    "2186": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방9",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2186"
+    },
+    "2187": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방10",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2187"
+    },
+    "2188": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방11",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2188"
+    },
+    "2189": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문지기의방12",
+        "parent": 1836,
+        "bgm": 119,
+        "id": "2189"
+    },
+    "2190": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "고래갑판",
+        "parent": 2190,
+        "bgm": 1,
+        "id": "2190"
+    },
+    "2197": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "비밀통로................",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2197"
+    },
+    "2198": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방1",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2198"
+    },
+    "2199": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방2",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "2199"
+    },
+    "2401": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴1",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2401"
+    },
+    "2402": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴2",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2402"
+    },
+    "2403": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴3",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2403"
+    },
+    "2404": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴4",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2404"
+    },
+    "2405": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴5",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2405"
+    },
+    "2406": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴6",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2406"
+    },
+    "2407": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴7",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2407"
+    },
+    "2408": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴8",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2408"
+    },
+    "2409": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴9",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2409"
+    },
+    "2410": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "늑대인간굴10",
+        "parent": 1836,
+        "bgm": 112,
+        "id": "2410"
+    },
+    "2532": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "일본포목상",
+        "parent": 1836,
+        "bgm": 1,
+        "id": "2532"
+    },
+    "2533": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "일본전설대장장이의집",
+        "parent": 1836,
+        "bgm": 1,
+        "id": "2533"
+    },
+    "2534": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁역사가의집",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2534"
+    },
+    "2900": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "일본표신궁",
+        "parent": 2900,
+        "bgm": 119,
+        "id": "2900"
+    },
+    "2901": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방1",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2901"
+    },
+    "2902": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방2",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2902"
+    },
+    "2903": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방3",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2903"
+    },
+    "2904": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방4",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2904"
+    },
+    "2905": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방5",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2905"
+    },
+    "2906": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방6",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2906"
+    },
+    "2907": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방7",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2907"
+    },
+    "2908": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방8",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2908"
+    },
+    "2909": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문려의방9",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2909"
+    },
+    "2910": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방1",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2910"
+    },
+    "2911": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방2",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2911"
+    },
+    "2912": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방3",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2912"
+    },
+    "2913": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방4",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2913"
+    },
+    "2914": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방5",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2914"
+    },
+    "2915": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방6",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2915"
+    },
+    "2916": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방7",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2916"
+    },
+    "2917": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방8",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2917"
+    },
+    "2918": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁닌자의방9",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2918"
+    },
+    "2919": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방1",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2919"
+    },
+    "2920": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방2",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2920"
+    },
+    "2921": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방3",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2921"
+    },
+    "2922": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방4",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2922"
+    },
+    "2923": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방5",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2923"
+    },
+    "2924": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방6",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2924"
+    },
+    "2925": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방7",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2925"
+    },
+    "2926": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방8",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2926"
+    },
+    "2927": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁백향의방9",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2927"
+    },
+    "2928": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방1",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2928"
+    },
+    "2929": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방2",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2929"
+    },
+    "2930": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방3",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2930"
+    },
+    "2931": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방4",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2931"
+    },
+    "2932": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방5",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2932"
+    },
+    "2933": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방6",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2933"
+    },
+    "2934": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방7",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2934"
+    },
+    "2935": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방8",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2935"
+    },
+    "2936": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁문지기의방9",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2936"
+    },
+    "2937": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구1",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2937"
+    },
+    "2938": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구2",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2938"
+    },
+    "2939": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구3",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2939"
+    },
+    "2940": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구4",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2940"
+    },
+    "2941": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구5",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2941"
+    },
+    "2942": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구6",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2942"
+    },
+    "2943": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구7",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2943"
+    },
+    "2944": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구8",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2944"
+    },
+    "2945": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "표신궁본성입구9",
+        "parent": 2900,
+        "bgm": 113,
+        "id": "2945"
+    },
+    "2946": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "동장군의방",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2946"
+    },
+    "2947": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "서장군의방",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2947"
+    },
+    "2948": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "남장군의방",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2948"
+    },
+    "2949": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북장군의방",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2949"
+    },
+    "2950": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "중앙장군의방",
+        "parent": 2900,
+        "bgm": 111,
+        "id": "2950"
+    },
+    "16000": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방3",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16000"
+    },
+    "16001": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방4",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16001"
+    },
+    "16002": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방5",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16002"
+    },
+    "16003": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방6",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16003"
+    },
+    "16004": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방7",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16004"
+    },
+    "16005": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방8",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16005"
+    },
+    "16006": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방9",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16006"
+    },
+    "16007": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방10",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16007"
+    },
+    "16008": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방11",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16008"
+    },
+    "16009": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방12",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16009"
+    },
+    "16010": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방13",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16010"
+    },
+    "16011": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문려의방14",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16011"
+    },
+    "16012": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "비밀통로................",
+        "parent": 1836,
+        "bgm": 111,
+        "id": "16012"
+    }
+}

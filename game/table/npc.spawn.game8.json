@@ -1,0 +1,32 @@
+[
+    {
+        "direction": "bottom",
+        "map": 2958,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 2959,
+        "npc": 139,
+        "position": {
+            "x": 7,
+            "y": 5
+        },
+        "script": "천금장인"
+    },
+    {
+        "direction": "bottom",
+        "map": 2951,
+        "npc": 156,
+        "position": {
+            "x": 15,
+            "y": 17
+        },
+        "script": "한빙장"
+    }
+]

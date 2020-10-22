@@ -1,0 +1,122 @@
+[
+    {
+        "direction": "right",
+        "map": 1840,
+        "npc": 84,
+        "position": {
+            "x": 11,
+            "y": 6
+        },
+        "script": "쥬모"
+    },
+    {
+        "direction": "bottom",
+        "map": 1840,
+        "npc": 63,
+        "position": {
+            "x": 12,
+            "y": 3
+        },
+        "script": "일본소소"
+    },
+    {
+        "direction": "bottom",
+        "map": 1841,
+        "npc": 85,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "옥이"
+    },
+    {
+        "direction": "bottom",
+        "map": 1835,
+        "npc": 86,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "뭉치"
+    },
+    {
+        "direction": "bottom",
+        "map": 1839,
+        "npc": 18,
+        "position": {
+            "x": 2,
+            "y": 4
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1838,
+        "npc": 19,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1842,
+        "npc": 93,
+        "position": {
+            "x": 14,
+            "y": 3
+        },
+        "script": "파괴왕"
+    },
+    {
+        "direction": "bottom",
+        "map": 2534,
+        "npc": 185,
+        "position": {
+            "x": 9,
+            "y": 12
+        },
+        "script": "표신궁역사가"
+    },
+    {
+        "direction": "bottom",
+        "map": 1844,
+        "npc": 229,
+        "position": {
+            "x": 37,
+            "y": 6
+        },
+        "script": "호위무사"
+    },
+    {
+        "direction": "bottom",
+        "map": 1835,
+        "npc": 161,
+        "position": {
+            "x": 5,
+            "y": 5
+        },
+        "script": "망치상인"
+    },
+    {
+        "direction": "bottom",
+        "map": 2532,
+        "npc": 166,
+        "position": {
+            "x": 5,
+            "y": 4
+        },
+        "script": "일본포목상"
+    },
+    {
+        "direction": "bottom",
+        "map": 1840,
+        "npc": 28,
+        "position": {
+            "x": 4,
+            "y": 4
+        },
+        "script": "영혼사"
+    }
+]

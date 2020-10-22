@@ -1,0 +1,12 @@
+[
+    {
+        "direction": "bottom",
+        "map": 1,
+        "npc": 0,
+        "position": {
+            "x": 10,
+            "y": 9
+        },
+        "script": "낙랑"
+    }
+]

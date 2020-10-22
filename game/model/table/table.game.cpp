@@ -29,6 +29,15 @@ fb::game::map* fb::game::container::map::name2map(const std::string& name)
     return nullptr;
 }
 
+fb::game::map* fb::game::container::map::operator[](uint16_t id) const
+{
+    auto found = this->find(id);
+    if(found == this->end())
+        return nullptr;
+
+    return found->second;
+}
+
 fb::game::npc::master* fb::game::container::npc::name2npc(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
@@ -350,32 +359,31 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
         path, 
         [&] (Json::Value::iterator& i, double percentage)
         {
-            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            auto                map = fb::game::table::maps.name2map(name);
+            auto                map_id = std::stoi(i.key().asString());
+            auto                map = fb::game::table::maps[map_id];
             if (map == nullptr)
                 return;
 
             auto            warps = *i;
             for (auto i2 = warps.begin(); i2 != warps.end(); i2++)
             {
-                auto        next_map_name = CP949((*i2)["map"].asString(), PLATFORM::Windows);
-                auto        next_map = fb::game::table::maps.name2map(next_map_name);
-                if (next_map == nullptr)
-                    continue;
-
                 const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
                 const point16_t after((*i2)["after"]["x"].asInt(), (*i2)["after"]["y"].asInt());
                 const range8_t  limit((*i2)["limit"]["min"].asInt(), (*i2)["limit"]["max"].asInt());
-
+                
+                auto        next_map_id = (*i2)["to"].asInt();
+                auto        next_map = fb::game::table::maps[next_map_id];
+                
                 map->warp_add(next_map, before, after, limit);
             }
 
-            callback(name, percentage);
+            callback(map->name(), percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            error(name, e);
+            auto                map_id = std::stoi(i.key().asString());
+            auto                map = fb::game::table::maps[map_id];
+            error(map->name(), e);
         }
     );
 
@@ -504,43 +512,49 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::lis
         path, 
         [&](Json::Value::iterator& i, double percentage)
         {
-            auto                spawns = *i;
-            auto                name = CP949(spawns["npc"].asString(), PLATFORM::Windows);
+            auto                data = *i;
+            auto                id = data["npc"].asInt();
+            auto                core = fb::game::table::npcs[id];
+            if (core == nullptr)
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_NAME);
 
-            auto                map = fb::game::table::maps.name2map(name);
+
+            auto                map_id = data["map"].asInt();
+            auto                map = fb::game::table::maps[map_id];
             if (map == nullptr)
-                return;
+                throw std::runtime_error(fb::game::message::assets::INVALID_MAP_NAME);
 
-            for (auto spawn : spawns)
-            {
-                auto            core = fb::game::table::mobs.name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
-                if (core == nullptr)
-                    continue;
+            auto                direction_str = CP949(data["direction"].asString(), PLATFORM::Windows);
+            auto                direction = fb::game::direction::BOTTOM;
+            if (direction_str == "top")
+                direction = fb::game::direction::TOP;
+            else if (direction_str == "right")
+                direction = fb::game::direction::RIGHT;
+            else if (direction_str == "bottom")
+                direction = fb::game::direction::BOTTOM;
+            else if (direction_str == "left")
+                direction = fb::game::direction::LEFT;
+            else
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
-                uint16_t        x0 = spawn["area"]["x0"].asInt();
-                uint16_t        x1 = spawn["area"]["x1"].asInt();
-                uint16_t        y0 = spawn["area"]["y0"].asInt();
-                uint16_t        y1 = spawn["area"]["y1"].asInt();
-                uint16_t        count = spawn["count"].asInt();
-                uint32_t        rezen = spawn["rezen time"].asInt();
+            point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
+            if (position.x > map->width() || position.y > map->height())
+                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_POSITION);
+            auto                script = CP949(data["script"].asString(), PLATFORM::Windows);
 
-                for (int i = 0; i < count; i++)
-                {
-                    auto        mob = static_cast<fb::game::mob*>(core->make(listener));
-                    mob->spawn_point(x0, y0);
-                    mob->spawn_size(x1, y1);
-                    mob->respawn_time(rezen);
-                    mob->map(map);
-                }
-            }
+            auto                cloned = new fb::game::npc(core, listener);
+            cloned->direction(direction);
+            cloned->script(script);
+            cloned->map(map, position);
 
-            callback(name, percentage);
+            callback(core->name(), percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                spawns = *i;
-            auto                name = CP949(spawns["npc"].asString(), PLATFORM::Windows);
-            error(name, e);
+            auto                data = *i;
+            auto                id = data["npc"].asInt();
+            auto                core = fb::game::table::npcs[id];
+            error(core->name(), e);
         }
     );
 
@@ -625,6 +639,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
 
 bool fb::game::container::mob::load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
+    char buffer[256] = {0,};
     auto count = fb::table::load
     (
         path, 
@@ -633,7 +648,10 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
             auto                name = CP949(i.key().asString(), PLATFORM::Windows);
             auto                core = fb::game::table::mobs.name2mob(name);
             if (core == nullptr)
-                throw std::runtime_error(fb::game::message::assets::INVALID_MOB_NAME);
+            {
+                sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str());
+                throw std::runtime_error(buffer);
+            }
 
             for(auto x : *i)
             {
@@ -642,7 +660,10 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
                 auto        item_core = fb::game::table::items.name2item(item_name);
 
                 if (item_core == nullptr)
-                    throw std::runtime_error(fb::game::message::assets::INVALID_ITEM_NAME);
+                {
+                    sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_ITEM_NAME, item_name.c_str());
+                    throw std::runtime_error(buffer);
+                }
 
                 core->dropitem_add(item_core, percentage);
             }
@@ -652,7 +673,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
         [&] (Json::Value::iterator& i, const std::string& e)
         {
             auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            error(name, e);
+            error("", e);
         }
     );
 
@@ -667,16 +688,16 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::lis
         path, 
         [&] (Json::Value::iterator& i, double percentage)
         {
-            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            auto                spawns = *i;
-
-            auto                map = fb::game::table::maps.name2map(name);
+            auto                map_id = std::stoi(i.key().asString());
+            auto                map = fb::game::table::maps[map_id];
             if (map == nullptr)
                 return;
 
+            auto                spawns = *i;
             for (auto spawn : spawns)
             {
-                auto            core = fb::game::table::mobs.name2mob(CP949(spawn["name"].asString(), PLATFORM::Windows));
+                auto            mob_id = spawn["mob"].asInt();
+                auto            core = fb::game::table::mobs[mob_id];
                 if (core == nullptr)
                     continue;
 
@@ -697,12 +718,13 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::lis
                 }
             }
 
-            callback(name, percentage);
+            callback(map->name(), percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            error(name, e);
+            auto                map_id = std::stoi(i.key().asString());
+            auto                map = fb::game::table::maps[map_id];
+            error(map->name(), e);
         }
     );
 

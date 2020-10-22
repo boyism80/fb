@@ -1,0 +1,752 @@
+{
+    "908": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "용궁",
+        "parent": 908,
+        "bgm": 121,
+        "id": "908"
+    },
+    "909": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군굴",
+        "parent": 909,
+        "bgm": 126,
+        "id": "909"
+    },
+    "910": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴",
+        "parent": 908,
+        "bgm": 126,
+        "id": "910"
+    },
+    "911": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문어장군굴01",
+        "parent": 911,
+        "bgm": 122,
+        "id": "911"
+    },
+    "912": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문어장군굴02",
+        "parent": 912,
+        "bgm": 122,
+        "id": "912"
+    },
+    "913": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문어장군굴03",
+        "parent": 913,
+        "bgm": 122,
+        "id": "913"
+    },
+    "914": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문어장군굴04",
+        "parent": 914,
+        "bgm": 122,
+        "id": "914"
+    },
+    "915": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "문어장군굴10",
+        "parent": 915,
+        "bgm": 122,
+        "id": "915"
+    },
+    "916": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴",
+        "parent": 916,
+        "bgm": 122,
+        "id": "916"
+    },
+    "917": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴",
+        "parent": 917,
+        "bgm": 127,
+        "id": "917"
+    },
+    "918": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "상어장군굴",
+        "parent": 908,
+        "bgm": 127,
+        "id": "918"
+    },
+    "919": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군굴",
+        "parent": 908,
+        "bgm": 125,
+        "id": "919"
+    },
+    "920": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "청의태자의동굴01",
+        "parent": 920,
+        "bgm": 128,
+        "id": "920"
+    },
+    "921": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "청의태자의동굴03",
+        "parent": 921,
+        "bgm": 128,
+        "id": "921"
+    },
+    "922": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "청의태자의동굴07",
+        "parent": 922,
+        "bgm": 128,
+        "id": "922"
+    },
+    "923": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "청의태자의동굴09",
+        "parent": 923,
+        "bgm": 128,
+        "id": "923"
+    },
+    "924": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "청의태자의동굴10",
+        "parent": 924,
+        "bgm": 131,
+        "id": "924"
+    },
+    "925": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "용왕의방",
+        "parent": 925,
+        "bgm": 121,
+        "id": "925"
+    },
+    "1777": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군의굴1",
+        "parent": 1777,
+        "bgm": 154,
+        "id": "1777"
+    },
+    "1778": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군의굴2",
+        "parent": 1778,
+        "bgm": 154,
+        "id": "1778"
+    },
+    "1779": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군의굴4",
+        "parent": 1779,
+        "bgm": 154,
+        "id": "1779"
+    },
+    "1780": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군의굴9",
+        "parent": 1780,
+        "bgm": 154,
+        "id": "1780"
+    },
+    "1781": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "복어장군의굴10",
+        "parent": 1781,
+        "bgm": 154,
+        "id": "1781"
+    },
+    "1782": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴01",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1782"
+    },
+    "1783": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴02",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1783"
+    },
+    "1784": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴03",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1784"
+    },
+    "1785": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴04",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1785"
+    },
+    "1786": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴05",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1786"
+    },
+    "1787": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "게장군굴10",
+        "parent": 908,
+        "bgm": 154,
+        "id": "1787"
+    },
+    "1788": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군의굴01",
+        "parent": 1788,
+        "bgm": 154,
+        "id": "1788"
+    },
+    "1789": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군의굴04",
+        "parent": 1789,
+        "bgm": 154,
+        "id": "1789"
+    },
+    "1790": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군의굴07",
+        "parent": 1790,
+        "bgm": 154,
+        "id": "1790"
+    },
+    "1791": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군의굴08",
+        "parent": 1791,
+        "bgm": 154,
+        "id": "1791"
+    },
+    "1792": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해마장군의굴10",
+        "parent": 1792,
+        "bgm": 154,
+        "id": "1792"
+    },
+    "1793": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴01",
+        "parent": 1793,
+        "bgm": 154,
+        "id": "1793"
+    },
+    "1794": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴02",
+        "parent": 1794,
+        "bgm": 154,
+        "id": "1794"
+    },
+    "1795": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴05",
+        "parent": 1795,
+        "bgm": 154,
+        "id": "1795"
+    },
+    "1796": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴08",
+        "parent": 1796,
+        "bgm": 154,
+        "id": "1796"
+    },
+    "1797": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴09",
+        "parent": 1797,
+        "bgm": 154,
+        "id": "1797"
+    },
+    "1798": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "인어장군굴10",
+        "parent": 1798,
+        "bgm": 154,
+        "id": "1798"
+    },
+    "1799": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "상어장군굴01",
+        "parent": 1799,
+        "bgm": 154,
+        "id": "1799"
+    },
+    "1800": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "상어장군굴02",
+        "parent": 1800,
+        "bgm": 154,
+        "id": "1800"
+    },
+    "1801": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "상어장군굴09",
+        "parent": 1801,
+        "bgm": 154,
+        "id": "1801"
+    },
+    "1802": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "상어장군굴10",
+        "parent": 1802,
+        "bgm": 127,
+        "id": "1802"
+    },
+    "1803": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴01",
+        "parent": 1803,
+        "bgm": 154,
+        "id": "1803"
+    },
+    "1804": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴04",
+        "parent": 1804,
+        "bgm": 154,
+        "id": "1804"
+    },
+    "1805": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴07",
+        "parent": 1805,
+        "bgm": 154,
+        "id": "1805"
+    },
+    "1806": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴08",
+        "parent": 1806,
+        "bgm": 154,
+        "id": "1806"
+    },
+    "1807": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴09",
+        "parent": 1807,
+        "bgm": 154,
+        "id": "1807"
+    },
+    "1808": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "해파리장군굴10",
+        "parent": 1808,
+        "bgm": 154,
+        "id": "1808"
+    }
+}

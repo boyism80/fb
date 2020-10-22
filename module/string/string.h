@@ -62,8 +62,8 @@ namespace fb { namespace game { namespace message {
         static const char* INVALID_MAP_NAME = "존재하지 않는 맵입니다.";
         static const char* INVALID_NPC_DIRECTION = "NPC의 방향이 올바르지 않습니다.";
         static const char* INVALID_NPC_POSITION = "NPC의 위치가 올바르지 않습니다.";
-        static const char* INVALID_MOB_NAME = "올바르지 않은 몹 이름입니다";
-        static const char* INVALID_ITEM_NAME = "올바르지 않은 아이템 이름입니다";
+        static const char* INVALID_MOB_NAME = "올바르지 않은 몹 이름입니다.";
+        static const char* INVALID_ITEM_NAME = "올바르지 않은 아이템 이름입니다.";
     }
     
     namespace group 

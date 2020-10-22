@@ -1,0 +1,302 @@
+{
+    "2951": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방입구",
+        "parent": 2952,
+        "bgm": 116,
+        "id": "2951"
+    },
+    "2952": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북극마을1",
+        "parent": 2952,
+        "bgm": 999,
+        "id": "2952"
+    },
+    "2953": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북극호수",
+        "parent": 2952,
+        "bgm": 999,
+        "id": "2953"
+    },
+    "2954": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북극주막",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2954"
+    },
+    "2955": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "신극지방지역",
+        "parent": 2952,
+        "bgm": 116,
+        "id": "2955"
+    },
+    "2956": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북극신전",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2956"
+    },
+    "2957": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "북극푸줏간",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2957"
+    },
+    "2958": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "북극성황당",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2958"
+    },
+    "2959": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": false,
+            "enabled talk": true,
+            "build in": true,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": false
+        },
+        "name": "북극대장간",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2959"
+    },
+    "2960": {
+        "option": {
+            "hunting ground": false,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": true,
+            "enabled magic": true
+        },
+        "name": "북극무한장",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2960"
+    },
+    "2961": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "북극점",
+        "parent": 2952,
+        "bgm": 1,
+        "id": "2961"
+    },
+    "2962": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방1",
+        "parent": 2962,
+        "bgm": 116,
+        "id": "2962"
+    },
+    "2963": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방2",
+        "parent": 2963,
+        "bgm": 116,
+        "id": "2963"
+    },
+    "2964": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방3",
+        "parent": 2964,
+        "bgm": 116,
+        "id": "2964"
+    },
+    "2965": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방4",
+        "parent": 2965,
+        "bgm": 116,
+        "id": "2965"
+    },
+    "2966": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방5",
+        "parent": 2966,
+        "bgm": 116,
+        "id": "2966"
+    },
+    "2967": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방6",
+        "parent": 2967,
+        "bgm": 116,
+        "id": "2967"
+    },
+    "2968": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방7",
+        "parent": 2968,
+        "bgm": 116,
+        "id": "2968"
+    },
+    "2969": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방8",
+        "parent": 2969,
+        "bgm": 116,
+        "id": "2969"
+    },
+    "2970": {
+        "option": {
+            "hunting ground": true,
+            "enabled die penalty": true,
+            "enabled talk": true,
+            "build in": false,
+            "enabled whisper": true,
+            "enabled pk": false,
+            "enabled magic": true
+        },
+        "name": "극지방9",
+        "parent": 2970,
+        "bgm": 116,
+        "id": "2970"
+    }
+}

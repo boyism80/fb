@@ -28,6 +28,8 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.current_line(height + 1);
     auto current_line = height;
 
+    char fname[256] = {0,};
+
     if(fb::game::table::doors.load("table/door.json", 
         [&] (const std::string& name, double percentage)
         {
@@ -51,15 +53,11 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
-#if defined DEBUG | defined _DEBUG
+
+    sprintf(fname, "table/map.%s.json", config["id"].asCString());
     if(fb::game::table::maps.load
     (
-        "table/map-temp.json", 
-#else
-    if(fb::game::table::maps.load
-    (
-        "table/map.json",
-#endif
+        fname, 
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -108,9 +106,10 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
+    sprintf(fname, "table/warp.%s.json", config["id"].asCString());
     if(fb::game::table::maps.load_warps
     (
-        "table/warp.json", 
+        fname,
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -160,7 +159,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::mixes.load
     (
-        "table/itemmix.json", 
+        "table/item.mix.json", 
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -235,7 +234,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::mobs.load_drops
     (
-        "table/item_drop.json", 
+        "table/item.drop.json", 
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -244,7 +243,10 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            if(name.size() > 0)
+                c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            else
+                c.puts("    - %s", error.c_str());
         }, 
         [&] (uint32_t count)
         {
@@ -258,9 +260,10 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
+    sprintf(fname, "table/npc.spawn.%s.json", config["id"].asCString());
     if(fb::game::table::npcs.load_spawn
     (
-        "table/npc_spawn.json", 
+        fname,
         listener, 
         [&] (const std::string& name, double percentage)
         {
@@ -284,9 +287,10 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
+    sprintf(fname, "table/mob.spawn.%s.json", config["id"].asCString());
     if(fb::game::table::mobs.load_spawn
     (
-        "table/mob_spawn.json", 
+        fname,
         listener, 
         [&] (const std::string& name, double percentage)
         {
@@ -357,10 +361,7 @@ int main(int argc, const char** argv)
         [&] (fb::base::socket<>& socket, bool success)
         {
             if(success)
-            {
-                for(auto x : config["id"])
-                    socket.send(fb::protocol::internal::request::subscribe(x.asString()));
-            }
+                socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
         },
         [&] ()
         {

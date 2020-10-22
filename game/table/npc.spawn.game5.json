@@ -1,0 +1,42 @@
+[
+    {
+        "direction": "bottom",
+        "map": 925,
+        "npc": 75,
+        "position": {
+            "x": 12,
+            "y": 7
+        },
+        "script": "용왕"
+    },
+    {
+        "direction": "bottom",
+        "map": 925,
+        "npc": 76,
+        "position": {
+            "x": 9,
+            "y": 7
+        },
+        "script": "좌선녀"
+    },
+    {
+        "direction": "bottom",
+        "map": 925,
+        "npc": 144,
+        "position": {
+            "x": 17,
+            "y": 9
+        },
+        "script": "거북장군"
+    },
+    {
+        "direction": "bottom",
+        "map": 925,
+        "npc": 77,
+        "position": {
+            "x": 15,
+            "y": 7
+        },
+        "script": "우선녀"
+    }
+]

@@ -1,0 +1,262 @@
+[
+    {
+        "direction": "bottom",
+        "map": 1622,
+        "npc": 128,
+        "position": {
+            "x": 9,
+            "y": 7
+        },
+        "script": "환상의섬잡화"
+    },
+    {
+        "direction": "bottom",
+        "map": 1610,
+        "npc": 130,
+        "position": {
+            "x": 7,
+            "y": 7
+        },
+        "script": "환상의섬대장장이"
+    },
+    {
+        "direction": "bottom",
+        "map": 1609,
+        "npc": 132,
+        "position": {
+            "x": 8,
+            "y": 7
+        },
+        "script": "환상의섬포목상"
+    },
+    {
+        "direction": "bottom",
+        "map": 1636,
+        "npc": 131,
+        "position": {
+            "x": 10,
+            "y": 7
+        },
+        "script": "쥬모"
+    },
+    {
+        "direction": "bottom",
+        "map": 1636,
+        "npc": 28,
+        "position": {
+            "x": 17,
+            "y": 7
+        },
+        "script": "영혼사"
+    },
+    {
+        "direction": "bottom",
+        "map": 1649,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1650,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1597,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1598,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1699,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1700,
+        "npc": 18,
+        "position": {
+            "x": 9,
+            "y": 8
+        },
+        "script": "성황할머니"
+    },
+    {
+        "direction": "bottom",
+        "map": 1697,
+        "npc": 177,
+        "position": {
+            "x": 13,
+            "y": 7
+        },
+        "script": "원주민주술사"
+    },
+    {
+        "direction": "bottom",
+        "map": 1648,
+        "npc": 167,
+        "position": {
+            "x": 101,
+            "y": 66
+        },
+        "script": "전전"
+    },
+    {
+        "direction": "bottom",
+        "map": 1698,
+        "npc": 168,
+        "position": {
+            "x": 125,
+            "y": 74
+        },
+        "script": "먹염"
+    },
+    {
+        "direction": "bottom",
+        "map": 1648,
+        "npc": 187,
+        "position": {
+            "x": 18,
+            "y": 99
+        },
+        "script": "파바로"
+    },
+    {
+        "direction": "bottom",
+        "map": 1611,
+        "npc": 188,
+        "position": {
+            "x": 17,
+            "y": 23
+        },
+        "script": "고균도선착행자"
+    },
+    {
+        "direction": "bottom",
+        "map": 1611,
+        "npc": 117,
+        "position": {
+            "x": 18,
+            "y": 17
+        },
+        "script": "조염"
+    },
+    {
+        "direction": "bottom",
+        "map": 1691,
+        "npc": 174,
+        "position": {
+            "x": 16,
+            "y": 5
+        },
+        "script": "진백랑"
+    },
+    {
+        "direction": "bottom",
+        "map": 1596,
+        "npc": 118,
+        "position": {
+            "x": 16,
+            "y": 120
+        },
+        "script": "진진"
+    },
+    {
+        "direction": "bottom",
+        "map": 1698,
+        "npc": 121,
+        "position": {
+            "x": 138,
+            "y": 82
+        },
+        "script": "퉁퉁대감"
+    },
+    {
+        "direction": "bottom",
+        "map": 1648,
+        "npc": 122,
+        "position": {
+            "x": 121,
+            "y": 93
+        },
+        "script": "통통대감"
+    },
+    {
+        "direction": "bottom",
+        "map": 1596,
+        "npc": 120,
+        "position": {
+            "x": 19,
+            "y": 147
+        },
+        "script": "탕탕대감"
+    },
+    {
+        "direction": "bottom",
+        "map": 1648,
+        "npc": 115,
+        "position": {
+            "x": 109,
+            "y": 139
+        },
+        "script": "준준"
+    },
+    {
+        "direction": "bottom",
+        "map": 1648,
+        "npc": 242,
+        "position": {
+            "x": 21,
+            "y": 77
+        },
+        "script": "한상약"
+    },
+    {
+        "direction": "bottom",
+        "map": 1698,
+        "npc": 113,
+        "position": {
+            "x": 162,
+            "y": 182
+        },
+        "script": "원주민정령사"
+    },
+    {
+        "direction": "bottom",
+        "map": 1647,
+        "npc": 171,
+        "position": {
+            "x": 8,
+            "y": 6
+        },
+        "script": "고균도푸줏간"
+    }
+]

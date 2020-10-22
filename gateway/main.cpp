@@ -45,10 +45,7 @@ int main(int argc, const char** argv)
         [&] (fb::base::socket<>& socket, bool success)
         {
             if(success)
-            {
-                for(auto x : config["id"])
-                    socket.send(fb::protocol::internal::request::subscribe(x.asString()));
-            }
+                socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
         },
         [&] ()
         {

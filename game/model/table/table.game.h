@@ -31,7 +31,6 @@ public:
     using std::map<uint16_t, fb::game::map*>::cbegin;
     using std::map<uint16_t, fb::game::map*>::cend;
     using std::map<uint16_t, fb::game::map*>::size;
-    using std::map<uint16_t, fb::game::map*>::operator[];
 
 private:
     static fb::game::map::effects           to_effect(const std::string& effect);
@@ -45,6 +44,9 @@ public:
 
 public:
     fb::game::map*                          name2map(const std::string& name);
+
+public:
+    fb::game::map*                          operator [] (uint16_t id) const;
 };
 
 class item : private std::map<uint16_t, fb::game::item::master*>
