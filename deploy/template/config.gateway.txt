@@ -1,0 +1,11 @@
+{
+    "id": "{{ name }}",
+    "delay": 0,
+    "ip": "{{ host.ip }}",
+    "port": {{ host.port }},
+    "internal": {
+        "ip": "{{ internal.ip }}",
+        "port": {{ internal.port }}
+    },
+    "entries": {{ login }}
+}

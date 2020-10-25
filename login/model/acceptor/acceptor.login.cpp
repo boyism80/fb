@@ -11,7 +11,7 @@ fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, u
     this->bind<fb::protocol::login::request::account::complete>       (0x04, std::bind(&acceptor::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::login::request::account::change_pw>      (0x26, std::bind(&acceptor::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
 
-    this->bind<fb::protocol::internal::response::login>               (std::bind(&acceptor::handle_private_login,             this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::transfer>            (std::bind(&acceptor::handle_transfer,                  this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::login::acceptor::~acceptor()
@@ -36,7 +36,7 @@ bool fb::login::acceptor::handle_disconnected(fb::socket<fb::login::session>& so
     return false;
 }
 
-bool fb::login::acceptor::handle_private_login(fb::internal::socket<>& socket, const fb::protocol::internal::response::login& response)
+bool fb::login::acceptor::handle_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
 {
     auto client = this->sockets[response.fd];
 
@@ -45,13 +45,16 @@ bool fb::login::acceptor::handle_private_login(fb::internal::socket<>& socket, c
         if(client == nullptr)
             return true;
 
-        if(response.status == false)
+        if(response.code == fb::protocol::internal::response::CONNECTED)
             throw id_exception("이미 접속중입니다.");
+
+        if(response.code != fb::protocol::internal::response::SUCCESS)
+            throw id_exception("비바람이 휘몰아치고 있습니다.");
 
         client->send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
         parameter.write(response.name);
-        this->transfer(*client, fb::config::get()["game"]["ip"].asString(), fb::config::get()["game"]["port"].asInt(), parameter);
+        this->transfer(*client, response.ip, response.port, parameter);
     }
     catch(login_exception& e)
     {
@@ -130,8 +133,8 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
 {
     try
     {
-        this->_auth_service.login(request.id, request.pw);
-        this->_internal->send(fb::protocol::internal::request::login(request.id, socket.native_handle()));
+        auto map = this->_auth_service.login(request.id, request.pw);
+        this->_internal->send(fb::protocol::internal::request::transfer(request.id, map, socket.native_handle()));
         return true;
     }
     catch(login_exception& e)

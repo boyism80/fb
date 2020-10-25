@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by login.rc
+// Used by transfer.rc
 //
 #define IDI_BARAM                       101
 

@@ -48,6 +48,9 @@
     <Filter Include="module\table">
       <UniqueIdentifier>{817dfb2c-989e-4779-a312-1e121a1a9089}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\exception">
+      <UniqueIdentifier>{a2f33864-c5bf-4cee-905c-e09e21f92eb2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -120,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="model\table\table.internal.h">
       <Filter>model\table</Filter>
+    </ClInclude>
+    <ClInclude Include="model\exception\exception.h">
+      <Filter>model\exception</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,35 @@
+{
+    "id": "{{ name }}",
+    "delay": 0,
+    "ip": "{{ host.ip }}",
+    "port": {{ host.port }},
+    "internal": {
+        "ip": "{{ internal.ip }}",
+        "port": {{ internal.port }}
+    },
+    "allow other language": false,
+    "forbidden": [ "김대중", "노무현" ],
+    "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
+    "database": {
+        "ip": "{{ database.ip }}",
+        "port": {{ database.port }},
+        "name": "{{ database.name }}",
+        "uid": "{{ database.uid }}",
+        "pwd": "admin"
+    },
+    "init": {
+        "map": 14,
+        "position": {
+            "x": 2,
+            "y": 2
+        },
+        "hp": {
+            "base": 50,
+            "range": 10
+        },
+        "mp": {
+            "base": 30,
+            "range": 10
+        }
+    }
+}

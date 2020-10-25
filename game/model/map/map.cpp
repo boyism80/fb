@@ -98,7 +98,7 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const void* data, size_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const std::string& host, const void* data, size_t size) :
     _id(id),
     _parent(parent),
     _bgm(bgm),
@@ -106,8 +106,13 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _option(option),
     _effect(effect),
     _tiles(nullptr),
-    objects(this)
+    _sectors(nullptr),
+    objects(this),
+    host(host)
 {
+    auto& config = fb::config::get();
+    if(config["id"].asString() != host)
+        return;
 
     std::string what;
 
@@ -166,7 +171,8 @@ fb::game::map::~map()
     for(auto warp : this->_warps)
         delete warp;
 
-    delete this->_sectors;
+    if(this->_sectors != nullptr)
+        delete this->_sectors;
 }
 
 uint16_t fb::game::map::id() const
@@ -197,6 +203,9 @@ bool fb::game::map::blocked(uint16_t x, uint16_t y) const
 
 bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
 {
+    if(this->_tiles == nullptr)
+        return false;
+
     if(x > this->_size.width)
         return false;
 
@@ -299,7 +308,7 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-void fb::game::map::warp_add(map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
+void fb::game::map::warp_add(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
 {
     this->_warps.push_back(new warp(map, before, after, limit));
 }
@@ -319,6 +328,9 @@ const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) co
 
 bool fb::game::map::update(fb::game::object& object)
 {
+    if(this->_sectors == nullptr)
+        return false;
+
     auto sector = this->_sectors->at(object.position());
     if(sector == nullptr)
         return false;
@@ -326,16 +338,22 @@ bool fb::game::map::update(fb::game::object& object)
     return object.sector(sector);
 }
 
-std::vector<object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
 {
-    return this->_sectors->objects(pivot, type);
+    if(this->_sectors == nullptr)
+        return std::vector<fb::game::object*>();
+    else
+        return this->_sectors->objects(pivot, type);
 }
 
-std::vector<object*> fb::game::map::belows(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb::game::object::types type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try
     {
+        if(this->_sectors == nullptr)
+            throw std::exception();
+
         auto sector = this->_sectors->at(pivot);
         std::copy_if
         (
@@ -354,9 +372,12 @@ std::vector<object*> fb::game::map::belows(const point16_t& pivot, fb::game::obj
     return objects;
 }
 
-std::vector<object*> fb::game::map::activateds(fb::game::object::types type)
+std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types type)
 {
-    return this->_sectors->activated_objects(type);
+    if(this->_sectors == nullptr)
+        return std::vector<fb::game::object*>();
+    else
+        return this->_sectors->activated_objects(type);
 }
 
 void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)

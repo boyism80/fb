@@ -204,6 +204,8 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::game::request::spell::use>       (0x0F, std::bind(&acceptor::handle_spell,           this, std::placeholders::_1, std::placeholders::_2));   // 스펠 핸들러
     this->bind<fb::protocol::game::request::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
 
+    this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_transfer,              this, std::placeholders::_1, std::placeholders::_2));
+
     this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
     this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
     this->_timer.push(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
@@ -258,22 +260,22 @@ fb::game::session* fb::game::acceptor::handle_accepted(fb::socket<fb::game::sess
     return session;
 }
 
-void fb::game::acceptor::send(object& object, const fb::protocol::base::header& response, acceptor::scope scope, bool exclude_self, bool encrypt)
+void fb::game::acceptor::send(object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
     switch(scope)
     {
     case acceptor::scope::SELF:
-        object.send(response, encrypt);
+        object.send(header, encrypt);
         break;
 
     case acceptor::scope::PIVOT:
     {
         auto nears = object.showns(object::types::SESSION);
         if(!exclude_self)
-            object.send(response, encrypt);
+            object.send(header, encrypt);
 
         for(auto& x : nears)
-            x->send(response, encrypt);
+            x->send(header, encrypt);
         break;
     }
 
@@ -288,7 +290,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
             return;
 
         for(const auto session : group->members())
-            session->send(response, encrypt);
+            session->send(header, encrypt);
 
         break;
     }
@@ -300,7 +302,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
             if(exclude_self && x == &object)
                 continue;
 
-            x->send(response, encrypt);
+            x->send(header, encrypt);
         }
 
         break;
@@ -308,7 +310,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
     case acceptor::scope::WORLD:
     {
-        this->send(response, encrypt);
+        this->send(header, encrypt);
         break;
     }
 
@@ -350,6 +352,33 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
         .pushobject(session)
         .pushobject(npc)
         .resume(2);
+}
+
+bool fb::game::acceptor::handle_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
+{
+    auto client = this->sockets[response.fd];
+
+    try
+    {
+        if(client == nullptr)
+            return true;
+
+        if(response.code != fb::protocol::internal::response::SUCCESS)
+            throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
+
+        auto session = client->data();
+        session->map(fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y), true);
+
+        fb::ostream         parameter;
+        parameter.write(response.name);
+        this->transfer(*client, response.ip, response.port, parameter);
+    }
+    catch(std::exception& e)
+    {
+        this->on_notify(*client->data(), e.what(), fb::game::message::type::STATE);
+    }
+
+    return true;
 }
 
 bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::login& request)
@@ -442,8 +471,6 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
     this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
     this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
-    this->send(*session, fb::protocol::game::response::session::show(*session, false), scope::SELF);
-    this->send(*session, fb::protocol::game::response::object::direction(*session), scope::SELF);
     this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
     return true;
 }

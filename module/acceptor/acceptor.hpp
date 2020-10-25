@@ -165,7 +165,7 @@ bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
     if(i == this->_public_handler_dict.end())
     {
         auto& c = fb::console::get();
-        c.puts("Á¤ÀÇµÇÁö ¾ÊÀº ¿äÃ»ÀÔ´Ï´Ù. [0x%2X]", cmd);
+        c.puts("ì •ì˜ë˜ì§€ ì•Šì€ ìš”ì²­ì…ë‹ˆë‹¤. [0x%2X]", cmd);
         return true; 
     }
 

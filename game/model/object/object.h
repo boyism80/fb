@@ -177,7 +177,7 @@ public:
     fb::game::direction                 direction() const;
     bool                                direction(fb::game::direction value);
 
-    virtual void                        map(fb::game::map* map, const point16_t& position);
+    void                                map(fb::game::map* map, const point16_t& position, bool force = false);
     void                                map(fb::game::map* map);
     fb::game::map*                      map() const;
 

@@ -288,6 +288,10 @@ void fb::game::mob::respawn_time(uint64_t ms)
 
 bool fb::game::mob::spawn(uint64_t now)
 {
+    auto& config = fb::config::get();
+    if(config["id"].asString() != this->_map->host)
+        return false;
+
     if(this->alive())
         return false;
 

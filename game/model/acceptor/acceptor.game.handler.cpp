@@ -441,21 +441,19 @@ void fb::game::acceptor::on_warp(fb::game::session& me)
     this->send(me, fb::protocol::game::response::session::id(me), scope::SELF);
     this->send(me, fb::protocol::game::response::map::config(*map), scope::SELF);
     this->send(me, fb::protocol::game::response::map::bgm(*map), scope::SELF);
-    this->send(me, fb::protocol::game::response::session::state(me, state_level::LEVEL_MAX), scope::SELF);
     this->send(me, fb::protocol::game::response::session::position(me), scope::SELF);
     this->send(me, fb::protocol::game::response::session::show(me, false), scope::SELF);
     this->send(me, fb::protocol::game::response::object::direction(me), scope::SELF);
 }
 
-void fb::game::acceptor::on_warp(fb::game::session& me, fb::game::map& map, const point16_t& position)
+void fb::game::acceptor::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
 
-    auto& config = fb::config::get();
-    //auto host = config["hosts"][map.host_id()]["host"].asString();
-    //auto port = config["hosts"][map.host_id()]["port"].asInt();
-    this->transfer(me, "192.168.0.100", 2004, parameter);
+    auto& socket = static_cast<fb::socket<fb::game::session>&>(me);
+    auto fd = socket.native_handle();
+    this->_internal->send(fb::protocol::internal::request::transfer(me.name(), map.id(), position.x, position.y, fd));
 }
 
 void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)

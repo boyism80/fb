@@ -28,9 +28,9 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.current_line(height + 1);
     auto current_line = height;
 
-    char fname[256] = {0,};
-
-    if(fb::game::table::doors.load("table/door.json", 
+    if(fb::game::table::doors.load
+    (
+        config["table"]["door"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -54,10 +54,9 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     current_line = c.current_line();
     c.next();
 
-    sprintf(fname, "table/map.%s.json", config["id"].asCString());
     if(fb::game::table::maps.load
     (
-        fname, 
+        config["table"]["map"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -82,7 +81,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::spells.load
     (
-        "table/spell.json", 
+        config["table"]["spell"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -106,10 +105,9 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
-    sprintf(fname, "table/warp.%s.json", config["id"].asCString());
     if(fb::game::table::maps.load_warps
     (
-        fname,
+        config["table"]["warp"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -134,7 +132,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::items.load
     (
-        "table/item.json", 
+        config["table"]["item"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -159,7 +157,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::mixes.load
     (
-        "table/item.mix.json", 
+        config["table"]["item mix"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -184,7 +182,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::npcs.load
     (
-        "table/npc.json", 
+        config["table"]["npc"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -209,7 +207,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::mobs.load
     (
-        "table/mob.json", 
+        config["table"]["mob"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -234,7 +232,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::mobs.load_drops
     (
-        "table/item.drop.json", 
+        config["table"]["item drop"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -260,10 +258,9 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
-    sprintf(fname, "table/npc.spawn.%s.json", config["id"].asCString());
     if(fb::game::table::npcs.load_spawn
     (
-        fname,
+        config["table"]["npc spawn"].asString(),
         listener, 
         [&] (const std::string& name, double percentage)
         {
@@ -287,10 +284,9 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
-    sprintf(fname, "table/mob.spawn.%s.json", config["id"].asCString());
     if(fb::game::table::mobs.load_spawn
     (
-        fname,
+        config["table"]["mob spawn"].asString(),
         listener, 
         [&] (const std::string& name, double percentage)
         {
@@ -316,7 +312,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.next();
     if(fb::game::table::classes.load
     (
-        "table/class.json", 
+        config["table"]["class"].asString(),
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)

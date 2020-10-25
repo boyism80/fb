@@ -1,0 +1,15 @@
+{
+    "delay": 0,
+    "port": {{ port }},
+    "database": {
+        "ip": "{{ database.ip }}",
+        "port": {{ database.port }},
+        "name": "{{ database.name }}",
+        "uid": "{{ database.uid }}",
+        "pwd": "{{ database.pwd }}"
+    },
+    "table": {
+        "host": "table/host.json"
+    },
+    "hosts": {{ game }}
+}

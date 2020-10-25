@@ -416,71 +416,67 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-void fb::game::object::map(fb::game::map* map, const point16_t& position)
+void fb::game::object::map(fb::game::map* map, const point16_t& position, bool force)
 {
-    if(map != nullptr && this->_map == map)
+    const bool to_empty         = (map == nullptr);
+    const bool from_empty       = (this->_map == nullptr);
+    const bool position_changed = (!to_empty && !from_empty && map == this->_map);
+    const bool transfer         = (!to_empty && !from_empty && map->host != this->_map->host);
+
+    if(position_changed)
     {
         this->position(position, true);
+        return;
     }
-    //else if(this->_map != nullptr && map != nullptr && this->_map->host_id() != map->host_id())
-    //{
-    //    auto nears = this->_map->nears(this->_position);
-    //    for(auto x : nears)
-    //    {
-    //        if(x == this)
-    //            continue;
 
-    //        this->_listener->on_hide(*x, *this);
-    //    }
-
-    //    this->_map->objects.remove(*this);
-
-    //    this->_map = map;
-    //    this->_position = position;
-    //    this->_listener->on_warp(static_cast<fb::game::session&>(*this), *map, position);
-    //}
-    else
+    if(transfer && force == false)
     {
-        auto sector = this->_sector;
+        if(this->is(fb::game::object::types::SESSION))
+            this->_listener->on_transfer(static_cast<fb::game::session&>(*this), *map, position);
 
-        if(this->_map != nullptr)
+        return;
+    }
+
+
+    if(from_empty == false)
+    {
+        auto nears = this->_map->nears(this->_position);
+        for (auto x : nears)
         {
-            auto nears = this->_map->nears(this->_position);
-            for(auto x : nears)
-            {
-                if(x == this)
-                    continue;
+            if (x == this)
+                continue;
 
+            this->_listener->on_hide(*x, *this);
+            if(force == false)
                 this->_listener->on_hide(*this, *x);
-                this->_listener->on_hide(*x, *this);
-            }
-
-            this->_map->objects.remove(*this);
         }
 
-        this->_map = map;
-        this->_position = position;
-        if(this->_map == nullptr)
-            this->sector(nullptr);
-        else
-            map->update(*this);
+        this->_map->objects.remove(*this);
+    }
 
-        if(map != nullptr)
+    this->_map = map;
+    this->_position = position;
+
+    if(this->_map == nullptr)
+        this->sector(nullptr);
+    else
+        this->_map->update(*this);
+
+    if(to_empty == false)
+    {
+        this->_map->objects.add(*this);
+
+        if(this->is(fb::game::object::types::SESSION) && force == false)
+            this->_listener->on_warp(static_cast<fb::game::session&>(*this));
+
+        auto nears = this->_map->nears(this->_position);
+        for(auto x : nears)
         {
-            map->objects.add(*this);
-            
-            if(this->is(fb::game::object::types::SESSION))
-                this->_listener->on_warp(static_cast<fb::game::session&>(*this));
+            if(x == this)
+                continue;
 
-            auto nears = this->_map->nears(this->_position);
-            for(auto x : nears)
-            {
-                if(x == this)
-                    continue;
-
-                this->_listener->on_show(*this, *x, false);
-                this->_listener->on_show(*x, *this, false);
-            }
+            this->_listener->on_show(*this, *x, false);
+            this->_listener->on_show(*x, *this, false);
         }
     }
 }

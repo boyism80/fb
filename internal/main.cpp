@@ -16,6 +16,8 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
+    auto& config = fb::config::get();
+
     auto& c = fb::console::get();
     auto height = 8;
     c.box(0, 0, c.width()-1, height);
@@ -34,7 +36,7 @@ int main(int argc, const char** argv)
 
     fb::internal::table::hosts.load
     (
-        "table/host.json", 
+        config["table"]["host"].asString(), 
         [&] (const std::string& name, double percentage)
         {
             auto n = c.move(0, current_line)
@@ -55,7 +57,6 @@ int main(int argc, const char** argv)
 
     // Execute acceptor
     boost::asio::io_context io_service;
-    auto& config = fb::config::get();
     acceptor = new fb::internal::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
 
     io_service.run();

@@ -9,6 +9,7 @@
 #include "model/door/door.h"
 #include "model/map/sector.h"
 #include "module/stream/stream.h"
+#include "module/config/config.h"
 
 namespace fb { namespace game {
 
@@ -145,12 +146,13 @@ private:
 public:
     fb::game::objects               objects;
     fb::game::doors                 doors;
+    const std::string               host;
 #pragma endregion
 
 
 #pragma region constructor / destructor
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const void* data, size_t size);
+    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const std::string& host, const void* data, size_t size);
     ~map();
 #pragma endregion
 
@@ -174,8 +176,8 @@ public:
     bool                            movable(const fb::game::object& object, fb::game::direction direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
-    void                            warp_add(map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
-    const map::warp*                warpable(const point16_t& position) const;
+    void                            warp_add(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
+    const fb::game::map::warp*      warpable(const point16_t& position) const;
 
     bool                            update(fb::game::object& object);
     

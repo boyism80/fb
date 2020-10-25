@@ -1,0 +1,35 @@
+{
+    "id": "game1",
+    "delay": 5,
+    "ip": "192.168.0.100",
+    "port": 2005,
+    "internal": {
+        "ip": "192.168.0.100",
+        "port": 3000
+    },
+    "login": {
+        "ip": "192.168.0.100",
+        "port": 2002
+    },
+    "database": {
+        "ip": "192.168.0.100",
+        "port": 3306,
+        "name": "fb",
+        "uid": "fb",
+        "pwd": "admin"
+    },
+    "table": {
+        "class": "table.dev/class.json",
+        "door": "table.dev/door.json",
+        "item": "table.dev/item.json",
+        "item drop": "table.dev/item.drop.json",
+        "item mix": "table.dev/item.mix.json",
+        "map": "table.dev/map.json",
+        "mob": "table.dev/mob.json",
+        "mob spawn": "table.dev/mob.spawn.json",
+        "npc": "table.dev/npc.json",
+        "npc spawn": "table.dev/npc.spawn.json",
+        "spell": "table.dev/spell.json",
+        "warp": "table.dev/warp.json"
+    }
+}

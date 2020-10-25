@@ -196,6 +196,7 @@
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\table\table.h" />
     <ClInclude Include="model\acceptor\acceptor.internal.h" />
+    <ClInclude Include="model\exception\exception.h" />
     <ClInclude Include="model\session\session.internal.h" />
     <ClInclude Include="model\table\table.internal.h" />
     <ClInclude Include="resource.h" />

@@ -1,0 +1,2826 @@
+[
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "도토리",
+                "count": 2
+            },
+            {
+                "item": "토끼고기",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "사슴고기",
+                "count": 2
+            },
+            {
+                "item": "말고기",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇄자황금투구",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 78,
+        "require": [
+            {
+                "item": "초보도시락",
+                "count": 1
+            },
+            {
+                "item": "다랑어살코기",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "1차도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 76,
+        "require": [
+            {
+                "item": "1차도시락",
+                "count": 1
+            },
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "2차도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 73,
+        "require": [
+            {
+                "item": "2차도시락",
+                "count": 1
+            },
+            {
+                "item": "열대땅콩",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "3차도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "3차도시락",
+                "count": 1
+            },
+            {
+                "item": "파수다지오",
+                "count": 1
+            },
+            {
+                "item": "늑대고기",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "4차도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 80,
+        "require": [
+            {
+                "item": "가시철단도",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "가시철도",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠가루",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "진랑투구",
+                "count": 1
+            },
+            {
+                "item": "금의가면",
+                "count": 1
+            },
+            {
+                "item": "금인각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "검신투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금의가면",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "격비모",
+                "count": 1
+            },
+            {
+                "item": "철의가면",
+                "count": 1
+            },
+            {
+                "item": "은인각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "격랑모",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "은인각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "경비투구",
+                "count": 1
+            },
+            {
+                "item": "철의가면",
+                "count": 1
+            },
+            {
+                "item": "은인각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "경랑투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "은인각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "오도독망고과편",
+                "count": 1
+            },
+            {
+                "item": "초코바나나",
+                "count": 1
+            },
+            {
+                "item": "달콤새콤구이",
+                "count": 1
+            },
+            {
+                "item": "야자수잎",
+                "count": 1
+            },
+            {
+                "item": "혼합사발",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "과일나라",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "비장의도시락",
+                "count": 1
+            },
+            {
+                "item": "활력충전음료",
+                "count": 1
+            },
+            {
+                "item": "활력충전통구이",
+                "count": 1
+            },
+            {
+                "item": "활력충전반찬",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "궁극의도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "금강석조각",
+                "count": 1
+            },
+            {
+                "item": "금강석조각",
+                "count": 1
+            },
+            {
+                "item": "금강석조각",
+                "count": 1
+            },
+            {
+                "item": "금강석조각",
+                "count": 1
+            },
+            {
+                "item": "금강석조각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "금강석",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금강석조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 80,
+        "require": [
+            {
+                "item": "영양반찬",
+                "count": 1
+            },
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "기분전환반찬",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 80,
+        "require": [
+            {
+                "item": "영양음료",
+                "count": 1
+            },
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "기분전환음료",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "영양통구이",
+                "count": 1
+            },
+            {
+                "item": "열대땅콩",
+                "count": 1
+            },
+            {
+                "item": "야자열매",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "기분전환통구이",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "나무막대",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            },
+            {
+                "item": "방울뱀꼬리",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "단사모",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "나무막대",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "인면충의알",
+                "count": 1
+            },
+            {
+                "item": "구미호꼬리",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "오선창",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "인면충의알",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "혼합사발",
+                "count": 1
+            },
+            {
+                "item": "야자수잎",
+                "count": 1
+            },
+            {
+                "item": "바나나다발",
+                "count": 1
+            },
+            {
+                "item": "식용벌레",
+                "count": 5
+            },
+            {
+                "item": "망고",
+                "count": 5
+            },
+            {
+                "item": "노회",
+                "count": 5
+            },
+            {
+                "item": "포도",
+                "count": 5
+            }
+        ],
+        "success": [
+            {
+                "item": "달콤새콤구이",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "대마령봉",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "대마혼봉",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "적령초",
+                "count": 1
+            },
+            {
+                "item": "일양초",
+                "count": 1
+            },
+            {
+                "item": "월로초",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "만지초",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "일양초",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "가시철도",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "백진도",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "천공반지",
+                "count": 1
+            },
+            {
+                "item": "매의깃털",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비룡반지",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "천공선류",
+                "count": 1
+            },
+            {
+                "item": "매의깃털",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "장석",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비룡선류",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "천공장갑",
+                "count": 1
+            },
+            {
+                "item": "매의깃털",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "운모",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비룡장갑",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "천공투구",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비룡투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠가루",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "천공팔찌",
+                "count": 1
+            },
+            {
+                "item": "매의깃털",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "마노",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비룡팔찌",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "4차도시락",
+                "count": 1
+            },
+            {
+                "item": "기분전환통구이",
+                "count": 1
+            },
+            {
+                "item": "기분전환반찬",
+                "count": 1
+            },
+            {
+                "item": "기분전환음료",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "비장의도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "삼촉현창",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "삼촉현선",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "생장촉진반찬",
+                "count": 1
+            },
+            {
+                "item": "호두",
+                "count": 1
+            },
+            {
+                "item": "해바라기씨",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생명보존반찬",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "생장촉진음료",
+                "count": 1
+            },
+            {
+                "item": "노회",
+                "count": 1
+            },
+            {
+                "item": "망고",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생명보존음료",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "생장촉진통구이",
+                "count": 1
+            },
+            {
+                "item": "포도",
+                "count": 1
+            },
+            {
+                "item": "해바라기씨",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생명보존통구이",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "활력충전반찬",
+                "count": 1
+            },
+            {
+                "item": "고구마",
+                "count": 1
+            },
+            {
+                "item": "감자",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생장촉진반찬",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "활력충전음료",
+                "count": 1
+            },
+            {
+                "item": "야자수액",
+                "count": 1
+            },
+            {
+                "item": "바다거북의알",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생장촉진음료",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "활력충전통구이",
+                "count": 1
+            },
+            {
+                "item": "망고",
+                "count": 1
+            },
+            {
+                "item": "다랑어살코기",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "생장촉진통구이",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 55,
+        "require": [
+            {
+                "item": "경번팔찌",
+                "count": 1
+            },
+            {
+                "item": "청류팔찌",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "세명팔찌",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 3,
+        "require": [
+            {
+                "item": "황금반지",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "물소의뿔",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "쇄자황금반지",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 3,
+        "require": [
+            {
+                "item": "황금선류",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "물소의뿔",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "장석",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "쇄자황금선류",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 3,
+        "require": [
+            {
+                "item": "황금장갑",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "물소의뿔",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "운모",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "쇄자황금장갑",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 3,
+        "require": [
+            {
+                "item": "황금투구",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "쇄자황금투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 3,
+        "require": [
+            {
+                "item": "황금팔찌",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "물소의뿔",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "마노",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "쇄자황금팔찌",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "불의수정",
+                "count": 1
+            },
+            {
+                "item": "불의수정",
+                "count": 1
+            },
+            {
+                "item": "참나무조각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "숯의정화",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "불의수정",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "당예류",
+                "count": 1
+            },
+            {
+                "item": "비승류",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "승류",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "통장갑",
+                "count": 1
+            },
+            {
+                "item": "엄심장갑",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "신장갑",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "세명팔찌",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "연위팔찌",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "신장갑",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "연환장갑",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 20,
+        "require": [
+            {
+                "item": "나무막대",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "영롱비창",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "오선창",
+                "count": 1
+            },
+            {
+                "item": "오뢰창",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "자현목",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "오귀창",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오독산",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "망고",
+                "count": 5
+            },
+            {
+                "item": "열대땅콩",
+                "count": 5
+            },
+            {
+                "item": "호두",
+                "count": 5
+            },
+            {
+                "item": "혼합사발",
+                "count": 1
+            },
+            {
+                "item": "야자수잎",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "오도독망고과편",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쓰레기요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "건독",
+                "count": 1
+            },
+            {
+                "item": "곤독",
+                "count": 1
+            },
+            {
+                "item": "진독",
+                "count": 1
+            },
+            {
+                "item": "태독",
+                "count": 1
+            },
+            {
+                "item": "선독",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "오독산",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "선독",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "대마혼봉",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "용설봉",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 10,
+        "require": [
+            {
+                "item": "반짝이는돌",
+                "count": 1
+            },
+            {
+                "item": "운모",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 4
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "월아검",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "운모",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "승류",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "유연선류",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 50,
+        "require": [
+            {
+                "item": "호피반지",
+                "count": 1
+            },
+            {
+                "item": "천수반지",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "은마반지",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "수리검",
+                "count": 1
+            },
+            {
+                "item": "흑룡철심",
+                "count": 1
+            },
+            {
+                "item": "검조각",
+                "count": 1
+            },
+            {
+                "item": "이가닌자의독",
+                "count": 1
+            },
+            {
+                "item": "이가닌자의보패",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "이가닌자의검",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "수리검",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "대나무가지",
+                "count": 1
+            },
+            {
+                "item": "노송의가지",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            },
+            {
+                "item": "마노",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "인풍죽선",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "궁극의도시락",
+                "count": 1
+            },
+            {
+                "item": "생장촉진반찬",
+                "count": 1
+            },
+            {
+                "item": "생장촉진음료",
+                "count": 1
+            },
+            {
+                "item": "생장촉진통구이",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "전설의도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쓰레기요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 15,
+        "require": [
+            {
+                "item": "하선녀의실타래",
+                "count": 1
+            },
+            {
+                "item": "도깨비가죽",
+                "count": 1
+            },
+            {
+                "item": "유성지의보패",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "주술갑옷",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "하선녀의실타래",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "삼촉현선",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "진선장",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "환두대검",
+                "count": 1
+            },
+            {
+                "item": "오독산",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "장인의돌",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "진성검",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "천년묵은가지",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 25,
+        "require": [
+            {
+                "item": "장인의뼈",
+                "count": 1
+            },
+            {
+                "item": "물소의뿔",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "천공투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠가루",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 20,
+        "require": [
+            {
+                "item": "인풍죽선",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "천풍선",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 80,
+        "require": [
+            {
+                "item": "영양음료",
+                "count": 1
+            },
+            {
+                "item": "영양반찬",
+                "count": 1
+            },
+            {
+                "item": "영양통구이",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "초보도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "끔찍한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 80,
+        "require": [
+            {
+                "item": "야자수잎",
+                "count": 1
+            },
+            {
+                "item": "바나나",
+                "count": 5
+            },
+            {
+                "item": "야자열매",
+                "count": 5
+            },
+            {
+                "item": "혼합사발",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "초코바나나",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "실패한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "어전의칼",
+                "count": 1
+            },
+            {
+                "item": "원숭이털",
+                "count": 1
+            },
+            {
+                "item": "은여우털",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "타라의남자옷",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "원숭이털",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 35,
+        "require": [
+            {
+                "item": "어전의칼",
+                "count": 1
+            },
+            {
+                "item": "너구리털",
+                "count": 1
+            },
+            {
+                "item": "은여우털",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "타라의여자옷",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "너구리털",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 20,
+        "require": [
+            {
+                "item": "해골왕의뼈",
+                "count": 1
+            },
+            {
+                "item": "하선녀의실타래",
+                "count": 1
+            },
+            {
+                "item": "도깨비가죽",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "해골갑옷",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "하선녀의실타래",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "향료가루",
+                "count": 5
+            }
+        ],
+        "success": [
+            {
+                "item": "향료",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "향료가루",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 30,
+        "require": [
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "오철",
+                "count": 1
+            },
+            {
+                "item": "장석",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "현철",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "오철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 70,
+        "require": [
+            {
+                "item": "환두대도",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠가루",
+                "count": 1
+            },
+            {
+                "item": "쇠조각",
+                "count": 1
+            },
+            {
+                "item": "석영",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "환두대검",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "쇠조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 20,
+        "require": [
+            {
+                "item": "전설의도시락",
+                "count": 1
+            },
+            {
+                "item": "생명보존음료",
+                "count": 1
+            },
+            {
+                "item": "생명보존반찬",
+                "count": 1
+            },
+            {
+                "item": "생명보존통구이",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "환상의도시락",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "실패한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 65,
+        "require": [
+            {
+                "item": "기분전환반찬",
+                "count": 1
+            },
+            {
+                "item": "식용벌레",
+                "count": 1
+            },
+            {
+                "item": "파수다지오",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "활력충전반찬",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "실패한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 65,
+        "require": [
+            {
+                "item": "기분전환음료",
+                "count": 1
+            },
+            {
+                "item": "야자수액",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "활력충전음료",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "실패한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 65,
+        "require": [
+            {
+                "item": "기분전환통구이",
+                "count": 1
+            },
+            {
+                "item": "바다거북의알",
+                "count": 1
+            },
+            {
+                "item": "노회",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "활력충전통구이",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "실패한요리",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 8,
+        "require": [
+            {
+                "item": "비룡투구",
+                "count": 1
+            },
+            {
+                "item": "현철",
+                "count": 1
+            },
+            {
+                "item": "금조각",
+                "count": 1
+            },
+            {
+                "item": "만지초",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "황금투구",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "금조각",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 40,
+        "require": [
+            {
+                "item": "곤봉",
+                "count": 1
+            },
+            {
+                "item": "불의수정",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "횃불",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "곤봉",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "낡은망치",
+                "count": 1
+            },
+            {
+                "item": "순수의강철",
+                "count": 1
+            },
+            {
+                "item": "어전의칼",
+                "count": 1
+            },
+            {
+                "item": "진호박",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "진월신검",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            },
+            {
+                "item": "낡은망치",
+                "count": 1
+            },
+            {
+                "item": "수리검",
+                "count": 1
+            },
+            {
+                "item": "청호박",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "청월기창",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "낡은망치",
+                "count": 1
+            },
+            {
+                "item": "순수의강철",
+                "count": 1
+            },
+            {
+                "item": "불의수정",
+                "count": 1
+            },
+            {
+                "item": "적호박",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "적화접선",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "percentage": 60,
+        "require": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            },
+            {
+                "item": "낡은망치",
+                "count": 1
+            },
+            {
+                "item": "곤봉",
+                "count": 1
+            },
+            {
+                "item": "황호박",
+                "count": 1
+            }
+        ],
+        "success": [
+            {
+                "item": "황화곤봉",
+                "count": 1
+            }
+        ],
+        "failed": [
+            {
+                "item": "순수의강철",
+                "count": 1
+            }
+        ]
+    }
+]

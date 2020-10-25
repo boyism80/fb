@@ -143,13 +143,13 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
     );
 }
 
-void fb::login::service::auth::login(const std::string& id, const std::string& pw)
+uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
     this->assert_account(id, pw);
 
     auto found = this->_connection->query
     (
-        "SELECT pw FROM user WHERE name='%s' LIMIT 1",
+        "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
         id.c_str(), this->sha256(pw).c_str()
     );
 
@@ -158,6 +158,9 @@ void fb::login::service::auth::login(const std::string& id, const std::string& p
 
     if(found.get_value<std::string>(0) != this->sha256(pw))
         throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+
+    auto map = found.get_value<uint32_t>(1);
+    return map;
 }
 
 void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)

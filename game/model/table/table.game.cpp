@@ -309,6 +309,8 @@ fb::game::item::penalties fb::game::container::item::to_penalty(const std::strin
 
 bool fb::game::container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
+    auto& config = fb::config::get();
+    auto current_host = config["id"].asString();
     auto count = fb::table::load
     (
         path, 
@@ -323,28 +325,35 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
             uint8_t             bgm = data["bgm"].asInt();
             auto                effect = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
             auto                option = this->to_option(data);
+            auto                host = data["host"].asString();
+
+            auto                required = (host == current_host);
 
             // Load binary
             std::vector<char> map_binary;
-            if (this->load_data(key, map_binary) == false)
+            if (required && (this->load_data(key, map_binary) == false))
                 throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_DATA);
 
             // Load blocks
             Json::Value         blocks;
-            if (this->load_blocks(key, blocks) == false)
+            if (required && (this->load_blocks(key, blocks) == false))
                 throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
 
-            auto                map = new fb::game::map(key, parent, bgm, name, option, effect, map_binary.data(), map_binary.size());
-            for (const auto block : blocks)
-                map->block(block["x"].asInt(), block["y"].asInt(), true);
+            auto                map = new fb::game::map(key, parent, bgm, name, option, effect, host, map_binary.data(), map_binary.size());
+            if(required)
+            {
+                for (const auto block : blocks)
+                    map->block(block["x"].asInt(), block["y"].asInt(), true);
+            }
 
             std::map<uint16_t, fb::game::map*>::insert(std::make_pair(key, map));
             callback((map->name()), percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                key = i.key().asString();
-            error(key, e);
+            auto                data = *i;
+            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
+            error(name, e);
         }
     );
 
@@ -507,54 +516,54 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
 
 bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
+    auto& config = fb::config::get();
+    auto current_host = config["id"].asString();
     auto count = fb::table::load
     (
         path, 
         [&](Json::Value::iterator& i, double percentage)
         {
-            auto                data = *i;
-            auto                id = data["npc"].asInt();
-            auto                core = fb::game::table::npcs[id];
-            if (core == nullptr)
-                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_NAME);
-
-
-            auto                map_id = data["map"].asInt();
+            auto                map_id = std::stoi(i.key().asString());
             auto                map = fb::game::table::maps[map_id];
             if (map == nullptr)
-                throw std::runtime_error(fb::game::message::assets::INVALID_MAP_NAME);
+                return;
 
-            auto                direction_str = CP949(data["direction"].asString(), PLATFORM::Windows);
-            auto                direction = fb::game::direction::BOTTOM;
-            if (direction_str == "top")
-                direction = fb::game::direction::TOP;
-            else if (direction_str == "right")
-                direction = fb::game::direction::RIGHT;
-            else if (direction_str == "bottom")
-                direction = fb::game::direction::BOTTOM;
-            else if (direction_str == "left")
-                direction = fb::game::direction::LEFT;
-            else
-                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
+            auto                spawns = *i;
+            for (auto spawn : spawns)
+            {
+                auto            npc_id = spawn["npc"].asInt();
+                auto            core = fb::game::table::npcs[npc_id];
+                if (core == nullptr)
+                    continue;
 
-            point16_t           position(data["position"]["x"].asInt(), data["position"]["y"].asInt());
-            if (position.x > map->width() || position.y > map->height())
-                throw std::runtime_error(fb::game::message::assets::INVALID_NPC_POSITION);
-            auto                script = CP949(data["script"].asString(), PLATFORM::Windows);
+                point16_t       position(spawn["position"]["x"].asInt(), spawn["position"]["y"].asInt());
+                auto            script = CP949(spawn["script"].asString(), PLATFORM::Windows);
+                auto            direction_str = CP949(spawn["direction"].asString(), PLATFORM::Windows);
+                auto            direction = fb::game::direction::BOTTOM;
+                if (direction_str == "top")
+                    direction = fb::game::direction::TOP;
+                else if (direction_str == "right")
+                    direction = fb::game::direction::RIGHT;
+                else if (direction_str == "bottom")
+                    direction = fb::game::direction::BOTTOM;
+                else if (direction_str == "left")
+                    direction = fb::game::direction::LEFT;
+                else
+                    throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
-            auto                cloned = new fb::game::npc(core, listener);
-            cloned->direction(direction);
-            cloned->script(script);
-            cloned->map(map, position);
+                auto                cloned = new fb::game::npc(core, listener);
+                cloned->direction(direction);
+                cloned->script(script);
+                cloned->map(map, position);
+            }
 
-            callback(core->name(), percentage);
+            callback(map->name(), percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                data = *i;
-            auto                id = data["npc"].asInt();
-            auto                core = fb::game::table::npcs[id];
-            error(core->name(), e);
+            auto                map_id = std::stoi(i.key().asString());
+            auto                map = fb::game::table::maps[map_id];
+            error(map->name(), e);
         }
     );
 

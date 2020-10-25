@@ -31,7 +31,7 @@ public:
     bool                        handle_disconnected(fb::socket<fb::login::session>&);
 
 public:
-    bool                        handle_private_login(fb::internal::socket<>&, const fb::protocol::internal::response::login&);
+    bool                        handle_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
 
 public:
     bool                        handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);

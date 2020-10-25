@@ -3,6 +3,10 @@ Debug
 Release
 .filters
 .user
-maps
+resources/maps/*.map
+resources/maps/*.block
+resources/maps/*.txt
 deploy/ubuntu
 bin
+__pycache__
+optimize.bat

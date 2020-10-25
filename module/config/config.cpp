@@ -8,7 +8,11 @@ const Json::Value& fb::config::get()
     if(loaded == false)
     {
         std::ifstream ifstream;
+#if defined DEBUG | defined _DEBUG
+        ifstream.open("config.dev.json");
+#else
         ifstream.open("config.json");
+#endif
         if(ifstream.is_open() == false)
             throw std::runtime_error("cannot load conf_login.json file");
 
@@ -16,6 +20,8 @@ const Json::Value& fb::config::get()
         if(reader.parse(ifstream, instance) == false)
             throw std::runtime_error("cannot parse conf_login.json file");
         ifstream.close();
+
+        loaded = true;
     }
 
     return instance;

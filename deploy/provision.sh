@@ -24,3 +24,7 @@ cd boost_1_74_0
 
 apt-get install libssl-dev -y
 apt-get install libncurses5-dev libncursesw5-dev -y
+
+apt-get install python3-pip -y
+pip3 install fabric3
+pip3 install jinja2

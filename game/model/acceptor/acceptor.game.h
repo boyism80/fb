@@ -17,6 +17,7 @@
 #include "model/life/life.h"
 #include "model/listener/listener.h"
 #include "protocol/game.h"
+#include "protocol/internal.h"
 #include "module/string/string.h"
 #include "model/lua/lua.h"
 #include "model/table/table.game.h"
@@ -56,13 +57,16 @@ public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
 
 public:
-    void                    send(fb::game::object& object, const fb::protocol::base::header& response, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
-    void                    send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt = true);
-    void                    send(const fb::protocol::base::header& response, bool encrypt = true);
+    void                    send(fb::game::object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
+    void                    send(const fb::protocol::base::header& header, bool encrypt = true);
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
+
+public:
+    bool                    handle_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
 
     // game event method
 public:
@@ -145,7 +149,7 @@ public:
     void                    on_option(session& me, fb::game::options option, bool enabled);
     void                    on_level_up(session& me);
     void                    on_warp(fb::game::session& me);
-    void                    on_warp(session& me, fb::game::map& map, const point16_t& position);
+    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position);
     void                    on_item_get(session& me, fb::game::item& item, uint8_t slot);
     void                    on_item_changed(session& me, fb::game::item& item, uint8_t slot);
     void                    on_item_lost(session& me, uint8_t slot);

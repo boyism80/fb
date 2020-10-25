@@ -9,7 +9,7 @@ namespace fb { namespace internal {
 class session
 {
 public:
-    std::vector<std::string>    subscribed;
+    std::string                 name;
 
 public:
     session();

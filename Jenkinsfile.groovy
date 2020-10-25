@@ -43,7 +43,10 @@ pipeline {
         }
         stage('Deploy') {
             steps{
-                echo 'none'
+                dir('resources/maps') {
+                    sh 'unzip maps.zip'
+                }
+                sh 'fab -f deploy/fabfile.py environment:development deploy'
             }
         }
     }

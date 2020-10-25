@@ -6,6 +6,9 @@
 #include "protocol/internal.h"
 #include "module/console/console.h"
 #include "module/acceptor/acceptor.h"
+#include "model/table/table.internal.h"
+#include "model/exception/exception.h"
+#include "module/config/config.h"
 
 namespace fb { namespace internal {
 
@@ -60,7 +63,7 @@ public:
 
 public:
     bool                            handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
-    bool                            handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
+    bool                            handle_transfer(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::transfer&);
 };
 
 } }
