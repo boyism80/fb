@@ -19,12 +19,6 @@ LOCAL_ROOT = './deploy'
 CONFIGURATION = None
 TABLES = {}
 
-env.hosts = ['192.168.0.180']
-@task
-def test():
-    message = run('echo hello')
-    print(message)
-
 @task
 def environment(e):
     global CONFIGURATION
