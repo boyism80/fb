@@ -1,0 +1,17 @@
+FROM ubuntu:18.04
+WORKDIR app
+
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt-get install libjsoncpp-dev -y
+RUN apt-get install lua5.3-dev -y
+RUN apt-get install libmysqlclient-dev -y
+RUN apt-get install wget -y
+RUN wget http://ftp.superuser.co.kr/pub/etc/zlib-1.1.4.tar.gz
+RUN tar xvfz zlib-1.1.4.tar.gz
+
+WORKDIR zlib-1.1.4
+RUN ./configure && make && make install
+
+WORKDIR ..
+RUN rm -rf zlib-1.1.4*

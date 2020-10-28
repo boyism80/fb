@@ -42,7 +42,7 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps{
+            steps {
                 dir('resources/maps') {
                     sh 'unzip maps.zip'
                 }

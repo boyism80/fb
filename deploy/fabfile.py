@@ -19,6 +19,12 @@ LOCAL_ROOT = './deploy'
 CONFIGURATION = None
 TABLES = {}
 
+env.hosts = ['192.168.0.180']
+@task
+def test():
+    message = run('echo hello')
+    print(message)
+
 @task
 def environment(e):
     global CONFIGURATION
@@ -60,12 +66,15 @@ def internal():
                                   context=context, use_sudo=True, backup=False, use_jinja=True)
 
             put(f'internal/bin/internal', 'internal', use_sudo=True, mode='0755')
+            put(f'internal/Dockerfile', '.', use_sudo=True)
             run('mkdir -p table')
             with cd('table'):
                 if os.path.isfile(f'table.deploy/host.json'):
                     put('table.deploy/host.json', 'host.json')
                 else:
                     os.remove(f'table.deploy/host.json')
+
+            reset_docker(name, config['port'])
 
 
 @parallel
@@ -87,6 +96,9 @@ def gateway():
             run(f"echo '{template.render(context)}' > config.json")
 
             put(f'gateway/bin/gateway', 'gateway', use_sudo=True, mode='0755')
+            put(f'gateway/Dockerfile', '.', use_sudo=True)
+
+            reset_docker(name, config['port'])
 
 
 @parallel
@@ -106,6 +118,9 @@ def login():
             run(f"echo '{template.render(context)}' > config.json")
 
             put(f'login/bin/login', 'login', use_sudo=True, mode='0755')
+            put(f'login/Dockerfile', '.', use_sudo=True)
+
+            reset_docker(name, config['port'])
 
 
 
@@ -130,6 +145,7 @@ def game():
                                   context=context, use_sudo=True, backup=False, use_jinja=True)
 
             put(f'game/bin/game', 'game', use_sudo=True, mode='0755')
+            put(f'game/Dockerfile', '.', use_sudo=True)
 
             run('mkdir -p table')
             with cd('table'):
@@ -163,6 +179,8 @@ def game():
                     sudo('unzip maps.zip')
                     sudo('rm -f maps.zip')
 
+            reset_docker(name, config['port'])
+
 
 
 
@@ -173,3 +191,13 @@ def current():
     host = env.host
     result = { x : CONFIGURATION['deploy'][role][x] for x in CONFIGURATION['deploy'][role] if CONFIGURATION['deploy'][role][x]['ip'] == host }
     return result
+
+def reset_docker(name, port):
+    with settings(warn_only=True):
+        container_name = f'fb_{name}'
+        sudo(f"docker stop {container_name}")
+        sudo(f"docker rm {container_name}")
+        sudo(f"docker rmi fb:{name}")
+        
+        sudo(f"docker build --tag fb:{name} .")
+        sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")
