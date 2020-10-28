@@ -106,7 +106,7 @@ def convert_npc_spawn(path, maps, npcs):
         map_id = f"{maps[spawn['map']]['id']:06}"
 
         if map_id not in spawns[host]:
-        	spawns[host][map_id] = []
+            spawns[host][map_id] = []
 
         spawn['npc'] = int(npcs[spawn['npc']]['id'])
         del spawn['map']
@@ -133,7 +133,7 @@ def convert_mob_spawn(path, maps, mobs):
 
         map_id = f"{int(maps[map_name]['id']):06}"
         if map_id not in spawns[host]:
-        	spawns[host][map_id] = []
+            spawns[host][map_id] = []
 
         for spawn in data[map_name]:
             spawn['mob'] = mobs[spawn['name']]['id']
@@ -183,56 +183,56 @@ def resources():
     compress_maps(maps)
 
 if __name__ == '__main__':
-	resources()
+    resources()
 
-	game_config = None
-	with open('game/config.dev.json', 'r', encoding='utf8') as f:
-		game_config = json.load(f)
+    game_config = None
+    with open('game/config.dev.json', 'r', encoding='utf8') as f:
+        game_config = json.load(f)
 
-	internal_config = None
-	with open('internal/config.dev.json', 'r', encoding='utf8') as f:
-		internal_config = json.load(f)
+    internal_config = None
+    with open('internal/config.dev.json', 'r', encoding='utf8') as f:
+        internal_config = json.load(f)
 
-	current_id = game_config['id']
-	current_host = internal_config['hosts'][current_id]
+    current_id = game_config['id']
+    current_host = internal_config['hosts'][current_id]
 
-	game_config['ip'] = current_host['ip']
-	game_config['port'] = current_host['port']
-	with open('game/config.dev.json', 'w', encoding='utf8') as f:
-		f.write(json.dumps(game_config, indent=4, ensure_ascii=False))
+    game_config['ip'] = current_host['ip']
+    game_config['port'] = current_host['port']
+    with open('game/config.dev.json', 'w', encoding='utf8') as f:
+        f.write(json.dumps(game_config, indent=4, ensure_ascii=False))
 
-	if os.path.isdir('game/table.dev'):
-		shutil.rmtree('game/table.dev')
-	Path('game/table.dev').mkdir(parents=True, exist_ok=True)
+    if os.path.isdir('game/table.dev'):
+        shutil.rmtree('game/table.dev')
+    Path('game/table.dev').mkdir(parents=True, exist_ok=True)
 
-	if os.path.isdir('game/maps'):
-		shutil.rmtree('game/maps')
-	Path('game/maps').mkdir(parents=True, exist_ok=True)
+    if os.path.isdir('game/maps'):
+        shutil.rmtree('game/maps')
+    Path('game/maps').mkdir(parents=True, exist_ok=True)
 
-	for fname in glob.glob(os.path.join('resources/table', '*.json')):
-		shutil.copy(fname, 'game/table.dev')
+    for fname in glob.glob(os.path.join('resources/table', '*.json')):
+        shutil.copy(fname, 'game/table.dev')
 
-	if os.path.isfile(f'table.deploy/mob.spawn.{current_id}.json'):
-		shutil.copy(f'table.deploy/mob.spawn.{current_id}.json', 'game/table.dev/mob.spawn.json')
-	else:
-		os.remove('game/table.dev/mob.spawn.json')
+    if os.path.isfile(f'table.deploy/mob.spawn.{current_id}.json'):
+        shutil.copy(f'table.deploy/mob.spawn.{current_id}.json', 'game/table.dev/mob.spawn.json')
+    else:
+        os.remove('game/table.dev/mob.spawn.json')
 
-	if os.path.isfile(f'table.deploy/npc.spawn.{current_id}.json'):
-		shutil.copy(f'table.deploy/npc.spawn.{current_id}.json', 'game/table.dev/npc.spawn.json')
-	else:
-		os.remove('game/table.dev/npc.spawn.json')
+    if os.path.isfile(f'table.deploy/npc.spawn.{current_id}.json'):
+        shutil.copy(f'table.deploy/npc.spawn.{current_id}.json', 'game/table.dev/npc.spawn.json')
+    else:
+        os.remove('game/table.dev/npc.spawn.json')
 
-	if os.path.isfile(f'table.deploy/warp.{current_id}.json'):
-		shutil.copy(f'table.deploy/warp.{current_id}.json', 'game/table.dev/warp.json')
-	else:
-		os.remove('game/table.dev/warp.json')
+    if os.path.isfile(f'table.deploy/warp.{current_id}.json'):
+        shutil.copy(f'table.deploy/warp.{current_id}.json', 'game/table.dev/warp.json')
+    else:
+        os.remove('game/table.dev/warp.json')
 
-	if os.path.isfile(f'table.deploy/maps.{current_id}.zip'):
-		shutil.copy(f'table.deploy/maps.{current_id}.zip', 'game/maps/maps.zip')
+    if os.path.isfile(f'table.deploy/maps.{current_id}.zip'):
+        shutil.copy(f'table.deploy/maps.{current_id}.zip', 'game/maps/maps.zip')
 
-		zfile = zipfile.ZipFile('game/maps/maps.zip')
-		zfile.extractall('game/maps')
-		zfile.close()
-		os.remove('game/maps/maps.zip')
+        zfile = zipfile.ZipFile('game/maps/maps.zip')
+        zfile.extractall('game/maps')
+        zfile.close()
+        os.remove('game/maps/maps.zip')
 
-	shutil.rmtree('table.deploy')
+    shutil.rmtree('table.deploy')

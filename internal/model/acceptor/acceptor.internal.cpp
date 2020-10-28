@@ -5,13 +5,15 @@ fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port
 {
     this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::login>(std::bind(&acceptor::handle_login, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::logout>(std::bind(&acceptor::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::whisper>(std::bind(&acceptor::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::internal::acceptor::~acceptor()
 {
-    
+    for(auto pair : this->_users)
+        delete pair.second;
 }
 
 void fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket)
@@ -77,12 +79,9 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
         auto& config = fb::config::get();
         auto session = subscriber->data();
         this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd));
-        this->_users[request.name] = new fb::internal::user(*game_id);
     }
     catch(fb::internal::transfer_error& e)
     {
-        delete this->_users[request.name];
-        this->_users.erase(request.name);
         this->send(socket, fb::protocol::internal::response::transfer(request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd));
     }
     catch(std::exception& e)
@@ -90,6 +89,35 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
         this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd));
     }
     
+    return true;
+}
+
+bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
+{
+    try
+    {
+        auto game_id = fb::internal::table::hosts[request.map];
+        if(game_id == nullptr)
+            return true;
+
+        auto subscriber = this->_subscribers[*game_id];
+        if(subscriber == nullptr)
+            return true;
+
+        auto found = this->_users.find(request.name);
+        if(found != this->_users.end())
+        {
+            delete found->second;
+            this->_users.erase(found);
+        }
+
+        this->_users[request.name] = new fb::internal::user(*game_id);
+    }
+    catch(std::exception& e)
+    {
+        // TODO
+    }
+
     return true;
 }
 

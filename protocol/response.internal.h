@@ -16,7 +16,7 @@ enum transfer_code : uint8_t
 class transfer : public fb::protocol::base::header
 {
 public:
-    BIND_ID(LOGIN)
+    BIND_ID(TRANSFER)
 
 public:
     std::string             name;

@@ -11,6 +11,7 @@ namespace fb { namespace protocol { namespace internal {
 enum id : uint8_t
 {
     SUBSCRIBE,
+    TRANSFER,
     LOGIN,
     LOGOUT,
     WHISPER,

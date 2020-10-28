@@ -35,7 +35,7 @@ public:
 class transfer : public fb::protocol::base::header
 {
 public:
-    BIND_ID(LOGIN)
+    BIND_ID(TRANSFER)
 
 public:
     std::string             name;
@@ -70,6 +70,36 @@ public:
         this->x = in_stream.read_u16();
         this->y = in_stream.read_u16();
         this->fd = in_stream.read_u32();
+    }
+};
+
+class login : public fb::protocol::base::header
+{
+public:
+    BIND_ID(LOGIN)
+
+public:
+    std::string             name;
+    uint16_t                map;
+
+public:
+    login() {}
+    login(const std::string& name, uint32_t map) : 
+        name(name), map(map)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(id)
+                  .writestr_u8(this->name, false)
+                  .write_u16(this->map);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    {
+        this->name = in_stream.readstr_u8(false);
+        this->map = in_stream.read_u16();
     }
 };
 

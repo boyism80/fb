@@ -432,6 +432,8 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     std::map<equipment::slot, std::optional<int>> equipments;
     found.each([this, &session, &equipments] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
     {
+        this->_internal->send(fb::protocol::internal::request::login(name, map));
+
         equipments[equipment::slot::WEAPON_SLOT] = weapon;
         equipments[equipment::slot::HELMET_SLOT] = helmet;
         equipments[equipment::slot::ARMOR_SLOT] = armor;
