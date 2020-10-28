@@ -60,6 +60,75 @@ public:
     }
 };
 
+class whisper : public fb::protocol::base::header
+{
+public:
+    BIND_ID(WHISPER)
+
+public:
+    bool                    success;
+    std::string             from;
+    std::string             to;
+    std::string             message;
+
+public:
+    whisper() {}
+    whisper(bool success, const std::string& from, const std::string& to, const std::string& message) : 
+        success(success), from(from), to(to), message(message)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(id)
+            .write_u8(this->success)
+            .writestr_u8(this->from)
+            .writestr_u8(this->to)
+            .writestr_u8(this->message);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    {
+        this->success = in_stream.read_u8();
+        this->from = in_stream.readstr_u8();
+        this->to = in_stream.readstr_u8();
+        this->message = in_stream.readstr_u8();
+    }
+};
+
+class message : public fb::protocol::base::header
+{
+public:
+    BIND_ID(MESSAGE)
+
+public:
+    std::string             to;
+    std::string             contents;
+    uint8_t                 type;
+
+public:
+    message() {}
+    message(const std::string& to, const std::string& contents, uint8_t type) : 
+        to(to), contents(contents), type(type)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(id)
+            .writestr_u8(this->to)
+            .writestr_u8(this->contents)
+            .write_u8(this->type);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    {
+        this->to = in_stream.readstr_u8();
+        this->contents = in_stream.readstr_u8();
+        this->type = in_stream.read_u8();
+    }
+};
+
 } } } }
 
 #endif // !__PROTOCOL_RESPONSE_INTERNAL_H__

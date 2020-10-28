@@ -203,8 +203,11 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::game::request::item::throws>     (0x17, std::bind(&acceptor::handle_throw_item,      this, std::placeholders::_1, std::placeholders::_2));   // 아이템 던지기 핸들러
     this->bind<fb::protocol::game::request::spell::use>       (0x0F, std::bind(&acceptor::handle_spell,           this, std::placeholders::_1, std::placeholders::_2));   // 스펠 핸들러
     this->bind<fb::protocol::game::request::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
+    this->bind<fb::protocol::game::request::whisper>          (0x19, std::bind(&acceptor::handle_whisper,         this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
 
-    this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_transfer,              this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_in_transfer,           this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::whisper>     (std::bind(&acceptor::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));
 
     this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
     this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
@@ -241,7 +244,7 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
         pair.second->handle_timer(elapsed_milliseconds);
 }
 
-fb::game::session* fb::game::acceptor::find_session(const std::string& name) const
+fb::game::session* fb::game::acceptor::find(const std::string& name) const
 {
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
         [&name] (std::pair<uint32_t, fb::socket<fb::game::session>*> pair) 
@@ -355,7 +358,7 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
         .resume(2);
 }
 
-bool fb::game::acceptor::handle_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
+bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
 {
     auto client = this->sockets[response.fd];
 
@@ -378,6 +381,31 @@ bool fb::game::acceptor::handle_transfer(fb::internal::socket<>& socket, const f
     {
         this->on_notify(*client->data(), e.what(), fb::game::message::type::STATE);
     }
+
+    return true;
+}
+
+bool fb::game::acceptor::handle_in_whisper(fb::internal::socket<>& socket, const fb::protocol::internal::response::whisper& response)
+{
+    auto client = this->find(response.from);
+    if(client == nullptr)
+        return true;
+
+    std::stringstream sstream;
+    if(response.success)
+        sstream << response.to << "> " << response.message;
+    else
+        sstream << response.to << "님은 바람의나라에 없습니다.";
+
+    client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+    return true;
+}
+
+bool fb::game::acceptor::handle_in_message(fb::internal::socket<>& socket, const fb::protocol::internal::response::message& response)
+{
+    auto to = this->find(response.to);
+    if(to != nullptr)
+        this->send(*to, fb::protocol::game::response::message(response.contents, (fb::game::message::type)response.type), scope::SELF);
 
     return true;
 }
@@ -766,7 +794,7 @@ bool fb::game::acceptor::handle_group(fb::socket<fb::game::session>& socket, con
     try
     {
         std::stringstream       sstream;
-        auto                    you = this->find_session(request.name);
+        auto                    you = this->find(request.name);
         if(you == nullptr)
         {
             sstream << request.name << fb::game::message::group::CANNOT_FIND_TARGET;
@@ -1096,6 +1124,13 @@ bool fb::game::acceptor::handle_door(fb::socket<fb::game::session>& socket, cons
         .func("handle_door")
         .pushobject(session)
         .resume(1);
+    return true;
+}
+
+bool fb::game::acceptor::handle_whisper(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::whisper& request)
+{
+    auto session = socket.data();
+    this->_internal->send(fb::protocol::internal::request::whisper(session->name(), request.name, request.message));
     return true;
 }
 

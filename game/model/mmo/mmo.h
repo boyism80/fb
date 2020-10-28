@@ -73,6 +73,7 @@ namespace message
 {
     enum type : uint8_t
     {
+        NOTIFY      = 0x00,
         BLUE        = 0x01,
         STATE       = 0x03,
         SHOUT       = 0x04,

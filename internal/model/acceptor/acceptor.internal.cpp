@@ -6,6 +6,7 @@ fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port
     this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::logout>(std::bind(&acceptor::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::whisper>(std::bind(&acceptor::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::internal::acceptor::~acceptor()
@@ -98,5 +99,30 @@ bool fb::internal::acceptor::handle_logout(fb::internal::socket<fb::internal::se
         delete this->_users[request.name];
 
     this->_users.erase(request.name);
+    return true;
+}
+
+bool fb::internal::acceptor::handle_whisper(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::whisper& request)
+{
+    try
+    {
+        auto found = this->_users.find(request.to);
+        if(found == this->_users.end())
+            throw std::exception();
+
+        auto subscriber = this->_subscribers[found->second->game_id];
+        if(subscriber == nullptr)
+            throw std::exception();
+
+        this->send(socket, fb::protocol::internal::response::whisper(true, request.from, request.to, request.message));
+
+        std::stringstream sstream;
+        sstream << request.from << "\" " << request.message;
+        subscriber->send(fb::protocol::internal::response::message(request.to, sstream.str(), 0x00));
+    }
+    catch(std::exception& e)
+    {
+        this->send(socket, fb::protocol::internal::response::whisper(false, request.from, request.to, request.message));
+    }
     return true;
 }

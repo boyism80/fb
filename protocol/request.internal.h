@@ -98,6 +98,39 @@ public:
     }
 };
 
+class whisper : public fb::protocol::base::header
+{
+public:
+    BIND_ID(WHISPER)
+
+public:
+    std::string             from;
+    std::string             to;
+    std::string             message;
+
+public:
+    whisper() {}
+    whisper(const std::string& from, const std::string& to, const std::string& message) : 
+        from(from), to(to), message(message) 
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(id)
+                  .writestr_u8(this->from)
+                  .writestr_u8(this->to)
+                  .writestr_u8(this->message);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    {
+        this->from = in_stream.readstr_u8();
+        this->to = in_stream.readstr_u8();
+        this->message = in_stream.readstr_u8();
+    }
+};
+
 } } } }
 
 #endif // !__PROTOCOL_REQUEST_INTERNAL_H__

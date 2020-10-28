@@ -13,6 +13,8 @@ enum id : uint8_t
     SUBSCRIBE,
     LOGIN,
     LOGOUT,
+    WHISPER,
+    MESSAGE,
 };
 
 } } }

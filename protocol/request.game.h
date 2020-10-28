@@ -327,6 +327,21 @@ public:
     {}
 };
 
+
+class whisper : public fb::protocol::base::header
+{
+public:
+    std::string             name;
+    std::string             message;
+
+public:
+    void deserialize(fb::istream& in_stream)
+    {
+        this->name = in_stream.readstr_u8();
+        this->message = in_stream.readstr_u8();
+    }
+};
+
 } } } }
 
 #endif // !__PROTOCOL_REQUEST_GAME_H__

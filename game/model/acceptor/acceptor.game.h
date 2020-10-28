@@ -51,7 +51,7 @@ public:
     ~acceptor();
 
 private:
-    fb::game::session*      find_session(const std::string& name) const;
+    fb::game::session*      find(const std::string& name) const;
 
 public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
@@ -66,7 +66,9 @@ public:
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
 
 public:
-    bool                    handle_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
+    bool                    handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
+    bool                    handle_in_whisper(fb::internal::socket<>&, const fb::protocol::internal::response::whisper&);
+    bool                    handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
 
     // game event method
 public:
@@ -106,6 +108,7 @@ public:
     bool                    handle_throw_item(fb::socket<fb::game::session>&, const fb::protocol::game::request::item::throws&);
     bool                    handle_spell(fb::socket<fb::game::session>&, const fb::protocol::game::request::spell::use&);
     bool                    handle_door(fb::socket<fb::game::session>&, const fb::protocol::game::request::door&);
+    bool                    handle_whisper(fb::socket<fb::game::session>&, const fb::protocol::game::request::whisper&);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);
