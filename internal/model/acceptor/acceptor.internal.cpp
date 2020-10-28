@@ -5,6 +5,7 @@ fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port
 {
     this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::logout>(std::bind(&acceptor::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::internal::acceptor::~acceptor()
@@ -88,5 +89,14 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
         this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd));
     }
     
+    return true;
+}
+
+bool fb::internal::acceptor::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
+{
+    if(this->_users[request.name] != nullptr)
+        delete this->_users[request.name];
+
+    this->_users.erase(request.name);
     return true;
 }

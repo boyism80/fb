@@ -76,7 +76,7 @@ public:
 class logout : public fb::protocol::base::header
 {
 public:
-    BIND_ID(LOGIN)
+    BIND_ID(LOGOUT)
 
 public:
     std::string             name;

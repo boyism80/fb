@@ -231,6 +231,7 @@ bool acceptor::handle_disconnected(fb::socket<fb::game::session>& socket)
     this->on_save(*session);
     session->map(nullptr);
 
+    this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     return true;
 }
 
