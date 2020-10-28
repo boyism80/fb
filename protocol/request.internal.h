@@ -23,7 +23,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-                  .writestr_u8(this->name);
+                  .writestr_u8(this->name, false);
     }
 
     void deserialize(fb::istream& in_stream)
@@ -56,7 +56,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-                  .writestr_u8(this->name)
+                  .writestr_u8(this->name, false)
                   .write_u16(this->map)
                   .write_u16(this->x)
                   .write_u16(this->y)
@@ -65,7 +65,7 @@ public:
 
     void deserialize(fb::istream& in_stream)
     {
-        this->name = in_stream.readstr_u8();
+        this->name = in_stream.readstr_u8(false);
         this->map = in_stream.read_u16();
         this->x = in_stream.read_u16();
         this->y = in_stream.read_u16();
@@ -89,12 +89,12 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-                  .writestr_u8(this->name);
+                  .writestr_u8(this->name, false);
     }
 
     void deserialize(fb::istream& in_stream)
     {
-        this->name = in_stream.readstr_u8();
+        this->name = in_stream.readstr_u8(false);
     }
 };
 
@@ -118,16 +118,16 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-                  .writestr_u8(this->from)
-                  .writestr_u8(this->to)
-                  .writestr_u8(this->message);
+                  .writestr_u8(this->from, false)
+                  .writestr_u8(this->to, false)
+                  .writestr_u8(this->message, false);
     }
 
     void deserialize(fb::istream& in_stream)
     {
-        this->from = in_stream.readstr_u8();
-        this->to = in_stream.readstr_u8();
-        this->message = in_stream.readstr_u8();
+        this->from = in_stream.readstr_u8(false);
+        this->to = in_stream.readstr_u8(false);
+        this->message = in_stream.readstr_u8(false);
     }
 };
 

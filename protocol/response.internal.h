@@ -37,24 +37,24 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-                  .writestr_u8(this->name)
+                  .writestr_u8(this->name, false)
                   .write_u8(this->code)
                   .write_u16(this->map)
                   .write_u16(this->x)
                   .write_u16(this->y)
-                  .writestr_u8(this->ip)
+                  .writestr_u8(this->ip, false)
                   .write_u16(this->port)
                   .write_u32(this->fd);
     }
 
     void deserialize(fb::istream& in_stream)
     {
-        this->name = in_stream.readstr_u8();
+        this->name = in_stream.readstr_u8(false);
         this->code = transfer_code(in_stream.read_u8());
         this->map = in_stream.read_16();
         this->x = in_stream.read_16();
         this->y = in_stream.read_16();
-        this->ip = in_stream.readstr_u8();
+        this->ip = in_stream.readstr_u8(false);
         this->port = in_stream.read_u16();
         this->fd = in_stream.read_u32();
     }
@@ -82,17 +82,17 @@ public:
     {
         out_stream.write_u8(id)
             .write_u8(this->success)
-            .writestr_u8(this->from)
-            .writestr_u8(this->to)
-            .writestr_u8(this->message);
+            .writestr_u8(this->from, false)
+            .writestr_u8(this->to, false)
+            .writestr_u8(this->message, false);
     }
 
     void deserialize(fb::istream& in_stream)
     {
         this->success = in_stream.read_u8();
-        this->from = in_stream.readstr_u8();
-        this->to = in_stream.readstr_u8();
-        this->message = in_stream.readstr_u8();
+        this->from = in_stream.readstr_u8(false);
+        this->to = in_stream.readstr_u8(false);
+        this->message = in_stream.readstr_u8(false);
     }
 };
 
@@ -116,15 +116,15 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         out_stream.write_u8(id)
-            .writestr_u8(this->to)
-            .writestr_u8(this->contents)
+            .writestr_u8(this->to, false)
+            .writestr_u8(this->contents, false)
             .write_u8(this->type);
     }
 
     void deserialize(fb::istream& in_stream)
     {
-        this->to = in_stream.readstr_u8();
-        this->contents = in_stream.readstr_u8();
+        this->to = in_stream.readstr_u8(false);
+        this->contents = in_stream.readstr_u8(false);
         this->type = in_stream.read_u8();
     }
 };

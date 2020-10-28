@@ -125,7 +125,7 @@ void fb::istream::read(void * buffer, size_t size)
     this->_offset += uint32_t(size);
 }
 
-std::string fb::istream::readstr()
+std::string fb::istream::readstr(bool encoding)
 {
     auto size = strlen((const char*)this->data() + this->_offset);
     char* buffer = new char[size + 1];
@@ -134,37 +134,37 @@ std::string fb::istream::readstr()
     std::string text(buffer);
     delete[] buffer;
     this->_offset += size + 1;
-    return UTF8(text);
+    return encoding ? UTF8(text) : text;
 }
 
-std::string fb::istream::readstr_u8()
+std::string fb::istream::readstr_u8(bool encoding)
 {
 	uint8_t					size = this->read_u8();
 	char					buffer[0xFF];
 	this->read(buffer, size);
 	buffer[std::min(size, uint8_t(0xFF))] = 0x00;
 
-	return UTF8(buffer);
+	return encoding ? UTF8(buffer) : buffer;
 }
 
-std::string fb::istream::readstr_u16(buffer::endian endian)
+std::string fb::istream::readstr_u16(bool encoding, buffer::endian endian)
 {
 	uint16_t				size = this->read_u16(endian);
 	char					buffer[0xFF];
 	this->read(buffer, size);
 	buffer[std::min(size, uint16_t(0xFF))] = 0x00;
 
-	return UTF8(buffer);
+	return encoding ? UTF8(buffer) : buffer;
 }
 
-std::string fb::istream::readstr_u32(buffer::endian endian)
+std::string fb::istream::readstr_u32(bool encoding, buffer::endian endian)
 {
     uint32_t				size = this->read_u32(endian);
     char					buffer[0xFF];
     this->read(buffer, size);
     buffer[std::min(size, uint32_t(0xFF))] = 0x00;
 
-    return UTF8(buffer);
+    return encoding ? UTF8(buffer) : buffer;
 }
 
 uint32_t fb::istream::readable_size() const
@@ -255,25 +255,25 @@ fb::ostream& fb::ostream::write_u32(uint32_t value, buffer::endian endian)
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u8(const std::string& value)
+fb::ostream& fb::ostream::writestr_u8(const std::string& value, bool encoding)
 {
-    auto cp949 = CP949(value);
+    auto cp949 = encoding ? CP949(value) : value;
     this->write_u8((uint8_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u16(const std::string& value, buffer::endian endian)
+fb::ostream& fb::ostream::writestr_u16(const std::string& value, buffer::endian endian, bool encoding)
 {
-    auto cp949 = CP949(value);
+    auto cp949 = encoding ? CP949(value) : value;
     this->write_u16((uint16_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u32(const std::string& value, buffer::endian endian)
+fb::ostream& fb::ostream::writestr_u32(const std::string& value, buffer::endian endian, bool encoding)
 {
-    auto cp949 = CP949(value);
+    auto cp949 = encoding ? CP949(value) : value;
     this->write_u32((uint32_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
@@ -291,9 +291,9 @@ fb::ostream& fb::ostream::write(const buffer& wb)
     return *this;
 }
 
-fb::ostream& fb::ostream::write(const std::string& str, bool uint16)
+fb::ostream& fb::ostream::write(const std::string& str, bool uint16, bool encoding)
 {
-    auto cp949 = CP949(str);
+    auto cp949 = encoding ? CP949(str) : str;
 	if(uint16)
 		this->write_u16((uint16_t)cp949.size());
 	else
