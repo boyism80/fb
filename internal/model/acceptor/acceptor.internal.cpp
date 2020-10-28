@@ -82,6 +82,17 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
     }
     catch(fb::internal::transfer_error& e)
     {
+        if(e.code == fb::protocol::internal::response::CONNECTED)
+        {
+            delete this->_users[request.name];
+            this->_users.erase(request.name);
+
+            // send disconnection message
+            auto game_id = fb::internal::table::hosts[request.map];
+            auto subscriber = this->_subscribers[*game_id];
+            subscriber->send(fb::protocol::internal::response::logout(request.name));
+        }
+
         this->send(socket, fb::protocol::internal::response::transfer(request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd));
     }
     catch(std::exception& e)
@@ -123,10 +134,13 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
 
 bool fb::internal::acceptor::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
 {
-    if(this->_users[request.name] != nullptr)
-        delete this->_users[request.name];
-
-    this->_users.erase(request.name);
+    auto found = this->_users.find(request.name);
+    if(found != this->_users.end())
+    {
+        delete found->second;
+        this->_users.erase(found);
+    }
+    
     return true;
 }
 

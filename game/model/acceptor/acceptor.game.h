@@ -69,6 +69,7 @@ public:
     bool                    handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
     bool                    handle_in_whisper(fb::internal::socket<>&, const fb::protocol::internal::response::whisper&);
     bool                    handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
+    bool                    handle_in_logout(fb::internal::socket<>&, const fb::protocol::internal::response::logout&);
 
     // game event method
 public:

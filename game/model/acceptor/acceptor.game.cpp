@@ -208,6 +208,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_in_transfer,           this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::whisper>     (std::bind(&acceptor::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::logout>      (std::bind(&acceptor::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));
 
     this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
     this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
@@ -407,6 +408,15 @@ bool fb::game::acceptor::handle_in_message(fb::internal::socket<>& socket, const
     if(to != nullptr)
         this->send(*to, fb::protocol::game::response::message(response.contents, (fb::game::message::type)response.type), scope::SELF);
 
+    return true;
+}
+
+bool fb::game::acceptor::handle_in_logout(fb::internal::socket<>& socket, const fb::protocol::internal::response::logout& response)
+{
+    auto session = this->find(response.name);
+    if(session != nullptr)
+        static_cast<fb::socket<fb::game::session>&>(*session).close();
+    
     return true;
 }
 

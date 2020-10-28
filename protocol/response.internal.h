@@ -60,6 +60,33 @@ public:
     }
 };
 
+class logout : public fb::protocol::base::header
+{
+public:
+    BIND_ID(LOGOUT)
+
+public:
+    std::string             name;
+
+public:
+    logout() {}
+    logout(const std::string& name) : 
+        name(name)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(id)
+            .writestr_u8(this->name, false);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    {
+        this->name = in_stream.readstr_u8(false);
+    }
+};
+
 class whisper : public fb::protocol::base::header
 {
 public:
