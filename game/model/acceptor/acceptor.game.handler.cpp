@@ -399,7 +399,7 @@ void fb::game::acceptor::on_option(session& me, fb::game::options option, bool e
         break;
 
     case options::FIXED_MOVE:
-        sstream << "고정이동     ";
+        sstream << "고정이동    ";
         break;
 
     case options::TRADE:
