@@ -191,10 +191,14 @@ public:
     std::vector<object*>                sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     object*                             forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                showings(object::types type = object::types::UNKNOWN) const;        // 내가 볼 수 있는
-    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before = false);
-    std::vector<object*>                showns(object::types type = object::types::UNKNOWN) const;          // 날 보고 있는
-    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before = false);
+
+    // 내 시야에서 보여지는 오브젝트들
+    std::vector<object*>                showings(object::types type = object::types::UNKNOWN) const;
+    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before_me = false, bool before_you = false);
+
+    // 자기 시야에 내가 있는 오브젝트들
+    std::vector<object*>                showns(object::types type = object::types::UNKNOWN) const;
+    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before_me = false, bool before_you = false);
 
     bool                                visible() const;
     void                                visible(bool value);

@@ -173,19 +173,26 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
         this->_listener->on_hold(static_cast<fb::game::session&>(*this));
 
     this->_map->update(*this);
+    
+    auto nears_before = this->_map->nears(this->_before);
+    auto nears_after = this->_map->nears(this->_position);
+
     {
-        auto befores = fb::game::object::showings(this->_map->nears(this->_before), *this, fb::game::object::UNKNOWN, true);
+        // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
+        auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::UNKNOWN, true, false);
         std::sort(befores.begin(), befores.end());
 
-        auto afters = fb::game::object::showings(this->_map->nears(this->_position), *this, fb::game::object::UNKNOWN, false);
+        // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
+        auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::UNKNOWN, false, false);
         std::sort(afters.begin(), afters.end());
 
-
+        // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
         std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
         for(auto x : hides)
             this->_listener->on_hide(*this, *x);
 
+        // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
         std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for(auto x : shows)
@@ -193,18 +200,21 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
     }
 
     {
-        auto befores = fb::game::object::showns(this->_map->nears(this->_before), *this, fb::game::object::UNKNOWN, true);
+        // 내 이전 위치에서 내 시야에 보이는 오브젝트들
+        auto befores = fb::game::object::showings(nears_before, *this, fb::game::object::UNKNOWN, true, false);
         std::sort(befores.begin(), befores.end());
 
-        auto afters = fb::game::object::showns(this->_map->nears(this->_position), *this, fb::game::object::UNKNOWN, false);
+        // 내 현재 위치에서 내 시야에 보이는 오브젝트들
+        auto afters = fb::game::object::showings(nears_after, *this, fb::game::object::UNKNOWN, false, false);
         std::sort(afters.begin(), afters.end());
 
-
+        // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
         std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
         for(auto x : hides)
             this->_listener->on_hide(*x, *this);
 
+        // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
         std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for(auto x : shows)
@@ -596,18 +606,18 @@ std::vector<fb::game::object*> fb::game::object::showings(object::types type) co
         return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before)
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before_me, bool before_you)
 {
     auto                    objects = std::vector<fb::game::object*>();
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&pivot, type, before](fb::game::object* x)
+        [&](fb::game::object* x)
         {
             return
                 *x != pivot &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                pivot.sight(*x, before);
+                pivot.sight(*x, before_me, before_you);
         }
     );
 
@@ -622,19 +632,19 @@ std::vector<object*> fb::game::object::showns(object::types type) const
         return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
 }
 
-std::vector<object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before)
+std::vector<object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before_me, bool before_you)
 {
     auto                    objects = std::vector<fb::game::object*>();
     
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&pivot, type, before](fb::game::object* x)
+        [&](fb::game::object* x)
         {
             return
                 *x != pivot &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                x->sight(pivot, before);
+                x->sight(pivot, before_you, before_me);
         }
     );
 
