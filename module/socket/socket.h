@@ -29,8 +29,8 @@ protected:
     ~socket();
 
 protected:
-    virtual void            on_encrypt(fb::ostream& out) {}
-    virtual void            on_wrap(fb::ostream& out) {}
+    virtual bool            on_encrypt(fb::ostream& out) { return true; }
+    virtual bool            on_wrap(fb::ostream& out) { return true; }
 
 public:
     void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
@@ -82,8 +82,8 @@ public:
     ~socket();
     
 protected:
-    void                    on_encrypt(fb::ostream& out);
-    void                    on_wrap(fb::ostream& out);
+    bool                    on_encrypt(fb::ostream& out);
+    bool                    on_wrap(fb::ostream& out);
 
 public:
     fb::cryptor&            crt();
@@ -106,7 +106,7 @@ public:
     ~socket();
 
 protected:
-    void                    on_wrap(fb::ostream& out);
+    bool                    on_wrap(fb::ostream& out);
 };
 
 } }

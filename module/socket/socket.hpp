@@ -18,11 +18,11 @@ template<typename T>
 inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
     auto clone = stream;
-    if(encrypt)
-        this->on_encrypt(clone);
+    if(encrypt && this->on_encrypt(clone) == -1)
+        return;
 
-    if(wrap)
-        this->on_wrap(clone);
+    if(wrap && this->on_wrap(clone) == -1)
+        return;
 
     auto buffer = boost::asio::buffer(clone.data(), clone.size());
     boost::asio::async_write
@@ -118,15 +118,15 @@ fb::socket<T>::~socket()
 }
 
 template<typename T>
-inline void fb::socket<T>::on_encrypt(fb::ostream& out)
+inline bool fb::socket<T>::on_encrypt(fb::ostream& out)
 {
-    this->_crt.encrypt(out);
+    return this->_crt.encrypt(out);
 }
 
 template<typename T>
-inline void fb::socket<T>::on_wrap(fb::ostream& out)
+inline bool fb::socket<T>::on_wrap(fb::ostream& out)
 {
-    this->_crt.wrap(out);
+    return this->_crt.wrap(out);
 }
 
 template <typename T>
@@ -166,11 +166,12 @@ fb::internal::socket<T>::~socket()
 {}
 
 template <typename T>
-void fb::internal::socket<T>::on_wrap(fb::ostream& out)
+bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 {
     auto                size = out.size();
     const uint8_t       header[] = {uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
     out.insert(out.begin(), header, header + sizeof(header));
+    return true;
 }
 
 
