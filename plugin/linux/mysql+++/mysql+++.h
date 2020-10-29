@@ -731,7 +731,7 @@ namespace daotk {
 				unsigned int _timeout = 0,
 				bool _autoreconnect = false,
 				const std::string _init_command = "",
-				const std::string _charset = "",
+				const std::string _charset = "utf8",
 				unsigned int _port = 0,
 				unsigned long _client_flag = 0
 			) :	server(_server),
