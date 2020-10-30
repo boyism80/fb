@@ -46,7 +46,7 @@ pipeline {
                 dir('resources/maps') {
                     sh 'unzip maps.zip'
                 }
-                sh 'fab -f deploy/fabfile.py environment:development deploy'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy'
             }
         }
     }

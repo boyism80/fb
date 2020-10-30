@@ -49,7 +49,7 @@ def deploy():
 def internal():
     global CONFIGURATION
 
-    for name , config in current().items():
+    for name, config in current().items():
         run(f'mkdir -p {name}')
 
         with cd(name):
@@ -76,7 +76,7 @@ def internal():
 def gateway():
     global CONFIGURATION
     
-    for name , config in current().items():
+    for name, config in current().items():
         run(f'mkdir -p {name}')
 
         with cd(name):
@@ -98,7 +98,7 @@ def gateway():
 @parallel
 @roles('login')
 def login():
-    for name , config in current().items():
+    for name, config in current().items():
         run(f'mkdir -p {name}')
 
         with cd(name):
@@ -122,7 +122,7 @@ def login():
 @parallel
 @roles('game')
 def game():
-    for name , config in current().items():
+    for name, config in current().items():
         run(f'mkdir -p {name}')
 
         with cd(name):
@@ -193,5 +193,5 @@ def reset_docker(name, port):
         sudo(f"docker rm {container_name}")
         sudo(f"docker rmi fb:{name}")
         
-        sudo(f"docker build --tag fb:{name} .")
-        sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")
+    sudo(f"docker build --tag fb:{name} .")
+    sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")
