@@ -487,6 +487,9 @@ void fb::game::acceptor::on_item_lost(session& me, uint8_t slot)
 
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
 {
+    this->send(me, fb::protocol::game::response::life::action(me, action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT, true);
+    if(you != nullptr && you->is(fb::game::object::types::LIFE))
+        static_cast<fb::game::life&>(*you).hp_down(damage, &me, critical);
 }
 
 void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool critical)

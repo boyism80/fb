@@ -208,7 +208,11 @@ void fb::game::life::hp(uint32_t value)
     auto before = this->_hp;
     this->_hp = value;
     if(this->_listener != nullptr)
+    {
+        if(this->is(fb::game::object::types::SESSION))
+            this->_listener->on_updated(static_cast<fb::game::session&>(*this), fb::game::state_level::LEVEL_MIDDLE);
         this->_listener->on_hp(*this, before, this->_hp);
+    }
 }
 
 uint32_t fb::game::life::mp() const
@@ -218,7 +222,14 @@ uint32_t fb::game::life::mp() const
 
 void fb::game::life::mp(uint32_t value)
 {
+    auto before = this->_mp;
     this->_mp = value;
+    if(this->_listener != nullptr)
+    {
+        if(this->is(fb::game::object::types::SESSION))
+            this->_listener->on_updated(static_cast<fb::game::session&>(*this), fb::game::state_level::LEVEL_MIDDLE);
+        this->_listener->on_mp(*this, before, this->_hp);
+    }
 }
 
 uint32_t fb::game::life::base_hp() const

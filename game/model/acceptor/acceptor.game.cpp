@@ -1155,6 +1155,12 @@ void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
         return;
     }
 
+    if(target->alive() == false)
+    {
+        mob->target(nullptr);
+        return;
+    }
+
     // 상하좌우로 타겟이 있는지 검사한다.
     for(int i = 0; i < 4; i++)
     {
