@@ -339,7 +339,7 @@ fb::game::life* fb::game::mob::autoset_target()
         return NULL;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto x : this->showings(fb::game::object::types::SESSION))
+    for(auto x : this->showns(fb::game::object::types::SESSION))
     {
         if(x->sight(*this) == false)
             continue;

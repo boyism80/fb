@@ -275,7 +275,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
     case acceptor::scope::PIVOT:
     {
-        auto nears = object.showns(object::types::SESSION);
+        auto nears = object.showings(object::types::SESSION);
         if(!exclude_self)
             object.send(header, encrypt);
 
