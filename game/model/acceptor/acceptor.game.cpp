@@ -1148,58 +1148,60 @@ bool fb::game::acceptor::handle_whisper(fb::socket<fb::game::session>& socket, c
 
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 {
-    auto                    target = mob->target();
-    if(target == nullptr)
+    try
     {
-        mob->move(direction(std::rand() % 4));
-        return;
-    }
+        auto                    target = mob->target();
+        if(target == nullptr)
+            throw nullptr;
 
-    if(target->alive() == false)
+        if(target->alive() == false)
+            throw nullptr;
+
+        // 상하좌우로 타겟이 있는지 검사한다.
+        for(int i = 0; i < 4; i++)
+        {
+            auto                direction = fb::game::direction(i);
+            if(mob->side(direction, fb::game::object::SESSION) != target)
+                continue;
+
+            if(mob->direction() != direction)
+                mob->direction(direction);
+
+            mob->attack();
+            return;
+        }
+
+
+        // 타겟 방향으로 이동이 가능하다면 이동한다.
+        auto                    x_axis = bool(std::rand()%2);
+        if(x_axis)
+        {
+            if(mob->x() > target->x() && mob->move(direction::LEFT))   return;
+            if(mob->x() < target->x() && mob->move(direction::RIGHT))  return;
+            if(mob->y() > target->y() && mob->move(direction::TOP))    return;
+            if(mob->y() < target->y() && mob->move(direction::BOTTOM)) return;
+        }
+        else
+        {
+            if(mob->y() > target->y() && mob->move(direction::TOP))    return;
+            if(mob->y() < target->y() && mob->move(direction::BOTTOM)) return;
+            if(mob->x() > target->x() && mob->move(direction::LEFT))   return;
+            if(mob->x() < target->x() && mob->move(direction::RIGHT))  return;
+        }
+
+
+        // 이동할 수 있는 방향으로 일단 이동한다.
+        auto                    random_direction = std::rand() % 4;
+        for(int i = 0; i < 4; i++)
+        {
+            if(mob->move(direction((random_direction + i) % 4)))
+                return;
+        }
+    }
+    catch(...)
     {
         mob->target(nullptr);
-        return;
-    }
-
-    // 상하좌우로 타겟이 있는지 검사한다.
-    for(int i = 0; i < 4; i++)
-    {
-        auto                direction = fb::game::direction(i);
-        if(mob->side(direction, fb::game::object::SESSION) != target)
-            continue;
-
-        if(mob->direction() != direction)
-            mob->direction(direction);
-
-        mob->attack();
-        return;
-    }
-
-
-    // 타겟 방향으로 이동이 가능하다면 이동한다.
-    auto                    x_axis = bool(std::rand()%2);
-    if(x_axis)
-    {
-        if(mob->x() > target->x() && mob->move(direction::LEFT))   return;
-        if(mob->x() < target->x() && mob->move(direction::RIGHT))  return;
-        if(mob->y() > target->y() && mob->move(direction::TOP))    return;
-        if(mob->y() < target->y() && mob->move(direction::BOTTOM)) return;
-    }
-    else
-    {
-        if(mob->y() > target->y() && mob->move(direction::TOP))    return;
-        if(mob->y() < target->y() && mob->move(direction::BOTTOM)) return;
-        if(mob->x() > target->x() && mob->move(direction::LEFT))   return;
-        if(mob->x() < target->x() && mob->move(direction::RIGHT))  return;
-    }
-
-
-    // 이동할 수 있는 방향으로 일단 이동한다.
-    auto                    random_direction = std::rand() % 4;
-    for(int i = 0; i < 4; i++)
-    {
-        if(mob->move(direction((random_direction + i) % 4)))
-            return;
+        mob->move(direction(std::rand() % 4));
     }
 }
 
