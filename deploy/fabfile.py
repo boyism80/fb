@@ -32,11 +32,17 @@ def environment(e):
             if host['ip'] not in env['roledefs'][role]['hosts']:
                 env['roledefs'][role]['hosts'].append(host['ip'])
 
+            if host['ip'] not in env['hosts']:
+                env['hosts'].append(host['ip'])
+
+    print(env['hosts'])
+
 
 @task
 def deploy():
     optimizer.resources()
 
+    execute(clear_docker)
     execute(internal)
     execute(gateway)
     execute(login)
@@ -68,7 +74,7 @@ def internal():
                 else:
                     os.remove(f'table.deploy/host.json')
 
-            reset_docker(name, config['port'])
+            build_docker(name, config['port'])
 
 
 @parallel
@@ -92,7 +98,7 @@ def gateway():
             put(f'gateway/bin/gateway', 'gateway', use_sudo=True, mode='0755')
             put(f'gateway/Dockerfile', '.', use_sudo=True)
 
-            reset_docker(name, config['port'])
+            build_docker(name, config['port'])
 
 
 @parallel
@@ -114,7 +120,7 @@ def login():
             put(f'login/bin/login', 'login', use_sudo=True, mode='0755')
             put(f'login/Dockerfile', '.', use_sudo=True)
 
-            reset_docker(name, config['port'])
+            build_docker(name, config['port'])
 
 
 
@@ -173,7 +179,7 @@ def game():
                     sudo('unzip maps.zip')
                     sudo('rm -f maps.zip')
 
-            reset_docker(name, config['port'])
+            build_docker(name, config['port'])
 
 
 
@@ -186,12 +192,12 @@ def current():
     result = { x : CONFIGURATION['deploy'][role][x] for x in CONFIGURATION['deploy'][role] if CONFIGURATION['deploy'][role][x]['ip'] == host }
     return result
 
-def reset_docker(name, port):
+def clear_docker():
     with settings(warn_only=True):
-        container_name = f'fb_{name}'
-        sudo(f"docker stop {container_name}")
-        sudo(f"docker rm {container_name}")
-        sudo(f"docker rmi fb:{name}")
-        
+        sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm')
+        sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi')
+
+def build_docker(name, port):
+    container_name = f'fb_{name}'
     sudo(f"docker build --tag fb:{name} .")
     sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")
