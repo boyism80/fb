@@ -163,7 +163,6 @@ void fb::game::acceptor::on_hold(session& me)
 void fb::game::acceptor::on_die(session& me)
 {
     me.state(state::GHOST);
-    this->send(me, fb::protocol::game::response::session::show(me, true), scope::SELF);
 }
 
 void fb::game::acceptor::on_notify(session& me, const std::string& message, fb::game::message::type type)

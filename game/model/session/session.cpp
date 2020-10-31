@@ -179,7 +179,9 @@ void fb::game::session::disguise(uint16_t value)
 void fb::game::session::undisguise()
 {
     this->_disguise = std::nullopt;
-    this->state(state::NORMAL);
+    if(this->state() == fb::game::state::DISGUISE)
+        this->state(state::NORMAL);
+
     if(this->_listener != nullptr)
         this->_listener->on_updated(*this, state_level::LEVEL_MAX);
 }
