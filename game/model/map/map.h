@@ -212,6 +212,84 @@ public:
 #pragma endregion
 };
 
+namespace worldmap {
+
+typedef struct __destination_tag
+{
+public:
+    const point16_t         position;
+    const fb::game::map*    map;
+
+public:
+    __destination_tag(const point16_t& position, const fb::game::map* map) : 
+        position(position), map(map)
+    {}
+} destination;
+
+typedef struct __offset_tag
+{
+public:
+    const point16_t         position;
+    const destination       dest;
+
+public:
+    __offset_tag(const point16_t& position, const destination& dest) : 
+        position(position), dest(dest)
+    {}
+
+    __offset_tag(const struct __offset_tag& right) : 
+        __offset_tag(right.position, right.dest)
+    {}
+
+} offset;
+
+class group : private std::map<const std::string, offset*>
+{
+public:
+    using std::map<const std::string, offset*>::begin;
+    using std::map<const std::string, offset*>::end;
+    using std::map<const std::string, offset*>::cbegin;
+    using std::map<const std::string, offset*>::cend;
+    using std::map<const std::string, offset*>::size;
+
+public:
+    group();
+    ~group();
+
+public:
+    void                                push(const std::string& name, offset* offset);
+    bool                                contains(const offset& offset) const;
+};
+
+class world : private std::vector<group*>
+{
+public:
+    typedef std::pair<const std::string, offset*> offset_pair;
+
+private:
+    std::vector<offset_pair>            _offsets;
+
+public:
+    using std::vector<group*>::begin;
+    using std::vector<group*>::end;
+    using std::vector<group*>::cbegin;
+    using std::vector<group*>::cend;
+    using std::vector<group*>::size;
+    using std::vector<group*>::operator[];
+
+public:
+    world();
+    ~world();
+
+public:
+    void                                push(group* group);
+    const std::vector<offset_pair>&     offsets() const;
+    const fb::game::worldmap::group*    find(const std::string& name) const;
+    const fb::game::worldmap::group*    find(const fb::game::map& map) const;
+};
+
+}
+
 } }
 
 #endif // !__MAP_H__

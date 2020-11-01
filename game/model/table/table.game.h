@@ -32,6 +32,10 @@ public:
     using std::map<uint16_t, fb::game::map*>::cend;
     using std::map<uint16_t, fb::game::map*>::size;
 
+public:
+    map();
+    ~map();
+
 private:
     static fb::game::map::effects           to_effect(const std::string& effect);
     static fb::game::map::options           to_option(const Json::Value& data);
@@ -62,6 +66,10 @@ public:
     using std::map<uint16_t, fb::game::item::master*>::size;
     using std::map<uint16_t, fb::game::item::master*>::operator[];
 
+public:
+    item();
+    ~item();
+
 private:
     static fb::game::item::master*          create(uint32_t id, const Json::Value& data);
     static fb::game::item::item_limit       to_limit(const Json::Value& data);
@@ -88,6 +96,10 @@ public:
     using std::map<uint16_t, fb::game::npc::master*>::operator[];
 
 public:
+    npc();
+    ~npc();
+
+public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
     bool                                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
@@ -107,6 +119,10 @@ public:
     using std::map<uint16_t, fb::game::mob::master*>::cend;
     using std::map<uint16_t, fb::game::mob::master*>::size;
     using std::map<uint16_t, fb::game::mob::master*>::operator[];
+
+public:
+    mob();
+    ~mob();
 
 private:
     static fb::game::mob::sizes             to_size(const std::string& size);
@@ -135,6 +151,10 @@ public:
     using std::map<uint16_t, fb::game::spell*>::operator[];
 
 public:
+    spell();
+    ~spell();
+
+public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
@@ -153,6 +173,10 @@ public:
     using std::vector<fb::game::class_data*>::cend;
     using std::vector<fb::game::class_data*>::size;
     using std::vector<fb::game::class_data*>::operator[];
+
+public:
+    cls();
+    ~cls();
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -177,6 +201,10 @@ public:
     using std::vector<fb::game::itemmix*>::operator[];
 
 public:
+    mix();
+    ~mix();
+
+public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
@@ -197,7 +225,31 @@ public:
     using std::vector<fb::game::door::master*>::operator[];
 
 public:
+    door();
+    ~door();
+
+public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+};
+
+
+class worlds : private std::map<const std::string, fb::game::worldmap::world*>
+{
+public:
+    worlds();
+    ~worlds();
+
+public:
+    using std::map<const std::string, fb::game::worldmap::world*>::begin;
+    using std::map<const std::string, fb::game::worldmap::world*>::end;
+    using std::map<const std::string, fb::game::worldmap::world*>::cbegin;
+    using std::map<const std::string, fb::game::worldmap::world*>::cend;
+    using std::map<const std::string, fb::game::worldmap::world*>::size;
+    using std::map<const std::string, fb::game::worldmap::world*>::operator[];
+
+public:
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    const std::optional<std::string>        find(const fb::game::map& map) const;
 };
 
 }
@@ -210,6 +262,7 @@ public:
     static std::vector<clan*>               clans;
     static fb::game::board                  board;
     static fb::game::container::map         maps;
+    static fb::game::container::worlds      worlds;
     static fb::game::container::item        items;
     static fb::game::container::npc         npcs;
     static fb::game::container::mob         mobs;

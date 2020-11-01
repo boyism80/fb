@@ -53,7 +53,6 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
     current_line = c.current_line();
     c.next();
-
     if(fb::game::table::maps.load
     (
         config["table"]["map"].asString(),
@@ -71,6 +70,31 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         {
             auto n = c.move(0, current_line)
                       .puts(fb::game::message::assets::MAP_ALL_LOADED, count);
+            c.clear(n, current_line);
+        }) == false)
+    {
+        return false;
+    }
+
+    current_line = c.current_line();
+    c.next();
+    if(fb::game::table::worlds.load
+    (
+        config["table"]["world"].asString(),
+        [&] (const std::string& name, double percentage)
+        {
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str());
+            c.clear(n, current_line);
+        }, 
+        [&] (const std::string& name, const std::string& error)
+        {
+            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+        }, 
+        [&] (uint32_t count)
+        {
+            auto n = c.move(0, current_line)
+                      .puts(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count);
             c.clear(n, current_line);
         }) == false)
     {

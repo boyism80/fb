@@ -1,5 +1,6 @@
 #include "model/session/session.h"
 #include "model/group/group.h"
+#include "model/map/map.h"
 
 fb::game::group::group(session& leader) : 
     _leader(&leader)

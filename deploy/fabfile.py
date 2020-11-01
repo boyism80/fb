@@ -166,6 +166,11 @@ def game():
                 else:
                     sudo('rm -f warp.json')
 
+                if os.path.isfile(f'table.deploy/world.json'):
+                    put(f'table.deploy/world.json', 'world.json')
+                else:
+                    sudo('rm -f world.json')
+
             run('mkdir -p scripts')
             with cd('scripts'):
                 sudo('rm -rf *')
@@ -176,7 +181,7 @@ def game():
                 sudo('rm -rf *')
                 if os.path.isfile(f'table.deploy/maps.{name}.zip'):
                     put(f'table.deploy/maps.{name}.zip', 'maps.zip')
-                    sudo('unzip maps.zip')
+                    sudo('unzip -qq maps.zip')
                     sudo('rm -f maps.zip')
 
             build_docker(name, config['port'])

@@ -4,6 +4,7 @@
 std::vector<fb::game::clan*>            fb::game::table::clans;
 fb::game::board                         fb::game::table::board;
 fb::game::container::map                fb::game::table::maps;
+fb::game::container::worlds             fb::game::table::worlds;
 fb::game::container::item               fb::game::table::items;
 fb::game::container::npc                fb::game::table::npcs;
 fb::game::container::mob                fb::game::table::mobs;
@@ -203,6 +204,15 @@ bool fb::game::container::map::load_blocks(uint16_t id, Json::Value& buffer)
     return true;
 }
 
+fb::game::container::item::item()
+{}
+
+fb::game::container::item::~item()
+{
+    for(auto x : *this)
+        delete x.second;
+}
+
 fb::game::item::master* fb::game::container::item::create(uint32_t id, const Json::Value& data)
 {
     std::string         types           = CP949(data["type"].asString(), PLATFORM::Windows);
@@ -305,6 +315,15 @@ fb::game::item::penalties fb::game::container::item::to_penalty(const std::strin
         return fb::game::item::penalties::DESTRUCTION;
 
     throw std::runtime_error(fb::game::message::assets::INVALID_DEATH_PENALTY);
+}
+
+fb::game::container::map::map()
+{}
+
+fb::game::container::map::~map()
+{
+    for(auto x : *this)
+        delete x.second;
 }
 
 bool fb::game::container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -484,6 +503,15 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
     return true;
 }
 
+fb::game::container::npc::npc()
+{}
+
+fb::game::container::npc::~npc()
+{
+    for(auto x : *this)
+        delete x.second;
+}
+
 bool fb::game::container::npc::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto count = fb::table::load
@@ -569,6 +597,15 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::lis
 
     complete(count);
     return true;
+}
+
+fb::game::container::mob::mob()
+{}
+
+fb::game::container::mob::~mob()
+{
+    for(auto x : *this)
+        delete x.second;
 }
 
 fb::game::mob::sizes fb::game::container::mob::to_size(const std::string& size)
@@ -741,6 +778,15 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::lis
     return true;
 }
 
+fb::game::container::spell::spell()
+{}
+
+fb::game::container::spell::~spell()
+{
+    for(auto x : *this)
+        delete x.second;
+}
+
 bool fb::game::container::spell::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto count = fb::table::load
@@ -780,6 +826,16 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
 
     complete(count);
     return true;
+}
+
+fb::game::container::cls::cls()
+{
+}
+
+fb::game::container::cls::~cls()
+{
+    for(auto x : *this)
+        delete x;
 }
 
 bool fb::game::container::cls::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -824,6 +880,16 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
 
     complete(count);
     return true;
+}
+
+fb::game::container::mix::mix()
+{
+}
+
+fb::game::container::mix::~mix()
+{
+    for(auto x : *this)
+        delete x;
 }
 
 bool fb::game::container::mix::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -886,6 +952,15 @@ fb::game::itemmix* fb::game::container::mix::find(const std::vector<fb::game::it
     return i != this->end() ? *i : nullptr;
 }
 
+fb::game::container::door::door()
+{}
+
+fb::game::container::door::~door()
+{
+    for(auto x : *this)
+        delete x;
+}
+
 bool fb::game::container::door::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto count = fb::table::load
@@ -915,4 +990,101 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
 
     complete(count);
     return true;
+}
+
+fb::game::container::worlds::worlds()
+{
+}
+
+fb::game::container::worlds::~worlds()
+{
+    for(auto x : *this)
+        delete x.second;
+}
+
+bool fb::game::container::worlds::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+{
+    auto count = fb::table::load
+    (
+        path, 
+        [&] (Json::Value::iterator& i, double percentage)
+        {
+            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
+            auto                world = new fb::game::worldmap::world();
+            for(auto _group : *i)
+            {
+                auto            group = new fb::game::worldmap::group();
+                for(auto _offset = _group.begin(); _offset != _group.end(); _offset++)
+                {
+                    auto        name_world = CP949(_offset.key().asString(), PLATFORM::Windows);
+                    auto        offset = *_offset;
+
+                    group->push(name_world, new fb::game::worldmap::offset
+                    (
+                        point16_t
+                        (
+                            offset["position"]["x"].asInt(), 
+                            offset["position"]["y"].asInt()
+                        ), 
+                        fb::game::worldmap::destination
+                        (
+                            point16_t
+                            (
+                                offset["destination"]["x"].asInt(), 
+                                offset["destination"]["y"].asInt()
+                            ), 
+                            table::maps[offset["destination"]["map"].asInt()]
+                        )
+                    ));
+                }
+
+                world->push(group);
+            }
+
+            std::map<const std::string, fb::game::worldmap::world*>::insert(std::make_pair(name, world));
+            callback(name, percentage);
+        },
+        [&] (Json::Value::iterator& i, const std::string& e)
+        {
+            auto                key = i.key().asString();
+            error(key, e);
+        }
+    );
+
+    complete(count);
+    return true;
+}
+
+const std::optional<std::string> fb::game::container::worlds::find(const fb::game::map& map) const
+{
+    auto found = std::find_if
+    (
+        this->cbegin(), this->cend(), 
+        [&] (const std::pair<const std::string, const fb::game::worldmap::world*> pair)
+        {
+            const auto name = pair.first;
+            const auto world = pair.second;
+
+            return std::find_if
+            (
+                world->cbegin(), world->cend(),
+                [&] (const fb::game::worldmap::group* group)
+                {
+                    return std::find_if
+                    (
+                        group->cbegin(), group->cend(),
+                        [&] (const std::pair<const std::string, fb::game::worldmap::offset*> x)
+                        {
+                            return x.second->dest.map == &map;
+                        }
+                    ) != group->end();
+                }
+            ) != world->cend();
+        }
+    );
+
+    if(found != this->cend())
+        return found->first;
+    else
+        return std::nullopt;
 }

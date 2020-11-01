@@ -27,6 +27,7 @@ namespace fb { namespace game { namespace message {
     namespace assets 
     {
         static const char* MAP_LOADED = " * [%0.2lf%%] 맵 정보를 읽었습니다. (%s)";
+        static const char* WORLD_MAP_LOADED = " * [%0.2lf%%] 월드맵 정보를 읽었습니다. (%s)";
         static const char* DOOR_LOADED = " * [%0.2lf%%] 도어 정보를 읽었습니다. (%s)";
         static const char* SPELL_LOADED = " * [%0.2lf%%] 스펠 정보를 읽었습니다. (%s)";
         static const char* WARP_LOADED = " * [%0.2lf%%] 워프 정보를 읽었습니다. (%s)";
@@ -40,6 +41,7 @@ namespace fb { namespace game { namespace message {
         static const char* CLASS_LOADED = " * [%0.2lf%%] 클래스 정보를 읽었습니다. (%s)";
         static const char* BOARD_LOADED = " * [%0.2lf%%] 게시판 정보를 읽었습니다. (%s)";
         static const char* MAP_ALL_LOADED = " * [100%%] 총 %d개의 맵 정보를 읽었습니다.";
+        static const char* WORLD_MAP_ALL_LOADED = " * [100%%] 총 %d개의 월드맵 정보를 읽었습니다.";
         static const char* DOOR_ALL_LOADED = " * [100%%] 총 %d개의 도어 정보를 읽었습니다.";
         static const char* SPELL_ALL_LOADED = " * [100%%] 총 %d개의 스펠 정보를 읽었습니다.";
         static const char* WARP_ALL_LOADED = " * [100%%] 총 %d개의 워프 정보를 읽었습니다.";

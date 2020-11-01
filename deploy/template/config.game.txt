@@ -25,6 +25,7 @@
         "item drop": "table/item.drop.json",
         "item mix": "table/item.mix.json",
         "map": "table/map.json",
+        "world": "table/world.json",
         "mob": "table/mob.json",
         "mob spawn": "table/mob.spawn.json",
         "npc": "table/npc.json",

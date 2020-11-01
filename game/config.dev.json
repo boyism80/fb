@@ -1,8 +1,8 @@
 {
-    "id": "game1",
+    "id": "game7",
     "delay": 5,
     "ip": "192.168.0.100",
-    "port": 3004,
+    "port": 3010,
     "internal": {
         "ip": "192.168.0.100",
         "port": 3000
@@ -25,6 +25,7 @@
         "item drop": "table.dev/item.drop.json",
         "item mix": "table.dev/item.mix.json",
         "map": "table.dev/map.json",
+        "world": "table.dev/world.json",
         "mob": "table.dev/mob.json",
         "mob spawn": "table.dev/mob.spawn.json",
         "npc": "table.dev/npc.json",

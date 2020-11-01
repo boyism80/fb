@@ -504,3 +504,108 @@ int fb::game::map::builtin_doors(lua_State* lua)
     
     return 1;
 }
+
+
+
+
+// world
+fb::game::worldmap::group::group()
+{
+}
+
+fb::game::worldmap::group::~group()
+{
+    for(auto x : *this)
+        delete x.second;
+}
+
+void fb::game::worldmap::group::push(const std::string& name, offset* offset)
+{
+    this->insert(std::make_pair(name, offset));
+}
+
+bool fb::game::worldmap::group::contains(const offset& offset) const
+{
+    return std::find_if
+    (
+        this->cbegin(), this->cend(),
+        [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+        {
+            return pair.second == &offset;
+        }
+    ) != this->cend();
+}
+
+fb::game::worldmap::world::world()
+{
+}
+
+fb::game::worldmap::world::~world()
+{
+    for(auto x : *this)
+        delete x;
+}
+
+void fb::game::worldmap::world::push(group* group)
+{
+    this->push_back(group);
+    for(auto x : *group)
+        this->_offsets.push_back(x);
+}
+
+const std::vector<fb::game::worldmap::world::offset_pair>& fb::game::worldmap::world::offsets() const
+{
+    return this->_offsets;
+}
+
+const fb::game::worldmap::group* fb::game::worldmap::world::find(const std::string& name) const
+{
+    auto found = std::find_if
+    (
+        this->cbegin(), this->cend(), 
+        [&] (const fb::game::worldmap::group* group)
+        {
+            auto x = std::find_if
+            (
+                group->cbegin(), group->cend(),
+                [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+                {
+                    return pair.first == name;
+                }
+            );
+
+            return x != group->cend();
+        }
+    );
+
+    if(found == this->cend())
+        return nullptr;
+
+    return *found;
+}
+
+const fb::game::worldmap::group* fb::game::worldmap::world::find(const fb::game::map& map) const
+{
+    auto found = std::find_if
+    (
+        this->cbegin(), this->cend(), 
+        [&] (const fb::game::worldmap::group* group)
+        {
+            auto x = std::find_if
+            (
+                group->cbegin(), group->cend(),
+                [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+                {
+                    return pair.second->dest.map == &map;
+                }
+            );
+
+            return x != group->cend();
+        }
+    );
+
+    if(found == this->cend())
+        return nullptr;
+
+    return *found;
+}

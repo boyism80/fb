@@ -3,6 +3,7 @@
 
 #include "protocol/protocol.h"
 #include "model/map/map.h"
+#include "model/table/table.game.h"
 
 static const uint16_t crc16tab[256] = 
 {
@@ -142,6 +143,76 @@ public:
                   .write_u16(this->map.height()) // height
                   .write_u8(this->map.option() & fb::game::map::options::BUILD_IN ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
                   .write(this->map.name(), true);
+    }
+};
+
+
+class worlds : public fb::protocol::base::header
+{
+public:
+    const fb::game::map&            map;
+
+public:
+    worlds(const fb::game::map& map) : 
+        map(map)
+    {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        auto wm_name = fb::game::table::worlds.find(this->map);
+        if(wm_name.has_value() == false)
+            return;
+
+        auto world = fb::game::table::worlds[*wm_name];
+        if(world == nullptr)
+            return;
+
+        auto& offsets = world->offsets();
+        auto current = -1;
+        for(int i = 0; i < offsets.size(); i++)
+        {
+            if(&this->map == offsets[i].second->dest.map)
+            {
+                current = i;
+                break;
+            }
+        }
+        if(current == -1)
+            return;
+
+        out_stream.write_u8(0x2E)
+            .writestr_u8(*wm_name)
+            .write_u8(offsets.size())
+            .write_u8(current);
+
+        auto index_offset = 0;
+        for(int index_group = 0; index_group < world->size(); index_group++)
+        {
+            auto group = (*world)[index_group];
+            for(auto offset : *group)
+            {
+                index_offset++;
+
+                out_stream.write_u16(offset.second->position.x)
+                    .write_u16(offset.second->position.y)
+                    .writestr_u8(offset.first)
+                    .write_u16(0x0000)
+                    .write_u8(index_offset)
+                    .write_u8(index_group)
+                    .write_u16(0x9219)
+                    .write_u16(0x8919)
+                    .write_u16(group->size());
+
+                for(int i = 0; i < offsets.size(); i++)
+                {
+                    if(group->contains(*offsets[i].second) == false)
+                        continue;
+
+                    out_stream.write_u16(i);
+                }
+            }
+        }
     }
 };
 

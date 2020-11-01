@@ -148,6 +148,23 @@ def convert_mob_spawn(path, maps, mobs):
 
     return spawns
 
+
+def convert_world(path, maps):
+    worlds = None
+    with open(path, 'r', encoding='utf8') as f:
+        worlds = json.load(f)
+
+    for groups in worlds.values():
+        for group in groups:
+            for config in group.values():
+                map_name = config['destination']['map']
+                config['destination']['map'] = maps[map_name]['id']
+
+    Path('table.deploy').mkdir(parents=True, exist_ok=True)
+    with open(f'table.deploy/world.json', 'w', encoding='utf8') as f:
+        f.write(json.dumps(worlds, indent=4, ensure_ascii=False))
+
+
 def compress_maps(maps):
     data = {}
     for name in maps:
@@ -180,6 +197,7 @@ def resources():
     convert_warps('resources/table/warp.json', maps)
     convert_npc_spawn('resources/table/npc.spawn.json', maps, npcs)
     convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
+    convert_world('resources/table/world.json', maps)
     compress_maps(maps)
 
 if __name__ == '__main__':
@@ -226,6 +244,11 @@ if __name__ == '__main__':
         shutil.copy(f'table.deploy/warp.{current_id}.json', 'game/table.dev/warp.json')
     else:
         os.remove('game/table.dev/warp.json')
+
+    if os.path.isfile(f'table.deploy/world.json'):
+        shutil.copy(f'table.deploy/world.json', 'game/table.dev/world.json')
+    else:
+        os.remove('game/table.dev/world.json')
 
     if os.path.isfile(f'table.deploy/maps.{current_id}.zip'):
         shutil.copy(f'table.deploy/maps.{current_id}.zip', 'game/maps/maps.zip')

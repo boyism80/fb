@@ -1573,5 +1573,15 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         return true;
     }
 
+    if(splitted[0] == "월드맵")
+    {
+        auto name = splitted[1];
+        auto map = fb::game::table::maps.name2map(name);
+        if(map != nullptr)
+            session.send(fb::protocol::game::response::map::worlds(*map));
+
+        return true;
+    }
+
     return false;
 }
