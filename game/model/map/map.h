@@ -18,6 +18,91 @@ class map;
 class mob;
 class session;
 
+namespace wm {
+
+typedef struct __destination_tag
+{
+public:
+    point16_t               position;
+    fb::game::map*          map;
+
+public:
+    __destination_tag() : 
+        map(nullptr)
+    {}
+
+    __destination_tag(const point16_t& position, fb::game::map* map) : 
+        position(position), map(map)
+    {}
+} destination;
+
+typedef struct __offset_tag
+{
+public:
+    const std::string       id;
+    const std::string       name;
+    const point16_t         position;
+    const destination       dest;
+
+public:
+    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dest) : 
+        id(id), name(name), position(position), dest(dest)
+    {}
+
+    __offset_tag(const struct __offset_tag& right) : 
+        __offset_tag(right.id, right.name, right.position, right.dest)
+    {}
+
+} offset;
+
+class group : private std::vector<offset*>
+{
+public:
+    using std::vector<offset*>::begin;
+    using std::vector<offset*>::end;
+    using std::vector<offset*>::cbegin;
+    using std::vector<offset*>::cend;
+    using std::vector<offset*>::size;
+    using std::vector<offset*>::operator[];
+
+public:
+    group();
+    ~group();
+
+public:
+    void                                push(offset* offset);
+    bool                                contains(const offset& offset) const;
+};
+
+class world : private std::vector<group*>
+{
+private:
+    std::vector<offset*>                _offsets;
+
+public:
+    const std::string                   name;
+
+public:
+    using std::vector<group*>::begin;
+    using std::vector<group*>::end;
+    using std::vector<group*>::cbegin;
+    using std::vector<group*>::cend;
+    using std::vector<group*>::size;
+    using std::vector<group*>::operator[];
+
+public:
+    world(const std::string& name);
+    ~world();
+
+public:
+    void                                push(group* group);
+    const std::vector<offset*>&         offsets() const;
+    const fb::game::wm::group*          find(const std::string& name) const;
+    const fb::game::wm::group*          find(const fb::game::map& map) const;
+};
+
+}
+
 class objects : private std::vector<fb::game::object*>
 {
 #pragma region friend
@@ -112,15 +197,22 @@ public:
     typedef struct _warp
     {
     public:
+        // default warp
         fb::game::map*              map;
         const point16_t             before, after;
         const range8_t              limit;
 
+        // world warp
+        const fb::game::wm::offset* offset;
+
     public:
         _warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t limit) : 
-            map(map), before(before), after(after), limit(limit) {}
+            map(map), before(before), after(after), limit(limit), offset(nullptr) {}
+        _warp(const fb::game::wm::offset* offset, const point16_t& before) : 
+            map(nullptr), before(before), after(0, 0), limit(0, 0), offset(offset)
+        {}
         _warp(const _warp& right) : 
-            map(right.map), before(right.before), after(right.after), limit(right.limit)
+            map(right.map), before(right.before), after(right.after), limit(right.limit), offset(right.offset)
         {}
         ~_warp() {}
     } warp;
@@ -176,7 +268,8 @@ public:
     bool                            movable(const fb::game::object& object, fb::game::direction direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
-    void                            warp_add(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
+    void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
+    void                            push_warp(fb::game::wm::offset* offset, const point16_t& before);
     const fb::game::map::warp*      warpable(const point16_t& position) const;
 
     bool                            update(fb::game::object& object);
@@ -211,90 +304,6 @@ public:
     static int                      builtin_doors(lua_State* lua);
 #pragma endregion
 };
-
-namespace wm {
-
-typedef struct __destination_tag
-{
-public:
-    point16_t               position;
-    fb::game::map*          map;
-
-public:
-    __destination_tag() : 
-        map(nullptr)
-    {}
-
-    __destination_tag(const point16_t& position, fb::game::map* map) : 
-        position(position), map(map)
-    {}
-} destination;
-
-typedef struct __offset_tag
-{
-public:
-    const std::string       id;
-    const std::string       name;
-    const point16_t         position;
-    const destination       dest;
-
-public:
-    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dest) : 
-        id(id), name(name), position(position), dest(dest)
-    {}
-
-    __offset_tag(const struct __offset_tag& right) : 
-        __offset_tag(right.id, right.name, right.position, right.dest)
-    {}
-
-} offset;
-
-class group : private std::vector<offset*>
-{
-public:
-    using std::vector<offset*>::begin;
-    using std::vector<offset*>::end;
-    using std::vector<offset*>::cbegin;
-    using std::vector<offset*>::cend;
-    using std::vector<offset*>::size;
-
-public:
-    group();
-    ~group();
-
-public:
-    void                                push(offset* offset);
-    bool                                contains(const offset& offset) const;
-};
-
-class world : private std::vector<group*>
-{
-private:
-    std::vector<offset*>                _offsets;
-
-public:
-    const std::string                   name;
-
-public:
-    using std::vector<group*>::begin;
-    using std::vector<group*>::end;
-    using std::vector<group*>::cbegin;
-    using std::vector<group*>::cend;
-    using std::vector<group*>::size;
-    using std::vector<group*>::operator[];
-
-public:
-    world(const std::string& name);
-    ~world();
-
-public:
-    void                                push(group* group);
-    const std::vector<offset*>&         offsets() const;
-    const fb::game::wm::group*          find(const std::string& name) const;
-    const fb::game::wm::group*          find(const fb::game::map& map) const;
-};
-
-}
 
 } }
 

@@ -308,9 +308,14 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-void fb::game::map::warp_add(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
+void fb::game::map::push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
 {
     this->_warps.push_back(new warp(map, before, after, limit));
+}
+
+void fb::game::map::push_warp(fb::game::wm::offset* offset, const point16_t& before)
+{
+    this->_warps.push_back(new warp(offset, before));
 }
 
 const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) const

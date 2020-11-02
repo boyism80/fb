@@ -393,16 +393,28 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                 return;
 
             auto            warps = *i;
-            for (auto i2 = warps.begin(); i2 != warps.end(); i2++)
+            for(auto js_warp : *i)
             {
-                const point16_t before((*i2)["before"]["x"].asInt(), (*i2)["before"]["y"].asInt());
-                const point16_t after((*i2)["after"]["x"].asInt(), (*i2)["after"]["y"].asInt());
-                const range8_t  limit((*i2)["limit"]["min"].asInt(), (*i2)["limit"]["max"].asInt());
-                
-                auto        next_map_id = (*i2)["to"].asInt();
-                auto        next_map = fb::game::table::maps[next_map_id];
-                
-                map->warp_add(next_map, before, after, limit);
+                const point16_t before(js_warp["before"]["x"].asInt(), js_warp["before"]["y"].asInt());
+
+                if(js_warp.isMember("world"))
+                {
+                    auto world = fb::game::table::worlds[js_warp["world"]["wm"].asInt()];
+                    auto group = (*world)[js_warp["world"]["group"].asInt()];
+                    auto offset = (*group)[js_warp["world"]["offset"].asInt()];
+
+                    map->push_warp(offset, before);
+                }
+                else
+                {
+                    const point16_t after(js_warp["after"]["x"].asInt(), js_warp["after"]["y"].asInt());
+                    const range8_t  limit(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
+
+                    auto        next_map_id = js_warp["to"].asInt();
+                    auto        next_map = fb::game::table::maps[next_map_id];
+
+                    map->push_warp(next_map, before, after, limit);
+                }
             }
 
             callback(map->name(), percentage);

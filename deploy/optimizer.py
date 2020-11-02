@@ -61,7 +61,21 @@ def convert_host(maps):
     return hosts
 
 
-def convert_warps(path, maps):
+def convert_warps(path, world_path, maps):
+
+    def find_index(worlds, id):
+        for wm_i, world in enumerate(worlds.values()):
+            for group_i, group in enumerate(world):
+                for offset_i, offset_name in enumerate(group.keys()):
+                    if offset_name == id:
+                        return wm_i, group_i, offset_i
+
+        return None, None, None
+
+    worlds = None
+    with open(world_path, 'r', encoding='utf8') as f:
+        worlds = json.load(f)
+
     data = None
     with open(path, 'r', encoding='utf8') as f:
         data = json.load(f)
@@ -83,9 +97,13 @@ def convert_warps(path, maps):
     for host in warps:
         for id in warps[host]:
             for warp in warps[host][id]:
-                name = warp['map']
-                warp['to'] = int(maps[name]['id'])
-                del warp['map']
+                if 'world' in warp:
+                    wm, group, offset = find_index(worlds, warp['world'])
+                    warp['world'] = { 'wm': wm, 'group': group, 'offset': offset }
+                else:
+                    name = warp['map']
+                    warp['to'] = int(maps[name]['id'])
+                    del warp['map']
 
     Path('table.deploy').mkdir(parents=True, exist_ok=True)
     for host in warps:
@@ -216,7 +234,7 @@ def resources():
     mobs = load_mobs('resources/table/mob.json')
 
     convert_host(maps)
-    convert_warps('resources/table/warp.json', maps)
+    convert_warps('resources/table/warp.json', 'resources/table/world.json', maps)
     convert_npc_spawn('resources/table/npc.spawn.json', maps, npcs)
     convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
     convert_world('resources/table/world.json', maps)

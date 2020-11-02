@@ -150,17 +150,38 @@ public:
 class worlds : public fb::protocol::base::header
 {
 public:
-    const std::string               id;
+    const fb::game::wm::offset*     offset;
 
 public:
-    worlds(const std::string& id) : 
-        id(id)
+    worlds(const fb::game::wm::offset& offset) : 
+        offset(&offset)
     {}
+    worlds(const std::string& id)
+    {
+        auto  windex = fb::game::table::worlds.find(id);
+        auto  world = fb::game::table::worlds[windex];
+        auto& offsets = world->offsets();
+        auto found = std::find_if
+            (
+                offsets.cbegin(), offsets.cend(),
+                [&] (fb::game::wm::offset* offset)
+                {
+                    return offset->id == id;
+                }
+            );
+
+        this->offset = 
+            found == offsets.cend() ? 
+            nullptr : *found;
+    }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto windex = fb::game::table::worlds.find(this->id);
+        if(this->offset == nullptr)
+            return;
+
+        auto windex = fb::game::table::worlds.find(this->offset->id);
         if(windex == -1)
             return;
 
@@ -172,7 +193,7 @@ public:
         auto current = -1;
         for(int i = 0; i < offsets.size(); i++)
         {
-            if(this->id == offsets[i]->id)
+            if(this->offset == offsets[i])
             {
                 current = i;
                 break;

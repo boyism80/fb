@@ -551,7 +551,17 @@ bool fb::game::acceptor::handle_move(fb::socket<fb::game::session>& socket, cons
     // 워프 위치라면 워프한다.
     const auto              warp = map->warpable(session->position());
     if(warp != nullptr)
-        session->map(warp->map, warp->after);
+    {
+        if(warp->offset != nullptr)
+        {
+            session->map(nullptr);
+            session->send(fb::protocol::game::response::map::worlds(*warp->offset));
+        }
+        else
+        {
+            session->map(warp->map, warp->after);
+        }
+    }
     return true;
 }
 
