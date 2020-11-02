@@ -262,6 +262,7 @@ public:
     uint16_t                        height() const;
     size16_t                        size() const;
     uint8_t                         bgm() const;
+    bool                            loaded() const;
 
     bool                            existable(const point16_t position) const;
     bool                            movable(const point16_t position) const;

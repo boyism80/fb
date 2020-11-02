@@ -246,6 +246,11 @@ uint8_t fb::game::map::bgm() const
     return this->_bgm;
 }
 
+bool fb::game::map::loaded() const
+{
+    return this->_size.width > 0 && this->_size.height > 0;
+}
+
 bool fb::game::map::existable(const point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;

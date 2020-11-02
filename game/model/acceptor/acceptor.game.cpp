@@ -383,9 +383,17 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
     {
         auto session = client->data();
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
-        
-        session->map(session->before_map(), session->before());
-        session->before_map(nullptr);
+
+        auto before = session->before_map();
+        if(before == nullptr)
+        {
+            socket.close();
+        }
+        else
+        {
+            session->map(before, session->before());
+            session->before_map(nullptr);
+        }
     }
 
     return true;
@@ -1172,9 +1180,10 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
     const auto after = offsets[request.after]->dest;
 
     auto session = socket.data();
-    session->before_map(before.map);
+    if(before.map->loaded())
+        session->before_map(before.map);
+    
     session->map(after.map, after.position);
-
     return true;
 }
 
@@ -1608,6 +1617,7 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
     if(splitted[0] == "월드맵")
     {
         auto id = splitted[1];
+        session.before_map(session.map());
         session.map(nullptr);
         session.send(fb::protocol::game::response::map::worlds(id));
 
