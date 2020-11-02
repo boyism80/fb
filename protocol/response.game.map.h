@@ -160,11 +160,11 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto pair = fb::game::table::worlds.find(this->id);
-        if(pair.has_value() == false)
+        auto windex = fb::game::table::worlds.find(this->id);
+        if(windex == -1)
             return;
 
-        auto world = fb::game::table::worlds[pair->first];
+        auto world = fb::game::table::worlds[windex];
         if(world == nullptr)
             return;
 
@@ -172,7 +172,7 @@ public:
         auto current = -1;
         for(int i = 0; i < offsets.size(); i++)
         {
-            if(this->id == offsets[i].first)
+            if(this->id == offsets[i]->id)
             {
                 current = i;
                 break;
@@ -182,7 +182,7 @@ public:
             return;
 
         out_stream.write_u8(0x2E)
-            .writestr_u8(pair->first)
+            .writestr_u8(world->name)
             .write_u8(offsets.size())
             .write_u8(current);
 
@@ -192,18 +192,18 @@ public:
             auto group = (*world)[gropu_id];
             for(auto offset : *group)
             {
-                out_stream.write_u16(offset.second->position.x)
-                    .write_u16(offset.second->position.y)
-                    .writestr_u8(offset.second->name)
+                out_stream.write_u16(offset->position.x)
+                    .write_u16(offset->position.y)
+                    .writestr_u8(offset->name)
                     .write_u16(0x0000)
-                    .write_u16(pair->second)
+                    .write_u16(windex)
                     .write_u16(current)
                     .write_u16(offset_id++)
                     .write_u16(group->size());
 
                 for(int i = 0; i < offsets.size(); i++)
                 {
-                    if(group->contains(*offsets[i].second) == false)
+                    if(group->contains(*offsets[i]) == false)
                         continue;
 
                     out_stream.write_u16(i);

@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <sstream>
 #include <zlib.h>
-#include <unordered_map>
 #include "model/door/door.h"
 #include "model/map/sector.h"
 #include "module/stream/stream.h"
@@ -234,46 +233,47 @@ public:
 typedef struct __offset_tag
 {
 public:
+    const std::string       id;
     const std::string       name;
     const point16_t         position;
     const destination       dest;
 
 public:
-    __offset_tag(const std::string& name, const point16_t& position, const destination& dest) : 
-        name(name), position(position), dest(dest)
+    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dest) : 
+        id(id), name(name), position(position), dest(dest)
     {}
 
     __offset_tag(const struct __offset_tag& right) : 
-        __offset_tag(right.name, right.position, right.dest)
+        __offset_tag(right.id, right.name, right.position, right.dest)
     {}
 
 } offset;
 
-class group : private std::unordered_map<std::string, offset*>
+class group : private std::vector<offset*>
 {
 public:
-    using std::unordered_map<std::string, offset*>::begin;
-    using std::unordered_map<std::string, offset*>::end;
-    using std::unordered_map<std::string, offset*>::cbegin;
-    using std::unordered_map<std::string, offset*>::cend;
-    using std::unordered_map<std::string, offset*>::size;
+    using std::vector<offset*>::begin;
+    using std::vector<offset*>::end;
+    using std::vector<offset*>::cbegin;
+    using std::vector<offset*>::cend;
+    using std::vector<offset*>::size;
 
 public:
     group();
     ~group();
 
 public:
-    void                                push(const std::string& id, offset* offset);
+    void                                push(offset* offset);
     bool                                contains(const offset& offset) const;
 };
 
 class world : private std::vector<group*>
 {
-public:
-    typedef std::pair<const std::string, offset*> offset_pair;
-
 private:
-    std::vector<offset_pair>            _offsets;
+    std::vector<offset*>                _offsets;
+
+public:
+    const std::string                   name;
 
 public:
     using std::vector<group*>::begin;
@@ -284,12 +284,12 @@ public:
     using std::vector<group*>::operator[];
 
 public:
-    world();
+    world(const std::string& name);
     ~world();
 
 public:
     void                                push(group* group);
-    const std::vector<offset_pair>&     offsets() const;
+    const std::vector<offset*>&         offsets() const;
     const fb::game::wm::group*          find(const std::string& name) const;
     const fb::game::wm::group*          find(const fb::game::map& map) const;
 };

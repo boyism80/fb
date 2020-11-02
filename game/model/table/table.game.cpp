@@ -999,7 +999,7 @@ fb::game::container::worlds::worlds()
 fb::game::container::worlds::~worlds()
 {
     for(auto x : *this)
-        delete x.second;
+        delete x;
 }
 
 bool fb::game::container::worlds::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -1009,32 +1009,33 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
         path, 
         [&] (Json::Value::iterator& i, double percentage)
         {
-            auto                name = CP949(i.key().asString(), PLATFORM::Windows);
-            auto                world = new fb::game::wm::world();
-            for(auto js_group : *i)
+            auto                js_world = *i;
+            auto                name = CP949(js_world["name"].asString(), PLATFORM::Windows);
+            auto                world = new fb::game::wm::world(name);
+            for(auto js_group : js_world["world"])
             {
                 auto            group = new fb::game::wm::group();
-                for(auto js_offset = js_group.begin(); js_offset != js_group.end(); js_offset++)
+                for(auto js_offset : js_group)
                 {
-                    auto        id = CP949(js_offset.key().asString(), PLATFORM::Windows);
-                    auto        offset = *js_offset;
+                    auto        id = CP949(js_offset["id"].asString(), PLATFORM::Windows);
 
-                    group->push(id, new fb::game::wm::offset
+                    group->push(new fb::game::wm::offset
                     (
-                        CP949(offset["name"].asString(), PLATFORM::Windows),
+                        id, 
+                        CP949(js_offset["name"].asString(), PLATFORM::Windows),
                         point16_t
                         (
-                            offset["position"]["x"].asInt(), 
-                            offset["position"]["y"].asInt()
+                            js_offset["position"]["x"].asInt(), 
+                            js_offset["position"]["y"].asInt()
                         ), 
                         fb::game::wm::destination
                         (
                             point16_t
                             (
-                                offset["destination"]["x"].asInt(), 
-                                offset["destination"]["y"].asInt()
+                                js_offset["destination"]["x"].asInt(), 
+                                js_offset["destination"]["y"].asInt()
                             ), 
-                            table::maps[offset["destination"]["map"].asInt()]
+                            table::maps[js_offset["destination"]["map"].asInt()]
                         )
                     ));
                 }
@@ -1042,7 +1043,7 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
                 world->push(group);
             }
 
-            (*this)[name] = world;
+            std::vector<fb::game::wm::world*>::push_back(world);
             callback(name, percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)
@@ -1056,44 +1057,31 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
     return true;
 }
 
-fb::game::container::worlds::key_pair fb::game::container::worlds::find(const std::string& id) const
+int fb::game::container::worlds::find(const std::string& id) const
 {
-    auto index = 0;
-    for(auto pair : *this)
+    for(int i = 0; i < this->size(); i++)
     {
+        auto world = this->at(i);
+
         const auto found = std::find_if
         (
-            pair.second->cbegin(), pair.second->cend(),
+            world->cbegin(), world->cend(),
             [&] (const fb::game::wm::group* group)
             {
                 return std::find_if
                 (
                     group->cbegin(), group->cend(),
-                    [&] (const std::pair<const std::string, fb::game::wm::offset*> x)
+                    [&] (const fb::game::wm::offset* x)
                     {
-                        return x.first == id;
+                        return x->id == id;
                     }
                 ) != group->end();
             }
         );
 
-        if(found != pair.second->cend())
-            return std::make_pair(pair.first, index);
-
-        index++;
+        if(found != world->cend())
+            return i;
     }
 
-    return std::nullopt;
-}
-
-const fb::game::wm::world* fb::game::container::worlds::operator[](int index) const
-{
-    auto begin = this->cbegin();
-    for(int i = 0; i < index; i++)
-        begin++;
-
-    if(begin == this->cend())
-        return nullptr;
-    else
-        return begin->second;
+    return -1;
 }

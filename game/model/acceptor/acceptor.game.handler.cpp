@@ -574,6 +574,8 @@ void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
 void fb::game::acceptor::on_save(session& me)
 {
     auto map = me.map();
+    if(map == nullptr)
+        map = me.before_map();
     auto weapon = me.items.weapon();
     auto helmet = me.items.helmet();
     auto armor = me.items.armor();
@@ -601,7 +603,7 @@ void fb::game::acceptor::on_save(session& me)
         me.sex(), 
         me.nation(), 
         me.creature(),
-        map->id(),
+        map != nullptr ? map->id() : 0,
         me.x(),
         me.y(),
         me.direction(),

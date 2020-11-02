@@ -516,12 +516,12 @@ fb::game::wm::group::group()
 fb::game::wm::group::~group()
 {
     for(auto x : *this)
-        delete x.second;
+        delete x;
 }
 
-void fb::game::wm::group::push(const std::string& id, offset* offset)
+void fb::game::wm::group::push(offset* offset)
 {
-    (*this)[id] = offset;
+    this->push_back(offset);
 }
 
 bool fb::game::wm::group::contains(const offset& offset) const
@@ -529,14 +529,15 @@ bool fb::game::wm::group::contains(const offset& offset) const
     return std::find_if
     (
         this->cbegin(), this->cend(),
-        [&] (const std::pair<const std::string, fb::game::wm::offset*>& pair)
+        [&] (const fb::game::wm::offset* x)
         {
-            return pair.second == &offset;
+            return x == &offset;
         }
     ) != this->cend();
 }
 
-fb::game::wm::world::world()
+fb::game::wm::world::world(const std::string& name) : 
+    name(name)
 {
 }
 
@@ -553,7 +554,7 @@ void fb::game::wm::world::push(group* group)
         this->_offsets.push_back(x);
 }
 
-const std::vector<fb::game::wm::world::offset_pair>& fb::game::wm::world::offsets() const
+const std::vector<fb::game::wm::offset*>& fb::game::wm::world::offsets() const
 {
     return this->_offsets;
 }
@@ -568,9 +569,9 @@ const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) cons
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::pair<const std::string, fb::game::wm::offset*>& pair)
+                [&] (const fb::game::wm::offset* offset)
                 {
-                    return pair.first == id;
+                    return offset->id == id;
                 }
             );
 
@@ -594,9 +595,9 @@ const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) c
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::pair<std::string, fb::game::wm::offset*>& pair)
+                [&] (const fb::game::wm::offset* offset)
                 {
-                    return pair.second->dest.map == &map;
+                    return offset->dest.map == &map;
                 }
             );
 

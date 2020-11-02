@@ -159,15 +159,32 @@ def convert_world(path, maps):
     with open(path, 'r', encoding='utf8') as f:
         worlds = json.load(f)
 
-    for world in worlds.values():
+    cvt_worlds = []
+    for wname, world in worlds.items():
+        cvt_world = []
         for group in world:
-            for offset in group.values():
+            cvt_group = []
+            for id, offset in group.items():
+                offset['id'] = id
                 map_name = offset['destination']['map']
                 offset['destination']['map'] = maps[map_name]['id']
 
+                cvt_group.append({
+                    'id': id,
+                    'name': offset['name'],
+                    'position': offset['position'],
+                    'destination': {
+                        'map': maps[map_name]['id'],
+                        'x': offset['destination']['x'],
+                        'y': offset['destination']['y']
+                    }
+                })
+            cvt_world.append(cvt_group)
+        cvt_worlds.append({'name': wname, 'world': cvt_world})
+
     Path('table.deploy').mkdir(parents=True, exist_ok=True)
     with open(f'table.deploy/world.json', 'w', encoding='utf8') as f:
-        f.write(json.dumps(worlds, indent=4, ensure_ascii=False))
+        f.write(json.dumps(cvt_worlds, indent=4, ensure_ascii=False))
 
 
 def compress_maps(maps):

@@ -1158,8 +1158,8 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
         return false;
 
     const auto& offsets = world->offsets();
-    const auto before = offsets[request.before].second->dest;
-    const auto after = offsets[request.after].second->dest;
+    const auto before = offsets[request.before]->dest;
+    const auto after = offsets[request.after]->dest;
 
     auto session = socket.data();
     session->before_map(before.map);
