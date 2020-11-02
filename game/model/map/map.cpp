@@ -509,68 +509,68 @@ int fb::game::map::builtin_doors(lua_State* lua)
 
 
 // world
-fb::game::worldmap::group::group()
+fb::game::wm::group::group()
 {
 }
 
-fb::game::worldmap::group::~group()
+fb::game::wm::group::~group()
 {
     for(auto x : *this)
         delete x.second;
 }
 
-void fb::game::worldmap::group::push(const std::string& name, offset* offset)
+void fb::game::wm::group::push(const std::string& id, offset* offset)
 {
-    this->insert(std::make_pair(name, offset));
+    (*this)[id] = offset;
 }
 
-bool fb::game::worldmap::group::contains(const offset& offset) const
+bool fb::game::wm::group::contains(const offset& offset) const
 {
     return std::find_if
     (
         this->cbegin(), this->cend(),
-        [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+        [&] (const std::pair<const std::string, fb::game::wm::offset*>& pair)
         {
             return pair.second == &offset;
         }
     ) != this->cend();
 }
 
-fb::game::worldmap::world::world()
+fb::game::wm::world::world()
 {
 }
 
-fb::game::worldmap::world::~world()
+fb::game::wm::world::~world()
 {
     for(auto x : *this)
         delete x;
 }
 
-void fb::game::worldmap::world::push(group* group)
+void fb::game::wm::world::push(group* group)
 {
     this->push_back(group);
     for(auto x : *group)
         this->_offsets.push_back(x);
 }
 
-const std::vector<fb::game::worldmap::world::offset_pair>& fb::game::worldmap::world::offsets() const
+const std::vector<fb::game::wm::world::offset_pair>& fb::game::wm::world::offsets() const
 {
     return this->_offsets;
 }
 
-const fb::game::worldmap::group* fb::game::worldmap::world::find(const std::string& name) const
+const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) const
 {
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const fb::game::worldmap::group* group)
+        [&] (const fb::game::wm::group* group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+                [&] (const std::pair<const std::string, fb::game::wm::offset*>& pair)
                 {
-                    return pair.first == name;
+                    return pair.first == id;
                 }
             );
 
@@ -584,17 +584,17 @@ const fb::game::worldmap::group* fb::game::worldmap::world::find(const std::stri
     return *found;
 }
 
-const fb::game::worldmap::group* fb::game::worldmap::world::find(const fb::game::map& map) const
+const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) const
 {
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const fb::game::worldmap::group* group)
+        [&] (const fb::game::wm::group* group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::pair<const std::string, fb::game::worldmap::offset*>& pair)
+                [&] (const std::pair<std::string, fb::game::wm::offset*>& pair)
                 {
                     return pair.second->dest.map == &map;
                 }

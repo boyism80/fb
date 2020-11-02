@@ -23,6 +23,22 @@ public:
     }
 };
 
+class world : public fb::protocol::base::header
+{
+public:
+    uint16_t                world;
+    uint16_t                before;
+    uint16_t                after;
+
+public:
+    void deserialize(fb::istream& in_stream)
+    {
+        this->world = in_stream.read_u16();
+        this->before = in_stream.read_u16();
+        this->after = in_stream.read_u16();
+    }
+};
+
 } } } } }
 
 #endif // !__PROTOCOL_REQUEST_GAME_MAP_H__

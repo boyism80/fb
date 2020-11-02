@@ -233,23 +233,29 @@ public:
 };
 
 
-class worlds : private std::map<const std::string, fb::game::worldmap::world*>
+class worlds : private std::unordered_map<std::string, fb::game::wm::world*>
 {
+public:
+    typedef std::optional<std::pair<std::string, int>> key_pair;
+
 public:
     worlds();
     ~worlds();
 
 public:
-    using std::map<const std::string, fb::game::worldmap::world*>::begin;
-    using std::map<const std::string, fb::game::worldmap::world*>::end;
-    using std::map<const std::string, fb::game::worldmap::world*>::cbegin;
-    using std::map<const std::string, fb::game::worldmap::world*>::cend;
-    using std::map<const std::string, fb::game::worldmap::world*>::size;
-    using std::map<const std::string, fb::game::worldmap::world*>::operator[];
+    using std::unordered_map<std::string, fb::game::wm::world*>::begin;
+    using std::unordered_map<std::string, fb::game::wm::world*>::end;
+    using std::unordered_map<std::string, fb::game::wm::world*>::cbegin;
+    using std::unordered_map<std::string, fb::game::wm::world*>::cend;
+    using std::unordered_map<std::string, fb::game::wm::world*>::size;
+    using std::unordered_map<std::string, fb::game::wm::world*>::operator[];
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    const std::optional<std::string>        find(const fb::game::map& map) const;
+    key_pair                                find(const std::string& id) const;
+
+public:
+    const fb::game::wm::world*              operator [] (int) const;
 };
 
 }

@@ -428,10 +428,35 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 void fb::game::object::map(fb::game::map* map, const point16_t& position, bool force)
 {
+    auto before = this->_map;
+    if(this->is(fb::game::object::types::SESSION))
+    {
+        auto session = static_cast<fb::game::session*>(this);
+        if(map == nullptr && session->before_map() != nullptr)
+            before = session->before_map();
+    }
+
     const bool to_empty         = (map == nullptr);
     const bool from_empty       = (this->_map == nullptr);
     const bool position_changed = (!to_empty && !from_empty && map == this->_map);
-    const bool transfer         = (!to_empty && !from_empty && map->host != this->_map->host);
+    bool       transfer         = false;
+    if(to_empty == false)
+    {
+        if(from_empty)
+        {
+            auto session = (fb::game::session*)nullptr;
+            if(this->is(fb::game::object::types::SESSION))
+            {
+                auto session = static_cast<fb::game::session*>(this);
+                auto before = session->before_map();
+                transfer = before != nullptr && map->host != before->host;
+            }
+        }
+        else
+        {
+            transfer = map->host != this->_map->host;
+        }
+    }
 
     if(position_changed)
     {

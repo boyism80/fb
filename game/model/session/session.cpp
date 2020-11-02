@@ -28,7 +28,8 @@ session::session(fb::socket<fb::game::session>& socket, listener* listener) :
     _clan(nullptr),
     trade(*this, listener),
     items(*this, listener),
-    dialog(*this, listener)
+    dialog(*this, listener),
+    _before_map(nullptr)
 {
     memset(this->_options, 0, sizeof(this->_options));
 }
@@ -831,6 +832,16 @@ void fb::game::session::unride(fb::game::listener* listener)
 bool fb::game::session::alive() const
 {
     return this->_state != state::GHOST;
+}
+
+fb::game::map* fb::game::session::before_map()
+{
+    return this->_before_map;
+}
+
+void fb::game::session::before_map(fb::game::map* map)
+{
+    this->_before_map = map;
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

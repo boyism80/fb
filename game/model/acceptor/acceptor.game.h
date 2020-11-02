@@ -110,6 +110,7 @@ public:
     bool                    handle_spell(fb::socket<fb::game::session>&, const fb::protocol::game::request::spell::use&);
     bool                    handle_door(fb::socket<fb::game::session>&, const fb::protocol::game::request::door&);
     bool                    handle_whisper(fb::socket<fb::game::session>&, const fb::protocol::game::request::whisper&);
+    bool                    handle_world(fb::socket<fb::game::session>&, const fb::protocol::game::request::map::world&);
 
 private:
     void                    handle_counter_mob_action(fb::game::mob* mob);

@@ -204,6 +204,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::game::request::spell::use>       (0x0F, std::bind(&acceptor::handle_spell,           this, std::placeholders::_1, std::placeholders::_2));   // 스펠 핸들러
     this->bind<fb::protocol::game::request::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
     this->bind<fb::protocol::game::request::whisper>          (0x19, std::bind(&acceptor::handle_whisper,         this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
+    this->bind<fb::protocol::game::request::map::world>       (0x3F, std::bind(&acceptor::handle_world,           this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
 
     this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_in_transfer,           this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::whisper>     (std::bind(&acceptor::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));
@@ -380,7 +381,11 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
     }
     catch(std::exception& e)
     {
-        this->on_notify(*client->data(), e.what(), fb::game::message::type::STATE);
+        auto session = client->data();
+        this->on_notify(*session, e.what(), fb::game::message::type::STATE);
+        
+        session->map(session->before_map(), session->before());
+        session->before_map(nullptr);
     }
 
     return true;
@@ -1146,6 +1151,23 @@ bool fb::game::acceptor::handle_whisper(fb::socket<fb::game::session>& socket, c
     return true;
 }
 
+bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::map::world& request)
+{
+    auto world = fb::game::table::worlds[request.world];
+    if(world == nullptr)
+        return false;
+
+    const auto& offsets = world->offsets();
+    const auto before = offsets[request.before].second->dest;
+    const auto after = offsets[request.after].second->dest;
+
+    auto session = socket.data();
+    session->before_map(before.map);
+    session->map(after.map, after.position);
+
+    return true;
+}
+
 void fb::game::acceptor::handle_counter_mob_action(fb::game::mob* mob)
 {
     try
@@ -1575,10 +1597,9 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
 
     if(splitted[0] == "월드맵")
     {
-        auto name = splitted[1];
-        auto map = fb::game::table::maps.name2map(name);
-        if(map != nullptr)
-            session.send(fb::protocol::game::response::map::worlds(*map));
+        auto id = splitted[1];
+        session.map(nullptr);
+        session.send(fb::protocol::game::response::map::worlds(id));
 
         return true;
     }

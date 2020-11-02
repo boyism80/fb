@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <zlib.h>
+#include <unordered_map>
 #include "model/door/door.h"
 #include "model/map/sector.h"
 #include "module/stream/stream.h"
@@ -212,16 +213,20 @@ public:
 #pragma endregion
 };
 
-namespace worldmap {
+namespace wm {
 
 typedef struct __destination_tag
 {
 public:
-    const point16_t         position;
-    const fb::game::map*    map;
+    point16_t               position;
+    fb::game::map*          map;
 
 public:
-    __destination_tag(const point16_t& position, const fb::game::map* map) : 
+    __destination_tag() : 
+        map(nullptr)
+    {}
+
+    __destination_tag(const point16_t& position, fb::game::map* map) : 
         position(position), map(map)
     {}
 } destination;
@@ -229,35 +234,36 @@ public:
 typedef struct __offset_tag
 {
 public:
+    const std::string       name;
     const point16_t         position;
     const destination       dest;
 
 public:
-    __offset_tag(const point16_t& position, const destination& dest) : 
-        position(position), dest(dest)
+    __offset_tag(const std::string& name, const point16_t& position, const destination& dest) : 
+        name(name), position(position), dest(dest)
     {}
 
     __offset_tag(const struct __offset_tag& right) : 
-        __offset_tag(right.position, right.dest)
+        __offset_tag(right.name, right.position, right.dest)
     {}
 
 } offset;
 
-class group : private std::map<const std::string, offset*>
+class group : private std::unordered_map<std::string, offset*>
 {
 public:
-    using std::map<const std::string, offset*>::begin;
-    using std::map<const std::string, offset*>::end;
-    using std::map<const std::string, offset*>::cbegin;
-    using std::map<const std::string, offset*>::cend;
-    using std::map<const std::string, offset*>::size;
+    using std::unordered_map<std::string, offset*>::begin;
+    using std::unordered_map<std::string, offset*>::end;
+    using std::unordered_map<std::string, offset*>::cbegin;
+    using std::unordered_map<std::string, offset*>::cend;
+    using std::unordered_map<std::string, offset*>::size;
 
 public:
     group();
     ~group();
 
 public:
-    void                                push(const std::string& name, offset* offset);
+    void                                push(const std::string& id, offset* offset);
     bool                                contains(const offset& offset) const;
 };
 
@@ -284,8 +290,8 @@ public:
 public:
     void                                push(group* group);
     const std::vector<offset_pair>&     offsets() const;
-    const fb::game::worldmap::group*    find(const std::string& name) const;
-    const fb::game::worldmap::group*    find(const fb::game::map& map) const;
+    const fb::game::wm::group*          find(const std::string& name) const;
+    const fb::game::wm::group*          find(const fb::game::map& map) const;
 };
 
 }

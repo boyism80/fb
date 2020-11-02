@@ -150,21 +150,21 @@ public:
 class worlds : public fb::protocol::base::header
 {
 public:
-    const fb::game::map&            map;
+    const std::string               id;
 
 public:
-    worlds(const fb::game::map& map) : 
-        map(map)
+    worlds(const std::string& id) : 
+        id(id)
     {}
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto wm_name = fb::game::table::worlds.find(this->map);
-        if(wm_name.has_value() == false)
+        auto pair = fb::game::table::worlds.find(this->id);
+        if(pair.has_value() == false)
             return;
 
-        auto world = fb::game::table::worlds[*wm_name];
+        auto world = fb::game::table::worlds[pair->first];
         if(world == nullptr)
             return;
 
@@ -172,7 +172,7 @@ public:
         auto current = -1;
         for(int i = 0; i < offsets.size(); i++)
         {
-            if(&this->map == offsets[i].second->dest.map)
+            if(this->id == offsets[i].first)
             {
                 current = i;
                 break;
@@ -182,26 +182,23 @@ public:
             return;
 
         out_stream.write_u8(0x2E)
-            .writestr_u8(*wm_name)
+            .writestr_u8(pair->first)
             .write_u8(offsets.size())
             .write_u8(current);
 
-        auto index_offset = 0;
-        for(int index_group = 0; index_group < world->size(); index_group++)
+        auto offset_id = 0;
+        for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
         {
-            auto group = (*world)[index_group];
+            auto group = (*world)[gropu_id];
             for(auto offset : *group)
             {
-                index_offset++;
-
                 out_stream.write_u16(offset.second->position.x)
                     .write_u16(offset.second->position.y)
-                    .writestr_u8(offset.first)
+                    .writestr_u8(offset.second->name)
                     .write_u16(0x0000)
-                    .write_u8(index_offset)
-                    .write_u8(index_group)
-                    .write_u16(0x9219)
-                    .write_u16(0x8919)
+                    .write_u16(pair->second)
+                    .write_u16(current)
+                    .write_u16(offset_id++)
                     .write_u16(group->size());
 
                 for(int i = 0; i < offsets.size(); i++)

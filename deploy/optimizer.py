@@ -5,6 +5,7 @@ import shutil
 import glob
 from pathlib import Path
 
+
 def load_maps(path):
     maps = {}
     with open(path, 'r', encoding='utf8') as f:
@@ -17,6 +18,7 @@ def load_maps(path):
         reverse[name]['id'] = int(id)
 
     return reverse
+
 
 def load_npcs(path):
     npcs = {}
@@ -31,6 +33,7 @@ def load_npcs(path):
 
     return reverse
 
+
 def load_mobs(path):
     mobs = {}
     with open(path, 'r', encoding='utf8') as f:
@@ -43,6 +46,7 @@ def load_mobs(path):
         reverse[name]['id'] = int(id)
 
     return reverse
+
 
 def convert_host(maps):
     reverse = { x['id'] : x for x in maps.values() }
@@ -83,13 +87,13 @@ def convert_warps(path, maps):
                 warp['to'] = int(maps[name]['id'])
                 del warp['map']
 
-
     Path('table.deploy').mkdir(parents=True, exist_ok=True)
     for host in warps:
         with open(f'table.deploy/warp.{host}.json', 'w', encoding='utf8') as f:
             f.write(json.dumps(warps[host], indent=4, ensure_ascii=False))
 
     return warps
+
 
 def convert_npc_spawn(path, maps, npcs):
     data = None
@@ -118,6 +122,7 @@ def convert_npc_spawn(path, maps, npcs):
             f.write(json.dumps(spawns[host], indent=4, ensure_ascii=False))
 
     return spawns
+
 
 def convert_mob_spawn(path, maps, mobs):
     data = None
@@ -154,11 +159,11 @@ def convert_world(path, maps):
     with open(path, 'r', encoding='utf8') as f:
         worlds = json.load(f)
 
-    for groups in worlds.values():
-        for group in groups:
-            for config in group.values():
-                map_name = config['destination']['map']
-                config['destination']['map'] = maps[map_name]['id']
+    for world in worlds.values():
+        for group in world:
+            for offset in group.values():
+                map_name = offset['destination']['map']
+                offset['destination']['map'] = maps[map_name]['id']
 
     Path('table.deploy').mkdir(parents=True, exist_ok=True)
     with open(f'table.deploy/world.json', 'w', encoding='utf8') as f:
@@ -175,7 +180,6 @@ def compress_maps(maps):
 
         data[host].append(f"{maps[name]['id']:06}")
 
-
     Path('table.deploy').mkdir(parents=True, exist_ok=True)
     for host in data:
         zfile = zipfile.ZipFile(f'table.deploy/maps.{host}.zip', 'w')
@@ -188,6 +192,7 @@ def compress_maps(maps):
 
         zfile.close()
 
+
 def resources():
     maps = load_maps('resources/table/map.json')
     npcs = load_npcs('resources/table/npc.json')
@@ -199,6 +204,7 @@ def resources():
     convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
     convert_world('resources/table/world.json', maps)
     compress_maps(maps)
+
 
 if __name__ == '__main__':
     resources()
