@@ -51,6 +51,9 @@ protected:
 public:
     void                        send_stream(S<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
     void                        send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+
+public:
+    operator boost::asio::io_context& () const;
 };
 
 } }

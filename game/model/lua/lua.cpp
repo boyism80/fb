@@ -1,7 +1,7 @@
 #include "model/lua/lua.h"
 using namespace fb::game::lua;
 
-main* main::_instance;
+main*                           main::_instance;
 
 std::string lua_cp949(lua_State* lua, int i)
 {
@@ -85,7 +85,7 @@ state& fb::game::lua::state::func(const char* format, ...)
 
 state& fb::game::lua::state::pushstring(const std::string& value)
 {
-    lua_pushstring(this->_lua, value.c_str());
+    lua_push_utf8(this->_lua, value.c_str());
     return *this;
 }
 
@@ -125,9 +125,12 @@ state::operator lua_State* () const
 }
 
 thread::thread() : 
-    state(lua_newthread(main::get())),
-    _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX))
-{ }
+    lua::state(lua_newthread(main::get())),
+    _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX)),
+    _state(LUA_YIELD)
+{ 
+    lua::main::get().threads.insert(std::make_pair(this->_lua, this));
+}
 
 fb::game::lua::thread::thread(const char* format, ...) : thread()
 {
@@ -200,6 +203,64 @@ thread& fb::game::lua::thread::pushobject(const luable& object)
     return static_cast<thread&>(state::pushobject(object));
 }
 
+int fb::game::lua::thread::argc() const
+{
+    return lua_gettop(this->_lua);
+}
+
+int fb::game::lua::thread::resume(int num_args)
+{
+    if(this->_state == LUA_PENDING)
+        return this->_state;
+
+    auto state = lua_resume(*this, nullptr, num_args);
+    if(this->_state != LUA_PENDING)
+        this->_state = state;
+    
+    return this->_state;
+}
+
+int fb::game::lua::thread::state() const
+{
+    return this->_state;
+}
+
+bool fb::game::lua::thread::pending() const
+{
+    return this->_state == LUA_PENDING;
+}
+
+void fb::game::lua::thread::pending(bool value)
+{
+    this->_state = value ? LUA_PENDING : LUA_YIELD;
+}
+
+void fb::game::lua::thread::wake_up()
+{
+    this->pending(false);
+    this->resume(0);
+}
+
+thread* fb::game::lua::thread::get(lua_State& lua_state)
+{
+    auto& threads = lua::main::get().threads;
+
+    auto found = threads.find(&lua_state);
+    if(found == threads.end())
+        return nullptr;
+
+    switch(found->second->_state)
+    {
+    case LUA_YIELD:
+    case LUA_PENDING:
+        return found->second;
+
+    default:
+        threads.erase(found->second->_lua);
+        return nullptr;
+    }
+}
+
 main::main() : state(luaL_newstate())
 {
     luaL_openlibs(*this);
@@ -207,6 +268,9 @@ main::main() : state(luaL_newstate())
 
 main::~main()
 {
+    for(auto x : threads)
+        delete x.second;
+
     lua_close(*this);
 }
 

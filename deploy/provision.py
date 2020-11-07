@@ -28,7 +28,7 @@ def update():
     sudo('apt-get install libncurses5-dev libncursesw5-dev -y')
     sudo('apt-get install python3-pip -y')
     sudo('apt-get install default-jre -y')
-    sudo('apt-get install docker docker.io')
+    sudo('apt-get install docker docker.io -y')
     sudo('apt-get install unzip -y')
 
     if not files.exists('/var/provision_completed'):

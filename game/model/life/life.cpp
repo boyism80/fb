@@ -85,17 +85,19 @@ fb::game::object* fb::game::life::master::make(listener* listener) const
 
 int fb::game::life::master::builtin_hp(lua_State* lua)
 {
-    auto object = *(fb::game::life::master**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    auto object = thread->touserdata<fb::game::life::master>(1);
 
-    lua_pushinteger(lua, object->_hp);
+    thread->pushinteger(object->_hp);
     return 1;
 }
 
 int fb::game::life::master::builtin_mp(lua_State* lua)
 {
-    auto object = *(fb::game::life::master**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    auto object = thread->touserdata<fb::game::life::master>(1);
 
-    lua_pushinteger(lua, object->_mp);
+    thread->pushinteger(object->_mp);
     return 1;
 }
 
@@ -291,19 +293,92 @@ void fb::game::life::kill()
         this->_listener->on_hide(*this);
 }
 
+bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
+{
+    lua::thread             thread;
+    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+        .func("handle_spell");
+
+    if(spell.type() != fb::game::spell::types::INPUT)
+        return false;
+
+    thread.pushobject(this)
+        .pushobject(spell)
+        .pushstring(message.c_str())
+        .resume(3);
+    return true;
+}
+
+bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
+{
+    if(this->_map == nullptr)
+        return false;
+
+    auto to = this->_map->objects.find(fd);
+    if(to == nullptr)
+        return false;
+
+    return this->active(spell, *to);
+}
+
+bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
+{
+    lua::thread             thread;
+    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+        .func("handle_spell");
+
+    if(spell.type() != fb::game::spell::types::TARGET)
+        return false;
+
+    auto                map = this->map();
+    if(map == nullptr)
+        return false;
+
+    if(to.map() != this->map())
+        return false;
+
+    if(this->sight(to) == false)
+        return true;
+
+    thread.pushobject(this)
+        .pushobject(spell)
+        .pushobject(&to)
+        .resume(3);
+    return true;
+}
+
+bool fb::game::life::active(fb::game::spell& spell)
+{
+    lua::thread             thread;
+    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+        .func("handle_spell");
+
+    if(spell.type() != fb::game::spell::types::NORMAL)
+        return false;
+
+    thread.pushobject(this)
+        .pushobject(spell)
+        .resume(2);
+    return true;
+}
+
 int fb::game::life::builtin_hp(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, object->hp());
+        thread->pushinteger(object->hp());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         object->hp(value);
         return 0;
     }
@@ -311,17 +386,21 @@ int fb::game::life::builtin_hp(lua_State* lua)
 
 int fb::game::life::builtin_mp(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, object->mp());
+        thread->pushinteger(object->mp());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         object->mp(value);
         return 0;
     }
@@ -329,27 +408,39 @@ int fb::game::life::builtin_mp(lua_State* lua)
 
 int fb::game::life::builtin_base_hp(lua_State* lua)
 {
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto object = thread->touserdata<fb::game::life>(1);
     auto master = object->based<life::master>();
 
-    lua_pushinteger(lua, master->_hp);
+    thread->pushinteger(master->_hp);
     return 1;
 }
 
 int fb::game::life::builtin_base_mp(lua_State* lua)
 {
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto object = thread->touserdata<fb::game::life>(1);
     auto master = object->based<life::master>();
 
-    lua_pushinteger(lua, master->_mp);
+    thread->pushinteger(master->_mp);
     return 1;
 }
 
 int fb::game::life::builtin_hp_inc(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = (uint32_t)lua_tointeger(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
+    auto value = (uint32_t)thread->tointeger(2);
 
     object->hp_up(value);
     return 0;
@@ -357,9 +448,13 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 
 int fb::game::life::builtin_hp_dec(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = (uint32_t)lua_tointeger(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
+    auto value = (uint32_t)thread->tointeger(2);
 
     object->hp_down(value);
     return 0;
@@ -367,9 +462,13 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 
 int fb::game::life::builtin_mp_inc(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = (uint32_t)lua_tointeger(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
+    auto value = (uint32_t)thread->tointeger(2);
 
     object->mp_up(value);
     return 0;
@@ -377,9 +476,13 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
 
 int fb::game::life::builtin_mp_dec(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto object = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto value = (uint32_t)lua_tointeger(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto object = thread->touserdata<fb::game::life>(1);
+    auto value = (uint32_t)thread->tointeger(2);
 
     object->mp_down(value);
     return 0;
@@ -387,12 +490,16 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
 
 int fb::game::life::builtin_action(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto life = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto action = lua_tointeger(lua, 2);
-    auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : lua_tointeger(lua, 3);
-    auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)lua_tointeger(lua, 4);
+    auto life = thread->touserdata<fb::game::life>(1);
+    auto action = thread->tointeger(2);
+    auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : thread->tointeger(3);
+    auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
 
     acceptor->send(*life, fb::protocol::game::response::life::action(*life, fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);
     return 0;
@@ -400,10 +507,14 @@ int fb::game::life::builtin_action(lua_State* lua)
 
 int fb::game::life::builtin_spell(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto life = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto index = (int)lua_tointeger(lua, 2);
+    auto life = thread->touserdata<fb::game::life>(1);
+    auto index = (int)thread->tointeger(2);
 
     life->spells[index]->to_lua(lua);
     return 1;
@@ -411,13 +522,17 @@ int fb::game::life::builtin_spell(lua_State* lua)
 
 int fb::game::life::builtin_damage(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto me = *(fb::game::life**)lua_touserdata(lua, 1);
-    auto you = *(fb::game::life**)lua_touserdata(lua, 2);
-    auto damage = (uint32_t)lua_tointeger(lua, 3);
+    auto me = thread->touserdata<fb::game::life>(1);
+    auto you = thread->touserdata<fb::game::life>(2);
+    auto damage = (uint32_t)thread->tointeger(3);
 
     me->hp_down(damage, you, false);
-    lua_pushboolean(lua, you->visible());
+    thread->pushboolean(you->visible());
     return 1;
 }

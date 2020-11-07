@@ -408,15 +408,23 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
 
 int fb::game::map::builtin_name(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_push_utf8(lua, map->name().c_str());
+    auto map = thread->touserdata<fb::game::map>(1);
+
+    thread->pushstring(map->name());
     return 1;
 }
 
 int fb::game::map::builtin_objects(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto map = thread->touserdata<fb::game::map>(1);
 
     lua_newtable(lua);
     const auto& objects = map->objects;
@@ -432,67 +440,87 @@ int fb::game::map::builtin_objects(lua_State* lua)
 
 int fb::game::map::builtin_width(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_pushinteger(lua, map->width());
+    auto map = thread->touserdata<fb::game::map>(1);
+
+    thread->pushinteger(map->width());
     return 1;
 }
 
 int fb::game::map::builtin_height(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_pushinteger(lua, map->height());
+    auto map = thread->touserdata<fb::game::map>(1);
+
+    thread->pushinteger(map->height());
     return 1;
 }
 
 int fb::game::map::builtin_area(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_pushinteger(lua, map->width());
-    lua_pushinteger(lua, map->height());
+    auto map = thread->touserdata<fb::game::map>(1);
+
+    thread->pushinteger(map->width());
+    thread->pushinteger(map->height());
     return 2;
 }
 
 int fb::game::map::builtin_movable(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto map = thread->touserdata<fb::game::map>(1);
     auto position = point16_t();
 
     if(lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
-        position.x = (uint16_t)lua_tointeger(lua, -1);
+        position.x = (uint16_t)thread->tointeger(-1);
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 2, 2);
-        position.y = (uint16_t)lua_tointeger(lua, -1);
+        position.y = (uint16_t)thread->tointeger(-1);
         lua_remove(lua, -1);
     }
     else if(lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
     {
-        position.x = (uint16_t)lua_tointeger(lua, 2);
-        position.y = (uint16_t)lua_tointeger(lua, 3);
+        position.x = (uint16_t)thread->tointeger(2);
+        position.y = (uint16_t)thread->tointeger(3);
     }
     else
     {
-        lua_pushboolean(lua, false);
+        thread->pushboolean(false);
         return 1;
     }
 
-    lua_pushboolean(lua, map->movable(position));
+    thread->pushboolean(map->movable(position));
     return 1;
 }
 
 int fb::game::map::builtin_door(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto map = thread->touserdata<fb::game::map>(1);
+    auto session = thread->touserdata<fb::game::session>(2);
 
     auto door = map->doors.find(*session);
     if(door == nullptr)
-        lua_pushnil(lua);
+        thread->pushnil();
     else
         door->to_lua(lua);
 
@@ -501,7 +529,11 @@ int fb::game::map::builtin_door(lua_State* lua)
 
 int fb::game::map::builtin_doors(lua_State* lua)
 {
-    auto map = *(fb::game::map**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto map = thread->touserdata<fb::game::map>(1);
 
     lua_newtable(lua);
 

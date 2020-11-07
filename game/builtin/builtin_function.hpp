@@ -17,24 +17,28 @@ inline void to_lua(lua_State* lua, const T* self)
 template <typename T>
 int builtin_dialog(lua_State* lua)
 {
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
     try
     {
-        auto argc = lua_gettop(lua);
+        auto argc = thread->argc();
         if(argc < 3)
             throw std::runtime_error("not enough parameters");
 
-        auto object = *(T**)lua_touserdata(lua, 1);
-        auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-        auto message = lua_cp949(lua, 3);
-        auto button_prev = argc < 4 ? false : lua_toboolean(lua, 4);
-        auto button_next = argc < 5 ? false : lua_toboolean(lua, 5);
+        auto object = thread->touserdata<T>(1);
+        auto session = thread->touserdata<fb::game::session>(2);
+        auto message = thread->tostring(3);
+        auto button_prev = argc < 4 ? false : thread->toboolean(4);
+        auto button_next = argc < 5 ? false : thread->toboolean(5);
 
         session->dialog.show(*object, message, button_prev, button_next);
-        return lua_yield(lua, 1);
+        return thread->yield(1);
     }
     catch(std::exception&)
     {
-        lua_pushnil(lua);
+        thread->pushnil();
         return 1;
     }
 }
@@ -42,57 +46,69 @@ int builtin_dialog(lua_State* lua)
 template <typename T>
 int builtin_menu_dialog(lua_State* lua)
 {
-    auto npc = *(T**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_cp949(lua, 3);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto npc = thread->touserdata<T>(1);
+    auto session = thread->touserdata<fb::game::session>(2);
+    auto message = thread->tostring(3);
 
     // Read menu list
-    auto size = lua_rawlen(lua, 4);
+    auto size = thread->rawlen(4);
     std::vector<std::string> menus;
     for(int i = 0; i < size; i++)
     {
-        lua_rawgeti(lua, 4, i+1);
-        menus.push_back(lua_cp949(lua, -1));
+        thread->rawgeti(4, i+1);
+        menus.push_back(thread->tostring(-1));
     }
 
     session->dialog.show(*npc, message, menus);
-    return lua_yield(lua, 1);
+    return thread->yield(1);
 }
 
 template <typename T>
 int builtin_item_dialog(lua_State* lua)
 {
-    auto npc = *(T**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_cp949(lua, 3);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto npc = thread->touserdata<T>(1);
+    auto session = thread->touserdata<fb::game::session>(2);
+    auto message = thread->tostring(3);
 
     // Read menu list
-    auto size = lua_rawlen(lua, 4);
+    auto size = thread->rawlen(4);
     std::vector<item::master*> items;
     for(int i = 0; i < size; i++)
     {
-        lua_rawgeti(lua, 4, i+1);
-        items.push_back(*(item::master**)lua_touserdata(lua, -1));
+        thread->rawgeti(4, i+1);
+        items.push_back(thread->touserdata<item::master>(-1));
     }
 
     session->dialog.show(*npc, message, items);
-    return lua_yield(lua, 1);
+    return thread->yield(1);
 }
 
 template <typename T>
 int builtin_input_dialog(lua_State* lua)
 {
-    auto npc = *(T**)lua_touserdata(lua, 1);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 2);
-    auto message = lua_cp949(lua, 3);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    auto argc = lua_gettop(lua);
+    auto npc = thread->touserdata<T>(1);
+    auto session = thread->touserdata<fb::game::session>(2);
+    auto message = thread->tostring(3);
+
+    auto argc = thread->argc();
     if(argc > 3)
     {
-        auto message_top = lua_cp949(lua, 4);
-        auto message_bot = lua_cp949(lua, 5);
-        auto maxlen = argc < 6 ? 0xFF : (int)lua_tointeger(lua, 6);
-        auto prev = argc < 7 ? false : lua_toboolean(lua, 7);
+        auto message_top = thread->tostring(4);
+        auto message_bot = thread->tostring(5);
+        auto maxlen = argc < 6 ? 0xFF : (int)thread->tointeger(6);
+        auto prev = argc < 7 ? false : thread->toboolean(7);
 
         session->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
     }
@@ -100,5 +116,5 @@ int builtin_input_dialog(lua_State* lua)
     {
         session->dialog.input(*npc, message);
     }
-    return lua_yield(lua, 1);
+    return thread->yield(1);
 }

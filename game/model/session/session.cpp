@@ -846,17 +846,21 @@ void fb::game::session::before_map(fb::game::map* map)
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->look());
+        thread->pushinteger(session->look());
         return 1;
     }
     else
     {
-        auto value = (uint16_t)lua_tointeger(lua, 2);
+        auto value = (uint16_t)thread->tointeger(2);
         session->look(value);
         return 0;
     }
@@ -864,17 +868,21 @@ int fb::game::session::builtin_look(lua_State* lua)
 
 int fb::game::session::builtin_color(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->color());
+        thread->pushinteger(session->color());
         return 1;
     }
     else
     {
-        auto value = (uint8_t)lua_tointeger(lua, 2);
+        auto value = (uint8_t)thread->tointeger(2);
         session->color(value);
         return 0;
     }
@@ -882,17 +890,21 @@ int fb::game::session::builtin_color(lua_State* lua)
 
 int fb::game::session::builtin_money(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->money());
+        thread->pushinteger(session->money());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         session->money(value);
         return 0;
     }
@@ -900,17 +912,21 @@ int fb::game::session::builtin_money(lua_State* lua)
 
 int fb::game::session::builtin_exp(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->experience());
+        thread->pushinteger(session->experience());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         session->experience(value);
         return 0;
     }
@@ -918,17 +934,21 @@ int fb::game::session::builtin_exp(lua_State* lua)
 
 int fb::game::session::builtin_base_hp(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->base_hp());
+        thread->pushinteger(session->base_hp());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         session->base_hp(value);
         return 0;
     }
@@ -936,17 +956,21 @@ int fb::game::session::builtin_base_hp(lua_State* lua)
 
 int fb::game::session::builtin_base_mp(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->base_mp());
+        thread->pushinteger(session->base_mp());
         return 1;
     }
     else
     {
-        auto value = (uint32_t)lua_tointeger(lua, 2);
+        auto value = (uint32_t)thread->tointeger(2);
         session->base_mp(value);
         return 0;
     }
@@ -954,17 +978,21 @@ int fb::game::session::builtin_base_mp(lua_State* lua)
 
 int fb::game::session::builtin_strength(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->strength());
+        thread->pushinteger(session->strength());
         return 1;
     }
     else
     {
-        auto value = (uint8_t)lua_tointeger(lua, 2);
+        auto value = (uint8_t)thread->tointeger(2);
         session->strength(value);
         return 0;
     }
@@ -972,17 +1000,21 @@ int fb::game::session::builtin_strength(lua_State* lua)
 
 int fb::game::session::builtin_dexterity(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->dexteritry());
+        thread->pushinteger(session->dexteritry());
         return 1;
     }
     else
     {
-        auto value = (uint8_t)lua_tointeger(lua, 2);
+        auto value = (uint8_t)thread->tointeger(2);
         session->dexteritry(value);
         return 0;
     }
@@ -990,17 +1022,21 @@ int fb::game::session::builtin_dexterity(lua_State* lua)
 
 int fb::game::session::builtin_intelligence(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->intelligence());
+        thread->pushinteger(session->intelligence());
         return 1;
     }
     else
     {
-        auto value = (uint8_t)lua_tointeger(lua, 2);
+        auto value = (uint8_t)thread->tointeger(2);
         session->intelligence(value);
         return 0;
     }
@@ -1008,11 +1044,15 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
 
 int fb::game::session::builtin_item(lua_State* lua)
 {
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(1);
     auto item = (fb::game::item*)nullptr;
     if(lua_isnumber(lua, 2))
     {
-        auto index = (uint8_t)lua_tointeger(lua, 2);
+        auto index = (uint8_t)thread->tointeger(2);
         item = session->items[index];
     }
     else if(lua_isstring(lua, 2))
@@ -1022,7 +1062,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     }
 
     if(item == nullptr)
-        lua_pushnil(lua);
+        thread->pushnil();
     else
         item->to_lua(lua);
 
@@ -1031,7 +1071,11 @@ int fb::game::session::builtin_item(lua_State* lua)
 
 int fb::game::session::builtin_items(lua_State* lua)
 {
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(1);
 
     lua_newtable(lua);
     for(int i = 0; i < item::MAX_SLOT; i++)
@@ -1048,26 +1092,34 @@ int fb::game::session::builtin_items(lua_State* lua)
 
 int fb::game::session::builtin_item_drop(lua_State* lua)
 {
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
-    auto index = (uint8_t)lua_tointeger(lua, 2);
-    auto drop_all = lua_toboolean(lua, 3);
+    auto session = thread->touserdata<fb::game::session>(1);
+    auto index = (uint8_t)thread->tointeger(2);
+    auto drop_all = thread->toboolean(3);
 
     auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1);
     if(dropped != nullptr)
         dropped->to_lua(lua);
     else
-        lua_pushnil(lua);
+        thread->pushnil();
 
     return 1;
 }
 
 int fb::game::session::builtin_mkitem(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
     auto name = lua_cp949(lua, 2);
-    auto store = argc < 3 ? true : lua_toboolean(lua, 3);
+    auto store = argc < 3 ? true : thread->toboolean(3);
 
     if(store == false)
         return object::builtin_mkitem(lua);
@@ -1075,7 +1127,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     auto master = fb::game::table::items.name2item(name);
     if(master == nullptr)
     {
-        lua_pushnil(lua);
+        thread->pushnil();
     }
     else
     {
@@ -1092,16 +1144,20 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
 
 int fb::game::session::builtin_rmitem(lua_State* lua)
 {
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
     try
     {
-        auto argc = lua_gettop(lua);
-        auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+        auto argc = thread->argc();
+        auto session = thread->touserdata<fb::game::session>(1);
         auto index = uint8_t(0);
-        auto count = argc < 3 ? 1 : (int)lua_tointeger(lua, 3);
+        auto count = argc < 3 ? 1 : (int)thread->tointeger(3);
 
         if(lua_isuserdata(lua, 2))
         {
-            auto item = *(fb::game::item**)lua_touserdata(lua, 2);
+            auto item = thread->touserdata<fb::game::item>(2);
             if(item == nullptr)
                 throw std::exception();
 
@@ -1109,7 +1165,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
         else if(lua_isnumber(lua, 2))
         {
-            index = (uint8_t)lua_tointeger(lua, 2) - 1;
+            index = (uint8_t)thread->tointeger(2) - 1;
         }
         else if(lua_isstring(lua, 2))
         {
@@ -1142,16 +1198,20 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
 int fb::game::session::builtin_state(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->state());
+        thread->pushinteger(session->state());
         return 1;
     }
     else
     {
-        auto value = fb::game::state(lua_tointeger(lua, 2));
+        auto value = fb::game::state(thread->tointeger(2));
         session->state(value);
         return 0;
     }
@@ -1159,17 +1219,21 @@ int fb::game::session::builtin_state(lua_State* lua)
 
 int fb::game::session::builtin_disguise(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->disguise().value());
+        thread->pushinteger(session->disguise().value());
         return 1;
     }
     else if(luaL_checkinteger(lua, 2))
     {
-        session->disguise((uint16_t)lua_tointeger(lua, 2));
+        session->disguise((uint16_t)thread->tointeger(2));
         return 0;
     }
     else
@@ -1181,8 +1245,12 @@ int fb::game::session::builtin_disguise(lua_State* lua)
 
 int fb::game::session::builtin_class(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
@@ -1192,11 +1260,11 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls_name = fb::game::table::classes.class2name(cls, promotion);
         if(cls_name == nullptr)
         {
-            lua_pushnil(lua);
+            thread->pushnil();
         }
         else
         {
-            lua_push_utf8(lua, cls_name->c_str());
+            thread->pushstring(*cls_name);
         }
     }
     else
@@ -1205,14 +1273,14 @@ int fb::game::session::builtin_class(lua_State* lua)
         uint8_t cls, promotion;
         if(fb::game::table::classes.name2class(cls_name, &cls, &promotion) == false)
         {
-            lua_pushboolean(lua, false);
+            thread->pushboolean(false);
         }
         else
         {
             auto acceptor = lua::env<fb::game::acceptor>("acceptor");
             acceptor->send(*session, fb::protocol::game::response::session::id(*session), acceptor::scope::SELF);
             acceptor->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
-            lua_pushboolean(lua, true);
+            thread->pushboolean(true);
         }
     }
 
@@ -1221,17 +1289,21 @@ int fb::game::session::builtin_class(lua_State* lua)
 
 int fb::game::session::builtin_level(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     if(argc == 1)
     {
-        lua_pushinteger(lua, session->level());
+        thread->pushinteger(session->level());
         return 1;
     }
     else
     {
-        auto level = std::max(0, std::min((int)lua_tointeger(lua, 2), 255));
+        auto level = std::max(0, std::min((int)thread->tointeger(2), 255));
         session->level(level);
 
         auto acceptor = lua::env<fb::game::acceptor>("acceptor");
@@ -1242,12 +1314,16 @@ int fb::game::session::builtin_level(lua_State* lua)
 
 int fb::game::session::builtin_group(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto session = *(fb::game::session**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
 
     auto group = session->group();
     if(group == nullptr)
-        lua_pushnil(lua);
+        thread->pushnil();
     else
         group->to_lua(lua);
 

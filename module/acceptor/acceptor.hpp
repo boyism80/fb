@@ -143,6 +143,12 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
     socket.send(out_stream, encrypt, wrap);
 }
 
+template <template<class> class S, class T>
+inline fb::base::acceptor<S, T>::operator boost::asio::io_context& () const
+{
+    return this->_context;
+}
+
 
 
 

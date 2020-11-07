@@ -52,7 +52,7 @@ public:
 
 private:
     fb::game::session*      find(const std::string& name) const;
-
+    void                    bind_timer(std::function<void(uint64_t)> fn, int ms);
 public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
 
@@ -203,6 +203,7 @@ public:
 
     // built-in method
 public:
+    static int              builtin_sleep(lua_State* lua);
     static int              builtin_name2mob(lua_State* lua);
     static int              builtin_name2npc(lua_State* lua);
     static int              builtin_name2map(lua_State* lua);

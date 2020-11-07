@@ -128,7 +128,8 @@ fb::game::mob::mob(const mob::master* master, listener* listener, bool alive) :
     _action_time(0),
     _dead_time(0),
     _respawn_time(0),
-    _target(NULL)
+    _target(nullptr),
+    _attack_thread(nullptr)
 {
     this->visible(alive);
     if(alive)
@@ -149,7 +150,10 @@ fb::game::mob::mob(const mob& right) :
 {}
 
 fb::game::mob::~mob()
-{}
+{
+    if(this->_attack_thread != nullptr)
+        delete this->_attack_thread;
+}
 
 void fb::game::mob::attack()
 {
@@ -157,10 +161,45 @@ void fb::game::mob::attack()
         return;
 
     auto front = this->forward(object::types::UNKNOWN);
-    auto damage = 0;
-    if(front != nullptr && front->is(object::types::LIFE) && static_cast<life*>(front)->alive())
-        damage = this->random_damage(*static_cast<fb::game::life*>(front));
 
+    if(front == nullptr)
+        return;
+
+    if(front->is(object::types::LIFE) == false)
+        return;
+
+
+    if(static_cast<life*>(front)->alive() == false)
+        return;
+
+    auto& script = this->script_attack();
+
+    if(this->_attack_thread == nullptr)
+    {
+        this->_attack_thread = new lua::thread("scripts/mob/%s.lua", script.c_str());
+        this->_attack_thread->func("handle_attack")
+            .pushobject(this)
+            .pushobject(front)
+            .resume(2);
+    }
+
+    auto stop = false;
+    if(this->_attack_thread->state() == LUA_PENDING)
+    {
+        stop = true;
+    }
+    else
+    {
+        stop = this->_attack_thread->toboolean(-1);
+
+        delete this->_attack_thread;
+        this->_attack_thread = nullptr;
+    }
+
+    if(stop)
+        return;
+
+    auto damage = this->random_damage(*static_cast<fb::game::life*>(front));
     if(this->_listener != nullptr)
         this->_listener->on_attack(*this, front, damage, false);
 }

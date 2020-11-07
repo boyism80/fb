@@ -69,7 +69,7 @@ private:
     sizes                       _size;
     uint32_t                    _speed;
     std::string                 _script_attack, _script_die;
-    std::vector<drop>          _items;
+    std::vector<drop>           _items;
 #pragma endregion
 
 
@@ -116,7 +116,7 @@ public:
 
     void                        dropitem_add(const mob::drop& money);
     void                        dropitem_add(const fb::game::item::master* item, float percentage);
-    const std::vector<drop>&   items() const;
+    const std::vector<drop>&    items() const;
 #pragma endregion
 
 
@@ -139,6 +139,7 @@ private:
     uint32_t                    _respawn_time; // seconds
 
     fb::game::life*             _target;
+    lua::thread*                _attack_thread;
 #pragma endregion
     
 

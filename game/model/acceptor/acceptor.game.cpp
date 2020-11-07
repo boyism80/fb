@@ -165,6 +165,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     lua::bind_class<item::master, object::master>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
+    lua_register(lua::main::get(), "sleep",     builtin_sleep);
     lua_register(lua::main::get(), "name2mob",  builtin_name2mob);
     lua_register(lua::main::get(), "name2item", builtin_name2item);
     lua_register(lua::main::get(), "name2npc",  builtin_name2npc);
@@ -204,16 +205,16 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::game::request::spell::use>       (0x0F, std::bind(&acceptor::handle_spell,           this, std::placeholders::_1, std::placeholders::_2));   // 스펠 핸들러
     this->bind<fb::protocol::game::request::door>             (0x20, std::bind(&acceptor::handle_door,            this, std::placeholders::_1, std::placeholders::_2));   // 도어 핸들러
     this->bind<fb::protocol::game::request::whisper>          (0x19, std::bind(&acceptor::handle_whisper,         this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
-    this->bind<fb::protocol::game::request::map::world>       (0x3F, std::bind(&acceptor::handle_world,           this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
+    this->bind<fb::protocol::game::request::map::world>       (0x3F, std::bind(&acceptor::handle_world,           this, std::placeholders::_1, std::placeholders::_2));   // 월드맵 핸들러
 
     this->bind<fb::protocol::internal::response::transfer>    (std::bind(&acceptor::handle_in_transfer,           this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::whisper>     (std::bind(&acceptor::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&acceptor::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));
 
-    this->_timer.push(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
-    this->_timer.push(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
-    this->_timer.push(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
+    this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
 }
 
 acceptor::~acceptor()
@@ -258,6 +259,11 @@ fb::game::session* fb::game::acceptor::find(const std::string& name) const
         return nullptr;
 
     return i->second->data();
+}
+
+void fb::game::acceptor::bind_timer(std::function<void(uint64_t)> fn, int ms)
+{
+    this->_timer.push(fn, ms);
 }
 
 fb::game::session* fb::game::acceptor::handle_accepted(fb::socket<fb::game::session>& socket)
@@ -1097,65 +1103,29 @@ bool fb::game::acceptor::handle_spell(fb::socket<fb::game::session>& socket, con
     if(spell == nullptr)
         return false;
 
-    lua::thread             thread;
-    thread.from("scripts/spell/%s.lua", spell->cast().c_str())
-          .func("handle_spell");
-
     request.parse(spell->type());
     switch(spell->type())
     {
     case spell::types::INPUT:
-    {
-        char                message[256];
-
-        thread.pushobject(session)
-            .pushobject(spell)
-            .pushstring(request.message)
-            .resume(3);
+        session->active(*spell, request.message);
         break;
-    }
 
     case spell::types::TARGET:
-    {
-        auto                map = session->map();
-        if(map == nullptr)
-            return false;
-
-        auto                target = map->objects.find(request.fd);
-        if(target == nullptr)
-            return true;
-
-        if(session->sight(*target) == false)
-            return true;
-
-        thread.pushobject(session)
-            .pushobject(spell)
-            .pushobject(target)
-            .resume(3);
+        session->active(*spell, request.fd);
         break;
-    }
 
     case spell::types::NORMAL:
-    {
-        thread.pushobject(session)
-            .pushobject(spell)
-            .resume(2);
+        session->active(*spell);
         break;
     }
-    }
 
-    // 마나를 쓰니까 업데이트 해주겠지?
-    // 마나 안쓰면 업데이트 안해줘도 되니까
-    // 이건 hp, mp가 변경될 때 리스너
-    this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
     return true;
 }
 
 bool fb::game::acceptor::handle_door(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::door& request)
 {
     auto session = socket.data();
-    lua::thread()
-        .from("scripts/common/door.lua")
+    lua::thread("scripts/common/door.lua")
         .func("handle_door")
         .pushobject(session)
         .resume(1);
@@ -1621,6 +1591,14 @@ bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::str
         session.map(nullptr);
         session.send(fb::protocol::game::response::map::worlds(id));
 
+        return true;
+    }
+
+    if(splitted[0] == "청룡마령참")
+    {
+        this->send(session, fb::protocol::game::response::object::effect(session, 137), scope::SELF);
+        this->send(session, fb::protocol::game::response::session::action(session, fb::game::action(0x03), duration(30), 8), scope::SELF);
+        this->send(session, fb::protocol::game::response::object::sound(session, fb::game::sound::type(8)), scope::SELF);
         return true;
     }
 

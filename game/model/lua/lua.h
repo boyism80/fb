@@ -24,6 +24,8 @@ extern "C"
 #define END_LUA_EXTENSION                   {NULL, NULL}\
                                             };
 
+#define LUA_PENDING (LUA_ERRERR+1)
+
 
 // global
 std::string                     lua_cp949(lua_State* lua, int i);
@@ -49,7 +51,7 @@ public:
 
 class state
 {
-private:
+protected:
     lua_State*                  _lua;
 
 protected:
@@ -82,13 +84,32 @@ public:
     bool                        arg_boolean(int offset) { return toboolean(offset); }
     bool                        ret_boolean(int offset) { return toboolean(-offset); }
 
+    template <typename T>
+    T*                          touserdata(int offset) { return *(T**)lua_touserdata(*this, offset); }
+
+    bool                        is_str(int offset) { return lua_isstring(*this, offset); }
+    bool                        is_obj(int offset) { return lua_isuserdata(*this, offset); }
+    bool                        is_table(int offset) { return lua_istable(*this, offset); }
+    bool                        is_num(int offset) { return lua_isnumber(*this, offset); }
+
+    int                         rawgeti(int offset_t, int offset_e) { return lua_rawgeti(*this, offset_t, offset_e); }
+    void                        rawseti(int offset_t, int offset_e) { lua_rawseti(*this, offset_t, offset_e); }
+    int                         rawlen(int offset_t) { return lua_rawlen(*this, offset_t); }
+    void                        remove(int offset) { lua_remove(*this, offset); }
+    void                        new_table() { lua_newtable(*this); }
+
+
 public:
     operator                    lua_State* () const;
 };
 
+class thread;
 
 class main : public state
 {
+public:
+    std::map<lua_State*, thread*> threads;
+
 private:
     static main* _instance;
 
@@ -104,6 +125,7 @@ public:
 class thread : public state
 {
 private:
+    int                         _state;
     int                         _ref;
 
 public:
@@ -123,8 +145,20 @@ public:
     thread&                     pushobject(const luable& object);
 
 public:
-    int                         resume(int num_args) { return lua_resume(*this, nullptr, num_args); }
+    int                         argc() const;
+
+public:
+    int                         resume(int num_args);
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
+    int                         state() const;
+
+public:
+    bool                        pending() const;
+    void                        pending(bool value);
+    void                        wake_up();
+
+public:
+    static thread*              get(lua_State& lua_state);
 };
 
 void release();
