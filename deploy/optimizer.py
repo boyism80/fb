@@ -222,8 +222,11 @@ def compress_maps(maps):
             data_name = f'resources/maps/{map_id}.map'
             block_name = f'resources/maps/{map_id}.block'
 
-            zfile.write(data_name, os.path.basename(data_name))
-            zfile.write(block_name, os.path.basename(block_name))
+            if os.path.isfile(data_name):
+                zfile.write(data_name, os.path.basename(data_name))
+
+            if os.path.isfile(block_name):
+                zfile.write(block_name, os.path.basename(block_name))
 
         zfile.close()
 
@@ -267,6 +270,8 @@ if __name__ == '__main__':
     if os.path.isdir('game/maps'):
         shutil.rmtree('game/maps')
     Path('game/maps').mkdir(parents=True, exist_ok=True)
+
+    shutil.copy(f'table.deploy/host.json', 'internal/table/host.json')
 
     for fname in glob.glob(os.path.join('resources/table', '*.json')):
         shutil.copy(fname, 'game/table.dev')

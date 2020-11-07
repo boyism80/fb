@@ -1,8 +1,8 @@
 {
-    "id": "game7",
+    "id": "default",
     "delay": 5,
     "ip": "192.168.0.100",
-    "port": 3010,
+    "port": 3014,
     "internal": {
         "ip": "192.168.0.100",
         "port": 3000

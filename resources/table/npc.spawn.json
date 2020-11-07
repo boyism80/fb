@@ -9388,5 +9388,25 @@
             "y": 117
         },
         "script": "초보사냥도우미"
+    },
+    {
+        "direction": "bottom",
+        "map": "방장실",
+        "npc": "혜천대사",
+        "position": {
+            "x": 11,
+            "y": 14
+        },
+        "script": "혜천대사"
+    },
+    {
+        "direction": "bottom",
+        "map": "방장실",
+        "npc": "철수나한",
+        "position": {
+            "x": 19,
+            "y": 14
+        },
+        "script": "철수나한"
     }
 ]

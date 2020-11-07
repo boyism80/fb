@@ -591,12 +591,12 @@ void fb::game::acceptor::on_save(session& me)
     (
         buffer, 
         "UPDATE user SET "
-        "   look=%d, color=%d, sex=%d, nation=%d, creature=%d, map=%d, "
-        "   position_x=%d, position_y=%d, direction=%d, state=%d, "
-        "   class=%d, promotion=%d, exp=%d, money=%d, disguise=%s, "
-        "   hp=%d, base_hp=%d, additional_hp=%d, mp=%d, base_mp=%d, additional_mp=%d "
+        "   look=%u, color=%u, sex=%u, nation=%u, creature=%u, map=%u, "
+        "   position_x=%u, position_y=%u, direction=%u, state=%u, "
+        "   class=%u, promotion=%u, exp=%u, money=%u, disguise=%s, "
+        "   hp=%u, base_hp=%u, additional_hp=%u, mp=%u, base_mp=%u, additional_mp=%u "
         "WHERE "
-        "   id=%d "
+        "   id=%u "
         "LIMIT 1",
         me.look(), 
         me.color(), 
