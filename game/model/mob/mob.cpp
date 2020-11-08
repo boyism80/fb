@@ -155,32 +155,21 @@ fb::game::mob::~mob()
         delete this->_attack_thread;
 }
 
-void fb::game::mob::attack()
+bool fb::game::mob::action()
 {
-    if(this->alive() == false)
-        return;
-
-    auto front = this->forward(object::types::UNKNOWN);
-
-    if(front == nullptr)
-        return;
-
-    if(front->is(object::types::LIFE) == false)
-        return;
-
-
-    if(static_cast<life*>(front)->alive() == false)
-        return;
-
     auto& script = this->script_attack();
 
     if(this->_attack_thread == nullptr)
     {
         this->_attack_thread = new lua::thread("scripts/mob/%s.lua", script.c_str());
-        this->_attack_thread->func("handle_attack")
-            .pushobject(this)
-            .pushobject(front)
-            .resume(2);
+        this->_attack_thread->func("handle_attack").pushobject(this);
+
+        if(this->_target != nullptr)
+            this->_attack_thread->pushobject(this->_target);
+        else
+            this->_attack_thread->pushnil();
+        
+        this->_attack_thread->resume(2);
     }
 
     auto stop = false;
@@ -196,7 +185,23 @@ void fb::game::mob::attack()
         this->_attack_thread = nullptr;
     }
 
-    if(stop)
+    return stop;
+}
+
+void fb::game::mob::attack()
+{
+    if(this->alive() == false)
+        return;
+
+    auto front = this->forward(object::types::UNKNOWN);
+
+    if(front == nullptr)
+        return;
+
+    if(front->is(object::types::LIFE) == false)
+        return;
+
+    if(static_cast<life*>(front)->alive() == false)
         return;
 
     auto damage = this->random_damage(*static_cast<fb::game::life*>(front));

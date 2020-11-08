@@ -153,6 +153,7 @@ public:
 
 #pragma region public method
 public:
+    bool                        action();
     void                        attack();
     uint32_t                    hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 

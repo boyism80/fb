@@ -1246,19 +1246,22 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
             if(now < mob->action_time() + mob->speed())
                 continue;
 
-            switch(mob->offensive())
+            if(mob->action() == false)
             {
-            case mob::offensive_type::COUNTER:
-                this->handle_counter_mob_action(mob);
-                break;
+                switch(mob->offensive())
+                {
+                case mob::offensive_type::COUNTER:
+                    this->handle_counter_mob_action(mob);
+                    break;
 
-            case mob::offensive_type::CONTAINMENT:
-                this->handle_containment_mob_action(mob);
-                break;
+                case mob::offensive_type::CONTAINMENT:
+                    this->handle_containment_mob_action(mob);
+                    break;
 
-            default:
-                this->handle_counter_mob_action(mob);
-                break;
+                default:
+                    this->handle_counter_mob_action(mob);
+                    break;
+                }
             }
 
             mob->action_time(now);
