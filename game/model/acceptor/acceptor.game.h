@@ -112,10 +112,6 @@ public:
     bool                    handle_whisper(fb::socket<fb::game::session>&, const fb::protocol::game::request::whisper&);
     bool                    handle_world(fb::socket<fb::game::session>&, const fb::protocol::game::request::map::world&);
 
-private:
-    void                    handle_counter_mob_action(fb::game::mob* mob);
-    void                    handle_containment_mob_action(fb::game::mob* mob);
-
 public:
     void                    handle_mob_action(uint64_t now);
     void                    handle_mob_respawn(uint64_t now);

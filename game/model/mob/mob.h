@@ -150,6 +150,12 @@ public:
     ~mob();
 #pragma endregion
 
+#pragma region private method
+private:
+    fb::game::life*             find_target();
+    bool                        near_target(fb::game::direction& out) const;
+#pragma endregion
+
 
 #pragma region public method
 public:
@@ -189,9 +195,10 @@ public:
 
     fb::game::life*             target() const;
     void                        target(fb::game::life* value);
-    fb::game::life*             autoset_target();
 
-    const std::vector<drop>&   items() const;
+    const std::vector<drop>&    items() const;
+    fb::game::life*             fix();
+    void                        AI(uint64_t now);
 #pragma endregion
 };
 

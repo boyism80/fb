@@ -216,6 +216,17 @@ int fb::game::lua::thread::resume(int num_args)
     auto state = lua_resume(*this, nullptr, num_args);
     if(this->_state != LUA_PENDING)
         this->_state = state;
+
+    switch(this->_state)
+    {
+    case LUA_PENDING:
+    case LUA_YIELD:
+        break;
+
+    default:
+        lua::main::get().threads.erase(this->_lua);
+        break;
+    }
     
     return this->_state;
 }

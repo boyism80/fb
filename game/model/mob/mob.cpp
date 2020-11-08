@@ -157,8 +157,9 @@ fb::game::mob::~mob()
 
 bool fb::game::mob::action()
 {
-    auto& script = this->script_attack();
+    this->fix();
 
+    auto& script = this->script_attack();
     if(this->_attack_thread == nullptr)
     {
         this->_attack_thread = new lua::thread("scripts/mob/%s.lua", script.c_str());
@@ -376,23 +377,48 @@ void fb::game::mob::target(fb::game::life* value)
     this->_target = value;
 }
 
-fb::game::life* fb::game::mob::autoset_target()
+fb::game::life* fb::game::mob::fix()
+{
+    try
+    {
+        if(this->_target == nullptr)
+            throw nullptr;
+
+        if(this->_target->alive() == false)
+            throw nullptr;
+
+        if(this->sight(*this->_target) == false)
+            throw nullptr;
+    }
+    catch(...)
+    {
+        if(this->offensive() == mob::offensive_type::CONTAINMENT)
+            this->_target = this->find_target();
+        else
+            this->_target = nullptr;
+    }
+
+    return this->_target;
+}
+
+fb::game::life* fb::game::mob::find_target()
 {
     auto                    map = this->_map;
-    if(map == NULL)
-        return NULL;
+    if(map == nullptr)
+        return nullptr;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto x : this->showns(fb::game::object::types::SESSION))
+    for(auto x : this->showings(fb::game::object::types::SESSION))
     {
-        if(x->sight(*this) == false)
+        auto                life = static_cast<fb::game::life*>(x);
+        if(life->alive() == false)
             continue;
 
         auto                distance_sqrt = (uint32_t)std::abs(x->x() - this->x()) * std::abs(x->y() - this->y());
         if(distance_sqrt > min_distance_sqrt)
             continue;
 
-        this->_target = static_cast<fb::game::life*>(x);
+        this->_target = life;
     }
 
     return this->_target;
@@ -401,4 +427,73 @@ fb::game::life* fb::game::mob::autoset_target()
 const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
 {
     return static_cast<const master*>(this->_master)->items();
+}
+
+bool fb::game::mob::near_target(fb::game::direction& out) const
+{
+    for(int i = 0; i < 4; i++)
+    {
+        auto                direction = fb::game::direction(i);
+        if(this->side(direction, fb::game::object::SESSION) != this->_target)
+            continue;
+
+        out = direction;
+        return true;
+    }
+
+    return false;
+}
+
+void fb::game::mob::AI(uint64_t now)
+{
+    try
+    {
+        if(now < this->_action_time + this->speed())
+            return;
+
+        // 유효한 타겟이 없으면 고쳐준다.
+        auto direction = fb::game::direction::BOTTOM;
+        if(this->fix() == nullptr)
+        {
+            this->move(fb::game::direction(std::rand() % 4));
+        }
+        else if(this->near_target(direction))
+        {
+            this->direction(direction);
+            this->attack();
+        }
+        else
+        {
+            auto                    x_axis = bool(std::rand()%2);
+            if(x_axis)
+            {
+                if(this->_position.x > this->_target->x() && this->move(direction::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(direction::RIGHT))  throw nullptr;
+                if(this->_position.y > this->_target->y() && this->move(direction::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(direction::BOTTOM)) throw nullptr;
+            }
+            else
+            {
+                if(this->_position.y > this->_target->y() && this->move(direction::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(direction::BOTTOM)) throw nullptr;
+                if(this->_position.x > this->_target->x() && this->move(direction::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(direction::RIGHT))  throw nullptr;
+            }
+
+
+            // 이동할 수 있는 방향으로 일단 이동한다.
+            auto                    random_direction = std::rand() % 4;
+            for(int i = 0; i < 4; i++)
+            {
+                if(this->move(fb::game::direction((random_direction + i) % 4)))
+                    throw nullptr;
+            }
+        }
+    }
+    catch(...)
+    {
+        
+    }
+
+    this->_action_time = now;
 }
