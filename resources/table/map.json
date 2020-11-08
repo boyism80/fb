@@ -19455,7 +19455,7 @@
         "host": "game10"
     },
     "1686": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19471,7 +19471,7 @@
         "host": "game10"
     },
     "1687": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19487,7 +19487,7 @@
         "host": "game10"
     },
     "1688": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19503,7 +19503,7 @@
         "host": "game10"
     },
     "1689": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19519,7 +19519,7 @@
         "host": "game10"
     },
     "1690": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19535,7 +19535,7 @@
         "host": "game10"
     },
     "1691": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19551,7 +19551,7 @@
         "host": "game10"
     },
     "1692": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19567,7 +19567,7 @@
         "host": "game10"
     },
     "1693": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19583,7 +19583,7 @@
         "host": "game10"
     },
     "1694": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -19599,7 +19599,7 @@
         "host": "game10"
     },
     "1695": {
-        "effect": "shipwreck",
+        "effect": "water",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20065,7 +20065,7 @@
         "host": "game10"
     },
     "1726": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20081,7 +20081,7 @@
         "host": "game10"
     },
     "1727": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20097,7 +20097,7 @@
         "host": "game10"
     },
     "1728": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20113,7 +20113,7 @@
         "host": "game10"
     },
     "1729": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20129,7 +20129,7 @@
         "host": "game10"
     },
     "1730": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20145,7 +20145,7 @@
         "host": "game10"
     },
     "1731": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20161,7 +20161,7 @@
         "host": "game10"
     },
     "1732": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20177,7 +20177,7 @@
         "host": "game10"
     },
     "1733": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20193,7 +20193,7 @@
         "host": "game10"
     },
     "1734": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,
@@ -20209,7 +20209,7 @@
         "host": "game10"
     },
     "1735": {
-        "effect": "hot wave",
+        "effect": "fire",
         "option": {
             "hunting ground": true,
             "enabled die penalty": true,

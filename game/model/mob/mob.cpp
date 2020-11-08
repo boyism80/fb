@@ -160,6 +160,9 @@ bool fb::game::mob::action()
     this->fix();
 
     auto& script = this->script_attack();
+    if(script.empty())
+        return false;
+
     if(this->_attack_thread == nullptr)
     {
         this->_attack_thread = new lua::thread("scripts/mob/%s.lua", script.c_str());

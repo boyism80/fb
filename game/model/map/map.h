@@ -171,8 +171,8 @@ public:
     enum effects : uint8_t 
     { 
         NO_EFFECT = 0x00,
-        HOT_WAVE = 0x01,
-        SHIPWRECT = 0x02 
+        FIRE = 0x01,
+        WATER = 0x02 
     };
 #pragma endregion
 

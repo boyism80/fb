@@ -391,11 +391,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
 
         auto before = session->before_map();
-        if(before == nullptr)
-        {
-            socket.close();
-        }
-        else
+        if(before != nullptr)
         {
             session->map(before, session->before());
             session->before_map(nullptr);
@@ -557,7 +553,7 @@ bool fb::game::acceptor::handle_move(fb::socket<fb::game::session>& socket, cons
     auto session = socket.data();
     auto                    map = session->map();
     if(map == nullptr)
-        return false;
+        return true;
 
     point16_t               before(request.position);
     session->move(request.direction, before);
@@ -582,10 +578,14 @@ bool fb::game::acceptor::handle_move(fb::socket<fb::game::session>& socket, cons
 bool fb::game::acceptor::handle_update_move(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::update_move& request)
 {
     auto session = socket.data();
+    auto map = session->map();
+    if(map == nullptr)
+        return true;
+
     if(this->handle_move(socket, request) == false)
         return false;
 
-    this->send(*session, fb::protocol::game::response::map::update(*session->map(), request.begin, request.size), scope::SELF);
+    this->send(*session, fb::protocol::game::response::map::update(*map, request.begin, request.size), scope::SELF);
     return true;
 }
 

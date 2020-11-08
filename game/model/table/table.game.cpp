@@ -133,11 +133,11 @@ uint32_t fb::game::container::cls::exp(uint8_t class_id, uint8_t level)
 
 fb::game::map::effects fb::game::container::map::to_effect(const std::string& effect)
 {
-    if(effect == "hot wave")
-        return fb::game::map::effects::HOT_WAVE;
+    if(effect == "fire")
+        return fb::game::map::effects::FIRE;
 
-    if(effect == "shipwreck")
-        return fb::game::map::effects::SHIPWRECT;
+    if(effect == "water")
+        return fb::game::map::effects::WATER;
 
     return fb::game::map::effects::NO_EFFECT;
 }
