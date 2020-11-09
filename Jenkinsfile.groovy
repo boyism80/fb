@@ -44,6 +44,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 dir('resources/maps') {
+                    sh 'rm -f *.map'
+                    sh 'rm -f *.block'
                     sh 'unzip -qq maps.zip'
                 }
                 sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy'

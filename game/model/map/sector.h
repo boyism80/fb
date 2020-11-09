@@ -48,7 +48,7 @@ private:
     const size16_t                  _size;
     const uint32_t                  _rows, _columns;
     const uint32_t                  _count;
-    std::map<uint32_t, sector*>     _pool;
+    std::vector<sector*>            _pool;
     std::map<uint32_t, sector*>     _activated_cache;
 
 public:

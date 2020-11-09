@@ -17,8 +17,10 @@ public:
     uint8_t x, y;
 
 public:
-    _point8() { x = y = 0; }
-    _point8(uint8_t x, uint8_t y) { this->x = x; this->y = y; }
+    _point8() : x(0), y(0) 
+    {}
+    _point8(uint8_t x, uint8_t y) : x(x), y(y)
+    {}
 
 } point8_t;
 
@@ -28,8 +30,10 @@ public:
     uint8_t width, height;
 
 public:
-    _size8() { width = height = 0; }
-    _size8(uint8_t width, uint8_t height) { this->width = width; this->height = height; }
+    _size8() : width(0), height(0)
+    {}
+    _size8(uint8_t width, uint8_t height) : width(width), height(height)
+    {}
 
 public:
     bool empty() { return this->width == 0 || this->height == 0; }
@@ -168,8 +172,12 @@ public:
     uint16_t width, height;
 
 public:
-    _size16() { width = height = 0; }
-    _size16(uint16_t width, uint16_t height) { this->width = width; this->height = height; }
+    _size16() : width(width), height(height)
+    {}
+    _size16(uint16_t width, uint16_t height) : width(width), height(height)
+    {}
+    _size16(const struct _size16& right) : width(right.width), height(right.height)
+    {}
 
 public:
     bool empty() { return this->width == 0 || this->height == 0; }
@@ -192,8 +200,10 @@ public:
     uint16_t master, current;
 
 public:
-    _mutable_uint16_t(uint16_t value) { this->master = this->current = value; }
-    _mutable_uint16_t(uint16_t master, uint16_t current) { this->master = master; this->current = current; }
+    _mutable_uint16_t(uint16_t value) : master(value), current(value) 
+    {}
+    _mutable_uint16_t(uint16_t master, uint16_t current) : master(master), current(current)
+    {}
 
 } mutable_uint16_t;
 
@@ -203,8 +213,10 @@ public:
     uint32_t master, current;
 
 public:
-    _mutable_uint32_t(uint32_t value) { this->master = this->current = value; }
-    _mutable_uint32_t(uint32_t master, uint32_t current) { this->master = master; this->current = current; }
+    _mutable_uint32_t(uint32_t value) : master(value), current(value)
+    {}
+    _mutable_uint32_t(uint32_t master, uint32_t current) : master(master), current(current)
+    {}
 
 } mutable_uint32_t;
 
@@ -214,7 +226,8 @@ public:
     uint8_t min, max;
 
 public:
-    _range8_t(uint8_t min, uint8_t max) { this->min = min; this->max = max; }
+    _range8_t(uint8_t min, uint8_t max) : min(min), max(max)
+    {}
 } range8_t;
 
 typedef struct _range16_t
@@ -223,7 +236,8 @@ public:
     uint16_t min, max;
 
 public:
-    _range16_t(uint16_t min, uint16_t max) { this->min = min; this->max = max; }
+    _range16_t(uint16_t min, uint16_t max) : min(min), max(max)
+    {}
 } range16_t;
 
 typedef struct _range32_t
@@ -232,7 +246,8 @@ public:
     uint32_t min, max;
 
 public:
-    _range32_t(uint32_t min, uint32_t max) { this->min = min; this->max = max; }
+    _range32_t(uint32_t min, uint32_t max) : min(min), max(max)
+    {}
 } range32_t;
 
 } }
