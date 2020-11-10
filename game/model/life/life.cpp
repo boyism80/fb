@@ -87,6 +87,9 @@ int fb::game::life::master::builtin_hp(lua_State* lua)
 {
     auto thread = lua::thread::get(*lua);
     auto object = thread->touserdata<fb::game::life::master>(1);
+    if(object == nullptr)
+        return 0;
+    
 
     thread->pushinteger(object->_hp);
     return 1;
@@ -96,6 +99,9 @@ int fb::game::life::master::builtin_mp(lua_State* lua)
 {
     auto thread = lua::thread::get(*lua);
     auto object = thread->touserdata<fb::game::life::master>(1);
+    if(object == nullptr)
+        return 0;
+    
 
     thread->pushinteger(object->_mp);
     return 1;
@@ -370,6 +376,9 @@ int fb::game::life::builtin_hp(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
 
     if(argc == 1)
     {
@@ -392,6 +401,9 @@ int fb::game::life::builtin_mp(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
 
     if(argc == 1)
     {
@@ -413,6 +425,9 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
         return 0;
 
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto master = object->based<life::master>();
 
     thread->pushinteger(master->_hp);
@@ -426,6 +441,9 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
         return 0;
 
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto master = object->based<life::master>();
 
     thread->pushinteger(master->_mp);
@@ -440,6 +458,9 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto value = (uint32_t)thread->tointeger(2);
 
     object->hp_up(value);
@@ -454,6 +475,9 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto value = (uint32_t)thread->tointeger(2);
 
     object->hp_down(value);
@@ -468,6 +492,9 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto value = (uint32_t)thread->tointeger(2);
 
     object->mp_up(value);
@@ -482,6 +509,9 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
+    if(object == nullptr)
+        return 0;
+    
     auto value = (uint32_t)thread->tointeger(2);
 
     object->mp_down(value);
@@ -497,6 +527,9 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto life = thread->touserdata<fb::game::life>(1);
+    if(life == nullptr)
+        return 0;
+    
     auto action = thread->tointeger(2);
     auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : thread->tointeger(3);
     auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
@@ -514,6 +547,9 @@ int fb::game::life::builtin_spell(lua_State* lua)
     auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto life = thread->touserdata<fb::game::life>(1);
+    if(life == nullptr)
+        return 0;
+    
     auto index = (int)thread->tointeger(2);
 
     life->spells[index]->to_lua(lua);
@@ -529,7 +565,13 @@ int fb::game::life::builtin_damage(lua_State* lua)
     auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto me = thread->touserdata<fb::game::life>(1);
+    if(me == nullptr)
+        return 0;
+    
     auto you = thread->touserdata<fb::game::life>(2);
+    if(you == nullptr)
+        return 0;
+
     auto damage = (uint32_t)thread->tointeger(3);
 
     me->hp_down(damage, you, false);

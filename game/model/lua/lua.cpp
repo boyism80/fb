@@ -19,8 +19,10 @@ void lua_push_utf8(lua_State* lua, const std::string& v)
 
 void fb::game::lua::luable::to_lua(lua_State* lua) const
 {
-    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
+    auto allocated = static_cast<void**>(lua_newuserdata(lua, sizeof(void**)));
     *allocated = (void*)this;
+
+    const_cast<std::vector<void**>&>(this->_pointers).push_back(allocated);
 
     auto metaname = this->metaname();
     luaL_getmetatable(lua, metaname.c_str());
@@ -37,6 +39,19 @@ fb::game::lua::luable::luable(uint32_t id)
 
 fb::game::lua::luable::~luable()
 {
+    for(auto x : this->_pointers)
+        *x = nullptr;
+}
+
+int fb::game::lua::luable::builtin_gc(lua_State* lua)
+{
+    auto allocated = static_cast<void**>(lua_touserdata(lua, 1));
+    auto luable = static_cast<fb::game::lua::luable*>(*allocated);
+    auto found = std::find(luable->_pointers.begin(), luable->_pointers.end(), allocated);
+    if(found != luable->_pointers.end())
+        luable->_pointers.erase(found);
+
+    return 0;
 }
 
 state::state(lua_State* lua) : _lua(lua)
@@ -265,11 +280,10 @@ thread* fb::game::lua::thread::get(lua_State& lua_state)
     case LUA_YIELD:
     case LUA_PENDING:
         return found->second;
-
-    default:
-        threads.erase(found->second->_lua);
-        return nullptr;
     }
+
+    threads.erase(&lua_state);
+    return nullptr;
 }
 
 main::main() : state(luaL_newstate())

@@ -21,6 +21,8 @@ private:
 
 private:
     group(session& leader);
+
+public:
     ~group();
 
 public:

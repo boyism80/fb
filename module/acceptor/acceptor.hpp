@@ -73,8 +73,10 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 {
     auto& casted = static_cast<S<T>&>(socket);
     this->handle_disconnected(casted);
-    this->sockets.erase(casted);
+    if(casted.data() != nullptr)
+        delete casted.data();
 
+    this->sockets.erase(casted);
     delete &casted;
 }
 

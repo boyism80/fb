@@ -28,7 +28,13 @@ int builtin_dialog(lua_State* lua)
             throw std::runtime_error("not enough parameters");
 
         auto object = thread->touserdata<T>(1);
+        if(object == nullptr)
+            return 0;
+
         auto session = thread->touserdata<fb::game::session>(2);
+        if(session == nullptr)
+            return 0;
+
         auto message = thread->tostring(3);
         auto button_prev = argc < 4 ? false : thread->toboolean(4);
         auto button_next = argc < 5 ? false : thread->toboolean(5);
@@ -51,7 +57,13 @@ int builtin_menu_dialog(lua_State* lua)
         return 0;
 
     auto npc = thread->touserdata<T>(1);
+    if(npc == nullptr)
+        return 0;
+
     auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr)
+        return 0;
+
     auto message = thread->tostring(3);
 
     // Read menu list
@@ -75,7 +87,13 @@ int builtin_item_dialog(lua_State* lua)
         return 0;
 
     auto npc = thread->touserdata<T>(1);
+    if(npc == nullptr)
+        return 0;
+
     auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr)
+        return 0;
+
     auto message = thread->tostring(3);
 
     // Read menu list
@@ -84,7 +102,11 @@ int builtin_item_dialog(lua_State* lua)
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(4, i+1);
-        items.push_back(thread->touserdata<item::master>(-1));
+        auto core = thread->touserdata<item::master>(-1);
+        if(core == nullptr)
+            continue;
+
+        items.push_back(core);
     }
 
     session->dialog.show(*npc, message, items);
@@ -99,7 +121,13 @@ int builtin_input_dialog(lua_State* lua)
         return 0;
 
     auto npc = thread->touserdata<T>(1);
+    if(npc == nullptr)
+        return 0;
+
     auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr)
+        return 0;
+
     auto message = thread->tostring(3);
 
     auto argc = thread->argc();

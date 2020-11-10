@@ -114,7 +114,13 @@ const std::vector<fb::game::mob::drop>& fb::game::mob::master::items() const
 
 int fb::game::mob::master::builtin_speed(lua_State* lua)
 {
-    auto mob = *(fb::game::mob::master**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto mob = thread->touserdata<fb::game::mob::master>(1);
+    if(mob == nullptr)
+        return 0;
 
     lua_pushinteger(lua, mob->_speed);
     return 1;

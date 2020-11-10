@@ -78,13 +78,19 @@ void fb::game::group::destroy(fb::game::group& group)
 
 int fb::game::group::builtin_members(lua_State* lua)
 {
-    auto group = *(fb::game::group**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_newtable(lua);
+    auto group = thread->touserdata<fb::game::group>(1);
+    if(group == nullptr)
+        return 0;
+    
+    thread->new_table();
     for(int i = 0; i < group->_members.size(); i++)
     {
         group->_members[i]->to_lua(lua);
-        lua_rawseti(lua, -2, i+1);
+        thread->rawseti(-2, i+1);
     }
 
     return 1;
@@ -92,7 +98,14 @@ int fb::game::group::builtin_members(lua_State* lua)
 
 int fb::game::group::builtin_leader(lua_State* lua)
 {
-    auto group = *(fb::game::group**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto group = thread->touserdata<fb::game::group>(1);
+    if(group == nullptr)
+        return 0;
+    
     group->_leader->to_lua(lua);
     return 1;
 }

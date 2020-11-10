@@ -413,6 +413,8 @@ int fb::game::map::builtin_name(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
 
     thread->pushstring(map->name());
     return 1;
@@ -425,6 +427,9 @@ int fb::game::map::builtin_objects(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
 
     lua_newtable(lua);
     const auto& objects = map->objects;
@@ -445,6 +450,9 @@ int fb::game::map::builtin_width(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
 
     thread->pushinteger(map->width());
     return 1;
@@ -457,6 +465,9 @@ int fb::game::map::builtin_height(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
 
     thread->pushinteger(map->height());
     return 1;
@@ -469,6 +480,9 @@ int fb::game::map::builtin_area(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
 
     thread->pushinteger(map->width());
     thread->pushinteger(map->height());
@@ -482,6 +496,9 @@ int fb::game::map::builtin_movable(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
     auto position = point16_t();
 
     if(lua_istable(lua, 2))
@@ -516,7 +533,13 @@ int fb::game::map::builtin_door(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
     auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr)
+        return 0;
+
 
     auto door = map->doors.find(*session);
     if(door == nullptr)
@@ -534,6 +557,9 @@ int fb::game::map::builtin_doors(lua_State* lua)
         return 0;
 
     auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
 
     lua_newtable(lua);
 

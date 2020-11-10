@@ -35,6 +35,9 @@ namespace fb { namespace game { namespace lua {
 
 class luable
 {
+private:
+    std::vector<void**>         _pointers;
+
 #pragma region lua
 public:
     LUA_PROTOTYPE
@@ -42,11 +45,16 @@ public:
 #pragma endregion
 
 #pragma region public method
-public:
+protected:
     luable();
     luable(uint32_t id);
-    ~luable();
+
+public:
+    virtual ~luable();
 #pragma endregion
+
+public:
+    static int                  builtin_gc(lua_State* lua);
 };
 
 class state

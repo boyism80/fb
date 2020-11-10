@@ -5,6 +5,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
+{"__gc",                fb::game::lua::luable::builtin_gc},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")

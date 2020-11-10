@@ -47,25 +47,43 @@ const std::string& fb::game::spell::message() const
 
 int fb::game::spell::builtin_type(lua_State* lua)
 {
-    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_pushinteger(lua, spell->type());
+    auto spell = thread->touserdata<fb::game::spell>(1);
+    if(spell == nullptr)
+        return 0;
+
+    thread->pushinteger(spell->type());
     return 1;
 }
 
 int fb::game::spell::builtin_name(lua_State* lua)
 {
-    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_push_utf8(lua, spell->_name.c_str());
+    auto spell = thread->touserdata<fb::game::spell>(1);
+    if(spell == nullptr)
+        return 0;
+
+    thread->pushstring(spell->_name.c_str());
     return 1;
 }
 
 int fb::game::spell::builtin_message(lua_State* lua)
 {
-    auto spell = *(fb::game::spell**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
 
-    lua_push_utf8(lua, spell->_message.c_str());
+    auto spell = thread->touserdata<fb::game::spell>(1);
+    if(spell == nullptr)
+        return 0;
+
+    thread->pushstring(spell->_message.c_str());
     return 1;
 }
 
