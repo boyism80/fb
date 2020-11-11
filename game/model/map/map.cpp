@@ -192,10 +192,10 @@ const std::string& fb::game::map::name() const
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
 {
-    if(x > this->_size.width)
+    if(x >= this->_size.width)
         return true;
 
-    if(y > this->_size.height)
+    if(y >= this->_size.height)
         return true;
 
     return this->_tiles[y * this->_size.width + x].blocked;
@@ -206,10 +206,10 @@ bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
     if(this->_tiles == nullptr)
         return false;
 
-    if(x > this->_size.width)
+    if(x >= this->_size.width)
         return false;
 
-    if(y > this->_size.height)
+    if(y >= this->_size.height)
         return false;
 
     this->_tiles[y * this->_size.width + x].blocked = option;
