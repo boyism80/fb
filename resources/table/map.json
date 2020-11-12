@@ -88748,7 +88748,7 @@
         "name": "백두산관문",
         "parent": 14,
         "bgm": 156,
-        "host": "game30",
+        "host": "game13",
         "option": {
             "hunting ground": false,
             "enabled die penalty": true,
