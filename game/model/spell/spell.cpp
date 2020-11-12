@@ -69,7 +69,7 @@ int fb::game::spell::builtin_name(lua_State* lua)
     if(spell == nullptr)
         return 0;
 
-    thread->pushstring(spell->_name.c_str());
+    thread->pushstring(spell->_name);
     return 1;
 }
 
@@ -83,7 +83,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
     if(spell == nullptr)
         return 0;
 
-    thread->pushstring(spell->_message.c_str());
+    thread->pushstring(spell->_message);
     return 1;
 }
 

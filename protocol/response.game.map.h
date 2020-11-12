@@ -100,7 +100,7 @@ class bgm : public fb::protocol::base::header
 {
 public:
     const fb::game::map&            map;
-    const uint16_t                  volume;
+    const uint8_t                   volume;
 
 public:
     bgm(const fb::game::map& map, uint16_t volume = 100) : 

@@ -39,7 +39,7 @@ bool fb::game::trade::begin(session& you)
     {
         if(this->_owner.id() == you.id())
         {
-            // ÀÚ±â ÀÚ½Å°ú °Å·¡¸¦ ÇÏ·Á°í ½ÃµµÇÏ´Â °æ¿ì
+            // ìê¸° ìì‹ ê³¼ ê±°ë˜ë¥¼ í•˜ë ¤ê³  ì‹œë„í•˜ëŠ” ê²½ìš°
             return false;
         }
 
@@ -50,7 +50,7 @@ bool fb::game::trade::begin(session& you)
 
         if(you.option(options::TRADE) == false)
         {
-            // »ó´ë¹æÀÌ ±³È¯ °ÅºÎÁß
+            // ìƒëŒ€ë°©ì´ êµí™˜ ê±°ë¶€ì¤‘
             std::stringstream sstream;
             sstream << you.name() << message::trade::REFUSED_BY_PARTNER;
             throw std::runtime_error(sstream.str());
@@ -63,7 +63,7 @@ bool fb::game::trade::begin(session& you)
 
         if(you.trade.trading())
         {
-            // »ó´ë¹æÀÌ ÀÌ¹Ì ±³È¯Áß
+            // ìƒëŒ€ë°©ì´ ì´ë¯¸ êµí™˜ì¤‘
             std::stringstream sstream;
             sstream << you.name() << message::trade::PARTNER_ALREADY_TRADING;
             throw std::runtime_error(sstream.str());
@@ -71,13 +71,13 @@ bool fb::game::trade::begin(session& you)
 
         if(this->_owner.sight(you) == false)
         {
-            // »ó´ë¹æÀÌ ½Ã¾ß¿¡¼­ º¸ÀÌÁö ¾ÊÀ½
+            // ìƒëŒ€ë°©ì´ ì‹œì•¼ì—ì„œ ë³´ì´ì§€ ì•ŠìŒ
             throw std::runtime_error(message::trade::PARTNER_INVISIBLE);
         }
 
         if(this->_owner.distance_sqrt(you) > 16)
         {
-            // »ó´ë¹æ°úÀÇ °Å¸®°¡ ³Ê¹« ¸Ø
+            // ìƒëŒ€ë°©ê³¼ì˜ ê±°ë¦¬ê°€ ë„ˆë¬´ ë©ˆ
             std::stringstream sstream;
             sstream << you.name() << message::trade::PARTNER_TOO_FAR;
             
@@ -133,14 +133,14 @@ bool fb::game::trade::up(fb::game::item& item)
 
         if((item.attr() & fb::game::item::attrs::ITEM_ATTR_BUNDLE) && (item.count() > 1))
         {
-            // ¹­À½ ´ÜÀ§ÀÇ ¾ÆÀÌÅÛ Çü½Ä °Å·¡ ½Ãµµ
+            // ë¬¶ìŒ ë‹¨ìœ„ì˜ ì•„ì´í…œ í˜•ì‹ ê±°ë˜ ì‹œë„
             this->_selected = &item;
             if (this->_listener != nullptr)
                 this->_listener->on_trade_bundle(this->_owner);
         }
         else
         {
-            // ÀÏ¹İ ¾ÆÀÌÅÛÀÇ °Å·¡ ½Ãµµ
+            // ì¼ë°˜ ì•„ì´í…œì˜ ê±°ë˜ ì‹œë„
             auto splitted = this->_owner.items.remove(item);
             auto index = this->add(*splitted);
             if(index == 0xFF)
@@ -168,8 +168,8 @@ bool fb::game::trade::up(uint8_t money)
 {
     try
     {
-        // ÀÔ·ÂÇÑ ±İÀü ¾çÀ» °è¼ÓÇØ¼­ »©¸é ¾ÈµÈ´Ù.
-        // 100Àü ÀÔ·ÂÇÑ °æ¿ì -1, -10, -100 ÀÌ·¸°Ô ±î¿©¹ö¸²
+        // ì…ë ¥í•œ ê¸ˆì „ ì–‘ì„ ê³„ì†í•´ì„œ ë¹¼ë©´ ì•ˆëœë‹¤.
+        // 100ì „ ì…ë ¥í•œ ê²½ìš° -1, -10, -100 ì´ë ‡ê²Œ ê¹Œì—¬ë²„ë¦¼
         auto                total = this->_owner.money() + this->_money;
         if(money > total)
             money = total;
@@ -349,12 +349,12 @@ bool fb::game::trade::lock()
             this->_listener->on_trade_lock(this->_owner, true);
         }
 
-        if(this->_you->trade._locked == false)  // »ó´ë¹æÀÌ ÀÌ¹Ì ±³È¯ È®ÀÎÀ» ´©¸¥ °æ¿ì
+        if(this->_you->trade._locked == false)  // ìƒëŒ€ë°©ì´ ì´ë¯¸ êµí™˜ í™•ì¸ì„ ëˆ„ë¥¸ ê²½ìš°
         {
             this->_listener->on_trade_lock(*this->_you, false);
             return true;
         }
-        else if(!this->flushable() || !this->_you->trade.flushable())   // ±³È¯ÀÌ ºÒ°¡´ÉÇÑ °æ¿ì
+        else if(!this->flushable() || !this->_you->trade.flushable())   // êµí™˜ì´ ë¶ˆê°€ëŠ¥í•œ ê²½ìš°
         {
             this->restore();
             this->_you->trade.restore();

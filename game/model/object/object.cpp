@@ -68,7 +68,7 @@ int fb::game::object::master::builtin_name(lua_State* lua)
         return 0;
     
 
-    thread->pushstring(object->_name.c_str());
+    thread->pushstring(object->_name);
     return 1;
 }
 
@@ -801,7 +801,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
         return 0;
     
 
-    thread->pushstring(me->name().c_str());
+    thread->pushstring(me->name());
     return 1;
 }
 
@@ -817,7 +817,7 @@ int fb::game::object::builtin_name(lua_State* lua)
     
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
 
-    thread->pushstring(object->name().c_str());
+    thread->pushstring(object->name());
     return 1;
 }
 

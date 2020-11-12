@@ -1809,36 +1809,29 @@ fb::game::equipment* items::wear(fb::game::equipment::slot slot, fb::game::equip
     switch(slot) // equipment::slot
     {
     case equipment::WEAPON_SLOT:
-        this->_owner.items.weapon(static_cast<fb::game::weapon*>(item));
-        break;
+        return this->_owner.items.weapon(static_cast<fb::game::weapon*>(item));
 
     case equipment::ARMOR_SLOT:
-        this->_owner.items.armor(static_cast<fb::game::armor*>(item));
-        break;
+        return this->_owner.items.armor(static_cast<fb::game::armor*>(item));
 
     case equipment::SHIELD_SLOT:
-        this->_owner.items.shield(static_cast<fb::game::shield*>(item));
-        break;
+        return this->_owner.items.shield(static_cast<fb::game::shield*>(item));
 
     case equipment::HELMET_SLOT:
-        this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
-        break;
+        return this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
 
     case equipment::LEFT_HAND_SLOT:
-        this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
+        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
         break;
 
     case equipment::RIGHT_HAND_SLOT:
-        this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
+        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
 
     case equipment::LEFT_AUX_SLOT:
-        this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
-        break;
+        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
 
     case equipment::RIGHT_AUX_SLOT:
-        this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
-        break;
+        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
 
     default:
         throw std::runtime_error("invalid equipment slot");

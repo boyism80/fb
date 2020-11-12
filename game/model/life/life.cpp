@@ -310,7 +310,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
 
     thread.pushobject(this)
         .pushobject(spell)
-        .pushstring(message.c_str())
+        .pushstring(message)
         .resume(3);
     return true;
 }

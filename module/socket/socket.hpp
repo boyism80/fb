@@ -18,10 +18,10 @@ template<typename T>
 inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
     auto clone = stream;
-    if(encrypt && this->on_encrypt(clone) == -1)
+    if(encrypt && this->on_encrypt(clone) == false)
         return;
 
-    if(wrap && this->on_wrap(clone) == -1)
+    if(wrap && this->on_wrap(clone) == false)
         return;
 
     auto buffer = boost::asio::buffer(clone.data(), clone.size());

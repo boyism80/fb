@@ -94,7 +94,7 @@ public:
 class info : public fb::protocol::base::header
 {
 public:
-    uint8_t                 position;
+    uint16_t                position;
     uint8_t                 slot;
 
 public:
