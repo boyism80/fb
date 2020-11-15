@@ -275,11 +275,14 @@ thread* fb::game::lua::thread::get(lua_State& lua_state)
     if(found == threads.end())
         return nullptr;
 
-    switch(found->second->_state)
+    if(found->second != nullptr)
     {
-    case LUA_YIELD:
-    case LUA_PENDING:
-        return found->second;
+        switch(found->second->_state)
+        {
+        case LUA_YIELD:
+        case LUA_PENDING:
+            return found->second;
+        }
     }
 
     threads.erase(&lua_state);
@@ -319,4 +322,9 @@ void main::release()
 void fb::game::lua::release()
 {
     main::release();
+}
+
+void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
+{
+    lua_register(main::get(), name.c_str(), fn);
 }

@@ -147,11 +147,13 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     _timer(context)
 {
     const auto& config = fb::config::get();
-    this->_connection = new connection(
+    this->_connection = new connection
+    (
         config["database"]["ip"].asString(), 
         config["database"]["uid"].asString(), 
         config["database"]["pwd"].asString(), 
-        config["database"]["name"].asString());
+        config["database"]["name"].asString()
+    );
 
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
@@ -166,13 +168,13 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     lua::bind_class<item::master, object::master>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
-    lua_register(lua::main::get(), "sleep",     builtin_sleep);
-    lua_register(lua::main::get(), "name2mob",  builtin_name2mob);
-    lua_register(lua::main::get(), "name2item", builtin_name2item);
-    lua_register(lua::main::get(), "name2npc",  builtin_name2npc);
-    lua_register(lua::main::get(), "name2map",  builtin_name2map);
-    lua_register(lua::main::get(), "timer",     builtin_timer);
-    lua_register(lua::main::get(), "weather",   builtin_weather);
+    lua::bind_function("sleep",     builtin_sleep);
+    lua::bind_function("name2mob",  builtin_name2mob);
+    lua::bind_function("name2item", builtin_name2item);
+    lua::bind_function("name2npc",  builtin_name2npc);
+    lua::bind_function("name2map",  builtin_name2map);
+    lua::bind_function("timer",     builtin_timer);
+    lua::bind_function("weather",   builtin_weather);
     
     this->bind<fb::protocol::game::request::login>            (0x10, std::bind(&acceptor::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (0x11, std::bind(&acceptor::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
@@ -216,6 +218,22 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), 100);      // 몹 행동 타이머
     this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), 1000);     // 몹 리젠 타이머
     this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), 1000);     // 버프 타이머
+
+    this->bind_command("맵이동",   std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("사운드",   std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("액션",     std::bind(&acceptor::handle_command_action, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("날씨",     std::bind(&acceptor::handle_command_weather, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("밝기",     std::bind(&acceptor::handle_command_bright, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("타이머",   std::bind(&acceptor::handle_command_timer, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("이펙트",   std::bind(&acceptor::handle_command_effect, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("변신",     std::bind(&acceptor::handle_command_disguise, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("변신해제", std::bind(&acceptor::handle_command_undisguise, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("마법배우기", std::bind(&acceptor::handle_command_spell, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("몬스터생성", std::bind(&acceptor::handle_command_mob, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("직업바꾸기", std::bind(&acceptor::handle_command_class, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("레벨바꾸기", std::bind(&acceptor::handle_command_level, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("아이템생성", std::bind(&acceptor::handle_command_item, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("월드맵", std::bind(&acceptor::handle_command_world, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()
@@ -265,6 +283,11 @@ fb::game::session* fb::game::acceptor::find(const std::string& name) const
 void fb::game::acceptor::bind_timer(std::function<void(uint64_t)> fn, int ms)
 {
     this->_timer.push(fn, ms);
+}
+
+void fb::game::acceptor::bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn)
+{
+    this->_command_dict.insert(std::make_pair(command, fn));
 }
 
 fb::game::session* fb::game::acceptor::handle_accepted(fb::socket<fb::game::session>& socket)
@@ -929,9 +952,9 @@ bool fb::game::acceptor::handle_user_list(fb::socket<fb::game::session>& socket,
 bool fb::game::acceptor::handle_chat(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::chat& request)
 {
     auto session = socket.data();
-    if(this->handle_admin(*session, request.message))
+    if(handle_command(*session, request.message) == true)
         return true;
-
+    
     std::stringstream           sstream;
     if(request.shout)
         sstream << session->name() << "! " << request.message;
@@ -1253,265 +1276,277 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
     }
 }
 
-bool fb::game::acceptor::handle_admin(fb::game::session& session, const std::string& message)
+bool fb::game::acceptor::handle_command(fb::game::session& session, const std::string& message)
 {
-    if(message[0] != '/')
+    if(message.starts_with('/') == false)
         return false;
 
-    auto                            npc = fb::game::table::npcs.name2npc("낙랑");
-    std::string                     command = std::string(message.begin() + 1, message.end());
     std::vector<std::string>        splitted;
-    std::istringstream              sstream(command);
+    std::istringstream              sstream(message.substr(1));
     std::string                     unit;
-
-    while(std::getline(sstream, unit, ' '))
+    while (std::getline(sstream, unit, ' '))
     {
         splitted.push_back(unit);
     }
 
-    if(command == "show")
+    auto found = this->_command_dict.find(splitted[0]);
+    if (found == this->_command_dict.end())
+        return false;
+
+    Json::Value parameters;
+    for (auto i = splitted.begin() + 1; i != splitted.end(); i++)
     {
-        session.dialog.show(*fb::game::table::items.name2item("남자기모노"), "갓승현님 사랑합니다.", true, true);
-        return true;
-    }
-
-    if(command == "show short list")
-    {
-        std::vector<std::string> menus = {"갓", "승", "현"};
-        session.dialog.show(*npc, "갓승현님 존경합니다.", menus);
-        return true;
-    }
-
-    if(command == "show long list")
-    {
-        std::vector<std::string> menus;
-        std::string message = "갓승현님은 위대하신 게임서버 개발계의 큰 별이시다.";
-        int i = 0;
-        int mod = 0;
-        for(auto c : message)
-        {
-            i++;
-            
-            if(c == ' ')
-                mod = int(!(bool(mod)));
-
-            if(i % 2 != mod)
-                continue;
-
-            menus.push_back(std::string(message.begin(), message.begin() + i));
-        }
-        session.dialog.show(*npc, "갓승현님 존경합니다.", menus);
-        return true;
-    }
-
-    if(command == "show inventory items")
-    {
-        std::vector<uint8_t> slots;
-        for(int i = 0; i < item::MAX_SLOT; i++)
-        {
-            const auto item = session.items[i];
-            if(item == nullptr)
-                continue;
-
-            slots.push_back(i+1);
-        }
-        session.dialog.show(*npc, "갓승현님의 인벤토리를 보여드립니다.", slots);
-        return true;
-    }
-
-    if(command == "show item core list")
-    {
-        std::vector<item::master*> items;
-        int count = 0;
-        for(auto pair : fb::game::table::items)
-        {
-            items.push_back(pair.second);
-            if(count++ > 100)
-                break;
-        }
-        session.dialog.show(*npc, "아시발 다 판다", items);
-        return true;
-    }
-
-    if(command == "show question")
-    {
-        session.dialog.input(*npc, "What is your name?");
-        return true;
-    }
-
-    if(command == "show extend input")
-    {
-        session.dialog.input(*npc, "안녕", "탑", "바텀", 0xFF, true);
-        return true;
-    }
-
-    if(command == "be ghost")
-    {
-        if(session.state() == state::NORMAL)
-            session.state(state::GHOST);
+        auto digit = std::all_of
+        (
+            (*i).begin(), (*i).end(),
+            [] (uint8_t c)
+            {
+                return std::isdigit(c);
+            }
+        );
+        if(digit)
+            parameters.append(std::stoi(*i));
         else
-            session.state(state::NORMAL);
-
-        this->send(session, fb::protocol::game::response::session::show(session, true), scope::PIVOT);
-        return true;
+            parameters.append(*i);
     }
 
-    if(splitted[0] == "weather")
+    found->second(session, parameters);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_map(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isString() == false)
+        return false;
+
+    auto name = parameters[0].asString();
+    auto map = fb::game::table::maps.name2map(name);
+    if(map == nullptr)
+        return false;
+
+    auto x = 0;
+    auto y = 0;
+    if(parameters.size() > 3)
     {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::weather(weather::type(value)), scope::SELF);
-        return true;
+        if(parameters[1].isNumeric())
+            x = parameters[1].asInt();
+
+        if(parameters[2].isNumeric())
+            y = parameters[2].asInt();
     }
+    session.map(map, point16_t(x, y));
+    return true;
+}
 
-    if(splitted[0] == "bright")
-    {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::bright(value), scope::SELF);
+bool fb::game::acceptor::handle_command_sound(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::object::sound(session, fb::game::sound::type(value)), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_action(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::session::action(session, fb::game::action(value), duration::DURATION_SPELL), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_weather(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::weather(weather::type(value)), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_bright(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::bright(value), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_timer(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::timer(value), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_effect(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+    this->send(session, fb::protocol::game::response::object::effect(session, value), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_disguise(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isString() == false)
+        return false;
+
+    auto name = parameters[0].asString();
+    auto mob = fb::game::table::mobs.name2mob(name);
+    if(mob == nullptr)
         return true;
-    }
 
-    if(splitted[0] == "timer")
-    {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::timer(value), scope::SELF);
+    session.disguise(mob->look());
+    this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::session::action(session, action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::object::sound(session, sound::type(0x0019)), scope::PIVOT);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_undisguise(fb::game::session& session, Json::Value& parameters)
+{
+    session.undisguise();
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_mob(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isString() == false)
+        return false;
+
+    auto name = parameters[0].asString();
+    auto core = fb::game::table::mobs.name2mob(name);
+    if(core == nullptr)
         return true;
-    }
 
-    if(splitted[0] == "effect")
-    {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::object::effect(session, value), scope::SELF);
+    auto mob = new fb::game::mob(core, this, true);
+    auto map = session.map();
+    mob->map(map, session.position());
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_class(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isString() == false)
+        return false;
+
+    auto name = parameters[0].asString();
+    uint8_t cls, promotion;
+    if(fb::game::table::classes.name2class(name, &cls, &promotion) == false)
         return true;
-    }
 
-    if(splitted[0] == "action")
-    {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::session::action(session, fb::game::action(value), duration::DURATION_SPELL), scope::SELF);
-        return true;
-    }
+    session.cls(cls);
+    session.promotion(promotion);
+    this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    return true;
+}
 
-    if(splitted[0] == "sound")
-    {
-        auto value = std::stoi(splitted[1]);
-        this->send(session, fb::protocol::game::response::object::sound(session, fb::game::sound::type(value)), scope::SELF);
-        return true;
-    }
+bool fb::game::acceptor::handle_command_level(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
 
-    if(splitted[0] == "map")
-    {
-        auto name = splitted[1];
-        auto x = 0;
-        auto y = 0;
+    if(parameters[0].isNumeric() == false)
+        return false;
 
-        if(splitted.size() > 2)
-            x = std::stoi(splitted[2]);
+    auto level = parameters[0].asInt();
+    session.level(level);
+    this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    return true;
+}
 
-        if(splitted.size() > 3)
-            y = std::stoi(splitted[3]);
+bool fb::game::acceptor::handle_command_spell(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
 
-        auto map = fb::game::table::maps.name2map(name);
-        if(map == nullptr)
-            return true;
+    if(parameters[0].isString() == false)
+        return false;
 
-        session.map(map, point16_t(x, y));
-        return true;
-    }
+    auto name = parameters[0].asString();
+    auto spell = fb::game::table::spells.name2spell(name);
+    if(spell == nullptr)
+        return false;
 
-    if(splitted[0] == "변신")
-    {
-        auto name = splitted[1];
-        auto mob = fb::game::table::mobs.name2mob(name);
-        if(mob == nullptr)
-            return true;
+    auto slot = session.spells.add(spell);
+    if(slot == 0xFF)
+        return false;
 
-        session.disguise(mob->look());
-        this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
-        this->send(session, fb::protocol::game::response::session::action(session, action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
-        this->send(session, fb::protocol::game::response::object::sound(session, sound::type(0x0019)), scope::PIVOT);
-        return true;
-    }
+    return true;
+}
 
-    if(splitted[0] == "변신해제")
-    {
-        session.undisguise();
-        return true;
-    }
+bool fb::game::acceptor::handle_command_item(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
 
-    if(splitted[0] == "마법배우기")
-    {
-        auto name = splitted[1];
-        auto spell = fb::game::table::spells.name2spell(name);
-        if(spell == nullptr)
-            return true;
+    if(parameters[0].isString() == false)
+        return false;
 
-        auto slot = session.spells.add(spell);
-        if(slot == 0xFF)
-            return true;
+    auto name = parameters[0].asString();
+    auto core = fb::game::table::items.name2item(name);
+    if(core == nullptr)
+        return false;
 
-        return true;
-    }
+    auto item = core->make<fb::game::item>(this);
+    item->map(session.map(), session.position());
+    return true;
+}
 
-    if(splitted[0] == "몬스터생성")
-    {
-        auto name = splitted[1];
-        auto core = fb::game::table::mobs.name2mob(name);
-        if(core == nullptr)
-            return true;
+bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
 
-        auto mob = new fb::game::mob(core, this, true);
-        auto map = session.map();
-        mob->map(map, session.position());
-        return true;
-    }
+    if(parameters[0].isString() == false)
+        return false;
 
-    if(splitted[0] == "직업바꾸기")
-    {
-        auto name = splitted[1];
-        uint8_t cls, promotion;
-        if(fb::game::table::classes.name2class(name, &cls, &promotion) == false)
-            return true;
-
-        session.cls(cls);
-        session.promotion(promotion);
-        this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
-        this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
-        return true;
-    }
-
-    if(splitted[0] == "레벨바꾸기")
-    {
-        auto level = std::stoi(splitted[1]);
-        session.level(level);
-        this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
-        return true;
-    }
-
-    if(splitted[0] == "아이템생성")
-    {
-        auto name = splitted[1];
-        auto item = fb::game::table::items.name2item(name)->make<fb::game::item>(this);
-        item->map(session.map(), session.position());
-        return true;
-    }
-
-    if(splitted[0] == "월드맵")
-    {
-        auto id = splitted[1];
-        session.before_map(session.map());
-        session.map(nullptr);
-        session.send(fb::protocol::game::response::map::worlds(id));
-
-        return true;
-    }
-
-    if(splitted[0] == "청룡마령참")
-    {
-        this->send(session, fb::protocol::game::response::object::effect(session, 137), scope::SELF);
-        this->send(session, fb::protocol::game::response::session::action(session, fb::game::action(0x03), duration(30), 8), scope::SELF);
-        this->send(session, fb::protocol::game::response::object::sound(session, fb::game::sound::type(8)), scope::SELF);
-        return true;
-    }
-
-    return false;
+    auto id = parameters[0].asString();
+    session.before_map(session.map());
+    session.map(nullptr);
+    session.send(fb::protocol::game::response::map::worlds(id));
+    return true;
 }

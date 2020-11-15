@@ -198,6 +198,8 @@ void bind_class()
     luaL_setfuncs(main::get(), T::LUA_METHODS, 0);
 }
 
+void bind_function(const std::string& name, lua_CFunction fn);
+
 template <typename T>
 void env(const char* key, T* data)
 {

@@ -42,9 +42,13 @@ public:
 public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
 
+public:
+    typedef std::map<std::string, std::function<bool(fb::game::session&, Json::Value&)>> command_dict;
+
 private:
     connection*             _connection;
     timer_container         _timer;
+    command_dict            _command_dict;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
@@ -53,6 +57,8 @@ public:
 private:
     fb::game::session*      find(const std::string& name) const;
     void                    bind_timer(std::function<void(uint64_t)> fn, int ms);
+    void                    bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn);
+
 public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
 
@@ -116,8 +122,24 @@ public:
     void                    handle_mob_action(uint64_t now);
     void                    handle_mob_respawn(uint64_t now);
     void                    handle_buff_timer(uint64_t now);
+    bool                    handle_command(fb::game::session& session, const std::string& message);
 
-    bool                    handle_admin(fb::game::session& session, const std::string& message);
+public:
+    bool                    handle_command_map(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_sound(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_action(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_weather(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_bright(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_timer(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_effect(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_disguise(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_undisguise(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_mob(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_class(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_level(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_spell(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_item(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_world(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object
