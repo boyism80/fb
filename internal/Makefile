@@ -1,6 +1,6 @@
 CXX             = g++
 BUILD           = bin
-STD             = -std=c++17
+STD             = -std=c++20
 TARGET          = $(BUILD)/internal
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql

@@ -14,8 +14,12 @@ def update():
     if files.exists('/var/provision_completed'):
         return
 
+    sudo('add-apt-repository ppa:ubuntu-toolchain-r/test -y')
     sudo('apt-get update -y')
     sudo('apt-get upgrade -y')
+    sudo('apt install gcc-10 g++-10 -y')
+    sudo('update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 102 --slave /usr/bin/g++ g++ /usr/bin/g++-10')
+    sudo('update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 75 --slave /usr/bin/g++ g++ /usr/bin/g++-7')
     sudo('apt-get install make -y')
     sudo('apt-get install wget -y')
     sudo('apt-get install libjsoncpp-dev -y')

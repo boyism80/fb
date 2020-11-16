@@ -1,6 +1,6 @@
 CXX             = g++ -g
 BUILD           = bin
-STD             = -std=c++17
+STD             = -std=c++20
 TARGET          = $(BUILD)/game 
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
