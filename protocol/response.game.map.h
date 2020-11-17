@@ -158,10 +158,15 @@ public:
     {}
     worlds(const std::string& id)
     {
-        auto  windex = fb::game::table::worlds.find(id);
-        auto  world = fb::game::table::worlds[windex];
-        auto& offsets = world->offsets();
-        auto found = std::find_if
+        try
+        {
+            auto  windex = fb::game::table::worlds.find(id);
+            if(windex == -1)
+                throw nullptr;
+
+            auto  world = fb::game::table::worlds[windex];
+            auto& offsets = world->offsets();
+            auto found = std::find_if
             (
                 offsets.cbegin(), offsets.cend(),
                 [&] (fb::game::wm::offset* offset)
@@ -170,9 +175,15 @@ public:
                 }
             );
 
-        this->offset = 
-            found == offsets.cend() ? 
-            nullptr : *found;
+            if(found == offsets.cend())
+                throw nullptr;
+
+            this->offset = *found;
+        }
+        catch(...)
+        {
+            this->offset = nullptr;
+        }
     }
 
 public:
