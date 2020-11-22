@@ -1,7 +1,7 @@
 #ifndef __AUTH_SERVICE_H
 #define __AUTH_SERVICE_H
 
-#include "mysql+++/mysql+++.h"
+#include "module/db/db.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -17,8 +17,6 @@
 #include "model/gateway/gateway.h"
 #include "module/encoding/encoding.h"
 #include "module/string/string.h"
-
-using namespace daotk::mysql;
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
 #define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
@@ -71,7 +69,6 @@ namespace fb { namespace login { namespace service {
 class auth : public service
 {
 private:
-    connection*                 _connection;
     std::vector<std::string>    _forbiddens;
 
 public:

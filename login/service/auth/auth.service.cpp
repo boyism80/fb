@@ -4,19 +4,13 @@ fb::login::service::auth::auth()
 {
     const auto& config = fb::config::get();
 
-    this->_connection = new connection(
-        config["database"]["ip"].asString(), 
-        config["database"]["uid"].asString(), 
-        config["database"]["pwd"].asString(), 
-        config["database"]["name"].asString());
-
     for(auto x : config["forbidden"])
         this->_forbiddens.push_back(x.asString());
 }
 
 fb::login::service::auth::~auth()
 {
-    delete this->_connection;
+    
 }
 
 // 참고자료
@@ -80,7 +74,8 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
 
 bool fb::login::service::auth::exists(const std::string& name) const
 {
-    return this->_connection->query
+    auto& connection = db::get();
+    return connection.query
     (
         "SELECT COUNT(*) FROM user WHERE name='%s'",
         name.c_str()
@@ -120,14 +115,16 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     std::srand(std::time(nullptr));
     auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
     auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
-    this->_connection->exec
+
+    auto& connection = db::get();
+    connection.exec
     (
         "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
         id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
     );
-    auto index = this->_connection->last_insert_id();
+    auto index = connection.last_insert_id();
 
-    auto result = this->_connection->query("SELECT id, name FROM user")
+    auto result = connection.query("SELECT id, name FROM user")
         .each([](int id, std::string name) 
             {
                 return true;
@@ -136,7 +133,8 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    this->_connection->exec
+    auto& connection = db::get();
+    connection.exec
     (
         "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name='%s'",
         hair, sex, nation, creature, id.c_str()
@@ -147,7 +145,8 @@ uint32_t fb::login::service::auth::login(const std::string& id, const std::strin
 {
     this->assert_account(id, pw);
 
-    auto found = this->_connection->query
+    auto& connection = db::get();
+    auto found = connection.query
     (
         "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
         id.c_str(), this->sha256(pw).c_str()
@@ -179,7 +178,8 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
     if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-    auto found = this->_connection->query
+    auto& connection = db::get();
+    auto found = connection.query
     (
         "SELECT pw, birth FROM user WHERE name='%s'",
         id.c_str()
@@ -205,7 +205,7 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
     if(birthday != found_birth)
         throw btd_exception();
 
-    this->_connection->exec
+    connection.exec
     (
         "UPDATE user SET pw='%s' WHERE name='%s'",
         this->sha256(new_pw).c_str(), id.c_str()

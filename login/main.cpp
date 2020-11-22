@@ -1,4 +1,5 @@
 #include "resource.h"
+#include "module/db/db.h"
 #include "model/acceptor/acceptor.login.h"
 #include "module/leak.h"
 #include "module/console/console.h"
@@ -62,6 +63,6 @@ int main(int argc, const char** argv)
     // Clean up
     delete acceptor;
     fb::console::release();
-
+    fb::db::release();
     return 0;
 }

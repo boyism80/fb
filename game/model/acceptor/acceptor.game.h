@@ -7,7 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
-#include "mysql+++/mysql+++.h"
+#include "module/db/db.h"
 #include "module/acceptor/acceptor.h"
 #include "module/config/config.h"
 #include "module/timer/timer.h"
@@ -21,8 +21,6 @@
 #include "module/string/string.h"
 #include "model/lua/lua.h"
 #include "model/table/table.game.h"
-
-using namespace daotk::mysql;
 
 namespace fb { namespace game {
 
@@ -46,7 +44,6 @@ public:
     typedef std::map<std::string, std::function<bool(fb::game::session&, Json::Value&)>> command_dict;
 
 private:
-    connection*             _connection;
     timer_container         _timer;
     command_dict            _command_dict;
 

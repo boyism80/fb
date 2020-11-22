@@ -1,4 +1,5 @@
 #include "resource.h"
+#include "module/db/db.h"
 #include "module/socket/socket.h"
 #include "module/config/config.h"
 #include "module/leak.h"
@@ -403,5 +404,6 @@ int main(int argc, const char** argv)
     delete acceptor;
     fb::game::lua::release();
     fb::console::release();
+    fb::db::release();
     return 0;
 }

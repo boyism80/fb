@@ -64,6 +64,5 @@ int main(int argc, const char** argv)
     // Clean up
     delete acceptor;
     c.release();
-
     return 0;
 }

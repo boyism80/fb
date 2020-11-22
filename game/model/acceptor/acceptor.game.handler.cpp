@@ -87,7 +87,8 @@ void fb::game::acceptor::on_updated(session& me, fb::game::state_level level)
 
 void fb::game::acceptor::on_money_changed(session& me, uint32_t value)
 {
-    this->_connection->query
+    auto& connection = fb::db::get();
+    connection.query
     (
         "UPDATE user SET money=%d WHERE id=%d",
         value, me.id()
@@ -218,14 +219,15 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
     this->send(me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::SELF);
 
-    this->_connection->query
+    auto& connection = fb::db::get();
+    connection.query
     (
         "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1",
         item.id()
     );
 
     auto column = equipment::column(slot);
-    this->_connection->query
+    connection.query
     (
         "UPDATE user SET %s=%d WHERE id=%d",
         column.c_str(), item.id(), me.id()
@@ -235,7 +237,8 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
 void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uint8_t index)
 {
     auto column = equipment::column(slot);
-    this->_connection->query
+    auto& connection = fb::db::get();
+    connection.query
     (
         "UPDATE user SET %s=NULL WHERE id=%d",
         column.c_str(), me.id()
@@ -458,17 +461,19 @@ void fb::game::acceptor::on_transfer(fb::game::session& me, fb::game::map& map, 
 void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)
 {
     auto master = item.based<fb::game::item::master>();
-    this->_connection->exec
+    auto& connection = fb::db::get();
+    connection.exec
     (
         "INSERT INTO item(master, owner, slot, count, durability) VALUES(%d, %d, %d, %d, %s)",
         master->id(), me.id(), slot, item.count(), "NULL"
     );
-    item.id(this->_connection->last_insert_id());
+    item.id(connection.last_insert_id());
 }
 
 void fb::game::acceptor::on_item_changed(session& me, fb::game::item& item, uint8_t slot)
 {
-    this->_connection->exec
+    auto& connection = fb::db::get();
+    connection.exec
     (
         "UPDATE item SET slot=%d, count=%d WHERE id=%d LIMIT 1",
         slot, item.count(), item.id()
@@ -477,7 +482,8 @@ void fb::game::acceptor::on_item_changed(session& me, fb::game::item& item, uint
 
 void fb::game::acceptor::on_item_lost(session& me, uint8_t slot)
 {
-    this->_connection->exec
+    auto& connection = fb::db::get();
+    connection.exec
     (
         "DELETE FROM item WHERE owner=%d AND slot=%d",
         me.id(), slot
@@ -551,10 +557,12 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 
 void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
 {
+    auto& connection = fb::db::get();
+
     // 메모리상에서 변경된 이후에 호출
     if(me.items[src] != nullptr)
     {
-        this->_connection->query
+        connection.query
         (
             "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
             src, me.items[src]->id()
@@ -563,7 +571,7 @@ void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
 
     if(me.items[dest] != nullptr)
     {
-        this->_connection->query
+        connection.query
         (
             "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
             dest, me.items[dest]->id()
@@ -622,7 +630,8 @@ void fb::game::acceptor::on_save(session& me)
         me.id()
     );
 
-    this->_connection->query(buffer);
+    auto& connection = fb::db::get();
+    connection.query(buffer);
 
     for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
@@ -630,7 +639,7 @@ void fb::game::acceptor::on_save(session& me)
         if(item == nullptr)
             continue;
 
-        this->_connection->query
+        connection.query
         (
             "UPDATE item SET master=%d, owner=%d, slot=%d, count=%d, durability=%s WHERE id=%d LIMIT 1",
             item->based<fb::game::item::master>()->id(),

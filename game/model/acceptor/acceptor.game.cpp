@@ -147,13 +147,6 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     _timer(context)
 {
     const auto& config = fb::config::get();
-    this->_connection = new connection
-    (
-        config["database"]["ip"].asString(), 
-        config["database"]["uid"].asString(), 
-        config["database"]["pwd"].asString(), 
-        config["database"]["name"].asString()
-    );
 
     lua::env<acceptor>("acceptor", this);
     lua::bind_class<lua::luable>();
@@ -238,7 +231,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
 
 acceptor::~acceptor()
 { 
-    delete this->_connection;
+    
 }
 
 bool acceptor::handle_connected(fb::socket<fb::game::session>& socket)
@@ -470,7 +463,8 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    auto found = this->_connection->query
+    auto& connection = fb::db::get();
+    auto found = connection.query
     (
         "SELECT * FROM user WHERE name='%s' LIMIT 1",
         session->name().c_str()
@@ -479,7 +473,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         return false;
 
     std::map<equipment::slot, std::optional<int>> equipments;
-    found.each([this, &session, &equipments] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
+    found.each([this, &session, &equipments, &connection] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
     {
         this->_internal->send(fb::protocol::internal::request::login(name, map));
 
@@ -510,7 +504,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         else
             session->undisguise();
 
-        this->_connection->query("SELECT * FROM item WHERE owner=%d",session->id()).each
+        connection.query("SELECT * FROM item WHERE owner=%d",session->id()).each
         (
             [this, &session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
             {
