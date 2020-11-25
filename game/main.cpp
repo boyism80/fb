@@ -382,11 +382,29 @@ int main(int argc, const char** argv)
         [&] (fb::base::socket<>& socket, bool success)
         {
             if(success)
+            {
                 socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
+            }
+            else
+            {
+                auto& c = fb::console::get();
+                auto t = std::time(nullptr);
+                auto tm = *std::localtime(&t);
+
+                std::ostringstream sstream;
+                sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
+            }
         },
         [&] ()
         {
-            // on disconnected
+            auto& c = fb::console::get();
+            auto t = std::time(nullptr);
+            auto tm = *std::localtime(&t);
+
+            std::ostringstream sstream;
+            sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
         }
     };
     auto acceptor = new fb::game::acceptor
