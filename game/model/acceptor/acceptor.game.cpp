@@ -5,7 +5,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
-{"__gc",                fb::game::lua::luable::builtin_gc},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
@@ -273,6 +272,11 @@ fb::game::session* fb::game::acceptor::find(const std::string& name) const
     return i->second->data();
 }
 
+bool fb::game::acceptor::exists(const fb::game::object& object) const
+{
+    return this->_hash_dict.contains(&object);
+}
+
 void fb::game::acceptor::bind_timer(std::function<void(uint64_t)> fn, int ms)
 {
     this->_timer.push(fn, ms);
@@ -326,12 +330,12 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
     case acceptor::scope::MAP:
     {
-        for(const auto x : object.map()->objects)
+        for(const auto pair : object.map()->objects)
         {
-            if(exclude_self && x == &object)
+            if(exclude_self && pair.second == &object)
                 continue;
 
-            x->send(header, encrypt);
+            pair.second->send(header, encrypt);
         }
 
         break;
@@ -741,7 +745,7 @@ bool fb::game::acceptor::handle_click_object(fb::socket<fb::game::session>& sock
     }
 
     auto                    map = session->map();
-    auto                    other = map->objects.find(request.fd);
+    auto                    other = map->objects[request.fd];
     if(other == nullptr)
         return true;
 
@@ -796,7 +800,7 @@ bool fb::game::acceptor::handle_trade(fb::socket<fb::game::session>& socket, con
     if(map == nullptr)
         return true;
 
-    auto                        you = static_cast<fb::game::session*>(map->objects.find(request.fd));   // 파트너
+    auto                        you = static_cast<fb::game::session*>(map->objects[request.fd]);   // 파트너
     if(you == nullptr)
         return true;
 
@@ -1185,6 +1189,9 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
         for(auto x : mobs)
         {
             auto mob = static_cast<fb::game::mob*>(x);
+            auto target = mob->target();
+            if(this->exists(static_cast<fb::game::object&>(*target)) == false)
+                mob->target(nullptr);
 
             if(mob->action())
                 continue;
@@ -1201,12 +1208,12 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     for(auto pair : fb::game::table::maps)
     {
         auto map = pair.second;
-        for(auto object : map->objects)
+        for(auto pair : map->objects)
         {
-            if(object->type() != object::types::MOB)
+            if(pair.second->type() != object::types::MOB)
                 continue;
 
-            auto mob = static_cast<fb::game::mob*>(object);
+            auto mob = static_cast<fb::game::mob*>(pair.second);
             if(mob == nullptr)
                 continue;
 
@@ -1251,13 +1258,13 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
         if(map->objects.size() == 0)
             continue;
 
-        for(auto object : map->objects)
+        for(auto pair : map->objects)
         {
-            if(object->buffs.size() == 0)
+            if(pair.second->buffs.size() == 0)
                 continue;
 
             std::vector<buff*> finishes;
-            for(auto buff : object->buffs)
+            for(auto buff : pair.second->buffs)
             {
                 buff->time_dec(1);
                 if(buff->time() <= 0)
@@ -1265,7 +1272,7 @@ void fb::game::acceptor::handle_buff_timer(uint64_t now)
             }
 
             for(auto finish : finishes)
-                object->buffs.remove(finish->spell().name());
+                pair.second->buffs.remove(finish->spell().name());
         }
     }
 }

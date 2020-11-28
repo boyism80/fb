@@ -22,8 +22,6 @@ void fb::game::lua::luable::to_lua(lua_State* lua) const
     auto allocated = static_cast<void**>(lua_newuserdata(lua, sizeof(void**)));
     *allocated = (void*)this;
 
-    const_cast<std::vector<void**>&>(this->_pointers).push_back(allocated);
-
     auto metaname = this->metaname();
     luaL_getmetatable(lua, metaname.c_str());
     lua_setmetatable(lua, -2);
@@ -39,19 +37,6 @@ fb::game::lua::luable::luable(uint32_t id)
 
 fb::game::lua::luable::~luable()
 {
-    for(auto x : this->_pointers)
-        *x = nullptr;
-}
-
-int fb::game::lua::luable::builtin_gc(lua_State* lua)
-{
-    auto allocated = static_cast<void**>(lua_touserdata(lua, 1));
-    auto luable = static_cast<fb::game::lua::luable*>(*allocated);
-    auto found = std::find(luable->_pointers.begin(), luable->_pointers.end(), allocated);
-    if(found != luable->_pointers.end())
-        luable->_pointers.erase(found);
-
-    return 0;
 }
 
 state::state(lua_State* lua) : _lua(lua)

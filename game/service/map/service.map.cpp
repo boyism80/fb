@@ -19,15 +19,15 @@ bool fb::game::service::map::movable(fb::game::map& map, const point16_t& positi
     if(map.blocked(position.x, position.y))
         return false;
 
-    for(const auto object : map.objects)
+    for(const auto pair : map.objects)
     {
-        if(object->visible() == false)
+        if(pair.second->visible() == false)
             continue;
 
-        if(object->type() == fb::game::object::types::ITEM)
+        if(pair.second->type() == fb::game::object::types::ITEM)
             continue;
 
-        if(object->position() == position)
+        if(pair.second->position() == position)
             return false;
     }
 

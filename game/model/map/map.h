@@ -103,28 +103,27 @@ public:
 
 }
 
-class objects : private std::vector<fb::game::object*>
+class objects : private std::map<uint32_t, fb::game::object*>
 {
 #pragma region friend
     friend fb::game::object;
 #pragma endregion
 
 private:
-    map*                            _owner;
+    fb::game::map*                  _owner;
     uint16_t                        _sequence;
 
 public:
-    using std::vector<fb::game::object*>::begin;
-    using std::vector<fb::game::object*>::end;
-    using std::vector<fb::game::object*>::cbegin;
-    using std::vector<fb::game::object*>::cend;
-    using std::vector<fb::game::object*>::rbegin;
-    using std::vector<fb::game::object*>::rend;
-    using std::vector<fb::game::object*>::crbegin;
-    using std::vector<fb::game::object*>::crend;
-    using std::vector<fb::game::object*>::size;
-    using std::vector<fb::game::object*>::at;
-    using std::vector<fb::game::object*>::operator[];
+    using std::map<uint32_t, fb::game::object*>::begin;
+    using std::map<uint32_t, fb::game::object*>::end;
+    using std::map<uint32_t, fb::game::object*>::cbegin;
+    using std::map<uint32_t, fb::game::object*>::cend;
+    using std::map<uint32_t, fb::game::object*>::rbegin;
+    using std::map<uint32_t, fb::game::object*>::rend;
+    using std::map<uint32_t, fb::game::object*>::crbegin;
+    using std::map<uint32_t, fb::game::object*>::crend;
+    using std::map<uint32_t, fb::game::object*>::size;
+    using std::map<uint32_t, fb::game::object*>::at;
 
 public:
     objects(fb::game::map* owner);
@@ -142,8 +141,12 @@ private:
 #pragma region public method
 public:
     std::vector<object*>            filter(fb::game::object::types type) const;
-    fb::game::object*               find(uint16_t sequence);
     fb::game::object*               exists(point16_t position) const;
+#pragma endregion
+
+#pragma region operator
+public:
+    fb::game::object*               operator [] (uint32_t seq) const;
 #pragma endregion
 };
 

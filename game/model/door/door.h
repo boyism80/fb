@@ -50,7 +50,7 @@ public:
     };
 
 private:
-    fb::game::map*                  _owner;
+    fb::game::map*              _owner;
     master&                     _master;
     bool                        _opened;
     bool                        _locked;

@@ -18,6 +18,8 @@ public:
     virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
     virtual void on_move(fb::game::object& me) = 0;
     virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    virtual void on_create(fb::game::object& me) = 0;
+    virtual void on_destroy(fb::game::object& me) = 0;
 
 
     // life

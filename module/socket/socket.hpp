@@ -197,7 +197,7 @@ void fb::base::socket_container<S, T>::erase(uint32_t fd)
 }
 
 template <template<class> class S, class T>
-inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
+inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd) const
 {
     auto found = std::map<uint32_t, S<T>*>::find(fd);
     if(found == this->end())

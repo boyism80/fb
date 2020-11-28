@@ -27,12 +27,13 @@ int builtin_dialog(lua_State* lua)
         if(argc < 3)
             throw std::runtime_error("not enough parameters");
 
+        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         auto object = thread->touserdata<T>(1);
         if(object == nullptr)
             return 0;
 
         auto session = thread->touserdata<fb::game::session>(2);
-        if(session == nullptr)
+        if(session == nullptr || acceptor->exists(*session) == false)
             return 0;
 
         auto message = thread->tostring(3);
@@ -56,12 +57,13 @@ int builtin_menu_dialog(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr)
+    if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
 
     auto message = thread->tostring(3);
@@ -86,12 +88,13 @@ int builtin_item_dialog(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr)
+    if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
 
     auto message = thread->tostring(3);
@@ -120,12 +123,13 @@ int builtin_input_dialog(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr)
+    if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
 
     auto message = thread->tostring(3);

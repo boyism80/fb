@@ -95,8 +95,12 @@ const fb::game::map& fb::game::door::map() const
 
 int fb::game::door::builtin_toggle(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
 
     door->toggle();
     lua_pushboolean(lua, door->opened());
@@ -105,8 +109,12 @@ int fb::game::door::builtin_toggle(lua_State* lua)
 
 int fb::game::door::builtin_locked(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
 
     lua_pushboolean(lua, door->locked());
     return 1;
@@ -114,9 +122,13 @@ int fb::game::door::builtin_locked(lua_State* lua)
 
 int fb::game::door::builtin_lock(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
-    auto value = lua_toboolean(lua, 2);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
+    auto value = thread->toboolean(2);
 
     door->lock(value);
     lua_pushboolean(lua, door->locked());
@@ -125,8 +137,12 @@ int fb::game::door::builtin_lock(lua_State* lua)
 
 int fb::game::door::builtin_opened(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
 
     lua_pushboolean(lua, door->opened());
     return 1;
@@ -134,8 +150,12 @@ int fb::game::door::builtin_opened(lua_State* lua)
 
 int fb::game::door::builtin_update(lua_State* lua)
 {
-    auto argc = lua_gettop(lua);
-    auto door = *(fb::game::door**)lua_touserdata(lua, 1);
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
 
     auto master = door->based();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");

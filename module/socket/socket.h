@@ -63,7 +63,7 @@ private:
     void                    erase(uint32_t fd);
 
 public:
-    S<T>*                   operator [] (uint32_t fd);
+    S<T>*                   operator [] (uint32_t fd) const;
 };
 
 } }

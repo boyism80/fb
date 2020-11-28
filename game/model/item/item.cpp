@@ -160,26 +160,30 @@ void fb::game::item::master::active_script(const std::string& value)
 
 int fb::game::item::master::builtin_make(lua_State* lua)
 {
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    auto master = *(fb::game::item::master**)lua_touserdata(lua, 1);
+    auto master = thread->touserdata<fb::game::item::master>(1);
     auto object = master->make(acceptor);
 
-    auto map = *(fb::game::map**)lua_touserdata(lua, 2);
+    auto map = thread->touserdata<fb::game::map>(2);
     object->map(map);
 
     if(lua_istable(lua, 3))
     {
         lua_rawgeti(lua, 3, 1);
-        object->x((uint16_t)lua_tointeger(lua, -1));
+        object->x((uint16_t)thread->tointeger(-1));
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 3, 2);
-        object->y((uint16_t)lua_tointeger(lua, -1));
+        object->y((uint16_t)thread->tointeger(-1));
         lua_remove(lua, -1);
     }
     else
     {
-        object->position((uint16_t)lua_tointeger(lua, 3), (uint16_t)lua_tointeger(lua, 4));
+        object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
     }
 
     acceptor->send(*object, fb::protocol::game::response::object::show(*object), acceptor::scope::PIVOT);

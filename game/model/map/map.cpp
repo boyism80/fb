@@ -15,7 +15,7 @@ uint16_t fb::game::objects::empty_seq()
 {
     for(int i = this->_sequence; i < 0xFFFF; i++)
     {
-        if(this->find(i) != nullptr)
+        if(this->contains(i))
             continue;
 
         this->_sequence = i + 1;
@@ -24,7 +24,7 @@ uint16_t fb::game::objects::empty_seq()
 
     for(int i = 1; i < this->_sequence; i++)
     {
-        if(this->find(i) != nullptr)
+        if(this->contains(i))
             continue;
 
         this->_sequence = i + 1;
@@ -37,22 +37,13 @@ uint16_t fb::game::objects::empty_seq()
 std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
 {
     auto result = std::vector<fb::game::object*>();
-    std::copy_if
-    (
-        this->begin(), this->end(), std::back_inserter(result),
-        [] (fb::game::object* x)
-        {
-            return x->is(object::types::SESSION);
-        }
-    );
+    for(auto pair : *this)
+    {
+        if(pair.second->is(object::types::SESSION))
+            result.push_back(pair.second);
+    }
 
     return result;
-}
-
-fb::game::object* fb::game::objects::find(uint16_t sequence)
-{
-    auto i = std::find_if(this->begin(), this->end(), [sequence] (object* x) { return x->sequence() == sequence; });
-    return i != this->end() ? *i : nullptr;
 }
 
 uint16_t fb::game::objects::add(fb::game::object& object)
@@ -63,35 +54,48 @@ uint16_t fb::game::objects::add(fb::game::object& object)
 uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
 {
     auto                    seq = this->empty_seq();
-    auto                    found = this->find(seq);
-    if(found != nullptr)
+    if(this->contains(seq))
     {
-        this->erase(std::find(this->begin(), this->end(), found));
-        delete found;
+        delete this->operator[](seq);
+        this->erase(seq);
     }
 
-    this->push_back(&object);
     object.sequence(seq);
+    this->insert(std::make_pair(seq, &object));
     return object.sequence();
 }
 
 bool fb::game::objects::remove(fb::game::object& object)
 {
-    auto i = std::find(this->begin(), this->end(), &object);
-    if(i == this->end())
+    if(this->contains(object.sequence()) == false)
         return false;
 
-    this->erase(i);
+    this->erase(object.sequence());
     return true;
 }
 
 fb::game::object* fb::game::objects::exists(point16_t position) const
 {
-    for(auto object : *this)
-    {
-        if(object->position() == position)
-            return object;
-    }
+    auto found = std::find_if
+    (
+        this->cbegin(), this->cend(),
+        [&position] (const std::pair<uint32_t, fb::game::object*>& pair)
+        {
+            return pair.second->position() == position;
+        }
+    );
+
+    if(found == this->cend())
+        return nullptr;
+    else
+        return found->second;
+}
+
+fb::game::object* fb::game::objects::operator[](uint32_t seq) const
+{
+    auto found = this->find(seq);
+    if(found != this->cend())
+        return found->second;
 
     return nullptr;
 }
@@ -165,8 +169,8 @@ fb::game::map::~map()
 {
     delete[] this->_tiles;
 
-    for(auto object : this->objects)
-        delete object;
+    for(auto pair : this->objects)
+        delete pair.second;
 
     for(auto warp : this->_warps)
         delete warp;
@@ -264,15 +268,15 @@ bool fb::game::map::movable(const point16_t position) const
     if((*this)(position.x, position.y)->blocked)
         return false;
 
-    for(const auto object : this->objects)
+    for(const auto pair : this->objects)
     {
-        if(object->visible() == false)
+        if(pair.second->visible() == false)
             continue;
 
-        if(object->type() == fb::game::object::types::ITEM)
+        if(pair.second->type() == fb::game::object::types::ITEM)
             continue;
 
-        if(object->position() == position)
+        if(pair.second->position() == position)
             return false;
     }
 
@@ -532,12 +536,13 @@ int fb::game::map::builtin_door(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
     
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr)
+    if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
 
 

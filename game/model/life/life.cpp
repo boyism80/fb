@@ -320,7 +320,7 @@ bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
     if(this->_map == nullptr)
         return false;
 
-    auto to = this->_map->objects.find(fd);
+    auto to = this->_map->objects[fd];
     if(to == nullptr)
         return false;
 
@@ -374,9 +374,10 @@ int fb::game::life::builtin_hp(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
 
@@ -399,9 +400,10 @@ int fb::game::life::builtin_mp(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
 
@@ -424,8 +426,9 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto master = object->based<life::master>();
@@ -440,8 +443,9 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto master = object->based<life::master>();
@@ -456,9 +460,10 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto value = (uint32_t)thread->tointeger(2);
@@ -473,9 +478,10 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto value = (uint32_t)thread->tointeger(2);
@@ -490,9 +496,10 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto value = (uint32_t)thread->tointeger(2);
@@ -507,9 +514,10 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::life>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto value = (uint32_t)thread->tointeger(2);
@@ -524,10 +532,10 @@ int fb::game::life::builtin_action(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
-    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
     auto life = thread->touserdata<fb::game::life>(1);
-    if(life == nullptr)
+    if(life == nullptr || acceptor->exists(*life) == false)
         return 0;
     
     auto action = thread->tointeger(2);
@@ -544,10 +552,10 @@ int fb::game::life::builtin_spell(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
-    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
     auto life = thread->touserdata<fb::game::life>(1);
-    if(life == nullptr)
+    if(life == nullptr || acceptor->exists(*life) == false)
         return 0;
     
     auto index = (int)thread->tointeger(2);
@@ -562,14 +570,14 @@ int fb::game::life::builtin_damage(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
-    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
     auto me = thread->touserdata<fb::game::life>(1);
-    if(me == nullptr)
+    if(me == nullptr || acceptor->exists(*me) == false)
         return 0;
     
     auto you = thread->touserdata<fb::game::life>(2);
-    if(you == nullptr)
+    if(you == nullptr || acceptor->exists(*you) == false)
         return 0;
 
     auto damage = (uint32_t)thread->tointeger(3);

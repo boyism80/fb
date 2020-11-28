@@ -42,10 +42,12 @@ public:
 
 public:
     typedef std::map<std::string, std::function<bool(fb::game::session&, Json::Value&)>> command_dict;
+    typedef std::map<const fb::game::object*, bool> hash_dict;
 
 private:
     timer_container         _timer;
     command_dict            _command_dict;
+    hash_dict               _hash_dict;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
@@ -55,6 +57,9 @@ private:
     fb::game::session*      find(const std::string& name) const;
     void                    bind_timer(std::function<void(uint64_t)> fn, int ms);
     void                    bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn);
+
+public:
+    bool                    exists(const fb::game::object& object) const;
 
 public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
@@ -140,6 +145,8 @@ public:
 
 public:
     // listener : object
+    void                    on_create(fb::game::object& me);
+    void                    on_destroy(fb::game::object& me);
     void                    on_direction(fb::game::object& me);
     void                    on_show(fb::game::object& me, bool light);
     void                    on_show(fb::game::object& me, fb::game::object& you, bool light);

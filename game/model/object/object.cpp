@@ -63,6 +63,7 @@ int fb::game::object::master::builtin_name(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object::master>(1);
     if(object == nullptr)
         return 0;
@@ -78,6 +79,7 @@ int fb::game::object::master::builtin_look(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object::master>(1);
     if(object == nullptr)
         return 0;
@@ -93,6 +95,7 @@ int fb::game::object::master::builtin_color(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object::master>(1);
     if(object == nullptr)
         return 0;
@@ -108,6 +111,7 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     // Ex) npc:dialog(session, "hello", true, true);
     return ::builtin_dialog<object::master>(lua);
 }
@@ -127,6 +131,8 @@ fb::game::object::object(const fb::game::object::master* master, listener* liste
     _visible(true),
     _sector(nullptr)
 {
+    if(this->_listener != nullptr)
+        this->_listener->on_create(*this);
 }
 
 fb::game::object::object(const object& right) :
@@ -136,6 +142,9 @@ fb::game::object::object(const object& right) :
 
 fb::game::object::~object()
 {
+    if(this->_listener != nullptr)
+        this->_listener->on_destroy(*this);
+
     this->map(nullptr);
 }
 
@@ -745,8 +754,9 @@ int fb::game::object::builtin_core(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto master = object->based();
@@ -760,12 +770,11 @@ int fb::game::object::builtin_id(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-
     thread->pushinteger(object->sequence());
     return 1;
 }
@@ -776,14 +785,15 @@ int fb::game::object::builtin_eq(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto me = thread->touserdata<fb::game::object>(1);
-    if(me == nullptr)
+    if(me == nullptr || acceptor->exists(*me) == false)
         return 0;
     
     auto you = thread->touserdata<fb::game::object>(2);
-if(you == nullptr)
-    return 0;
+    if(you == nullptr || acceptor->exists(*you) == false)
+        return 0;
 
     
     thread->pushboolean(me->sequence() == you->sequence());
@@ -796,11 +806,11 @@ int fb::game::object::builtin_tostring(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto me = thread->touserdata<fb::game::object>(1);
-    if(me == nullptr)
+    if(me == nullptr || acceptor->exists(*me) == false)
         return 0;
     
-
     thread->pushstring(me->name());
     return 1;
 }
@@ -811,12 +821,11 @@ int fb::game::object::builtin_name(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-
     thread->pushstring(object->name());
     return 1;
 }
@@ -827,6 +836,7 @@ int fb::game::object::builtin_dialog(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     return ::builtin_dialog<object>(lua);
 }
 
@@ -838,7 +848,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto sound = thread->tointeger(2);
@@ -854,9 +864,10 @@ int fb::game::object::builtin_position(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
 
@@ -888,7 +899,6 @@ int fb::game::object::builtin_position(lua_State* lua)
     std::vector<fb::game::object*> shows, hides, showings, hiddens;
     object->position(x, y);
 
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     if(object->is(fb::game::object::types::SESSION))
         acceptor->send(*object, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);
     else
@@ -909,9 +919,10 @@ int fb::game::object::builtin_direction(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
 
@@ -937,10 +948,10 @@ int fb::game::object::builtin_chat(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
-    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto message = thread->tostring(2);
@@ -970,10 +981,10 @@ int fb::game::object::builtin_message(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
-    auto argc = thread->argc();
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto message = thread->tostring(2);
@@ -993,7 +1004,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto spell = thread->touserdata<fb::game::spell>(2);
@@ -1019,7 +1030,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
 
@@ -1050,8 +1061,9 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     if(thread->is_str(2))
@@ -1082,7 +1094,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto effect = (uint8_t)thread->tointeger(2);
@@ -1098,11 +1110,12 @@ int fb::game::object::builtin_map(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     try
     {
         auto argc = thread->argc();
         auto object = thread->touserdata<fb::game::object>(1);
-        if(object == nullptr)
+        if(object == nullptr || acceptor->exists(*object) == false)
             return 0;
         
 
@@ -1172,8 +1185,9 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto name = thread->tostring(2);
@@ -1202,9 +1216,10 @@ int fb::game::object::builtin_showings(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto filter = argc < 2 ? object::types::UNKNOWN : object::types(thread->tointeger(2));
@@ -1227,9 +1242,10 @@ int fb::game::object::builtin_showns(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto filter = argc < 2 ? object::types::UNKNOWN : object::types(thread->tointeger(2));
@@ -1252,9 +1268,10 @@ int fb::game::object::builtin_front(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto filter = argc < 2 ? object::types::UNKNOWN : object::types(thread->tointeger(2));
@@ -1271,12 +1288,13 @@ int fb::game::object::builtin_front(lua_State* lua)
 int fb::game::object::builtin_is(lua_State* lua)
 {
     auto thread = lua::thread::get(*lua);
-    if(thread == nullptr)
+
+    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
         return 0;
 
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr)
+    if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
     auto type = thread->tointeger(2);

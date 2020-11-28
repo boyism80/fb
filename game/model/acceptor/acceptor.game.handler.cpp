@@ -1,5 +1,17 @@
 #include "acceptor.game.h"
 
+void fb::game::acceptor::on_create(fb::game::object& me)
+{
+    if(this->_hash_dict.contains(&me) == false)
+        this->_hash_dict.insert(std::make_pair(&me, true));
+}
+
+void fb::game::acceptor::on_destroy(fb::game::object& me)
+{
+    if(this->_hash_dict.contains(&me))
+        this->_hash_dict.erase(&me);
+}
+
 void fb::game::acceptor::on_direction(fb::game::object& me)
 {
     this->send(me, fb::protocol::game::response::object::direction(me), scope::PIVOT, true);
