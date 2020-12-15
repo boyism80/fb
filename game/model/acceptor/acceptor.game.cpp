@@ -5,6 +5,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::acceptor, "")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
+{"__gc",                fb::game::lua::luable::builtin_gc},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
@@ -226,6 +227,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_command("레벨바꾸기", std::bind(&acceptor::handle_command_level, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("아이템생성", std::bind(&acceptor::handle_command_item, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("월드맵", std::bind(&acceptor::handle_command_world, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("스크립트", std::bind(&acceptor::handle_command_script, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()
@@ -1549,5 +1551,16 @@ bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::
     session.before_map(session.map());
     session.map(nullptr);
     session.send(fb::protocol::game::response::map::worlds(id));
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_script(fb::game::session& session, Json::Value& parameters)
+{
+    session.dialog
+        .from("scripts/test.lua")
+        .func("func")
+        .pushobject(session)
+        .resume(1);
+
     return true;
 }

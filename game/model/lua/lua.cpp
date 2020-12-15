@@ -19,12 +19,14 @@ void lua_push_utf8(lua_State* lua, const std::string& v)
 
 void fb::game::lua::luable::to_lua(lua_State* lua) const
 {
-    auto allocated = static_cast<void**>(lua_newuserdata(lua, sizeof(void**)));
+    auto allocated = static_cast<void**>(lua_newuserdata(lua, sizeof(void**)));     // [val]
     *allocated = (void*)this;
 
     auto metaname = this->metaname();
-    luaL_getmetatable(lua, metaname.c_str());
-    lua_setmetatable(lua, -2);
+    luaL_getmetatable(lua, metaname.c_str());                                       // [val, mt]
+    lua_pushcfunction(lua, luable::builtin_gc);                                     // [val, mt, gc]
+    lua_setfield(lua, -2, "__gc");                                                  // [val, mt]
+    lua_setmetatable(lua, -2);                                                      // [val]
 }
 
 fb::game::lua::luable::luable()
@@ -37,6 +39,13 @@ fb::game::lua::luable::luable(uint32_t id)
 
 fb::game::lua::luable::~luable()
 {
+}
+
+int fb::game::lua::luable::builtin_gc(lua_State* lua)
+{
+    auto allocated = (void**)lua_touserdata(lua, 1);
+    *allocated = nullptr;
+    return 0;
 }
 
 state::state(lua_State* lua) : _lua(lua)

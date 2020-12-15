@@ -142,6 +142,7 @@ public:
     bool                    handle_command_spell(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_item(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_world(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_script(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

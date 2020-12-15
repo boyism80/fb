@@ -49,6 +49,9 @@ protected:
 public:
     virtual ~luable();
 #pragma endregion
+
+public:
+    static int                  builtin_gc(lua_State* lua);
 };
 
 class state
@@ -168,28 +171,26 @@ void release();
 template <typename T>
 void bind_class()
 {
-    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());
-
-    lua_pushvalue(main::get(), -1);
-    lua_setfield(main::get(), -2, "__index");
-    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);
+    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());      // [mt]
+    lua_pushvalue(main::get(), -1);                                     // [mt, mt]
+    // mt.__index = mt
+    lua_setfield(main::get(), -2, "__index");                           // [mt]
+    // [mt.functions = ...]
+    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);                      // []
 }
 
 template <typename T, typename B>
 void bind_class()
 {
-    // 새로운 메타테이블 형식을 생성 (T : -1)
-    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());
-    
-    // 상속받을 메타테이블을 가져온다. (B : -1) (T : -2)
-    luaL_getmetatable(main::get(), B::LUA_METATABLE_NAME.c_str());
-
-    // 상속받을 메타테이블로 설정한다. (T : -1)
-    lua_setmetatable(main::get(), -2);
-
-    lua_pushvalue(main::get(), -1);
-    lua_setfield(main::get(), -2, "__index");
-    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);
+    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());      // [mt]
+    luaL_getmetatable(main::get(), B::LUA_METATABLE_NAME.c_str());      // [mt, bt]
+    // mt.__metatable = bt
+    lua_setmetatable(main::get(), -2);                                  // [mt]
+    lua_pushvalue(main::get(), -1);                                     // [mt, mt]
+    // mt.__index = mt
+    lua_setfield(main::get(), -2, "__index");                           // [mt]
+    // mt.functions = ...
+    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);                      // []
 }
 
 void bind_function(const std::string& name, lua_CFunction fn);
