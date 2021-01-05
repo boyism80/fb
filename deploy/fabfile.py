@@ -42,7 +42,7 @@ def environment(e):
 def deploy():
     optimizer.resources()
 
-    execute(clear_docker)
+    execute(docker_rm)
     execute(internal)
     execute(gateway)
     execute(login)
@@ -74,7 +74,7 @@ def internal():
                 else:
                     os.remove(f'table.deploy/host.json')
 
-            build_docker(name, config['port'])
+            docker_build(name, config['port'])
 
 
 @parallel
@@ -98,7 +98,7 @@ def gateway():
             put(f'gateway/bin/gateway', 'gateway', use_sudo=True, mode='0755')
             put(f'gateway/Dockerfile', '.', use_sudo=True)
 
-            build_docker(name, config['port'])
+            docker_build(name, config['port'])
 
 
 @parallel
@@ -120,7 +120,7 @@ def login():
             put(f'login/bin/login', 'login', use_sudo=True, mode='0755')
             put(f'login/Dockerfile', '.', use_sudo=True)
 
-            build_docker(name, config['port'])
+            docker_build(name, config['port'])
 
 
 
@@ -184,7 +184,7 @@ def game():
                     sudo('unzip -qq maps.zip')
                     sudo('rm -f maps.zip')
 
-            build_docker(name, config['port'])
+            docker_build(name, config['port'])
 
 
 
@@ -197,12 +197,12 @@ def current():
     result = { x : CONFIGURATION['deploy'][role][x] for x in CONFIGURATION['deploy'][role] if CONFIGURATION['deploy'][role][x]['ip'] == host }
     return result
 
-def clear_docker():
+def docker_rm():
     with settings(warn_only=True):
         sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm')
-        sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi')
+        # sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi')
 
-def build_docker(name, port):
+def docker_build(name, port):
     container_name = f'fb_{name}'
     sudo(f"docker build --tag fb:{name} .")
     sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")
