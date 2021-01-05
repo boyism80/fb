@@ -5,8 +5,8 @@ TARGET          = $(BUILD)/game
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: config console cryptor database svc stream timer encoding table.base builtin_fn acceptor.game acceptor.game.handler board clan door group item life listener lua sector map table.game mmo mob npc object session.game spell trade main
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+all: config console cryptor database svc stream timer encoding table.base builtin_fn acceptor.game acceptor.game.handler acceptor.game.command board clan door group item life listener lua sector map table.game mmo mob npc object session.game spell trade main
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 config:
 	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
@@ -43,6 +43,9 @@ acceptor.game:
 
 acceptor.game.handler:
 	$(CXX) $(STD) -c ./model/acceptor/acceptor.game.handler.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.game.handler.o
+
+acceptor.game.command:
+	$(CXX) $(STD) -c ./model/acceptor/acceptor.game.command.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.game.command.o
 
 board:
 	$(CXX) $(STD) -c ./model/board/board.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/board.o

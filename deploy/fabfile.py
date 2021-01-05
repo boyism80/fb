@@ -93,7 +93,7 @@ def gateway():
                         'internal': CONFIGURATION['deploy']['internal']['internal'],
                         'login': json.dumps({ CONFIGURATION['deploy']['login'][x]['name']: {'desc': CONFIGURATION['deploy']['login'][x]['desc'], 'ip': CONFIGURATION['deploy']['login'][x]['ip'], 'port': CONFIGURATION['deploy']['login'][x]['port']} for x in CONFIGURATION['deploy']['login']}, ensure_ascii=False)
                       }
-            run(f"echo '{template.render(context)}' > config.json")
+            run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
             put(f'gateway/bin/gateway', 'gateway', use_sudo=True, mode='0755')
             put(f'gateway/Dockerfile', '.', use_sudo=True)
@@ -115,7 +115,7 @@ def login():
                         'internal': CONFIGURATION['deploy']['internal']['internal'],
                         'database': CONFIGURATION['database']
                       }
-            run(f"echo '{template.render(context)}' > config.json")
+            run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
             put(f'login/bin/login', 'login', use_sudo=True, mode='0755')
             put(f'login/Dockerfile', '.', use_sudo=True)

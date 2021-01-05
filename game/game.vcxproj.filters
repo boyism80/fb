@@ -220,6 +220,9 @@
     <ClCompile Include="..\module\table\table.cpp">
       <Filter>module\table</Filter>
     </ClCompile>
+    <ClCompile Include="model\acceptor\acceptor.game.command.cpp">
+      <Filter>model\acceptor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

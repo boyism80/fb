@@ -177,6 +177,7 @@
     <ClCompile Include="..\module\table\table.cpp" />
     <ClCompile Include="..\module\timer\timer.cpp" />
     <ClCompile Include="builtin\builtin_function.cpp" />
+    <ClCompile Include="model\acceptor\acceptor.game.command.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.handler.cpp" />
     <ClCompile Include="model\board\board.cpp" />
