@@ -248,3 +248,42 @@ bool fb::game::acceptor::handle_command_script(fb::game::session& session, Json:
 
     return true;
 }
+
+bool fb::game::acceptor::handle_command_hair(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isInt() == false)
+        return false;
+
+    auto hair = parameters[0].asInt();
+    session.look(hair);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_hair_color(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isInt() == false)
+        return false;
+
+    auto color = parameters[0].asInt();
+    session.color(color);
+    return true;
+}
+
+bool fb::game::acceptor::handle_command_armor_color(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isInt() == false)
+        return false;
+
+    auto color = parameters[0].asInt();
+    session.dress_color(color);
+    return true;
+}

@@ -614,7 +614,8 @@ void fb::game::acceptor::on_save(session& me)
         "   look=%u, color=%u, sex=%u, nation=%u, creature=%u, map=%u, "
         "   position_x=%u, position_y=%u, direction=%u, state=%u, "
         "   class=%u, promotion=%u, exp=%u, money=%u, disguise=%s, "
-        "   hp=%u, base_hp=%u, additional_hp=%u, mp=%u, base_mp=%u, additional_mp=%u "
+        "   hp=%u, base_hp=%u, additional_hp=%u, mp=%u, base_mp=%u, additional_mp=%u, "
+        "   weapon_color=%u, helmet_color=%u, armor_color=%u, shield_color=%u "
         "WHERE "
         "   id=%u "
         "LIMIT 1",
@@ -638,6 +639,10 @@ void fb::game::acceptor::on_save(session& me)
         0,
         me.mp(),
         me.base_mp(),
+        0,
+        0, 
+        0, 
+        me.dress_color(),
         0,
         me.id()
     );

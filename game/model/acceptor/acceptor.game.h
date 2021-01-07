@@ -143,6 +143,9 @@ public:
     bool                    handle_command_item(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_world(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_script(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_hair(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_hair_color(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_armor_color(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

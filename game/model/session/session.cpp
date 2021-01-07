@@ -143,6 +143,8 @@ uint16_t fb::game::session::look() const
 void fb::game::session::look(uint16_t value)
 {
     this->_look = value;
+    if(this->_listener != nullptr)
+        this->_listener->on_show(*this, false);
 }
 
 uint8_t fb::game::session::color() const
@@ -153,6 +155,8 @@ uint8_t fb::game::session::color() const
 void fb::game::session::color(uint8_t value)
 {
     this->_color = value;
+    if(this->_listener != nullptr)
+        this->_listener->on_show(*this, false);
 }
 
 uint8_t fb::game::session::dress_color() const
@@ -163,6 +167,8 @@ uint8_t fb::game::session::dress_color() const
 void fb::game::session::dress_color(uint8_t value)
 {
     this->_dress_color = value;
+    if(this->_listener != nullptr)
+        this->_listener->on_show(*this, false);
 }
 
 std::optional<uint16_t> fb::game::session::disguise() const

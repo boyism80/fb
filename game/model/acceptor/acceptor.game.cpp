@@ -228,6 +228,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_command("아이템생성", std::bind(&acceptor::handle_command_item, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("월드맵", std::bind(&acceptor::handle_command_world, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("스크립트", std::bind(&acceptor::handle_command_script, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("머리바꾸기", std::bind(&acceptor::handle_command_hair, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("머리염색", std::bind(&acceptor::handle_command_hair_color, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("갑옷염색", std::bind(&acceptor::handle_command_armor_color, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()
@@ -504,6 +507,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         session->mp(mp);
         session->experience(exp);
         session->state(fb::game::state(state));
+        session->dress_color(armor_color.value_or(0));
 
         if(disguise.has_value())
             session->disguise(disguise.value());
