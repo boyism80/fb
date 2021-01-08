@@ -1,44 +1,44 @@
 CXX             = g++
-BUILD           = bin
+BUILD           = /dist/fb/internal
 STD             = -std=c++20
 TARGET          = $(BUILD)/internal
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: config console db stream timer encoding table.base acceptor.internal session.internal table.internal main
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/acceptor.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(BUILD)/main.o
 	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/acceptor.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
-config:
+$(BUILD)/config.o: ../module/config/config.cpp
 	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
 
-console:
+$(BUILD)/console.o: ../module/console/console.cpp
 	$(CXX) $(STD) -c ../module/console/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
 
-db:
+$(BUILD)/db.o: ../module/db/db.cpp
 	$(CXX) $(STD) -c ../module/db/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
 
-stream:
+$(BUILD)/stream.o: ../module/stream/stream.cpp
 	$(CXX) $(STD) -c ../module/stream/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
 
-timer:
+$(BUILD)/timer.o: ../module/timer/timer.cpp
 	$(CXX) $(STD) -c ../module/timer/timer.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/timer.o
 
-encoding:
+$(BUILD)/encoding.o: ../module/encoding/encoding.cpp
 	$(CXX) $(STD) -c ../module/encoding/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
 
-table.base:
+$(BUILD)/table.base.o: ../module/table/table.cpp
 	$(CXX) $(STD) -c ../module/table/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.base.o
 
-acceptor.internal:
+$(BUILD)/acceptor.internal.o: ./model/acceptor/acceptor.internal.cpp
 	$(CXX) $(STD) -c ./model/acceptor/acceptor.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.internal.o
 
-session.internal:
+$(BUILD)/session.internal.o: ./model/session/session.internal.cpp
 	$(CXX) $(STD) -c ./model/session/session.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.internal.o
 
-table.internal:
+$(BUILD)/table.internal.o: ./model/table/table.internal.cpp
 	$(CXX) $(STD) -c ./model/table/table.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.internal.o
 
-main:
+$(BUILD)/main.o: ./main.cpp
 	$(CXX) $(STD) -c ./main.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/main.o
 
 clean :

@@ -11,7 +11,7 @@ import zipfile
 import optimizer
 
 env.user = 'ubuntu'
-env.password = 'tmdgus12!@'
+env.key_filename = 'ssh/fb'
 env.port = 22
 env.timeout = 60
 
@@ -65,7 +65,7 @@ def internal():
                                   template_dir=f'{LOCAL_ROOT}/template',
                                   context=context, use_sudo=True, backup=False, use_jinja=True)
 
-            put(f'internal/bin/internal', 'internal', use_sudo=True, mode='0755')
+            put(f'/dist/fb/internal/internal', 'internal', use_sudo=True, mode='0755')
             put(f'internal/Dockerfile', '.', use_sudo=True)
             run('mkdir -p table')
             with cd('table'):
@@ -95,7 +95,7 @@ def gateway():
                       }
             run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
-            put(f'gateway/bin/gateway', 'gateway', use_sudo=True, mode='0755')
+            put(f'/dist/fb/gateway/gateway', 'gateway', use_sudo=True, mode='0755')
             put(f'gateway/Dockerfile', '.', use_sudo=True)
 
             docker_build(name, config['port'])
@@ -117,7 +117,7 @@ def login():
                       }
             run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
-            put(f'login/bin/login', 'login', use_sudo=True, mode='0755')
+            put(f'/dist/fb/login/login', 'login', use_sudo=True, mode='0755')
             put(f'login/Dockerfile', '.', use_sudo=True)
 
             docker_build(name, config['port'])
@@ -144,7 +144,7 @@ def game():
                                   template_dir=f'{LOCAL_ROOT}/template',
                                   context=context, use_sudo=True, backup=False, use_jinja=True)
 
-            put(f'game/bin/game', 'game', use_sudo=True, mode='0755')
+            put(f'/dist/fb/game/game', 'game', use_sudo=True, mode='0755')
             put(f'game/Dockerfile', '.', use_sudo=True)
 
             run('mkdir -p table')
@@ -204,5 +204,5 @@ def docker_rm():
 
 def docker_build(name, port):
     container_name = f'fb_{name}'
-    sudo(f"docker build --tag fb:{name} .")
+    sudo(f"DOCKER_BUILDKIT=1 docker build --tag fb:{name} .")
     sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}")

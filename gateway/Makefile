@@ -1,50 +1,50 @@
 CXX             = g++
-BUILD           = bin
+BUILD           = /dist/fb/gateway
 STD             = -std=c++20
 TARGET          = $(BUILD)/gateway
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: config console cryptor db svc stream timer encoding acceptor.gateway gateway session.gateway service.gateway main
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.gateway.o $(BUILD)/gateway.o $(BUILD)/session.gateway.o $(BUILD)/service.gateway.o $(BUILD)/main.o
 	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.gateway.o $(BUILD)/gateway.o $(BUILD)/session.gateway.o $(BUILD)/service.gateway.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
-config:
+$(BUILD)/config.o: ../module/config/config.cpp
 	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
 
-console:
+$(BUILD)/console.o: ../module/console/console.cpp
 	$(CXX) $(STD) -c ../module/console/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
 
-cryptor:
+$(BUILD)/cryptor.o: ../module/cryptor/cryptor.cpp
 	$(CXX) $(STD) -c ../module/cryptor/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
 
-db:
+$(BUILD)/db.o: ../module/db/db.cpp
 	$(CXX) $(STD) -c ../module/db/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
 
-svc:
+$(BUILD)/service.o: ../module/service/service.cpp
 	$(CXX) $(STD) -c ../module/service/service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/service.o
 
-stream:
+$(BUILD)/stream.o: ../module/stream/stream.cpp
 	$(CXX) $(STD) -c ../module/stream/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
 
-timer:
+$(BUILD)/timer.o: ../module/timer/timer.cpp
 	$(CXX) $(STD) -c ../module/timer/timer.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/timer.o
 
-encoding:
+$(BUILD)/encoding.o: ../module/encoding/encoding.cpp
 	$(CXX) $(STD) -c ../module/encoding/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
 
-acceptor.gateway:
+$(BUILD)/acceptor.gateway.o: ./model/acceptor/acceptor.gateway.cpp
 	$(CXX) $(STD) -c ./model/acceptor/acceptor.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.gateway.o
 
-gateway:
+$(BUILD)/gateway.o: ./model/gateway/gateway.cpp
 	$(CXX) $(STD) -c ./model/gateway/gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/gateway.o
 
-session.gateway:
+$(BUILD)/session.gateway.o: ./model/session/session.gateway.cpp
 	$(CXX) $(STD) -c ./model/session/session.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.gateway.o
 
-service.gateway:
+$(BUILD)/service.gateway.o: ./service/gateway/service.gateway.cpp
 	$(CXX) $(STD) -c ./service/gateway/service.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/service.gateway.o
 
-main:
+$(BUILD)/main.o: ./main.cpp
 	$(CXX) $(STD) -c ./main.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/main.o
 
 clean :

@@ -6,8 +6,7 @@ pipeline {
                 stage('Build internal') {
                     steps{ 
                         dir('internal') {
-                            sh 'mkdir -p bin'
-                            // sh 'make clean'
+                            sh 'mkdir -p /dist/fb/internal'
                             sh 'make -j4'
                         }
                     }
@@ -15,8 +14,7 @@ pipeline {
                 stage('Build gateway') {
                     steps{ 
                         dir('gateway') {
-                            sh 'mkdir -p bin'
-                            // sh 'make clean'
+                            sh 'mkdir -p /dist/fb/gateway'
                             sh 'make -j4'
                         }
                     }
@@ -24,8 +22,7 @@ pipeline {
                 stage('Build login') {
                     steps{ 
                         dir('login') {
-                            sh 'mkdir -p bin'
-                            // sh 'make clean'
+                            sh 'mkdir -p /dist/fb/login'
                             sh 'make -j4'
                         }
                     }
@@ -33,8 +30,7 @@ pipeline {
                 stage('Build game') {
                     steps{ 
                         dir('game') {
-                            sh 'mkdir -p bin'
-                            // sh 'make clean'
+                            sh 'mkdir -p /dist/fb/game'
                             sh 'make -j4'
                         }
                     }
