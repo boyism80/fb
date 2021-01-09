@@ -277,13 +277,19 @@ bool fb::game::acceptor::handle_command_hair_color(fb::game::session& session, J
 
 bool fb::game::acceptor::handle_command_armor_color(fb::game::session& session, Json::Value& parameters)
 {
-    if(parameters.size() < 1)
+    if(parameters.size() == 0)
+    {
+        session.armor_color(std::nullopt);
+        return true;
+    }
+    else if(parameters[0].isInt() == false)
+    {
         return false;
-
-    if(parameters[0].isInt() == false)
-        return false;
-
-    auto color = parameters[0].asInt();
-    session.dress_color(color);
-    return true;
+    }
+    else
+    {
+        auto color = parameters[0].asInt();
+        session.armor_color(color);
+        return true;
+    }
 }

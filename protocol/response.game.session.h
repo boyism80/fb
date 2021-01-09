@@ -63,7 +63,7 @@ public:
         if(this->session.state() == fb::game::state::DISGUISE)
         {
             out_stream.write_u16(this->session.disguise().value())
-                      .write_u8(this->session.dress_color());
+                      .write_u8(this->session.current_armor_color());
         }
         else
         {
@@ -74,7 +74,7 @@ public:
             if(armor != nullptr)
             {
                 out_stream.write_u8((uint8_t)armor->dress())
-                          .write_u8(this->session.dress_color() == 0 ? armor->color() : this->session.dress_color());
+                          .write_u8(session.current_armor_color());
             }
             else
             {
@@ -363,7 +363,7 @@ public:
         if(disguised)
         {
             out_stream.write_u16(this->session.disguise().value())
-                      .write_u8(this->session.dress_color());
+                      .write_u8(this->session.current_armor_color());
         }
         else
         {
@@ -371,7 +371,7 @@ public:
                       .write_u8(this->session.color());
 
             out_stream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
-                      .write_u8(armor != nullptr ? armor->color() : 0x00);
+                      .write_u8(this->session.current_armor_color());
 
             out_stream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
                       .write_u8(weapon != nullptr ? weapon->color() : 0x00);

@@ -14,7 +14,7 @@ session::session(fb::socket<fb::game::session>& socket, listener* listener) :
     _id(0xFFFFFFFF),
     _listener(listener),
     _socket(socket),
-    _look(0), _color(0), _dress_color(0),
+    _look(0), _color(0), _armor_color(0),
     _disguise(0),
     _defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
     _nation(nation::GOGURYEO),
@@ -159,16 +159,22 @@ void fb::game::session::color(uint8_t value)
         this->_listener->on_show(*this, false);
 }
 
-uint8_t fb::game::session::dress_color() const
+std::optional<uint8_t> fb::game::session::armor_color() const
 {
-    return this->_dress_color;
+    return this->_armor_color;
 }
 
-void fb::game::session::dress_color(uint8_t value)
+void fb::game::session::armor_color(std::optional<uint8_t> value)
 {
-    this->_dress_color = value;
+    this->_armor_color = value;
     if(this->_listener != nullptr)
         this->_listener->on_show(*this, false);
+}
+
+uint8_t fb::game::session::current_armor_color() const
+{
+    auto armor = this->items.armor();
+    return this->_armor_color.value_or(armor != nullptr ? armor->color() : 0x00);
 }
 
 std::optional<uint16_t> fb::game::session::disguise() const

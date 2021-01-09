@@ -133,7 +133,7 @@ private:
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
-    uint8_t                     _dress_color;
+    std::optional<uint8_t>      _armor_color;
 
     defensive                   _defensive;
     uint32_t                    _base_hp, _base_mp;
@@ -214,8 +214,9 @@ public:
     uint8_t                     color() const;
     void                        color(uint8_t value);
 
-    uint8_t                     dress_color() const;
-    void                        dress_color(uint8_t value);
+    std::optional<uint8_t>      armor_color() const;
+    void                        armor_color(std::optional<uint8_t> value);
+    uint8_t                     current_armor_color() const;
 
     std::optional<uint16_t>     disguise() const;
     void                        disguise(uint16_t value);

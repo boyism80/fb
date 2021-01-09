@@ -507,7 +507,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         session->mp(mp);
         session->experience(exp);
         session->state(fb::game::state(state));
-        session->dress_color(armor_color.value_or(0));
+        session->armor_color(armor_color);
 
         if(disguise.has_value())
             session->disguise(disguise.value());

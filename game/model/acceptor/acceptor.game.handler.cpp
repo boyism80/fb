@@ -615,7 +615,7 @@ void fb::game::acceptor::on_save(session& me)
         "   position_x=%u, position_y=%u, direction=%u, state=%u, "
         "   class=%u, promotion=%u, exp=%u, money=%u, disguise=%s, "
         "   hp=%u, base_hp=%u, additional_hp=%u, mp=%u, base_mp=%u, additional_mp=%u, "
-        "   weapon_color=%u, helmet_color=%u, armor_color=%u, shield_color=%u "
+        "   weapon_color=%s, helmet_color=%s, armor_color=%s, shield_color=%s "
         "WHERE "
         "   id=%u "
         "LIMIT 1",
@@ -640,10 +640,10 @@ void fb::game::acceptor::on_save(session& me)
         me.mp(),
         me.base_mp(),
         0,
-        0, 
-        0, 
-        me.dress_color(),
-        0,
+        "0", 
+        "0", 
+        me.armor_color().has_value() ? std::to_string(me.armor_color().value()).c_str() : "NULL",
+        "0",
         me.id()
     );
 
