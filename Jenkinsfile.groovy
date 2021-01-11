@@ -37,14 +37,47 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+
+        stage('Preperence') {
             steps {
                 dir('resources/maps') {
                     sh 'rm -f *.map'
                     sh 'rm -f *.block'
                     sh 'unzip -qq maps.zip'
                 }
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy'
+                sh 'fab -f deploy/fabfile.py optimize'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_rm'
+            }
+        }
+
+        stage('Deploy') {
+            parallel {
+                stage('Deploy internal') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} internal'
+                    }
+                }
+                stage('Deploy gateway') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} gateway'
+                    }
+                }
+                stage('Deploy login') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} login'
+                    }
+                }
+                stage('Deploy game') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} game'
+                    }
+                }
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                sh 'fab -f deploy/fabfile.py cleanup'
             }
         }
     }
