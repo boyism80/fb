@@ -10,6 +10,7 @@ namespace fb {
 class timer : private boost::asio::steady_timer
 {
 private:
+    boost::asio::io_context&        _context;
     uint32_t                        _ms;
     std::function<void(uint64_t)>   _fn;
 
@@ -25,9 +26,6 @@ private:
 
 public:
     static uint64_t                 now();
-
-private:
-    static void                     handle_once(const boost::system::error_code& e, std::function<void(void)> fn, boost::asio::steady_timer* timer);
 
 public:
     static void                     run(boost::asio::io_context& context, std::function<void()> fn, uint32_t ms);
