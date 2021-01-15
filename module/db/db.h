@@ -8,6 +8,7 @@
 #include <future>
 #include <functional>
 #include <deque>
+#include "module/console/console.h"
 
 using namespace daotk::mysql;
 

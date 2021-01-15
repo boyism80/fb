@@ -20,8 +20,10 @@ _mutex.lock();
     if(_usings == nullptr)
         _usings = new std::deque<daotk::mysql::connection*>();
 
+    auto& c = fb::console::get();
     while(_connections->empty())
     {
+        c.puts("All connections are used.");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
