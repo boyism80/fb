@@ -72,14 +72,19 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
-bool fb::login::service::auth::exists(const std::string& name) const
+void fb::login::service::auth::exists(const std::string& name, std::function<void(const std::string&, bool)> callback)
 {
-    auto& connection = db::get();
-    return connection.query
+    db::query
     (
+        [name, callback] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+        {
+            auto exists = result.get_value<int>() > 0;
+            callback(name, exists);
+            return true;
+        },
         "SELECT COUNT(*) FROM user WHERE name='%s'",
         name.c_str()
-    ).get_value<int>() > 0;
+    );
 }
 
 void fb::login::service::auth::assert_account(const std::string& id, const std::string& pw) const
@@ -103,23 +108,39 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-void fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
+void fb::login::service::auth::create_account(const std::string& id, const std::string& pw, std::function<void(const std::string&)> success, std::function<void(const std::string&, const login_exception&)> failed)
 {
     this->assert_account(id, pw);
 
-    if(this->exists(id))
-        throw id_exception(fb::login::message::account::ALREADY_EXISTS);
-
-    auto& config = fb::config::get();
-
-    std::srand(std::time(nullptr));
-    auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
-    auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
-
-    db::query
+    this->exists
     (
-        "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
-        id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
+        id,
+        [this, id, pw, success, failed] (const std::string& name, bool exists)
+        {
+            try
+            {
+                if(exists)
+                    throw std::exception();
+
+                auto& config = fb::config::get();
+
+                std::srand(std::time(nullptr));
+                auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
+                auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
+
+                db::query
+                (
+                    "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
+                    id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
+                );
+
+                success(id);
+            }
+            catch(std::exception& e)
+            {
+                failed(name, id_exception(fb::login::message::account::ALREADY_EXISTS));
+            }
+        }
     );
 }
 

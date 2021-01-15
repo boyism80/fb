@@ -1,8 +1,10 @@
 #include "db.h"
 
-daotk::mysql::connection**          fb::db::_connection_pool = nullptr;
-boost::asio::io_context*            fb::db::_context = nullptr;
-uint32_t                            fb::db::_index = 0;
+boost::asio::io_context*                fb::db::_context = nullptr;
+uint32_t                                fb::db::_index = 0;
+std::deque<daotk::mysql::connection*>*  fb::db::_connections = nullptr;
+std::deque<daotk::mysql::connection*>*  fb::db::_usings = nullptr;
+std::mutex                              fb::db::_mutex;
 
 void fb::db::bind(boost::asio::io_context& context)
 {
@@ -11,27 +13,25 @@ void fb::db::bind(boost::asio::io_context& context)
 
 daotk::mysql::connection& fb::db::get()
 {
-    auto& config = fb::config::get();
-    if(_connection_pool == nullptr)
+_mutex.lock();
+    if(_connections == nullptr)
+        _connections = new std::deque<daotk::mysql::connection*>(SIZE, nullptr);
+
+    if(_usings == nullptr)
+        _usings = new std::deque<daotk::mysql::connection*>();
+
+    while(_connections->empty())
     {
-        _connection_pool = new daotk::mysql::connection*[SIZE];
-        for(int i = 0; i < SIZE; i++)
-        {
-            _connection_pool[i] = new daotk::mysql::connection
-            (
-                config["database"]["ip"].asString(), 
-                config["database"]["uid"].asString(), 
-                config["database"]["pwd"].asString(), 
-                config["database"]["name"].asString()
-            );
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    auto current = _connection_pool[_index];
-    if(current->is_open() == false)
+    auto connection = _connections->front();
+    _connections->pop_front();
+
+    if(connection == nullptr)
     {
-        delete _connection_pool[_index];
-        current = _connection_pool[_index] = new daotk::mysql::connection
+        auto& config = fb::config::get();
+        connection = new daotk::mysql::connection
         (
             config["database"]["ip"].asString(), 
             config["database"]["uid"].asString(), 
@@ -40,17 +40,72 @@ daotk::mysql::connection& fb::db::get()
         );
     }
 
-    _index = (_index + 1) % SIZE;
-    return *current;
+    if(connection->is_open() == false)
+    {
+        delete connection;
+        
+        auto& config = fb::config::get();
+        connection = new daotk::mysql::connection
+        (
+            config["database"]["ip"].asString(), 
+            config["database"]["uid"].asString(), 
+            config["database"]["pwd"].asString(), 
+            config["database"]["name"].asString()
+        );
+    }
+
+    _usings->push_back(connection);
+_mutex.unlock();
+
+    return *connection;
+}
+
+bool fb::db::release(daotk::mysql::connection& connection)
+{
+    if(_connections == nullptr)
+        return false;
+
+    if(_usings == nullptr)
+        return false;
+
+    try
+    {
+_mutex.lock();
+        auto found = std::find(_usings->begin(), _usings->end(), &connection);
+        if(found == _usings->end())
+            throw std::exception();
+
+        _usings->erase(found);
+        _connections->push_back(&connection);
+_mutex.unlock();
+        return true;
+    }
+    catch(std::exception& e)
+    {
+_mutex.unlock();
+        return false;
+    }
 }
 
 void fb::db::release()
 {
-    if(_connection_pool == nullptr)
-        return;
+_mutex.lock();
+    if(_connections != nullptr)
+    {
+        for(auto connection : *_connections)
+            delete connection;
 
-    for(int i = 0; i < SIZE; i++)
-        delete _connection_pool[i];
+        delete _connections;
+        _connections = nullptr;
+    }
 
-    delete[] _connection_pool;
+    if(_usings != nullptr)
+    {
+        for(auto connection : *_usings)
+            delete connection;
+
+        delete _usings;
+        _usings = nullptr;
+    }
+_mutex.unlock();
 }

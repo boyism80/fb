@@ -83,26 +83,25 @@ bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socke
 
 bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::create& request)
 {
-    try
-    {
-        this->_auth_service.create_account(request.id, request.pw);
-        this->send(socket, fb::protocol::login::response::message("", 0x00));
+    auto& id = request.id;
+    this->_auth_service.create_account
+    (
+        request.id, request.pw,
+        [this, &socket, id] (const std::string& name)
+        {
+            this->send(socket, fb::protocol::login::response::message("", 0x00));
 
-        // 일단 아이디 선점해야함
+            // 일단 아이디 선점해야함
 
-        auto session = socket.data();
-        session->created_id = request.id;
-        return true;
-    }
-    catch(login_exception& e)
-    {
-        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        return true;
-    }
-    catch(std::exception& e)
-    {
-        return false;
-    }
+            auto session = socket.data();
+            session->created_id = id;
+        },
+        [&socket] (const std::string& name, const login_exception& e)
+        {
+            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+        }
+    );
+    return true;
 }
 
 bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::complete& request)

@@ -7,6 +7,7 @@
 #include <boost/asio.hpp>
 #include <future>
 #include <functional>
+#include <deque>
 
 using namespace daotk::mysql;
 
@@ -15,10 +16,12 @@ namespace fb {
 class db
 {
 private:
-    static const uint32_t                       SIZE = 10;
-    static daotk::mysql::connection**           _connection_pool;
-    static uint32_t                             _index;
-    static boost::asio::io_context*             _context;
+    static const uint32_t                         SIZE = 10;
+    static std::deque<daotk::mysql::connection*>* _connections;
+    static std::deque<daotk::mysql::connection*>* _usings;
+    static uint32_t                               _index;
+    static boost::asio::io_context*               _context;
+    static std::mutex                             _mutex;
 
 private:
     static std::string format_string_vargs(const char* fmt_str, va_list args) 
@@ -46,9 +49,12 @@ private:
         return std::move(res);
     }
 
+private:
+    static daotk::mysql::connection&    get();
+    static bool                         release(daotk::mysql::connection& connection);
+
 public:
     static void                         bind(boost::asio::io_context& context);
-    static daotk::mysql::connection&    get();
     static void                         release();
 
     template <typename... Values>
@@ -61,6 +67,7 @@ public:
             {
                 auto& connection = db::get();
                 connection.query(sql);
+                db::release(connection);
             },
             format_string(format.c_str(), std::forward<Values>(values)...)
         );
@@ -79,6 +86,7 @@ public:
             {
                 auto& connection = db::get();
                 auto  result = new daotk::mysql::result(connection.query(sql));
+                db::release(connection);
 
                 boost::asio::dispatch
                 (
