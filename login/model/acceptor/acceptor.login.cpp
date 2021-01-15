@@ -131,38 +131,35 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
 
 bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
-    try
-    {
-        auto map = this->_auth_service.login(request.id, request.pw);
-        this->_internal->send(fb::protocol::internal::request::transfer(request.id, map, socket.native_handle()));
-        return true;
-    }
-    catch(login_exception& e)
-    {
-        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        return true;
-    }
-    catch(std::exception& e)
-    {
-        return false;
-    }
+    this->_auth_service.login
+    (
+        request.id, request.pw,
+        [this, request, &socket] (uint32_t map)
+        {
+            this->_internal->send(fb::protocol::internal::request::transfer(request.id, map, socket.native_handle()));
+        },
+        [this, &socket] (const login_exception& e)
+        {
+            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+        }
+    );
+    return true;
 }
 
 bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
-    try
-    {
-        this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
-        socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
-        return true;
-    }
-    catch(login_exception& e)
-    {
-        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        return true;
-    }
-    catch(std::exception& e)
-    {
-        return false;
-    }
+    this->_auth_service.change_pw
+    (
+        request.name, request.pw, request.new_pw, request.birthday,
+        [this, &socket] ()
+        {
+            socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        },
+        [this, &socket] (const login_exception& e)
+        {
+            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+        }
+    );
+
+    return true;
 }

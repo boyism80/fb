@@ -56,10 +56,10 @@ int main(int argc, const char** argv)
     );
 
     // Execute acceptor
-    boost::asio::io_context io_service;
-    acceptor = new fb::internal::acceptor(io_service, config["port"].asInt(), config["delay"].asInt());
+    boost::asio::io_context io_context;
+    acceptor = new fb::internal::acceptor(io_context, config["port"].asInt(), config["delay"].asInt());
 
-    io_service.run();
+    io_context.run();
 
     // Clean up
     delete acceptor;

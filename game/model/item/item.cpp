@@ -925,10 +925,7 @@ bool fb::game::equipment::active()
 
     this->_owner->items.add(before);
     if(this->_listener != nullptr)
-    {
-        this->_listener->on_show(*this->_owner, false);
         this->_listener->on_equipment_on(*this->_owner, *this, slot);
-    }
 
     return true;
 }
@@ -1853,6 +1850,10 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
 
     this->_weapon = weapon;
     weapon->_owner = &this->_owner;
+    
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1867,6 +1868,10 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
 
     this->_armor = armor;
     armor->_owner = &this->_owner;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1881,6 +1886,10 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
 
     this->_shield = shield;
     shield->_owner = &this->_owner;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1895,6 +1904,10 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
 
     this->_helmet = helmet;
     helmet->_owner = &this->_owner;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1916,6 +1929,10 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
         before = this->ring(ring, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
     ring->_owner = &this->_owner;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1923,6 +1940,10 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, equipment::EQUIPMENT
 {
     auto before = this->_rings[position];
     this->_rings[position] = ring;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1945,6 +1966,10 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
         before = this->auxiliary(auxiliary, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
     auxiliary->_owner = &this->_owner;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 
@@ -1952,6 +1977,10 @@ fb::game::auxiliary* items::auxiliary(fb::game::auxiliary* auxiliary, equipment:
 {
     auto before = this->_auxiliaries[position];
     this->_auxiliaries[position] = auxiliary;
+
+    if(this->_listener != nullptr)
+        this->_listener->on_show(this->_owner, true);
+    
     return before;
 }
 

@@ -116,98 +116,117 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
     auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
     auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
 
-    auto& connection = db::get();
-    connection.exec
+    db::query
     (
         "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
         id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
     );
-    auto index = connection.last_insert_id();
-
-    auto result = connection.query("SELECT id, name FROM user")
-        .each([](int id, std::string name) 
-            {
-                return true;
-            });
 }
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    auto& connection = db::get();
-    connection.exec
+    db::query
     (
         "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name='%s'",
         hair, sex, nation, creature, id.c_str()
     );
 }
 
-uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw)
+uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed)
 {
     this->assert_account(id, pw);
 
-    auto& connection = db::get();
-    auto found = connection.query
+    db::query
     (
+        [this, pw, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+        {
+            try
+            {
+                if(result.count() == 0)
+                    throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
+
+                if(result.get_value<std::string>(0) != this->sha256(pw))
+                    throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+
+                success(result.get_value<uint32_t>(1));
+                return true;
+            }
+            catch(login_exception& e)
+            {
+                failed(e);
+                return true;
+            }
+        },
         "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
         id.c_str(), this->sha256(pw).c_str()
     );
-
-    if(found.count() == 0)
-        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
-
-    if(found.get_value<std::string>(0) != this->sha256(pw))
-        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
-
-    auto map = found.get_value<uint32_t>(1);
-    return map;
+    return true;
 }
 
-void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
+void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, std::function<void()> success, std::function<void(const login_exception&)> failed)
 {
-    if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
-        throw id_exception(fb::login::message::account::INVALID_NAME);
+    try
+    { 
+        if(id.length() < MIN_NAME_SIZE || id.length() > MAX_NAME_SIZE)
+            throw id_exception(fb::login::message::account::INVALID_NAME);
 
-    // Name must be full-hangul characters
-    if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
-        throw id_exception(fb::login::message::account::INVALID_NAME);
+        // Name must be full-hangul characters
+        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
+            throw id_exception(fb::login::message::account::INVALID_NAME);
 
-    // Name cannot contains subcharacters in forbidden list
-    if(this->is_forbidden(id.c_str()))
-        throw id_exception(fb::login::message::account::INVALID_NAME);
+        // Name cannot contains subcharacters in forbidden list
+        if(this->is_forbidden(id.c_str()))
+            throw id_exception(fb::login::message::account::INVALID_NAME);
 
-    if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
-        throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
+        if(pw.length() < MIN_PASSWORD_SIZE || pw.length() > MAX_PASSWORD_SIZE)
+            throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-    auto& connection = db::get();
-    auto found = connection.query
-    (
-        "SELECT pw, birth FROM user WHERE name='%s'",
-        id.c_str()
-    );
+        db::query
+        (
+            [this, id, pw, new_pw, birthday, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+            {
+                try
+                {
+                    if(result.count() == 0)
+                        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-    if(found.count() == 0)
-        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
+                    auto found_pw = result.get_value<std::string>(0);
+                    auto found_birth = result.get_value<uint32_t>(1);
 
-    auto found_pw = found.get_value<std::string>(0);
-    auto found_birth = found.get_value<uint32_t>(1);
+                    // TODO : 올바른 비밀번호인지 체크
+                    if(this->sha256(pw) != found_pw)
+                        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-    // TODO : 올바른 비밀번호인지 체크
-    if(this->sha256(pw) != found_pw)
-        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+                    if(new_pw.length() < MIN_PASSWORD_SIZE || new_pw.length() > MAX_PASSWORD_SIZE)
+                        throw newpw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-    if(new_pw.length() < MIN_PASSWORD_SIZE || new_pw.length() > MAX_PASSWORD_SIZE)
-        throw newpw_exception(fb::login::message::account::PASSWORD_SIZE);
-    
-    // TODO : 너무 쉬운 비밀번호인지 체크
-    if(pw == new_pw)
-        throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
+                    // TODO : 너무 쉬운 비밀번호인지 체크
+                    if(pw == new_pw)
+                        throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-    if(birthday != found_birth)
-        throw btd_exception();
+                    if(birthday != found_birth)
+                        throw btd_exception();
 
-    connection.exec
-    (
-        "UPDATE user SET pw='%s' WHERE name='%s'",
-        this->sha256(new_pw).c_str(), id.c_str()
-    );
+                    db::query
+                    (
+                        "UPDATE user SET pw='%s' WHERE name='%s'",
+                        this->sha256(new_pw).c_str(), id.c_str()
+                    );
+
+                    success();
+                    return true;
+                }
+                catch(login_exception& e)
+                {
+                    failed(e);
+                }
+            },
+            "SELECT pw, birth FROM user WHERE name='%s'",
+            id.c_str()
+        );
+    }
+    catch(login_exception& e)
+    {
+        failed(e);
+    }
 }

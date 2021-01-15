@@ -373,7 +373,8 @@ int main(int argc, const char** argv)
 
     // Execute acceptor
     auto& config = fb::config::get();
-    boost::asio::io_context io_service;
+    boost::asio::io_context io_context;
+    fb::db::bind(io_context);
 
     const auto connection = INTERNAL_CONNECTION
     {
@@ -409,14 +410,14 @@ int main(int argc, const char** argv)
     };
     auto acceptor = new fb::game::acceptor
     (
-        io_service, 
+        io_context, 
         config["port"].asInt(), 
         config["delay"].asInt(),
         connection
     );
 
     load_db(c, acceptor);
-    io_service.run();
+    io_context.run();
 
     // Release
     delete acceptor;

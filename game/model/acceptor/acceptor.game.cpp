@@ -472,90 +472,106 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    auto& connection = fb::db::get();
-    auto found = connection.query
+    fb::db::query
     (
+        [this, session](daotk::mysql::connection& connection, daotk::mysql::result& result) 
+        {
+            if(result.count() == 0)
+                return false;
+
+            std::map<equipment::slot, std::optional<int>> equipments;
+            result.each([this, session, &equipments] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
+            {
+                this->_internal->send(fb::protocol::internal::request::login(name, map));
+
+                equipments[equipment::slot::WEAPON_SLOT] = weapon;
+                equipments[equipment::slot::HELMET_SLOT] = helmet;
+                equipments[equipment::slot::ARMOR_SLOT] = armor;
+                equipments[equipment::slot::SHIELD_SLOT] = shield;
+                equipments[equipment::slot::LEFT_HAND_SLOT] = ring_left;
+                equipments[equipment::slot::RIGHT_HAND_SLOT] = ring_right;
+                equipments[equipment::slot::LEFT_AUX_SLOT] = aux_top;
+                equipments[equipment::slot::RIGHT_AUX_SLOT] = aux_bot;
+
+                session->id(id);
+                session->color(color);
+                session->direction(fb::game::direction(direction));
+                session->look(look);
+                session->money(money);
+                session->sex(fb::game::sex(sex));
+                session->base_hp(base_hp);
+                session->hp(hp);
+                session->base_mp(base_mp);
+                session->mp(mp);
+                session->experience(exp);
+                session->state(fb::game::state(state));
+                session->armor_color(armor_color);
+
+                if(disguise.has_value())
+                    session->disguise(disguise.value());
+                else
+                    session->undisguise();
+
+                fb::db::query
+                (
+                    [this, session, equipments](daotk::mysql::connection& connection, daotk::mysql::result& result)
+                    {
+                        result.each
+                        (
+                            [this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
+                            {
+                                auto& items = fb::game::table::items;
+                                auto item = items[master]->make<fb::game::item>(this);
+                                if(item == nullptr)
+                                    return true;
+
+                                item->id(id);
+                                item->count(count);
+                                if(slot.has_value())
+                                {
+                                    session->items.add(*item, slot.value());
+                                }
+                                else
+                                {
+                                    auto found = std::find_if(equipments.begin(), equipments.end(), 
+                                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
+                                        {
+                                            return x.second.has_value() && x.second.value() == id;
+                                        });
+
+                                    if(found != equipments.end())
+                                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
+                                }
+                                return true;
+                            }
+                        );
+
+                        return true;
+                    },
+                    "SELECT * FROM item WHERE owner=%d",
+                    session->id()
+                );
+
+                if(fb::game::table::maps[map] == nullptr)
+                    return false;
+
+                session->map(fb::game::table::maps[map], point16_t(position_x, position_y));
+
+                this->send(*session, fb::protocol::game::response::init(), scope::SELF);
+                this->send(*session, fb::protocol::game::response::time(25), scope::SELF);
+                this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
+                this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+                this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
+                this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
+                return true;
+            });
+            
+            return true;
+        }, 
         "SELECT * FROM user WHERE name='%s' LIMIT 1",
         session->name().c_str()
     );
-    if(found.count() == 0)
-        return false;
 
-    std::map<equipment::slot, std::optional<int>> equipments;
-    found.each([this, &session, &equipments, &connection] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
-    {
-        this->_internal->send(fb::protocol::internal::request::login(name, map));
-
-        equipments[equipment::slot::WEAPON_SLOT] = weapon;
-        equipments[equipment::slot::HELMET_SLOT] = helmet;
-        equipments[equipment::slot::ARMOR_SLOT] = armor;
-        equipments[equipment::slot::SHIELD_SLOT] = shield;
-        equipments[equipment::slot::LEFT_HAND_SLOT] = ring_left;
-        equipments[equipment::slot::RIGHT_HAND_SLOT] = ring_right;
-        equipments[equipment::slot::LEFT_AUX_SLOT] = aux_top;
-        equipments[equipment::slot::RIGHT_AUX_SLOT] = aux_bot;
-
-        session->id(id);
-        session->color(color);
-        session->direction(fb::game::direction(direction));
-        session->look(look);
-        session->money(money);
-        session->sex(fb::game::sex(sex));
-        session->base_hp(base_hp);
-        session->hp(hp);
-        session->base_mp(base_mp);
-        session->mp(mp);
-        session->experience(exp);
-        session->state(fb::game::state(state));
-        session->armor_color(armor_color);
-
-        if(disguise.has_value())
-            session->disguise(disguise.value());
-        else
-            session->undisguise();
-
-        connection.query("SELECT * FROM item WHERE owner=%d",session->id()).each
-        (
-            [this, &session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
-            {
-                auto& items = fb::game::table::items;
-                auto item = items[master]->make<fb::game::item>(this);
-                if(item == nullptr)
-                    return true;
-
-                item->id(id);
-                item->count(count);
-                if(slot.has_value())
-                {
-                    session->items.add(*item, slot.value());
-                }
-                else
-                {
-                    auto found = std::find_if(equipments.begin(), equipments.end(), 
-                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
-                        {
-                            return x.second.has_value() && x.second.value() == id;
-                        });
-
-                    if(found != equipments.end())
-                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
-                }
-                return true;
-            });
-
-        if(fb::game::table::maps[map] == nullptr)
-            return false;
-
-        session->map(fb::game::table::maps[map], point16_t(position_x, position_y));
-        return false;
-    });
-
-    this->send(*session, fb::protocol::game::response::init(), scope::SELF);
-    this->send(*session, fb::protocol::game::response::time(25), scope::SELF);
-    this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
-    this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
-    this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
-    this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
     return true;
 }
 

@@ -86,8 +86,8 @@ public:
     void                        assert_account(const std::string& id, const std::string& pw) const;
     void                        create_account(const std::string& id, const std::string& pw);
     void                        init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    uint32_t                    login(const std::string& id, const std::string& pw);
-    void                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
+    uint32_t                    login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed);
+    void                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, std::function<void()> success, std::function<void(const login_exception&)> failed);
 };
 
 } } }

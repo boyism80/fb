@@ -35,7 +35,7 @@ int main(int argc, const char** argv)
     c.current_line(height+ 1 );
 
     // Execute acceptor
-    boost::asio::io_context io_service;
+    boost::asio::io_context io_context;
     auto& config = fb::config::get();
 
     const auto connection = INTERNAL_CONNECTION
@@ -54,13 +54,13 @@ int main(int argc, const char** argv)
     };
     acceptor = new fb::gateway::acceptor
     (
-        io_service, 
+        io_context, 
         config["port"].asInt(), 
         config["delay"].asInt(),
         connection
     );
 
-    io_service.run();
+    io_context.run();
 
     // Clean up
     delete acceptor;
