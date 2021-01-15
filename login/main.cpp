@@ -64,6 +64,6 @@ int main(int argc, const char** argv)
     // Clean up
     delete acceptor;
     fb::console::release();
-    fb::db::release();
+    fb::db::close();
     return 0;
 }

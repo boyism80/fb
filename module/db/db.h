@@ -56,7 +56,7 @@ private:
 
 public:
     static void                         bind(boost::asio::io_context& context);
-    static void                         release();
+    static void                         close();
 
     template <typename... Values>
     static void query(const std::string& format, Values... values)

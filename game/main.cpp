@@ -423,6 +423,6 @@ int main(int argc, const char** argv)
     delete acceptor;
     fb::game::lua::release();
     fb::console::release();
-    fb::db::release();
+    fb::db::close();
     return 0;
 }

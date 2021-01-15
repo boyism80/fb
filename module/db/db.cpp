@@ -89,7 +89,7 @@ _mutex.unlock();
     }
 }
 
-void fb::db::release()
+void fb::db::close()
 {
 _mutex.lock();
     if(_connections != nullptr)
