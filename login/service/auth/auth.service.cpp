@@ -80,7 +80,6 @@ void fb::login::service::auth::exists(const std::string& name, std::function<voi
         {
             auto exists = result.get_value<int>() > 0;
             callback(name, exists);
-            return true;
         },
         "SELECT COUNT(*) FROM user WHERE name='%s'",
         name.c_str()
@@ -170,12 +169,10 @@ uint32_t fb::login::service::auth::login(const std::string& id, const std::strin
                     throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
                 success(result.get_value<uint32_t>(1));
-                return true;
             }
             catch(login_exception& e)
             {
                 failed(e);
-                return true;
             }
         },
         "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
@@ -230,12 +227,13 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
 
                     db::query
                     (
+                        [success] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+                        {
+                            success();
+                        },
                         "UPDATE user SET pw='%s' WHERE name='%s'",
                         this->sha256(new_pw).c_str(), id.c_str()
                     );
-
-                    success();
-                    return true;
                 }
                 catch(login_exception& e)
                 {

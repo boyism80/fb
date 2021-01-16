@@ -50,9 +50,9 @@ public:
     virtual void on_level_up(session& me) = 0;
     virtual void on_warp(fb::game::session& me) = 0;
     virtual void on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
-    virtual void on_item_get(session& me, fb::game::item& item, uint8_t slot) = 0;
-    virtual void on_item_changed(session& me, fb::game::item& item, uint8_t slot) = 0;
-    virtual void on_item_lost(session& me, uint8_t slot) = 0;
+    virtual void on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;
 
 
     // item
@@ -78,7 +78,7 @@ public:
     virtual void on_trade_bundle(session& me) = 0;
     virtual void on_trade_item(session& me, session& from, uint8_t index) = 0;
     virtual void on_trade_money(session& me, session& from) = 0;
-    virtual void on_trade_cancel(session& me) = 0;
+    virtual void on_trade_cancel(session& me, session& from) = 0;
     virtual void on_trade_lock(session& me, bool mine) = 0;
     virtual void on_trade_failed(session& me) = 0;
     virtual void on_trade_success(session& me) = 0;

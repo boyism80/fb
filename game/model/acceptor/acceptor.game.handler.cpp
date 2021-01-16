@@ -98,13 +98,7 @@ void fb::game::acceptor::on_updated(session& me, fb::game::state_level level)
 }
 
 void fb::game::acceptor::on_money_changed(session& me, uint32_t value)
-{
-    db::query
-    (
-        "UPDATE user SET money=%d WHERE id=%d",
-        value, me.id()
-    );
-}
+{ }
 
 void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bool critical)
 {
@@ -229,25 +223,10 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     sstream.str(std::string());
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
     this->send(me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::SELF);
-
-    auto column = equipment::column(slot);
-    db::query
-    (
-        "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1; UPDATE user SET %s=%d WHERE id=%d;",
-        item.id(),
-        column.c_str(), item.id(), me.id()
-    );
 }
 
 void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uint8_t index)
 {
-    auto column = equipment::column(slot);
-    db::query
-    (
-        "UPDATE user SET %s=NULL WHERE id=%d",
-        column.c_str(), me.id()
-    );
-
     this->send(me, fb::protocol::game::response::object::sound(me, sound::type::EQUIPMENT_OFF), scope::PIVOT);
 }
 
@@ -292,9 +271,10 @@ void fb::game::acceptor::on_trade_money(session& me, session& from)
     this->send(me, fb::protocol::game::response::trade::money(from, mine), scope::SELF);
 }
 
-void fb::game::acceptor::on_trade_cancel(session& me)
+void fb::game::acceptor::on_trade_cancel(session& me, session& from)
 {
-    this->send(me, fb::protocol::game::response::trade::close(fb::game::message::trade::CANCELLED_BY_ME), scope::SELF);
+    bool mine = (&me == &from);
+    this->send(me, fb::protocol::game::response::trade::close(mine ? fb::game::message::trade::CANCELLED_BY_ME : fb::game::message::trade::CANCELLED_BY_PARTNER), scope::SELF);
 }
 
 void fb::game::acceptor::on_trade_lock(session& me, bool mine)
@@ -462,37 +442,106 @@ void fb::game::acceptor::on_transfer(fb::game::session& me, fb::game::map& map, 
     this->_internal->send(fb::protocol::internal::request::transfer(me.name(), map.id(), position.x, position.y, fd));
 }
 
-void fb::game::acceptor::on_item_get(session& me, fb::game::item& item, uint8_t slot)
+void fb::game::acceptor::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)
 {
-    auto master = item.based<fb::game::item::master>();
+    std::vector<std::string> queries;
+    std::vector<std::string> dataList;
+    for(auto pair : items)
+    {
+        std::stringstream sstream;
+        auto slot = pair.first;
+        auto item = pair.second;
+
+        auto master = item->based<fb::game::item::master>();
+
+        sstream 
+            << "(" 
+            << std::to_string(master->id()) << ", "
+            << std::to_string(me.id()) << ", "
+            << std::to_string(slot) << ", "
+            << std::to_string(item->count()) << ", "
+            << "NULL"
+            << ")";
+
+        dataList.push_back(sstream.str());
+    }
+
+    std::stringstream sstream;
+    sstream << "INSERT INTO item(master, owner, slot, count, durability) VALUES ";
+    for(int i = 0; i < dataList.size(); i++)
+    {
+        if(i > 0)
+            sstream << ", ";
+
+        sstream << dataList[i];
+    }
+
     db::query
     (
-        [this, &item] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+        [&me, items] (daotk::mysql::connection& connection, daotk::mysql::result& result)
         {
-            item.id(connection.last_insert_id());
-            return true;
+            std::stringstream sstream;
+            std::vector<uint8_t> slotList;
+            for(auto pair : items)
+            {
+                slotList.push_back(pair.first);
+            }
+
+            sstream << "SELECT id, slot FROM item WHERE owner=" << me.id() << " AND slot IN (";
+            for(int i = 0; i < slotList.size(); i++)
+            {
+                if(i > 0)
+                    sstream << ", ";
+
+                sstream << std::to_string(slotList[i]);
+            }
+            sstream << ")";
+
+            db::query
+            (
+                [&me] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+                {
+                    result.each([&me] (uint32_t id, uint32_t slot)
+                    {
+                        me.items[slot]->id(id);
+                        return true;
+                    });
+                },
+                sstream.str()
+            );
         },
-        "INSERT INTO item(master, owner, slot, count, durability) VALUES(%d, %d, %d, %d, %s)",
-        master->id(), me.id(), slot, item.count(), "NULL"
+        sstream.str()
     );
+
+    
+    queries.push_back(sstream.str());
+
+    
 }
 
-void fb::game::acceptor::on_item_changed(session& me, fb::game::item& item, uint8_t slot)
-{
-    db::query
-    (
-        "UPDATE item SET slot=%d, count=%d WHERE id=%d LIMIT 1",
-        slot, item.count(), item.id()
-    );
-}
+void fb::game::acceptor::on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items)
+{ }
 
-void fb::game::acceptor::on_item_lost(session& me, uint8_t slot)
+void fb::game::acceptor::on_item_lost(session& me, const std::vector<uint8_t>& slots)
 {
-    db::query
-    (
-        "DELETE FROM item WHERE owner=%d AND slot=%d",
-        me.id(), slot
-    );
+    std::stringstream sstream;
+    
+    for(int i = 0; i < slots.size(); i++)
+    {
+        if(i > 0)
+            sstream << ", ";
+
+        sstream << std::to_string(slots[i]);
+    }
+    auto data = sstream.str();
+    
+    sstream.str("");
+    sstream 
+        << "DELETE FROM item WHERE owner=" << me.id() << " AND slot IN ("
+        << data
+        << ")";
+
+    db::query(sstream.str());
 }
 
 void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
@@ -561,38 +610,7 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 }
 
 void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
-{
-    // 메모리상에서 변경된 이후에 호출
-    if(me.items[src] != nullptr && me.items[dest] != nullptr)
-    {
-        db::query
-        (
-            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1; UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
-            src, me.items[src]->id(),
-            dest, me.items[dest]->id()
-        );
-    }
-    else if(me.items[src] != nullptr)
-    {
-        db::query
-        (
-            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
-            src, me.items[src]->id()
-        );
-    }
-    else if(me.items[dest] != nullptr)
-    {
-        db::query
-        (
-            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
-            dest, me.items[dest]->id()
-        );
-    }
-    else
-    {
-        // No any action
-    }
-}
+{ }
 
 void fb::game::acceptor::on_save(session& me)
 {
@@ -620,6 +638,7 @@ void fb::game::acceptor::on_save(session& me)
         "   position_x=%u, position_y=%u, direction=%u, state=%u, "
         "   class=%u, promotion=%u, exp=%u, money=%u, disguise=%s, "
         "   hp=%u, base_hp=%u, additional_hp=%u, mp=%u, base_mp=%u, additional_mp=%u, "
+        "   weapon=%s, helmet=%s, armor=%s, shield=%s, ring_left=%s, ring_right=%s, aux_top=%s, aux_bot=%s, "
         "   weapon_color=%s, helmet_color=%s, armor_color=%s, shield_color=%s "
         "WHERE "
         "   id=%u "
@@ -645,6 +664,14 @@ void fb::game::acceptor::on_save(session& me)
         me.mp(),
         me.base_mp(),
         0,
+        weapon != nullptr ? std::to_string(weapon->id()).c_str() : "NULL",
+        helmet != nullptr ? std::to_string(helmet->id()).c_str() : "NULL",
+        armor != nullptr ? std::to_string(armor->id()).c_str() : "NULL",
+        shield != nullptr ? std::to_string(shield->id()).c_str() : "NULL",
+        ring_left != nullptr ? std::to_string(ring_left->id()).c_str() : "NULL",
+        ring_right != nullptr ? std::to_string(ring_right->id()).c_str() : "NULL",
+        aux_top != nullptr ? std::to_string(aux_top->id()).c_str() : "NULL",
+        aux_bot != nullptr ? std::to_string(aux_bot->id()).c_str() : "NULL",
         "NULL", 
         "NULL", 
         me.armor_color().has_value() ? std::to_string(me.armor_color().value()).c_str() : "NULL",

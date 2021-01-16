@@ -248,8 +248,8 @@ bool fb::game::trade::cancel()
 
         if(this->_listener != nullptr)
         {
-            this->_listener->on_trade_cancel(this->_owner);
-            this->_listener->on_trade_cancel(*this->_you);
+            this->_listener->on_trade_cancel(this->_owner, this->_owner);
+            this->_listener->on_trade_cancel(*this->_you, this->_owner);
         }
 
         this->end();
@@ -283,9 +283,7 @@ uint8_t fb::game::trade::add(fb::game::item& item)
 
 void fb::game::trade::restore()
 {
-    for(auto item : this->_items)
-        this->_owner.items.add(item);
-
+    this->_owner.items.add(this->_items);
     this->_items.clear();
 
     this->_owner.money_add(this->_money);
@@ -294,8 +292,7 @@ void fb::game::trade::restore()
 
 void fb::game::trade::flush()
 {
-    for(auto item : this->_items)
-        this->_you->items.add(item);
+    this->_you->items.add(this->_items);
     this->_items.clear();
 
     this->_you->money_add(this->_money);

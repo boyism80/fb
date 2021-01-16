@@ -1654,70 +1654,89 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
 
 uint8_t fb::game::items::add(fb::game::item& item)
 {
-    // 번들 형식의 아이템인 경우
-    if(item.attr() & item::attrs::ITEM_ATTR_BUNDLE)
-    {
-        for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
-        {
-            if(this->at(i) == nullptr)
-                continue;
-
-            if(item.based() != this->at(i)->based())
-                continue;
-
-
-            // 아이템을 합치고 남은 갯수로 설정한다.
-            auto exists = this->at(i);
-            auto remain = exists->fill(item.count());
-            item.count(remain);
-
-            if(this->_listener != nullptr)
-                this->_listener->on_item_update(static_cast<session&>(this->owner()), i);
-
-            if(item.empty())
-                delete &item;
-
-            if(this->_listener != nullptr)
-                this->_listener->on_item_changed(this->_owner, *exists, i);
-
-            return i;
-        }
-    }
-
-    // 그 이외의 아이템인 경우
-    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
-    {
-        if(this->at(i) != nullptr)
-            continue;
-
-        item._owner = &this->_owner;
-        this->set(&item, i);
-        if(item._listener != nullptr)
-            item._listener->on_item_update(static_cast<session&>(this->owner()), i);
-
-        if(item._map != nullptr)
-            item.map(nullptr);
-
-        if(this->_listener != nullptr)
-        {
-            if(item.id() == 0xFFFFFFFF)
-                this->_listener->on_item_get(this->_owner, item, i);
-            else
-                this->_listener->on_item_changed(this->_owner, item, i);
-        }
-
-        return i;
-    }
-
-    return 0xFF;
+    return this->add(&item);
 }
 
 uint8_t fb::game::items::add(fb::game::item* item)
 {
-    if(item == nullptr)
-        return 0xFF;
+    auto result = this->add(std::vector<fb::game::item*> { item });
+    return result.empty() ? 
+        0xFF : result[0];
+}
 
-    return this->add(*item);
+std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
+{
+    std::vector<uint8_t>                indices;
+    std::map<uint8_t, fb::game::item*>  gets, updates;
+
+    for(auto item : items)
+    {
+        if(item == nullptr)
+            continue;
+
+        // 번들 형식의 아이템인 경우
+        if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
+        {
+            for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
+            {
+                if(this->at(i) == nullptr)
+                    continue;
+
+                if(item->based() != this->at(i)->based())
+                    continue;
+
+                // 아이템을 합치고 남은 갯수로 설정한다.
+                auto exists = this->at(i);
+                auto remain = exists->fill(item->count());
+                item->count(remain);
+
+                if(this->_listener != nullptr)
+                    this->_listener->on_item_update(static_cast<session&>(this->owner()), i);
+
+                if(item->empty())
+                    delete &item;
+
+                updates.insert(std::make_pair(i, item));
+
+                indices.push_back(i);
+                break;
+            }
+        }
+
+        // 그 이외의 아이템인 경우
+        for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
+        {
+            if(this->at(i) != nullptr)
+                continue;
+
+            item->_owner = &this->_owner;
+            this->set(item, i);
+            if(item->_listener != nullptr)
+                item->_listener->on_item_update(static_cast<session&>(this->owner()), i);
+
+            if(item->_map != nullptr)
+                item->map(nullptr);
+
+            if(this->_listener != nullptr)
+            {
+                if(item->id() == 0xFFFFFFFF)
+                    gets.insert(std::make_pair(i, item));
+                else
+                    updates.insert(std::make_pair(i, item));
+            }
+
+            indices.push_back(i);
+            break;
+        }
+    }
+
+    if(this->_listener != nullptr)
+    {
+        this->_listener->on_item_get(this->_owner, gets);
+        this->_listener->on_item_changed(this->_owner, updates);
+    }
+
+    return std::move(indices);
 }
 
 bool items::add(fb::game::item& item, uint8_t slot)
@@ -2002,6 +2021,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
 fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_attr attr)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
+
     try
     {
         owner.state_assert(state::RIDING | state::GHOST);
@@ -2016,9 +2036,9 @@ fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_
         if(this->_listener != nullptr)
         {
             if(this->at(slot) == nullptr)
-                this->_listener->on_item_lost(this->_owner, slot);
+                this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
             else
-                this->_listener->on_item_changed(this->_owner, *this->at(slot), slot);
+                this->_listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{slot, this->at(slot)}});
         }
         return dropped;
     }

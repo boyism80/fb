@@ -472,15 +472,17 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    fb::db::query
+    fb::db::mquery
     (
-        [this, session](daotk::mysql::connection& connection, daotk::mysql::result& result) 
+        [this, session](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
         {
-            if(result.count() == 0)
+            auto& baseResult = results[0];
+            auto& equipResult = results[1];
+            if(baseResult.count() == 0)
                 return false;
 
             std::map<equipment::slot, std::optional<int>> equipments;
-            result.each([this, session, &equipments] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
+            baseResult.each([this, session, &equipments] (uint32_t id, std::string name, std::string pw, uint32_t birth, datetime date, uint32_t look, uint32_t color, uint32_t sex, uint32_t nation, uint32_t creature, uint32_t map, uint32_t position_x, uint32_t position_y, uint32_t direction, uint32_t state, uint32_t cls, uint32_t promotion, uint32_t exp, uint32_t money, std::optional<uint32_t> disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, std::optional<uint32_t> weapon, std::optional<uint32_t> weapon_color, std::optional<uint32_t> helmet, std::optional<uint32_t> helmet_color, std::optional<uint32_t> armor, std::optional<uint32_t> armor_color, std::optional<uint32_t> shield, std::optional<uint32_t> shield_color, std::optional<uint32_t> ring_left, std::optional<uint32_t> ring_left_color, std::optional<uint32_t> ring_right, std::optional<uint32_t> ring_right_color, std::optional<uint32_t> aux_top, std::optional<uint32_t> aux_top_color, std::optional<uint32_t> aux_bot, std::optional<uint32_t> aux_bot_color, std::optional<uint32_t> clan)
             {
                 this->_internal->send(fb::protocol::internal::request::login(name, map));
 
@@ -512,46 +514,6 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                 else
                     session->undisguise();
 
-                fb::db::query
-                (
-                    [this, session, equipments](daotk::mysql::connection& connection, daotk::mysql::result& result)
-                    {
-                        result.each
-                        (
-                            [this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
-                            {
-                                auto& items = fb::game::table::items;
-                                auto item = items[master]->make<fb::game::item>(this);
-                                if(item == nullptr)
-                                    return true;
-
-                                item->id(id);
-                                item->count(count);
-                                if(slot.has_value())
-                                {
-                                    session->items.add(*item, slot.value());
-                                }
-                                else
-                                {
-                                    auto found = std::find_if(equipments.begin(), equipments.end(), 
-                                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
-                                        {
-                                            return x.second.has_value() && x.second.value() == id;
-                                        });
-
-                                    if(found != equipments.end())
-                                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
-                                }
-                                return true;
-                            }
-                        );
-
-                        return true;
-                    },
-                    "SELECT * FROM item WHERE owner=%d",
-                    session->id()
-                );
-
                 if(fb::game::table::maps[map] == nullptr)
                     return false;
 
@@ -565,10 +527,36 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                 this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
                 return true;
             });
-            
-            return true;
+
+            equipResult.each([this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
+            {
+                auto& items = fb::game::table::items;
+                auto item = items[master]->make<fb::game::item>(this);
+                if(item == nullptr)
+                    return true;
+
+                item->id(id);
+                item->count(count);
+                if(slot.has_value())
+                {
+                    session->items.add(*item, slot.value());
+                }
+                else
+                {
+                    auto found = std::find_if(equipments.begin(), equipments.end(), 
+                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
+                        {
+                            return x.second.has_value() && x.second.value() == id;
+                        });
+
+                    if(found != equipments.end())
+                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
+                }
+                return true;
+            });
         }, 
-        "SELECT * FROM user WHERE name='%s' LIMIT 1",
+        "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s');",
+        session->name().c_str(),
         session->name().c_str()
     );
 
@@ -767,22 +755,22 @@ bool fb::game::acceptor::handle_click_object(fb::socket<fb::game::session>& sock
     }
 
     auto                    map = session->map();
-    auto                    other = map->objects[request.fd];
-    if(other == nullptr)
+    auto                    you = map->objects[request.fd];
+    if(you == nullptr)
         return true;
 
-    switch(other->type())
+    switch(you->type())
     {
     case fb::game::object::types::SESSION:
-        this->send(*session, fb::protocol::game::response::session::external_info(*session), scope::SELF);
+        this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
         break;
 
     case fb::game::object::types::MOB:
-        this->handle_click_mob(*session, *static_cast<mob*>(other));
+        this->handle_click_mob(*session, static_cast<mob&>(*you));
         break;
 
     case fb::game::object::types::NPC:
-        this->handle_click_npc(*session, *static_cast<npc*>(other));
+        this->handle_click_npc(*session, static_cast<npc&>(*you));
         break;
     }
 
@@ -836,7 +824,7 @@ bool fb::game::acceptor::handle_trade(fb::socket<fb::game::session>& socket, con
 
     case trade::state::UP_ITEM: // 아이템 올릴때
     {
-        auto                item = me->items[request.parameter.index];
+        auto                item = me->items[request.parameter.index - 1];
         if(item == nullptr)
             break;
 

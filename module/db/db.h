@@ -55,7 +55,8 @@ private:
 
 private:
     static void                         _exec(const std::string& sql);
-    static void                         _query(const std::string& sql, const std::function<bool(daotk::mysql::connection& connection, daotk::mysql::result&)>& callback);
+    static void                         _query(const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback);
+    static void                         _mquery(const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback);
 
 public:
     static void                         bind(boost::asio::io_context& context);
@@ -73,7 +74,7 @@ public:
     }
 
     template <typename... Values>
-    static bool query(std::function<bool(daotk::mysql::connection& connection, daotk::mysql::result&)> callback, const std::string& format, Values... values)
+    static bool query(std::function<void(daotk::mysql::connection&, daotk::mysql::result&)> callback, const std::string& format, Values... values)
     {
         if(_context == nullptr)
             return false;
@@ -88,6 +89,25 @@ public:
 
         return true;
     }
+
+    template <typename... Values>
+    static bool mquery(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::string& format, Values... values)
+    {
+        if(_context == nullptr)
+            return false;
+
+        auto future = std::async
+        (
+            std::launch::async, 
+            std::bind(&db::_mquery, std::placeholders::_1, std::placeholders::_2),
+            format_string(format.c_str(), std::forward<Values>(values)...),
+            callback
+        );
+
+        return true;
+    }
+
+    static bool mquery(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries);
 };
 
 }
