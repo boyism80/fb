@@ -255,12 +255,6 @@ void fb::game::lua::thread::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-void fb::game::lua::thread::wake_up()
-{
-    this->pending(false);
-    this->resume(0);
-}
-
 thread* fb::game::lua::thread::get(lua_State& lua_state)
 {
     auto& threads = lua::main::get().threads;

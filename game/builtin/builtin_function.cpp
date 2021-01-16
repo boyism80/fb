@@ -10,11 +10,20 @@ int fb::game::acceptor::builtin_sleep(lua_State* lua)
         return 0;
 
     auto ms = (uint32_t)thread->tointeger(1);
-
     thread->pending(true);
 
     auto acceptor = lua::env<fb::game::acceptor>("acceptor");
-    fb::timer::run(*acceptor, boost::bind(&lua::thread::wake_up, thread),ms);
+    fb::timer::run
+    (
+        *acceptor, 
+        [lua] ()
+        {
+            auto thread = lua::thread::get(*lua);
+            thread->pending(false);
+            thread->resume(0);
+        },
+        std::chrono::milliseconds(ms)
+    );
     return thread->yield(0);
 }
 

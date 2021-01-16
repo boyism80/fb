@@ -92,7 +92,6 @@ bool fb::login::acceptor::handle_create_account(fb::socket<fb::login::session>& 
             this->send(socket, fb::protocol::login::response::message("", 0x00));
 
             // 일단 아이디 선점해야함
-
             auto session = socket.data();
             session->created_id = id;
         },
@@ -130,34 +129,60 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
 
 bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
-    this->_auth_service.login
+    const auto id = request.id;
+    const auto pw = request.pw;
+    auto delay = fb::config::get()["transfer delay"].asInt();
+
+    fb::timer::run
     (
-        request.id, request.pw,
-        [this, request, &socket] (uint32_t map)
+        this->_context,
+        [this, id, pw, &socket] ()
         {
-            this->_internal->send(fb::protocol::internal::request::transfer(request.id, map, socket.native_handle()));
+            this->_auth_service.login
+            (
+                id, pw,
+                [this, id, &socket] (uint32_t map)
+                {
+                    this->_internal->send(fb::protocol::internal::request::transfer(id, map, socket.native_handle()));
+                },
+                [this, &socket] (const login_exception& e)
+                {
+                    socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+                }
+            );
         },
-        [this, &socket] (const login_exception& e)
-        {
-            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        }
+        std::chrono::seconds(delay)
     );
     return true;
 }
 
 bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
-    this->_auth_service.change_pw
+    const auto id = request.name;
+    const auto pw = request.pw;
+    const auto new_pw = request.new_pw;
+    const auto birthday = request.birthday;
+    auto delay = fb::config::get()["transfer delay"].asInt();
+
+    fb::timer::run
     (
-        request.name, request.pw, request.new_pw, request.birthday,
-        [this, &socket] ()
+        this->_context,
+        [this, &socket, id, pw, new_pw, birthday] ()
         {
-            socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+            this->_auth_service.change_pw
+            (
+                id, pw, new_pw, birthday,
+                [this, &socket] ()
+                {
+                    socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+                },
+                [this, &socket] (const login_exception& e)
+                {
+                    socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+                }
+            );
         },
-        [this, &socket] (const login_exception& e)
-        {
-            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        }
+        std::chrono::seconds(delay)
     );
 
     return true;

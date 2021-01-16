@@ -10,6 +10,7 @@
 #include "module/socket/socket.h"
 #include "protocol/protocol.h"
 #include "module/console/console.h"
+#include "module/timer/timer.h"
 
 namespace fb { namespace base {
 
@@ -30,7 +31,6 @@ public:
 
 protected:
     void                        accept();
-    void                        handle_accept_timer(const boost::system::error_code& e, S<T>* socket, boost::asio::steady_timer* timer);
 
 protected:
     virtual void                handle_parse(S<T>& session) = 0;

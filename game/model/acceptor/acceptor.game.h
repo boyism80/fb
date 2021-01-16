@@ -55,7 +55,7 @@ public:
 
 private:
     fb::game::session*      find(const std::string& name) const;
-    void                    bind_timer(std::function<void(uint64_t)> fn, int ms);
+    void                    bind_timer(std::function<void(uint64_t)> fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn);
 
 public:

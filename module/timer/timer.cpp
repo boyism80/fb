@@ -1,8 +1,8 @@
 #include "timer.h"
 
-fb::timer::timer(boost::asio::io_context& context, std::function<void(uint64_t)> fn, uint32_t ms) : 
-    boost::asio::steady_timer(context, std::chrono::milliseconds(ms)),
-    _context(context), _fn(fn), _ms(ms)
+fb::timer::timer(boost::asio::io_context& context, std::function<void(uint64_t)> fn, const std::chrono::steady_clock::duration& duration) : 
+    boost::asio::steady_timer(context, duration),
+    _context(context), _fn(fn), _duration(duration)
 {
     this->async_wait(boost::bind(&timer::handle_loop, this));
 }
@@ -21,7 +21,7 @@ void fb::timer::handle_loop()
             this->_fn(now());
         }
     );
-    this->expires_from_now(std::chrono::milliseconds(this->_ms));
+    this->expires_from_now(this->_duration);
     this->async_wait(boost::bind(&timer::handle_loop, this));
 }
 
@@ -30,9 +30,9 @@ uint64_t fb::timer::now()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-void fb::timer::run(boost::asio::io_context& context, std::function<void(void)> fn, uint32_t ms)
+void fb::timer::run(boost::asio::io_context& context, std::function<void(void)> fn, const std::chrono::steady_clock::duration& duration)
 {
-    auto timer = new boost::asio::steady_timer(context, std::chrono::milliseconds(ms));
+    auto timer = new boost::asio::steady_timer(context, duration);
     timer->async_wait
     (
         [&context, fn, timer] (const boost::system::error_code& e)
@@ -53,9 +53,9 @@ fb::timer_container::~timer_container()
         delete x;
 }
 
-void fb::timer_container::push(std::function<void(uint64_t)> fn, uint32_t ms)
+void fb::timer_container::push(std::function<void(uint64_t)> fn, const std::chrono::steady_clock::duration& duration)
 {
-    this->push_back(new timer(this->_context, fn, ms));
+    this->push_back(new timer(this->_context, fn, duration));
 }
 
 void fb::timer_container::cancel()

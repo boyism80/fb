@@ -9,14 +9,15 @@
 #include "protocol/internal.h"
 #include "module/console/console.h"
 #include "module/acceptor/acceptor.h"
+#include "module/timer/timer.h"
 
 namespace fb { namespace login {
 
 class acceptor : public fb::acceptor<fb::login::session>
 {
 private:
-    fb::protocol::login::response::agreement  _agreement;
-    service::auth               _auth_service;
+    fb::protocol::login::response::agreement    _agreement;
+    service::auth                               _auth_service;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);

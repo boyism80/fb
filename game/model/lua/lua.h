@@ -160,7 +160,6 @@ public:
 public:
     bool                        pending() const;
     void                        pending(bool value);
-    void                        wake_up();
 
 public:
     static thread*              get(lua_State& lua_state);

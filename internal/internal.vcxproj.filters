@@ -51,6 +51,9 @@
     <Filter Include="model\exception">
       <UniqueIdentifier>{a2f33864-c5bf-4cee-905c-e09e21f92eb2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\timer">
+      <UniqueIdentifier>{00814364-f61b-4f9c-b152-0783e135ffd3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -79,6 +82,9 @@
     </ClCompile>
     <ClCompile Include="model\table\table.internal.cpp">
       <Filter>model\table</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\timer\timer.cpp">
+      <Filter>module\timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -126,6 +132,9 @@
     </ClInclude>
     <ClInclude Include="model\exception\exception.h">
       <Filter>model\exception</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\timer\timer.h">
+      <Filter>module\timer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
