@@ -3,7 +3,6 @@
 boost::asio::io_context*                fb::db::_context = nullptr;
 uint32_t                                fb::db::_index = 0;
 std::deque<daotk::mysql::connection*>*  fb::db::_connections = nullptr;
-std::deque<daotk::mysql::connection*>*  fb::db::_usings = nullptr;
 std::mutex                              fb::db::_mutex;
 
 void fb::db::bind(boost::asio::io_context& context)
@@ -13,12 +12,10 @@ void fb::db::bind(boost::asio::io_context& context)
 
 daotk::mysql::connection& fb::db::get()
 {
-_mutex.lock();
+    std::lock_guard<std::mutex> mg(_mutex);
+
     if(_connections == nullptr)
         _connections = new std::deque<daotk::mysql::connection*>(SIZE, nullptr);
-
-    if(_usings == nullptr)
-        _usings = new std::deque<daotk::mysql::connection*>();
 
     auto& c = fb::console::get();
     while(_connections->empty())
@@ -40,6 +37,7 @@ _mutex.lock();
             config["database"]["pwd"].asString(), 
             config["database"]["name"].asString()
         );
+        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
     }
 
     if(connection->is_open() == false)
@@ -54,44 +52,76 @@ _mutex.lock();
             config["database"]["pwd"].asString(), 
             config["database"]["name"].asString()
         );
+        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
     }
-
-    _usings->push_back(connection);
-_mutex.unlock();
 
     return *connection;
 }
 
 bool fb::db::release(daotk::mysql::connection& connection)
 {
-    if(_connections == nullptr)
-        return false;
 
-    if(_usings == nullptr)
+    std::lock_guard<std::mutex> mg(_mutex);
+
+    if(_connections == nullptr)
         return false;
 
     try
     {
-_mutex.lock();
-        auto found = std::find(_usings->begin(), _usings->end(), &connection);
-        if(found == _usings->end())
-            throw std::exception();
-
-        _usings->erase(found);
         _connections->push_back(&connection);
-_mutex.unlock();
         return true;
     }
     catch(std::exception& e)
     {
-_mutex.unlock();
         return false;
+    }
+}
+
+void fb::db::_exec(const std::string& sql)
+{
+    auto& connection = db::get();
+    try
+    {
+        connection.exec(sql);
+    }
+    catch(std::exception& e)
+    {
+        auto& c = console::get();
+        c.puts(e.what());
+    }
+
+    db::release(connection);
+}
+
+void fb::db::_query(const std::string& sql, const std::function<bool(daotk::mysql::connection& connection, daotk::mysql::result&)>& callback)
+{
+    auto connection = &db::get();
+    try
+    {
+        auto result = new daotk::mysql::result(connection->query(sql));
+
+        boost::asio::dispatch
+        (
+            *_context, 
+            [connection, callback, result] () 
+            { 
+                callback(*connection, *result); 
+                delete result;
+                db::release(*connection);
+            }
+        );
+    }
+    catch(std::exception& e)
+    {
+        db::release(*connection);
+        console::get().puts(e.what());
     }
 }
 
 void fb::db::close()
 {
-_mutex.lock();
+    std::lock_guard<std::mutex> mg(_mutex);
+
     if(_connections != nullptr)
     {
         for(auto connection : *_connections)
@@ -100,14 +130,4 @@ _mutex.lock();
         delete _connections;
         _connections = nullptr;
     }
-
-    if(_usings != nullptr)
-    {
-        for(auto connection : *_usings)
-            delete connection;
-
-        delete _usings;
-        _usings = nullptr;
-    }
-_mutex.unlock();
 }

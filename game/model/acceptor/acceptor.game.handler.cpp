@@ -230,16 +230,11 @@ void fb::game::acceptor::on_equipment_on(session& me, item& item, equipment::slo
     sstream << "갑옷 강도  " << me.defensive_physical() <<"  " << me.regenerative() << " S  " << me.defensive_magical();
     this->send(me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::SELF);
 
-    db::query
-    (
-        "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1",
-        item.id()
-    );
-
     auto column = equipment::column(slot);
     db::query
     (
-        "UPDATE user SET %s=%d WHERE id=%d",
+        "UPDATE item SET slot=NULL WHERE id=%d LIMIT 1; UPDATE user SET %s=%d WHERE id=%d;",
+        item.id(),
         column.c_str(), item.id(), me.id()
     );
 }
@@ -568,7 +563,16 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
 {
     // 메모리상에서 변경된 이후에 호출
-    if(me.items[src] != nullptr)
+    if(me.items[src] != nullptr && me.items[dest] != nullptr)
+    {
+        db::query
+        (
+            "UPDATE item SET slot=%d WHERE id=%d LIMIT 1; UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
+            src, me.items[src]->id(),
+            dest, me.items[dest]->id()
+        );
+    }
+    else if(me.items[src] != nullptr)
     {
         db::query
         (
@@ -576,14 +580,17 @@ void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
             src, me.items[src]->id()
         );
     }
-
-    if(me.items[dest] != nullptr)
+    else if(me.items[dest] != nullptr)
     {
         db::query
         (
             "UPDATE item SET slot=%d WHERE id=%d LIMIT 1",
             dest, me.items[dest]->id()
         );
+    }
+    else
+    {
+        // No any action
     }
 }
 
@@ -601,6 +608,8 @@ void fb::game::acceptor::on_save(session& me)
     auto aux_top = me.items.auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT);
     auto aux_bot = me.items.auxiliary(fb::game::equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     auto clan = me.clan();
+
+    std::vector<std::string> mquery;
 
     char buffer[1024] = {0,};
     sprintf
@@ -636,14 +645,14 @@ void fb::game::acceptor::on_save(session& me)
         me.mp(),
         me.base_mp(),
         0,
-        "0", 
-        "0", 
+        "NULL", 
+        "NULL", 
         me.armor_color().has_value() ? std::to_string(me.armor_color().value()).c_str() : "NULL",
-        "0",
+        "NULL",
         me.id()
     );
+    mquery.push_back(buffer);
 
-    db::query(buffer);
 
     for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
@@ -651,8 +660,9 @@ void fb::game::acceptor::on_save(session& me)
         if(item == nullptr)
             continue;
 
-        db::query
+        sprintf
         (
+            buffer, 
             "UPDATE item SET master=%d, owner=%d, slot=%d, count=%d, durability=%s WHERE id=%d LIMIT 1",
             item->based<fb::game::item::master>()->id(),
             me.id(),
@@ -661,5 +671,12 @@ void fb::game::acceptor::on_save(session& me)
             "NULL",
             item->id()
         );
+        mquery.push_back(buffer);
     }
+
+    std::stringstream sstream;
+    for(int i = 0; i < mquery.size(); i++)
+        sstream << mquery[i] << "; ";
+
+    db::query(sstream.str());
 }

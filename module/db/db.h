@@ -19,7 +19,6 @@ class db
 private:
     static const uint32_t                         SIZE = 10;
     static std::deque<daotk::mysql::connection*>* _connections;
-    static std::deque<daotk::mysql::connection*>* _usings;
     static uint32_t                               _index;
     static boost::asio::io_context*               _context;
     static std::mutex                             _mutex;
@@ -54,6 +53,10 @@ private:
     static daotk::mysql::connection&    get();
     static bool                         release(daotk::mysql::connection& connection);
 
+private:
+    static void                         _exec(const std::string& sql);
+    static void                         _query(const std::string& sql, const std::function<bool(daotk::mysql::connection& connection, daotk::mysql::result&)>& callback);
+
 public:
     static void                         bind(boost::asio::io_context& context);
     static void                         close();
@@ -64,12 +67,7 @@ public:
         auto future = std::async
         (
             std::launch::async, 
-            [] (const std::string& sql)
-            {
-                auto& connection = db::get();
-                connection.query(sql);
-                db::release(connection);
-            },
+            std::bind(&db::_exec, std::placeholders::_1),
             format_string(format.c_str(), std::forward<Values>(values)...)
         );
     }
@@ -83,23 +81,9 @@ public:
         auto future = std::async
         (
             std::launch::async, 
-            [callback] (const std::string& sql)
-            {
-                auto& connection = db::get();
-                auto  result = new daotk::mysql::result(connection.query(sql));
-                db::release(connection);
-
-                boost::asio::dispatch
-                (
-                    *_context, 
-                    [&connection, callback, result] () 
-                    { 
-                        callback(connection, *result); 
-                        delete result;
-                    }
-                );
-            },
-            format_string(format.c_str(), std::forward<Values>(values)...)
+            std::bind(&db::_query, std::placeholders::_1, std::placeholders::_2),
+            format_string(format.c_str(), std::forward<Values>(values)...),
+            callback
         );
 
         return true;
