@@ -122,7 +122,7 @@ uint32_t fb::console::puts(const char* format, ...)
     return result;
 }
 
-bool fb::console::clear(uint16_t x, uint16_t y)
+void fb::console::clear(uint16_t x, uint16_t y)
 {
     static int prev = 0;
     static char buffer[256];

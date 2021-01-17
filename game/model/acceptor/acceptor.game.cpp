@@ -478,7 +478,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
         {
             auto&                       baseResult = results[0];
             if(baseResult.count() == 0)
-                return false;
+                return;
 
             uint32_t					id;
             std::string					name;
@@ -558,7 +558,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                 session->undisguise();
 
             if(fb::game::table::maps[map] == nullptr)
-                return false;
+                return;
 
             session->map(fb::game::table::maps[map], point16_t(position_x, position_y));
 
