@@ -972,12 +972,12 @@ public:
     fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position);
 
     fb::game::item*                     find(const std::string& name) const;
-    fb::game::item*                     drop(uint8_t slot, uint8_t count, item::delete_attr attr = item::delete_attr::DELETE_DROP);
+    fb::game::item*                     drop(uint8_t slot, uint8_t count);
     void                                pickup(bool boost);
     bool                                throws(uint8_t slot);
     
     // override
-    fb::game::item*                     remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    fb::game::item*                     remove(uint8_t slot, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     bool                                swap(uint8_t src, uint8_t dest);
 };

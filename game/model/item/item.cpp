@@ -2018,7 +2018,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
     return nullptr;
 }
 
-fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
 
@@ -2033,13 +2033,6 @@ fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count, item::delete_
             owner.action(action::PICKUP, duration::DURATION_PICKUP);
         }
 
-        if(this->_listener != nullptr)
-        {
-            if(this->at(slot) == nullptr)
-                this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
-            else
-                this->_listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{slot, this->at(slot)}});
-        }
         return dropped;
     }
     catch(std::exception& e)
@@ -2150,10 +2143,10 @@ bool fb::game::items::throws(uint8_t slot)
     }
 }
 
-fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::remove(uint8_t slot, uint16_t count, item::delete_attr attr)
 {
     auto& owner = static_cast<fb::game::session&>(this->owner());
-    auto item = this->at(index);
+    auto item = this->at(slot);
     if(item == nullptr)
         return nullptr;
 
@@ -2161,14 +2154,21 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::del
 
     if(item == splitted)
     {
-        base_container<fb::game::item>::remove(index);
+        base_container<fb::game::item>::remove(slot);
         
         if(this->_listener != nullptr)
-            this->_listener->on_item_remove(owner, index, attr);
+            this->_listener->on_item_remove(owner, slot, attr);
     }
 
     if(this->_listener != nullptr)
-        this->_listener->on_item_update(owner, index);
+    {
+        this->_listener->on_item_update(owner, slot);
+
+        if(this->at(slot) == nullptr)
+            this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
+        else
+            this->_listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{slot, this->at(slot)}});
+    }
 
     return splitted;
 }
