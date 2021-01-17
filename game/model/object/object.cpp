@@ -647,7 +647,7 @@ std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direc
     catch(std::exception&)
     {}
 
-    return result;
+    return std::move(result);
 }
 
 fb::game::object* fb::game::object::forward(fb::game::object::types type) const
@@ -663,7 +663,7 @@ std::vector<fb::game::object*> fb::game::object::forwards(fb::game::object::type
 std::vector<fb::game::object*> fb::game::object::showns(object::types type) const
 {
     if(this->_map == nullptr)
-        return std::vector<fb::game::object*>();
+        return std::vector<fb::game::object*> {};
     else
         return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
 }
@@ -683,13 +683,13 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
         }
     );
 
-    return objects;
+    return std::move(objects);
 }
 
 std::vector<object*> fb::game::object::showings(object::types type) const
 {
     if(this->_map == nullptr)
-        return std::vector<object*>();
+        return std::vector<object*> {};
     else
         return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
 }
@@ -710,7 +710,7 @@ std::vector<object*> fb::game::object::showings(const std::vector<object*>& sour
         }
     );
 
-    return objects;
+    return std::move(objects);
 }
 
 bool fb::game::object::visible() const

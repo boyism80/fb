@@ -43,7 +43,7 @@ std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types
             result.push_back(pair.second);
     }
 
-    return result;
+    return std::move(result);
 }
 
 uint16_t fb::game::objects::add(fb::game::object& object)
@@ -355,7 +355,7 @@ bool fb::game::map::update(fb::game::object& object)
 std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
 {
     if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*>();
+        return std::vector<fb::game::object*> {};
     else
         return this->_sectors->objects(pivot, type);
 }
@@ -383,13 +383,13 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
     catch(std::exception&)
     {}
 
-    return objects;
+    return std::move(objects);
 }
 
 std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types type)
 {
     if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*>();
+        return std::vector<fb::game::object*> {};
     else
         return this->_sectors->activated_objects(type);
 }

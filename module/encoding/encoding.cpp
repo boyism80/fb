@@ -19,7 +19,7 @@ std::string cp949(const std::string& utf8)
     auto cp949 = std::string(mbs);
     delete[] mbs;
     delete[] wide;
-    return cp949;
+    return std::move(cp949);
 #else
     size_t src_size = utf8.length();
     char* src = const_cast<char*>(utf8.data());
@@ -35,7 +35,7 @@ std::string cp949(const std::string& utf8)
 
     auto cp949 = std::string(dst_head);
     delete[] dst_head;
-    return cp949;
+    return std::move(cp949);
 #endif
 }
 
@@ -58,7 +58,7 @@ std::string utf8(const std::string& cp949)
     auto utf8 = std::string(mbs);
     delete[] mbs;
     delete[] wide;
-    return utf8;
+    return std::move(utf8);
 #else
     size_t src_size = cp949.length();
     char* src = const_cast<char*>(cp949.data());
@@ -74,7 +74,7 @@ std::string utf8(const std::string& cp949)
 
     auto utf8 = std::string(dst_head);
     delete[] dst_head;
-    return utf8;
+    return std::move(utf8);
 #endif
 }
 

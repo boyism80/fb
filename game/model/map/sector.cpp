@@ -197,7 +197,7 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
             sectors.push_back(sector);
     }
 
-    return sectors;
+    return std::move(sectors);
 }
 
 std::vector<fb::game::sector*> fb::game::sectors::nears(const point16_t& pivot) const
@@ -214,7 +214,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
 
     if(type == fb::game::object::types::UNKNOWN)
     {
-        return objects;
+        return std::move(objects);
     }
     else
     {
@@ -227,7 +227,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
                 return x->is(type);
             }
         );
-        return filtered;
+        return std::move(filtered);
     }
 }
 
@@ -246,5 +246,5 @@ std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::ob
         );
     }
 
-    return result;
+    return std::move(result);
 }
