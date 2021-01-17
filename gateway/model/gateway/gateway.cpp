@@ -22,7 +22,7 @@ const std::string& fb::gateway::entry::name() const
     return this->_name;
 }
 
-const std::string& fb::gateway::entry::dest() const
+const std::string& fb::gateway::entry::dst() const
 {
     return this->_desc;
 }

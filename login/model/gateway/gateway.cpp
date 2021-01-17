@@ -16,7 +16,7 @@ const std::string& fb::login::gateway::name() const
     return this->_name;
 }
 
-const std::string& fb::login::gateway::dest() const
+const std::string& fb::login::gateway::dst() const
 {
     return this->_desc;
 }

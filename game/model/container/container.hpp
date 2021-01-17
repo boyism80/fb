@@ -75,15 +75,15 @@ inline bool fb::game::base_container<T>::remove(uint8_t index)
     return true;
 }
 template<typename T>
-inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dest)
+inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
 {
-    if(src == dest)
+    if(src == dst)
         return false;
 
-    if(src > this->_size - 1 || dest > this->_size - 1)
+    if(src > this->_size - 1 || dst > this->_size - 1)
         return false;
 
-    std::swap(this->_elements[src], this->_elements[dest]);
+    std::swap(this->_elements[src], this->_elements[dst]);
     return true;
 }
 template<typename T>

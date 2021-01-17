@@ -1088,13 +1088,13 @@ bool fb::game::acceptor::handle_swap(fb::socket<fb::game::session>& socket, cons
     {
     case swap::type::SPELL:
     {
-        session->spells.swap(request.src-1, request.dest-1);
+        session->spells.swap(request.src-1, request.dst-1);
         break;
     }
 
     case swap::type::ITEM:
     {
-        session->items.swap(request.src-1, request.dest-1);
+        session->items.swap(request.src-1, request.dst-1);
         break;
     }
 
@@ -1223,8 +1223,8 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
         return false;
 
     const auto& offsets = world->offsets();
-    const auto before = offsets[request.before]->dest;
-    const auto after = offsets[request.after]->dest;
+    const auto before = offsets[request.before]->dst;
+    const auto after = offsets[request.after]->dst;
 
     auto session = socket.data();
     if(before.map->loaded())

@@ -123,9 +123,9 @@ bool fb::game::spells::remove(uint8_t index)
     return success;
 }
 
-bool fb::game::spells::swap(uint8_t src, uint8_t dest)
+bool fb::game::spells::swap(uint8_t src, uint8_t dst)
 {
-    if(fb::game::base_container<fb::game::spell>::swap(src, dest) == false)
+    if(fb::game::base_container<fb::game::spell>::swap(src, dst) == false)
         return false;
 
     if(this->_listener != nullptr)
@@ -136,11 +136,11 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dest)
         else
             this->_listener->on_spell_remove(this->owner(), src);
 
-        const auto              left = this->at(dest);
+        const auto              left = this->at(dst);
         if(left != nullptr)
-            this->_listener->on_spell_update(this->owner(), dest);
+            this->_listener->on_spell_update(this->owner(), dst);
         else
-            this->_listener->on_spell_remove(this->owner(), dest);
+            this->_listener->on_spell_remove(this->owner(), dst);
     }
 
     return true;

@@ -979,7 +979,7 @@ public:
     // override
     fb::game::item*                     remove(uint8_t slot, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
-    bool                                swap(uint8_t src, uint8_t dest);
+    bool                                swap(uint8_t src, uint8_t dst);
 };
 
 

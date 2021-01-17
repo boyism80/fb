@@ -30,7 +30,7 @@ public:
     virtual uint8_t         add(T& element);
     virtual uint8_t         add(T* element);
     virtual bool            remove(uint8_t index);
-    virtual bool            swap(uint8_t src, uint8_t dest);
+    virtual bool            swap(uint8_t src, uint8_t dst);
 
     bool                    free() const;
     uint8_t                 free_size() const;

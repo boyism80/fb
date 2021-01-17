@@ -166,7 +166,7 @@ public:
 
             auto  world = fb::game::table::worlds[windex];
             auto& offsets = world->offsets();
-            auto found = std::find_if
+            auto  found = std::find_if
             (
                 offsets.cbegin(), offsets.cend(),
                 [&] (fb::game::wm::offset* offset)

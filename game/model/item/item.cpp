@@ -2182,9 +2182,9 @@ fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, it
     return this->remove(index, count, attr);
 }
 
-bool fb::game::items::swap(uint8_t src, uint8_t dest)
+bool fb::game::items::swap(uint8_t src, uint8_t dst)
 {
-    if(fb::game::base_container<fb::game::item>::swap(src, dest) == false)
+    if(fb::game::base_container<fb::game::item>::swap(src, dst) == false)
         return false;
     
     if(this->_listener != nullptr)
@@ -2195,13 +2195,13 @@ bool fb::game::items::swap(uint8_t src, uint8_t dest)
         else
             this->_listener->on_item_remove(this->_owner, src);
         
-        const auto              left = this->at(dest);
+        const auto              left = this->at(dst);
         if(left != nullptr)
-            this->_listener->on_item_update(this->_owner, dest);
+            this->_listener->on_item_update(this->_owner, dst);
         else
-            this->_listener->on_item_remove(this->_owner, dest);
+            this->_listener->on_item_remove(this->_owner, dst);
 
-        this->_listener->on_item_swap(this->_owner, src, dest);
+        this->_listener->on_item_swap(this->_owner, src, dst);
     }
 
     return true;

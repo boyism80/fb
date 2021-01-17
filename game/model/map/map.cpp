@@ -670,7 +670,7 @@ const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) c
                 group->cbegin(), group->cend(),
                 [&] (const fb::game::wm::offset* offset)
                 {
-                    return offset->dest.map == &map;
+                    return offset->dst.map == &map;
                 }
             );
 

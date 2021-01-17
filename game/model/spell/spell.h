@@ -92,7 +92,7 @@ public:
     uint8_t                     add(spell& element);
     uint8_t                     add(spell* element);
     bool                        remove(uint8_t index);
-    bool                        swap(uint8_t src, uint8_t dest);
+    bool                        swap(uint8_t src, uint8_t dst);
 };
 
 

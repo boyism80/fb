@@ -246,14 +246,14 @@ class swap : public fb::protocol::base::header
 public:
     fb::game::swap::type    type;
     uint8_t                 src;
-    uint8_t                 dest;
+    uint8_t                 dst;
 
 public:
     void deserialize(fb::istream& in_stream)
     {
         this->type = fb::game::swap::type(in_stream.read_u8());
         this->src = in_stream.read_u8();
-        this->dest = in_stream.read_u8();
+        this->dst = in_stream.read_u8();
     }
 };
 

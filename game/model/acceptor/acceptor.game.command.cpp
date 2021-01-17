@@ -232,9 +232,13 @@ bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::
         return false;
 
     auto id = parameters[0].asString();
+    auto response = fb::protocol::game::response::map::worlds(id);
+    if(response.offset == nullptr)
+        return false;
+
     session.before_map(session.map());
     session.map(nullptr);
-    session.send(fb::protocol::game::response::map::worlds(id));
+    session.send(response);
     return true;
 }
 

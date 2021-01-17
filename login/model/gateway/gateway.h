@@ -22,7 +22,7 @@ public:
 
 public:
     const std::string&      name() const;
-    const std::string&      dest() const;
+    const std::string&      dst() const;
     uint32_t                ip() const;
     uint16_t                port() const;
 };

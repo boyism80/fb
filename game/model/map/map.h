@@ -42,15 +42,15 @@ public:
     const std::string       id;
     const std::string       name;
     const point16_t         position;
-    const destination       dest;
+    const destination       dst;
 
 public:
-    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dest) : 
-        id(id), name(name), position(position), dest(dest)
+    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dst) : 
+        id(id), name(name), position(position), dst(dst)
     {}
 
     __offset_tag(const struct __offset_tag& right) : 
-        __offset_tag(right.id, right.name, right.position, right.dest)
+        __offset_tag(right.id, right.name, right.position, right.dst)
     {}
 
 } offset;

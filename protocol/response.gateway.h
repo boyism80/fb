@@ -49,7 +49,7 @@ public:
         for(uint32_t i = 0; i < this->entries.size(); i++)
         {
             auto                    gateway = this->entries.at(i);
-            uint32_t                len = sprintf(buffer, "%s;%s", gateway.name().c_str(), gateway.dest().c_str()) + 1;
+            uint32_t                len = sprintf(buffer, "%s;%s", gateway.name().c_str(), gateway.dst().c_str()) + 1;
 
             formats.write_u8(i)
                 .write_u32(gateway.ip())

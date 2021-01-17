@@ -609,7 +609,7 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
     this->send(me, fb::protocol::game::response::item::update(me, index), scope::SELF);
 }
 
-void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dest)
+void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dst)
 { }
 
 void fb::game::acceptor::on_save(session& me)

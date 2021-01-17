@@ -35,23 +35,23 @@ fb::cryptor::~cryptor()
     delete[] this->_key;
 }
 
-void fb::cryptor::intercrypt(const uint8_t* source, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize)
+void fb::cryptor::intercrypt(const uint8_t* source, uint8_t* dst, uint32_t size, const uint8_t* key, uint32_t ksize)
 {
-    uint8_t*                dest_offset = dest;
-    const uint8_t*          src_offset  = source;
-    uint32_t                num_loop    = size / 4;
+    uint8_t*                dst_offset = dst;
+    const uint8_t*          src_offset = source;
+    uint32_t                num_loop   = size / 4;
 
 
     for(uint32_t i = 0; i < num_loop; i++)
     {
-        unsigned int*       cvtint_dest = (unsigned int*)dest_offset;
+        unsigned int*       cvtint_dest = (unsigned int*)dst_offset;
         unsigned int*       cvtint_src  = (unsigned int*)src_offset;
         unsigned int*       cvtint_key  = (unsigned int*)key + (i % ksize);
 
         *cvtint_dest = *cvtint_src ^ *cvtint_key;
 
         src_offset  += 4;
-        dest_offset += 4;
+        dst_offset += 4;
     }
 
     uint32_t                matched = size & 3;
@@ -65,18 +65,18 @@ void fb::cryptor::intercrypt(const uint8_t* source, uint8_t* dest, uint32_t size
     switch(matched)
     {
     case 1:
-        *dest_offset = cvtint_val ^ *src_offset;
+        *dst_offset = cvtint_val ^ *src_offset;
         break;
 
     case 2:
         result = cvtint_val ^ *(unsigned short *)src_offset;
-        *(uint16_t*)dest_offset = result;
+        *(uint16_t*)dst_offset = result;
         break;
 
     case 3:
-        *(uint16_t*)dest_offset = cvtint_val ^ *(unsigned short *)src_offset;
+        *(uint16_t*)dst_offset = cvtint_val ^ *(unsigned short *)src_offset;
         result = src_offset[2];
-        dest_offset[2] = result ^ (cvtint_val >> 16);
+        dst_offset[2] = result ^ (cvtint_val >> 16);
         break;
     }
 }

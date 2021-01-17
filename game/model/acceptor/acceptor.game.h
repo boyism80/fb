@@ -193,7 +193,7 @@ public:
     // listener : item
     void                    on_item_remove(session& me, uint8_t index, item::delete_attr attr);
     void                    on_item_update(session& me, uint8_t index);
-    void                    on_item_swap(session& me, uint8_t src, uint8_t dest);
+    void                    on_item_swap(session& me, uint8_t src, uint8_t dst);
     void                    on_equipment_on(session& me, item& item, equipment::slot slot);
     void                    on_equipment_off(session& me, equipment::slot slot, uint8_t index);
     void                    on_item_active(session& me, item& item);
