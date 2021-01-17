@@ -172,7 +172,7 @@ public:
     uint16_t width, height;
 
 public:
-    _size16() : width(width), height(height)
+    _size16() : width(0), height(0)
     {}
     _size16(uint16_t width, uint16_t height) : width(width), height(height)
     {}
