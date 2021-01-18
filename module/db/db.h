@@ -91,7 +91,7 @@ public:
     }
 
     template <typename... Values>
-    static bool mquery(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::string& format, Values... values)
+    static bool query(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::string& format, Values... values)
     {
         if(_context == nullptr)
             return false;
@@ -107,7 +107,8 @@ public:
         return true;
     }
 
-    static bool mquery(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries);
+    static bool query(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries);
+    static bool query(const std::vector<std::string>& queries);
 };
 
 }

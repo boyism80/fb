@@ -459,8 +459,11 @@ void fb::game::acceptor::on_item_get(session& me, const std::map<uint8_t, fb::ga
             << std::to_string(master->id()) << ", "
             << std::to_string(me.id()) << ", "
             << std::to_string(slot) << ", "
-            << std::to_string(item->count()) << ", "
-            << "NULL"
+            << std::to_string(item->count()) << ", ";
+
+        auto durability = item->durability();
+        sstream 
+            << (durability.has_value() ? std::to_string(durability.value()) : "NULL")
             << ")";
 
         dataList.push_back(sstream.str());
@@ -687,6 +690,7 @@ void fb::game::acceptor::on_save(session& me)
         if(item == nullptr)
             continue;
 
+        auto durability = item->durability();
         sprintf
         (
             buffer, 
@@ -695,15 +699,33 @@ void fb::game::acceptor::on_save(session& me)
             me.id(),
             i,
             item->count(),
-            "NULL",
+            durability.has_value() ? std::to_string(durability.value()).c_str() : "NULL",
             item->id()
         );
         mquery.push_back(buffer);
     }
 
-    std::stringstream sstream;
-    for(int i = 0; i < mquery.size(); i++)
-        sstream << mquery[i] << "; ";
+    const auto& equipments = me.items.equipments();
+    for(auto pair : equipments)
+    {
+        auto slot = pair.first;
+        auto equipment = pair.second;
 
-    db::query(sstream.str());
+        if(equipment == nullptr)
+            continue;
+
+        sprintf
+        (
+            buffer, 
+            "UPDATE item SET master=%d, owner=%d, slot=NULL, count=%d, durability=%d WHERE id=%d", 
+            equipment->based<fb::game::item::master>()->id(),
+            me.id(),
+            equipment->count(),
+            equipment->durability().value(),
+            equipment->id()
+        );
+        mquery.push_back(buffer);
+    }
+
+    db::query(mquery);
 }

@@ -93,6 +93,30 @@ void fb::db::_exec(const std::string& sql)
     db::release(connection);
 }
 
+bool fb::db::query(const std::vector<std::string>& queries)
+{
+    if(_context == nullptr)
+        return false;
+
+    std::stringstream sstream;
+    for(int i = 0; i < queries.size(); i++)
+    {
+        if(i > 0)
+            sstream << "; ";
+
+        sstream << queries[i];
+    }
+
+    auto future = std::async
+    (
+        std::launch::async, 
+        std::bind(&db::_exec, std::placeholders::_1),
+        sstream.str()
+    );
+
+    return true;
+}
+
 void fb::db::_query(const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback)
 {
     auto connection = &db::get();
@@ -157,7 +181,7 @@ void fb::db::close()
     }
 }
 
-bool fb::db::mquery(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries)
+bool fb::db::query(std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries)
 {
     if(_context == nullptr)
         return false;

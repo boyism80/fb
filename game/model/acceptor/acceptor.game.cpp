@@ -472,7 +472,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    fb::db::mquery
+    fb::db::query
     (
         [this, session](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
         {

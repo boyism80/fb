@@ -248,6 +248,12 @@ const std::string fb::game::item::name_trade() const
     return this->name_styled();
 }
 
+std::optional<uint16_t> fb::game::item::durability() const
+{
+    return std::nullopt;
+}
+
+
 
 std::string fb::game::item::tip_message() const
 {
@@ -582,7 +588,7 @@ fb::game::pack::~pack()
 {}
 
 
-uint16_t fb::game::pack::durability() const
+std::optional<uint16_t> fb::game::pack::durability() const
 {
     return this->_durability;
 }
@@ -786,7 +792,7 @@ void fb::game::equipment::master::undress_script(const std::string& value)
     this->_undress_script = value;
 }
 
-uint16_t fb::game::equipment::master::durability() const
+std::optional<uint16_t> fb::game::equipment::master::durability() const
 {
     return this->_durability;
 }
@@ -853,7 +859,7 @@ fb::game::equipment::~equipment()
 const std::string fb::game::equipment::name_trade() const
 {
     std::stringstream sstream;
-    float                   percentage = this->durability() / float(this->durability_base()) * 100;
+    float                   percentage = this->_durability / float(this->durability_base()) * 100;
     sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
 
     return sstream.str();
@@ -935,7 +941,7 @@ uint16_t fb::game::equipment::dress() const
     return static_cast<const master*>(this->_master)->_dress;
 }
 
-uint16_t fb::game::equipment::durability() const
+std::optional<uint16_t> fb::game::equipment::durability() const
 {
     return this->_durability;
 }
@@ -1035,7 +1041,7 @@ std::string fb::game::equipment::tip_message() const
     std::stringstream           sstream;
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->durability()) << '/' << std::to_string(this->durability_base()) << ' ' << std::fixed << std::setprecision(1) << (this->durability() / (float)this->durability_base()) * 100 << '%' << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(this->durability_base()) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)this->durability_base()) * 100 << '%' << std::endl;
     sstream << this->mid_message();
     sstream << "무장:   " << std::to_string(this->defensive_physical()) << " Hit:  " << std::to_string(this->hit()) << " Dam:  " << std::to_string(this->damage());
 
@@ -2164,10 +2170,13 @@ fb::game::item* fb::game::items::remove(uint8_t slot, uint16_t count, item::dele
     {
         this->_listener->on_item_update(owner, slot);
 
-        if(this->at(slot) == nullptr)
-            this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
-        else
-            this->_listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{slot, this->at(slot)}});
+        if((item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) != fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
+        {
+            if(this->at(slot) == nullptr)
+                this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
+            else
+                this->_listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{slot, this->at(slot)}});
+        }
     }
 
     return splitted;
@@ -2205,6 +2214,21 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     }
 
     return true;
+}
+
+std::map<equipment::slot, item*> items::equipments() const
+{
+    return std::map<equipment::slot, item*>
+    {
+        {equipment::slot::WEAPON_SLOT,      _weapon},
+        {equipment::slot::ARMOR_SLOT,       _armor},
+        {equipment::slot::SHIELD_SLOT,      _shield},
+        {equipment::slot::HELMET_SLOT,      _helmet},
+        {equipment::slot::LEFT_HAND_SLOT,   _rings[equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT]},
+        {equipment::slot::RIGHT_HAND_SLOT,  _rings[equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT]},
+        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT]},
+        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT]}
+    };
 }
 
 fb::game::itemmix::builder::builder(session& owner, listener* listener) : 
