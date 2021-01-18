@@ -1699,6 +1699,7 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
 
     for(auto item : items)
     {
+        bool                            pushed = false;
         if(item == nullptr)
             continue;
 
@@ -1722,14 +1723,18 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
                     this->_listener->on_item_update(static_cast<session&>(this->owner()), i);
 
                 if(item->empty())
-                    delete &item;
+                    delete item;
 
-                updates.insert(std::make_pair(i, item));
+                updates.insert(std::make_pair(i, exists));
 
                 indices.push_back(i);
+                pushed = true;
                 break;
             }
         }
+
+        if(pushed)
+            continue;
 
         // 그 이외의 아이템인 경우
         for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
