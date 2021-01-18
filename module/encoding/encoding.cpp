@@ -29,7 +29,7 @@ std::string cp949(const std::string& utf8)
     char* dst_head = dst;
     std::memset(dst, 0, dst_size);
 
-    iconv_t cd = iconv_open("EUC-KR", "UTF-8");
+    iconv_t cd = iconv_open("CP949", "UTF-8");
     iconv(cd, &src, &src_size, &dst, &dst_size);
     iconv_close(cd);
 
@@ -68,7 +68,7 @@ std::string utf8(const std::string& cp949)
     char* dst_head = dst;
     std::memset(dst, 0, dst_size);
 
-    iconv_t cd = iconv_open("UTF-8", "EUC-KR");
+    iconv_t cd = iconv_open("UTF-8", "CP949");
     iconv(cd, &src, &src_size, &dst, &dst_size);
     iconv_close(cd);
 
