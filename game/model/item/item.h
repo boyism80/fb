@@ -45,17 +45,18 @@ public:
     {
         ITEM_ATTR_NONE                  = 0x00000000,
         ITEM_ATTR_CONSUME               = 0x00000001,
-        ITEM_ATTR_PACK                  = 0x00000002,
-        ITEM_ATTR_BUNDLE                = 0x00000003,
-        ITEM_ATTR_SCRIPT                = 0x00000004,
-        ITEM_ATTR_CASH                  = 0x00000005,
-        ITEM_ATTR_WEAPON                = 0x00000100,
-        ITEM_ATTR_ARMOR                 = 0x00000200,
-        ITEM_ATTR_SHIELD                = 0x00000400,
-        ITEM_ATTR_HELMET                = 0x00000800,
-        ITEM_ATTR_RING                  = 0x00001000,
-        ITEM_ATTR_AUXILIARY             = 0x00002000,
+        ITEM_ATTR_BUNDLE                = 0x00000002,
+        ITEM_ATTR_SCRIPT                = 0x00000003,
+        ITEM_ATTR_CASH                  = 0x00000004,
+        ITEM_ATTR_PACK                  = ITEM_ATTR_CONSUME   | 0x00000100,
         ITEM_ATTR_EQUIPMENT             = 0x10000000,
+        ITEM_ATTR_WEAPON                = ITEM_ATTR_EQUIPMENT | 0x00000100,
+        ITEM_ATTR_ARMOR                 = ITEM_ATTR_EQUIPMENT | 0x00000200,
+        ITEM_ATTR_SHIELD                = ITEM_ATTR_EQUIPMENT | 0x00000400,
+        ITEM_ATTR_HELMET                = ITEM_ATTR_EQUIPMENT | 0x00000800,
+        ITEM_ATTR_RING                  = ITEM_ATTR_EQUIPMENT | 0x00001000,
+        ITEM_ATTR_AUXILIARY             = ITEM_ATTR_EQUIPMENT | 0x00002000,
+        ITEM_ARRT_ARROW                 = ITEM_ATTR_EQUIPMENT | 0x00004000,
     };
 #pragma endregion
 
@@ -184,6 +185,7 @@ public:
 #pragma region virtual method
 public:
     virtual fb::game::item::attrs       attr() const;
+    bool                                attr(fb::game::item::attrs flag) const;
     virtual fb::game::object*           make(listener* listener) const;
 #pragma endregion
 
@@ -272,6 +274,7 @@ public:
     virtual const std::string           name_styled() const;
     virtual const std::string           name_trade() const;
     virtual std::optional<uint16_t>     durability() const;
+    virtual void                        durability(std::optional<uint16_t> value);
 
 #pragma endregion
 
@@ -299,6 +302,7 @@ public:
     const std::string&                  desc() const;
     const std::string&                  active_script() const;
     attrs                               attr() const;
+    bool                                attr(fb::game::item::attrs flag) const;
 
 #pragma endregion
 
@@ -416,6 +420,7 @@ public:
 
 public:
     std::optional<uint16_t>             durability() const;
+    void                                durability(std::optional<uint16_t> value);
     uint16_t                            base_durability() const;
 
 public:
@@ -593,6 +598,7 @@ public:
     uint16_t                            dress() const;
 
     std::optional<uint16_t>             durability() const;
+    void                                durability(std::optional<uint16_t> value);
     uint16_t                            durability_base() const;
 
     bool                                repair_enabled() const;

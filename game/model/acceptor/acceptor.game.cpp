@@ -570,7 +570,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
             auto&                           equipResult = results[1];
-            equipResult.each([this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> duration)
+            equipResult.each([this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> durability)
             {
                 auto& items = fb::game::table::items;
                 auto item = items[master]->make<fb::game::item>(this);
@@ -579,6 +579,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
 
                 item->id(id);
                 item->count(count);
+                item->durability(durability);
                 if(slot.has_value())
                 {
                     session->items.add(*item, slot.value());

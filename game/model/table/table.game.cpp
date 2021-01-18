@@ -458,7 +458,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
 
 
             // Equipment options
-            if (item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT && data.isMember("equipment option"))
+            if (item->attr(fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) && data.isMember("equipment option"))
             {
                 auto            option = data["equipment option"];
                 auto            equipment = static_cast<equipment::master*>(item);
@@ -486,7 +486,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
 
 
             // Weapon options
-            if (item->attr() & fb::game::item::attrs::ITEM_ATTR_WEAPON)
+            if (item->attr(fb::game::item::attrs::ITEM_ATTR_WEAPON))
             {
                 auto            option = data["equipment option"];
                 auto            weapon = static_cast<fb::game::weapon::master*>(item);

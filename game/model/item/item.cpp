@@ -200,6 +200,11 @@ fb::game::item::attrs fb::game::item::master::attr() const
     return attr;
 }
 
+bool fb::game::item::master::attr(fb::game::item::attrs flag) const
+{
+    return (this->attr() & flag) == flag;
+}
+
 fb::game::object* fb::game::item::master::make(listener* listener) const
 {
     return new item(this, listener);
@@ -237,7 +242,7 @@ const std::string fb::game::item::name_styled() const
     std::stringstream       sstream;
     sstream << this->name();
 
-    if((this->attr() & item::attrs::ITEM_ATTR_BUNDLE) && this->_count > 1)
+    if(this->attr(item::attrs::ITEM_ATTR_BUNDLE) && this->_count > 1)
         sstream << ' ' << this->_count << "개";
 
     return sstream.str();
@@ -252,6 +257,9 @@ std::optional<uint16_t> fb::game::item::durability() const
 {
     return std::nullopt;
 }
+
+void fb::game::item::durability(std::optional<uint16_t> value)
+{}
 
 
 
@@ -363,6 +371,11 @@ fb::game::item::attrs fb::game::item::attr() const
     return static_cast<const master*>(this->_master)->attr();
 }
 
+bool fb::game::item::attr(fb::game::item::attrs flag) const
+{
+    return static_cast<const master*>(this->_master)->attr(flag);
+}
+
 bool fb::game::item::active()
 {
     if(this->empty())
@@ -379,7 +392,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
     count = std::min(count, this->count());
 
     item* item = nullptr;
-    if((this->attr() & item::attrs::ITEM_ATTR_BUNDLE) && this->_count > count)
+    if(this->attr(item::attrs::ITEM_ATTR_BUNDLE) && this->_count > count)
     {
         this->_count -= count;
         
@@ -565,7 +578,7 @@ fb::game::pack::master::~master()
 
 fb::game::item::attrs fb::game::pack::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_CONSUME | item::attrs::ITEM_ATTR_PACK);
+    return item::attrs::ITEM_ATTR_PACK;
 }
 
 fb::game::object* fb::game::pack::master::make(listener* listener) const
@@ -591,6 +604,11 @@ fb::game::pack::~pack()
 std::optional<uint16_t> fb::game::pack::durability() const
 {
     return this->_durability;
+}
+
+void fb::game::pack::durability(std::optional<uint16_t> value)
+{
+    this->_durability = value.value_or(0);
 }
 
 uint16_t fb::game::pack::base_durability() const
@@ -869,8 +887,7 @@ bool fb::game::equipment::active()
 {
     fb::game::item*         before = nullptr;
     auto                    slot = equipment::slot::UNKNOWN_SLOT;
-    auto                    attr(fb::game::item::attrs(this->attr() & ~item::attrs::ITEM_ATTR_EQUIPMENT));
-    switch(attr)
+    switch(this->attr())
     {
     case item::attrs::ITEM_ATTR_WEAPON:
         before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
@@ -944,6 +961,11 @@ uint16_t fb::game::equipment::dress() const
 std::optional<uint16_t> fb::game::equipment::durability() const
 {
     return this->_durability;
+}
+
+void fb::game::equipment::durability(std::optional<uint16_t> value)
+{
+    this->_durability = value.value_or(0);
 }
 
 uint16_t fb::game::equipment::durability_base() const
@@ -1133,7 +1155,7 @@ fb::game::weapon::master::~master()
 
 fb::game::item::attrs fb::game::weapon::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_WEAPON);
+    return item::attrs::ITEM_ATTR_WEAPON;
 }
 
 fb::game::object* fb::game::weapon::master::make(listener* listener) const
@@ -1264,7 +1286,7 @@ fb::game::armor::master::~master()
 
 fb::game::item::attrs fb::game::armor::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_ARMOR);
+    return item::attrs::ITEM_ATTR_ARMOR;
 }
 
 fb::game::object* fb::game::armor::master::make(listener* listener) const
@@ -1305,7 +1327,7 @@ fb::game::helmet::master::~master()
 
 fb::game::item::attrs fb::game::helmet::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_HELMET);
+    return item::attrs::ITEM_ATTR_HELMET;
 }
 
 fb::game::object* fb::game::helmet::master::make(listener* listener) const
@@ -1346,7 +1368,7 @@ fb::game::shield::master::~master()
 
 fb::game::item::attrs fb::game::shield::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_SHIELD);
+    return item::attrs::ITEM_ATTR_SHIELD;
 }
 
 fb::game::object* fb::game::shield::master::make(listener* listener) const
@@ -1387,7 +1409,7 @@ fb::game::ring::master::~master()
 
 fb::game::item::attrs fb::game::ring::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_RING);
+    return item::attrs::ITEM_ATTR_RING;
 }
 
 fb::game::object* fb::game::ring::master::make(listener* listener) const
@@ -1428,7 +1450,7 @@ fb::game::auxiliary::master::~master()
 
 fb::game::item::attrs fb::game::auxiliary::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT | item::attrs::ITEM_ATTR_AUXILIARY);
+    return item::attrs::ITEM_ATTR_AUXILIARY;
 }
 
 fb::game::object* fb::game::auxiliary::master::make(listener* listener) const
@@ -1469,7 +1491,7 @@ fb::game::arrow::master::~master()
 
 fb::game::item::attrs fb::game::arrow::master::attr() const
 {
-    return item::attrs(item::attrs::ITEM_ATTR_EQUIPMENT);
+    return item::attrs::ITEM_ARRT_ARROW;
 }
 
 fb::game::object* fb::game::arrow::master::make(listener* listener) const
@@ -1681,7 +1703,7 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
             continue;
 
         // 번들 형식의 아이템인 경우
-        if(item->attr() & item::attrs::ITEM_ATTR_BUNDLE)
+        if(item->attr(item::attrs::ITEM_ATTR_BUNDLE))
         {
             for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
             {
@@ -2070,7 +2092,7 @@ void fb::game::items::pickup(bool boost)
         {
             auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);
-            if(below->attr() & fb::game::item::attrs::ITEM_ATTR_CASH)
+            if(below->attr(fb::game::item::attrs::ITEM_ATTR_CASH))
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = owner.money_add(cash->chunk());
@@ -2170,7 +2192,7 @@ fb::game::item* fb::game::items::remove(uint8_t slot, uint16_t count, item::dele
     {
         this->_listener->on_item_update(owner, slot);
 
-        if((item->attr() & fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) != fb::game::item::attrs::ITEM_ATTR_EQUIPMENT)
+        if(item->attr(fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) == false)
         {
             if(this->at(slot) == nullptr)
                 this->_listener->on_item_lost(this->_owner, std::vector<uint8_t> {slot});
