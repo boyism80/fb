@@ -56,7 +56,7 @@ public:
         ITEM_ATTR_HELMET                = ITEM_ATTR_EQUIPMENT | 0x00000800,
         ITEM_ATTR_RING                  = ITEM_ATTR_EQUIPMENT | 0x00001000,
         ITEM_ATTR_AUXILIARY             = ITEM_ATTR_EQUIPMENT | 0x00002000,
-        ITEM_ARRT_ARROW                 = ITEM_ATTR_EQUIPMENT | 0x00004000,
+        ITEM_ATTR_ARROW                 = ITEM_ATTR_EQUIPMENT | 0x00004000,
     };
 #pragma endregion
 
