@@ -1,6 +1,7 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
+#include <boost/algorithm/string/join.hpp>
 #include <jsoncpp/json/json.h>
 #include <string>
 #include <fstream>

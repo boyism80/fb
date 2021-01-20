@@ -60,6 +60,20 @@ inline uint8_t fb::game::base_container<T>::add(T& element)
     return 0xFF;
 }
 template<typename T>
+inline uint8_t fb::game::base_container<T>::add(T& element, uint8_t index)
+{
+    if(this->_elements[index] != nullptr)
+        return 0xFF;
+
+    this->_elements[index] = &element;
+    return index;
+}
+template<typename T>
+inline uint8_t fb::game::base_container<T>::add(T* element, uint8_t index)
+{
+    return this->add(*element, index);
+}
+template<typename T>
 inline uint8_t fb::game::base_container<T>::add(T* element)
 {
     return this->add(*element);

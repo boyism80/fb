@@ -727,5 +727,26 @@ void fb::game::acceptor::on_save(session& me)
         mquery.push_back(buffer);
     }
 
+
+    std::vector<std::string> spellSet;
+    for(int i = 0; i < fb::game::spell::MAX_SLOT; i++)
+    {
+        auto spell = me.spells[i];
+        std::vector<std::string> parameters;
+        parameters.push_back(std::to_string(me.id()));
+        parameters.push_back(std::to_string(i));
+        parameters.push_back((spell == nullptr) ? "NULL" : std::to_string(spell->id()));
+
+        std::stringstream sstream;
+        sstream << "(" << boost::algorithm::join(parameters, ", ") << ")";
+        spellSet.push_back(sstream.str());
+    }
+
+    std::stringstream sstream;
+    sstream << "INSERT INTO spell (owner, slot, id) VALUES "
+        << boost::algorithm::join(spellSet, ", ")
+        << " ON DUPLICATE KEY UPDATE id=VALUES(id)";
+    mquery.push_back(sstream.str());
+
     db::query(mquery);
 }

@@ -825,7 +825,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             if (data.isMember("message"))
                 message = CP949(data["message"].asString(), PLATFORM::Windows);
 
-            std::map<uint16_t, fb::game::spell*>::insert(std::make_pair(id, new fb::game::spell(fb::game::spell::types(type), name, cast, uncast, concast, message)));
+            std::map<uint16_t, fb::game::spell*>::insert(std::make_pair(id, new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message)));
             callback(name, percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)

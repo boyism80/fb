@@ -950,7 +950,7 @@ public:
     uint8_t                             add(fb::game::item& item);
     uint8_t                             add(fb::game::item* item);
     std::vector<uint8_t>                add(const std::vector<fb::game::item*>& items);
-    bool                                add(fb::game::item& item, uint8_t slot);
+    uint8_t                             add(fb::game::item& item, uint8_t slot);
     bool                                reduce(uint8_t index, uint16_t count);
     fb::game::item*                     active(uint8_t index);
     uint8_t                             inactive(equipment::slot slot);

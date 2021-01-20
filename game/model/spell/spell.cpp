@@ -1,7 +1,8 @@
 #include "model/spell/spell.h"
 #include "model/listener/listener.h"
 
-fb::game::spell::spell(types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
+fb::game::spell::spell(uint16_t id, types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message) : 
+    _id(id),
     _type(type),
     _name(name),
     _cast(cast),
@@ -13,6 +14,11 @@ fb::game::spell::spell(types type, const std::string& name, const std::string& c
 
 fb::game::spell::~spell()
 {
+}
+
+uint16_t fb::game::spell::id() const
+{
+    return this->_id;
 }
 
 fb::game::spell::types fb::game::spell::type() const
@@ -106,12 +112,28 @@ uint8_t fb::game::spells::add(spell& element)
     return index;
 }
 
+uint8_t fb::game::spells::add(spell& element, uint8_t index)
+{
+    if(fb::game::base_container<fb::game::spell>::add(element, index) != 0xFF && this->_listener != nullptr)
+        this->_listener->on_spell_update(this->owner(), index);
+
+    return index;
+}
+
 uint8_t fb::game::spells::add(spell* element)
 {
     if(element == nullptr)
         return 0xFF;
 
     return this->add(*element);
+}
+
+uint8_t fb::game::spells::add(spell* element, uint8_t index)
+{
+    if(element == nullptr)
+        return 0xFF;
+
+    return this->add(*element, index);
 }
 
 bool fb::game::spells::remove(uint8_t index)

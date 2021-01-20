@@ -39,6 +39,7 @@ public:
 
 #pragma region private field
 private:
+    uint16_t                    _id;
     fb::game::spell::types      _type;
     std::string                 _name;
     std::string                 _cast, _uncast, _concast;
@@ -48,13 +49,14 @@ private:
 
 #pragma region constructor / destructor
 public:
-    spell(fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
+    spell(uint16_t id, fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
 #pragma endregion
 
 
 #pragma region public method
 public:
+    uint16_t                    id() const;
     fb::game::spell::types      type() const;
     const std::string&          name() const;
     const std::string&          cast() const;
@@ -90,7 +92,9 @@ public:
     // override
 public:
     uint8_t                     add(spell& element);
+    uint8_t                     add(spell& element, uint8_t index);
     uint8_t                     add(spell* element);
+    uint8_t                     add(spell* element, uint8_t index);
     bool                        remove(uint8_t index);
     bool                        swap(uint8_t src, uint8_t dst);
 };

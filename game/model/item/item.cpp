@@ -1772,16 +1772,15 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
     return std::move(indices);
 }
 
-bool items::add(fb::game::item& item, uint8_t slot)
+uint8_t items::add(fb::game::item& item, uint8_t slot)
 {
-    if(this->at(slot) != nullptr)
-        return false;
+    if(fb::game::base_container<fb::game::item>::add(item, slot) == 0xFF)
+        return 0xFF;
 
-    this->set(&item, slot);
     item._owner = &this->_owner;
     if(item._listener != nullptr)
         item._listener->on_item_update(static_cast<session&>(this->owner()), slot);
-    return true;
+    return slot;
 }
 
 bool fb::game::items::reduce(uint8_t index, uint16_t count)

@@ -600,8 +600,23 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                 }
                 return true;
             });
+
+            auto&                           spellResult = results[2];
+            spellResult.each([this, session] (std::optional<uint32_t> id, uint32_t slot)
+            {
+                if(id.has_value() == false)
+                    return true;
+
+                auto spell = fb::game::table::spells[id.value()];
+                if(spell == nullptr)
+                    return true;
+
+                session->spells.add(spell, slot);
+                return true;
+            });
         }, 
-        "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s');",
+        "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');",
+        session->name().c_str(),
         session->name().c_str(),
         session->name().c_str()
     );
