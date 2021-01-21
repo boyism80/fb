@@ -199,7 +199,7 @@
     <ClCompile Include="model\spell\spell.cpp" />
     <ClCompile Include="model\table\table.game.cpp" />
     <ClCompile Include="model\trade\trade.cpp" />
-    <ClCompile Include="service\map\service.map.cpp" />
+    <ClCompile Include="service\sql\service.sql.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\acceptor\acceptor.h" />
@@ -242,7 +242,7 @@
     <ClInclude Include="model\table\table.game.h" />
     <ClInclude Include="model\trade\trade.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="service\map\service.map.h" />
+    <ClInclude Include="service\sql\service.sql.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc" />

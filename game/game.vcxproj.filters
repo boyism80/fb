@@ -95,14 +95,8 @@
     <Filter Include="module\service">
       <UniqueIdentifier>{2451ab40-0acb-4ac5-a6be-5940285ce021}</UniqueIdentifier>
     </Filter>
-    <Filter Include="service\object">
-      <UniqueIdentifier>{d8957e9e-3668-428e-b896-dd45e925c680}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model\life">
       <UniqueIdentifier>{38343c9c-f870-4e74-bb00-18eb24ba5825}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service\map">
-      <UniqueIdentifier>{e6f81926-c384-4dd9-8cf9-7b521054959d}</UniqueIdentifier>
     </Filter>
     <Filter Include="model\listener">
       <UniqueIdentifier>{2f61b8fd-120c-4c3d-8358-5e32a70032c9}</UniqueIdentifier>
@@ -121,6 +115,9 @@
     </Filter>
     <Filter Include="module\table">
       <UniqueIdentifier>{18e5d454-c67b-4543-af94-76fcb696175e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="service\sql">
+      <UniqueIdentifier>{8e4e0d8f-0d1f-48f0-bd4d-685422cadd6f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -196,9 +193,6 @@
     <ClCompile Include="model\life\life.cpp">
       <Filter>model\life</Filter>
     </ClCompile>
-    <ClCompile Include="service\map\service.map.cpp">
-      <Filter>service\map</Filter>
-    </ClCompile>
     <ClCompile Include="model\listener\listener.cpp">
       <Filter>model\listener</Filter>
     </ClCompile>
@@ -222,6 +216,9 @@
     </ClCompile>
     <ClCompile Include="model\acceptor\acceptor.game.command.cpp">
       <Filter>model\acceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="service\sql\service.sql.cpp">
+      <Filter>service\sql</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -315,9 +312,6 @@
     <ClInclude Include="model\life\life.h">
       <Filter>model\life</Filter>
     </ClInclude>
-    <ClInclude Include="service\map\service.map.h">
-      <Filter>service\map</Filter>
-    </ClInclude>
     <ClInclude Include="model\listener\listener.h">
       <Filter>model\listener</Filter>
     </ClInclude>
@@ -347,6 +341,9 @@
     </ClInclude>
     <ClInclude Include="..\module\table\table.h">
       <Filter>module\table</Filter>
+    </ClInclude>
+    <ClInclude Include="service\sql\service.sql.h">
+      <Filter>service\sql</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

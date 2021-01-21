@@ -247,7 +247,6 @@ public:
 #pragma region protected field
 
 protected:
-    uint32_t                            _id;
     listener*                           _listener;
     uint16_t                            _count;
     session*                            _owner;
@@ -282,8 +281,6 @@ public:
 #pragma region public method
 
 public:
-    uint32_t                            id() const;
-    void                                id(uint32_t id);
     uint16_t                            fill(uint16_t count);
     uint16_t                            reduce(uint16_t count);
     uint16_t                            free_space() const;

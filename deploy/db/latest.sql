@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: fb
 -- ------------------------------------------------------
--- Server version	8.0.16
+-- Server version 8.0.16
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -40,7 +40,7 @@ CREATE TABLE `clan` (
   PRIMARY KEY (`id`),
   KEY `clan_owner_idx` (`owner`),
   CONSTRAINT `clan_owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,16 +51,16 @@ DROP TABLE IF EXISTS `item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `item` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `master` int(10) unsigned NOT NULL,
-  `owner` int(10) unsigned DEFAULT NULL,
-  `slot` smallint(5) DEFAULT NULL,
-  `count` smallint(5) unsigned NOT NULL DEFAULT '1',
+  `owner` int(10) unsigned NOT NULL,
+  `index` smallint(5) NOT NULL,
+  `slot` smallint(5) NOT NULL,
+  `master` int(10) unsigned DEFAULT NULL,
+  `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`owner`,`index`,`slot`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `item_owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -79,7 +79,24 @@ CREATE TABLE `legend` (
   PRIMARY KEY (`id`),
   KEY `legend_owner_idx` (`owner`),
   CONSTRAINT `legend_owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `spell`
+--
+
+DROP TABLE IF EXISTS `spell`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `spell` (
+  `owner` int(11) unsigned NOT NULL,
+  `slot` tinyint(4) NOT NULL,
+  `id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`owner`,`slot`),
+  KEY `spell_owner_idx` (`owner`),
+  CONSTRAINT `spell_owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,43 +133,20 @@ CREATE TABLE `user` (
   `mp` int(10) unsigned NOT NULL,
   `base_mp` int(10) unsigned NOT NULL,
   `additional_mp` int(10) unsigned NOT NULL DEFAULT '0',
-  `weapon` int(10) unsigned DEFAULT NULL,
   `weapon_color` tinyint(3) unsigned DEFAULT NULL,
-  `helmet` int(10) unsigned DEFAULT NULL,
   `helmet_color` tinyint(3) unsigned DEFAULT NULL,
-  `armor` int(10) unsigned DEFAULT NULL,
   `armor_color` tinyint(3) unsigned DEFAULT NULL,
-  `shield` int(10) unsigned DEFAULT NULL,
   `shield_color` tinyint(3) unsigned DEFAULT NULL,
-  `ring_left` int(10) unsigned DEFAULT NULL,
   `ring_left_color` tinyint(3) unsigned DEFAULT NULL,
-  `ring_right` int(10) unsigned DEFAULT NULL,
   `ring_right_color` tinyint(3) unsigned DEFAULT NULL,
-  `aux_top` int(10) unsigned DEFAULT NULL,
   `aux_top_color` int(11) DEFAULT NULL,
-  `aux_bot` int(10) unsigned DEFAULT NULL,
   `aux_bot_color` int(10) unsigned DEFAULT NULL,
   `clan` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `index_idx` (`weapon`,`helmet`,`armor`,`shield`,`ring_left`,`ring_right`,`aux_top`,`aux_bot`),
-  KEY `helmet_idx` (`helmet`),
-  KEY `armor_idx` (`armor`),
-  KEY `shield_idx` (`shield`),
-  KEY `ring_left_idx` (`ring_left`),
-  KEY `ring_right_idx` (`ring_right`),
-  KEY `aux_top_idx` (`aux_top`),
-  KEY `aux_bot_idx` (`aux_bot`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_clan_idx` (`clan`),
-  CONSTRAINT `user_armor` FOREIGN KEY (`armor`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_aux_bot` FOREIGN KEY (`aux_bot`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_aux_top` FOREIGN KEY (`aux_top`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`),
-  CONSTRAINT `user_helmet` FOREIGN KEY (`helmet`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_ring_left` FOREIGN KEY (`ring_left`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_ring_right` FOREIGN KEY (`ring_right`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_shield` FOREIGN KEY (`shield`) REFERENCES `item` (`id`),
-  CONSTRAINT `user_weapon` FOREIGN KEY (`weapon`) REFERENCES `item` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=euckr;
+  CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -164,4 +158,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-10-28 20:57:08
+-- Dump completed on 2021-01-21 22:10:33

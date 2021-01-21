@@ -221,7 +221,6 @@ fb::game::object* fb::game::item::master::make(listener* listener) const
 
 fb::game::item::item(const fb::game::item::master* master, listener* listener) : 
     fb::game::object(master, listener),
-    _id(0xFFFFFFFF),
     _owner(nullptr),
     _listener(listener),
     _count(1)
@@ -272,16 +271,6 @@ std::string fb::game::item::tip_message() const
     if(desc.empty() == false)
         sstream << std::endl << std::endl << desc;
     return sstream.str();
-}
-
-uint32_t fb::game::item::id() const
-{
-    return this->_id;
-}
-
-void fb::game::item::id(uint32_t id)
-{
-    this->_id = id;
 }
 
 uint16_t fb::game::item::fill(uint16_t count)
@@ -404,7 +393,6 @@ fb::game::item* fb::game::item::split(uint16_t count)
         item = this;
     }
 
-    item->id(0xFFFFFFFF);
     return item;
 }
 
@@ -942,9 +930,7 @@ bool fb::game::equipment::active()
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
     // id를 유지시켜줘야 한다.
-    auto id = this->_id;
     this->_owner->items.remove(*this);
-    this->id(id);
 
     this->_owner->items.add(before);
     if(this->_listener != nullptr)
@@ -1751,12 +1737,7 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
                 item->map(nullptr);
 
             if(this->_listener != nullptr)
-            {
-                if(item->id() == 0xFFFFFFFF)
-                    gets.insert(std::make_pair(i, item));
-                else
-                    updates.insert(std::make_pair(i, item));
-            }
+                updates.insert(std::make_pair(i, item));
 
             indices.push_back(i);
             break;

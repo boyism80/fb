@@ -506,37 +506,17 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             uint32_t					mp;
             uint32_t					base_mp;
             uint32_t					additional_mp;
-            std::optional<uint32_t>		weapon;
             std::optional<uint32_t>		weapon_color;
-            std::optional<uint32_t>		helmet;
             std::optional<uint32_t>		helmet_color;
-            std::optional<uint32_t>		armor;
             std::optional<uint32_t>		armor_color;
-            std::optional<uint32_t>		shield;
             std::optional<uint32_t>		shield_color;
-            std::optional<uint32_t>		ring_left;
             std::optional<uint32_t>		ring_left_color;
-            std::optional<uint32_t>		ring_right;
             std::optional<uint32_t>		ring_right_color;
-            std::optional<uint32_t>		aux_top;
             std::optional<uint32_t>		aux_top_color;
-            std::optional<uint32_t>		aux_bot;
             std::optional<uint32_t>		aux_bot_color;
             std::optional<uint32_t>		clan;
-            baseResult.fetch(id, name, pw, birth, date, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon, weapon_color, helmet, helmet_color, armor, armor_color, shield, shield_color, ring_left, ring_left_color, ring_right, ring_right_color, aux_top, aux_top_color, aux_bot, aux_bot_color, clan);
+            baseResult.fetch(id, name, pw, birth, date, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
             this->_internal->send(fb::protocol::internal::request::login(name, map));
-
-            std::map<equipment::slot, std::optional<int>> equipments = 
-            {
-                {equipment::slot::WEAPON_SLOT, weapon},
-                {equipment::slot::HELMET_SLOT, helmet},
-                {equipment::slot::ARMOR_SLOT, armor},
-                {equipment::slot::SHIELD_SLOT, shield},
-                {equipment::slot::LEFT_HAND_SLOT, ring_left},
-                {equipment::slot::RIGHT_HAND_SLOT, ring_right},
-                {equipment::slot::LEFT_AUX_SLOT, aux_top},
-                {equipment::slot::RIGHT_AUX_SLOT, aux_bot}
-            };
 
             session->id(id);
             session->color(color);
@@ -570,34 +550,24 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
             auto&                           equipResult = results[1];
-            equipResult.each([this, session, equipments] (uint32_t id, uint32_t master, uint32_t owner, std::optional<uint32_t> slot, uint32_t count, std::optional<uint32_t> durability)
+            equipResult.each([this, session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> master, std::optional<uint32_t> count, std::optional<uint32_t> durability)
             {
+                if(master.has_value() == false)
+                    return true;
+
                 auto& items = fb::game::table::items;
-                auto item = items[master]->make<fb::game::item>(this);
+                auto item = items[master.value()]->make<fb::game::item>(this);
                 if(item == nullptr)
                     return true;
 
-                item->id(id);
-                item->count(count);
+                item->count(count.value());
                 item->durability(durability);
-                if(slot.has_value())
-                {
-                    session->items.add(*item, slot.value());
-                }
-                else
-                {
-                    auto found = std::find_if
-                    (
-                        equipments.begin(), equipments.end(), 
-                        [id](const std::pair<equipment::slot, std::optional<uint32_t>> x) 
-                        {
-                            return x.second.has_value() && x.second.value() == id;
-                        }
-                    );
 
-                    if(found != equipments.end())
-                        session->items.wear((*found).first, static_cast<fb::game::equipment*>(item));
-                }
+                if(slot == fb::game::equipment::slot::UNKNOWN_SLOT)
+                    session->items.add(*item, index);
+                else
+                    session->items.wear((fb::game::equipment::slot)slot, static_cast<fb::game::equipment*>(item));
+
                 return true;
             });
 
