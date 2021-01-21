@@ -188,6 +188,7 @@
     <ClCompile Include="model\gateway\gateway.cpp" />
     <ClCompile Include="model\session\session.login.cpp" />
     <ClCompile Include="service\auth\auth.service.cpp" />
+    <ClCompile Include="service\sql\sql.service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\acceptor\acceptor.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="model\session\session.login.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="service\auth\auth.service.h" />
+    <ClInclude Include="service\sql\sql.service.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="login.rc" />

@@ -13,10 +13,10 @@
 #include "module/stream/stream.h"
 #include "module/config/config.h"
 #include "model/session/session.login.h"
-#include "module/service/service.h"
 #include "model/gateway/gateway.h"
 #include "module/encoding/encoding.h"
 #include "module/string/string.h"
+#include "service/sql/sql.service.h"
 
 #define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
 #define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
@@ -66,7 +66,7 @@ public:
 
 namespace fb { namespace login { namespace service { 
 
-class auth : public service
+class auth
 {
 private:
     std::vector<std::string>    _forbiddens;

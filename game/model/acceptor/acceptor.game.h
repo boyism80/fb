@@ -22,7 +22,7 @@
 #include "module/string/string.h"
 #include "model/lua/lua.h"
 #include "model/table/table.game.h"
-#include "service/sql/service.sql.h"
+#include "service/sql/sql.service.h"
 
 namespace fb { namespace game {
 

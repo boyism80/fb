@@ -5,8 +5,8 @@ TARGET          = $(BUILD)/login
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/main.o
-	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(BUILD)/main.o
+	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/timer.o $(BUILD)/encoding.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../module/config/config.cpp
 	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
@@ -43,6 +43,9 @@ $(BUILD)/session.login.o: ./model/session/session.login.cpp
 
 $(BUILD)/auth.service.o: ./service/auth/auth.service.cpp
 	$(CXX) $(STD) -c ./service/auth/auth.service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/auth.service.o
+
+$(BUILD)/sql.service.o: ./service/sql/sql.service.cpp
+	$(CXX) $(STD) -c ./service/sql/sql.service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/sql.service.o
 
 $(BUILD)/main.o: ./main.cpp
 	$(CXX) $(STD) -c ./main.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/main.o

@@ -2,12 +2,11 @@
 #define __SERVICE_GATEWAY_H__
 
 #include <string>
-#include "module/service/service.h"
 #include "protocol/gateway.h"
 
 namespace fb { namespace gateway { namespace service { 
 
-class gateway : public service
+class gateway
 {
 public:
     gateway();

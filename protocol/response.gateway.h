@@ -3,6 +3,7 @@
 
 #include "protocol/protocol.h"
 #include "model/gateway/gateway.h"
+#include "module/cryptor/cryptor.h"
 
 namespace fb { namespace protocol { namespace gateway { namespace response {
 

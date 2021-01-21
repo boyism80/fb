@@ -1,22 +1,6 @@
 #include "model/session/session.h"
 #include "model/map/map.h"
-#include "service.sql.h"
-
-std::string fb::game::service::sql::_dict_to_update(const std::map<std::string, std::string>& value)
-{
-    std::vector<std::string> parameters;
-    for(auto pair : value)
-        parameters.push_back(pair.first + "=" + pair.second);
-
-    return boost::algorithm::join(parameters, ", ");
-}
-
-std::string fb::game::service::sql::_vec_to_insert(const std::vector<std::string>& value)
-{
-    std::stringstream sstream;
-    sstream << "(" << boost::algorithm::join(value, ", ") << ")";
-    return sstream.str();
-}
+#include "sql.service.h"
 
 std::string fb::game::service::sql::session::update(fb::game::session& session)
 {
@@ -57,7 +41,7 @@ std::string fb::game::service::sql::session::update(fb::game::session& session)
 
     std::stringstream sstream;
     sstream << "UPDATE user SET "
-        << _dict_to_update(dict)
+        << fb::service::sql::dict_to_update(dict)
         << " WHERE id="
         << session.id()
         << " LIMIT 1";
@@ -81,7 +65,7 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
             (item == nullptr) ? "NULL" : std::to_string(item->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
-        itemSet.push_back(_vec_to_insert(parameter));
+        itemSet.push_back(fb::service::sql::vec_to_insert(parameter));
     }
 
     const auto& equipments = session.items.equipments();
@@ -101,7 +85,7 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
 
-        itemSet.push_back(_vec_to_insert(parameter));
+        itemSet.push_back(fb::service::sql::vec_to_insert(parameter));
     }
 
     std::stringstream sstream;
@@ -118,7 +102,7 @@ std::string fb::game::service::sql::spell::update(fb::game::session& me)
     for(int i = 0; i < fb::game::spell::MAX_SLOT; i++)
     {
         auto spell = me.spells[i];
-        spellSet.push_back(_vec_to_insert(std::vector<std::string>
+        spellSet.push_back(fb::service::sql::vec_to_insert(std::vector<std::string>
         {
             std::to_string(me.id()),
             std::to_string(i),

@@ -62,6 +62,9 @@
     <Filter Include="module\encoding">
       <UniqueIdentifier>{e7ba9b8c-c651-4d44-938d-4472a5dca163}</UniqueIdentifier>
     </Filter>
+    <Filter Include="service\sql">
+      <UniqueIdentifier>{7cf5b7d9-ebb4-468e-b0ad-924b6845a04f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -102,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="..\module\encoding\encoding.cpp">
       <Filter>module\encoding</Filter>
+    </ClCompile>
+    <ClCompile Include="service\sql\sql.service.cpp">
+      <Filter>service\sql</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +167,9 @@
     </ClInclude>
     <ClInclude Include="..\module\acceptor\acceptor.hpp">
       <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="service\sql\sql.service.h">
+      <Filter>service\sql</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

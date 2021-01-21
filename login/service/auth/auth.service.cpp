@@ -121,18 +121,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
                 if(exists)
                     throw std::exception();
 
-                auto& config = fb::config::get();
-
-                std::srand(std::time(nullptr));
-                auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
-                auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
-
-                db::query
-                (
-                    "INSERT INTO user(name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES('%s', '%s', %d, %d, %d, %d, %d, %d, %d)",
-                    id.c_str(), this->sha256(pw).c_str(), hp, hp, mp, mp, config["init"]["map"].asInt(), config["init"]["position"]["x"].asInt(), config["init"]["position"]["y"].asInt()
-                );
-
+                db::query(fb::login::service::sql::auth::insert(name, this->sha256(pw)));
                 success(id);
             }
             catch(std::exception& e)
@@ -145,11 +134,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    db::query
-    (
-        "UPDATE user SET look=%d, sex=%d, nation=%d, creature=%d WHERE name='%s'",
-        hair, sex, nation, creature, id.c_str()
-    );
+    db::query(fb::login::service::sql::auth::update(id, hair, sex, nation, creature));
 }
 
 uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed)

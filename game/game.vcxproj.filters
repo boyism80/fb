@@ -217,7 +217,7 @@
     <ClCompile Include="model\acceptor\acceptor.game.command.cpp">
       <Filter>model\acceptor</Filter>
     </ClCompile>
-    <ClCompile Include="service\sql\service.sql.cpp">
+    <ClCompile Include="service\sql\sql.service.cpp">
       <Filter>service\sql</Filter>
     </ClCompile>
   </ItemGroup>
@@ -342,7 +342,7 @@
     <ClInclude Include="..\module\table\table.h">
       <Filter>module\table</Filter>
     </ClInclude>
-    <ClInclude Include="service\sql\service.sql.h">
+    <ClInclude Include="service\sql\sql.service.h">
       <Filter>service\sql</Filter>
     </ClInclude>
   </ItemGroup>
