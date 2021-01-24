@@ -306,8 +306,8 @@ public:
     fb::game::group*            group() const;
     fb::game::clan*             clan() const;
 
-    void                        state_assert(fb::game::state flags) const;
-    void                        state_assert(uint8_t flags) const;
+    void                        assert_state(fb::game::state value) const;
+    void                        assert_state(const std::vector<fb::game::state>& values) const;
 
     bool                        move(const point16_t& before);
     bool                        move(fb::game::direction direction, const point16_t& before);
@@ -342,6 +342,7 @@ public:
     static int                  builtin_class(lua_State* lua);
     static int                  builtin_level(lua_State* lua);
     static int                  builtin_group(lua_State* lua);
+    static int                  builtin_assert(lua_State* lua);
 
 #pragma endregion
 };

@@ -119,6 +119,8 @@ namespace fb { namespace game { namespace message {
     
     namespace ride 
     {
+        static const char* UNRIDE = "말에 타고 있지 않습니다.";
+        static const char* ALREADY_RIDE = "이미 타고 있습니다.";
         static const char* ON = "말에 탔습니다.";
         static const char* OFF = "말에서 내렸습니다.";
     }
@@ -150,6 +152,11 @@ namespace fb { namespace game { namespace message {
         static const char* LOCK = "문을 잠궜습니다.";
         static const char* UNLOCK = "문을 열었습니다.";
         static const char* LOCKED = "문이 잠겼습니다.";
+    }
+
+    namespace error
+    {
+        static const char* UNKNOWN = "올바르지 않은 명령입니다.";
     }
 
 } } }

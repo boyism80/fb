@@ -31,6 +31,12 @@ end
 
 
 function handle_spell(me, spell)
+    local err = me:assert({STATE_GHOST, STATE_RIDING})
+    if err then
+        me:message(err)
+        return
+    end
+
     local front = me:front(0xff & (~ITEM))
     if front == nil then
         return

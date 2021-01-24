@@ -127,6 +127,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"class",               fb::game::session::builtin_class},
 {"level",               fb::game::session::builtin_level},
 {"group",               fb::game::session::builtin_group},
+{"assert",              fb::game::session::builtin_assert},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
@@ -1231,7 +1232,7 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
         {
             auto mob = static_cast<fb::game::mob*>(x);
             auto target = mob->target();
-            if(this->exists(static_cast<fb::game::object&>(*target)) == false)
+            if(this->exists(*target) == false || target->alive() == false)
                 mob->target(nullptr);
 
             if(mob->action())

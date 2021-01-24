@@ -74,7 +74,7 @@ void fb::game::session::attack()
 {
     try
     {
-        this->state_assert(state::RIDING | state::GHOST);
+        this->assert_state({state::RIDING, state::GHOST});
 
         if(this->_map == nullptr)
             return;
@@ -102,7 +102,7 @@ void fb::game::session::action(fb::game::action action, fb::game::duration durat
 {
     try
     {
-        this->state_assert(state::GHOST | state::RIDING);
+        this->assert_state({state::GHOST, state::RIDING});
 
         if(this->_listener != nullptr)
             this->_listener->on_action(*this, action, duration, sound);
@@ -592,7 +592,7 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         if(value == 0)
             return 0;
 
-        this->state_assert(state::RIDING | state::GHOST);
+        this->assert_state({state::RIDING, state::GHOST});
 
 
         auto lack = this->money_reduce(value);
@@ -726,21 +726,23 @@ fb::game::clan* fb::game::session::clan() const
     return this->_clan;
 }
 
-void fb::game::session::state_assert(fb::game::state flags) const
+void fb::game::session::assert_state(fb::game::state value) const
 {
-    if((flags & state::GHOST) == state::GHOST && this->_state == state::GHOST)
-        throw ghost_exception();
+    static const auto pairs = std::map<fb::game::state, const std::runtime_error>
+    {
+        {state::GHOST, ghost_exception()},
+        {state::RIDING, ridding_exception()},
+        {state::DISGUISE, disguise_exception()}
+    };
 
-    if((flags & state::RIDING) == state::RIDING && this->_state == state::RIDING)
-        throw ridding_exception();
-
-    if((flags & state::DISGUISE) == state::DISGUISE && this->_state == state::DISGUISE)
-        throw disguise_exception();
+    if(this->_state == value)
+        throw pairs.at(value);
 }
 
-void fb::game::session::state_assert(uint8_t flags) const
+void fb::game::session::assert_state(const std::vector<fb::game::state>& values) const
 {
-    return this->state_assert(fb::game::state(flags));
+    for(auto value : values)
+        this->assert_state(value);
 }
 
 bool fb::game::session::move(const point16_t& before)
@@ -774,16 +776,16 @@ void fb::game::session::ride(fb::game::mob& horse)
 {
     try
     {
-        this->state_assert(state::GHOST | state::DISGUISE);
+        this->assert_state({state::GHOST, state::DISGUISE});
 
         if(this->state() == fb::game::state::RIDING)
-            throw std::runtime_error("이미 타고 있습니다.");
+            throw std::runtime_error(message::ride::ALREADY_RIDE);
 
         if(horse.based<fb::game::mob::master>() != fb::game::table::mobs.name2mob("말"))
             throw session::no_conveyance_exception();
 
         if(horse.map() != this->_map)
-            throw std::runtime_error("올바르지 않은 명령입니다.");
+            throw std::runtime_error(message::error::UNKNOWN);
 
         horse.map(nullptr);
         this->state(state::RIDING);
@@ -804,7 +806,7 @@ void fb::game::session::ride()
 {
     try
     {
-        this->state_assert(state::GHOST | state::DISGUISE);
+        this->assert_state({state::GHOST, state::DISGUISE});
 
         auto front = this->forward(object::types::MOB);
         if(front == nullptr)
@@ -823,9 +825,9 @@ void fb::game::session::unride(fb::game::listener* listener)
 {
     try
     {
-        this->state_assert(state::GHOST | state::DISGUISE);
+        this->assert_state({state::GHOST, state::DISGUISE});
         if(this->state() != fb::game::state::RIDING)
-            throw std::runtime_error("말에 타고 있지 않습니다.");
+            throw std::runtime_error(message::ride::UNRIDE);
 
         auto master = fb::game::table::mobs.name2mob("말");
         auto horse = new fb::game::mob(master, this->_listener, true);
@@ -1399,6 +1401,34 @@ int fb::game::session::builtin_group(lua_State* lua)
         group->to_lua(lua);
 
     return 1;
+}
+
+int fb::game::session::builtin_assert(lua_State* lua)
+{
+    auto thread = lua::thread::get(*lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    auto size = thread->rawlen(2);
+    std::vector<fb::game::state> values;
+    for(int i = 0; i < size; i++)
+    {
+        thread->rawgeti(2, i+1);
+        values.push_back((fb::game::state)thread->tointeger(-1));
+    }
+
+    try
+    {
+        session->assert_state(values);
+        return 0;
+    }
+    catch(std::runtime_error& e)
+    {
+        thread->pushstring(e.what());
+        return 1;
+    }
 }
 
 fb::game::session::container::container()

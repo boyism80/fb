@@ -1778,7 +1778,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
 {
     try
     {
-        this->_owner.state_assert(state::RIDING | state::GHOST);
+        this->_owner.assert_state({state::RIDING, state::GHOST});
 
         auto                    item = this->at(index);
         if(item == nullptr)
@@ -2037,7 +2037,7 @@ fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count)
 
     try
     {
-        owner.state_assert(state::RIDING | state::GHOST);
+        owner.assert_state({state::RIDING, state::GHOST});
 
         auto                    dropped = this->remove(slot, count, item::delete_attr::DELETE_DROP);
         if(dropped != nullptr)
