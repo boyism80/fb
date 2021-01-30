@@ -1,7 +1,7 @@
 #include "acceptor.login.h"
 
 fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::login::session>(context, port, accept_delay, internal_connection),
+    fb::acceptor<fb::login::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt()),
     _agreement(CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both))
 {
     // Register event handler
@@ -133,9 +133,8 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
     const auto pw = request.pw;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
-    fb::timer::run
+    this->threads().dispatch
     (
-        this->_context,
         [this, id, pw, &socket] ()
         {
             this->_auth_service.login
@@ -164,9 +163,8 @@ bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>&
     const auto birthday = request.birthday;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
-    fb::timer::run
+    this->threads().dispatch
     (
-        this->_context,
         [this, &socket, id, pw, new_pw, birthday] ()
         {
             this->_auth_service.change_pw

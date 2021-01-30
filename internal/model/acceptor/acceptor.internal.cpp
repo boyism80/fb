@@ -1,7 +1,7 @@
 #include "acceptor.internal.h"
 
 fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, accept_delay)
+    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, accept_delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
@@ -16,9 +16,9 @@ fb::internal::acceptor::~acceptor()
         delete pair.second;
 }
 
-void fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket)
+bool fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback)
 {
-    fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::acceptor::handler>>(socket, this->_handler_dict);
+    return fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::acceptor::handler>>(socket, this->_handler_dict);
 }
 
 fb::internal::session* fb::internal::acceptor::handle_accepted(fb::internal::socket<fb::internal::session>& socket)

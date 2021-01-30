@@ -153,7 +153,7 @@ const fb::game::object::master* fb::game::object::based() const
     return this->_master;
 }
 
-bool fb::game::object::is(object::types type)
+bool fb::game::object::is(object::types type) const
 {
     auto mine = this->type();
     return (type & mine) == mine;
@@ -182,8 +182,38 @@ fb::game::object::types fb::game::object::type() const
         return this->_master->type();
 }
 
-const fb::game::point16_t& fb::game::object::before() const
+const fb::game::object::cache& fb::game::object::before() const
 {
+    return this->_before;
+}
+
+const fb::game::object::cache& fb::game::object::before(fb::game::map* map)
+{
+    this->_before.map = map;
+    return this->_before;
+}
+
+const fb::game::object::cache& fb::game::object::before(const point16_t& position)
+{
+    this->_before.position = position;
+    return this->_before;
+}
+
+const fb::game::object::cache& fb::game::object::before(fb::game::map* map, const point16_t& position)
+{
+    if(this->_before.map != map)
+    {
+        this->_before.map = map;
+        this->_before.position = position;
+    }
+    else if(this->_before.position != position)
+    {
+        this->_before.position = position;
+    }
+    else
+    {
+    }
+
     return this->_before;
 }
 
@@ -192,7 +222,7 @@ const fb::game::point16_t& fb::game::object::position() const
     return this->_position;
 }
 
-bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
+bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 {
     if(this->_map == nullptr)
         return false;
@@ -200,18 +230,17 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
     if(this->_position.x == x && this->_position.y == y)
         return true;
 
-    this->_before.x = this->_position.x;
-    this->_before.y = this->_position.y;
-
+    this->before(this->_position);
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
-    if(force && this->is(fb::game::object::types::SESSION))
+    auto forced = refresh || abs(this->_before.position.x - this->_position.x) + abs(this->_before.position.y - this->_position.y) > 1;
+    if(forced && this->is(fb::game::object::types::SESSION))
         this->_listener->on_hold(static_cast<fb::game::session&>(*this));
 
     this->_map->update(*this);
     
-    auto nears_before = this->_map->nears(this->_before);
+    auto nears_before = this->_map->nears(this->_before.position);
     auto nears_after = this->_map->nears(this->_position);
 
     {
@@ -234,6 +263,15 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
         std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for(auto x : shows)
             this->_listener->on_show(*x, *this, false);
+
+        if(forced)
+        {
+            // 내가 이동한 뒤 내 시야에 여전히 남은 오브젝트들
+            auto stay = std::vector<fb::game::object*>();
+            std::set_difference(afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            for(auto x : stay)
+                this->_listener->on_show(*x, *this, false);
+        }
     }
 
     {
@@ -256,14 +294,23 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool force)
         std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for(auto x : shows)
             this->_listener->on_show(*this, *x, false);
+
+        if(forced)
+        {
+            // 내가 이동한 뒤 자기 시야에 여전히 내가 포함된 시야를 가진 오브젝트들
+            auto stay = std::vector<fb::game::object*>();
+            std::set_difference(afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            for(auto x : stay)
+                this->_listener->on_show(*this, *x, false);
+        }
     }
 
     return true;
 }
 
-bool fb::game::object::position(const point16_t position, bool force)
+bool fb::game::object::position(const point16_t position, bool refresh)
 {
-    return this->position(position.x, position.y, force);
+    return this->position(position.x, position.y, refresh);
 }
 
 bool fb::game::object::move()
@@ -386,7 +433,7 @@ fb::game::map* fb::game::object::map() const
 
 bool fb::game::object::sight(const point16_t& position, bool before) const
 {
-    return fb::game::object::sight(before ? this->_before : this->_position, position, this->_map);
+    return fb::game::object::sight(before ? this->_before.position : this->_position, position, this->_map);
 }
 
 bool fb::game::object::sight(const fb::game::object& object, bool before_me, bool before_you) const
@@ -400,7 +447,7 @@ bool fb::game::object::sight(const fb::game::object& object, bool before_me, boo
     if(object.visible() == false)
         return false;
 
-    return this->sight(before_you ? object._before : object._position, before_me);
+    return this->sight(before_you ? object._before.position : object._position, before_me);
 }
 
 bool fb::game::object::sector(fb::game::sector* sector)
@@ -420,6 +467,38 @@ bool fb::game::object::sector(fb::game::sector* sector)
 fb::game::sector* fb::game::object::sector()
 {
     return this->_sector;
+}
+
+void fb::game::object::enter()
+{
+    auto nears = this->_map->nears(this->_position);
+    for(auto x : nears)
+    {
+        if(x == this)
+            continue;
+
+        this->_listener->on_show(*this, *x, false);
+        this->_listener->on_show(*x, *this, false);
+    }
+}
+
+void fb::game::object::leave(bool erase_nears)
+{
+    if(this->_map == nullptr)
+        return;
+
+    auto nears = this->_map->nears(this->_position);
+    for (auto x : nears)
+    {
+        if (x == this)
+            continue;
+
+        this->_listener->on_hide(*x, *this);
+        if(erase_nears)
+            this->_listener->on_hide(*this, *x);
+    }
+
+    this->_map->objects.remove(*this);
 }
 
 bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
@@ -463,94 +542,27 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-void fb::game::object::map(fb::game::map* map, const point16_t& position, bool force)
+void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
-    auto before = this->_map;
-    if(this->is(fb::game::object::types::SESSION))
+    if(map != nullptr)
     {
-        auto session = static_cast<fb::game::session*>(this);
-        if(map == nullptr && session->before_map() != nullptr)
-            before = session->before_map();
-    }
-
-    const bool to_empty         = (map == nullptr);
-    const bool from_empty       = (this->_map == nullptr);
-    const bool position_changed = (!to_empty && !from_empty && map == this->_map);
-    bool       transfer         = false;
-    if(to_empty == false)
-    {
-        if(from_empty)
+        if(this->_map == map)
         {
-            auto session = (fb::game::session*)nullptr;
+            this->position(position, true);
+            return;
+        }
+
+        if(this->switch_process(*map))
+        {
             if(this->is(fb::game::object::types::SESSION))
-            {
-                auto session = static_cast<fb::game::session*>(this);
-                auto before = session->before_map();
-                transfer = before != nullptr && map->host != before->host;
-            }
-        }
-        else
-        {
-            transfer = map->host != this->_map->host;
+                this->_listener->on_transfer(static_cast<fb::game::session&>(*this), *map, position);
+
+            return;
         }
     }
 
-    if(position_changed)
-    {
-        this->position(position, true);
-        return;
-    }
-
-    if(transfer && force == false)
-    {
-        if(this->is(fb::game::object::types::SESSION))
-            this->_listener->on_transfer(static_cast<fb::game::session&>(*this), *map, position);
-
-        return;
-    }
-
-
-    if(from_empty == false)
-    {
-        auto nears = this->_map->nears(this->_position);
-        for (auto x : nears)
-        {
-            if (x == this)
-                continue;
-
-            this->_listener->on_hide(*x, *this);
-            if(force == false)
-                this->_listener->on_hide(*this, *x);
-        }
-
-        this->_map->objects.remove(*this);
-    }
-
-    this->_map = map;
-    this->_position = position;
-
-    if(this->_map == nullptr)
-        this->sector(nullptr);
-    else
-        this->_map->update(*this);
-
-    if(to_empty == false)
-    {
-        this->_map->objects.add(*this);
-
-        if(this->is(fb::game::object::types::SESSION) && force == false)
-            this->_listener->on_warp(static_cast<fb::game::session&>(*this));
-
-        auto nears = this->_map->nears(this->_position);
-        for(auto x : nears)
-        {
-            if(x == this)
-                continue;
-
-            this->_listener->on_show(*this, *x, false);
-            this->_listener->on_show(*x, *this, false);
-        }
-    }
+    this->leave(true);
+    this->_listener->on_leave(*this, map, position);
 }
 
 void fb::game::object::map(fb::game::map* map)
@@ -737,6 +749,63 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
         (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
+bool fb::game::object::switch_process(const fb::game::map& map) const
+{
+    if(this->is(fb::game::object::SESSION) == false)
+        return false;
+
+    auto session = static_cast<const fb::game::session*>(this);
+    
+    auto current = this->_map != nullptr ? this->_map : session->before().map;
+    if(current == nullptr)
+        return false;
+
+    if(current->host == map.host)
+        return false;
+
+    return true;
+}
+
+void fb::game::object::handle_enter(fb::game::map* map, const point16_t& position)
+{
+    this->before(this->_map, this->_position);
+
+    if(map == nullptr)
+    {
+        this->_map = nullptr;
+        this->_position.x = 0;
+        this->_position.y = 0;
+        this->sector(nullptr);
+    }
+    else
+    {
+        this->_map = map;
+        this->_position = position;
+        this->_map->update(*this);
+
+        this->_map->objects.add(*this);
+
+        if(this->is(fb::game::object::types::SESSION))
+            this->_listener->on_warp(static_cast<fb::game::session&>(*this));
+
+        this->enter();
+    }
+}
+
+void fb::game::object::handle_transfer(fb::game::map* map, const point16_t& position)
+{
+    if(map == nullptr)
+        return;
+
+    this->before(this->_map, this->_position);
+
+    this->_map = map;
+    this->_position = position;
+
+    this->leave(false);
+    this->_listener->on_leave(*this, map, position);
+}
+
 bool fb::game::object::operator==(const object& right) const
 {
     return this->_map == right._map &&
@@ -897,7 +966,7 @@ int fb::game::object::builtin_position(lua_State* lua)
     }
 
     std::vector<fb::game::object*> shows, hides, showings, hiddens;
-    object->position(x, y);
+    object->position(x, y, true);
 
     if(object->is(fb::game::object::types::SESSION))
         acceptor->send(*object, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);

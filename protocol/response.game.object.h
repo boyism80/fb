@@ -146,7 +146,7 @@ public:
 
 public:
     move(const fb::game::object& object, bool from_before = true) : 
-        move(object.sequence(), object.direction(), object.before(), object.position(), from_before)
+        move(object.sequence(), object.direction(), object.before().position, object.position(), from_before)
     {}
     move(const uint32_t id, fb::game::direction direction, const point16_t& before, const point16_t& current, bool from_before) : 
         id(id), direction(direction), before(before), current(current), from_before(from_before)

@@ -11,7 +11,6 @@
 #include "module/db/db.h"
 #include "module/acceptor/acceptor.h"
 #include "module/config/config.h"
-#include "module/timer/timer.h"
 #include "model/session/session.h"
 #include "model/group/group.h"
 #include "model/clan/clan.h"
@@ -47,7 +46,6 @@ public:
     typedef std::map<const fb::game::object*, bool> hash_dict;
 
 private:
-    timer_container         _timer;
     command_dict            _command_dict;
     hash_dict               _hash_dict;
 
@@ -57,7 +55,7 @@ public:
 
 private:
     fb::game::session*      find(const std::string& name) const;
-    void                    bind_timer(std::function<void(uint64_t)> fn, const std::chrono::steady_clock::duration& duration);
+    void                    bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn);
 
 public:
@@ -70,6 +68,15 @@ public:
     void                    send(fb::game::object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
+
+protected:
+    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const;
+
+public:
+    fb::thread*             thread(const fb::game::map& map) const;
+    uint8_t                 thread_index(const fb::game::map& map) const;
+    fb::thread*             thread(const fb::game::object& obj) const;
+    uint8_t                 thread_index(const fb::game::object& obj) const;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
@@ -123,9 +130,9 @@ public:
     bool                    handle_world(fb::socket<fb::game::session>&, const fb::protocol::game::request::map::world&);
 
 public:
-    void                    handle_mob_action(uint64_t now);
-    void                    handle_mob_respawn(uint64_t now);
-    void                    handle_buff_timer(uint64_t now);
+    void                    handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id);
+    void                    handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id);
+    void                    handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id);
     bool                    handle_command(fb::game::session& session, const std::string& message);
 
 public:
@@ -160,6 +167,7 @@ public:
     void                    on_hide(fb::game::object& me, fb::game::object& you);
     void                    on_move(fb::game::object& me);
     void                    on_unbuff(fb::game::object& me, fb::game::buff& buff);
+    void                    on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position);
 
     // listener : life
     void                    on_attack(life& me, object* you, uint32_t damage, bool critical);

@@ -39,7 +39,7 @@ public:
     ~acceptor();
 
 protected:
-    void                            handle_parse(fb::internal::socket<fb::internal::session>& socket);
+    bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback);
     
 public:
     fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket);

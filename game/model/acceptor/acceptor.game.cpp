@@ -144,8 +144,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection),
-    _timer(context)
+    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     const auto& config = fb::config::get();
 
@@ -209,9 +208,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));   // 월드 메시지
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&acceptor::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
 
-    this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1), std::chrono::milliseconds(100));   // 몹 행동 타이머
-    this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1), std::chrono::seconds(1));          // 몹 리젠 타이머
-    this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1), std::chrono::seconds(1));          // 버프 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::milliseconds(100));   // 몹 행동 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(1));          // 몹 리젠 타이머
+    this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(1));          // 버프 타이머
 
     this->bind_command("맵이동", std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("사운드", std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2));
@@ -280,12 +279,16 @@ fb::game::session* fb::game::acceptor::find(const std::string& name) const
 
 bool fb::game::acceptor::exists(const fb::game::object& object) const
 {
+    if(this->threads().valid(this->thread(object)) == false)
+        return false;
+
     return this->_hash_dict.contains(&object);
 }
 
-void fb::game::acceptor::bind_timer(std::function<void(uint64_t)> fn, const std::chrono::steady_clock::duration& duration)
+void fb::game::acceptor::bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration)
 {
-    this->_timer.push(fn, duration);
+    auto& threads = this->threads();
+    threads.settimer(fn, duration);
 }
 
 void fb::game::acceptor::bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn)
@@ -377,6 +380,42 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, bool e
     }
 }
 
+uint8_t fb::game::acceptor::handle_thread_index(fb::socket<fb::game::session>& socket) const
+{
+    return this->thread_index(*socket.data());
+}
+
+fb::thread* fb::game::acceptor::thread(const fb::game::map& map) const
+{
+    auto index = this->thread_index(map);
+    return this->threads().at(index);
+}
+
+uint8_t fb::game::acceptor::thread_index(const fb::game::map& map) const
+{
+    const auto&             threads = this->threads();
+    auto                    count = threads.count();
+    if(count == 0)
+        return 0xFF;
+
+    return map.id() % count;
+}
+
+fb::thread* fb::game::acceptor::thread(const fb::game::object& obj) const
+{
+    auto index = this->thread_index(obj);
+    return this->threads().at(index);
+}
+
+uint8_t fb::game::acceptor::thread_index(const fb::game::object& obj) const
+{
+    auto map = obj.map();
+    if(map == nullptr)
+        return 0xFF;
+
+    return this->thread_index(*map);
+}
+
 // TODO : 클릭도 인터페이스로
 void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
 {
@@ -406,7 +445,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = client->data();
-        session->map(fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y), true);
+        session->handle_transfer(fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
 
         fb::ostream         parameter;
         parameter.write(response.name);
@@ -417,11 +456,11 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
         auto session = client->data();
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
 
-        auto before = session->before_map();
+        auto before = session->before().map;
         if(before != nullptr)
         {
-            session->map(before, session->before());
-            session->before_map(nullptr);
+            session->map(before, session->before().position);
+            session->before(nullptr);
         }
     }
 
@@ -1215,24 +1254,28 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
 
     auto session = socket.data();
     if(before.map->loaded())
-        session->before_map(before.map);
+        session->before(before.map);
     
     session->map(after.map, after.position);
     return true;
 }
 
-void fb::game::acceptor::handle_mob_action(uint64_t now)
+void fb::game::acceptor::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
     for(auto pair : fb::game::table::maps)
     {
         auto                map = pair.second;
+        auto                thread = this->thread(*map);
+        if(thread != nullptr && thread->id() != id)
+            continue;
+
         const auto          mobs = map->activateds(fb::game::object::types::MOB);
 
         for(auto x : mobs)
         {
             auto mob = static_cast<fb::game::mob*>(x);
             auto target = mob->target();
-            if(this->exists(*target) == false || target->alive() == false)
+            if(target == nullptr || this->exists(*target) == false || target->alive() == false)
                 mob->target(nullptr);
 
             if(mob->action())
@@ -1243,13 +1286,17 @@ void fb::game::acceptor::handle_mob_action(uint64_t now)
     }
 }
 
-void fb::game::acceptor::handle_mob_respawn(uint64_t now)
+void fb::game::acceptor::handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id)
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*>    spawned_mobs;
     for(auto pair : fb::game::table::maps)
     {
-        auto map = pair.second;
+        auto                map = pair.second;
+        auto                thread = this->thread(*map);
+        if(thread != nullptr && thread->id() != id)
+            continue;
+
         for(auto pair : map->objects)
         {
             if(pair.second->type() != object::types::MOB)
@@ -1278,6 +1325,10 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
         if(session == nullptr)
             continue;
 
+        auto                thread = this->thread(*session);
+        if(thread != nullptr && thread->id() != id)
+            continue;
+
         shown_mobs.clear();
         for(auto spawned : spawned_mobs)
         {
@@ -1292,11 +1343,15 @@ void fb::game::acceptor::handle_mob_respawn(uint64_t now)
     }
 }
 
-void fb::game::acceptor::handle_buff_timer(uint64_t now)
+void fb::game::acceptor::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
     for(auto pair : fb::game::table::maps)
     {
         auto map = pair.second;
+        auto                thread = this->thread(*map);
+        if(thread != nullptr && thread->id() != id)
+            continue;
+
         if(map->objects.size() == 0)
             continue;
 

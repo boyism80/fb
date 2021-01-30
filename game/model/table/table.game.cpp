@@ -675,7 +675,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
             mob->damage_max(data["damage"]["max"].asInt());
             mob->offensive(this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)));
             mob->size(this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)));
-            mob->speed(data["speed"].asInt());
+            mob->speed(std::chrono::milliseconds(data["speed"].asInt()));
             mob->script_attack(CP949(data["script"]["attack"].asString(), PLATFORM::Windows));
             mob->script_die(CP949(data["script"]["die"].asString(), PLATFORM::Windows));
 
@@ -771,7 +771,7 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::lis
                     auto        mob = static_cast<fb::game::mob*>(core->make(listener));
                     mob->spawn_point(x0, y0);
                     mob->spawn_size(x1, y1);
-                    mob->respawn_time(rezen);
+                    mob->respawn_time(std::chrono::seconds(rezen));
                     mob->map(map);
                 }
             }

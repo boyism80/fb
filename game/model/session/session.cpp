@@ -28,8 +28,7 @@ session::session(fb::socket<fb::game::session>& socket, listener* listener) :
     _clan(nullptr),
     trade(*this, listener),
     items(*this, listener),
-    dialog(*this, listener),
-    _before_map(nullptr)
+    dialog(*this, listener)
 {
     memset(this->_options, 0, sizeof(this->_options));
 }
@@ -790,7 +789,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         horse.map(nullptr);
         this->state(state::RIDING);
         horse.kill();
-        horse.dead_time(fb::timer::now());
+        horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
 
         if(this->_listener != nullptr)
             this->_listener->on_notify(*this, message::ride::ON);
@@ -847,16 +846,6 @@ void fb::game::session::unride(fb::game::listener* listener)
 bool fb::game::session::alive() const
 {
     return this->_state != state::GHOST;
-}
-
-fb::game::map* fb::game::session::before_map()
-{
-    return this->_before_map;
-}
-
-void fb::game::session::before_map(fb::game::map* map)
-{
-    this->_before_map = map;
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

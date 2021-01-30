@@ -57,12 +57,12 @@ void fb::game::mob::master::size(mob::sizes value)
     this->_size = value;
 }
 
-uint32_t fb::game::mob::master::speed() const
+std::chrono::milliseconds fb::game::mob::master::speed() const
 {
     return this->_speed;
 }
 
-void fb::game::mob::master::speed(uint32_t value)
+void fb::game::mob::master::speed(std::chrono::milliseconds value)
 {
     this->_speed = value;
 }
@@ -122,7 +122,7 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
     if(mob == nullptr)
         return 0;
 
-    lua_pushinteger(lua, mob->_speed);
+    lua_pushinteger(lua, mob->_speed.count());
     return 1;
 }
 
@@ -250,7 +250,7 @@ fb::game::mob::sizes fb::game::mob::size() const
     return static_cast<const master*>(this->_master)->_size;
 }
 
-uint32_t fb::game::mob::speed() const
+std::chrono::milliseconds fb::game::mob::speed() const
 {
     return static_cast<const master*>(this->_master)->_speed;
 }
@@ -310,37 +310,37 @@ void fb::game::mob::spawn_size(const size16_t size)
     this->_spawn_size = size;
 }
 
-uint64_t fb::game::mob::action_time() const
+std::chrono::milliseconds fb::game::mob::action_time() const
 {
     return this->_action_time;
 }
 
-void fb::game::mob::action_time(uint64_t ms)
+void fb::game::mob::action_time(std::chrono::milliseconds ms)
 {
     this->_action_time = ms;
 }
 
-uint64_t fb::game::mob::dead_time() const
+std::chrono::milliseconds fb::game::mob::dead_time() const
 {
     return this->_dead_time;
 }
 
-void fb::game::mob::dead_time(uint64_t ms)
+void fb::game::mob::dead_time(std::chrono::milliseconds ms)
 {
     this->_dead_time = ms;
 }
 
-uint32_t fb::game::mob::respawn_time() const
+std::chrono::milliseconds fb::game::mob::respawn_time() const
 {
     return this->_respawn_time;
 }
 
-void fb::game::mob::respawn_time(uint64_t ms)
+void fb::game::mob::respawn_time(std::chrono::milliseconds ms)
 {
-    this->_respawn_time = (uint32_t)ms;
+    this->_respawn_time = ms;
 }
 
-bool fb::game::mob::spawn(uint64_t now)
+bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
 {
     auto& config = fb::config::get();
     if(config["id"].asString() != this->_map->host)
@@ -372,7 +372,7 @@ bool fb::game::mob::spawn(uint64_t now)
         break;
     }
 
-    this->action_time(now);
+    this->action_time(std::chrono::duration_cast<std::chrono::milliseconds>(now));
     return true;
 }
 
@@ -453,7 +453,7 @@ bool fb::game::mob::near_target(fb::game::direction& out) const
     return false;
 }
 
-void fb::game::mob::AI(uint64_t now)
+void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 {
     try
     {
@@ -504,5 +504,5 @@ void fb::game::mob::AI(uint64_t now)
         
     }
 
-    this->_action_time = now;
+    this->_action_time = std::chrono::duration_cast<std::chrono::milliseconds>(now);
 }

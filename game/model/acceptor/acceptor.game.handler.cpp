@@ -59,6 +59,27 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
 
+void fb::game::acceptor::on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position)
+{
+    auto thread = map != nullptr ? this->thread(*map) : nullptr;
+
+    if(thread == nullptr || thread == this->threads().current())
+    {
+        me.handle_enter(map, position);
+    }
+    else
+    {
+        auto object = &me;
+        thread->precedence.enqueue
+        (
+            [object, map, position] (uint8_t) 
+            {
+                object->handle_enter(map, position);
+            }
+        );
+    }
+}
+
 void fb::game::acceptor::on_attack(life& me, object* you, uint32_t damage, bool critical)
 {
 }
@@ -488,7 +509,7 @@ void fb::game::acceptor::on_die(mob& me)
 {
     // 몹 체력을 다 깎았으면 죽인다.
     this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);
-    me.dead_time(fb::timer::now());
+    me.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
 
     // 드롭 아이템 떨구기
     std::vector<object*> dropped_items;

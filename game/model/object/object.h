@@ -105,6 +105,22 @@ public:
 };
 #pragma endregion
 
+#pragma region cache
+typedef struct _cache_tag
+{
+    fb::game::map*                      map;
+    point16_t                           position;
+
+public:
+    _cache_tag() : map(nullptr)
+    {}
+    _cache_tag(fb::game::map* map, const point16_t& position) : map(map), position(position)
+    {}
+    ~_cache_tag() 
+    {}
+} cache;
+#pragma endregion
+
 #pragma region private field
 private:
     listener*                           _listener;
@@ -116,7 +132,7 @@ private:
 protected:
     uint32_t                            _sequence;
     const fb::game::object::master*     _master;
-    point16_t                           _before;
+    cache                               _before;
 
     point16_t                           _position;
     fb::game::direction                 _direction;
@@ -138,6 +154,8 @@ public:
 
 #pragma region private method
 private:
+    void                                enter();
+    void                                leave(bool erase_nears);
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
@@ -152,7 +170,7 @@ public:
     const master*                       based() const;
     template <typename T>
     const T*                            based() const { return static_cast<const T*>(this->_master); }
-    bool                                is(object::types type);
+    bool                                is(object::types type) const;
 
     virtual const std::string&          name() const;
     virtual uint16_t                    look() const;
@@ -160,11 +178,14 @@ public:
     virtual object::types               type() const;
 
 
-    const point16_t&                    before() const;
+    const cache&                        before() const;
+    const cache&                        before(fb::game::map* map);
+    const cache&                        before(const point16_t& position);
+    const cache&                        before(fb::game::map* map, const point16_t& position);
     const point16_t&                    position() const;
     const point16_t                     position_forward() const;
-    virtual bool                        position(uint16_t x, uint16_t y, bool force = false);
-    virtual bool                        position(const point16_t position, bool force = false);
+    virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
+    virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
     bool                                move(fb::game::direction direction);
 
@@ -177,7 +198,7 @@ public:
     fb::game::direction                 direction() const;
     bool                                direction(fb::game::direction value);
 
-    void                                map(fb::game::map* map, const point16_t& position, bool force = false);
+    void                                map(fb::game::map* map, const point16_t& position);
     void                                map(fb::game::map* map);
     fb::game::map*                      map() const;
 
@@ -205,11 +226,15 @@ public:
 
     double                              distance(const object& right) const;
     uint32_t                            distance_sqrt(const object& right) const;
+
+    bool                                switch_process(const fb::game::map& map) const;
 #pragma endregion
 
 #pragma region handler method
 public:
     virtual void                        handle_timer(uint64_t elapsed_milliseconds) {}
+    void                                handle_enter(fb::game::map* map, const point16_t& position);
+    void                                handle_transfer(fb::game::map* map, const point16_t& position);
 #pragma endregion
 
 #pragma region operator

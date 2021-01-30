@@ -16,7 +16,7 @@ bool fb::game::acceptor::handle_command_map(fb::game::session& session, Json::Va
 
     auto x = 0;
     auto y = 0;
-    if(parameters.size() > 3)
+    if(parameters.size() == 3)
     {
         if(parameters[1].isNumeric())
             x = parameters[1].asInt();
@@ -236,7 +236,7 @@ bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::
     if(response.offset == nullptr)
         return false;
 
-    session.before_map(session.map());
+    session.before(session.map());
     session.map(nullptr);
     session.send(response);
     return true;

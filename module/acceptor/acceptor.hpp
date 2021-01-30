@@ -1,11 +1,13 @@
 #include "acceptor.h"
 
 template <template<class> class S, class T>
-fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
+fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, uint8_t num_threads) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _accept_delay(accept_delay),
-    _internal(nullptr)
+    _internal(nullptr),
+    _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
+    _exit(false)
 {
     this->accept();
 }
@@ -22,6 +24,27 @@ fb::base::acceptor<S, T>::~acceptor()
 
     if(this->_internal == nullptr)
         delete this->_internal;
+
+    this->_exit = true;
+}
+
+template <template<class> class S, class T>
+void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
+{
+    if(this->handle_thread_index(*socket) != id)
+        return;
+
+    auto updated = this->handle_parse
+    (
+        *socket, 
+        [this, id] (S<T>& receiver) 
+        { return this->handle_thread_index(receiver) == id; }
+    );
+
+    if(updated == false)
+        return;
+
+    this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
 }
 
 template <template<class> class S, class T>
@@ -43,14 +66,15 @@ void fb::base::acceptor<S, T>::accept()
 
                 this->accept();
                 this->handle_connected(*socket);
-                fb::timer::run
+
+                this->_threads.dispatch
                 (
-                    this->_context,
                     [socket] ()
                     {
                         socket->recv();
                     },
-                    std::chrono::seconds(this->_accept_delay)
+                    std::chrono::seconds(this->_accept_delay),
+                    true
                 );
             }
             catch(std::exception& e)
@@ -62,22 +86,64 @@ void fb::base::acceptor<S, T>::accept()
 }
 
 template <template<class> class S, class T>
+fb::threads& fb::base::acceptor<S, T>::threads()
+{
+    return this->_threads;
+}
+
+template <template<class> class S, class T>
+const fb::threads& fb::base::acceptor<S, T>::threads() const
+{
+    return this->_threads;
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
-    auto& casted = static_cast<S<T>&>(socket);
-    this->handle_parse(casted);
+    auto                        casted = static_cast<S<T>*>(&socket);
+    auto                        id     = this->handle_thread_index(*casted);
+
+    if(id == 0xFF)
+    {
+        this->handle_work(casted, id);
+    }
+    else
+    {
+        this->dispatch(casted, std::bind(&fb::base::acceptor<S,T>::handle_work, this, casted, std::placeholders::_1));
+    }
 }
 
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 {
-    auto& casted = static_cast<S<T>&>(socket);
-    this->handle_disconnected(casted);
-    if(casted.data() != nullptr)
-        delete casted.data();
+    auto                        casted = static_cast<S<T>*>(&socket);
+    auto                        id     = this->handle_thread_index(*casted);
+    auto                        fn     = [this, casted] (uint8_t id)
+    {
+        this->handle_disconnected(*casted);
 
-    this->sockets.erase(casted);
-    delete &casted;
+        boost::asio::dispatch
+        (
+            this->get_executor(),
+            [this, casted] () 
+            {
+                if(casted->data() != nullptr)
+                    delete casted->data();
+
+                this->sockets.erase(*casted); 
+                delete casted;
+            }
+        );
+    };
+
+    if(id == 0xFF)
+    {
+        fn(id);
+    }
+    else
+    {
+        this->_threads[id]->precedence.enqueue(fn);
+    }
 }
 
 template <template<class> class S, class T>
@@ -146,6 +212,32 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 }
 
 template <template<class> class S, class T>
+bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback fn)
+{
+    auto id = this->handle_thread_index(*socket);
+    auto thread = this->_threads[id];
+
+    if(thread == nullptr)
+        fn(id);
+    else
+        this->_threads[id]->precedence.enqueue(std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
+    return true;
+}
+
+template <template<class> class S, class T>
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
+{
+    auto id = this->handle_thread_index(*socket);
+    auto thread = this->_threads[id];
+    
+    if(thread == nullptr)
+        this->handle_work(socket, id);
+    else
+        this->_threads[id]->queue.enqueue(std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
+    return true;
+}
+
+template <template<class> class S, class T>
 inline fb::base::acceptor<S, T>::operator boost::asio::io_context& () const
 {
     return this->_context;
@@ -155,8 +247,8 @@ inline fb::base::acceptor<S, T>::operator boost::asio::io_context& () const
 
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::base::acceptor<fb::socket, T>(context, port, accept_delay),
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads) : 
+    fb::base::acceptor<fb::socket, T>(context, port, accept_delay, num_threads),
     _internal_connection(internal_connection)
 {
     this->connect_internal();
@@ -164,7 +256,7 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
 
 template <typename T>
 fb::acceptor<T>::~acceptor()
-{}
+{ }
 
 template <typename T>
 bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
@@ -222,7 +314,7 @@ void fb::acceptor<T>::connect_internal()
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
+bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, std::function<bool(fb::socket<T>&)> callback)
 {
     static constexpr uint8_t    not_crt_cmd[] = {0x00, 0x10};
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
@@ -266,6 +358,9 @@ void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
             in_stream.reset();
             in_stream.shift(base_size + size);
             in_stream.flush();
+
+            if(callback(socket) == false)
+                return true;
         }
         catch(std::exception& e)
         {
@@ -278,6 +373,7 @@ void fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
     }
 
     in_stream.reset();
+    return false;
 }
 
 template <typename T>

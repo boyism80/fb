@@ -9,7 +9,6 @@
 #include "protocol/internal.h"
 #include "module/console/console.h"
 #include "module/acceptor/acceptor.h"
-#include "module/timer/timer.h"
 
 namespace fb { namespace login {
 

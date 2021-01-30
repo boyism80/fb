@@ -6,7 +6,7 @@ std::string fb::game::service::sql::session::update(fb::game::session& session)
 {
     auto map = session.map();
     if(map == nullptr)
-        map = session.before_map();
+        map = session.before().map;
 
     auto clan = session.clan();
 

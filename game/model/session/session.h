@@ -138,7 +138,6 @@ private:
     defensive                   _defensive;
     uint32_t                    _base_hp, _base_mp;
     uint32_t                    _experience;
-    fb::game::map*              _before_map;
 
 private:
     uint8_t                     _strength, _intelligence, _dexteritry;
@@ -316,9 +315,6 @@ public:
     void                        ride();
     void                        unride(fb::game::listener* listener);
     bool                        alive() const;
-
-    fb::game::map*              before_map();
-    void                        before_map(fb::game::map* map);
 #pragma endregion
 
 #pragma region built-in method
