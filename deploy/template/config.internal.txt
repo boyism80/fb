@@ -1,6 +1,7 @@
 {
     "delay": 0,
     "port": {{ port }},
+    "thread": 0,
     "database": {
         "ip": "{{ database.ip }}",
         "port": {{ database.port }},

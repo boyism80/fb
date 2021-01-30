@@ -26,9 +26,6 @@
     <Filter Include="module\stream">
       <UniqueIdentifier>{293db8f6-343f-4c71-b3ab-6264e9f40fdc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="module\timer">
-      <UniqueIdentifier>{bdb29e15-d1c1-4918-8063-1b01b9543b89}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model">
       <UniqueIdentifier>{bc41ca58-ba04-4b97-ae93-6517af8b1d7b}</UniqueIdentifier>
     </Filter>
@@ -59,6 +56,9 @@
     <Filter Include="module\encoding">
       <UniqueIdentifier>{76727eff-aa6b-4ad5-8f80-88ab2a203558}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\thread">
+      <UniqueIdentifier>{c7bd8159-293a-4588-8ac5-edc325c6b91f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\timer\timer.cpp">
-      <Filter>module\timer</Filter>
     </ClCompile>
     <ClCompile Include="model\acceptor\acceptor.gateway.cpp">
       <Filter>model\acceptor</Filter>
@@ -97,6 +94,9 @@
     <ClCompile Include="..\module\encoding\encoding.cpp">
       <Filter>module\encoding</Filter>
     </ClCompile>
+    <ClCompile Include="..\module\thread\thread.cpp">
+      <Filter>module\thread</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\module\leak.h">
@@ -116,9 +116,6 @@
     </ClInclude>
     <ClInclude Include="..\module\stream\stream.h">
       <Filter>module\stream</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\timer\timer.h">
-      <Filter>module\timer</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
@@ -152,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="..\module\acceptor\acceptor.hpp">
       <Filter>module\acceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\thread\thread.h">
+      <Filter>module\thread</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -182,7 +182,7 @@
     <ClCompile Include="..\module\encoding\encoding.cpp" />
     <ClCompile Include="..\module\service\service.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
-    <ClCompile Include="..\module\timer\timer.cpp" />
+    <ClCompile Include="..\module\thread\thread.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model\acceptor\acceptor.login.cpp" />
     <ClCompile Include="model\gateway\gateway.cpp" />
@@ -204,7 +204,7 @@
     <ClInclude Include="..\module\socket\socket.h" />
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
-    <ClInclude Include="..\module\timer\timer.h" />
+    <ClInclude Include="..\module\thread\thread.h" />
     <ClInclude Include="model\acceptor\acceptor.login.h" />
     <ClInclude Include="model\gateway\gateway.h" />
     <ClInclude Include="model\session\session.login.h" />

@@ -35,9 +35,6 @@
     <Filter Include="module\config">
       <UniqueIdentifier>{f025cf0c-8ce4-4631-b805-2d11b4deb3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="module\timer">
-      <UniqueIdentifier>{5f2eabcd-03b4-473a-86fa-0240e35ff004}</UniqueIdentifier>
-    </Filter>
     <Filter Include="module\db">
       <UniqueIdentifier>{1d6bb45e-5144-40ea-b61f-a4b23550f22d}</UniqueIdentifier>
     </Filter>
@@ -119,6 +116,9 @@
     <Filter Include="service\sql">
       <UniqueIdentifier>{8e4e0d8f-0d1f-48f0-bd4d-685422cadd6f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\thread">
+      <UniqueIdentifier>{b62461a3-b9e9-4664-834e-1c279745c8ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -181,9 +181,6 @@
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\timer\timer.cpp">
-      <Filter>module\timer</Filter>
-    </ClCompile>
     <ClCompile Include="model\acceptor\acceptor.game.cpp">
       <Filter>model\acceptor</Filter>
     </ClCompile>
@@ -219,6 +216,9 @@
     </ClCompile>
     <ClCompile Include="service\sql\sql.service.cpp">
       <Filter>service\sql</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\thread\thread.cpp">
+      <Filter>module\thread</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -297,9 +297,6 @@
     <ClInclude Include="..\module\stream\stream.h">
       <Filter>module\stream</Filter>
     </ClInclude>
-    <ClInclude Include="..\module\timer\timer.h">
-      <Filter>module\timer</Filter>
-    </ClInclude>
     <ClInclude Include="..\module\leak.h">
       <Filter>module</Filter>
     </ClInclude>
@@ -344,6 +341,9 @@
     </ClInclude>
     <ClInclude Include="service\sql\sql.service.h">
       <Filter>service\sql</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\thread\thread.h">
+      <Filter>module\thread</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

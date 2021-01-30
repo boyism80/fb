@@ -175,7 +175,7 @@
     <ClCompile Include="..\module\service\service.cpp" />
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\table\table.cpp" />
-    <ClCompile Include="..\module\timer\timer.cpp" />
+    <ClCompile Include="..\module\thread\thread.cpp" />
     <ClCompile Include="builtin\builtin_function.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.command.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.cpp" />
@@ -217,7 +217,7 @@
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\string\string.h" />
     <ClInclude Include="..\module\table\table.h" />
-    <ClInclude Include="..\module\timer\timer.h" />
+    <ClInclude Include="..\module\thread\thread.h" />
     <ClInclude Include="builtin\builtin_function.h" />
     <ClInclude Include="builtin\builtin_function.hpp" />
     <ClInclude Include="model\acceptor\acceptor.game.h" />

@@ -3,6 +3,7 @@
     "delay": 5,
     "ip":  "{{ host.ip }}",
     "port": {{ host.port }},
+    "thread": 2,
     "internal": {
         "ip": "{{ internal.ip }}",
         "port": {{ internal.port }}

@@ -1,6 +1,26 @@
 pipeline {
     agent { label 'slave' }
     stages {
+        stage('Initialize') {
+            when {
+                expression { params.CLEAN == true }
+            }
+            steps {
+                dir('internal') {
+                    sh 'make clean'
+                }
+                dir('gateway') {
+                    sh 'make clean'
+                }
+                dir('login') {
+                    sh 'make clean'
+                }
+                dir('game') {
+                    sh 'make clean'
+                }
+            }
+        }
+
         stage('Build') {
             parallel { 
                 stage('Build internal') {

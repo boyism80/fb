@@ -35,9 +35,6 @@
     <Filter Include="module\config">
       <UniqueIdentifier>{62541fdc-1924-4e48-aacf-95a9700f4e8b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="module\timer">
-      <UniqueIdentifier>{c2650f08-191e-427c-83dc-c6c0906266a3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="module\db">
       <UniqueIdentifier>{14b44bf6-7f41-471e-a5ca-4ea048deafcc}</UniqueIdentifier>
     </Filter>
@@ -65,6 +62,9 @@
     <Filter Include="service\sql">
       <UniqueIdentifier>{7cf5b7d9-ebb4-468e-b0ad-924b6845a04f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\thread">
+      <UniqueIdentifier>{a51ceb5b-b239-41d1-b3b8-c4e615b914dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -81,9 +81,6 @@
     </ClCompile>
     <ClCompile Include="..\module\config\config.cpp">
       <Filter>module\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\timer\timer.cpp">
-      <Filter>module\timer</Filter>
     </ClCompile>
     <ClCompile Include="..\module\db\db.cpp">
       <Filter>module\db</Filter>
@@ -108,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="service\sql\sql.service.cpp">
       <Filter>service\sql</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\thread\thread.cpp">
+      <Filter>module\thread</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,9 +134,6 @@
     </ClInclude>
     <ClInclude Include="..\module\config\config.h">
       <Filter>module\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\timer\timer.h">
-      <Filter>module\timer</Filter>
     </ClInclude>
     <ClInclude Include="..\module\db\db.h">
       <Filter>module\db</Filter>
@@ -170,6 +167,9 @@
     </ClInclude>
     <ClInclude Include="service\sql\sql.service.h">
       <Filter>service\sql</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\thread\thread.h">
+      <Filter>module\thread</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
