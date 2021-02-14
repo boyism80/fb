@@ -76,6 +76,7 @@ void fb::login::service::auth::exists(const std::string& name, std::function<voi
 {
     db::query
     (
+        name.c_str(),
         [name, callback] (daotk::mysql::connection& connection, daotk::mysql::result& result)
         {
             auto exists = result.get_value<int>() > 0;
@@ -121,7 +122,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
                 if(exists)
                     throw std::exception();
 
-                db::query(fb::login::service::sql::auth::insert(name, this->sha256(pw)));
+                db::query(id.c_str(), fb::login::service::sql::auth::insert(name, this->sha256(pw)));
                 success(id);
             }
             catch(std::exception& e)
@@ -134,7 +135,7 @@ void fb::login::service::auth::create_account(const std::string& id, const std::
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    db::query(fb::login::service::sql::auth::update(id, hair, sex, nation, creature));
+    db::query(id.c_str(), fb::login::service::sql::auth::update(id, hair, sex, nation, creature));
 }
 
 uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed)
@@ -143,6 +144,7 @@ uint32_t fb::login::service::auth::login(const std::string& id, const std::strin
 
     db::query
     (
+        id.c_str(),
         [this, pw, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
         {
             try
@@ -186,6 +188,7 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
 
         db::query
         (
+            id.c_str(),
             [this, id, pw, new_pw, birthday, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
             {
                 try
@@ -212,6 +215,7 @@ void fb::login::service::auth::change_pw(const std::string& id, const std::strin
 
                     db::query
                     (
+                        id.c_str(),
                         [success] (daotk::mysql::connection& connection, daotk::mysql::result& result)
                         {
                             success();

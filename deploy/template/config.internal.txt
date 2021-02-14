@@ -2,13 +2,7 @@
     "delay": 0,
     "port": {{ port }},
     "thread": 0,
-    "database": {
-        "ip": "{{ database.ip }}",
-        "port": {{ database.port }},
-        "name": "{{ database.name }}",
-        "uid": "{{ database.uid }}",
-        "pwd": "{{ database.pwd }}"
-    },
+    "database": {{ database }},
     "table": {
         "host": "table/host.json"
     },

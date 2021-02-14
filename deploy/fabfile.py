@@ -57,7 +57,7 @@ def internal():
         run(f'mkdir -p {name}', quiet=True)
 
         with cd(name):
-            context = { 'port': config['port'], 'database': CONFIGURATION['database'], 'game': json.dumps(CONFIGURATION['deploy']['game']) }
+            context = { 'port': config['port'], 'database': json.dumps(CONFIGURATION['database']), 'game': json.dumps(CONFIGURATION['deploy']['game']) }
             files.upload_template(filename='config.internal.txt',
                                   destination=f'config.json',
                                   template_dir=f'{LOCAL_ROOT}/template',
@@ -113,7 +113,7 @@ def login():
                         'name': name,
                         'host': config,
                         'internal': CONFIGURATION['deploy']['internal']['internal'],
-                        'database': CONFIGURATION['database']
+                        'database': json.dumps(CONFIGURATION['database'])
                       }
             run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
@@ -132,7 +132,7 @@ def build_game(name, config):
                     'host': config,
                     'internal': CONFIGURATION['deploy']['internal']['internal'],
                     'login': CONFIGURATION['deploy']['login']['login'],
-                    'database': CONFIGURATION['database'],
+                    'database': json.dumps(CONFIGURATION['database']),
                   }
         files.upload_template(filename='config.game.txt',
                               destination=f'config.json',

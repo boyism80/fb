@@ -17,6 +17,7 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
+    fb::db::init();
     auto& c = fb::console::get();
     auto height = 8;
     c.box(0, 0, c.width()-1, height);

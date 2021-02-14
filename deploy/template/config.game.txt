@@ -12,13 +12,7 @@
         "ip": "{{ login.ip }}",
         "port": {{ login.port }}
     },
-    "database": {
-        "ip": "{{ database.ip }}",
-        "port": {{ database.port }},
-        "name": "{{ database.name }}",
-        "uid": "{{ database.uid }}",
-        "pwd": "{{ database.pwd }}"
-    },
+    "database": {{ database }},
     "table": {
         "class": "table/class.json",
         "door": "table/door.json",

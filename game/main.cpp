@@ -369,6 +369,7 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
+    fb::db::init();
     auto& c = fb::console::get();
 
     // Execute acceptor

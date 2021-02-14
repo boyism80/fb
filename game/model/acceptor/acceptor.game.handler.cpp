@@ -543,7 +543,7 @@ void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dst)
 
 void fb::game::acceptor::on_save(session& me)
 {
-    db::query(std::vector<std::string>
+    db::query(me.name().c_str(), std::vector<std::string>
     {
         service::sql::session::update(me),
         service::sql::item::update(me),

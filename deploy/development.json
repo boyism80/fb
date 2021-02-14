@@ -35,11 +35,34 @@
 		}
 	},
 	"database": 
-	{
-		"ip": "192.168.0.180",
-		"port": 3306,
-		"name": "fb",
-		"uid": "fb",
-		"pwd": "admin"
-	}
+	[
+		{
+			"ip": "192.168.0.180",
+			"port": 3306,
+			"name": "fb",
+			"uid": "fb",
+			"pwd": "admin"
+		},
+		{
+			"ip": "192.168.0.181",
+			"port": 3306,
+			"name": "fb",
+			"uid": "fb",
+			"pwd": "admin"
+		},
+		{
+			"ip": "192.168.0.182",
+			"port": 3306,
+			"name": "fb",
+			"uid": "fb",
+			"pwd": "admin"
+		},
+		{
+			"ip": "192.168.0.183",
+			"port": 3306,
+			"name": "fb",
+			"uid": "fb",
+			"pwd": "admin"
+		}
+	]
 }

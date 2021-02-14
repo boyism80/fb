@@ -12,13 +12,16 @@
     "allow other language": false,
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
-    "database": {
-        "ip": "192.168.0.100",
-        "port": 3306,
-        "name": "fb",
-        "uid": "fb",
-        "pwd": "admin"
-    },
+    "database": 
+    [
+        {
+            "ip": "192.168.0.100",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        }
+    ],
     "init": {
         "map": 14,
         "position": {

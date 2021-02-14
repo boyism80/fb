@@ -514,6 +514,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
 
     fb::db::query
     (
+        request.name.c_str(),
         [this, session](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
         {
             auto&                       baseResult = results[0];

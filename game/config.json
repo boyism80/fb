@@ -12,13 +12,16 @@
         "ip": "192.168.0.100",
         "port": 3002
     },
-    "database": {
-        "ip": "192.168.0.100",
-        "port": 3306,
-        "name": "fb",
-        "uid": "fb",
-        "pwd": "admin"
-    },
+    "database": 
+    [
+        {
+            "ip": "192.168.0.100",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        }
+    ],
     "table": {
         "class": "table/class.json",
         "door": "table/door.json",
