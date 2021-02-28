@@ -130,6 +130,9 @@ public:
 class thread : public state
 {
 private:
+    static std::mutex _mutex;
+
+private:
     int                         _state;
     int                         _ref;
 

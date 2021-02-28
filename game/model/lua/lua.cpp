@@ -5,6 +5,7 @@
 using namespace fb::game::lua;
 
 main*                           main::_instance;
+std::mutex                      thread::_mutex;
 
 std::string lua_cp949(lua_State* lua, int i)
 {
@@ -141,7 +142,9 @@ thread::thread() :
     _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX)),
     _state(LUA_YIELD)
 { 
+thread::_mutex.lock();
     lua::main::get().threads.insert(std::make_pair(this->_lua, this));
+thread::_mutex.unlock();
 }
 
 fb::game::lua::thread::thread(const char* format, ...) : thread()
@@ -236,7 +239,9 @@ int fb::game::lua::thread::resume(int num_args)
         break;
 
     default:
+thread::_mutex.lock();
         lua::main::get().threads.erase(this->_lua);
+thread::_mutex.unlock();
         break;
     }
     
