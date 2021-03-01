@@ -207,7 +207,8 @@ def current():
 @parallel
 def docker_rm():
     with settings(warn_only=True):
-        sudo('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
+        # sudo('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
+        sudo('docker system prune -a -f')
         sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm', quiet=True)
         # sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi', quiet=True)
 
