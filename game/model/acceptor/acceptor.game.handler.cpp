@@ -50,7 +50,7 @@ void fb::game::acceptor::on_move(fb::game::object& me)
 
 void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
-     lua::thread()
+     lua::get()
          .from("scripts/spell/%s.lua", buff.spell().uncast().c_str())
          .func("handle_uncast")
          .pushobject(me)
@@ -167,7 +167,7 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
     catch(std::exception&)
     {}
 
-    lua::thread         thread;
+    auto& thread = fb::game::lua::get();
     thread.from("scripts/common/attack.lua")
           .func("handle_attack")
           .pushobject(me);
@@ -253,7 +253,7 @@ void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uin
 
 void fb::game::acceptor::on_item_active(session& me, item& item)
 {
-    lua::thread()
+    lua::get()
         .from("scripts/item/%s.lua", item.active_script().c_str())
         .func("handle_active")
         .pushobject(me)

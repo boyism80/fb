@@ -168,7 +168,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     lua::bind_function("name2map",  builtin_name2map);
     lua::bind_function("timer",     builtin_timer);
     lua::bind_function("weather",   builtin_weather);
-    
+
+    lua::reserve();
+
     this->bind<fb::protocol::game::request::login>            (0x10, std::bind(&acceptor::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (0x11, std::bind(&acceptor::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
     this->bind<fb::protocol::game::request::exit>             (0x0B, std::bind(&acceptor::handle_exit,            this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
@@ -1229,7 +1231,8 @@ bool fb::game::acceptor::handle_spell(fb::socket<fb::game::session>& socket, con
 bool fb::game::acceptor::handle_door(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::door& request)
 {
     auto session = socket.data();
-    lua::thread("scripts/common/door.lua")
+    lua::get()
+        .from("scripts/common/door.lua")
         .func("handle_door")
         .pushobject(session)
         .resume(1);

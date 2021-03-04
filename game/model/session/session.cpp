@@ -850,11 +850,11 @@ bool fb::game::session::alive() const
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -875,11 +875,11 @@ int fb::game::session::builtin_look(lua_State* lua)
 
 int fb::game::session::builtin_color(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -900,11 +900,11 @@ int fb::game::session::builtin_color(lua_State* lua)
 
 int fb::game::session::builtin_money(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -925,11 +925,11 @@ int fb::game::session::builtin_money(lua_State* lua)
 
 int fb::game::session::builtin_exp(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -950,11 +950,11 @@ int fb::game::session::builtin_exp(lua_State* lua)
 
 int fb::game::session::builtin_base_hp(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -975,11 +975,11 @@ int fb::game::session::builtin_base_hp(lua_State* lua)
 
 int fb::game::session::builtin_base_mp(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1000,11 +1000,11 @@ int fb::game::session::builtin_base_mp(lua_State* lua)
 
 int fb::game::session::builtin_strength(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1025,11 +1025,11 @@ int fb::game::session::builtin_strength(lua_State* lua)
 
 int fb::game::session::builtin_dexterity(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1050,11 +1050,11 @@ int fb::game::session::builtin_dexterity(lua_State* lua)
 
 int fb::game::session::builtin_intelligence(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1075,11 +1075,11 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
 
 int fb::game::session::builtin_item(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
@@ -1105,11 +1105,11 @@ int fb::game::session::builtin_item(lua_State* lua)
 
 int fb::game::session::builtin_items(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
@@ -1129,11 +1129,11 @@ int fb::game::session::builtin_items(lua_State* lua)
 
 int fb::game::session::builtin_item_drop(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
         return 0;
@@ -1151,11 +1151,11 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
 
 int fb::game::session::builtin_mkitem(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1173,7 +1173,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     }
     else
     {
-        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        auto acceptor = thread->env<fb::game::acceptor>("acceptor");
         auto item = master->make<fb::game::item>(acceptor);
         auto slot = session->items.add(item);
         item->to_lua(lua);
@@ -1186,11 +1186,11 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
 
 int fb::game::session::builtin_rmitem(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     try
     {
         auto argc = thread->argc();
@@ -1232,7 +1232,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
 
 
-        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        auto acceptor = thread->env<fb::game::acceptor>("acceptor");
         auto dropped = session->items.remove(index, item::delete_attr::DELETE_REMOVED);
         if(dropped != nullptr)
             delete dropped;
@@ -1245,11 +1245,11 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
 int fb::game::session::builtin_state(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1269,11 +1269,11 @@ int fb::game::session::builtin_state(lua_State* lua)
 
 int fb::game::session::builtin_disguise(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1298,11 +1298,11 @@ int fb::game::session::builtin_disguise(lua_State* lua)
 
 int fb::game::session::builtin_class(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1333,7 +1333,7 @@ int fb::game::session::builtin_class(lua_State* lua)
         }
         else
         {
-            auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+            auto acceptor = thread->env<fb::game::acceptor>("acceptor");
             acceptor->send(*session, fb::protocol::game::response::session::id(*session), acceptor::scope::SELF);
             acceptor->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
             thread->pushboolean(true);
@@ -1345,11 +1345,11 @@ int fb::game::session::builtin_class(lua_State* lua)
 
 int fb::game::session::builtin_level(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1365,7 +1365,7 @@ int fb::game::session::builtin_level(lua_State* lua)
         auto level = std::max(0, std::min((int)thread->tointeger(2), 255));
         session->level(level);
 
-        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        auto acceptor = thread->env<fb::game::acceptor>("acceptor");
         acceptor->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), acceptor::scope::SELF);
         return 0;
     }
@@ -1373,11 +1373,11 @@ int fb::game::session::builtin_level(lua_State* lua)
 
 int fb::game::session::builtin_group(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     if(session == nullptr || acceptor->exists(*session) == false)
@@ -1394,10 +1394,10 @@ int fb::game::session::builtin_group(lua_State* lua)
 
 int fb::game::session::builtin_assert(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     auto size = thread->rawlen(2);
@@ -1476,10 +1476,7 @@ fb::game::lua::dialog::dialog(fb::game::session& owner, listener* listener) :
 }
 
 fb::game::lua::dialog::~dialog()
-{
-    if(this->_thread != nullptr)
-        delete this->_thread;
-}
+{}
 
 fb::game::lua::dialog& fb::game::lua::dialog::pushstring(const std::string& value)
 {
@@ -1513,7 +1510,7 @@ fb::game::lua::dialog& fb::game::lua::dialog::pushboolean(bool value)
     return *this;
 }
 
-fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable* object)
+fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const luable* object)
 {
     if(this->_thread != nullptr)
         this->_thread->pushobject(object);
@@ -1521,7 +1518,7 @@ fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable* obje
     return *this;
 }
 
-fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable& object)
+fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const luable& object)
 {
     if(this->_thread != nullptr)
         this->_thread->pushobject(object);
@@ -1532,9 +1529,9 @@ fb::game::lua::dialog& fb::game::lua::dialog::pushobject(const lua::luable& obje
 fb::game::lua::dialog& fb::game::lua::dialog::from(const char* format, ...)
 {
     if(this->_thread != nullptr)
-        delete this->_thread;
+        this->_thread->release();
 
-    this->_thread = new lua::thread();
+    this->_thread = &fb::game::lua::get();
 
     va_list args;
     va_start(args, format);

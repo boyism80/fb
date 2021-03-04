@@ -139,7 +139,7 @@ private:
     std::chrono::milliseconds               _respawn_time; // seconds
 
     fb::game::life*                         _target;
-    lua::thread*                            _attack_thread;
+    lua::lua*                               _attack_thread;
 #pragma endregion
     
 

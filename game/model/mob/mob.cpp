@@ -114,10 +114,10 @@ const std::vector<fb::game::mob::drop>& fb::game::mob::master::items() const
 
 int fb::game::mob::master::builtin_speed(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto mob = thread->touserdata<fb::game::mob::master>(1);
     if(mob == nullptr)
         return 0;
@@ -171,8 +171,10 @@ bool fb::game::mob::action()
 
     if(this->_attack_thread == nullptr)
     {
-        this->_attack_thread = new lua::thread("scripts/mob/%s.lua", script.c_str());
-        this->_attack_thread->func("handle_attack").pushobject(this);
+        this->_attack_thread = &fb::game::lua::get();
+        this->_attack_thread->from("scripts/mob/%s.lua", script.c_str())
+            .func("handle_attack")
+            .pushobject(this);
 
         if(this->_target != nullptr)
             this->_attack_thread->pushobject(this->_target);
@@ -187,11 +189,13 @@ bool fb::game::mob::action()
     {
         stop = true;
     }
+    else if(this->_attack_thread->state() == LUA_YIELD)
+    {
+
+    }
     else
     {
         stop = this->_attack_thread->toboolean(-1);
-
-        delete this->_attack_thread;
         this->_attack_thread = nullptr;
     }
 

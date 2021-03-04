@@ -160,11 +160,11 @@ void fb::game::item::master::active_script(const std::string& value)
 
 int fb::game::item::master::builtin_make(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto master = thread->touserdata<fb::game::item::master>(1);
     auto object = master->make(acceptor);
 
@@ -2101,7 +2101,7 @@ void fb::game::items::pickup(bool boost)
                 break;
         }
 
-        lua::thread ()
+        lua::get()
             .from("scripts/common/pickup.lua")
             .func("handle_pickup")
             .pushobject(owner)

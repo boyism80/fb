@@ -17,17 +17,17 @@ inline void to_lua(lua_State* lua, const T* self)
 template <typename T>
 int builtin_dialog(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     try
     {
         auto argc = thread->argc();
         if(argc < 3)
             throw std::runtime_error("not enough parameters");
 
-        auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+        auto acceptor = thread->env<fb::game::acceptor>("acceptor");
         auto object = thread->touserdata<T>(1);
         if(object == nullptr)
             return 0;
@@ -53,11 +53,11 @@ int builtin_dialog(lua_State* lua)
 template <typename T>
 int builtin_menu_dialog(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;
@@ -84,11 +84,11 @@ int builtin_menu_dialog(lua_State* lua)
 template <typename T>
 int builtin_item_dialog(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;
@@ -119,11 +119,11 @@ int builtin_item_dialog(lua_State* lua)
 template <typename T>
 int builtin_input_dialog(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto npc = thread->touserdata<T>(1);
     if(npc == nullptr)
         return 0;

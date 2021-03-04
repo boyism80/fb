@@ -32,7 +32,7 @@ class dialog
 {
 private:
     session&                _owner;
-    lua::thread*            _thread;
+    lua*                    _thread;
     listener*               _listener;
 
 public:
@@ -44,8 +44,8 @@ public:
     dialog&                 pushinteger(int value);
     dialog&                 pushnil();
     dialog&                 pushboolean(bool value);
-    dialog&                 pushobject(const lua::luable* object);
-    dialog&                 pushobject(const lua::luable& object);
+    dialog&                 pushobject(const luable* object);
+    dialog&                 pushobject(const luable& object);
 
 public:
     dialog&                 from(const char* format, ...);

@@ -78,10 +78,10 @@ void fb::game::group::destroy(fb::game::group& group)
 
 int fb::game::group::builtin_members(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto group = thread->touserdata<fb::game::group>(1);
     if(group == nullptr)
         return 0;
@@ -98,10 +98,10 @@ int fb::game::group::builtin_members(lua_State* lua)
 
 int fb::game::group::builtin_leader(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto group = thread->touserdata<fb::game::group>(1);
     if(group == nullptr)
         return 0;

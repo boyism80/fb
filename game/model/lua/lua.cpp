@@ -5,7 +5,7 @@
 using namespace fb::game::lua;
 
 main*                           main::_instance;
-std::mutex                      thread::_mutex;
+std::mutex                      lua::_mutex;
 
 std::string lua_cp949(lua_State* lua, int i)
 {
@@ -19,6 +19,24 @@ std::string lua_cp949(lua_State* lua, int i)
 void lua_push_utf8(lua_State* lua, const std::string& v)
 {
     lua_pushstring(lua, UTF8(v, PLATFORM::Windows).c_str());
+}
+
+lua& fb::game::lua::get()
+{
+    auto& main = fb::game::lua::main::get();
+    return main.alloc();
+}
+
+lua* fb::game::lua::get(lua_State* lua)
+{
+    auto& main = fb::game::lua::main::get();
+    return main.get(*lua);
+}
+
+void fb::game::lua::reserve(int capacity)
+{
+    auto& main = fb::game::lua::main::get();
+    main.reserve(capacity);
 }
 
 void fb::game::lua::luable::to_lua(lua_State* lua) const
@@ -52,242 +70,11 @@ int fb::game::lua::luable::builtin_gc(lua_State* lua)
     return 0;
 }
 
-state::state(lua_State* lua) : _lua(lua)
-{
-}
-
-fb::game::lua::state::state(lua_State* lua, const char* format, ...) : state(lua)
-{
-    va_list args;
-    va_start(args, format);
-
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    luaL_dofile(*this, buffer);
-}
-
-state::~state()
-{
-}
-
-state& fb::game::lua::state::from(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    luaL_dofile(*this, buffer);
-    return *this;
-}
-
-state& fb::game::lua::state::func(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    lua_getglobal(*this, buffer);
-    return *this;
-}
-
-state& fb::game::lua::state::pushstring(const std::string& value)
-{
-    lua_push_utf8(this->_lua, value.c_str());
-    return *this;
-}
-
-state& fb::game::lua::state::pushinteger(int value)
-{
-    lua_pushinteger(this->_lua, value);
-    return *this;
-}
-
-state& fb::game::lua::state::pushnil()
-{
-    lua_pushnil(this->_lua);
-    return *this;
-}
-
-state& fb::game::lua::state::pushboolean(bool value)
-{
-    lua_pushboolean(this->_lua, value);
-    return *this;
-}
-
-state& fb::game::lua::state::pushobject(const luable* object)
-{
-    object->to_lua(*this);
-    return *this;
-}
-
-state& fb::game::lua::state::pushobject(const luable& object)
-{
-    object.to_lua(*this);
-    return *this;
-}
-
-state::operator lua_State* () const
-{
-    return this->_lua;
-}
-
-thread::thread() : 
-    lua::state(lua_newthread(main::get())),
-    _ref(luaL_ref(main::get(), LUA_REGISTRYINDEX)),
-    _state(LUA_YIELD)
-{ 
-thread::_mutex.lock();
-    lua::main::get().threads.insert(std::make_pair(this->_lua, this));
-thread::_mutex.unlock();
-}
-
-fb::game::lua::thread::thread(const char* format, ...) : thread()
-{
-    va_list args;
-    va_start(args, format);
-
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    luaL_dofile(*this, buffer);
-}
-
-thread::~thread()
-{
-    luaL_unref(main::get(), LUA_REGISTRYINDEX, this->_ref);
-}
-
-thread& fb::game::lua::thread::from(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    luaL_dofile(*this, buffer);
-    return *this;
-}
-
-thread& fb::game::lua::thread::func(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
-    va_end(args);
-
-    lua_getglobal(*this, buffer);
-    return *this;
-}
-
-thread& fb::game::lua::thread::pushstring(const std::string& value)
-{
-    return static_cast<thread&>(state::pushstring(value));
-}
-
-thread& fb::game::lua::thread::pushinteger(int value)
-{
-    return static_cast<thread&>(state::pushinteger(value));
-}
-
-thread& fb::game::lua::thread::pushnil()
-{
-    return static_cast<thread&>(state::pushnil());
-}
-
-thread& fb::game::lua::thread::pushboolean(bool value)
-{
-    return static_cast<thread&>(state::pushboolean(value));
-}
-
-thread& fb::game::lua::thread::pushobject(const luable* object)
-{
-    return static_cast<thread&>(state::pushobject(object));
-}
-
-thread& fb::game::lua::thread::pushobject(const luable& object)
-{
-    return static_cast<thread&>(state::pushobject(object));
-}
-
-int fb::game::lua::thread::argc() const
-{
-    return lua_gettop(this->_lua);
-}
-
-int fb::game::lua::thread::resume(int num_args)
-{
-    if(this->_state == LUA_PENDING)
-        return this->_state;
-
-    auto state = lua_resume(*this, nullptr, num_args);
-    if(this->_state != LUA_PENDING)
-        this->_state = state;
-
-    switch(this->_state)
-    {
-    case LUA_PENDING:
-    case LUA_YIELD:
-        break;
-
-    default:
-thread::_mutex.lock();
-        lua::main::get().threads.erase(this->_lua);
-thread::_mutex.unlock();
-        break;
-    }
-    
-    return this->_state;
-}
-
-int fb::game::lua::thread::state() const
-{
-    return this->_state;
-}
-
-bool fb::game::lua::thread::pending() const
-{
-    return this->_state == LUA_PENDING;
-}
-
-void fb::game::lua::thread::pending(bool value)
-{
-    this->_state = value ? LUA_PENDING : LUA_YIELD;
-}
-
-thread* fb::game::lua::thread::get(lua_State& lua_state)
-{
-    auto& threads = lua::main::get().threads;
-
-    auto found = threads.find(&lua_state);
-    if(found == threads.end())
-        return nullptr;
-
-    if(found->second != nullptr)
-    {
-        switch(found->second->_state)
-        {
-        case LUA_YIELD:
-        case LUA_PENDING:
-            return found->second;
-        }
-    }
-
-    threads.erase(&lua_state);
-    return nullptr;
-}
-
-main::main() : state(luaL_newstate())
+lua::lua(lua_State* lua) : _lua(lua)
 {
     luaL_openlibs(*this);
+
+    bind_builtin_functions();
 
     lua_pushinteger(*this, fb::game::object::types::UNKNOWN);
     lua_setglobal(*this, "UNKNOWN");
@@ -523,12 +310,264 @@ main::main() : state(luaL_newstate())
     lua_setglobal(*this, "DIALOG_RESULT_NEXT");
 }
 
+lua::~lua()
+{
+    lua_close(*this);
+}
+
+void fb::game::lua::lua::bind_builtin_functions()
+{
+    auto& main = fb::game::lua::main::get();
+
+    for(auto name : main.inheritances)
+    {
+        luaL_newmetatable(*this, name.c_str());
+        if(main.relations.find(name) != main.relations.end())
+        {
+            auto base_name = main.relations[name].c_str();
+            luaL_getmetatable(*this, base_name);
+            lua_setmetatable(*this, -2);
+        }
+        lua_pushvalue(*this, -1);
+        lua_setfield(*this, -2, "__index");
+        luaL_setfuncs(*this, main.builtin_local_funcs[name], 0);
+    }
+
+    for(auto pair : main.builtin_global_funcs)
+    {
+        auto name = pair.first.c_str();
+        auto func = pair.second;
+        
+        lua_register(*this, name, func);
+    }
+
+    for(auto pair : main.environments)
+    {
+        auto name = pair.first.c_str();
+        auto data = pair.second;
+
+        lua_pushstring(*this, name);
+        lua_pushlightuserdata(*this, data);
+        lua_settable(*this, LUA_REGISTRYINDEX);
+    }
+}
+
+lua& fb::game::lua::lua::from(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    luaL_dofile(*this, buffer);
+    return *this;
+}
+
+lua& fb::game::lua::lua::func(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buffer[256];
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    lua_getglobal(*this, buffer);
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushstring(const std::string& value)
+{
+    lua_push_utf8(this->_lua, value.c_str());
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushinteger(int value)
+{
+    lua_pushinteger(this->_lua, value);
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushnil()
+{
+    lua_pushnil(this->_lua);
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushboolean(bool value)
+{
+    lua_pushboolean(this->_lua, value);
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushobject(const luable* object)
+{
+    object->to_lua(*this);
+    return *this;
+}
+
+lua& fb::game::lua::lua::pushobject(const luable& object)
+{
+    object.to_lua(*this);
+    return *this;
+}
+
+lua::operator lua_State* () const
+{
+    return this->_lua;
+}
+
+int fb::game::lua::lua::argc() const
+{
+    return lua_gettop(this->_lua);
+}
+
+int fb::game::lua::lua::resume(int num_args)
+{
+    if(this->_state == LUA_PENDING)
+        return this->_state;
+
+    auto lua = lua_resume(*this, nullptr, num_args);
+    if(this->_state != LUA_PENDING)
+        this->_state = lua;
+
+    switch(this->_state)
+    {
+    case LUA_PENDING:
+    case LUA_YIELD:
+        break;
+
+    default:
+        main::get().release(*this);
+        break;
+    }
+    
+    return this->_state;
+}
+
+int fb::game::lua::lua::state() const
+{
+    return this->_state;
+}
+
+void fb::game::lua::lua::release()
+{
+    auto& main = fb::game::lua::main::get();
+    main.release(*this);
+}
+
+bool fb::game::lua::lua::pending() const
+{
+    return this->_state == LUA_PENDING;
+}
+
+void fb::game::lua::lua::pending(bool value)
+{
+    this->_state = value ? LUA_PENDING : LUA_YIELD;
+}
+
+lua* fb::game::lua::main::get(lua_State& lua)
+{
+    std::lock_guard gd(lua::_mutex);
+
+    auto found = this->busy.find(&lua);
+    if(found == this->busy.end())
+        return nullptr;
+
+    return found->second;
+}
+
+void fb::game::lua::main::reserve(int capacity)
+{
+    std::lock_guard gd(lua::_mutex);
+
+    this->clear();
+    for(int i = 0; i < capacity; i++)
+    {
+        auto created = new lua(luaL_newstate());
+        this->idle.insert(std::make_pair((lua_State*)*created, created));
+    }
+}
+
+lua& fb::game::lua::main::alloc()
+{
+    std::lock_guard gd(lua::_mutex);
+
+    if(this->idle.empty())
+    {
+        auto created = new lua(luaL_newstate());
+        this->busy.insert(std::make_pair((lua_State*)*created, created));
+        return *created;
+    }
+    else
+    {
+        auto lua = this->idle.begin()->second;
+        this->idle.erase((lua_State*)*lua);
+        this->busy.insert(std::make_pair((lua_State*)*lua, lua));
+        return *lua;
+    }
+}
+
+void fb::game::lua::main::release(lua& lua)
+{
+    std::lock_guard gd(lua::_mutex);
+
+    if(this->idle.find((lua_State*)lua) != this->idle.end())
+        return;
+
+    this->idle.insert(std::make_pair((lua_State*)lua, &lua));
+    this->busy.erase((lua_State*)lua);
+}
+
+main::main()
+{
+}
+
 main::~main()
 {
-    for(auto x : threads)
+    this->clear();
+}
+
+void fb::game::lua::main::update_inheritances()
+{
+    std::map<std::string, int> references;
+    for(auto pair : this->relations)
+    {
+        auto derived = pair.first;
+        auto based = pair.second;
+
+        if(references.find(derived) == references.end())
+            references.insert(std::make_pair(derived, 0));
+
+        if(references.find(based) == references.end())
+            references.insert(std::make_pair(based, 1));
+        else
+            references[based]++;
+    }
+
+    auto sorted = std::vector<std::pair<std::string, int>>(references.begin(), references.end());
+    std::sort
+    (
+        sorted.begin(), 
+        sorted.end(), 
+        [] (const std::pair<std::string, int>& pair1, const std::pair<std::string, int>& pair2)
+        {
+            return pair1.second > pair2.second;
+        }
+    );
+
+    this->inheritances.clear();
+    for(auto pair : sorted)
+        this->inheritances.push_back(pair.first);
+}
+
+void fb::game::lua::main::clear()
+{
+    for(auto x : idle)
         delete x.second;
 
-    lua_close(*this);
+    for(auto x : busy)
+        delete x.second;
 }
 
 main& main::get()
@@ -555,5 +594,7 @@ void fb::game::lua::release()
 
 void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
 {
-    lua_register(main::get(), name.c_str(), fn);
+    auto& main = fb::game::lua::main::get();
+    main.bind_function(name, fn);
+    //lua_register(main::get(), name.c_str(), fn);
 }

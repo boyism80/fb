@@ -412,10 +412,10 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
 
 int fb::game::map::builtin_name(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -426,10 +426,10 @@ int fb::game::map::builtin_name(lua_State* lua)
 
 int fb::game::map::builtin_objects(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -449,10 +449,10 @@ int fb::game::map::builtin_objects(lua_State* lua)
 
 int fb::game::map::builtin_width(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -464,10 +464,10 @@ int fb::game::map::builtin_width(lua_State* lua)
 
 int fb::game::map::builtin_height(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -479,10 +479,10 @@ int fb::game::map::builtin_height(lua_State* lua)
 
 int fb::game::map::builtin_area(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -495,10 +495,10 @@ int fb::game::map::builtin_area(lua_State* lua)
 
 int fb::game::map::builtin_movable(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -532,11 +532,11 @@ int fb::game::map::builtin_movable(lua_State* lua)
 
 int fb::game::map::builtin_door(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
-    auto acceptor = lua::env<fb::game::acceptor>("acceptor");
+    
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
@@ -557,10 +557,10 @@ int fb::game::map::builtin_door(lua_State* lua)
 
 int fb::game::map::builtin_doors(lua_State* lua)
 {
-    auto thread = lua::thread::get(*lua);
+    auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-
+    
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;

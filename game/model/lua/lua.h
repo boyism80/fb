@@ -10,6 +10,8 @@ extern "C"
 
 #include <vector>
 #include <string>
+#include <map>
+#include <list>
 #include "module/socket/socket.h"
 #include "module/encoding/encoding.h"
 
@@ -26,12 +28,24 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR+1)
 
+#define LUA_DEFAULT_POOL_SIZE 100
+
 
 // global
 std::string                     lua_cp949(lua_State* lua, int i);
 void                            lua_push_utf8(lua_State* lua, const std::string& v);
 
 namespace fb { namespace game { namespace lua {
+
+class luable;
+class lua;
+class main;
+
+lua&                            get();
+lua*                            get(lua_State* lua);
+void                            reserve(int capacity = LUA_DEFAULT_POOL_SIZE);
+void                            release();
+void                            bind_function(const std::string& name, lua_CFunction fn);
 
 class luable
 {
@@ -54,28 +68,41 @@ public:
     static int                  builtin_gc(lua_State* lua);
 };
 
-class state
+class lua
 {
+private:
+    static std::mutex           _mutex;
+
+private:
+    friend class main;
+
+private:
+    int                         _state;
+    int                         _ref;
+
 protected:
     lua_State*                  _lua;
 
 protected:
-    state(lua_State* lua);
-    state(lua_State* lua, const char* format, ...);
-    virtual ~state();
-
-protected:
+    lua(lua_State* lua);
+    lua(const lua&) = delete;
 
 public:
-    state&                      from(const char* format, ...);
-    state&                      func(const char* format, ...);
+    virtual ~lua();
 
-    state&                      pushstring(const std::string& value);
-    state&                      pushinteger(int value);
-    state&                      pushnil();
-    state&                      pushboolean(bool value);
-    state&                      pushobject(const luable* object);
-    state&                      pushobject(const luable& object);
+private:
+    void                        bind_builtin_functions();
+
+public:
+    lua&                        from(const char* format, ...);
+    lua&                        func(const char* format, ...);
+                                
+    lua&                        pushstring(const std::string& value);
+    lua&                        pushinteger(int value);
+    lua&                        pushnil();
+    lua&                        pushboolean(bool value);
+    lua&                        pushobject(const luable* object);
+    lua&                        pushobject(const luable& object);
 
     const std::string           tostring(int offset) { return lua_cp949(*this, offset); }
     const std::string           arg_string(int offset) { return tostring(offset); }
@@ -103,17 +130,58 @@ public:
     void                        remove(int offset) { lua_remove(*this, offset); }
     void                        new_table() { lua_newtable(*this); }
 
+public:
+    int                         argc() const;
+
+public:
+    int                         resume(int num_args);
+    int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
+    int                         state() const;
+    void                        release();
+
+public:
+    bool                        pending() const;
+    void                        pending(bool value);
+
 
 public:
     operator                    lua_State* () const;
+
+public:
+    template <typename T>
+    T* env(const char* key)
+    {
+        lua_pushstring(*this, key);
+        lua_gettable(*this, LUA_REGISTRYINDEX);
+
+        auto ret = static_cast<T*>(lua_touserdata(*this, -1));
+        lua_remove(*this, -1);
+
+        return ret;
+    }
 };
 
-class thread;
 
-class main : public state
+class main
 {
 public:
-    std::map<lua_State*, thread*> threads;
+    friend class lua;
+
+public:
+    typedef std::map<std::string, const luaL_Reg*>  builtin_func_map;
+    typedef std::map<std::string, lua_CFunction>    builtin_funcs;
+    typedef std::map<std::string, std::string>      relation_map;
+    typedef std::map<std::string, void*>            environment_map;
+
+private:
+    builtin_func_map            builtin_local_funcs;
+    builtin_funcs               builtin_global_funcs;
+    relation_map                relations;
+    environment_map             environments;
+    std::list<std::string>      inheritances;
+
+public:
+    std::map<lua_State*, lua*>       idle, busy;
 
 private:
     static main* _instance;
@@ -122,99 +190,74 @@ public:
     main();
     ~main();
 
+private:
+    void                        update_inheritances();
+    void                        clear();
+
+public:
+    void                        reserve(int capacity = LUA_DEFAULT_POOL_SIZE);
+    lua&                        alloc();
+    lua*                        get(lua_State& lua);
+    void                        release(lua& lua);
+
 public:
     static main&                get();
     static void                 release();
+
+public:
+    template <typename T>
+    void bind_class()
+    {
+        auto name = T::LUA_METATABLE_NAME.c_str();
+        auto methods = T::LUA_METHODS;
+
+        this->builtin_local_funcs.insert(std::make_pair(name, methods));
+        this->update_inheritances();
+    }
+
+    template <typename T, typename B>
+    void bind_class()
+    {
+        auto derived = T::LUA_METATABLE_NAME.c_str();
+        auto base = B::LUA_METATABLE_NAME.c_str();
+        this->relations.insert(std::make_pair(derived, base));
+
+        auto methods = T::LUA_METHODS;
+        this->builtin_local_funcs.insert(std::make_pair(derived, methods));
+        this->update_inheritances();
+    }
+
+    void bind_function(const std::string& name, lua_CFunction func)
+    {
+        this->builtin_global_funcs.insert(std::make_pair(name, func));
+    }
+
+    template <typename T>
+    void env(const char* key, T* data)
+    {
+        this->environments.insert(std::make_pair(std::string(key), (void*)data));
+    }
 };
-
-class thread : public state
-{
-private:
-    static std::mutex _mutex;
-
-private:
-    int                         _state;
-    int                         _ref;
-
-public:
-    thread();
-    thread(const char* format, ...);
-    ~thread();
-
-public:
-    thread&                     from(const char* format, ...);
-    thread&                     func(const char* format, ...);
-
-    thread&                     pushstring(const std::string& value);
-    thread&                     pushinteger(int value);
-    thread&                     pushnil();
-    thread&                     pushboolean(bool value);
-    thread&                     pushobject(const luable* object);
-    thread&                     pushobject(const luable& object);
-
-public:
-    int                         argc() const;
-
-public:
-    int                         resume(int num_args);
-    int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
-    int                         state() const;
-
-public:
-    bool                        pending() const;
-    void                        pending(bool value);
-
-public:
-    static thread*              get(lua_State& lua_state);
-};
-
-void release();
 
 template <typename T>
 void bind_class()
 {
-    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());      // [mt]
-    lua_pushvalue(main::get(), -1);                                     // [mt, mt]
-    // mt.__index = mt
-    lua_setfield(main::get(), -2, "__index");                           // [mt]
-    // [mt.functions = ...]
-    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);                      // []
+    auto& main = fb::game::lua::main::get();
+    main.bind_class<T>();
 }
 
 template <typename T, typename B>
 void bind_class()
 {
-    luaL_newmetatable(main::get(), T::LUA_METATABLE_NAME.c_str());      // [mt]
-    luaL_getmetatable(main::get(), B::LUA_METATABLE_NAME.c_str());      // [mt, bt]
-    // mt.__metatable = bt
-    lua_setmetatable(main::get(), -2);                                  // [mt]
-    lua_pushvalue(main::get(), -1);                                     // [mt, mt]
-    // mt.__index = mt
-    lua_setfield(main::get(), -2, "__index");                           // [mt]
-    // mt.functions = ...
-    luaL_setfuncs(main::get(), T::LUA_METHODS, 0);                      // []
+    auto& main = fb::game::lua::main::get();
+    main.bind_class<T, B>();
 }
-
-void bind_function(const std::string& name, lua_CFunction fn);
 
 template <typename T>
 void env(const char* key, T* data)
 {
-    lua_pushstring(main::get(), key);
-    lua_pushlightuserdata(main::get(), data);
-    lua_settable(main::get(), LUA_REGISTRYINDEX);
-}
-
-template <typename T>
-T* env(const char* key)
-{
-    lua_pushstring(main::get(), key);
-    lua_gettable(main::get(), LUA_REGISTRYINDEX);
-
-    auto ret = static_cast<T*>(lua_touserdata(main::get(), -1));
-    lua_remove(main::get(), -1);
-
-    return ret;
+    auto& main = fb::game::lua::main::get();
+    main.env(key, data);
 }
 
 } } }
