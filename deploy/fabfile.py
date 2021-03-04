@@ -205,12 +205,17 @@ def current():
 
 @task
 @parallel
-def docker_rm():
+def docker_stop():
     with settings(warn_only=True):
         # sudo('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
-        sudo('docker system prune -a -f')
         sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm', quiet=True)
         # sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi', quiet=True)
+
+@task
+@parallel
+def docker_rm():
+    with settings(warn_only=True):
+        sudo('docker system prune -a -f')
 
 def docker_build(name, port):
     container_name = f'fb_{name}'

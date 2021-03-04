@@ -66,7 +66,7 @@ pipeline {
                     sh 'unzip -qq maps.zip'
                 }
                 sh 'fab -f deploy/fabfile.py optimize'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_rm'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_stop'
             }
         }
 
@@ -97,6 +97,7 @@ pipeline {
 
         stage('Clean Up') {
             steps {
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_rm'
                 sh 'fab -f deploy/fabfile.py cleanup'
             }
         }
