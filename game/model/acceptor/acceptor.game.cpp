@@ -161,6 +161,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     lua::bind_class<item::master, object::master>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
+    lua::bind_function("seed",      builtin_seed);
     lua::bind_function("sleep",     builtin_sleep);
     lua::bind_function("name2mob",  builtin_name2mob);
     lua::bind_function("name2item", builtin_name2item);

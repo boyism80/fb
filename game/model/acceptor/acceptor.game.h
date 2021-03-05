@@ -239,6 +239,7 @@ public:
 
     // built-in method
 public:
+    static int              builtin_seed(lua_State* lua);
     static int              builtin_sleep(lua_State* lua);
     static int              builtin_name2mob(lua_State* lua);
     static int              builtin_name2npc(lua_State* lua);

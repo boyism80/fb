@@ -3,6 +3,21 @@
 
 using namespace fb::game;
 
+int fb::game::acceptor::builtin_seed(lua_State* lua)
+{
+    static std::random_device random;
+    static std::mt19937 gen(random());
+    static auto distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
+
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto seed = distribution(gen);
+    thread->pushinteger(seed);
+    return 1;
+}
+
 int fb::game::acceptor::builtin_sleep(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);

@@ -3,8 +3,8 @@ function handle_attack(me, you)
         return false
     end
 
-    math.randomseed(os.time())
-    if math.random() < 0.2 then
+    math.randomseed(seed())
+    if math.random() < 0.01 then
         me:chat('여의주의 힘을 받은 용이여..')
         sleep(2000);
         

@@ -98,7 +98,7 @@ public:
     lua&                        func(const char* format, ...);
                                 
     lua&                        pushstring(const std::string& value);
-    lua&                        pushinteger(int value);
+    lua&                        pushinteger(lua_Integer value);
     lua&                        pushnil();
     lua&                        pushboolean(bool value);
     lua&                        pushobject(const luable* object);
@@ -134,7 +134,7 @@ public:
     int                         argc() const;
 
 public:
-    int                         resume(int num_args);
+    int                         resume(int argc);
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
     int                         state() const;
     void                        release();

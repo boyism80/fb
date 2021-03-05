@@ -382,7 +382,7 @@ lua& fb::game::lua::lua::pushstring(const std::string& value)
     return *this;
 }
 
-lua& fb::game::lua::lua::pushinteger(int value)
+lua& fb::game::lua::lua::pushinteger(lua_Integer value)
 {
     lua_pushinteger(this->_lua, value);
     return *this;
@@ -422,14 +422,15 @@ int fb::game::lua::lua::argc() const
     return lua_gettop(this->_lua);
 }
 
-int fb::game::lua::lua::resume(int num_args)
+int fb::game::lua::lua::resume(int argc)
 {
     if(this->_state == LUA_PENDING)
         return this->_state;
 
-    auto lua = lua_resume(*this, nullptr, num_args);
+    auto state = lua_resume(*this, nullptr, argc);;
+
     if(this->_state != LUA_PENDING)
-        this->_state = lua;
+        this->_state = state;
 
     switch(this->_state)
     {

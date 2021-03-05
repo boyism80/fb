@@ -4,6 +4,7 @@
 #include "model/mmo/mmo.h"
 #include "model/lua/lua.h"
 #include "module/encoding/encoding.h"
+#include <random>
 
 template <typename T>
 void to_lua(lua_State* lua, const T* self);
