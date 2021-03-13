@@ -120,6 +120,7 @@ enum duration : uint8_t
     DURATION_PICKUP         = 0x32,
     DURATION_EMOTION        = 0x4E,
     DURATION_SPELL          = 0x20,
+    DURATION_THROW          = 0x28,
 };
 
 enum state_level : uint8_t

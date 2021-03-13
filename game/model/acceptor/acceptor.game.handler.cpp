@@ -263,7 +263,10 @@ void fb::game::acceptor::on_item_active(session& me, item& item)
 
 void fb::game::acceptor::on_item_throws(session& me, item& item, const point16_t& to)
 {
-    this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
+    if(me.position() != to)
+        this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
+    else
+        this->send(me, fb::protocol::game::response::session::action(me, fb::game::action::ATTACK, fb::game::duration::DURATION_THROW), scope::PIVOT);
 }
 
 void fb::game::acceptor::on_spell_update(life& me, uint8_t index)
