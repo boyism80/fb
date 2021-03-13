@@ -66,7 +66,8 @@ fb::game::lua::luable::~luable()
 int fb::game::lua::luable::builtin_gc(lua_State* lua)
 {
     auto allocated = (void**)lua_touserdata(lua, 1);
-    *allocated = nullptr;
+    if(allocated != nullptr)
+        *allocated = nullptr;
     return 0;
 }
 
@@ -427,7 +428,7 @@ int fb::game::lua::lua::resume(int argc)
     if(this->_state == LUA_PENDING)
         return this->_state;
 
-    auto state = lua_resume(*this, nullptr, argc);;
+    auto state = lua_resume(*this, nullptr, argc);
 
     if(this->_state != LUA_PENDING)
         this->_state = state;
@@ -512,6 +513,9 @@ lua& fb::game::lua::main::alloc()
 void fb::game::lua::main::release(lua& lua)
 {
     std::lock_guard gd(lua::_mutex);
+
+    if(this->busy.find(lua) == this->busy.end())
+        return;
 
     if(this->idle.find((lua_State*)lua) != this->idle.end())
         return;

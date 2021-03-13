@@ -1567,10 +1567,8 @@ bool fb::game::lua::dialog::resume(int argc)
 
     auto state = this->_thread->resume(argc);
     if(state != LUA_YIELD)
-    {
-        delete this->_thread;
         this->_thread = nullptr;
-    }
+
     return state;
 }
 
