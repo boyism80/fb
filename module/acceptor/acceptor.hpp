@@ -364,10 +364,12 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, std::function<bool(fb:
         }
         catch(std::exception& e)
         {
+            in_stream.clear();
             break;
         }
         catch(...)
         {
+            in_stream.clear();
             break;
         }
     }

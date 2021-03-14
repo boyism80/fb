@@ -43,6 +43,12 @@ fb::buffer fb::buffer::compress() const
     return compressed;
 }
 
+void fb::buffer::clear()
+{
+    std::vector<uint8_t>::clear();
+    this->_offset = 0;
+}
+
 uint32_t fb::buffer::crc() const
 {
     return crc32(0, vector<uint8_t>::data(), (uint32_t)this->size());
