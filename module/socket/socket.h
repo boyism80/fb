@@ -4,6 +4,7 @@
 #include <exception>
 #include <map>
 #include <deque>
+#include <mutex>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include "protocol/protocol.h"
@@ -23,6 +24,9 @@ protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
     T*                      _data;
+
+public:
+    std::mutex              mutex;
 
 protected:
     socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);

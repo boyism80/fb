@@ -34,12 +34,27 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
     if(this->handle_thread_index(*socket) != id)
         return;
 
-    auto updated = this->handle_parse
-    (
-        *socket, 
-        [this, id] (S<T>& receiver) 
-        { return this->handle_thread_index(receiver) == id; }
-    );
+    bool updated = false;
+    if(id != 0xFF)
+    {
+        auto gd = std::lock_guard<std::mutex>(socket->mutex);
+
+        updated = this->handle_parse
+        (
+            *socket, 
+            [this, id] (S<T>& receiver) 
+            { return this->handle_thread_index(receiver) == id; }
+        );
+    }
+    else
+    {
+        updated = this->handle_parse
+        (
+            *socket, 
+            [this, id] (S<T>& receiver) 
+            { return this->handle_thread_index(receiver) == id; }
+        );
+    }
 
     if(updated == false)
         return;

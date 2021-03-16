@@ -55,10 +55,9 @@ void fb::base::socket<T>::recv()
                 if(error)
                     throw std::exception();
                 
-                //this->_instream.insert(this->_instream.end(), buffer, buffer + bytes_transferred);
-                for(int i = 0; i < bytes_transferred; i++)
-                    this->_instream.push_back(this->_buffer[i]);
+                auto gd = std::lock_guard<std::mutex>(mutex);
 
+                this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->_handle_received(*this);
                 this->recv();
             }
