@@ -210,7 +210,19 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
     auto sectors = this->nears(pivot);
     auto objects = std::vector<fb::game::object*>();
     for(auto sector : sectors)
-        objects.insert(objects.end(), sector->begin(), sector->end());
+    {
+        for(auto obj : *sector)
+        {
+            if(obj->is(object::types::MOB))
+            {
+                auto mob = static_cast<fb::game::mob*>(obj);
+                if(mob->alive() == false)
+                    continue;
+            }
+
+            objects.push_back(obj);
+        }
+    }
 
     if(type == fb::game::object::types::UNKNOWN)
     {

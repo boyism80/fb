@@ -1279,6 +1279,9 @@ void fb::game::acceptor::handle_mob_action(std::chrono::steady_clock::duration n
         for(auto x : mobs)
         {
             auto mob = static_cast<fb::game::mob*>(x);
+            if(mob->alive() == false)
+                continue;
+
             auto target = mob->target();
             if(target == nullptr || this->exists(*target) == false || target->alive() == false)
                 mob->target(nullptr);
