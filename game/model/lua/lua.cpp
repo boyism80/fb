@@ -322,6 +322,16 @@ void fb::game::lua::lua::bind_builtin_functions()
 
     for(auto name : main.inheritances)
     {
+        /*
+        * mt[name] = {}
+        * if relations[name] then
+        *   setmetatable(mt[name], mt[base])
+        * end
+        * 
+        * mt[name].__index = mt[name]
+        * --- mt[name].func1 = ...
+        * --- mt[name].func2 = ...
+        */
         luaL_newmetatable(*this, name.c_str());
         if(main.relations.find(name) != main.relations.end())
         {
