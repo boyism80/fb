@@ -10,13 +10,22 @@
 namespace fb { namespace game {
 
 class object;
-class listener;
+class life;
 
 class spell : public lua::luable
 {
 #pragma region lua
 public:
     LUA_PROTOTYPE
+#pragma endregion
+
+#pragma region listener
+public:
+interface listener
+{
+    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+};
 #pragma endregion
 
 
@@ -82,11 +91,8 @@ public:
 
 class spells : public fb::game::base_container<fb::game::spell>
 {
-private:
-    listener*                   _listener;
-
 public:
-    spells(life& owner, listener* listener);
+    spells(life& owner);
     ~spells();
 
     // override

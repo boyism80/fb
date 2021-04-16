@@ -16,10 +16,24 @@ namespace fb { namespace game {
 
 class session;
 class items;
-class listener;
 
 class item : public object
 {
+public:
+enum delete_attr : uint8_t;
+
+#pragma region listener
+public:
+interface listener : public virtual fb::game::object::listener
+{
+    virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::DELETE_NONE) = 0;
+    virtual void on_item_update(session& me, uint8_t index) = 0;
+    virtual void on_item_swap(session& me, uint8_t src, uint8_t dst) = 0;
+    virtual void on_item_active(session& me, item& item) = 0;
+    virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
+};
+#pragma endregion
+
 #pragma region enum
 public:
     enum penalties { NONE, DROP, DESTRUCTION };
@@ -247,7 +261,6 @@ public:
 #pragma region protected field
 
 protected:
-    listener*                           _listener;
     uint16_t                            _count;
     session*                            _owner;
 
@@ -432,6 +445,17 @@ public:
 //
 class equipment : public item
 {
+enum slot : uint8_t;
+
+#pragma region listener
+public:
+interface listener : public virtual fb::game::item::listener
+{
+    virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;
+    virtual void on_equipment_off(session& me, equipment::slot slot, uint8_t index) = 0;
+};
+#pragma endregion
+
 public:
     DECLARE_EXCEPTION(not_equipment_exception, "입을 수 없는 물건입니다.")
 
@@ -865,10 +889,9 @@ public:
     {
     private:
         session&                        _owner;
-        listener*                       _listener;
 
     public:
-        builder(session& owner, listener* listener);
+        builder(session& owner);
         ~builder();
 
     public:
@@ -925,9 +948,6 @@ class items : public fb::game::base_container<fb::game::item>
 private:
     fb::game::session&                  _owner;
 
-protected:
-    listener*                           _listener;
-
 private:
     fb::game::weapon*                   _weapon;
     fb::game::armor*                    _armor;
@@ -937,7 +957,7 @@ private:
     fb::game::auxiliary*                _auxiliaries[2];
 
 public:
-    items(session& owner, listener* listener);
+    items(session& owner);
     ~items();
 
 private:

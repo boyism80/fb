@@ -1,6 +1,5 @@
 #include "model/npc/npc.h"
 #include "model/acceptor/acceptor.game.h"
-#include "model/listener/listener.h"
 #include "builtin/builtin_function.h"
 
 using namespace fb::game;
@@ -36,8 +35,7 @@ int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
 }
 
 fb::game::npc::npc(const fb::game::npc::master* master, listener* listener) : 
-    fb::game::object(master, listener),
-    _listener(listener)
+    fb::game::object(master, listener)
 {
 }
 

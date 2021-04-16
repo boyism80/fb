@@ -13,7 +13,6 @@ class session;
 class buffs;
 class objects;
 class items;
-class listener;
 class sector;
 class sectors;
 
@@ -121,6 +120,23 @@ public:
 } cache;
 #pragma endregion
 
+#pragma region listener
+public:
+interface listener
+{
+    virtual void on_direction(fb::game::object& me) = 0;
+    virtual void on_show(fb::game::object& me, bool light) = 0;
+    virtual void on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
+    virtual void on_hide(fb::game::object& me) = 0;
+    virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
+    virtual void on_move(fb::game::object& me) = 0;
+    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    virtual void on_create(fb::game::object& me) = 0;
+    virtual void on_destroy(fb::game::object& me) = 0;
+    virtual void on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
+};
+#pragma endregion
+
 #pragma region private field
 private:
     listener*                           _listener;
@@ -161,6 +177,9 @@ private:
 
 #pragma region public method
 public:
+    template <typename T>
+    T*                                  get_listener() const { return dynamic_cast<T*>(this->_listener); }
+
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
 
@@ -243,6 +262,7 @@ protected:
 #pragma endregion
 
 #pragma region operator
+public:
     bool                                operator == (const object& right) const;
     bool                                operator != (const object& right) const;
 #pragma endregion

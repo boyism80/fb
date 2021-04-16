@@ -8,10 +8,24 @@ namespace fb { namespace game {
 
 class session;
 class item;
-class listener;
 
 class trade
 {
+#pragma region listener
+public:
+interface listener
+{
+    virtual void on_trade_begin(session& me, session& you) = 0;
+    virtual void on_trade_bundle(session& me) = 0;
+    virtual void on_trade_item(session& me, session& from, uint8_t index) = 0;
+    virtual void on_trade_money(session& me, session& from) = 0;
+    virtual void on_trade_cancel(session& me, session& from) = 0;
+    virtual void on_trade_lock(session& me, bool mine) = 0;
+    virtual void on_trade_failed(session& me) = 0;
+    virtual void on_trade_success(session& me) = 0;
+};
+#pragma endregion
+
 #pragma region enum
 public:
     enum state : uint8_t
@@ -26,7 +40,6 @@ public:
 #pragma endregion
 
 private:
-    listener*                               _listener;
     session&                                _owner;
     session*                                _you;
     std::vector<fb::game::item*>            _items;
@@ -35,7 +48,7 @@ private:
     bool                                    _locked;
 
 public:
-    trade(session& owner, listener* listener);
+    trade(session& owner);
     ~trade();
 
 private:

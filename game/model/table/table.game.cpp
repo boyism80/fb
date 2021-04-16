@@ -554,7 +554,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
     return true;
 }
 
-bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto& config = fb::config::get();
     auto current_host = config["id"].asString();
@@ -739,7 +739,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
     return true;
 }
 
-bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto count = fb::table::load
     (

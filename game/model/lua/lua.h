@@ -28,14 +28,13 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR+1)
 
-#define LUA_DEFAULT_POOL_SIZE 100
-
-
 // global
 std::string                     lua_cp949(lua_State* lua, int i);
 void                            lua_push_utf8(lua_State* lua, const std::string& v);
 
 namespace fb { namespace game { namespace lua {
+
+constexpr auto DEFAULT_POOL_SIZE = 100;
 
 class luable;
 class lua;
@@ -43,7 +42,7 @@ class main;
 
 lua&                            get();
 lua*                            get(lua_State* lua);
-void                            reserve(int capacity = LUA_DEFAULT_POOL_SIZE);
+void                            reserve(int capacity = DEFAULT_POOL_SIZE);
 void                            release();
 void                            bind_function(const std::string& name, lua_CFunction fn);
 
@@ -195,7 +194,7 @@ private:
     void                        clear();
 
 public:
-    void                        reserve(int capacity = LUA_DEFAULT_POOL_SIZE);
+    void                        reserve(int capacity = DEFAULT_POOL_SIZE);
     lua&                        alloc();
     lua*                        get(lua_State& lua);
     void                        release(lua& lua);

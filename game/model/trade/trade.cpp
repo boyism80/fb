@@ -1,11 +1,9 @@
 #include "model/session/session.h"
 #include "model/trade/trade.h"
-#include "model/listener/listener.h"
 #include "model/table/table.game.h"
 
-fb::game::trade::trade(session& owner, listener* listener) : 
+fb::game::trade::trade(session& owner) : 
     _owner(owner),
-    _listener(listener),
     _selected(nullptr),
     _money(0),
     _locked(false),
@@ -35,6 +33,8 @@ fb::game::session* fb::game::trade::you() const
 
 bool fb::game::trade::begin(session& you)
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         if(this->_owner.id() == you.id())
@@ -87,18 +87,18 @@ bool fb::game::trade::begin(session& you)
         this->_you = &you;
         you.trade._you = &this->_owner;
 
-        if(this->_listener != nullptr)
+        if(listener != nullptr)
         {
-            this->_listener->on_trade_begin(this->_owner, you);
-            this->_listener->on_trade_begin(you, this->_owner);
+            listener->on_trade_begin(this->_owner, you);
+            listener->on_trade_begin(you, this->_owner);
         }
 
         return true;
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what());
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::STATE);
 
         return false;
     }
@@ -123,6 +123,8 @@ bool fb::game::trade::trading() const
 
 bool fb::game::trade::up(fb::game::item& item)
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         if(this->trading() == false)
@@ -135,8 +137,8 @@ bool fb::game::trade::up(fb::game::item& item)
         {
             // 묶음 단위의 아이템 형식 거래 시도
             this->_selected = &item;
-            if (this->_listener != nullptr)
-                this->_listener->on_trade_bundle(this->_owner);
+            if (listener != nullptr)
+                listener->on_trade_bundle(this->_owner);
         }
         else
         {
@@ -146,10 +148,10 @@ bool fb::game::trade::up(fb::game::item& item)
             if(index == 0xFF)
                 return false;
 
-            if (this->_listener != nullptr)
+            if (listener != nullptr)
             {
-                this->_listener->on_trade_item(this->_owner, this->_owner, index);
-                this->_listener->on_trade_item(*this->_you, this->_owner, index);
+                listener->on_trade_item(this->_owner, this->_owner, index);
+                listener->on_trade_item(*this->_you, this->_owner, index);
             }
         }
 
@@ -157,8 +159,8 @@ bool fb::game::trade::up(fb::game::item& item)
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::POPUP);
         
         return false;
     }
@@ -166,6 +168,8 @@ bool fb::game::trade::up(fb::game::item& item)
 
 bool fb::game::trade::up(uint8_t money)
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         // 입력한 금전 양을 계속해서 빼면 안된다.
@@ -177,18 +181,18 @@ bool fb::game::trade::up(uint8_t money)
         this->_owner.money(total - money);
         this->_money = money;
 
-        if(this->_listener != nullptr)
+        if(listener != nullptr)
         {
-            this->_listener->on_trade_money(this->_owner, this->_owner);
-            this->_listener->on_trade_money(this->_owner, this->_owner);
+            listener->on_trade_money(this->_owner, this->_owner);
+            listener->on_trade_money(this->_owner, this->_owner);
         }
         
         return true;
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::POPUP);
 
         return false;
     }
@@ -201,6 +205,8 @@ uint32_t fb::game::trade::money() const
 
 bool fb::game::trade::count(uint16_t count)
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         if(this->trading() == false)
@@ -218,10 +224,10 @@ bool fb::game::trade::count(uint16_t count)
         auto splitted = this->_owner.items.remove(*this->_selected, count);
         auto index = this->add(*splitted);
 
-        if(this->_listener != nullptr)
+        if(listener != nullptr)
         {
-            this->_listener->on_trade_item(this->_owner, this->_owner, index);
-            this->_listener->on_trade_item(*this->_you, this->_owner, index);
+            listener->on_trade_item(this->_owner, this->_owner, index);
+            listener->on_trade_item(*this->_you, this->_owner, index);
         }
 
         this->_selected = nullptr;
@@ -229,8 +235,8 @@ bool fb::game::trade::count(uint16_t count)
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::POPUP);
 
         return false;
     }
@@ -238,6 +244,8 @@ bool fb::game::trade::count(uint16_t count)
 
 bool fb::game::trade::cancel()
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         if(this->trading() == false)
@@ -246,10 +254,10 @@ bool fb::game::trade::cancel()
         this->restore();
         this->_you->trade.restore();
 
-        if(this->_listener != nullptr)
+        if(listener != nullptr)
         {
-            this->_listener->on_trade_cancel(this->_owner, this->_owner);
-            this->_listener->on_trade_cancel(*this->_you, this->_owner);
+            listener->on_trade_cancel(this->_owner, this->_owner);
+            listener->on_trade_cancel(*this->_you, this->_owner);
         }
 
         this->end();
@@ -257,8 +265,8 @@ bool fb::game::trade::cancel()
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::POPUP);
 
         return false;
     }
@@ -335,20 +343,22 @@ bool fb::game::trade::flushable() const
 
 bool fb::game::trade::lock()
 {
+    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+
     try
     {
         if(this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
         this->_locked = true;
-        if(this->_listener != nullptr)
+        if(listener != nullptr)
         {
-            this->_listener->on_trade_lock(this->_owner, true);
+            listener->on_trade_lock(this->_owner, true);
         }
 
         if(this->_you->trade._locked == false)  // 상대방이 이미 교환 확인을 누른 경우
         {
-            this->_listener->on_trade_lock(*this->_you, false);
+            listener->on_trade_lock(*this->_you, false);
             return true;
         }
         else if(!this->flushable() || !this->_you->trade.flushable())   // 교환이 불가능한 경우
@@ -356,10 +366,10 @@ bool fb::game::trade::lock()
             this->restore();
             this->_you->trade.restore();
 
-            if(this->_listener != nullptr)
+            if(listener != nullptr)
             {
-                this->_listener->on_trade_failed(this->_owner);
-                this->_listener->on_trade_failed(*this->_you);
+                listener->on_trade_failed(this->_owner);
+                listener->on_trade_failed(*this->_you);
             }
             this->end();
             return false;
@@ -369,10 +379,10 @@ bool fb::game::trade::lock()
             this->flush();
             this->_you->trade.flush();
 
-            if(this->_listener != nullptr)
+            if(listener != nullptr)
             {
-                this->_listener->on_trade_success(this->_owner);
-                this->_listener->on_trade_success(*this->_you);
+                listener->on_trade_success(this->_owner);
+                listener->on_trade_success(*this->_you);
             }
             this->end();
             return true;
@@ -380,8 +390,8 @@ bool fb::game::trade::lock()
     }
     catch(std::exception& e)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_notify(this->_owner, e.what());
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), message::type::STATE);
 
         return false;
     }

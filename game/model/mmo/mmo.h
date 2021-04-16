@@ -8,6 +8,10 @@
 #include "module/stream/stream.h"
 #include "module/common/type.h"
 
+#ifndef interface
+#define interface struct
+#endif
+
 #define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\
                                         {\
                                         public:\

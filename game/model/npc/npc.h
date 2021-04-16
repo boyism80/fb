@@ -5,8 +5,6 @@
 
 namespace fb { namespace game {
 
-class listener;
-
 class npc : public object
 {
 #pragma region lua
@@ -22,6 +20,12 @@ class master : public object::master
 #pragma region lua
 public:
     LUA_PROTOTYPE
+#pragma endregion
+
+#pragma region listener
+public:
+interface listener : public virtual fb::game::object::listener
+{};
 #pragma endregion
 
 
@@ -58,7 +62,6 @@ public:
 #pragma region private field
 private:
     std::string                 _script;
-    listener*                   _listener;
 #pragma endregion
 
 

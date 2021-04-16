@@ -3,7 +3,6 @@
 #include "model/session/session.h"
 #include "model/mob/mob.h"
 #include "model/acceptor/acceptor.game.h"
-#include "model/listener/listener.h"
 #include "builtin/builtin_function.h"
 
 fb::game::object::master::master(const std::string& name, uint16_t look, uint8_t color) : 

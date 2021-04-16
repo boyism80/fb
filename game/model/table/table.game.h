@@ -101,7 +101,7 @@ public:
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_spawn(const std::string& path, fb::game::npc::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::npc::master*                  name2npc(const std::string& name);
@@ -131,7 +131,7 @@ private:
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
     bool                                    load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                    load_spawn(const std::string& path, fb::game::mob::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::mob::master*                  name2mob(const std::string& name);

@@ -5,13 +5,26 @@
 
 namespace fb { namespace game {
 
-class listener;
-
 class life : public object
 {
 #pragma region lua
 public:
     LUA_PROTOTYPE
+#pragma endregion
+
+#pragma region listener
+public:
+interface listener : public virtual fb::game::object::listener,
+    public fb::game::spell::listener
+{
+    virtual void on_attack(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_damage(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void on_die(life& me) = 0;
+    virtual void on_hp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void on_mp(life& me, uint32_t before, uint32_t current) = 0;
+};
 #pragma endregion
 
 
@@ -78,13 +91,6 @@ public:
 
 #pragma endregion
 
-
-#pragma region private field
-private:
-    listener*                       _listener;
-#pragma endregion
-
-
 #pragma region protected field
 protected:
     uint32_t                    _hp, _mp;
@@ -150,6 +156,11 @@ public:
     bool                        active(fb::game::spell& spell, fb::game::object& to);
 #pragma endregion
 
+#pragma region handler
+protected:
+    virtual void                handle_update() {}
+
+#pragma endregion
 
 #pragma region built-in method
 public:

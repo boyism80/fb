@@ -1,6 +1,5 @@
 #include "model/session/session.h"
 #include "model/map/map.h"
-#include "model/listener/listener.h"
 #include "mob.h"
 
 fb::game::mob::master::master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
@@ -130,7 +129,6 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
 
 fb::game::mob::mob(const mob::master* master, listener* listener, bool alive) : 
     life(master, listener),
-    _listener(listener),
     _action_time(0),
     _dead_time(0),
     _respawn_time(0),
@@ -219,20 +217,24 @@ void fb::game::mob::attack()
         return;
 
     auto damage = this->random_damage(*static_cast<fb::game::life*>(front));
-    if(this->_listener != nullptr)
-        this->_listener->on_attack(*this, front, damage, false);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_attack(*this, front, damage, false);
 }
 
 uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool critical)
 {
+    auto listener = this->get_listener<fb::game::mob::listener>();
+
     value = fb::game::life::hp_down(value, from, critical);
-    if(this->_listener != nullptr)
-        this->_listener->on_damage(*this, from, value, critical);
+    if(listener != nullptr)
+        listener->on_damage(*this, from, value, critical);
 
     if(this->_hp == 0)
     {
-        if(this->_listener != nullptr)
-            this->_listener->on_die(*this);
+        if(listener != nullptr)
+            listener->on_die(*this);
 
         this->visible(false);
     }

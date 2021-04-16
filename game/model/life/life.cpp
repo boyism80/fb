@@ -1,5 +1,4 @@
 #include "model/acceptor/acceptor.game.h"
-#include "model/listener/listener.h"
 #include "model/map/map.h"
 #include "life.h"
 
@@ -116,31 +115,28 @@ int fb::game::life::master::builtin_mp(lua_State* lua)
 
 fb::game::life::life(const master* master, listener* listener) : 
     object(master, listener),
-    _listener(listener),
     _hp(0),
     _mp(0),
     _condition(fb::game::condition::NONE),
-    spells(*this, listener)
+    spells(*this)
 {
 }
 
 fb::game::life::life(master* master, listener* listener, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
     object(master, listener, id),
-    _listener(listener),
     _hp(hp),
     _mp(mp),
     _condition(fb::game::condition::NONE),
-    spells(*this, listener)
+    spells(*this)
 {
 }
 
 fb::game::life::life(const fb::game::object& object, listener* listener, uint32_t hp, uint32_t mp, uint32_t exp) : 
     fb::game::object(object),
-    _listener(listener),
     _hp(hp),
     _mp(mp),
     _condition(fb::game::condition::NONE),
-    spells(*this, listener)
+    spells(*this)
 {
 }
 
@@ -161,33 +157,39 @@ uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& lif
 
 uint32_t fb::game::life::hp_up(uint32_t value, fb::game::object* from)
 {
+    auto listener = this->get_listener<fb::game::life::listener>();
+
     value = std::min(value, this->base_hp() - this->_hp);
     this->hp(this->_hp + value);
-    if(this->_listener != nullptr)
-        this->_listener->on_heal_hp(*this, value, from);
+    if(listener != nullptr)
+        listener->on_heal_hp(*this, value, from);
 
     return value;
 }
 
 uint32_t fb::game::life::hp_down(uint32_t value, fb::game::object* from, bool critical)
 {
+    auto listener = this->get_listener<fb::game::life::listener>();
+
     value = std::min(value, this->_hp);
     this->hp(this->_hp - value);
-    if(this->_listener != nullptr)
-        this->_listener->on_damage(*this, from, value, critical);
+    if(listener != nullptr)
+        listener->on_damage(*this, from, value, critical);
 
-    if(this->_hp == 0 && this->_listener != nullptr)
-        this->_listener->on_die(*this);
+    if(this->_hp == 0 && listener != nullptr)
+        listener->on_die(*this);
 
     return value;
 }
 
 uint32_t fb::game::life::mp_up(uint32_t value, fb::game::object* from)
 {
+    auto listener = this->get_listener<fb::game::life::listener>();
+
     value = std::min(value, this->base_mp() - this->_mp);
     this->mp(this->_mp + value);
-    if(this->_listener != nullptr)
-        this->_listener->on_heal_mp(*this, value, from);
+    if(listener != nullptr)
+        listener->on_heal_mp(*this, value, from);
 
     return value;
 }
@@ -205,11 +207,12 @@ void fb::game::life::attack()
     if(this->_map == nullptr)
         return;
 
+    auto listener = this->get_listener<fb::game::life::listener>();
     auto front = this->forward(object::types::UNKNOWN);
 
     // TODO: 몬스터 데미지 공식 적용
-    if(this->_listener != nullptr)
-        this->_listener->on_attack(*this, front, 1, false);
+    if(listener != nullptr)
+        listener->on_attack(*this, front, 1, false);
 }
 
 uint32_t fb::game::life::hp() const
@@ -221,12 +224,12 @@ void fb::game::life::hp(uint32_t value)
 {
     auto before = this->_hp;
     this->_hp = value;
-    if(this->_listener != nullptr)
-    {
-        if(this->is(fb::game::object::types::SESSION))
-            this->_listener->on_updated(static_cast<fb::game::session&>(*this), fb::game::state_level::LEVEL_MIDDLE);
-        this->_listener->on_hp(*this, before, this->_hp);
-    }
+
+    this->handle_update();
+
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_hp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::mp() const
@@ -238,12 +241,12 @@ void fb::game::life::mp(uint32_t value)
 {
     auto before = this->_mp;
     this->_mp = value;
-    if(this->_listener != nullptr)
-    {
-        if(this->is(fb::game::object::types::SESSION))
-            this->_listener->on_updated(static_cast<fb::game::session&>(*this), fb::game::state_level::LEVEL_MIDDLE);
-        this->_listener->on_mp(*this, before, this->_hp);
-    }
+
+    this->handle_update();
+
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_mp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::base_hp() const
@@ -301,8 +304,10 @@ bool fb::game::life::alive() const
 void fb::game::life::kill()
 {
     this->_hp = 0;
-    if(this->_listener != nullptr)
-        this->_listener->on_hide(*this);
+
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_hide(*this);
 }
 
 bool fb::game::life::active(fb::game::spell& spell, const std::string& message)

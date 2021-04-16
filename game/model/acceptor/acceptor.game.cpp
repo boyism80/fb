@@ -870,7 +870,7 @@ bool fb::game::acceptor::handle_itemmix(fb::socket<fb::game::session>& socket, c
     if(request.indices.size() > item::MAX_SLOT - 1)
         return false;
 
-    itemmix::builder            builder(*session, this);
+    itemmix::builder            builder(*session);
     for(auto x : request.indices)
         builder.push(x - 1);
 

@@ -8,7 +8,6 @@
 namespace fb { namespace game {
 
 class session;
-class listener;
 
 class mob : public life
 {
@@ -17,6 +16,15 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
+#pragma region listener
+public:
+interface listener : public virtual fb::game::life::listener
+{
+    virtual void on_attack(mob& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_damage(mob& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_die(mob& me) = 0;
+};
+#pragma endregion
 
 #pragma region structure
 public:
