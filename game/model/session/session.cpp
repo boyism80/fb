@@ -54,6 +54,34 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
+void fb::game::session::handle_hold()
+{
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_hold(*this);
+}
+
+void fb::game::session::handle_switch_process(fb::game::map& map, const point16_t& position)
+{
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_transfer(*this, map, position);
+}
+
+void fb::game::session::handle_warp()
+{
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_warp(*this);
+}
+
+void fb::game::session::handle_update()
+{
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
+}
+
 
 fb::game::session::operator fb::socket<fb::game::session>& ()
 {

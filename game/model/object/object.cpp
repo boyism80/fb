@@ -235,8 +235,8 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     auto forced = refresh || abs(this->_before.position.x - this->_position.x) + abs(this->_before.position.y - this->_position.y) > 1;
-    if(forced && this->is(fb::game::object::types::SESSION))
-        this->_listener->on_hold(static_cast<fb::game::session&>(*this));
+    if(forced)
+        this->handle_hold();
 
     this->_map->update(*this);
     
@@ -554,9 +554,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 
         if(this->switch_process(*map))
         {
-            if(this->is(fb::game::object::types::SESSION))
-                this->_listener->on_transfer(static_cast<fb::game::session&>(*this), *map, position);
-
+            this->handle_switch_process(*map, position);
             return;
         }
     }
@@ -785,9 +783,7 @@ void fb::game::object::handle_enter(fb::game::map* map, const point16_t& positio
 
         this->_map->objects.add(*this);
 
-        if(this->is(fb::game::object::types::SESSION))
-            this->_listener->on_warp(static_cast<fb::game::session&>(*this));
-
+        this->handle_warp();
         this->enter();
     }
 }

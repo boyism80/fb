@@ -235,6 +235,11 @@ public:
     virtual void                        handle_timer(uint64_t elapsed_milliseconds) {}
     void                                handle_enter(fb::game::map* map, const point16_t& position);
     void                                handle_transfer(fb::game::map* map, const point16_t& position);
+
+protected:
+    virtual void                        handle_hold() {}
+    virtual void                        handle_switch_process(fb::game::map& map, const point16_t& position) {}
+    virtual void                        handle_warp() {}
 #pragma endregion
 
 #pragma region operator
