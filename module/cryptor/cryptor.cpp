@@ -22,9 +22,9 @@ fb::cryptor::cryptor() : cryptor(0, (uint8_t*)"NexonInc.")
 
 fb::cryptor::cryptor(uint8_t types, const uint8_t* key) : _key(NULL), _sequence(0), _type(types)
 {
-    this->_key = new uint8_t[0x09 * 4];
+    this->_key = new uint8_t[KEY_SIZE * 4];
     for(int i = 0; i < 4; i++)
-        std::memcpy(this->_key + 0x09 * i, key, 0x09);
+        std::memcpy(this->_key + KEY_SIZE * i, key, KEY_SIZE);
 }
 
 fb::cryptor::cryptor(const cryptor& crt) : cryptor(crt._type, crt._key)
@@ -86,7 +86,6 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
     auto                    extended_size = size + 0x100;
     auto                    buffer_src = (uint8_t*)data.data() + offset;
     auto                    buffer_dst = new uint8_t[extended_size];
-    auto                    key_size = uint8_t(0x09);
 
     try
     {
@@ -96,18 +95,18 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         if(size - 1 <= 0)
             throw;
 
-        this->crypt(buffer_src + 1, buffer_dst + 2, size - 1, this->_key, key_size);
+        this->crypt(buffer_src + 1, buffer_dst + 2, size - 1, this->_key, KEY_SIZE);
 
-        auto                num_loop = uint32_t((size - 2) / key_size + 1);
+        auto                num_loop = uint32_t((size - 2) / KEY_SIZE + 1);
         if(num_loop > 0)
         {
             auto            offset = buffer_dst + 2;
             for(uint32_t i = 0; i < num_loop; i++)
             {
                 if(i != this->_sequence)
-                    this->crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+                    this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
-                offset += key_size;
+                offset += KEY_SIZE;
             }
         }
         this->crypt(buffer_dst + 2, buffer_dst + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
@@ -142,7 +141,6 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
     auto                    extended_size = size + 0x100;
     auto                    buffer_src = (uint8_t*)data.data() + offset;
     auto                    buffer_dst = new uint8_t[extended_size];
-    auto                    key_size = uint8_t(0x09);
 
     try
     {
@@ -153,20 +151,20 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
             throw;
 
         this->crypt(buffer_src + 2, buffer_dst + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
-        int num_subenc = (size - 3) / key_size + 1;
+        int num_subenc = (size - 3) / KEY_SIZE + 1;
         if(num_subenc > 0)
         {
             uint8_t*        offset = buffer_dst + 1;
             for(int i = 0; i < num_subenc; i++)
             {
                 if(sequence != i)
-                    this->crypt(offset, offset, key_size, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+                    this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
 
-                offset += key_size;
+                offset += KEY_SIZE;
             }
         }
 
-        this->crypt(buffer_dst + 1, buffer_dst + 1, size - 2, this->_key, key_size);
+        this->crypt(buffer_dst + 1, buffer_dst + 1, size - 2, this->_key, KEY_SIZE);
 
     }
     catch(...)
@@ -236,7 +234,7 @@ uint8_t* fb::cryptor::key() const
 fb::cryptor& fb::cryptor::operator=(const cryptor& crt)
 {
     for(int i = 0; i < 4; i++)
-        std::memcpy(this->_key + 0x09 * i, (const void*)crt._key, 0x09);
+        std::memcpy(this->_key + KEY_SIZE * i, (const void*)crt._key, KEY_SIZE);
     this->_type = crt._type;
 
     return *this;
@@ -247,15 +245,15 @@ fb::cryptor fb::cryptor::generate()
 #if defined DEBUG | defined _DEBUG
     auto                    enc_type        = 1;
 #else
-    auto                    enc_type        = rand() % 0x09;
+    auto                    enc_type        = rand() % KEY_SIZE;
 #endif
-    uint8_t                 enc_key[0x09]   = {0,};
+    uint8_t                 enc_key[KEY_SIZE]   = {0,};
 
 #if defined DEBUG | defined _DEBUG
-    for(int i = 0; i < 0x09; i++)
+    for(int i = 0; i < KEY_SIZE; i++)
         enc_key[i] = i + 1;
 #else
-    for(int i = 0; i < 0x09; i++)
+    for(int i = 0; i < KEY_SIZE; i++)
         enc_key[i] = rand() % 255 + 1;
 #endif
 
@@ -264,13 +262,13 @@ fb::cryptor fb::cryptor::generate()
 
 bool fb::cryptor::validate(uint8_t type, const uint8_t* key, uint8_t ksize)
 {
-    if(type > 0x09)
+    if(type > KEY_SIZE)
         return false;
 
-    if(ksize != 0x09)
+    if(ksize != KEY_SIZE)
         return false;
 
-    if(std::any_of(key, key + 0x09, [](uint8_t x) { return x == 0;}))
+    if(std::any_of(key, key + KEY_SIZE, [](uint8_t x) { return x == 0;}))
         return false;
 
     return true;

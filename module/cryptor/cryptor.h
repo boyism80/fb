@@ -8,8 +8,8 @@ namespace fb {
 class cryptor
 {
 public:
-    static uint32_t         HEX_TABLE[10][0x100];
-    static const uint32_t   KEY_SIZE = 0x09;
+    static uint32_t             HEX_TABLE[10][0x100];
+    static constexpr uint32_t   KEY_SIZE = 0x09;
 
 private:
     uint8_t                 _type;
