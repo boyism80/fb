@@ -77,11 +77,6 @@ void fb::game::life::master::defensive_magical(uint8_t value)
     this->_defensive.magical = value;
 }
 
-fb::game::object* fb::game::life::master::make(listener* listener) const
-{
-    return new life(this, listener);
-}
-
 int fb::game::life::master::builtin_hp(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -145,14 +140,14 @@ fb::game::life::~life()
 {
 }
 
-uint32_t fb::game::life::random_damage(uint32_t value, const fb::game::life& life) const
+uint32_t fb::game::life::calculate_damage(uint32_t value, const fb::game::life& life) const
 {
-    uint32_t Xrate = life.direction() == this->direction() ? 2 : 1;
-    uint32_t n = (100 - life.defensive_physical()) / 10;
-    float defensive_percent = -125 + (n * (2*14.75f - (n-1)/2.0f))/2.0f;
-    uint32_t random_damage = value - uint32_t(defensive_percent * (value/100.0f));
+    auto rate = life.direction() == this->direction() ? 2 : 1;
+    auto n = (100 - life.defensive_physical()) / 10;
+    auto defensive_percent = -125 + (n * (2*14.75f - (n-1)/2.0f))/2.0f;
+    auto damage = value - uint32_t(defensive_percent * (value/100.0f));
 
-    return random_damage * Xrate;
+    return damage * rate;
 }
 
 uint32_t fb::game::life::hp_up(uint32_t value, fb::game::object* from)
@@ -173,11 +168,14 @@ uint32_t fb::game::life::hp_down(uint32_t value, fb::game::object* from, bool cr
 
     value = std::min(value, this->_hp);
     this->hp(this->_hp - value);
-    if(listener != nullptr)
-        listener->on_damage(*this, from, value, critical);
 
-    if(this->_hp == 0 && listener != nullptr)
-        listener->on_die(*this);
+    this->handle_damaged(from, value, critical);
+    if(this->_hp == 0)
+    {
+        if(from != nullptr)
+            from->handle_kill(*this);
+        this->handle_die(from);
+    }
 
     return value;
 }
@@ -207,12 +205,27 @@ void fb::game::life::attack()
     if(this->_map == nullptr)
         return;
 
-    auto listener = this->get_listener<fb::game::life::listener>();
-    auto front = this->forward(object::types::UNKNOWN);
+    if(this->alive() == false)
+        return;
 
-    // TODO: 몬스터 데미지 공식 적용
-    if(listener != nullptr)
-        listener->on_attack(*this, front, 1, false);
+    auto front = this->forward(object::types::UNKNOWN);
+    this->handle_attack(front);
+
+    if(front == nullptr || front->is(fb::game::object::types::LIFE) == false)
+        return;
+
+    auto you = static_cast<fb::game::life*>(front);
+    if(you == nullptr)
+        return;
+
+    auto miss = this->handle_calculate_miss(*you);
+    if(miss)
+        return;
+
+    auto critical = this->handle_calculate_critical(*you);
+    auto damage = this->handle_calculate_damage(critical);
+
+    this->handle_hit(*you, damage, critical);
 }
 
 uint32_t fb::game::life::hp() const
@@ -378,6 +391,60 @@ bool fb::game::life::active(fb::game::spell& spell)
         .resume(2);
     return true;
 }
+
+bool fb::game::life::handle_calculate_critical(fb::game::life& you) const
+{
+#if defined DEBUG | defined _DEBUG
+    return true;
+#else
+    return std::rand() % 100 < 20;
+#endif
+}
+
+bool fb::game::life::handle_calculate_miss(fb::game::life& you) const
+{
+#if defined DEBUG | defined _DEBUG
+    return false;
+#else
+    return std::rand() % 3 == 0;
+#endif
+}
+
+void fb::game::life::handle_attack(fb::game::object* you)
+{
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_attack(*this, you);
+}
+
+void fb::game::life::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
+{
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_hit(*this, you, damage, critical);
+}
+
+void fb::game::life::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
+{
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_damaged(*this, from, damage, critical);
+}
+
+void fb::game::life::handle_die(fb::game::object* from)
+{
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_die(*this, from);
+}
+
+void fb::game::life::handle_kill(fb::game::life& you)
+{
+    auto listener = this->get_listener<fb::game::life::listener>();
+    if(listener != nullptr)
+        listener->on_kill(*this, you);
+}
+
 
 int fb::game::life::builtin_hp(lua_State* lua)
 {

@@ -205,7 +205,7 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
     return (this->attr() & flag) == flag;
 }
 
-fb::game::object* fb::game::item::master::make(listener* listener) const
+fb::game::object* fb::game::item::master::make(fb::game::item::listener* listener) const
 {
     return new item(this, listener);
 }
@@ -411,7 +411,7 @@ fb::game::item::attrs fb::game::cash::master::attr() const
     return item::attrs::ITEM_ATTR_CASH;
 }
 
-fb::game::object* fb::game::cash::master::make(listener* listener) const
+fb::game::object* fb::game::cash::master::make(fb::game::item::listener* listener) const
 {
     return new cash(0, listener);
 }
@@ -514,7 +514,7 @@ fb::game::item::attrs fb::game::consume::master::attr() const
     return attr;
 }
 
-fb::game::object* fb::game::consume::master::make(listener* listener) const
+fb::game::object* fb::game::consume::master::make(fb::game::item::listener* listener) const
 {
     return new consume(this, listener);
 }
@@ -573,7 +573,7 @@ fb::game::item::attrs fb::game::pack::master::attr() const
     return item::attrs::ITEM_ATTR_PACK;
 }
 
-fb::game::object* fb::game::pack::master::make(listener* listener) const
+fb::game::object* fb::game::pack::master::make(fb::game::item::listener* listener) const
 {
     return new pack(this, listener);
 }
@@ -653,9 +653,9 @@ fb::game::item::attrs fb::game::equipment::master::attr() const
     return item::attrs::ITEM_ATTR_EQUIPMENT;
 }
 
-fb::game::object* fb::game::equipment::master::make(listener* listener) const
+fb::game::object* fb::game::equipment::master::make(fb::game::item::listener* listener) const
 {
-    return new equipment(this, listener);
+    return new equipment(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 uint16_t fb::game::equipment::master::dress() const
@@ -1151,9 +1151,9 @@ fb::game::item::attrs fb::game::weapon::master::attr() const
     return item::attrs::ITEM_ATTR_WEAPON;
 }
 
-fb::game::object* fb::game::weapon::master::make(listener* listener) const
+fb::game::object* fb::game::weapon::master::make(fb::game::item::listener* listener) const
 {
-    return new weapon(this, listener);
+    return new weapon(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 fb::game::weapon::types fb::game::weapon::master::weapon_type() const
@@ -1282,9 +1282,9 @@ fb::game::item::attrs fb::game::armor::master::attr() const
     return item::attrs::ITEM_ATTR_ARMOR;
 }
 
-fb::game::object* fb::game::armor::master::make(listener* listener) const
+fb::game::object* fb::game::armor::master::make(fb::game::item::listener* listener) const
 {
-    return new armor(this, listener);
+    return new armor(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 
@@ -1323,9 +1323,9 @@ fb::game::item::attrs fb::game::helmet::master::attr() const
     return item::attrs::ITEM_ATTR_HELMET;
 }
 
-fb::game::object* fb::game::helmet::master::make(listener* listener) const
+fb::game::object* fb::game::helmet::master::make(fb::game::item::listener* listener) const
 {
-    return new helmet(this, listener);
+    return new helmet(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 
@@ -1364,9 +1364,9 @@ fb::game::item::attrs fb::game::shield::master::attr() const
     return item::attrs::ITEM_ATTR_SHIELD;
 }
 
-fb::game::object* fb::game::shield::master::make(listener* listener) const
+fb::game::object* fb::game::shield::master::make(fb::game::item::listener* listener) const
 {
-    return new shield(this, listener);
+    return new shield(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 
@@ -1405,9 +1405,9 @@ fb::game::item::attrs fb::game::ring::master::attr() const
     return item::attrs::ITEM_ATTR_RING;
 }
 
-fb::game::object* fb::game::ring::master::make(listener* listener) const
+fb::game::object* fb::game::ring::master::make(fb::game::item::listener* listener) const
 {
-    return new ring(this, listener);
+    return new ring(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 
@@ -1446,9 +1446,9 @@ fb::game::item::attrs fb::game::auxiliary::master::attr() const
     return item::attrs::ITEM_ATTR_AUXILIARY;
 }
 
-fb::game::object* fb::game::auxiliary::master::make(listener* listener) const
+fb::game::object* fb::game::auxiliary::master::make(fb::game::item::listener* listener) const
 {
-    return new auxiliary(this, listener);
+    return new auxiliary(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 
@@ -1487,9 +1487,9 @@ fb::game::item::attrs fb::game::arrow::master::attr() const
     return item::attrs::ITEM_ATTR_ARROW;
 }
 
-fb::game::object* fb::game::arrow::master::make(listener* listener) const
+fb::game::object* fb::game::arrow::master::make(fb::game::item::listener* listener) const
 {
-    return new arrow(this, listener);
+    return new arrow(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
 

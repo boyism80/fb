@@ -80,6 +80,71 @@ void fb::game::session::handle_update()
         listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
 }
 
+uint32_t fb::game::session::handle_calculate_damage(bool critical) const
+{
+    auto                    weapon = this->items.weapon();
+
+    if(weapon == nullptr) // no weapon
+    {
+        return 1 + std::rand() % 5;
+    }
+    else if(critical)
+    {
+        auto                range = weapon->damage_large();
+        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
+    }
+    else // normal
+    {
+        auto                range = weapon->damage_small();
+        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
+    }
+}
+
+void fb::game::session::handle_attack(fb::game::object* you)
+{
+    fb::game::life::handle_attack(you);
+
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_attack(*this, you);
+}
+
+void fb::game::session::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
+{
+    fb::game::life::handle_hit(you, damage, critical);
+
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_hit(*this, you, damage, critical);
+}
+
+void fb::game::session::handle_kill(fb::game::life& you)
+{
+    fb::game::life::handle_kill(you);
+
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_kill(*this, you);
+}
+
+void fb::game::session::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
+{
+    fb::game::life::handle_damaged(from, damage, critical);
+
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_damaged(*this, from, damage, critical);
+}
+
+void fb::game::session::handle_die(fb::game::object* from)
+{
+    fb::game::life::handle_die(from);
+
+    auto listener = this->get_listener<fb::game::session::listener>();
+    if(listener != nullptr)
+        listener->on_die(*this, from);
+}
+
 
 fb::game::session::operator fb::socket<fb::game::session>& ()
 {
@@ -102,22 +167,7 @@ void fb::game::session::attack()
     try
     {
         this->assert_state({state::RIDING, state::GHOST});
-
-        if(this->_map == nullptr)
-            return;
-
-        auto front = this->forward(object::types::UNKNOWN);
-        auto damage = 0;
-        auto critical = false;
-
-        if(front != nullptr && front->is(object::types::LIFE) && static_cast<life*>(front)->alive())
-        {
-            critical = true;
-            damage = this->random_damage(*static_cast<fb::game::life*>(front), critical);
-        }
-
-        if(listener != nullptr)
-            listener->on_attack(*this, front, damage, critical);
+        fb::game::life::attack();
     }
     catch(std::exception& e)
     {
@@ -141,20 +191,6 @@ void fb::game::session::action(fb::game::action action, fb::game::duration durat
         if(listener != nullptr)
             listener->on_notify(*this, e.what());
     }
-}
-
-uint32_t fb::game::session::hp_down(uint32_t value, fb::game::object* from, bool critical)
-{
-    auto listener = this->get_listener<fb::game::session::listener>();
-
-    value = fb::game::life::hp_down(value, from, critical);
-
-    if(listener != nullptr)
-        listener->on_damage(*this, from, value, critical);
-
-    if(this->_hp == 0 && listener != nullptr)
-        listener->on_die(*this);
-    return value;
 }
 
 const std::string& fb::game::session::name() const
@@ -680,32 +716,6 @@ uint32_t fb::game::session::damage() const
 void fb::game::session::damage(uint8_t value)
 {
     this->_damage = value;
-}
-
-uint32_t fb::game::session::random_damage(fb::game::life& life, bool& critical) const
-{
-    uint32_t                damage = 0;
-    auto                    weapon = this->items.weapon();
-
-    if(weapon == nullptr) // no weapon
-    {
-        damage = 1 + std::rand() % 5;
-        critical = false;
-    }
-    else if(std::rand() % 100 < 20) // critical
-    {
-        auto                range = weapon->damage_large();
-        damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
-        critical = true;
-    }
-    else // normal
-    {
-        auto                range = weapon->damage_small();
-        damage = std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
-        critical = false;
-    }
-
-    return fb::game::life::random_damage(damage, life);
 }
 
 uint32_t fb::game::session::hit() const

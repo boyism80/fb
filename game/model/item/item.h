@@ -200,14 +200,14 @@ public:
 public:
     virtual fb::game::item::attrs       attr() const;
     bool                                attr(fb::game::item::attrs flag) const;
-    virtual fb::game::object*           make(listener* listener) const;
+    virtual fb::game::object*           make(fb::game::item::listener* listener) const;
 #pragma endregion
 
 
 #pragma region template method
 public:
     template <typename T>
-    T* make(listener* listener) const { return static_cast<T*>(this->make(listener)); }
+    T* make(fb::game::item::listener* listener) const { return static_cast<T*>(this->make(listener)); }
 #pragma endregion
 
 
@@ -341,7 +341,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -384,7 +384,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -417,7 +417,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 private:
@@ -525,7 +525,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
 
     public:
         uint16_t                        dress() const;
@@ -695,7 +695,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
         fb::game::weapon::types         weapon_type() const;
 
         const range32_t&                damage_small() const;
@@ -744,7 +744,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -769,7 +769,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -794,7 +794,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -819,7 +819,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -844,7 +844,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:
@@ -869,7 +869,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(listener* listener) const;
+        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
     };
 
 public:

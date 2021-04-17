@@ -80,13 +80,25 @@ void fb::game::acceptor::on_leave(fb::game::object& me, fb::game::map* map, cons
     }
 }
 
-void fb::game::acceptor::on_attack(life& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_attack(life& me, object* you)
 {
 }
 
-void fb::game::acceptor::on_damage(life& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_hit(life& me, life& you, uint32_t damage, bool critical)
+{
+}
+
+void fb::game::acceptor::on_kill(life& me, life& you)
+{
+}
+
+void fb::game::acceptor::on_damaged(life& me, object* you, uint32_t damage, bool critical)
 {
     this->send(me, fb::protocol::game::response::life::show_hp(me, damage, false), scope::PIVOT);
+}
+
+void fb::game::acceptor::on_die(life& me, object* you)
+{
 }
 
 void fb::game::acceptor::on_heal_hp(life& me, uint32_t value, fb::game::object* from)
@@ -96,9 +108,6 @@ void fb::game::acceptor::on_heal_hp(life& me, uint32_t value, fb::game::object* 
 void fb::game::acceptor::on_heal_mp(life& me, uint32_t value, fb::game::object* from)
 {
 }
-
-void fb::game::acceptor::on_die(life& me)
-{}
 
 void fb::game::acceptor::on_hp(life& me, uint32_t before, uint32_t current)
 {
@@ -121,7 +130,7 @@ void fb::game::acceptor::on_updated(session& me, fb::game::state_level level)
 void fb::game::acceptor::on_money_changed(session& me, uint32_t value)
 { }
 
-void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_attack(session& me, object* you)
 {
     this->send(me, fb::protocol::game::response::session::action(me, action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT);
     auto* weapon = me.items.weapon();
@@ -130,42 +139,6 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
         auto            sound = weapon->sound();
         this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::sound::type(sound) : fb::game::sound::SWING), scope::PIVOT);
     }
-
-#if !defined DEBUG && !defined _DEBUG
-
-#endif
-
-    try
-    {
-        if(you == nullptr)
-            throw std::exception();
-
-        if(you->is(object::types::LIFE) == false)
-            throw std::exception();
-
-        auto life = static_cast<fb::game::life*>(you);
-        if(life->alive() == false)
-            throw std::exception();
-
-#ifndef DEBUG
-        auto miss = (std::rand() % 3 == 0);
-        if(miss)
-            throw std::exception();
-#endif
-
-#ifndef PK
-        if(life->is(object::types::SESSION))
-            throw std::exception();
-#endif
-
-
-        if (weapon != nullptr)
-            this->send(me, fb::protocol::game::response::object::sound(me, sound::type::DAMAGE), scope::PIVOT);
-
-        life->hp_down(damage, &me, critical);
-    }
-    catch(std::exception&)
-    {}
 
     auto& thread = fb::game::lua::get();
     thread.from("scripts/common/attack.lua")
@@ -178,7 +151,24 @@ void fb::game::acceptor::on_attack(session& me, object* you, uint32_t damage, bo
     thread.resume(2);
 }
 
-void fb::game::acceptor::on_damage(session& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_hit(session& me, life& you, uint32_t damage, bool critical)
+{
+#ifndef PK
+    if(you.is(object::types::SESSION))
+        return;
+#endif
+
+    auto* weapon = me.items.weapon();
+    if (weapon != nullptr)
+        this->send(me, fb::protocol::game::response::object::sound(me, sound::type::DAMAGE), scope::PIVOT);
+
+    you.hp_down(damage, &me, critical);
+}
+
+void fb::game::acceptor::on_kill(session& me, life& you)
+{}
+
+void fb::game::acceptor::on_damaged(session& me, object* you, uint32_t damage, bool critical)
 {
 }
 
@@ -187,7 +177,7 @@ void fb::game::acceptor::on_hold(session& me)
     this->send(me, fb::protocol::game::response::session::position(me), scope::SELF);
 }
 
-void fb::game::acceptor::on_die(session& me)
+void fb::game::acceptor::on_die(session& me, object* you)
 {
     me.state(state::GHOST);
 }
@@ -476,14 +466,20 @@ void fb::game::acceptor::on_item_changed(session& me, const std::map<uint8_t, fb
 void fb::game::acceptor::on_item_lost(session& me, const std::vector<uint8_t>& slots)
 { }
 
-void fb::game::acceptor::on_attack(mob& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_attack(mob& me, object* you)
 {
     this->send(me, fb::protocol::game::response::life::action(me, action::ATTACK, duration::DURATION_ATTACK), scope::PIVOT, true);
-    if(you != nullptr && you->is(fb::game::object::types::LIFE))
-        static_cast<fb::game::life&>(*you).hp_down(damage, &me, critical);
 }
 
-void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool critical)
+void fb::game::acceptor::on_hit(mob& me, life& you, uint32_t damage, bool critical)
+{
+    you.hp_down(damage, &me, critical);
+}
+
+void fb::game::acceptor::on_kill(mob& me, life& you)
+{}
+
+void fb::game::acceptor::on_damaged(mob& me, object* you, uint32_t damage, bool critical)
 {
     if(me.alive())
     {
@@ -508,7 +504,7 @@ void fb::game::acceptor::on_damage(mob& me, object* you, uint32_t damage, bool c
     }
 }
 
-void fb::game::acceptor::on_die(mob& me)
+void fb::game::acceptor::on_die(mob& me, object* you)
 {
     // 몹 체력을 다 깎았으면 죽인다.
     this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);

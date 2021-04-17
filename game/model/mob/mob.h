@@ -20,9 +20,11 @@ public:
 public:
 interface listener : public virtual fb::game::life::listener
 {
-    virtual void on_attack(mob& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_damage(mob& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_die(mob& me) = 0;
+    virtual void on_attack(mob& me, object* you) = 0;
+    virtual void on_hit(mob& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void on_kill(mob& me, life& you) = 0;
+    virtual void on_damaged(mob& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_die(mob& me, object* you) = 0;
 };
 #pragma endregion
 
@@ -168,7 +170,6 @@ private:
 #pragma region public method
 public:
     bool                                    action();
-    void                                    attack();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
     uint16_t                                damage_min() const;
@@ -179,8 +180,6 @@ public:
     const std::string&                      script_attack() const;
     const std::string&                      script_die() const;
     offensive_type                          offensive() const;
-
-    uint32_t                                random_damage(fb::game::life& life) const;
 
     const point16_t&                        spawn_point() const;
     void                                    spawn_point(uint16_t x, uint16_t y);
@@ -207,6 +206,15 @@ public:
     const std::vector<drop>&                items() const;
     fb::game::life*                         fix();
     void                                    AI(std::chrono::steady_clock::duration now);
+#pragma endregion
+
+#pragma region override method
+    uint32_t                                handle_calculate_damage(bool critical) const;
+    void                                    handle_attack(fb::game::object* target);
+    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical);
+    void                                    handle_kill(fb::game::life& you);
+    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
+    void                                    handle_die(fb::game::object* from);
 #pragma endregion
 };
 

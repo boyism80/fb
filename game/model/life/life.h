@@ -17,11 +17,14 @@ public:
 interface listener : public virtual fb::game::object::listener,
     public fb::game::spell::listener
 {
-    virtual void on_attack(life& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_damage(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_attack(life& me, object* you) = 0;
+    virtual void on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void on_kill(life& me, life& you) = 0;
+    virtual void on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_die(life& me, object* you) = 0;
+
     virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
     virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
-    virtual void on_die(life& me) = 0;
     virtual void on_hp(life& me, uint32_t before, uint32_t current) = 0;
     virtual void on_mp(life& me, uint32_t before, uint32_t current) = 0;
 };
@@ -77,8 +80,6 @@ public:
 
         uint32_t                    defensive_magical() const;
         void                        defensive_magical(uint8_t value);
-
-        object*                     make(listener* listener) const;
 #pragma endregion
 
 
@@ -115,7 +116,7 @@ protected:
 
 #pragma region protected method
 protected:
-    uint32_t                    random_damage(uint32_t value, const fb::game::life& life) const;
+    uint32_t                    calculate_damage(uint32_t value, const fb::game::life& life) const;
 #pragma endregion
 
 
@@ -159,6 +160,16 @@ public:
 #pragma region handler
 protected:
     virtual void                handle_update() {}
+    virtual uint32_t            handle_calculate_damage(bool critical) const = 0;
+    virtual bool                handle_calculate_critical(fb::game::life& you) const;
+    virtual bool                handle_calculate_miss(fb::game::life& you) const;
+    virtual void                handle_attack(fb::game::object* you);
+    virtual void                handle_hit(fb::game::life& you, uint32_t damage, bool critical);
+    virtual void                handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
+    virtual void                handle_die(fb::game::object* from);
+
+public:
+    virtual void                handle_kill(fb::game::life& you);
 
 #pragma endregion
 

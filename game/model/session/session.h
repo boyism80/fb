@@ -136,10 +136,12 @@ interface listener : public virtual fb::game::life::listener,
         public fb::game::equipment::listener
 {
 public:
-    virtual void on_attack(session& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_damage(session& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_attack(session& me, object* you) = 0;
+    virtual void on_hit(session& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void on_kill(session& me, life& you) = 0;
+    virtual void on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void on_hold(session& me) = 0;
-    virtual void on_die(session& me) = 0;
+    virtual void on_die(session& me, object* you) = 0;
     virtual void on_action(session& me, fb::game::action action, duration duration, uint8_t sound) = 0;
     virtual void on_updated(session& me, state_level level = state_level::LEVEL_MIN) = 0;
     virtual void on_money_changed(session& me, uint32_t value) = 0;
@@ -219,7 +221,13 @@ protected:
     void                        handle_hold();
     void                        handle_switch_process(fb::game::map& map, const point16_t& position);
     void                        handle_warp();
-    virtual void                handle_update();
+    void                        handle_update();
+    uint32_t                    handle_calculate_damage(bool critical) const;
+    void                        handle_attack(fb::game::object* target);
+    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical);
+    void                        handle_kill(fb::game::life& you);
+    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
+    void                        handle_die(fb::game::object* from);
 
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
@@ -238,7 +246,6 @@ public:
     void                        id(uint32_t id);
     void                        attack();
     void                        action(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00);
-    uint32_t                    hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
     const std::string&          name() const;
     void                        name(const std::string& value);
@@ -322,8 +329,6 @@ public:
 
     uint32_t                    damage() const;
     void                        damage(uint8_t value);
-
-    uint32_t                    random_damage(fb::game::life& life, bool& critical) const;
 
     uint32_t                    hit() const;
     void                        hit(uint8_t value);

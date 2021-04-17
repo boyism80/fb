@@ -170,19 +170,24 @@ public:
     void                    on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position);
 
     // listener : life
-    void                    on_attack(life& me, object* you, uint32_t damage, bool critical);
-    void                    on_damage(life& me, object* you, uint32_t damage, bool critical);
+    void                    on_attack(life& me, object* you);
+    void                    on_hit(life& me, life& you, uint32_t damage, bool critical);
+    void                    on_kill(life& me, life& you);
+    void                    on_damaged(life& me, object* you, uint32_t damage, bool critical);
+    void                    on_die(life& me, object* you);
+
     void                    on_heal_hp(life& me, uint32_t value, fb::game::object* from);
     void                    on_heal_mp(life& me, uint32_t value, fb::game::object* from);
-    void                    on_die(life& me);
     void                    on_hp(life& me, uint32_t before, uint32_t current);
     void                    on_mp(life& me, uint32_t before, uint32_t current);
 
     // listener : session
-    void                    on_attack(session& me, object* you, uint32_t damage, bool critical);
-    void                    on_damage(session& me, object* you, uint32_t damage, bool critical);
+    void                    on_attack(session& me, object* you);
+    void                    on_hit(session& me, life& you, uint32_t damage, bool critical);
+    void                    on_kill(session& me, life& you);
+    void                    on_damaged(session& me, object* you, uint32_t damage, bool critical);
     void                    on_hold(session& me);
-    void                    on_die(session& me);
+    void                    on_die(session& me, object* you);
     void                    on_action(session& me, action action, duration duration, uint8_t sound);
     void                    on_updated(session& me, fb::game::state_level level);
     void                    on_money_changed(session& me, uint32_t value);
@@ -196,9 +201,11 @@ public:
     void                    on_item_lost(session& me, const std::vector<uint8_t>& slots);
 
     // listener : mob
-    void                    on_attack(mob& me, object* you, uint32_t damage, bool critical);
-    void                    on_damage(mob& me, object* you, uint32_t damage, bool critical);
-    void                    on_die(mob& me);
+    void                    on_attack(mob& me, object* you);
+    void                    on_hit(mob& me, life& you, uint32_t damage, bool critical);
+    void                    on_kill(mob& me, life& you);
+    void                    on_damaged(mob& me, object* you, uint32_t damage, bool critical);
+    void                    on_die(mob& me, object* you);
 
     // listener : item
     void                    on_item_remove(session& me, uint8_t index, item::delete_attr attr);

@@ -200,44 +200,12 @@ bool fb::game::mob::action()
     return stop;
 }
 
-void fb::game::mob::attack()
-{
-    if(this->alive() == false)
-        return;
-
-    auto front = this->forward(object::types::UNKNOWN);
-
-    if(front == nullptr)
-        return;
-
-    if(front->is(object::types::LIFE) == false)
-        return;
-
-    if(static_cast<life*>(front)->alive() == false)
-        return;
-
-    auto damage = this->random_damage(*static_cast<fb::game::life*>(front));
-
-    auto listener = this->get_listener<fb::game::mob::listener>();
-    if(listener != nullptr)
-        listener->on_attack(*this, front, damage, false);
-}
-
 uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool critical)
 {
-    auto listener = this->get_listener<fb::game::mob::listener>();
-
     value = fb::game::life::hp_down(value, from, critical);
-    if(listener != nullptr)
-        listener->on_damage(*this, from, value, critical);
-
     if(this->_hp == 0)
-    {
-        if(listener != nullptr)
-            listener->on_die(*this);
-
         this->visible(false);
-    }
+
     return value;
 }
 
@@ -274,14 +242,6 @@ const std::string& fb::game::mob::script_die() const
 fb::game::mob::offensive_type fb::game::mob::offensive() const
 {
     return static_cast<const master*>(this->_master)->_offensive_type;
-}
-
-uint32_t fb::game::mob::random_damage(fb::game::life& life) const
-{
-    uint32_t difference = std::abs(this->damage_max() - this->damage_min());
-    uint32_t random_damage = this->damage_min() + (std::rand() % difference);
-
-    return fb::game::life::random_damage(random_damage, life);
 }
 
 const fb::game::point16_t& fb::game::mob::spawn_point() const
@@ -511,4 +471,55 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
     }
 
     this->_action_time = std::chrono::duration_cast<std::chrono::milliseconds>(now);
+}
+
+uint32_t fb::game::mob::handle_calculate_damage(bool critical) const
+{
+    auto difference = std::abs(this->damage_max() - this->damage_min());
+    return this->damage_min() + (std::rand() % difference);
+}
+
+void fb::game::mob::handle_attack(fb::game::object* target)
+{
+    fb::game::life::handle_attack(target);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_attack(*this, target);
+}
+
+void fb::game::mob::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
+{
+    fb::game::life::handle_hit(you, damage, critical);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_hit(*this, you, damage, critical);
+}
+
+void fb::game::mob::handle_kill(fb::game::life& you)
+{
+    fb::game::life::handle_kill(you);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_kill(*this, you);
+}
+
+void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
+{
+    fb::game::life::handle_damaged(from, damage, critical);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_damaged(*this, from, damage, critical);
+}
+
+void fb::game::mob::handle_die(fb::game::object* from)
+{
+    fb::game::life::handle_die(from);
+
+    auto listener = this->get_listener<fb::game::mob::listener>();
+    if(listener != nullptr)
+        listener->on_die(*this, from);
 }
