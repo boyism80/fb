@@ -7,20 +7,6 @@ using namespace fb::game::lua;
 main*                           main::_instance;
 std::mutex                      lua::_mutex;
 
-std::string lua_cp949(lua_State* lua, int i)
-{
-    auto x = lua_tostring(lua, i);
-    if(x == nullptr)
-        return std::string();
-
-    return CP949(x, PLATFORM::Windows);
-}
-
-void lua_push_utf8(lua_State* lua, const std::string& v)
-{
-    lua_pushstring(lua, UTF8(v, PLATFORM::Windows).c_str());
-}
-
 lua& fb::game::lua::get()
 {
     auto& main = fb::game::lua::main::get();
@@ -389,7 +375,7 @@ lua& fb::game::lua::lua::func(const char* format, ...)
 
 lua& fb::game::lua::lua::pushstring(const std::string& value)
 {
-    lua_push_utf8(this->_lua, value.c_str());
+    lua_pushstring(*this, UTF8(value, PLATFORM::Windows).c_str());
     return *this;
 }
 
@@ -421,6 +407,15 @@ lua& fb::game::lua::lua::pushobject(const luable& object)
 {
     object.to_lua(*this);
     return *this;
+}
+
+const std::string fb::game::lua::lua::tostring(int offset)
+{
+    auto x = lua_tostring(*this, offset);
+    if(x == nullptr)
+        return std::string();
+
+    return CP949(x, PLATFORM::Windows); 
 }
 
 lua::operator lua_State* () const

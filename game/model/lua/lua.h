@@ -28,10 +28,6 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR+1)
 
-// global
-std::string                     lua_cp949(lua_State* lua, int i);
-void                            lua_push_utf8(lua_State* lua, const std::string& v);
-
 namespace fb { namespace game { namespace lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 100;
@@ -103,7 +99,7 @@ public:
     lua&                        pushobject(const luable* object);
     lua&                        pushobject(const luable& object);
 
-    const std::string           tostring(int offset) { return lua_cp949(*this, offset); }
+    const std::string           tostring(int offset);
     const std::string           arg_string(int offset) { return tostring(offset); }
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
