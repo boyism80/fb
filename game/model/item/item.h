@@ -445,7 +445,21 @@ public:
 //
 class equipment : public item
 {
-enum slot : uint8_t;
+#pragma region enum
+public:
+    enum slot : uint8_t
+    {
+        UNKNOWN_SLOT                    = 0,
+        WEAPON_SLOT                     = 1,
+        ARMOR_SLOT                      = 2,
+        SHIELD_SLOT                     = 3,
+        HELMET_SLOT                     = 4,
+        LEFT_HAND_SLOT                  = 7,
+        RIGHT_HAND_SLOT                 = 8,
+        LEFT_AUX_SLOT                   = 20,
+        RIGHT_AUX_SLOT                  = 21,
+    };
+#pragma endregion
 
 #pragma region listener
 public:
@@ -463,6 +477,7 @@ public:
     enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 
 public:
+#pragma region inner structure
     typedef struct _repair
     {
     private:
@@ -500,7 +515,10 @@ public:
         uint32_t                        price() const { return this->_price; }
         void                            price(uint32_t value) { this->_price = value; }
     } rename;
+#pragma endregion
 
+#pragma region master
+public:
     class master : public fb::game::item::master
     {
     protected:
@@ -589,19 +607,7 @@ public:
         void                            undress_script(const std::string& value);
 
     };
-
-    enum slot : uint8_t
-    {
-        UNKNOWN_SLOT                    = 0,
-        WEAPON_SLOT                     = 1,
-        ARMOR_SLOT                      = 2,
-        SHIELD_SLOT                     = 3,
-        HELMET_SLOT                     = 4,
-        LEFT_HAND_SLOT                  = 7,
-        RIGHT_HAND_SLOT                 = 8,
-        LEFT_AUX_SLOT                   = 20,
-        RIGHT_AUX_SLOT                  = 21,
-    };
+#pragma endregion
 
 protected:
     uint16_t                            _durability;
