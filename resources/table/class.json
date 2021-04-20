@@ -8,14 +8,6 @@
             "intelligence" : 0,
             "mp" : 0,
             "strength" : 0
-         }, // Level 0
-         {
-            "dexteritry" : 0,
-            "exp" : 0,
-            "hp" : 0,
-            "intelligence" : 0,
-            "mp" : 0,
-            "strength" : 0
          }, // Level 1
          {
             "dexteritry" : 0,

@@ -117,7 +117,7 @@ uint32_t fb::game::container::cls::exp(uint8_t class_id, uint8_t level)
 {
     try
     {
-        if(class_id == 0 && level > 5)
+        if(class_id == 0 && level >= 5)
             return 0;
 
         if(level > 99)

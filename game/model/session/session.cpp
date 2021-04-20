@@ -383,8 +383,6 @@ bool fb::game::session::level_up()
     if(this->_class == 0 && this->_level >= 5)
         return false;
 
-    this->level(this->_level + 1);
-    
     this->strength_up(fb::game::table::classes[this->_class]->level_abilities[this->_level]->strength);
     this->intelligence_up(fb::game::table::classes[this->_class]->level_abilities[this->_level]->intelligence);
     this->dexteritry_up(fb::game::table::classes[this->_class]->level_abilities[this->_level]->dexteritry);
@@ -394,6 +392,8 @@ bool fb::game::session::level_up()
 
     this->hp(this->base_hp());
     this->mp(this->base_mp());
+
+    this->level(this->_level + 1);
 
     auto listener = this->get_listener<fb::game::session::listener>();
 
@@ -522,8 +522,8 @@ void fb::game::session::experience(uint32_t value)
 
 uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
 {
-    uint32_t capacity = 0xFFFFFFFF - this->_experience;
-    uint32_t lack = 0;
+    auto capacity = 0xFFFFFFFF - this->_experience;
+    auto lack = 0;
 
     auto listener = this->get_listener<fb::game::session::listener>();
 
@@ -532,7 +532,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
         if(this->_class == 0)
         {
-            auto require = fb::game::table::classes.exp(0, 5);
+            auto require = fb::game::table::classes.exp(0, 5 - 1);
             if(this->_experience > require)
                 value = 0;
 
@@ -567,7 +567,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             if(this->max_level())
                 break;
 
-            auto require = fb::game::table::classes.exp(this->_class, this->_level + 1);
+            auto require = fb::game::table::classes.exp(this->_class, this->_level);
             if(require == 0)
                 break;
 
@@ -613,13 +613,15 @@ uint32_t fb::game::session::experience_remained() const
     if(this->_class == 0 && this->_level >= 5)
         return 0;
 
-    return fb::game::table::classes.exp(this->_class, this->_level+1) - this->experience();
+    return fb::game::table::classes.exp(this->_class, this->_level) - this->experience();
 }
 
 float fb::game::session::experience_percent() const
 {
-    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::table::classes.exp(this->cls(), this->level()+1);
-    auto                    prev_exp = this->max_level() ? 0x00000000 : fb::game::table::classes.exp(this->cls(), this->level());
+    auto                    current_level = this->level();
+    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::table::classes.exp(this->cls(), current_level);
+    auto                    prev_exp = current_level > 1 ? 
+                                       (this->max_level() ? 0x00000000 : fb::game::table::classes.exp(this->cls(), current_level - 1)) : 0;
     auto                    exp_range = next_exp - prev_exp;
 
     return std::min(100.0f, ((this->_experience - prev_exp) / float(exp_range)) * 100.0f);
