@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 #include "resource.h"
 #include "module/socket/socket.h"
 #include "model/acceptor/acceptor.gateway.h"
@@ -24,15 +25,15 @@ int main(int argc, const char** argv)
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GATEWAY]";
-    c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
+    c.cursor((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.move(c.width()-1 - strlen(github) - 3, 4).puts(github);
+    c.cursor(c.width()-1 - strlen(github) - 3, 4).puts(github);
 
     auto madeby = "made by cshyeon";
-    c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
+    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
 
-    c.current_line(height+ 1 );
+    c.cursor(0, height + 1);
 
     // Execute acceptor
     boost::asio::io_context io_context;
@@ -45,11 +46,32 @@ int main(int argc, const char** argv)
         [&] (fb::base::socket<>& socket, bool success)
         {
             if(success)
+            {
                 socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
+            }
+            else
+            {
+                auto& c = fb::console::get();
+                auto t = std::time(nullptr);
+                auto tm = *std::localtime(&t);
+
+                std::ostringstream sstream;
+                sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
+                 .next();
+            }
         },
         [&] ()
         {
             // on disconnected
+            auto& c = fb::console::get();
+            auto t = std::time(nullptr);
+            auto tm = *std::localtime(&t);
+
+            std::ostringstream sstream;
+            sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+            c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
+             .next();
         }
     };
     acceptor = new fb::gateway::acceptor

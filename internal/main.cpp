@@ -23,35 +23,37 @@ int main(int argc, const char** argv)
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [INTERNAL]";
-    c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
+    c.cursor((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.move(c.width()-1 - strlen(github) - 3, 4).puts(github);
+    c.cursor(c.width()-1 - strlen(github) - 3, 4).puts(github);
 
     auto madeby = "made by cshyeon";
-    c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
+    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
 
-    c.current_line(height + 1);
-    auto current_line = height;
-
+    auto pivot = height + 1;
+    auto stack = 0;
     fb::internal::table::hosts.load
     (
         config["table"]["host"].asString(), 
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str())
+             .trim();
         },
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         },
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                .puts(" * [100%%] 총 %d개의 호스트 정보를 읽었습니다.", count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(" * [100%%] 총 %d개의 호스트 정보를 읽었습니다.", count)
+             .trim()
+             .next();
         }
     );
 

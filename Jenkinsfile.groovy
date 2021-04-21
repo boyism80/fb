@@ -97,7 +97,7 @@ pipeline {
 
         stage('Clean Up') {
             steps {
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_rm'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_prune'
                 sh 'fab -f deploy/fabfile.py cleanup'
             }
         }

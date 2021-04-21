@@ -1,11 +1,12 @@
 #ifndef __CONSOLE_H__
-#define	__CONSOLE_H__
+#define __CONSOLE_H__
 
 #ifdef  _WIN32
 #include <Windows.h>
-#define	CONSOLE_TITLE	"Private kingdom of the wind - http://cshyeon.com"
+#define CONSOLE_TITLE   "Private kingdom of the wind - http://cshyeon.com"
 bool SetConsoleIcon(int id);
 #else
+#include <locale.h>
 #include <ncursesw/curses.h>
 #endif
 #include <stdarg.h>
@@ -24,10 +25,9 @@ private:
 private:
 #ifdef _WIN32
     HANDLE                  _stdout;
+    int                     _x, _y;
 #endif
-    std::optional<uint16_t> _x, _y;
     uint16_t                _width, _height;
-    uint16_t                _current_line;
 
 private:
     console();
@@ -37,16 +37,18 @@ private:
     std::string             format(const std::string& f, va_list* args);
 
 public:
-    fb::console&            move(uint16_t x, uint16_t y);
-    uint32_t                puts(const char* format, ...);
-    void                    clear(uint16_t x, uint16_t y);
+    fb::console&            puts(const char* format, ...);
+    fb::console&            clear(uint16_t x, uint16_t y);
+    fb::console&            trim();
     bool                    line(uint16_t x, uint16_t y, uint16_t width, char content, char side = '+');
     bool                    box(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+    uint16_t                x() const;
+    uint16_t                y() const;
     uint16_t                width() const;
     uint16_t                height() const;
-    uint32_t                current_line() const;
-    fb::console&            current_line(uint32_t row);
     fb::console&            next();
+    fb::console&            cursor(uint16_t x, uint16_t y);
+    void                    cursor(uint16_t* x, uint16_t* y) const;
 
 public:
     static console&         get();

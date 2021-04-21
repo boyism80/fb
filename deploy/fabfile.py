@@ -213,11 +213,11 @@ def docker_stop():
 
 @task
 @parallel
-def docker_rm():
+def docker_prune():
     with settings(warn_only=True):
         sudo('docker system prune -a -f')
 
 def docker_build(name, port):
     container_name = f'fb_{name}'
     sudo(f"DOCKER_BUILDKIT=1 docker build --quiet --tag fb:{name} .", quiet=True)
-    sudo(f"docker run --name {container_name} -d -it -p {port}:{port} fb:{name}", quiet=True)
+    sudo(f"docker run --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{name}", quiet=True)

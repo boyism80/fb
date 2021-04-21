@@ -18,346 +18,386 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.move((c.width()-1 - strlen(header)) / 2, 2).puts(header);
+    c.cursor((c.width()-1 - strlen(header)) / 2, 2).puts(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.move(c.width()-1 - strlen(github) - 3, 4).puts(github);
+    c.cursor(c.width()-1 - strlen(github) - 3, 4).puts(github);
 
     auto madeby = "made by cshyeon";
-    c.move(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
+    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).puts(madeby);
 
-    c.current_line(height + 1);
-    auto current_line = height;
-
+    auto pivot = height + 1;
+    auto stack = 0;
     if(fb::game::table::doors.load
     (
         config["table"]["door"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::DOOR_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::DOOR_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::maps.load
     (
         config["table"]["map"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MAP_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MAP_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::worlds.load
     (
         config["table"]["world"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count)
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::spells.load
     (
         config["table"]["spell"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::SPELL_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::SPELL_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::maps.load_warps
     (
         config["table"]["warp"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::WARP_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::WARP_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::items.load
     (
         config["table"]["item"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::ITEM_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::ITEM_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::mixes.load
     (
         config["table"]["item mix"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::npcs.load
     (
         config["table"]["npc"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::NPC_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::NPC_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::mobs.load
     (
         config["table"]["mob"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MOB_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MOB_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::mobs.load_drops
     (
         config["table"]["item drop"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
+            c.cursor(0, pivot + (++stack));
+
             if(name.size() > 0)
                 c.puts("    - %s (%s)", error.c_str(), name.c_str());
             else
                 c.puts("    - %s", error.c_str());
+            c.trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::DROP_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::DROP_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::npcs.load_spawn
     (
         config["table"]["npc spawn"].asString(),
         listener, 
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::mobs.load_spawn
     (
         config["table"]["mob spawn"].asString(),
         listener, 
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
-    current_line = c.current_line();
-    c.next();
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::table::classes.load
     (
         config["table"]["class"].asString(),
         [&] (const std::string& name, double percentage)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str())
+             .trim();
         }, 
         [&] (const std::string& name, const std::string& error)
         {
-            c.puts("    - %s (%s)", error.c_str(), name.c_str());
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str())
+             .trim();
         }, 
         [&] (uint32_t count)
         {
-            auto n = c.move(0, current_line)
-                      .puts(fb::game::message::assets::CLASS_ALL_LOADED, count);
-            c.clear(n, current_line);
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::CLASS_ALL_LOADED, count)
+             .trim()
+             .next();
         }) == false)
     {
         return false;
     }
 
+    pivot += (stack + 1);
+    c.cursor(0, pivot);
     return true;
 }
 
@@ -395,7 +435,8 @@ int main(int argc, const char** argv)
 
                 std::ostringstream sstream;
                 sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
+                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
+                 .next();
             }
         },
         [&] ()
@@ -406,7 +447,8 @@ int main(int argc, const char** argv)
 
             std::ostringstream sstream;
             sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
+            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str())
+             .next();
         }
     };
     auto acceptor = new fb::game::acceptor
