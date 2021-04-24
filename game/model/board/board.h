@@ -50,20 +50,20 @@ public:
 #pragma endregion
 
 #pragma region section class
-    class section : private std::vector<article*>
+    class section : private std::vector<std::unique_ptr<article>>
     {
     public:
         DECLARE_EXCEPTION(not_found_exception, fb::game::message::board::SECTION_NOT_EXIST)
 
     public:
-        using std::vector<article*>::operator[];
-        using std::vector<article*>::begin;
-        using std::vector<article*>::end;
-        using std::vector<article*>::cbegin;
-        using std::vector<article*>::cend;
-        using std::vector<article*>::rbegin;
-        using std::vector<article*>::rend;
-        using std::vector<article*>::size;
+        using std::vector<std::unique_ptr<article>>::operator[];
+        using std::vector<std::unique_ptr<article>>::begin;
+        using std::vector<std::unique_ptr<article>>::end;
+        using std::vector<std::unique_ptr<article>>::cbegin;
+        using std::vector<std::unique_ptr<article>>::cend;
+        using std::vector<std::unique_ptr<article>>::rbegin;
+        using std::vector<std::unique_ptr<article>>::rend;
+        using std::vector<std::unique_ptr<article>>::size;
 
     private:
         std::string          _title;
@@ -71,10 +71,6 @@ public:
     public:
         section(const std::string& title);
         ~section();
-
-    private:
-        iterator                        it(uint16_t id);
-        const_iterator                  const_it(uint16_t id) const;
 
     public:
         const std::string&              title() const;
@@ -89,15 +85,17 @@ public:
 public:
     DECLARE_EXCEPTION(auth_exception, fb::game::message::board::NOT_AUTH)
 
+    typedef std::vector<std::unique_ptr<section>> unique_sections;
+
 private:
-    std::vector<section*>               _sections;
+    unique_sections                     _sections;
 
 public:
     board();
     ~board();
 
 public:
-    const std::vector<section*>&        sections() const;
+    const unique_sections&              sections() const;
     section*                            at(uint32_t index) const;
 
     section*                            add(const std::string& name);

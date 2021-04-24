@@ -5,7 +5,6 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _accept_delay(accept_delay),
-    _internal(nullptr),
     _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
     _exit(false)
 {
@@ -15,16 +14,6 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
 template <template<class> class S, class T>
 fb::base::acceptor<S, T>::~acceptor()
 {
-    for(auto x : this->sockets)
-    {
-        if(x.second->data() != nullptr)
-            delete x.second->data();
-        delete x.second;
-    }
-
-    if(this->_internal == nullptr)
-        delete this->_internal;
-
     this->_exit = true;
 }
 
@@ -142,11 +131,7 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
             this->get_executor(),
             [this, casted] () 
             {
-                if(casted->data() != nullptr)
-                    delete casted->data();
-
-                this->sockets.erase(*casted); 
-                delete casted;
+                this->sockets.erase(*casted);
             }
         );
     };
@@ -290,10 +275,7 @@ bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 template <typename T>
 void fb::acceptor<T>::connect_internal()
 {
-    if(this->_internal != nullptr)
-        delete this->_internal;
-
-    this->_internal = new fb::internal::socket<>
+    this->_internal.reset(new fb::internal::socket<>
         (
             this->_context,
             [&] (fb::base::socket<>& socket)
@@ -306,7 +288,8 @@ void fb::acceptor<T>::connect_internal()
                 this->_internal_connection.handle_disconnected();
                 this->connect_internal();
             }
-        );
+        )
+    );
     
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(this->_internal_connection.ip), this->_internal_connection.port);
     this->_internal->async_connect

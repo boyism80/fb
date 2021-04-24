@@ -154,10 +154,7 @@ fb::game::mob::mob(const mob& right) :
 {}
 
 fb::game::mob::~mob()
-{
-    if(this->_attack_thread != nullptr)
-        delete this->_attack_thread;
-}
+{}
 
 bool fb::game::mob::action()
 {
@@ -179,24 +176,23 @@ bool fb::game::mob::action()
         else
             this->_attack_thread->pushnil();
         
-        this->_attack_thread->resume(2);
+        this->_attack_thread = &this->_attack_thread->resume(2);
     }
 
     auto stop = false;
-    if(this->_attack_thread->state() == LUA_PENDING)
+    switch(this->_attack_thread->state())
     {
+    case LUA_PENDING:
+    case LUA_YIELD:
         stop = true;
-    }
-    else if(this->_attack_thread->state() == LUA_YIELD)
-    {
+        break;
 
-    }
-    else
-    {
+    default:
         stop = this->_attack_thread->toboolean(-1);
         this->_attack_thread = nullptr;
+        break;
     }
-
+    
     return stop;
 }
 

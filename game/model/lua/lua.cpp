@@ -4,19 +4,17 @@
 #include "model/mob/mob.h"
 using namespace fb::game::lua;
 
-main*                           main::_instance;
+std::unique_ptr<main>           main::_instance;
 std::mutex                      lua::_mutex;
 
 lua& fb::game::lua::get()
 {
-    auto& main = fb::game::lua::main::get();
-    return main.alloc();
+    return fb::game::lua::main::get().alloc();
 }
 
 lua* fb::game::lua::get(lua_State* lua)
 {
-    auto& main = fb::game::lua::main::get();
-    return main.get(*lua);
+    return fb::game::lua::main::get().get(*lua);
 }
 
 void fb::game::lua::reserve(int capacity)
@@ -428,10 +426,10 @@ int fb::game::lua::lua::argc() const
     return lua_gettop(this->_lua);
 }
 
-int fb::game::lua::lua::resume(int argc)
+lua& fb::game::lua::lua::resume(int argc)
 {
     if(this->_state == LUA_PENDING)
-        return this->_state;
+        return *this;
 
     auto state = lua_resume(*this, nullptr, argc);
 
@@ -442,14 +440,13 @@ int fb::game::lua::lua::resume(int argc)
     {
     case LUA_PENDING:
     case LUA_YIELD:
+        return *this;
         break;
 
     default:
-        main::get().release(*this);
+        return main::get().release(*this);
         break;
     }
-    
-    return this->_state;
 }
 
 int fb::game::lua::lua::state() const
@@ -481,14 +478,15 @@ lua* fb::game::lua::main::get(lua_State& lua)
     if(found == this->busy.end())
         return nullptr;
 
-    return found->second;
+    return found->second.get();
 }
 
 void fb::game::lua::main::reserve(int capacity)
 {
     std::lock_guard gd(lua::_mutex);
 
-    this->clear();
+    this->idle.clear();
+    this->busy.clear();
     for(int i = 0; i < capacity; i++)
     {
         auto created = new lua(luaL_newstate());
@@ -503,39 +501,34 @@ lua& fb::game::lua::main::alloc()
     if(this->idle.empty())
     {
         auto created = new lua(luaL_newstate());
-        this->busy.insert(std::make_pair((lua_State*)*created, created));
+        this->busy.insert(std::make_pair((lua_State*)*created, std::unique_ptr<lua>(created)));
         return *created;
     }
     else
     {
-        auto lua = this->idle.begin()->second;
-        this->idle.erase((lua_State*)*lua);
-        this->busy.insert(std::make_pair((lua_State*)*lua, lua));
-        return *lua;
+        auto& lua = this->idle.begin()->second;
+        auto  key = (lua_State*)*lua;
+        this->busy.insert(std::make_pair(key, std::move(lua)));
+        this->idle.erase(key);
+        return *this->busy[key].get();
     }
 }
 
-void fb::game::lua::main::release(lua& lua)
+lua& fb::game::lua::main::release(lua& lua)
 {
     std::lock_guard gd(lua::_mutex);
 
     if(this->busy.find(lua) == this->busy.end())
-        return;
+        return lua;
 
     if(this->idle.find((lua_State*)lua) != this->idle.end())
-        return;
+        return lua;
 
-    this->idle.insert(std::make_pair((lua_State*)lua, &lua));
-    this->busy.erase((lua_State*)lua);
-}
+    auto key = (lua_State*)lua;
+    this->idle.insert(std::make_pair(key, std::move(this->busy[key])));
+    this->busy.erase(key);
 
-main::main()
-{
-}
-
-main::~main()
-{
-    this->clear();
+    return *this->idle[key];
 }
 
 void fb::game::lua::main::update_inheritances()
@@ -571,35 +564,12 @@ void fb::game::lua::main::update_inheritances()
         this->inheritances.push_back(pair.first);
 }
 
-void fb::game::lua::main::clear()
-{
-    for(auto x : idle)
-        delete x.second;
-
-    for(auto x : busy)
-        delete x.second;
-}
-
 main& main::get()
 {
-    if(main::_instance == nullptr)
-        main::_instance = new main();
+    if(main::_instance.get() == nullptr)
+        main::_instance.reset(new main());
 
     return *_instance;
-}
-
-void main::release()
-{
-    if(main::_instance == nullptr)
-        return;
-    
-    delete main::_instance;
-    main::_instance = nullptr;
-}
-
-void fb::game::lua::release()
-{
-    main::release();
 }
 
 void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)

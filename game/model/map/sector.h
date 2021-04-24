@@ -43,17 +43,26 @@ public:
 
 class sectors
 {
+public:
+    typedef std::vector<std::unique_ptr<sector>>    unique_sectors;
+
 private:
     const size16_t                  _map_size;
     const size16_t                  _size;
     const uint32_t                  _rows, _columns;
     const uint32_t                  _count;
-    std::vector<sector*>            _pool;
+    unique_sectors                  _pool;
     std::map<uint32_t, sector*>     _activated_cache;
 
 public:
     sectors(const size16_t& map_size, const size16_t& size);
-    ~sectors();
+    sectors(const sectors&) = delete;
+    sectors(sectors&&) = delete;
+    ~sectors() = default;
+
+public:
+    sectors& operator = (sectors&) = delete;
+    sectors& operator = (const sectors&) = delete;
 
 private:
     uint32_t                        index(const point16_t& position) const;

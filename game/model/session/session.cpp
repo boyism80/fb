@@ -1643,11 +1643,11 @@ bool fb::game::lua::dialog::resume(int argc)
     if(this->_thread == nullptr)
         return false;
 
-    auto state = this->_thread->resume(argc);
-    if(state != LUA_YIELD)
+    auto result = this->_thread->resume(argc).state();
+    if(result != LUA_YIELD)
         this->_thread = nullptr;
 
-    return state;
+    return result;
 }
 
 void fb::game::lua::dialog::show(const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)

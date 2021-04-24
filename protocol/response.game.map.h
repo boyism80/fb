@@ -221,8 +221,8 @@ public:
         auto offset_id = 0;
         for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
         {
-            auto group = (*world)[gropu_id];
-            for(auto offset : *group)
+            auto& group = (*world)[gropu_id];
+            for(auto& offset : *group)
             {
                 out_stream.write_u16(offset->position.x)
                     .write_u16(offset->position.y)

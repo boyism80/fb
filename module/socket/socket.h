@@ -23,14 +23,14 @@ private:
 protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
-    T*                      _data;
+    std::unique_ptr<T>      _data;
 
 public:
     std::mutex              mutex;
 
 protected:
     socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
-    ~socket();
+    ~socket() = default;
 
 protected:
     virtual bool            on_encrypt(fb::ostream& out) { return true; }
@@ -51,15 +51,15 @@ template <template<class> class S, class T>
 class acceptor;
 
 template <template<class> class S, class T>
-class socket_container : private std::map<uint32_t, S<T>*>
+class socket_container : private std::map<uint32_t, std::unique_ptr<S<T>>>
 {
 public:
     friend class acceptor<S, T>;
 
 public:
-    using std::map<uint32_t, S<T>*>::begin;
-    using std::map<uint32_t, S<T>*>::end;
-    using std::map<uint32_t, S<T>*>::size;
+    using std::map<uint32_t, std::unique_ptr<S<T>>>::begin;
+    using std::map<uint32_t, std::unique_ptr<S<T>>>::end;
+    using std::map<uint32_t, std::unique_ptr<S<T>>>::size;
 
 private:
     void                    push(S<T>& session);
@@ -83,7 +83,7 @@ private:
 public:
     socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
     socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
-    ~socket();
+    ~socket() = default;
     
 protected:
     bool                    on_encrypt(fb::ostream& out);

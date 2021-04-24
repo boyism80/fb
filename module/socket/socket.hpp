@@ -3,14 +3,8 @@
 template<typename T>
 fb::base::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
     boost::asio::ip::tcp::socket(context),
-    _data(nullptr),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
-{
-}
-
-template <typename T>
-fb::base::socket<T>::~socket()
 {
 }
 
@@ -78,13 +72,13 @@ fb::istream& fb::base::socket<T>::in_stream()
 template <typename T>
 void fb::base::socket<T>::data(T* value)
 {
-    this->_data = value;
+    this->_data.reset(value);
 }
 
 template <typename T>
 T* fb::base::socket<T>::data()
 {
-    return this->_data;
+    return this->_data.get();
 }
 
 template<typename T>
@@ -112,11 +106,6 @@ fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, 
     fb::socket<T>(context, handle_received, handle_closed)
 {
     this->_crt = crt;
-}
-
-template<typename T>
-fb::socket<T>::~socket()
-{
 }
 
 template<typename T>
@@ -183,27 +172,27 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(S<T>& session)
 {
-    std::map<uint32_t, S<T>*>::insert(std::pair<uint32_t, S<T>*>(session.native_handle(), &session));
+    std::map<uint32_t, std::unique_ptr<S<T>>>::insert(std::pair<uint32_t, std::unique_ptr<S<T>>>(session.native_handle(), std::unique_ptr<S<T>>(&session)));
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
-    std::map<uint32_t, S<T>*>::erase(session.native_handle());
+    std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.native_handle());
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(uint32_t fd)
 {
-    std::map<uint32_t, S<T>*>::erase(fd);
+    std::map<uint32_t, std::unique_ptr<S<T>>>::erase(fd);
 }
 
 template <template<class> class S, class T>
 inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd) const
 {
-    auto found = std::map<uint32_t, S<T>*>::find(fd);
-    if(found == this->end())
+    const auto& found = std::map<uint32_t, std::unique_ptr<S<T>>>::find(fd);
+    if(found == this->cend())
         return nullptr;
 
-    return found->second;
+    return found->second.get();
 }

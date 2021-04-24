@@ -86,21 +86,24 @@ public:
 
 class threads
 {
+public:
+    typedef std::map<std::thread::id, std::unique_ptr<fb::thread>>  unique_threads;
+    typedef std::unique_ptr<std::thread::id[]>                      unique_id_list;
+
 private:
     boost::asio::io_context&                        _context;
-    std::map<std::thread::id, fb::thread*>          _threads;
-    std::thread::id*                                _keys;
+    unique_threads                                  _threads;
+    unique_id_list                                  _keys;
 
 public:
     threads(boost::asio::io_context& context, uint8_t count);
-    ~threads();
+    ~threads() = default;
 
 public:
     fb::thread*                                     at(uint8_t index) const;
     fb::thread*                                     at(std::thread::id id) const;
     fb::thread*                                     current();
     const fb::thread*                               current() const;
-    void                                            exit();
     uint8_t                                         count() const;
     bool                                            empty() const;
     bool                                            valid(uint8_t index) const;

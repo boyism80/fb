@@ -255,7 +255,6 @@ bool acceptor::handle_disconnected(fb::socket<fb::game::session>& socket)
 
     this->on_save(*session);
     session->map(nullptr);
-
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     return true;
 }
@@ -269,7 +268,7 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 fb::game::session* fb::game::acceptor::find(const std::string& name) const
 {
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (std::pair<uint32_t, fb::socket<fb::game::session>*> pair) 
+        [&name] (const std::pair<const uint32_t, std::unique_ptr<fb::socket<fb::game::session>>>& pair) 
         {
             return pair.second->data()->name() == name;
         });
@@ -321,8 +320,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
         for(auto& x : nears)
             x->send(header, encrypt);
-        break;
-    }
+    } break;
 
     case acceptor::scope::GROUP:
     {
@@ -336,35 +334,30 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
 
         for(const auto session : group->members())
             session->send(header, encrypt);
-
-        break;
-    }
+    } break;
 
     case acceptor::scope::MAP:
     {
-        for(const auto pair : object.map()->objects)
+        for(const auto& pair : object.map()->objects)
         {
             if(exclude_self && pair.second == &object)
                 continue;
 
             pair.second->send(header, encrypt);
         }
-
-        break;
-    }
+    } break;
 
     case acceptor::scope::WORLD:
     {
         this->send(header, encrypt);
-        break;
-    }
+    } break;
 
     }
 }
 
 void fb::game::acceptor::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
-    for(auto pair : this->sockets)
+    for(const auto& pair : this->sockets)
     {
         auto session = pair.second->data();
         if(session->map() != &map)
@@ -376,7 +369,7 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, const 
 
 void fb::game::acceptor::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    for(const auto pair : this->sockets)
+    for(const auto& pair : this->sockets)
     {
         auto session = pair.second->data();
         session->send(response, encrypt);
@@ -1073,13 +1066,13 @@ bool fb::game::acceptor::handle_board(fb::socket<fb::game::session>& socket, con
 
     case 0x04:
     {
-        auto                    section = fb::game::table::board.sections().at(request.section);
+        auto                    section = fb::game::table::board.sections()[request.section].get();
         if(section->add(request.title, request.contents, session->name()) != nullptr)
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
         break;
     }
 
-    case 0x05: // delete
+    case 0x05:
     {
         try
         {
@@ -1327,7 +1320,7 @@ void fb::game::acceptor::handle_mob_respawn(std::chrono::steady_clock::duration 
 
     // 화면에 보이는 몹만 갱신
     std::vector<object*> shown_mobs;
-    for(auto pair : this->sockets)
+    for(const auto& pair : this->sockets)
     {
         auto session = pair.second->data();
         if(session == nullptr)
@@ -1363,7 +1356,7 @@ void fb::game::acceptor::handle_buff_timer(std::chrono::steady_clock::duration n
         if(map->objects.size() == 0)
             continue;
 
-        for(auto pair : map->objects)
+        for(auto& pair : map->objects)
         {
             if(pair.second->buffs.size() == 0)
                 continue;

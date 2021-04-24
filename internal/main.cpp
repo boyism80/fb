@@ -5,8 +5,6 @@
 #include "module/console/console.h"
 #include "module/config/config.h"
 
-fb::internal::acceptor*       acceptor;
-
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
@@ -39,32 +37,31 @@ int main(int argc, const char** argv)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str())
-             .trim();
+             .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str());
         },
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         },
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(" * [100%%] 총 %d개의 호스트 정보를 읽었습니다.", count)
-             .trim()
-             .next();
+             .puts(" * [100%%] 총 %d개의 호스트 정보를 읽었습니다.", count);
         }
     );
 
     // Execute acceptor
     boost::asio::io_context io_context;
-    acceptor = new fb::internal::acceptor(io_context, config["port"].asInt(), config["delay"].asInt());
+    auto acceptor = std::make_unique<fb::internal::acceptor>
+    (
+        io_context, 
+        config["port"].asInt(), 
+        config["delay"].asInt()
+    );
 
     io_context.run();
 
     // Clean up
-    delete acceptor;
-    c.release();
     return 0;
 }

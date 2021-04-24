@@ -39,7 +39,6 @@ class main;
 lua&                            get();
 lua*                            get(lua_State* lua);
 void                            reserve(int capacity = DEFAULT_POOL_SIZE);
-void                            release();
 void                            bind_function(const std::string& name, lua_CFunction fn);
 
 class luable
@@ -81,9 +80,14 @@ protected:
 protected:
     lua(lua_State* lua);
     lua(const lua&) = delete;
+    lua(lua&&) = delete;
 
 public:
     virtual ~lua();
+
+public:
+    lua& operator = (lua&) = delete;
+    lua& operator = (const lua&) = delete;
 
 private:
     void                        bind_builtin_functions();
@@ -129,7 +133,7 @@ public:
     int                         argc() const;
 
 public:
-    int                         resume(int argc);
+    lua&                        resume(int argc);
     int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
     int                         state() const;
     void                        release();
@@ -163,10 +167,11 @@ public:
     friend class lua;
 
 public:
-    typedef std::map<std::string, const luaL_Reg*>  builtin_func_map;
-    typedef std::map<std::string, lua_CFunction>    builtin_funcs;
-    typedef std::map<std::string, std::string>      relation_map;
-    typedef std::map<std::string, void*>            environment_map;
+    typedef std::map<std::string, const luaL_Reg*>      builtin_func_map;
+    typedef std::map<std::string, lua_CFunction>        builtin_funcs;
+    typedef std::map<std::string, std::string>          relation_map;
+    typedef std::map<std::string, void*>                environment_map;
+    typedef std::map<lua_State*, std::unique_ptr<lua>>  unique_lua_map;
 
 private:
     builtin_func_map            builtin_local_funcs;
@@ -176,28 +181,31 @@ private:
     std::list<std::string>      inheritances;
 
 public:
-    std::map<lua_State*, lua*>       idle, busy;
+    unique_lua_map              idle, busy;
 
 private:
-    static main* _instance;
+    static std::unique_ptr<main> _instance;
 
 public:
-    main();
-    ~main();
+    main() = default;
+    main(const main&&) = delete;
+    ~main() = default;
+
+public:
+    main& operator = (main&) = delete;
+    main& operator = (main&&) = delete;
 
 private:
     void                        update_inheritances();
-    void                        clear();
 
 public:
     void                        reserve(int capacity = DEFAULT_POOL_SIZE);
     lua&                        alloc();
     lua*                        get(lua_State& lua);
-    void                        release(lua& lua);
+    lua&                        release(lua& lua);
 
 public:
     static main&                get();
-    static void                 release();
 
 public:
     template <typename T>

@@ -24,7 +24,7 @@ private:
 protected:
     boost::asio::io_context&                    _context;
     uint8_t                                     _accept_delay;
-    fb::internal::socket<>*                     _internal;
+    std::unique_ptr<fb::internal::socket<>>     _internal;
 
 public:
     fb::base::socket_container<S, T>            sockets;

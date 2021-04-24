@@ -80,16 +80,16 @@ public:
 #pragma endregion
 };
 
-class doors : private std::vector<door*>
+class doors : private std::vector<std::unique_ptr<door>>
 {
 public:
-    using std::vector<door*>::begin;
-    using std::vector<door*>::end;
-    using std::vector<door*>::cbegin;
-    using std::vector<door*>::cend;
-    using std::vector<door*>::rbegin;
-    using std::vector<door*>::rend;
-    using std::vector<door*>::size;
+    using std::vector<std::unique_ptr<door>>::begin;
+    using std::vector<std::unique_ptr<door>>::end;
+    using std::vector<std::unique_ptr<door>>::cbegin;
+    using std::vector<std::unique_ptr<door>>::cend;
+    using std::vector<std::unique_ptr<door>>::rbegin;
+    using std::vector<std::unique_ptr<door>>::rend;
+    using std::vector<std::unique_ptr<door>>::size;
 
 public:
     doors();

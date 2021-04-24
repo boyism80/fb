@@ -37,7 +37,7 @@ uint16_t fb::game::objects::empty_seq()
 std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
 {
     auto result = std::vector<fb::game::object*>();
-    for(auto pair : *this)
+    for(auto& pair : *this)
     {
         if(pair.second->is(object::types::SESSION))
             result.push_back(pair.second);
@@ -79,7 +79,7 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
     auto found = std::find_if
     (
         this->cbegin(), this->cend(),
-        [&position] (const std::pair<uint32_t, fb::game::object*>& pair)
+        [&position] (const std::pair<const uint32_t, fb::game::object*>& pair)
         {
             return pair.second->position() == position;
         }
@@ -93,7 +93,7 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
 
 fb::game::object* fb::game::objects::operator[](uint32_t seq) const
 {
-    auto found = this->find(seq);
+    const auto& found = this->find(seq);
     if(found != this->cend())
         return found->second;
 
@@ -130,11 +130,10 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
         throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
 
     uint32_t map_size = this->_size.width * this->_size.height;
-    this->_tiles = new tile[map_size];
+    this->_tiles = std::make_unique<tile[]>(map_size);
     if(this->_tiles == nullptr)
         throw std::runtime_error("맵 타일 메모리를 할당할 수 없습니다.");
 
-    memset(this->_tiles, 0, sizeof(tile) * map_size);
     for(uint32_t i = 0; i < map_size; i++)
     {
         this->_tiles[i].id = istream.read_u16();
@@ -167,14 +166,6 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
 fb::game::map::~map()
 {
-    delete[] this->_tiles;
-
-    for(auto pair : this->objects)
-        delete pair.second;
-
-    for(auto warp : this->_warps)
-        delete warp;
-
     if(this->_sectors != nullptr)
         delete this->_sectors;
 }
@@ -268,7 +259,7 @@ bool fb::game::map::movable(const point16_t position) const
     if((*this)(position.x, position.y)->blocked)
         return false;
 
-    for(const auto pair : this->objects)
+    for(const auto& pair : this->objects)
     {
         if(pair.second->visible() == false)
             continue;
@@ -319,22 +310,22 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
 
 void fb::game::map::push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
 {
-    this->_warps.push_back(new warp(map, before, after, limit));
+    this->_warps.push_back(std::make_unique<warp>(map, before, after, limit));
 }
 
 void fb::game::map::push_warp(fb::game::wm::offset* offset, const point16_t& before)
 {
-    this->_warps.push_back(new warp(offset, before));
+    this->_warps.push_back(std::make_unique<warp>(offset, before));
 }
 
 const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) const
 {
-    for(const auto warp : this->_warps)
+    for(const auto& warp : this->_warps)
     {
         if(warp->before != position)
             continue;
 
-        return warp;
+        return warp.get();
     }
 
     return nullptr;
@@ -407,7 +398,7 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     if(y > this->_size.height)
         return nullptr;
 
-    return this->_tiles + (y * this->_size.width + x);
+    return &this->_tiles[y * this->_size.width + x];
 }
 
 int fb::game::map::builtin_name(lua_State* lua)
@@ -438,7 +429,7 @@ int fb::game::map::builtin_objects(lua_State* lua)
     lua_newtable(lua);
     const auto& objects = map->objects;
 
-    for(int i = 0; i < map->objects.size(); i++)
+    for(int i = 0; i < objects.size(); i++)
     {
         map->objects[i]->to_lua(lua);
         lua_rawseti(lua, -2, i+1);
@@ -582,19 +573,9 @@ int fb::game::map::builtin_doors(lua_State* lua)
 
 
 // world
-fb::game::wm::group::group()
-{
-}
-
-fb::game::wm::group::~group()
-{
-    for(auto x : *this)
-        delete x;
-}
-
 void fb::game::wm::group::push(offset* offset)
 {
-    this->push_back(offset);
+    this->push_back(std::unique_ptr<fb::game::wm::offset>(offset));
 }
 
 bool fb::game::wm::group::contains(const offset& offset) const
@@ -602,9 +583,9 @@ bool fb::game::wm::group::contains(const offset& offset) const
     return std::find_if
     (
         this->cbegin(), this->cend(),
-        [&] (const fb::game::wm::offset* x)
+        [&] (const std::unique_ptr<fb::game::wm::offset>& x)
         {
-            return x == &offset;
+            return x.get() == &offset;
         }
     ) != this->cend();
 }
@@ -614,17 +595,11 @@ fb::game::wm::world::world(const std::string& name) :
 {
 }
 
-fb::game::wm::world::~world()
-{
-    for(auto x : *this)
-        delete x;
-}
-
 void fb::game::wm::world::push(group* group)
 {
-    this->push_back(group);
-    for(auto x : *group)
-        this->_offsets.push_back(x);
+    this->push_back(std::unique_ptr<fb::game::wm::group>(group));
+    for(auto& x : *group)
+        this->_offsets.push_back(x.get());
 }
 
 const std::vector<fb::game::wm::offset*>& fb::game::wm::world::offsets() const
@@ -637,12 +612,12 @@ const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) cons
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const fb::game::wm::group* group)
+        [&] (const std::unique_ptr<fb::game::wm::group>& group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const fb::game::wm::offset* offset)
+                [&] (const std::unique_ptr<fb::game::wm::offset>& offset)
                 {
                     return offset->id == id;
                 }
@@ -655,7 +630,7 @@ const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) cons
     if(found == this->cend())
         return nullptr;
 
-    return *found;
+    return (*found).get();
 }
 
 const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) const
@@ -663,12 +638,12 @@ const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) c
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const fb::game::wm::group* group)
+        [&] (const std::unique_ptr<fb::game::wm::group>& group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const fb::game::wm::offset* offset)
+                [&] (const std::unique_ptr<fb::game::wm::offset>& offset)
                 {
                     return offset->dst.map == &map;
                 }
@@ -681,5 +656,5 @@ const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) c
     if(found == this->cend())
         return nullptr;
 
-    return *found;
+    return (*found).get();
 }

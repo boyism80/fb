@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <zlib.h>
+#include <memory>
 #include "model/door/door.h"
 #include "model/map/sector.h"
 #include "module/stream/stream.h"
@@ -55,26 +56,32 @@ public:
 
 } offset;
 
-class group : private std::vector<offset*>
+class group : private std::vector<std::unique_ptr<offset>>
 {
 public:
-    using std::vector<offset*>::begin;
-    using std::vector<offset*>::end;
-    using std::vector<offset*>::cbegin;
-    using std::vector<offset*>::cend;
-    using std::vector<offset*>::size;
-    using std::vector<offset*>::operator[];
+    using std::vector<std::unique_ptr<offset>>::begin;
+    using std::vector<std::unique_ptr<offset>>::end;
+    using std::vector<std::unique_ptr<offset>>::cbegin;
+    using std::vector<std::unique_ptr<offset>>::cend;
+    using std::vector<std::unique_ptr<offset>>::size;
+    using std::vector<std::unique_ptr<offset>>::operator[];
 
 public:
-    group();
-    ~group();
+    group() = default;
+    group(const group&) = delete;
+    group(group&&) = delete;
+    ~group() = default;
+
+public:
+    group& operator = (group&) = delete;
+    group& operator = (group&&) = delete;
 
 public:
     void                                push(offset* offset);
     bool                                contains(const offset& offset) const;
 };
 
-class world : private std::vector<group*>
+class world : private std::vector<std::unique_ptr<group>>
 {
 private:
     std::vector<offset*>                _offsets;
@@ -83,16 +90,22 @@ public:
     const std::string                   name;
 
 public:
-    using std::vector<group*>::begin;
-    using std::vector<group*>::end;
-    using std::vector<group*>::cbegin;
-    using std::vector<group*>::cend;
-    using std::vector<group*>::size;
-    using std::vector<group*>::operator[];
+    using std::vector<std::unique_ptr<group>>::begin;
+    using std::vector<std::unique_ptr<group>>::end;
+    using std::vector<std::unique_ptr<group>>::cbegin;
+    using std::vector<std::unique_ptr<group>>::cend;
+    using std::vector<std::unique_ptr<group>>::size;
+    using std::vector<std::unique_ptr<group>>::operator[];
 
 public:
     world(const std::string& name);
-    ~world();
+    world(const world&) = delete;
+    world(world&&) = delete;
+    ~world() = default;
+
+public:
+    world& operator = (world&) = delete;
+    world& operator = (world&&) = delete;
 
 public:
     void                                push(group* group);
@@ -221,18 +234,24 @@ public:
     } warp;
 #pragma endregion
 
+#pragma region types
+public:
+    typedef std::unique_ptr<tile[]>             unique_tiles;
+    typedef std::vector<std::unique_ptr<warp>>  unique_warps;
+#pragma endregion
+
 
 #pragma region private field
 private:
     uint16_t                        _id;
     uint16_t                        _parent;
     size16_t                        _size;
-    tile*                           _tiles;
+    unique_tiles                    _tiles;
     std::string                     _name;
     options                         _option;
     effects                         _effect;
     uint8_t                         _bgm;
-    std::vector<warp*>              _warps;
+    unique_warps                    _warps;
     fb::game::sectors*              _sectors;
 #pragma endregion
 

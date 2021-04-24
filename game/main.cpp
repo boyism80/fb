@@ -34,21 +34,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::DOOR_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::DOOR_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -62,21 +58,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MAP_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::MAP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -90,20 +82,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count)
-             .next();
+             .puts(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -117,21 +106,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::SPELL_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::SPELL_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -146,21 +131,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::WARP_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::WARP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -174,21 +155,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::ITEM_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::ITEM_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -202,21 +179,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -230,21 +203,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::NPC_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::NPC_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -258,21 +227,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MOB_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::MOB_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -286,8 +251,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
@@ -302,9 +266,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::DROP_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::DROP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -319,21 +281,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -348,21 +306,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -376,21 +330,17 @@ bool load_db(fb::console& c, fb::game::listener* listener)
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str())
-             .trim();
+             .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
         }, 
         [&] (const std::string& name, const std::string& error)
         {
             c.cursor(0, pivot + (++stack))
-             .puts("    - %s (%s)", error.c_str(), name.c_str())
-             .trim();
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
         }, 
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::CLASS_ALL_LOADED, count)
-             .trim()
-             .next();
+             .puts(fb::game::message::assets::CLASS_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -409,7 +359,6 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-    fb::db::init();
     auto& c = fb::console::get();
 
     // Execute acceptor
@@ -435,8 +384,7 @@ int main(int argc, const char** argv)
 
                 std::ostringstream sstream;
                 sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
-                 .next();
+                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
             }
         },
         [&] ()
@@ -447,11 +395,10 @@ int main(int argc, const char** argv)
 
             std::ostringstream sstream;
             sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str())
-             .next();
+            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
         }
     };
-    auto acceptor = new fb::game::acceptor
+    auto acceptor = std::make_unique<fb::game::acceptor>
     (
         io_context, 
         config["port"].asInt(), 
@@ -459,13 +406,9 @@ int main(int argc, const char** argv)
         connection
     );
 
-    load_db(c, acceptor);
+    load_db(c, acceptor.get());
     io_context.run();
 
     // Release
-    delete acceptor;
-    fb::game::lua::release();
-    fb::console::release();
-    fb::db::close();
     return 0;
 }

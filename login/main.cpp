@@ -6,8 +6,6 @@
 #include "module/config/config.h"
 #include "protocol/internal.h"
 
-fb::login::acceptor*       acceptor;
-
 int main(int argc, const char** argv)
 {
     //_CrtSetBreakAlloc(165);
@@ -17,7 +15,6 @@ int main(int argc, const char** argv)
     ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-    fb::db::init();
     auto& c = fb::console::get();
     auto height = 8;
     c.box(0, 0, c.width()-1, height);
@@ -56,8 +53,7 @@ int main(int argc, const char** argv)
 
                 std::ostringstream sstream;
                 sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
-                 .next();
+                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
             }
         },
         [&] ()
@@ -69,11 +65,10 @@ int main(int argc, const char** argv)
 
             std::ostringstream sstream;
             sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-            c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str())
-             .next();
+            c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
         }
     };
-    acceptor = new fb::login::acceptor
+    auto acceptor = std::make_unique<fb::login::acceptor>
     (
         io_context, 
         config["port"].asInt(), 
@@ -84,8 +79,5 @@ int main(int argc, const char** argv)
     io_context.run();
 
     // Clean up
-    delete acceptor;
-    fb::console::release();
-    fb::db::close();
     return 0;
 }

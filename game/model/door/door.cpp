@@ -171,25 +171,22 @@ fb::game::doors::doors()
 }
 
 fb::game::doors::~doors()
-{
-    for(auto door : *this)
-        delete door;
-}
+{}
 
 void fb::game::doors::add(map* map, fb::game::door::master& master, const point16_t position, bool opened)
 {
-    this->push_back(new door(map, master, position, opened));
+    this->push_back(std::make_unique<fb::game::door>(map, master, position, opened));
 }
 
 fb::game::door* fb::game::doors::find(const point16_t position)
 {
-    for(auto door : *this)
+    for(const auto& door : *this)
     {
         const auto& master = door->based();
         for(int i = 0; i < master.size(); i++)
         {
             if(position == point16_t(door->position.x + i, door->position.y))
-                return door;
+                return door.get();
         }
     }
 

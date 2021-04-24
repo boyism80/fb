@@ -1,6 +1,6 @@
 #include "console.h"
 
-fb::console* fb::console::_ist;
+std::unique_ptr<fb::console> fb::console::_ist;
 
 #ifdef _WIN32
 bool SetConsoleIcon(int id)
@@ -48,6 +48,9 @@ fb::console::console()
 
 fb::console::~console()
 {
+#ifdef __linux__
+    endwin();
+#endif
 }
 
 std::string fb::console::format(const std::string& f, va_list* args)
@@ -106,7 +109,8 @@ fb::console& fb::console::puts(const char* format, ...)
     mvprintw(y, x, combined.c_str());
     refresh();
 #endif
-    
+
+    this->trim().next();
     return *this;
 }
 
@@ -220,18 +224,8 @@ void fb::console::cursor(uint16_t* x, uint16_t* y) const
 
 fb::console& fb::console::get()
 {
-    if(_ist == nullptr)
-        _ist = new console();
+    if(_ist.get() == nullptr)
+        _ist.reset(new console());
 
     return *_ist;
-}
-
-void fb::console::release()
-{
-    if(_ist != nullptr)
-        delete _ist;
-
-#ifdef __linux__
-    endwin();
-#endif
 }

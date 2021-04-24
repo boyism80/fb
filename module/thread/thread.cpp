@@ -168,30 +168,18 @@ uint8_t fb::thread::index() const
 }
 
 fb::threads::threads(boost::asio::io_context& context, uint8_t count) : 
-    _context(context),
-    _keys(nullptr)
+    _context(context)
 {
     if(count > 0)
-        this->_keys = new std::thread::id[count];
+        this->_keys = std::make_unique<std::thread::id[]>(count);
 
     for(int i = 0; i < count; i++)
     {
         auto thread = new fb::thread(i);
         auto id = thread->id();
         this->_keys[i] = id;
-        this->_threads.insert(std::make_pair(id, thread));
+        this->_threads.insert(std::make_pair(id, std::unique_ptr<fb::thread>(thread)));
     }
-}
-
-fb::threads::~threads()
-{
-    this->exit();
-
-    for(auto pair : this->_threads)
-        delete pair.second;
-
-    if(this->_keys != nullptr)
-        delete[] this->_keys;
 }
 
 fb::thread* fb::threads::at(uint8_t index) const
@@ -209,7 +197,7 @@ fb::thread* fb::threads::at(std::thread::id id) const
     if(found == this->_threads.end())
         return nullptr;
     else
-        return found->second;
+        return found->second.get();
 }
 
 fb::thread* fb::threads::current()
@@ -219,7 +207,7 @@ fb::thread* fb::threads::current()
     if(found == this->_threads.end())
         return nullptr;
     else
-        return found->second;
+        return found->second.get();
 }
 
 const fb::thread* fb::threads::current() const
@@ -229,13 +217,7 @@ const fb::thread* fb::threads::current() const
     if(found == this->_threads.end())
         return nullptr;
     else
-        return found->second;
-}
-
-void fb::threads::exit()
-{
-    for(auto pair : this->_threads)
-        pair.second->exit();
+        return found->second.get();
 }
 
 uint8_t fb::threads::count() const
@@ -306,7 +288,7 @@ void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clo
     }
     else
     {
-        for(auto pair : this->_threads)
+        for(auto& pair : this->_threads)
         {
             pair.second->settimer(fn, duration);
         }

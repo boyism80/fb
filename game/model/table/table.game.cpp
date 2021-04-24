@@ -400,10 +400,10 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                 if(js_warp.isMember("world"))
                 {
                     auto world = fb::game::table::worlds[js_warp["world"]["wm"].asInt()];
-                    auto group = (*world)[js_warp["world"]["group"].asInt()];
-                    auto offset = (*group)[js_warp["world"]["offset"].asInt()];
+                    auto& group = (*world)[js_warp["world"]["group"].asInt()];
+                    auto& offset = (*group)[js_warp["world"]["offset"].asInt()];
 
-                    map->push_warp(offset, before);
+                    map->push_warp(offset.get(), before);
                 }
                 else
                 {
@@ -1078,12 +1078,12 @@ int fb::game::container::worlds::find(const std::string& id) const
         const auto found = std::find_if
         (
             world->cbegin(), world->cend(),
-            [&] (const fb::game::wm::group* group)
+            [&] (const std::unique_ptr<fb::game::wm::group>& group)
             {
                 return std::find_if
                 (
                     group->cbegin(), group->cend(),
-                    [&] (const fb::game::wm::offset* x)
+                    [&] (const std::unique_ptr<fb::game::wm::offset>& x)
                     {
                         return x->id == id;
                     }

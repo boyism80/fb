@@ -13,6 +13,7 @@ bool SetConsoleIcon(int id);
 #include <string>
 #include <cstring>
 #include <optional>
+#include <memory>
 #include "module/encoding/encoding.h"
 
 namespace fb {
@@ -20,7 +21,7 @@ namespace fb {
 class console
 {
 private:
-    static console*         _ist;
+    static std::unique_ptr<console>         _ist;
 
 private:
 #ifdef _WIN32
@@ -31,7 +32,15 @@ private:
 
 private:
     console();
+
+public:
+    console(const console&) = delete;
+    console(console&&) = delete;
     ~console();
+
+public:
+    console& operator = (console&) = delete;
+    console& operator = (const console&) = delete;
 
 private:
     std::string             format(const std::string& f, va_list* args);
@@ -52,7 +61,6 @@ public:
 
 public:
     static console&         get();
-    static void             release();
 };
 
 }

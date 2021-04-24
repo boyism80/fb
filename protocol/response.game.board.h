@@ -9,23 +9,23 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class sections : public fb::protocol::base::header
 {
 public:
-    const std::vector<fb::game::board::section*>&        data;
-public:
-    sections() : 
-        data(fb::game::table::board.sections())
+    sections()
     {}
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
+        const auto& sections = fb::game::table::board.sections();
+        auto size = (uint16_t)sections.size();
+
         out_stream.write_u8(0x31)
                   .write_u8(0x01)
-                  .write_u16((uint16_t)this->data.size());
+                  .write_u16(size);
 
-        for(int i = 0; i < this->data.size(); i++)
+        for(int i = 0; i < size; i++)
         {
             out_stream.write_u16(i)
-                      .write(this->data[i]->title());
+                      .write(sections[i]->title());
         }
     }
 };
@@ -45,7 +45,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto              section = fb::game::table::board.sections()[section_id];
+        const auto&             section = fb::game::table::board.sections()[section_id];
 
         out_stream.write_u8(0x31)
             .write_u8(0x02)
@@ -64,7 +64,7 @@ public:
 
         for(auto i = section->rbegin() + reverse_offset; i != section->rend(); i++)
         {
-            const auto          article = (*i);
+            const auto          article = i->get();
             if(article->deleted())
                 continue;
 

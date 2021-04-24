@@ -81,13 +81,7 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
             cache.erase(x.id());
     };
     for(auto i = 0; i < this->_count; i++)
-        this->_pool.push_back(new sector(i, callback));
-}
-
-fb::game::sectors::~sectors()
-{
-    for(auto x : this->_pool)
-        delete x;
+        this->_pool.push_back(std::make_unique<sector>(i, callback));
 }
 
 uint32_t fb::game::sectors::index(const point16_t& position) const
@@ -120,7 +114,7 @@ fb::game::sector* fb::game::sectors::at(uint32_t index) const
     if(index > this->_pool.size() - 1)
         return nullptr;
 
-    return this->_pool[index];
+    return this->_pool[index].get();
 }
 
 uint32_t fb::game::sectors::push(fb::game::object& object)

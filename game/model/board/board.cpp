@@ -69,34 +69,7 @@ fb::game::board::section::section(const std::string & title) :
 }
 
 fb::game::board::section::~section()
-{
-    for(auto article : *this)
-        delete article;
-}
-
-std::vector<fb::game::board::article*>::iterator fb::game::board::section::it(uint16_t id)
-{
-    for(auto i = this->begin(); i != this->end(); i++)
-    {
-        const auto& article = *i;
-        if(article->id() == id)
-            return i;
-    }
-
-    return this->end();
-}
-
-std::vector<fb::game::board::article*>::const_iterator fb::game::board::section::const_it(uint16_t id) const
-{
-    for(auto i = this->cbegin(); i != this->cend(); i++)
-    {
-        const auto& article = *i;
-        if(article->id() == id)
-            return i;
-    }
-
-    return this->cend();
-}
+{}
 
 const std::string& fb::game::board::section::title() const
 {
@@ -113,19 +86,22 @@ fb::game::board::article* fb::game::board::section::add(const std::string& title
     auto time = std::time(0);
     auto now = std::localtime(&time);
 
-    auto allocated = new article(uint16_t(this->size()+1), title, content, writer, now->tm_mon + 1, now->tm_mday, color);
-    this->push_back(allocated);
-
-    return allocated;
+    auto article = new fb::game::board::article(uint16_t(this->size()+1), title, content, writer, now->tm_mon + 1, now->tm_mday, color);
+    this->push_back(std::unique_ptr<fb::game::board::article>(article));
+    return article;
 }
 
 bool fb::game::board::section::remove(uint16_t id)
 {
-    auto found = this->it(id);
-    if(found == this->end())
-        return false;
-
-    this->erase(found);
+    return std::remove_if
+    (
+        this->begin(), 
+        this->end(),
+        [id] (std::unique_ptr<article>& x)
+        {
+            return x->id() == id;
+        }
+    ) != this->end();
     return true;
 }
 
@@ -134,20 +110,29 @@ const fb::game::board::article* fb::game::board::section::at(uint32_t index) con
     if(index > this->size() - 1)
         return nullptr;
 
-    const auto article = std::vector<board::article*>::at(index);
+    const auto& article = std::vector<std::unique_ptr<board::article>>::at(index);
     if(article->deleted())
         return nullptr;
 
-    return article;
+    return article.get();
 }
 
 const fb::game::board::article* fb::game::board::section::find(uint16_t id) const
 {
-    auto found = this->const_it(id);
+    auto found = std::find_if
+    (
+        this->cbegin(),
+        this->cend(),
+        [id] (const std::unique_ptr<article>& x)
+        {
+            return x->id() == id;
+        }
+    );
+
     if(found == this->cend())
         return nullptr;
 
-    return *found;
+    return found->get();
 }
 
 
@@ -160,12 +145,9 @@ fb::game::board::board()
 }
 
 fb::game::board::~board()
-{
-    for(auto section : this->_sections)
-        delete section;
-}
+{}
 
-const std::vector<fb::game::board::section*>& fb::game::board::sections() const
+const std::vector<std::unique_ptr<fb::game::board::section>>& fb::game::board::sections() const
 {
     return this->_sections;
 }
@@ -175,14 +157,13 @@ fb::game::board::section* fb::game::board::at(uint32_t index) const
     if(index > this->_sections.size() - 1)
         return nullptr;
 
-    return this->_sections.at(index);
+    return this->_sections[index].get();
 }
 
 fb::game::board::section* fb::game::board::add(const std::string& name)
 {
-    auto section = new board::section(name);
-    this->_sections.push_back(section);
-
+    auto section = new fb::game::board::section(name); std::make_unique<board::section>(name);
+    this->_sections.push_back(std::unique_ptr<fb::game::board::section>(section));
     return section;
 }
 
@@ -193,9 +174,6 @@ void fb::game::board::remove(uint32_t index)
 
 void fb::game::board::clear()
 {
-    for(auto section : this->_sections)
-        delete section;
-
     this->_sections.clear();
 }
 

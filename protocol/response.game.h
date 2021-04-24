@@ -63,7 +63,7 @@ public:
                   .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
-        for(auto pair : this->sockets)
+        for(auto& pair : this->sockets)
         {
             auto user = pair.second->data();
             auto& name = user->name();
