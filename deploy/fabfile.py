@@ -40,6 +40,11 @@ def environment(e):
 
 @task
 def optimize():
+    with lcd('resources/maps'):
+        local('rm -f *.map')
+        local('rm -f *.block')
+        local('unzip -qq maps.zip')
+
     optimizer.resources()
 
 @task
@@ -215,7 +220,7 @@ def docker_stop():
 @parallel
 def docker_prune():
     with settings(warn_only=True):
-        sudo('docker system prune -a -f')
+        sudo('docker system prune -a -f', quiet=True)
 
 def docker_build(name, port):
     container_name = f'fb_{name}'

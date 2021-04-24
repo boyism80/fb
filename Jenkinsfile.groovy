@@ -60,11 +60,6 @@ pipeline {
 
         stage('Preperence') {
             steps {
-                dir('resources/maps') {
-                    sh 'rm -f *.map'
-                    sh 'rm -f *.block'
-                    sh 'unzip -qq maps.zip'
-                }
                 sh 'fab -f deploy/fabfile.py optimize'
                 sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_stop'
             }
