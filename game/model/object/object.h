@@ -8,6 +8,7 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class map;
 class session;
 class buffs;
@@ -15,9 +16,27 @@ class objects;
 class items;
 class sector;
 class sectors;
+#pragma endregion
 
 class object : public lua::luable
 {
+#pragma region listener
+public:
+    interface listener
+    {
+        virtual void on_direction(fb::game::object& me) = 0;
+        virtual void on_show(fb::game::object& me, bool light) = 0;
+        virtual void on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
+        virtual void on_hide(fb::game::object& me) = 0;
+        virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
+        virtual void on_move(fb::game::object& me) = 0;
+        virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+        virtual void on_create(fb::game::object& me) = 0;
+        virtual void on_destroy(fb::game::object& me) = 0;
+        virtual void on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
+    };
+#pragma endregion
+
 #pragma region lua
 public:
     LUA_PROTOTYPE
@@ -63,6 +82,16 @@ protected:
 #pragma region friend
 public:
     friend class fb::game::object;
+#pragma endregion
+
+
+#pragma region template
+public:
+    template <typename T>
+    T* make(fb::game::object::listener* listener) const
+    {
+        return new T(static_cast<const typename T::master*>(this), dynamic_cast<typename T::listener*>(listener));
+    }
 #pragma endregion
 
 
@@ -120,23 +149,6 @@ public:
 } cache;
 #pragma endregion
 
-#pragma region listener
-public:
-interface listener
-{
-    virtual void on_direction(fb::game::object& me) = 0;
-    virtual void on_show(fb::game::object& me, bool light) = 0;
-    virtual void on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
-    virtual void on_hide(fb::game::object& me) = 0;
-    virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
-    virtual void on_move(fb::game::object& me) = 0;
-    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
-    virtual void on_create(fb::game::object& me) = 0;
-    virtual void on_destroy(fb::game::object& me) = 0;
-    virtual void on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
-};
-#pragma endregion
-
 #pragma region private field
 private:
     listener*                           _listener;
@@ -188,7 +200,7 @@ public:
 
     const master*                       based() const;
     template <typename T>
-    const T*                            based() const { return static_cast<const T*>(this->_master); }
+    const typename T::master*           based() const { return static_cast<const typename T::master*>(this->_master); }
     bool                                is(object::types type) const;
 
     virtual const std::string&          name() const;

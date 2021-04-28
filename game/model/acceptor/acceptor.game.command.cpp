@@ -218,7 +218,10 @@ bool fb::game::acceptor::handle_command_item(fb::game::session& session, Json::V
     if(core == nullptr)
         return false;
 
-    auto item = core->make<fb::game::item>(this);
+    auto count = parameters.size() > 1 && parameters[1].isInt() ? 
+        parameters[1].asInt() : 1;
+
+    auto item = core->make<fb::game::item>(this, count);
     item->map(session.map(), session.position());
     return true;
 }

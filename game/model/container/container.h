@@ -24,6 +24,7 @@ protected:
     T*                      set(T* element, int position);
 
 public:
+    uint8_t                 next() const;
     life&                   owner();
     const life&             owner() const;
     virtual T*              at(uint8_t index) const;

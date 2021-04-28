@@ -28,6 +28,17 @@ inline T* fb::game::base_container<T>::set(T* element, int position)
     return before;
 }
 template<typename T>
+inline uint8_t fb::game::base_container<T>::next() const
+{
+    for(int i = 0; i < this->_size; i++)
+    {
+        if(this->at(i) == nullptr)
+            return i;
+    }
+
+    return 0xFF;
+}
+template<typename T>
 inline fb::game::life& fb::game::base_container<T>::owner()
 {
     return this->_owner;
@@ -48,16 +59,11 @@ inline T* fb::game::base_container<T>::at(uint8_t index) const
 template<typename T>
 inline uint8_t fb::game::base_container<T>::add(T& element)
 {
-    for(int i = 0; i < this->_size; i++)
-    {
-        if(this->_elements[i] != nullptr)
-            continue;
+    auto next = this->next();
+    if(next != 0xFF)
+        this->_elements[next] = &element;
 
-        this->_elements[i] = &element;
-        return i;
-    }
-
-    return 0xFF;
+    return next;
 }
 template<typename T>
 inline uint8_t fb::game::base_container<T>::add(T& element, uint8_t index)

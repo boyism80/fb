@@ -855,7 +855,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(this->state() == fb::game::state::RIDING)
             throw std::runtime_error(message::ride::ALREADY_RIDE);
 
-        if(horse.based<fb::game::mob::master>() != fb::game::table::mobs.name2mob("말"))
+        if(horse.based<fb::game::mob>() != fb::game::table::mobs.name2mob("말"))
             throw session::no_conveyance_exception();
 
         if(horse.map() != this->_map)
@@ -1287,7 +1287,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(item == nullptr)
                 throw std::exception();
 
-            index = session->items.to_index(item->based<fb::game::item::master>());
+            index = session->items.index(item->based<fb::game::item>());
         }
         else if(lua_isnumber(lua, 2))
         {
@@ -1303,7 +1303,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(master == nullptr)
                 throw std::exception();
 
-            index = session->items.to_index(master);
+            index = session->items.index(master);
         }
         else
         {
@@ -1659,7 +1659,7 @@ void fb::game::lua::dialog::show(const object::master& object, const std::string
 
 void fb::game::lua::dialog::show(const object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
-    return this->show(*object.based<object::master>(), message, button_prev, button_next, interaction);
+    return this->show(*object.based<fb::game::object>(), message, button_prev, button_next, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
@@ -1671,7 +1671,7 @@ void fb::game::lua::dialog::show(const npc::master& npc, const std::string& mess
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
-    this->show(*npc.based<npc::master>(), message, menus, interaction);
+    this->show(*npc.based<fb::game::npc>(), message, menus, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
@@ -1683,7 +1683,7 @@ void fb::game::lua::dialog::show(const npc::master& npc, const std::string& mess
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
-    return this->show(*npc.based<npc::master>(), message, item_slots, interaction);
+    return this->show(*npc.based<fb::game::npc>(), message, item_slots, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
@@ -1695,7 +1695,7 @@ void fb::game::lua::dialog::show(const npc::master& npc, const std::string& mess
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
 {
-    this->show(*npc.based<npc::master>(), message, cores, interaction);
+    this->show(*npc.based<fb::game::npc>(), message, cores, interaction);
 }
 
 void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction)
@@ -1707,7 +1707,7 @@ void fb::game::lua::dialog::input(const npc::master& npc, const std::string& mes
 
 void fb::game::lua::dialog::input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction)
 {
-    this->input(*npc.based<npc::master>(), message, interaction);
+    this->input(*npc.based<fb::game::npc>(), message, interaction);
 }
 
 void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
@@ -1719,5 +1719,5 @@ void fb::game::lua::dialog::input(const npc::master& npc, const std::string& mes
 
 void fb::game::lua::dialog::input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
-    this->input(*npc.based<npc::master>(), message, top, bottom, maxlen, prev, interaction);
+    this->input(*npc.based<fb::game::npc>(), message, top, bottom, maxlen, prev, interaction);
 }

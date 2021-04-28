@@ -67,6 +67,11 @@ namespace fb { namespace game { namespace message {
         static const char* INVALID_MOB_NAME = "올바르지 않은 몹 이름입니다.";
         static const char* INVALID_ITEM_NAME = "올바르지 않은 아이템 이름입니다.";
     }
+
+    namespace item
+    {
+        static const char* CANNOT_PICKUP_ANYMORE = "더 이상 가질 수 없습니다.";
+    }
     
     namespace group 
     {

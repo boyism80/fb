@@ -509,7 +509,7 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
-    auto master = object->based<life::master>();
+    auto master = object->based<fb::game::life>();
 
     thread->pushinteger(master->_hp);
     return 1;
@@ -526,7 +526,7 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     if(object == nullptr || acceptor->exists(*object) == false)
         return 0;
     
-    auto master = object->based<life::master>();
+    auto master = object->based<fb::game::life>();
 
     thread->pushinteger(master->_mp);
     return 1;

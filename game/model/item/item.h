@@ -14,13 +14,17 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class session;
 class items;
+#pragma endregion
 
 class item : public object
 {
+#pragma region forward declaration
 public:
 enum delete_attr : uint8_t;
+#pragma endregion
 
 #pragma region listener
 public:
@@ -33,6 +37,7 @@ interface listener : public virtual fb::game::object::listener
     virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
 };
 #pragma endregion
+
 
 #pragma region enum
 public:
@@ -73,6 +78,7 @@ public:
         ITEM_ATTR_ARROW                 = ITEM_ATTR_EQUIPMENT | 0x00004000,
     };
 #pragma endregion
+
 
 #pragma region lua
 public:
@@ -200,14 +206,19 @@ public:
 public:
     virtual fb::game::item::attrs       attr() const;
     bool                                attr(fb::game::item::attrs flag) const;
-    virtual fb::game::object*           make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
 #pragma endregion
 
 
 #pragma region template method
 public:
     template <typename T>
-    T* make(fb::game::item::listener* listener) const { return static_cast<T*>(this->make(listener)); }
+    T* make(fb::game::item::listener* listener, int count = 1) const 
+    {
+        auto created = static_cast<T*>(this->make(listener)); 
+        created->count(count);
+        return created;
+    }
 #pragma endregion
 
 
@@ -270,7 +281,7 @@ protected:
 #pragma region constructor / destructor
 
 public:
-    item(const fb::game::item::master* master, listener* listener);
+    item(const fb::game::item::master* master, listener* listener, uint16_t count = 1);
     item(const item& right);
     virtual ~item();
 
@@ -322,6 +333,7 @@ public:
 public:
     virtual bool                        active();
     virtual item*                       split(uint16_t count = 1);
+    virtual void                        merge(fb::game::item& item);
 
 #pragma endregion
 };
@@ -332,6 +344,7 @@ public:
 //
 class cash : public item
 {
+#pragma region master
 public:
     class master : public fb::game::item::master
     {
@@ -341,8 +354,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
     static const master                 BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
@@ -372,6 +386,7 @@ public:
 //
 class consume : public item
 {
+#pragma region master
 public:
     class master : public fb::game::item::master
     {
@@ -384,11 +399,12 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        fb::game::item*                 make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
-    consume(const master* master, listener* listener);
+    consume(const master* master, listener* listener, uint16_t count = 1);
     consume(const consume& right);
     ~consume();
 
@@ -403,6 +419,7 @@ public:
 //
 class pack : public item
 {
+#pragma region master
 public:
     class master : public fb::game::item::master
     {
@@ -417,8 +434,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 private:
     uint16_t                            _durability;
@@ -476,8 +494,9 @@ public:
 public:
     enum EQUIPMENT_POSITION : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 
-public:
+
 #pragma region inner structure
+public:
     typedef struct _repair
     {
     private:
@@ -543,7 +562,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
 
     public:
         uint16_t                        dress() const;
@@ -671,6 +690,7 @@ public:
 //
 class weapon : public equipment
 {
+#pragma region structure
 public:
     typedef struct _damage_range
     {
@@ -680,10 +700,14 @@ public:
     public:
         _damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) {}
     } damage_range;
+#pragma endregion
 
-    
+#pragma region enum
+public:
     enum types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
+#pragma endregion
 
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -701,7 +725,7 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
         fb::game::weapon::types         weapon_type() const;
 
         const range32_t&                damage_small() const;
@@ -716,6 +740,7 @@ public:
         void                            spell(const std::string& value);
 
     };
+#pragma endregion master
 
 
 public:
@@ -741,6 +766,7 @@ protected:
 //
 class armor : public equipment
 {
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -750,13 +776,14 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
 
 public:
     armor(const fb::game::armor::master* master, listener* listener);
     armor(const fb::game::armor& right);
     ~armor();
+#pragma endregion
 };
 
 
@@ -766,6 +793,7 @@ public:
 //
 class helmet : public equipment
 {
+#pragma region
 public:
     class master : public equipment::master
     {
@@ -775,13 +803,14 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
 
 public:
     helmet(const master* master, listener* listener);
     helmet(const helmet& right);
     ~helmet();
+#pragma endregion
 };
 
 
@@ -791,6 +820,7 @@ public:
 //
 class shield : public equipment
 {
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -800,8 +830,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
     shield(const master* master, listener* listener);
@@ -816,6 +847,7 @@ public:
 //
 class ring : public equipment
 {
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -825,8 +857,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
     ring(const master* master, listener* listener);
@@ -841,6 +874,7 @@ public:
 //
 class auxiliary : public equipment
 {
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -850,8 +884,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
     auxiliary(const master* master, listener* listener);
@@ -866,6 +901,7 @@ public:
 //
 class arrow : public equipment
 {
+#pragma region master
 public:
     class master : public equipment::master
     {
@@ -875,8 +911,9 @@ public:
 
     public:
         virtual fb::game::item::attrs   attr() const;
-        virtual fb::game::object*       make(fb::game::item::listener* listener) const;
+        virtual fb::game::item*         make(fb::game::item::listener* listener) const;
     };
+#pragma endregion
 
 public:
     arrow(const master* master, listener* listener);
@@ -977,8 +1014,8 @@ public:
     bool                                reduce(uint8_t index, uint16_t count);
     fb::game::item*                     active(uint8_t index);
     uint8_t                             inactive(equipment::slot slot);
-    uint8_t                             to_index(const fb::game::item::master* item) const;
-    uint8_t                             to_index(const fb::game::item& item) const;
+    uint8_t                             index(const fb::game::item::master* item) const;
+    uint8_t                             index(const fb::game::item& item) const;
 
     fb::game::equipment*                wear(fb::game::equipment::slot slot, fb::game::equipment* item);
 
@@ -1003,6 +1040,7 @@ public:
     fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary, equipment::EQUIPMENT_POSITION position);
 
     fb::game::item*                     find(const std::string& name) const;
+    fb::game::item*                     find(const fb::game::item::master& base) const;
     fb::game::item*                     drop(uint8_t slot, uint8_t count);
     void                                pickup(bool boost);
     bool                                throws(uint8_t slot);

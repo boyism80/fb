@@ -59,7 +59,7 @@ public:
     {}
 
     menu(const fb::game::npc& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : 
-        menu(*npc.based<fb::game::npc::master>(), menus, message, interaction)
+        menu(*npc.based<fb::game::npc>(), menus, message, interaction)
     {}
 
 public:
@@ -111,7 +111,7 @@ public:
     {}
 
     slot(const fb::game::npc& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : 
-        slot(*npc.based<fb::game::npc::master>(), slots, message, interaction)
+        slot(*npc.based<fb::game::npc>(), slots, message, interaction)
     {}
 
 public:
@@ -153,7 +153,7 @@ public:
     {}
 
     item(const fb::game::npc& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
-        item(*npc.based<fb::game::npc::master>(), items, message, pursuit, interaction)
+        item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     {}
 
 public:
@@ -204,7 +204,7 @@ public:
     {}
 
     input(const fb::game::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : 
-        input(*npc.based<fb::game::npc::master>(), message, interaction)
+        input(*npc.based<fb::game::npc>(), message, interaction)
     {}
 
 public:
@@ -243,7 +243,7 @@ public:
     {}
 
     input_ext(const fb::game::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : 
-        input_ext(*npc.based<fb::game::npc::master>(), message, top, bottom, maxlen, button_prev, interaction)
+        input_ext(*npc.based<fb::game::npc>(), message, top, bottom, maxlen, button_prev, interaction)
     {}
 
 public:
