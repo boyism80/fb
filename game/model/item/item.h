@@ -212,7 +212,7 @@ public:
 
 #pragma region template method
 public:
-    template <typename T>
+    template <typename T = fb::game::item>
     T* make(fb::game::item::listener* listener, int count = 1) const 
     {
         auto created = static_cast<T*>(this->make(listener)); 
@@ -329,10 +329,9 @@ public:
 
 
 #pragma region event method
-
 public:
     virtual bool                        active();
-    virtual item*                       split(uint16_t count = 1);
+    virtual item*                       split(uint16_t count = 1, fb::game::item::delete_attr attr = fb::game::item::delete_attr::DELETE_NONE);
     virtual void                        merge(fb::game::item& item);
 
 #pragma endregion

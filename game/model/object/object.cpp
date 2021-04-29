@@ -559,7 +559,8 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
     }
 
     this->leave(true);
-    this->_listener->on_leave(*this, map, position);
+    if(this->_listener != nullptr)
+        this->_listener->on_leave(*this, map, position);
 }
 
 void fb::game::object::map(fb::game::map* map)

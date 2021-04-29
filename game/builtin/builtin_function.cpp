@@ -34,7 +34,7 @@ int fb::game::acceptor::builtin_sleep(lua_State* lua)
         {
             auto thread = fb::game::lua::get(lua);
             if(thread == nullptr)
-                return 0;
+                return;
             
             thread->pending(false);
             thread->resume(0);
