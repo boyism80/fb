@@ -191,6 +191,7 @@ private:
 public:
     template <typename T>
     T*                                  get_listener() const { return dynamic_cast<T*>(this->_listener); }
+    void                                set_listener(fb::game::object::listener* listener) { this->_listener = listener; }
 
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }

@@ -324,6 +324,8 @@ public:
     const std::string&                  active_script() const;
     attrs                               attr() const;
     bool                                attr(fb::game::item::attrs flag) const;
+    fb::game::session*                  owner() const;
+    void                                owner(fb::game::session* owner);
 
 #pragma endregion
 
@@ -331,7 +333,7 @@ public:
 #pragma region event method
 public:
     virtual bool                        active();
-    virtual item*                       split(uint16_t count = 1, fb::game::item::delete_attr attr = fb::game::item::delete_attr::DELETE_NONE);
+    virtual item*                       split(uint16_t count = 1);
     virtual void                        merge(fb::game::item& item);
 
 #pragma endregion
@@ -1009,7 +1011,7 @@ public:
     uint8_t                             add(fb::game::item& item);
     uint8_t                             add(fb::game::item* item);
     std::vector<uint8_t>                add(const std::vector<fb::game::item*>& items);
-    uint8_t                             add(fb::game::item& item, uint8_t slot);
+    uint8_t                             add(fb::game::item& item, uint8_t index);
     bool                                reduce(uint8_t index, uint16_t count);
     fb::game::item*                     active(uint8_t index);
     uint8_t                             inactive(equipment::slot slot);
@@ -1040,12 +1042,12 @@ public:
 
     fb::game::item*                     find(const std::string& name) const;
     fb::game::item*                     find(const fb::game::item::master& base) const;
-    fb::game::item*                     drop(uint8_t slot, uint8_t count);
+    fb::game::item*                     drop(uint8_t index, uint8_t count);
     void                                pickup(bool boost);
-    bool                                throws(uint8_t slot);
+    bool                                throws(uint8_t index);
     
     // override
-    fb::game::item*                     remove(uint8_t slot, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    fb::game::item*                     remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     bool                                swap(uint8_t src, uint8_t dst);
 

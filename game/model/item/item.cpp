@@ -365,6 +365,20 @@ bool fb::game::item::attr(fb::game::item::attrs flag) const
     return static_cast<const master*>(this->_master)->attr(flag);
 }
 
+fb::game::session* fb::game::item::owner() const
+{
+    return this->_owner;
+}
+
+void fb::game::item::owner(fb::game::session* owner)
+{
+    this->_owner = owner;
+    if(owner == nullptr)
+        this->set_listener(nullptr);
+    else
+        this->set_listener(owner->get_listener<fb::game::item::listener>());
+}
+
 bool fb::game::item::active()
 {
     if(this->empty())
@@ -373,44 +387,21 @@ bool fb::game::item::active()
     return false;
 }
 
-fb::game::item* fb::game::item::split(uint16_t count, fb::game::item::delete_attr attr)
+fb::game::item* fb::game::item::split(uint16_t count)
 {
     if(this->unique())
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     auto listener = this->_owner != nullptr ? this->_owner->get_listener<fb::game::session::listener>() : nullptr;
-    auto splitted = this;
-    auto index = this->_owner != nullptr ? this->_owner->items.index(*this) : uint8_t(0xFF);
     if(this->attr(item::attrs::ITEM_ATTR_BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        splitted = this->based<fb::game::item>()->make(listener, count);
+        return this->based<fb::game::item>()->make(listener, count);
     }
     else
     {
-        auto& base_container = (fb::game::base_container<fb::game::item>&)this->_owner->items;
-        base_container.remove(index);
-
-        if(listener != nullptr)
-            listener->on_item_remove(*this->_owner, index, attr);
-
-        splitted = this;
+        return this;
     }
-
-    if(listener != nullptr)
-    {
-        listener->on_item_update(*this->_owner, index);
-
-        if(splitted->attr(fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) == false)
-        {
-            if(this->_owner->items[index] == nullptr)
-                listener->on_item_lost(*this->_owner, std::vector<uint8_t> {index});
-            else
-                listener->on_item_changed(*this->_owner, std::map<uint8_t, fb::game::item*> {{index, this->_owner->items[index]}});
-        }
-    }
-
-    return splitted;
 }
 
 void fb::game::item::merge(fb::game::item& item)
@@ -1778,16 +1769,18 @@ std::vector<uint8_t> items::add(const std::vector<fb::game::item*>& items)
     return std::move(indices);
 }
 
-uint8_t items::add(fb::game::item& item, uint8_t slot)
+uint8_t items::add(fb::game::item& item, uint8_t index)
 {
-    if(fb::game::base_container<fb::game::item>::add(item, slot) == 0xFF)
+    if(fb::game::base_container<fb::game::item>::add(item, index) == 0xFF)
         return 0xFF;
 
+    item.owner(&this->_owner);
+
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
-    item._owner = &this->_owner;
     if(listener != nullptr && item.empty() == false)
-        listener->on_item_update(static_cast<session&>(this->owner()), slot);
-    return slot;
+        listener->on_item_update(static_cast<session&>(this->owner()), index);
+
+    return index;
 }
 
 bool fb::game::items::reduce(uint8_t index, uint16_t count)
@@ -1909,7 +1902,7 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
     fb::game::weapon*       before = this->_weapon;
 
     this->_weapon = weapon;
-    weapon->_owner = &this->_owner;
+    weapon->owner(&this->_owner);
     
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -1928,7 +1921,7 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
     fb::game::armor*        before = this->_armor;
 
     this->_armor = armor;
-    armor->_owner = &this->_owner;
+    armor->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -1947,7 +1940,7 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
     fb::game::shield*       before = this->_shield;
 
     this->_shield = shield;
-    shield->_owner = &this->_owner;
+    shield->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -1966,7 +1959,7 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
     fb::game::helmet*       before = this->_helmet;
 
     this->_helmet = helmet;
-    helmet->_owner = &this->_owner;
+    helmet->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -1992,7 +1985,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
     {
         before = this->ring(ring, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
-    ring->_owner = &this->_owner;
+    ring->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -2031,7 +2024,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     {
         before = this->auxiliary(auxiliary, equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT);
     }
-    auxiliary->_owner = &this->_owner;
+    auxiliary->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
     if(listener != nullptr)
@@ -2084,7 +2077,7 @@ fb::game::item* fb::game::items::find(const fb::game::item::master& base) const
     return nullptr;
 }
 
-fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count)
+fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 {
     auto&                       owner = static_cast<fb::game::session&>(this->owner());
     auto                        listener = this->_owner.get_listener<fb::game::session::listener>();
@@ -2093,7 +2086,7 @@ fb::game::item* fb::game::items::drop(uint8_t slot, uint8_t count)
     {
         owner.assert_state({state::RIDING, state::GHOST});
 
-        auto                    dropped = this->remove(slot, count, item::delete_attr::DELETE_DROP);
+        auto                    dropped = this->remove(index, count, item::delete_attr::DELETE_DROP);
         if(dropped != nullptr)
         {
             dropped->map(owner.map(), owner.position());
@@ -2169,13 +2162,13 @@ void fb::game::items::pickup(bool boost)
     }
 }
 
-bool fb::game::items::throws(uint8_t slot)
+bool fb::game::items::throws(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::session::listener>();
 
     try
     {
-        auto                    item = this->_owner.items.at(slot);
+        auto                    item = this->_owner.items.at(index);
         if(item == nullptr)
             return false;
 
@@ -2186,7 +2179,7 @@ bool fb::game::items::throws(uint8_t slot)
         if(map == nullptr)
             throw std::exception();
 
-        auto                    dropped = this->remove(slot, 1, item::delete_attr::DELETE_THROW);
+        auto                    dropped = this->remove(index, 1, item::delete_attr::DELETE_THROW);
         auto                    position = this->_owner.position();
         for(int i = 0; i < 7; i++)
         {
@@ -2213,14 +2206,34 @@ bool fb::game::items::throws(uint8_t slot)
     }
 }
 
-fb::game::item* fb::game::items::remove(uint8_t slot, uint16_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::delete_attr attr)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
-    auto                    item = this->at(slot);
+    auto                    item = this->at(index);
     if(item == nullptr)
         return nullptr;
 
-    return item->split(count, attr);
+    auto                    listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto                    splitted = item->split(count);
+    if(splitted == item)
+    {
+        fb::game::base_container<fb::game::item>::remove(index);
+        if(listener != nullptr)
+            listener->on_item_remove(this->_owner, index, attr);
+    }
+
+    if(listener != nullptr)
+    {
+        auto current = this->at(index);
+        
+        listener->on_item_update(this->_owner, index);
+        if(current == nullptr)
+            listener->on_item_lost(this->_owner, std::vector<uint8_t> {index});
+        else
+            listener->on_item_changed(this->_owner, std::map<uint8_t, fb::game::item*> {{index, current}});
+    }
+
+    return splitted;
 }
 
 fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, item::delete_attr attr)
