@@ -131,9 +131,9 @@ public:
 #pragma region listener
 public:
 interface listener : public virtual fb::game::life::listener, 
-        public fb::game::lua::dialog::listener,
-        public fb::game::trade::listener,
-        public fb::game::equipment::listener
+        public virtual fb::game::lua::dialog::listener,
+        public virtual fb::game::trade::listener,
+        public virtual fb::game::equipment::listener
 {
 public:
     virtual void on_attack(session& me, object* you) = 0;

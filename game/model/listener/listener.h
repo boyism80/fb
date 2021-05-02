@@ -7,8 +7,8 @@
 
 namespace fb { namespace game {
 
-interface listener : public session::listener,
-    public mob::listener
+interface listener : public virtual session::listener,
+    public virtual mob::listener
 {
 public:
     // game

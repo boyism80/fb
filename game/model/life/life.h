@@ -15,7 +15,7 @@ public:
 #pragma region listener
 public:
 interface listener : public virtual fb::game::object::listener,
-    public fb::game::spell::listener
+    public virtual fb::game::spell::listener
 {
     virtual void on_attack(life& me, object* you) = 0;
     virtual void on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
