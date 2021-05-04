@@ -220,7 +220,7 @@ bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback fn)
     if(thread == nullptr)
         fn(id);
     else
-        this->_threads[id]->precedence.enqueue(std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
+        this->_threads[id]->precedence.enqueue(fn);
     return true;
 }
 
@@ -231,9 +231,9 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
     auto thread = this->_threads[id];
     
     if(thread == nullptr)
-        this->handle_work(socket, id);
+        fn(id);
     else
-        this->_threads[id]->queue.enqueue(std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
+        this->_threads[id]->queue.enqueue(fn);
     return true;
 }
 

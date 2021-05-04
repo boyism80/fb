@@ -34,7 +34,7 @@ void fb::queue::enqueue(fb::queue_callback fn)
 fb::queue_callback fb::queue::dequeue()
 {   MUTEX_GUARD(this->_mutex)
 
-    auto fn = this->front();
+    auto& fn = this->front();
     this->pop();
     return fn;
 }
@@ -56,7 +56,7 @@ void fb::queue::flush(uint8_t index)
 
     while(std::queue<fb::queue_callback>::empty() == false)
     {
-        auto fn = this->front();
+        auto& fn = this->front();
         this->pop();
         
         fn(index);
