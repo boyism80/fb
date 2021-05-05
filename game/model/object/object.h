@@ -33,7 +33,7 @@ public:
         virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
         virtual void on_create(fb::game::object& me) = 0;
         virtual void on_destroy(fb::game::object& me) = 0;
-        virtual void on_enter(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
+        virtual void on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) = 0;
     };
 #pragma endregion
 
@@ -268,8 +268,8 @@ public:
 #pragma region handler method
 public:
     virtual void                        handle_timer(uint64_t elapsed_milliseconds) {}
-    void                                handle_enter(fb::game::map* map, const point16_t& position);
-    void                                handle_transfer(fb::game::map* map, const point16_t& position);
+    void                                handle_enter(fb::game::map& map, const point16_t& position);
+    void                                handle_transfer(fb::game::map& map, const point16_t& position);
     virtual void                        handle_kill(fb::game::life& you) {}
 
 protected:

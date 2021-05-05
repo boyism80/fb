@@ -59,26 +59,21 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
 
-void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map* map, const point16_t& position)
+void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position)
 {
-    auto thread = (fb::thread*)nullptr;
-    if(map != nullptr)
-        thread = this->thread(*map);
-
+    auto thread = this->thread(map);
+    
     if(thread == nullptr || thread == this->threads().current())
     {
         me.handle_enter(map, position);
     }
     else
     {
-        me.map(nullptr);
-
-        auto object = &me;
         thread->precedence.enqueue
         (
-            [object, map, position] (uint8_t) 
+            [&me, &map, position] (uint8_t) 
             {
-                object->handle_enter(map, position);
+                me.handle_enter(map, position);
             }
         );
     }

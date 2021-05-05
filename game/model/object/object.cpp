@@ -543,7 +543,16 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
-    if(map != nullptr)
+    if(map == nullptr)
+    {
+        if(this->_map != nullptr)
+            this->_map->objects.remove(*this);
+            
+        this->_map = nullptr;
+        this->sector(nullptr);
+        this->leave(true);
+    }
+    else
     {
         if(this->_map == map)
         {
@@ -556,11 +565,13 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
             this->handle_switch_process(*map, position);
             return;
         }
-    }
 
-    this->leave(true);
-    if(this->_listener != nullptr)
-        this->_listener->on_enter(*this, map, position);
+        if(this->_map != nullptr)
+            this->map(nullptr);
+
+        if(this->_listener != nullptr)
+            this->_listener->on_enter(*this, *map, position);
+    }
 }
 
 void fb::game::object::map(fb::game::map* map)
@@ -761,38 +772,24 @@ bool fb::game::object::switch_process(const fb::game::map& map) const
     return current->host != map.host;
 }
 
-void fb::game::object::handle_enter(fb::game::map* map, const point16_t& position)
+void fb::game::object::handle_enter(fb::game::map& map, const point16_t& position)
 {
     this->before(this->_map, this->_position);
 
-    if(map == nullptr)
-    {
-        this->_map = nullptr;
-        this->_position.x = 0;
-        this->_position.y = 0;
-        this->sector(nullptr);
-    }
-    else
-    {
-        this->_map = map;
-        this->_position = position;
-        this->_map->update(*this);
+    this->_map = &map;
+    this->_position = position;
+    this->_map->update(*this);
+    this->_map->objects.add(*this);
 
-        this->_map->objects.add(*this);
-
-        this->handle_warp();
-        this->enter();
-    }
+    this->handle_warp();
+    this->enter();
 }
 
-void fb::game::object::handle_transfer(fb::game::map* map, const point16_t& position)
+void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& position)
 {
-    if(map == nullptr)
-        return;
-
     this->before(this->_map, this->_position);
 
-    this->_map = map;
+    this->_map = &map;
     this->_position = position;
 
     this->leave(false);

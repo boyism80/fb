@@ -441,7 +441,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = client->data();
-        session->handle_transfer(fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
+        session->handle_transfer(*fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
 
         fb::ostream         parameter;
         parameter.write(response.name);
