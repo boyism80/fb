@@ -560,7 +560,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 
     this->leave(true);
     if(this->_listener != nullptr)
-        this->_listener->on_leave(*this, map, position);
+        this->_listener->on_enter(*this, map, position);
 }
 
 void fb::game::object::map(fb::game::map* map)
@@ -758,10 +758,7 @@ bool fb::game::object::switch_process(const fb::game::map& map) const
     if(current == nullptr)
         return false;
 
-    if(current->host == map.host)
-        return false;
-
-    return true;
+    return current->host != map.host;
 }
 
 void fb::game::object::handle_enter(fb::game::map* map, const point16_t& position)
@@ -799,7 +796,7 @@ void fb::game::object::handle_transfer(fb::game::map* map, const point16_t& posi
     this->_position = position;
 
     this->leave(false);
-    this->_listener->on_leave(*this, map, position);
+    this->_listener->on_enter(*this, map, position);
 }
 
 bool fb::game::object::operator==(const object& right) const

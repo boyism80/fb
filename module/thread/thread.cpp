@@ -9,12 +9,6 @@ fb::timer::timer(fb::thread_callback fn, std::chrono::steady_clock::duration dur
 fb::timer::~timer()
 {}
 
-fb::thread::thread(uint8_t index) : 
-    _thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index),
-    _index(index),
-    _exit(false)
-{ }
-
 
 
 
@@ -34,9 +28,9 @@ void fb::queue::enqueue(fb::queue_callback fn)
 fb::queue_callback fb::queue::dequeue()
 {   MUTEX_GUARD(this->_mutex)
 
-    auto& fn = this->front();
+    auto fn = this->front();
     this->pop();
-    return fn;
+    return std::move(fn);
 }
 
 bool fb::queue::dequeue(fb::queue_callback& fn)
@@ -57,13 +51,18 @@ void fb::queue::flush(uint8_t index)
     while(std::queue<fb::queue_callback>::empty() == false)
     {
         auto& fn = this->front();
-        this->pop();
-        
         fn(index);
+
+        this->pop();
     }
 }
 
 
+fb::thread::thread(uint8_t index) : 
+    _thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index),
+    _index(index),
+    _exit(false)
+{ }
 
 fb::thread::~thread()
 {}
@@ -222,7 +221,7 @@ const fb::thread* fb::threads::current() const
 
 uint8_t fb::threads::count() const
 {
-    return this->_threads.size();
+    return (uint8_t)this->_threads.size();
 }
 
 bool fb::threads::empty() const

@@ -55,7 +55,7 @@ void fb::base::socket<T>::recv()
                 this->_handle_received(*this);
                 this->recv();
             }
-            catch(std::exception& e)
+            catch(std::exception&)
             {
                 this->_handle_closed(*this);
             }

@@ -6,7 +6,7 @@ fb::db::db() :
     _context(nullptr)
 {
     auto& config = fb::config::get();
-    auto databases = config["database"];
+    auto& databases = config["database"];
 
     for(int i = 0; i < databases.size(); i++)
     {
@@ -134,7 +134,7 @@ bool fb::db::release(const char* name, daotk::mysql::connection& connection)
         connections->push_back(&connection);
         return true;
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return false;
     }

@@ -207,14 +207,8 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
     {
         for(auto obj : *sector)
         {
-            if(obj->is(object::types::MOB))
-            {
-                auto mob = static_cast<fb::game::mob*>(obj);
-                if(mob->alive() == false)
-                    continue;
-            }
-
-            objects.push_back(obj);
+            if(obj->available())
+                objects.push_back(obj);
         }
     }
 

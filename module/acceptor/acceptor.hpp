@@ -360,7 +360,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, std::function<bool(fb:
             if(callback(socket) == false)
                 return true;
         }
-        catch(std::exception& e)
+        catch(std::exception&)
         {
             in_stream.clear();
             break;

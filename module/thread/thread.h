@@ -29,6 +29,11 @@ public:
 
 private:
     timer(fb::thread_callback fn, std::chrono::steady_clock::duration duration);
+    timer(const timer&) = delete;
+    timer(timer&&) = delete;
+
+    timer& operator = (timer&) = delete;
+    timer& operator = (const timer&) = delete;
 
 public:
     ~timer();
@@ -38,6 +43,16 @@ class queue : private std::queue<fb::queue_callback>
 {
 private:
     std::mutex                                      _mutex;
+
+public:
+    queue() = default;
+    ~queue() = default;
+
+    queue(const queue&) = delete;
+    queue(queue&&) = delete;
+
+    queue& operator = (queue&) = delete;
+    queue& operator = (const queue&) = delete;
 
 public:
     bool                                            empty();
@@ -65,6 +80,12 @@ public:
 public:
     thread(uint8_t index);
     ~thread();
+
+    thread(const thread&) = delete;
+    thread(thread&&) = delete;
+
+    thread& operator = (thread&) = delete;
+    thread& operator = (const thread&) = delete;
 
 private:
     void                                            handle_thread(uint8_t index);
@@ -98,6 +119,12 @@ private:
 public:
     threads(boost::asio::io_context& context, uint8_t count);
     ~threads() = default;
+
+    threads(const threads&) = delete;
+    threads(threads&&) = delete;
+
+    threads& operator = (threads&) = delete;
+    threads& operator = (const threads&) = delete;
 
 public:
     fb::thread*                                     at(uint8_t index) const;

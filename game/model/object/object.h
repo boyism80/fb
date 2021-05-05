@@ -33,7 +33,7 @@ public:
         virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
         virtual void on_create(fb::game::object& me) = 0;
         virtual void on_destroy(fb::game::object& me) = 0;
-        virtual void on_leave(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
+        virtual void on_enter(fb::game::object& me, fb::game::map* map, const point16_t& position) = 0;
     };
 #pragma endregion
 
@@ -258,6 +258,9 @@ public:
 
     double                              distance(const object& right) const;
     uint32_t                            distance_sqrt(const object& right) const;
+
+    // 유효한 오브젝트인지
+    virtual bool                        available() const { return true; }
 
     bool                                switch_process(const fb::game::map& map) const;
 #pragma endregion

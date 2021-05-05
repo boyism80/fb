@@ -75,7 +75,7 @@ bool fb::login::acceptor::handle_agreement(fb::socket<fb::login::session>& socke
         socket.send(this->_agreement);
         return true;
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return false;
     }
@@ -117,11 +117,11 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
         session->created_id.clear();
         return true;
     }
-    catch(login_exception& e)
+    catch(login_exception&)
     {
         return true;
     }
-    catch(std::exception& e)
+    catch(std::exception&)
     {
         return false;
     }

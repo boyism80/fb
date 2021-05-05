@@ -206,6 +206,8 @@ public:
     const std::vector<drop>&                items() const;
     fb::game::life*                         fix();
     void                                    AI(std::chrono::steady_clock::duration now);
+
+    virtual bool                            available() const { return this->alive(); }
 #pragma endregion
 
 #pragma region override method

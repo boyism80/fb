@@ -125,7 +125,7 @@ public:
 
     int                         rawgeti(int offset_t, int offset_e) { return lua_rawgeti(*this, offset_t, offset_e); }
     void                        rawseti(int offset_t, int offset_e) { lua_rawseti(*this, offset_t, offset_e); }
-    int                         rawlen(int offset_t) { return lua_rawlen(*this, offset_t); }
+    int                         rawlen(int offset_t) { return (int)lua_rawlen(*this, offset_t); }
     void                        remove(int offset) { lua_remove(*this, offset); }
     void                        new_table() { lua_newtable(*this); }
 
