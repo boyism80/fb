@@ -2,7 +2,7 @@ CXX             = g++
 BUILD           = /dist/fb/gateway
 STD             = -std=c++20
 TARGET          = $(BUILD)/gateway
-LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw
+LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
 all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/acceptor.gateway.o $(BUILD)/gateway.o $(BUILD)/session.gateway.o $(BUILD)/service.gateway.o $(BUILD)/main.o

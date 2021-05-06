@@ -2,7 +2,7 @@ CXX             = g++
 BUILD           = /dist/fb/internal
 STD             = -std=c++20
 TARGET          = $(BUILD)/internal
-LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw
+LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
 all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/acceptor.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(BUILD)/main.o

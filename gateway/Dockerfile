@@ -1,4 +1,4 @@
-FROM cshyeon/fb:gateway
+FROM cshyeon/fb:latest
 WORKDIR app
 COPY . .
 RUN chmod 755 ./gateway

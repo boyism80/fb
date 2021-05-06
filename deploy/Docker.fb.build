@@ -16,12 +16,12 @@ RUN ./configure && make && make install
 WORKDIR ..
 RUN rm -rf zlib-1.1.4*
 
-RUN wget -O boost_1_74_0.tar.gz https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
+RUN wget -O boost_1_74_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz
 RUN apt-get install unzip -y
 RUN unzip boost_1_74_0.tar.gz
 WORKDIR boost_1_74_0
 RUN ./bootstrap.sh --prefix=/usr/
-RUN ./b2
+RUN ./b2 --with-program_options
 RUN ./b2 install
 WORKDIR ..
 RUN rm -f boost_1_74_0.tar.gz

@@ -6,13 +6,20 @@
 #include <memory>
 #include <fstream>
 #include <jsoncpp/json/json.h>
+#include <sstream>
 
 namespace fb {
 
 class config
 {
+private:
+    Json::Value             _json;
+
+private:
+    config(const char* env = nullptr);
+
 public:
-    static const Json::Value& get();
+    static const Json::Value& get(const char* env = nullptr);
 };
 
 }

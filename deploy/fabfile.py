@@ -9,7 +9,7 @@ import os
 import shutil
 import zipfile
 import optimizer
-import multiprocessing
+import time
 
 env.user = 'ubuntu'
 env.key_filename = 'ssh/fb'
@@ -45,11 +45,19 @@ def optimize():
         local('rm -f *.block')
         local('unzip -qq maps.zip')
 
-    optimizer.resources()
+    # for internal
+    optimizer.hosts('host.json')
+
+    # for game
+    optimizer.compress(maps=os.path.join('resources', 'maps'),
+                       tables=os.path.join('resources', 'table'),
+                       scripts=os.path.join('game', 'scripts'),
+                       dst='resources.zip')
 
 @task
 def cleanup():
-    shutil.rmtree('table.deploy')
+    local('rm -f host.json')
+    local('rm -f resources.zip')
     
 
 @task
@@ -62,7 +70,7 @@ def internal():
         run(f'mkdir -p {name}', quiet=True)
 
         with cd(name):
-            context = { 'port': config['port'], 'database': json.dumps(CONFIGURATION['database']), 'game': json.dumps(CONFIGURATION['deploy']['game']) }
+            context = { 'port': config['port'], 'database': CONFIGURATION['database'], 'game': json.dumps(CONFIGURATION['deploy']['game']) }
             files.upload_template(filename='config.internal.txt',
                                   destination=f'config.json',
                                   template_dir=f'{LOCAL_ROOT}/template',
@@ -72,10 +80,7 @@ def internal():
             put(f'internal/Dockerfile', '.', use_sudo=True)
             run('mkdir -p table', quiet=True)
             with cd('table'):
-                if os.path.isfile(f'table.deploy/host.json'):
-                    put('table.deploy/host.json', 'host.json')
-                else:
-                    os.remove(f'table.deploy/host.json')
+                put(f'host.json', '.', use_sudo=True)
 
             docker_build(name, config['port'])
 
@@ -118,7 +123,7 @@ def login():
                         'name': name,
                         'host': config,
                         'internal': CONFIGURATION['deploy']['internal']['internal'],
-                        'database': json.dumps(CONFIGURATION['database'])
+                        'database': CONFIGURATION['database']
                       }
             run(f"echo '{template.render(context)}' > config.json", quiet=True)
 
@@ -127,78 +132,42 @@ def login():
 
             docker_build(name, config['port'])
 
-
-def build_game(name, config):
-    run(f'mkdir -p {name}', quiet=True)
-
-    with cd(name):
-        context = { 
-                    'name': name, 
-                    'host': config,
-                    'internal': CONFIGURATION['deploy']['internal']['internal'],
-                    'login': CONFIGURATION['deploy']['login']['login'],
-                    'database': json.dumps(CONFIGURATION['database']),
-                  }
-        files.upload_template(filename='config.game.txt',
-                              destination=f'config.json',
-                              template_dir=f'{LOCAL_ROOT}/template',
-                              context=context, use_sudo=True, backup=False, use_jinja=True)
-
-        put(f'/dist/fb/game/game', 'game', use_sudo=True, mode='0755')
-        put(f'game/Dockerfile', '.', use_sudo=True)
-
-        run('mkdir -p table', quiet=True)
-        with cd('table'):
-            sudo('rm -rf *', quiet=True)
-            put(f'resources/table/*.json', '.')
-            if os.path.isfile(f'table.deploy/mob.spawn.{name}.json'):
-                put(f'table.deploy/mob.spawn.{name}.json', 'mob.spawn.json')
-            else:
-                sudo('rm -f mob.spawn.json', quiet=True)
-
-            if os.path.isfile(f'table.deploy/npc.spawn.{name}.json'):
-                put(f'table.deploy/npc.spawn.{name}.json', 'npc.spawn.json')
-            else:
-                sudo('rm -f npc.spawn.json', quiet=True)
-
-            if os.path.isfile(f'table.deploy/warp.{name}.json'):
-                put(f'table.deploy/warp.{name}.json', 'warp.json')
-            else:
-                sudo('rm -f warp.json', quiet=True)
-
-            if os.path.isfile(f'table.deploy/world.json'):
-                put(f'table.deploy/world.json', 'world.json')
-            else:
-                sudo('rm -f world.json', quiet=True)
-
-        run('mkdir -p scripts', quiet=True)
-        with cd('scripts'):
-            sudo('rm -rf *', quiet=True)
-            put(f'game/scripts/*', '.')
-
-        run('mkdir -p maps', quiet=True)
-        with cd('maps'):
-            sudo('rm -rf *', quiet=True)
-            if os.path.isfile(f'table.deploy/maps.{name}.zip'):
-                put(f'table.deploy/maps.{name}.zip', 'maps.zip')
-                sudo('unzip -qq maps.zip', quiet=True)
-                sudo('rm -f maps.zip', quiet=True)
-
-        docker_build(name, config['port'])
-
-
 @task
 @parallel
 @roles('game')
 def game():
-    processes = []
-    for name, config in current().items():
-        p = multiprocessing.Process(target=build_game, kwargs={'name': name, 'config': config})
-        p.start()
-        processes.append(p)
+    root = 'game'
 
-    for p in processes:
-        p.join()
+    sudo(f'rm -rf {root}')
+    run(f'mkdir -p {root}', quiet=True)
+
+    with cd(root):
+        for name, config in current().items():
+            context = { 
+                    'name': name, 
+                    'host': config,
+                    'internal': CONFIGURATION['deploy']['internal']['internal'],
+                    'login': CONFIGURATION['deploy']['login']['login'],
+                    'database': CONFIGURATION['database'],
+                  }
+            files.upload_template(filename='config.game.txt',
+                                  destination=f'config.{name}.json',
+                                  template_dir=f'{LOCAL_ROOT}/template',
+                                  context=context, use_sudo=True, backup=False, use_jinja=True)
+
+        put(f'/dist/fb/game/game', 'game', use_sudo=True, mode='0755')
+        put(f'game/Dockerfile', '.', use_sudo=True)
+
+        put('resources.zip', '.', use_sudo=True)
+        sudo('unzip -qq resources.zip')
+        sudo('rm -f resources.zip')
+        
+        sudo(f"DOCKER_BUILDKIT=1 docker build --quiet --tag fb:{root} .", quiet=True)
+        for name, config in current().items():
+            container_name = f'fb_{name}'
+            port = config['port']
+            sudo(f"docker run -v `pwd`:/app --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{root} --env {name}", quiet=True)
+
 
 def current():
     global CONFIGURATION
@@ -216,13 +185,37 @@ def docker_stop():
         sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm', quiet=True)
         # sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi', quiet=True)
 
+def container_names(host):
+    global CONFIGURATION
+
+    result = []
+    for services in CONFIGURATION['deploy'].values():
+        for name, service in services.items():
+            if service['ip'] == host:
+                result.append(name)
+
+    return result
+
+
 @task
 @parallel
 def docker_prune():
+    limit = 10
+
     with settings(warn_only=True):
+        for i in range(limit):
+            names = sudo("docker container ls -f 'status=running' --format '{{.Names}}'", quiet=True).replace('\r\n', '\n').split('\n')
+            containers = [f'fb_{x}' for x in container_names(env.host)]
+
+            if set(containers).issubset(names):
+                break
+
+            print(f'host waits while all docker container is running.. ({i + 1}/{10})')
+            time.sleep(1)
+
         sudo('docker system prune -a -f', quiet=True)
 
 def docker_build(name, port):
     container_name = f'fb_{name}'
     sudo(f"DOCKER_BUILDKIT=1 docker build --quiet --tag fb:{name} .", quiet=True)
-    sudo(f"docker run --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{name}", quiet=True)
+    sudo(f"docker run -v `pwd`:/app --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{name}", quiet=True)

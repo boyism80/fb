@@ -14,6 +14,7 @@ RUN apt install libstdc++-10-dev libstdc++-10-doc -y
 RUN apt-get install wget -y
 RUN wget http://ftp.superuser.co.kr/pub/etc/zlib-1.1.4.tar.gz
 RUN tar xvfz zlib-1.1.4.tar.gz
+RUN apt-get install libboost-program-options-dev -y
 
 WORKDIR zlib-1.1.4
 RUN ./configure && make && make install

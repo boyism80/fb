@@ -54,10 +54,6 @@ def convert_host(maps):
     for id in reverse:
         hosts[id] = reverse[id]['host']
 
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    with open(f'table.deploy/host.json', 'w', encoding='utf8') as f:
-        f.write(json.dumps(hosts, indent=4, ensure_ascii=False))
-
     return hosts
 
 
@@ -82,33 +78,18 @@ def convert_warps(path, world_path, maps):
 
     warps = {}
     for name in maps:
-        host = maps[name]['host']
         id = maps[name]['id']
-
-        if host not in warps:
-            warps[host] = {}
-
-        if name in data:
-            if id not in warps[host]:
-                warps[host][id] = []
-
-            warps[host][id] += data[name]
-
-    for host in warps:
-        for id in warps[host]:
-            for warp in warps[host][id]:
-                if 'world' in warp:
-                    wm, group, offset = find_index(worlds, warp['world'])
-                    warp['world'] = { 'wm': wm, 'group': group, 'offset': offset }
-                else:
-                    name = warp['map']
-                    warp['to'] = int(maps[name]['id'])
-                    del warp['map']
-
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    for host in warps:
-        with open(f'table.deploy/warp.{host}.json', 'w', encoding='utf8') as f:
-            f.write(json.dumps(warps[host], indent=4, ensure_ascii=False))
+        warps[id] = data[name] if name in data else []
+    
+    for id in warps:
+        for warp in warps[id]:
+            if 'world' in warp:
+                wm, group, offset = find_index(worlds, warp['world'])
+                warp['world'] = { 'wm': wm, 'group': group, 'offset': offset }
+            else:
+                name = warp['map']
+                warp['to'] = int(maps[name]['id'])
+                del warp['map']
 
     return warps
 
@@ -121,23 +102,14 @@ def convert_npc_spawn(path, maps, npcs):
     spawns = {}
     for spawn in data:
         host = maps[spawn['map']]['host']
-
-        if host not in spawns:
-            spawns[host] = {}
-
         map_id = f"{maps[spawn['map']]['id']:06}"
 
-        if map_id not in spawns[host]:
-            spawns[host][map_id] = []
+        if map_id not in spawns:
+            spawns[map_id] = []
 
         spawn['npc'] = int(npcs[spawn['npc']]['id'])
         del spawn['map']
-        spawns[host][map_id].append(spawn)
-
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    for host in spawns:
-        with open(f'table.deploy/npc.spawn.{host}.json', 'w', encoding='utf8') as f:
-            f.write(json.dumps(spawns[host], indent=4, ensure_ascii=False))
+        spawns[map_id].append(spawn)
 
     return spawns
 
@@ -149,26 +121,16 @@ def convert_mob_spawn(path, maps, mobs):
 
     spawns = {}
     for map_name in data:
-        host = maps[map_name]['host']
-
-        if host not in spawns:
-            spawns[host] = {}
-
         map_id = f"{int(maps[map_name]['id']):06}"
-        if map_id not in spawns[host]:
-            spawns[host][map_id] = []
+        if map_id not in spawns:
+            spawns[map_id] = []
 
         for spawn in data[map_name]:
             spawn['mob'] = mobs[spawn['name']]['id']
             del spawn['name']
 
-        spawns[host][map_id] += data[map_name]
-
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    for host in spawns:
-        with open(f'table.deploy/mob.spawn.{host}.json', 'w', encoding='utf8') as f:
-            f.write(json.dumps(spawns[host], indent=4, ensure_ascii=False))
-
+        spawns[map_id] += data[map_name]
+    
     return spawns
 
 
@@ -177,7 +139,7 @@ def convert_world(path, maps):
     with open(path, 'r', encoding='utf8') as f:
         worlds = json.load(f)
 
-    cvt_worlds = []
+    result = []
     for wname, world in worlds.items():
         cvt_world = []
         for group in world:
@@ -198,110 +160,88 @@ def convert_world(path, maps):
                     }
                 })
             cvt_world.append(cvt_group)
-        cvt_worlds.append({'name': wname, 'world': cvt_world})
+        result.append({'name': wname, 'world': cvt_world})
 
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    with open(f'table.deploy/world.json', 'w', encoding='utf8') as f:
-        f.write(json.dumps(cvt_worlds, indent=4, ensure_ascii=False))
+    return result
 
 
-def compress_maps(maps):
-    data = {}
-    for name in maps:
-        host = maps[name]['host']
+def compress_maps(zfile, path, archive_name):
+    for file in [x for x in os.listdir(path) if x.endswith('.map') or x.endswith('.block')]:
+        zfile.write(os.path.join(path, file), os.path.join(archive_name, file))
 
-        if host not in data:
-            data[host] = []
+def compress_table(zfile, path, archive_name):
+    for file in [x for x in os.listdir(path) if x.endswith('.json')]:
+        zfile.write(os.path.join(path, file), os.path.join(archive_name, file))
 
-        data[host].append(f"{maps[name]['id']:06}")
+def compress_script(zfile, path, archive_name):
+    for (path, dir, files) in os.walk(path):
+        for file in files:
+            src = os.path.join(path, file)
+            dst = os.path.join(*Path(path).parts[1:], file)
 
-    Path('table.deploy').mkdir(parents=True, exist_ok=True)
-    for host in data:
-        zfile = zipfile.ZipFile(f'table.deploy/maps.{host}.zip', 'w')
-        for map_id in data[host]:
-            data_name = f'resources/maps/{map_id}.map'
-            block_name = f'resources/maps/{map_id}.block'
-
-            if os.path.isfile(data_name):
-                zfile.write(data_name, os.path.basename(data_name))
-
-            if os.path.isfile(block_name):
-                zfile.write(block_name, os.path.basename(block_name))
-
-        zfile.close()
+            zfile.write(src, dst)
 
 
-def resources():
+def resources(src, dst):
     maps = load_maps('resources/table/map.json')
     npcs = load_npcs('resources/table/npc.json')
     mobs = load_mobs('resources/table/mob.json')
 
-    convert_host(maps)
-    convert_warps('resources/table/warp.json', 'resources/table/world.json', maps)
-    convert_npc_spawn('resources/table/npc.spawn.json', maps, npcs)
-    convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
-    convert_world('resources/table/world.json', maps)
-    compress_maps(maps)
+    Path(dst).mkdir(parents=True, exist_ok=True)
 
+    warps = convert_warps('resources/table/warp.json', 'resources/table/world.json', maps)
+    with open(os.path.join(dst, 'warp.json'), 'w', encoding='utf8') as f:
+        f.write(json.dumps(warps, indent=4, ensure_ascii=False, sort_keys=True))
+
+    npc_spawns = convert_npc_spawn('resources/table/npc.spawn.json', maps, npcs)
+    with open(os.path.join(dst, 'npc.spawn.json'), 'w', encoding='utf8') as f:
+        f.write(json.dumps(npc_spawns, indent=4, ensure_ascii=False, sort_keys=True))
+
+    mob_spawns = convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
+    with open(os.path.join(dst, 'mob.spawn.json'), 'w', encoding='utf8') as f:
+        f.write(json.dumps(mob_spawns, indent=4, ensure_ascii=False, sort_keys=True))
+
+    worlds = convert_world('resources/table/world.json', maps)
+    with open(os.path.join(dst, 'world.json'), 'w', encoding='utf8') as f:
+        f.write(json.dumps(worlds, indent=4, ensure_ascii=False, sort_keys=True))
+
+    files = [x for x in os.listdir(src) if x.endswith('.json')]
+    for file in files:
+        from_path = os.path.join(src, file)
+        to_path = os.path.join(dst, file)
+        if os.path.isfile(to_path):
+            continue
+        
+        shutil.copy(from_path, to_path)
+
+def hosts(dst):
+    maps = load_maps('resources/table/map.json')
+    hosts = convert_host(maps)
+
+    with open(dst, 'w', encoding='utf8') as f:
+        f.write(json.dumps(hosts, indent=4, ensure_ascii=False, sort_keys=True))
+
+def compress(maps, tables, scripts, dst):
+    temp = 'temp'
+    if os.path.isdir(temp):
+        shutil.rmtree(temp)
+    os.makedirs(temp, exist_ok=True)
+    
+    resources(tables, temp)
+
+    if os.path.isfile(dst):
+        os.remove(dst)
+    zfile = zipfile.ZipFile(dst, 'w')
+
+    compress_maps(zfile, maps, 'maps')
+    compress_table(zfile, temp, 'table')
+    compress_script(zfile, scripts, 'scripts')
+    zfile.close()
+
+    shutil.rmtree(temp)
 
 if __name__ == '__main__':
-    resources()
-
-    game_config = None
-    with open('game/config.dev.json', 'r', encoding='utf8') as f:
-        game_config = json.load(f)
-
-    internal_config = None
-    with open('internal/config.dev.json', 'r', encoding='utf8') as f:
-        internal_config = json.load(f)
-
-    current_id = game_config['id']
-    current_host = internal_config['hosts'][current_id]
-
-    game_config['ip'] = current_host['ip']
-    game_config['port'] = current_host['port']
-    with open('game/config.dev.json', 'w', encoding='utf8') as f:
-        f.write(json.dumps(game_config, indent=4, ensure_ascii=False))
-
-    if os.path.isdir('game/table.dev'):
-        shutil.rmtree('game/table.dev')
-    Path('game/table.dev').mkdir(parents=True, exist_ok=True)
-
-    if os.path.isdir('game/maps'):
-        shutil.rmtree('game/maps')
-    Path('game/maps').mkdir(parents=True, exist_ok=True)
-
-    shutil.copy(f'table.deploy/host.json', 'internal/table/host.json')
-
-    for fname in glob.glob(os.path.join('resources/table', '*.json')):
-        shutil.copy(fname, 'game/table.dev')
-
-    if os.path.isfile(f'table.deploy/mob.spawn.{current_id}.json'):
-        shutil.copy(f'table.deploy/mob.spawn.{current_id}.json', 'game/table.dev/mob.spawn.json')
-    else:
-        os.remove('game/table.dev/mob.spawn.json')
-
-    if os.path.isfile(f'table.deploy/npc.spawn.{current_id}.json'):
-        shutil.copy(f'table.deploy/npc.spawn.{current_id}.json', 'game/table.dev/npc.spawn.json')
-    else:
-        os.remove('game/table.dev/npc.spawn.json')
-
-    if os.path.isfile(f'table.deploy/warp.{current_id}.json'):
-        shutil.copy(f'table.deploy/warp.{current_id}.json', 'game/table.dev/warp.json')
-    else:
-        os.remove('game/table.dev/warp.json')
-
-    if os.path.isfile(f'table.deploy/world.json'):
-        shutil.copy(f'table.deploy/world.json', 'game/table.dev/world.json')
-    else:
-        os.remove('game/table.dev/world.json')
-
-    if os.path.isfile(f'table.deploy/maps.{current_id}.zip'):
-        shutil.copy(f'table.deploy/maps.{current_id}.zip', 'game/maps/maps.zip')
-
-        zfile = zipfile.ZipFile('game/maps/maps.zip')
-        zfile.extractall('game/maps')
-        zfile.close()
-        os.remove('game/maps/maps.zip')
-
-    shutil.rmtree('table.deploy')
+    compress(maps=os.path.join('resources', 'maps'),
+             tables=os.path.join('resources', 'table'),
+             scripts=os.path.join('game', 'scripts'),
+             dst='resources.zip')

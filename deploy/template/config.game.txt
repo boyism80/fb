@@ -12,7 +12,20 @@
         "ip": "{{ login.ip }}",
         "port": {{ login.port }}
     },
-    "database": {{ database }},
+    "database": 
+    [
+        {% for db in database -%}
+        {
+            "ip": "{{ db.ip }}",
+            "port": {{ db.port }},
+            "name": "{{ db.name}}",
+            "uid": "{{ db.uid }}",
+            "pwd": "{{ db.pwd }}"
+        }
+        {%- if not loop.last %}, 
+        {% endif %}
+        {%- endfor %}
+    ],
     "table": {
         "class": "table/class.json",
         "door": "table/door.json",

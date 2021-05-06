@@ -1,28 +1,48 @@
 #include "config.h"
 
-const Json::Value& fb::config::get()
+fb::config::config(const char* env)
 {
-    static Json::Value  instance;
-    static bool			loaded = false;
-
-    if(loaded == false)
+    std::ifstream       ifstream;
+    try
     {
-        std::ifstream ifstream;
-#if defined DEBUG | defined _DEBUG
-        ifstream.open("config.dev.json");
-#else
-        ifstream.open("config.json");
-#endif
+        std::stringstream   sstream;
+        if(env == nullptr)
+            sstream << "config.json";
+        else
+            sstream << "config." << env << ".json";
+
+        ifstream.open(sstream.str());
         if(ifstream.is_open() == false)
-            throw std::runtime_error("cannot load conf_login.json file");
+        {
+            sstream.str("");
+            sstream << "cannot load config." << env << " file.";
+            throw std::runtime_error(sstream.str());
+        }
 
-        Json::Reader reader;
-        if(reader.parse(ifstream, instance) == false)
-            throw std::runtime_error("cannot parse conf_login.json file");
+        Json::Reader        reader;
+        if(reader.parse(ifstream, this->_json) == false)
+        {
+            sstream.str("");
+            sstream << "cannot parse config." << env << " file.";
+            throw std::runtime_error(sstream.str());
+        }
+
         ifstream.close();
-
-        loaded = true;
     }
+    catch(std::exception& e)
+    {
+        if(ifstream.is_open())
+            ifstream.close();
 
-    return instance;
+        throw e;
+    }
+}
+
+const Json::Value& fb::config::get(const char* env)
+{
+    static std::unique_ptr<fb::config> _ist;
+    if(_ist == nullptr)
+        _ist = std::unique_ptr<fb::config>(new fb::config(env));
+
+    return _ist->_json;
 }
