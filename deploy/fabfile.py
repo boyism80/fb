@@ -10,6 +10,7 @@ import shutil
 import zipfile
 import optimizer
 import time
+import copy
 
 env.user = 'ubuntu'
 env.key_filename = 'ssh/fb'
@@ -23,22 +24,22 @@ TABLES = {}
 @task
 def environment(e):
     global CONFIGURATION
+
     with open(f'{LOCAL_ROOT}/{e}.json') as f:
         CONFIGURATION = json.load(f)
 
-    for role in CONFIGURATION['deploy']:
-        env['roledefs'][role] = {'hosts': []}
+    for service in CONFIGURATION['deploy']:
+        env['roledefs'][service] = {'hosts': []}
 
-        for name, host in CONFIGURATION['deploy'][role].items():
-            if host['ip'] not in env['roledefs'][role]['hosts']:
-                env['roledefs'][role]['hosts'].append(host['ip'])
+        for name, config in CONFIGURATION['deploy'][service].items():
+            if config['ip'] not in env['roledefs'][service]['hosts']:
+                env['roledefs'][service]['hosts'].append(config['ip'])
 
-            if host['ip'] not in env['hosts']:
-                env['hosts'].append(host['ip'])
-
-    print(env['hosts'])
+            if config['ip'] not in env['hosts']:
+                env['hosts'].append(config['ip'])
 
 @task
+@runs_once
 def optimize():
     with lcd('resources/maps'):
         local('rm -f *.map')
@@ -55,135 +56,79 @@ def optimize():
                        dst='resources.zip')
 
 @task
-def cleanup():
+@parallel
+def setup():
+    configs = current()
+    if 'internal' in configs['deploy']:
+        sudo('rm -rf internal', quiet=True)
+        sudo('mkdir -p internal/table', quiet=True)
+        with cd('internal/table'):
+            put(f'host.json', '.', use_sudo=True)
+
+    if 'game' in configs['deploy']:
+        sudo('rm -rf game', quiet=True)
+        sudo('mkdir -p game', quiet=True)
+        with cd('game'):
+            put('resources.zip', '.', use_sudo=True)
+            sudo('unzip -qq resources.zip', quiet=True)
+            sudo('rm -f resources.zip', quiet=True)
+
+@task
+def clean():
     local('rm -f host.json')
     local('rm -f resources.zip')
-    
+
+@task
+def build(service):
+    local(f'docker run -v $PWD:/app -i -w /app/{service} cshyeon/fb:build make -j4')
+
 
 @task
 @parallel
-@roles('internal')
-def internal():
+def deploy(service):
     global CONFIGURATION
 
-    for name, config in current().items():
-        run(f'mkdir -p {name}', quiet=True)
+    configs = current()
+    if service not in configs['deploy']:
+        return
 
-        with cd(name):
-            context = { 'port': config['port'], 'database': CONFIGURATION['database'], 'game': json.dumps(CONFIGURATION['deploy']['game']) }
-            files.upload_template(filename='config.internal.txt',
-                                  destination=f'config.json',
-                                  template_dir=f'{LOCAL_ROOT}/template',
-                                  context=context, use_sudo=True, backup=False, use_jinja=True)
+    context = copy.deepcopy(CONFIGURATION)
+    sudo(f'mkdir -p {service}', quiet=True)
+    with cd(service):
+        for name, config in configs['deploy'][service].items():
+            context.update({'name': name})
 
-            put(f'/dist/fb/internal/internal', 'internal', use_sudo=True, mode='0755')
-            put(f'internal/Dockerfile', '.', use_sudo=True)
-            run('mkdir -p table', quiet=True)
-            with cd('table'):
-                put(f'host.json', '.', use_sudo=True)
+            template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"{LOCAL_ROOT}/template")).get_template(f'config.{service}.txt')
+            sudo(f"echo '{template.render(context)}' > config.{name}.json", quiet=True)
 
-            docker_build(name, config['port'])
+        put(f'dist/fb/{service}/{service}', '.', use_sudo=True, mode='0755')
 
-
-@task
-@parallel
-@roles('gateway')
-def gateway():
-    global CONFIGURATION
-    
-    for name, config in current().items():
-        run(f'mkdir -p {name}', quiet=True)
-
-        with cd(name):
-            template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"{LOCAL_ROOT}/template")).get_template("config.gateway.txt")
-            context = {
-                        'name': name,
-                        'host': config,
-                        'internal': CONFIGURATION['deploy']['internal']['internal'],
-                        'login': json.dumps({ CONFIGURATION['deploy']['login'][x]['name']: {'desc': CONFIGURATION['deploy']['login'][x]['desc'], 'ip': CONFIGURATION['deploy']['login'][x]['ip'], 'port': CONFIGURATION['deploy']['login'][x]['port']} for x in CONFIGURATION['deploy']['login']}, ensure_ascii=False)
-                      }
-            run(f"echo '{template.render(context)}' > config.json", quiet=True)
-
-            put(f'/dist/fb/gateway/gateway', 'gateway', use_sudo=True, mode='0755')
-            put(f'gateway/Dockerfile', '.', use_sudo=True)
-
-            docker_build(name, config['port'])
-
-
-@task
-@parallel
-@roles('login')
-def login():
-    for name, config in current().items():
-        run(f'mkdir -p {name}', quiet=True)
-
-        with cd(name):
-            template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"{LOCAL_ROOT}/template")).get_template("config.login.txt")
-            context = {
-                        'name': name,
-                        'host': config,
-                        'internal': CONFIGURATION['deploy']['internal']['internal'],
-                        'database': CONFIGURATION['database']
-                      }
-            run(f"echo '{template.render(context)}' > config.json", quiet=True)
-
-            put(f'/dist/fb/login/login', 'login', use_sudo=True, mode='0755')
-            put(f'login/Dockerfile', '.', use_sudo=True)
-
-            docker_build(name, config['port'])
-
-@task
-@parallel
-@roles('game')
-def game():
-    root = 'game'
-
-    sudo(f'rm -rf {root}')
-    run(f'mkdir -p {root}', quiet=True)
-
-    with cd(root):
-        for name, config in current().items():
-            context = { 
-                    'name': name, 
-                    'host': config,
-                    'internal': CONFIGURATION['deploy']['internal']['internal'],
-                    'login': CONFIGURATION['deploy']['login']['login'],
-                    'database': CONFIGURATION['database'],
-                  }
-            files.upload_template(filename='config.game.txt',
-                                  destination=f'config.{name}.json',
-                                  template_dir=f'{LOCAL_ROOT}/template',
-                                  context=context, use_sudo=True, backup=False, use_jinja=True)
-
-        put(f'/dist/fb/game/game', 'game', use_sudo=True, mode='0755')
-        put(f'game/Dockerfile', '.', use_sudo=True)
-
-        put('resources.zip', '.', use_sudo=True)
-        sudo('unzip -qq resources.zip')
-        sudo('rm -f resources.zip')
-        
-        sudo(f"DOCKER_BUILDKIT=1 docker build --quiet --tag fb:{root} .", quiet=True)
-        for name, config in current().items():
-            container_name = f'fb_{name}'
-            port = config['port']
-            sudo(f"docker run -v `pwd`:/app --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{root} --env {name}", quiet=True)
-
+        for name, config in configs['deploy'][service].items():
+            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app -w /app -e LC_ALL=C.UTF-8 -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service} --env {name}", quiet=True)
 
 def current():
     global CONFIGURATION
 
-    role = env.effective_roles[0]
-    host = env.host
-    result = { x : CONFIGURATION['deploy'][role][x] for x in CONFIGURATION['deploy'][role] if CONFIGURATION['deploy'][role][x]['ip'] == host }
+    result = copy.deepcopy(CONFIGURATION)
+
+    for service, configs in CONFIGURATION['deploy'].items():
+        for name, config in configs.items():
+            if config['ip'] == env.host:
+                continue
+
+            del result['deploy'][service][name]
+
+    for service in [x for x in result['deploy']]:
+        if not result['deploy'][service]:
+            del result['deploy'][service]
+
     return result
 
 @task
 @parallel
-def docker_stop():
+def stop():
     with settings(warn_only=True):
-        # sudo('docker rmi $(docker images --filter "dangling=true" -q --no-trunc)')
         sudo('docker ps --filter name=fb_* -aq | xargs docker stop | xargs docker rm', quiet=True)
-        # sudo('docker images --filter=reference=fb:* -aq | xargs docker rmi', quiet=True)
 
 def container_names(host):
     global CONFIGURATION
@@ -199,23 +144,7 @@ def container_names(host):
 
 @task
 @parallel
-def docker_prune():
-    limit = 10
-
+def prune():
     with settings(warn_only=True):
-        for i in range(limit):
-            names = sudo("docker container ls -f 'status=running' --format '{{.Names}}'", quiet=True).replace('\r\n', '\n').split('\n')
-            containers = [f'fb_{x}' for x in container_names(env.host)]
-
-            if set(containers).issubset(names):
-                break
-
-            print(f'host waits while all docker container is running.. ({i + 1}/{10})')
-            time.sleep(1)
-
-        sudo('docker system prune -a -f', quiet=True)
-
-def docker_build(name, port):
-    container_name = f'fb_{name}'
-    sudo(f"DOCKER_BUILDKIT=1 docker build --quiet --tag fb:{name} .", quiet=True)
-    sudo(f"docker run -v `pwd`:/app --name {container_name} -d -it -e LC_ALL=C.UTF-8 -p {port}:{port} fb:{name}", quiet=True)
+        sudo('docker container prune -f', quiet=True)
+        sudo('docker image prune -f', quiet=True)

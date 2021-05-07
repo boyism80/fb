@@ -354,45 +354,58 @@ bool load_db(fb::console& c, fb::game::listener* listener)
 
 int main(int argc, const char** argv)
 {
-    //_CrtSetBreakAlloc(157);
-#ifdef _WIN32
-    ::SetConsoleIcon(IDI_BARAM);
-    ::SetConsoleTitle(CONSOLE_TITLE);
-#endif
-
-    auto desc = boost::program_options::options_description("fb game");
-    desc.add_options()
-        ("env,e", boost::program_options::value<std::string>(), "environment");
-
-    boost::program_options::variables_map vmap;
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vmap);
-    boost::program_options::notify(vmap);
-
     auto& c = fb::console::get();
 
-    // Execute acceptor
-    auto env = vmap.count("env") ? vmap["env"].as<std::string>().c_str() : 
-#if defined DEBUG | defined _DEBUG
-        "dev";
-#else
-        nullptr;
-#endif
-    auto& config = fb::config::get(env);
-
-    boost::asio::io_context io_context;
-    fb::db::bind(io_context);
-
-    const auto connection = INTERNAL_CONNECTION
+    try
     {
-        config["internal"]["ip"].asString(),
-        (uint16_t)config["internal"]["port"].asInt(),
-        [&] (fb::base::socket<>& socket, bool success)
+        //_CrtSetBreakAlloc(157);
+    #ifdef _WIN32
+        ::SetConsoleIcon(IDI_BARAM);
+        ::SetConsoleTitle(CONSOLE_TITLE);
+    #endif
+
+        auto desc = boost::program_options::options_description("fb game");
+        desc.add_options()
+            ("env,e", boost::program_options::value<std::string>(), "environment");
+
+        boost::program_options::variables_map vmap;
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vmap);
+        boost::program_options::notify(vmap);
+
+        // Execute acceptor
+        auto env = vmap.count("env") ? vmap["env"].as<std::string>().c_str() : 
+    #if defined DEBUG | defined _DEBUG
+            "dev";
+    #else
+            nullptr;
+    #endif
+        auto& config = fb::config::get(env);
+
+        boost::asio::io_context io_context;
+        fb::db::bind(io_context);
+
+        const auto connection = INTERNAL_CONNECTION
         {
-            if(success)
+            config["internal"]["ip"].asString(),
+            (uint16_t)config["internal"]["port"].asInt(),
+            [&] (fb::base::socket<>& socket, bool success)
             {
-                socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
-            }
-            else
+                if(success)
+                {
+                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
+                }
+                else
+                {
+                    auto& c = fb::console::get();
+                    auto t = std::time(nullptr);
+                    auto tm = *std::localtime(&t);
+
+                    std::ostringstream sstream;
+                    sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+                    c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
+                }
+            },
+            [&] ()
             {
                 auto& c = fb::console::get();
                 auto t = std::time(nullptr);
@@ -400,30 +413,24 @@ int main(int argc, const char** argv)
 
                 std::ostringstream sstream;
                 sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
+                c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
             }
-        },
-        [&] ()
-        {
-            auto& c = fb::console::get();
-            auto t = std::time(nullptr);
-            auto tm = *std::localtime(&t);
+        };
+        auto acceptor = std::make_unique<fb::game::acceptor>
+        (
+            io_context, 
+            config["port"].asInt(), 
+            config["delay"].asInt(),
+            connection
+        );
 
-            std::ostringstream sstream;
-            sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-            c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
-        }
-    };
-    auto acceptor = std::make_unique<fb::game::acceptor>
-    (
-        io_context, 
-        config["port"].asInt(), 
-        config["delay"].asInt(),
-        connection
-    );
-
-    load_db(c, acceptor.get());
-    io_context.run();
+        load_db(c, acceptor.get());
+        io_context.run();
+    }
+    catch(std::exception& e)
+    {
+        c.puts(e.what());
+    }
 
     // Release
     return 0;

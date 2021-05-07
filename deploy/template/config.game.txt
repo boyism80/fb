@@ -1,26 +1,26 @@
 {
     "id": "{{ name }}",
     "delay": 5,
-    "ip":  "{{ host.ip }}",
-    "port": {{ host.port }},
+    "ip":  "{{ deploy.game[name].ip }}",
+    "port": {{ deploy.game[name].port }},
     "thread": 2,
     "internal": {
-        "ip": "{{ internal.ip }}",
-        "port": {{ internal.port }}
+        "ip": "{{ deploy.internal[deploy.game[name].internal].ip }}",
+        "port": {{ deploy.internal[deploy.game[name].internal].port }}
     },
     "login": {
-        "ip": "{{ login.ip }}",
-        "port": {{ login.port }}
+        "ip": "{{ deploy.login[deploy.game[name].login].ip }}",
+        "port": {{ deploy.login[deploy.game[name].login].port }}
     },
     "database": 
     [
-        {% for db in database -%}
+        {% for database in database -%}
         {
-            "ip": "{{ db.ip }}",
-            "port": {{ db.port }},
-            "name": "{{ db.name}}",
-            "uid": "{{ db.uid }}",
-            "pwd": "{{ db.pwd }}"
+            "ip": "{{ database.ip }}",
+            "port": {{ database.port }},
+            "name": "{{ database.name}}",
+            "uid": "{{ database.uid }}",
+            "pwd": "{{ database.pwd }}"
         }
         {%- if not loop.last %}, 
         {% endif %}

@@ -219,7 +219,7 @@ def hosts(dst):
     hosts = convert_host(maps)
 
     with open(dst, 'w', encoding='utf8') as f:
-        f.write(json.dumps(hosts, indent=4, ensure_ascii=False, sort_keys=True))
+        f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
 
 def compress(maps, tables, scripts, dst):
     temp = 'temp'

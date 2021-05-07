@@ -1,12 +1,21 @@
 {
     "id": "{{ name }}",
     "delay": 0,
-    "ip": "{{ host.ip }}",
-    "port": {{ host.port }},
+    "ip":  "{{ deploy.gateway[name].ip }}",
+    "port": {{ deploy.gateway[name].port }},
     "thread": 0,
     "internal": {
-        "ip": "{{ internal.ip }}",
-        "port": {{ internal.port }}
+        "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
+        "port": {{ deploy.internal[deploy.gateway[name].internal].port }}
     },
-    "entries": {{ login }}
+    "entries": {
+        {% for entry in deploy.gateway[name].entrypoints -%}
+        "{{  entry.name }}": {
+            "ip": "{{ deploy.login[entry.login].ip }}",
+            "port": {{ deploy.login[entry.login].port }},
+            "desc": "{{ entry.desc }}"
+        }{% if not loop.last %}, 
+        {% endif %}
+        {%- endfor %}
+    }
 }

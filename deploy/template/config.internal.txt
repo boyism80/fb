@@ -1,16 +1,16 @@
 {
     "delay": 0,
-    "port": {{ port }},
+    "port": {{ deploy.internal[name].port }},
     "thread": 0,
     "database": 
     [
-        {% for db in database -%}
+        {% for database in database -%}
         {
-            "ip": "{{ db.ip }}",
-            "port": {{ db.port }},
-            "name": "{{ db.name}}",
-            "uid": "{{ db.uid }}",
-            "pwd": "{{ db.pwd }}"
+            "ip": "{{ database.ip }}",
+            "port": {{ database.port }},
+            "name": "{{ database.name}}",
+            "uid": "{{ database.uid }}",
+            "pwd": "{{ database.pwd }}"
         }
         {%- if not loop.last %}, 
         {% endif %}
@@ -19,5 +19,10 @@
     "table": {
         "host": "table/host.json"
     },
-    "hosts": {{ game }}
+    "hosts": {
+        {% for name, config in deploy.game.items() -%}
+        "{{ name }}": { "ip": "{{ config.ip }}", "port": {{ config.port }} }{% if not loop.last %}, 
+        {% endif %}
+        {%- endfor %}
+    }
 }

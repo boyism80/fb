@@ -21,70 +21,61 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            parallel { 
-                stage('Build internal') {
-                    steps{ 
-                        dir('internal') {
-                            sh 'mkdir -p /dist/fb/internal'
-                            sh 'make -j4'
-                        }
-                    }
-                }
-                stage('Build gateway') {
-                    steps{ 
-                        dir('gateway') {
-                            sh 'mkdir -p /dist/fb/gateway'
-                            sh 'make -j4'
-                        }
-                    }
-                }
-                stage('Build login') {
-                    steps{ 
-                        dir('login') {
-                            sh 'mkdir -p /dist/fb/login'
-                            sh 'make -j4'
-                        }
-                    }
-                }
-                stage('Build game') {
-                    steps{ 
-                        dir('game') {
-                            sh 'mkdir -p /dist/fb/game'
-                            sh 'make -j4'
-                        }
-                    }
-                }
+        stage('Preperence') {
+            steps {
+                sh 'docker pull cshyeon/fb:build'
+                sh 'docker pull cshyeon/fb:latest'
+
+                sh 'fab -f deploy/fabfile.py optimize'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} stop setup'
             }
         }
 
-        stage('Preperence') {
-            steps {
-                sh 'fab -f deploy/fabfile.py optimize'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_stop'
+        stage('Build') {
+            parallel { 
+                stage('internal') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py build:internal'
+                    }
+                }
+                stage('gateway') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py build:gateway'
+                    }
+                }
+                stage('login') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py build:login'
+                    }
+                }
+                stage('game') {
+                    steps{ 
+                        sh 'fab -f deploy/fabfile.py build:game'
+                    }
+                }
             }
         }
 
         stage('Deploy') {
             parallel {
-                stage('Deploy internal') {
+                stage('internal') {
                     steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} internal'
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
                     }
                 }
-                stage('Deploy gateway') {
+                stage('gateway') {
                     steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} gateway'
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
                     }
                 }
-                stage('Deploy login') {
+                stage('login') {
                     steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} login'
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
                     }
                 }
-                stage('Deploy game') {
+                stage('game') {
                     steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} game'
+                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
                     }
                 }
             }
@@ -92,8 +83,8 @@ pipeline {
 
         stage('Clean Up') {
             steps {
-                sh 'fab -f deploy/fabfile.py cleanup'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} docker_prune'
+                sh 'fab -f deploy/fabfile.py clean'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} prune'
             }
         }
     }
