@@ -545,12 +545,9 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     if(map == nullptr)
     {
-        if(this->_map != nullptr)
-            this->_map->objects.remove(*this);
-            
+        this->leave(true);
         this->_map = nullptr;
         this->sector(nullptr);
-        this->leave(true);
     }
     else
     {
