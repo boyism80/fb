@@ -43,10 +43,6 @@ int main(int argc, const char** argv)
         c.cursor(0, height + 1);
     
         // Execute acceptor
-        boost::asio::io_context io_context;
-        fb::db::bind(io_context);
-    
-        // Execute acceptor
         auto env = vmap.count("env") ? vmap["env"].as<std::string>().c_str() : 
 #if defined DEBUG | defined _DEBUG
             "dev";
@@ -54,6 +50,10 @@ int main(int argc, const char** argv)
             nullptr;
 #endif
         auto& config = fb::config::get(env);
+
+        // Execute acceptor
+        boost::asio::io_context io_context;
+        fb::db::bind(io_context);
 
         const auto connection = INTERNAL_CONNECTION
         {

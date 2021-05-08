@@ -19,7 +19,18 @@
 				"entrypoints": 
 				[
 					{ "name": "채승현", "desc": "채승현은 신이다.", "login": "login" },
-					{ "name": "채진영", "desc": "채진영은 바보다.", "login": "login" }
+					{ "name": "채진영", "desc": "채진영은 바보다.", "login": "login" },
+					{ "name": "연", "desc": "1996년 4월 서비스 시작", "login": "login" },
+					{ "name": "무휼", "desc": "2000년 2월 서비스 시작", "login": "login" },
+					{ "name": "세류", "desc": "2000년 7월 서비스 시작", "login": "login" },
+					{ "name": "유리", "desc": "2000년 7월 서비스 시작", "login": "login" },
+					{ "name": "해명", "desc": "2000년 12월 서비스 시작", "login": "login" },
+					{ "name": "배극", "desc": "2000년 12월 서비스 시작(PK서버)", "login": "login" },
+					{ "name": "하자", "desc": "10대들을 위한 전용 서버", "login": "login" },
+					{ "name": "호동", "desc": "2001년 2월 서비스 시작", "login": "login" },
+					{ "name": "주몽", "desc": "2002년 2월 서비스 시작", "login": "login" },
+					{ "name": "낙랑", "desc": "2002년 8월 서비스 시작", "login": "login" },
+					{ "name": "괴유", "desc": "2002년 2월 서비스 시작(무료테스트 서버)", "login": "login" }
 				]
 			}
 		},

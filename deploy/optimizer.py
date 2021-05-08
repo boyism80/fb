@@ -3,10 +3,11 @@ import json
 import zipfile
 import shutil
 import glob
-from pathlib import Path
+import pathlib
+import argparse
 
 
-def load_maps(path):
+def __load_maps(path):
     maps = {}
     with open(path, 'r', encoding='utf8') as f:
         maps = json.load(f)
@@ -20,7 +21,7 @@ def load_maps(path):
     return reverse
 
 
-def load_npcs(path):
+def __load_npcs(path):
     npcs = {}
     with open(path, 'r', encoding='utf8') as f:
         npcs = json.load(f)
@@ -34,7 +35,7 @@ def load_npcs(path):
     return reverse
 
 
-def load_mobs(path):
+def __load_mobs(path):
     mobs = {}
     with open(path, 'r', encoding='utf8') as f:
         mobs = json.load(f)
@@ -48,7 +49,7 @@ def load_mobs(path):
     return reverse
 
 
-def convert_host(maps):
+def __convert_host(maps):
     reverse = { x['id'] : x for x in maps.values() }
     hosts = {}
     for id in reverse:
@@ -57,7 +58,7 @@ def convert_host(maps):
     return hosts
 
 
-def convert_warps(path, world_path, maps):
+def __convert_warps(path, world_path, maps):
 
     def find_index(worlds, id):
         for wm_i, world in enumerate(worlds.values()):
@@ -94,7 +95,7 @@ def convert_warps(path, world_path, maps):
     return warps
 
 
-def convert_npc_spawn(path, maps, npcs):
+def __convert_npc_spawn(path, maps, npcs):
     data = None
     with open(path, 'r', encoding='utf8') as f:
         data = json.load(f)
@@ -114,7 +115,7 @@ def convert_npc_spawn(path, maps, npcs):
     return spawns
 
 
-def convert_mob_spawn(path, maps, mobs):
+def __convert_mob_spawn(path, maps, mobs):
     data = None
     with open(path, 'r', encoding='utf8') as f:
         data = json.load(f)
@@ -134,7 +135,7 @@ def convert_mob_spawn(path, maps, mobs):
     return spawns
 
 
-def convert_world(path, maps):
+def __convert_world(path, maps):
     worlds = None
     with open(path, 'r', encoding='utf8') as f:
         worlds = json.load(f)
@@ -165,43 +166,43 @@ def convert_world(path, maps):
     return result
 
 
-def compress_maps(zfile, path, archive_name):
+def __compress_maps(zfile, path, archive_name):
     for file in [x for x in os.listdir(path) if x.endswith('.map') or x.endswith('.block')]:
         zfile.write(os.path.join(path, file), os.path.join(archive_name, file))
 
-def compress_table(zfile, path, archive_name):
+def __compress_table(zfile, path, archive_name):
     for file in [x for x in os.listdir(path) if x.endswith('.json')]:
         zfile.write(os.path.join(path, file), os.path.join(archive_name, file))
 
-def compress_script(zfile, path, archive_name):
+def __compress_script(zfile, path, archive_name):
     for (path, dir, files) in os.walk(path):
         for file in files:
             src = os.path.join(path, file)
-            dst = os.path.join(*Path(path).parts[1:], file)
+            dst = os.path.join(*pathlib.Path(path).parts[1:], file)
 
             zfile.write(src, dst)
 
 
-def resources(src, dst):
-    maps = load_maps('resources/table/map.json')
-    npcs = load_npcs('resources/table/npc.json')
-    mobs = load_mobs('resources/table/mob.json')
+def convert(src, dst):
+    maps = __load_maps(f'{src}/map.json')
+    npcs = __load_npcs(f'{src}/npc.json')
+    mobs = __load_mobs(f'{src}/mob.json')
 
-    Path(dst).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(dst).mkdir(parents=True, exist_ok=True)
 
-    warps = convert_warps('resources/table/warp.json', 'resources/table/world.json', maps)
+    warps = __convert_warps(f'{src}/warp.json', f'{src}/world.json', maps)
     with open(os.path.join(dst, 'warp.json'), 'w', encoding='utf8') as f:
         f.write(json.dumps(warps, indent=4, ensure_ascii=False, sort_keys=True))
 
-    npc_spawns = convert_npc_spawn('resources/table/npc.spawn.json', maps, npcs)
+    npc_spawns = __convert_npc_spawn(f'{src}/npc.spawn.json', maps, npcs)
     with open(os.path.join(dst, 'npc.spawn.json'), 'w', encoding='utf8') as f:
         f.write(json.dumps(npc_spawns, indent=4, ensure_ascii=False, sort_keys=True))
 
-    mob_spawns = convert_mob_spawn('resources/table/mob.spawn.json', maps, mobs)
+    mob_spawns = __convert_mob_spawn(f'{src}/mob.spawn.json', maps, mobs)
     with open(os.path.join(dst, 'mob.spawn.json'), 'w', encoding='utf8') as f:
         f.write(json.dumps(mob_spawns, indent=4, ensure_ascii=False, sort_keys=True))
 
-    worlds = convert_world('resources/table/world.json', maps)
+    worlds = __convert_world(f'{src}/world.json', maps)
     with open(os.path.join(dst, 'world.json'), 'w', encoding='utf8') as f:
         f.write(json.dumps(worlds, indent=4, ensure_ascii=False, sort_keys=True))
 
@@ -214,34 +215,41 @@ def resources(src, dst):
         
         shutil.copy(from_path, to_path)
 
-def hosts(dst):
-    maps = load_maps('resources/table/map.json')
-    hosts = convert_host(maps)
-
-    with open(dst, 'w', encoding='utf8') as f:
-        f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
+def hosts():
+    maps = __load_maps('resources/table/map.json')
+    return __convert_host(maps)
 
 def compress(maps, tables, scripts, dst):
-    temp = 'temp'
-    if os.path.isdir(temp):
-        shutil.rmtree(temp)
-    os.makedirs(temp, exist_ok=True)
-    
-    resources(tables, temp)
-
     if os.path.isfile(dst):
         os.remove(dst)
     zfile = zipfile.ZipFile(dst, 'w')
 
-    compress_maps(zfile, maps, 'maps')
-    compress_table(zfile, temp, 'table')
-    compress_script(zfile, scripts, 'scripts')
+    __compress_maps(zfile, maps, 'maps')
+    __compress_table(zfile, tables, 'table')
+    __compress_script(zfile, scripts, 'scripts')
     zfile.close()
 
-    shutil.rmtree(temp)
-
 if __name__ == '__main__':
-    compress(maps=os.path.join('resources', 'maps'),
-             tables=os.path.join('resources', 'table'),
-             scripts=os.path.join('game', 'scripts'),
-             dst='resources.zip')
+    parser = argparse.ArgumentParser(description='fb optimizer')
+    parser.add_argument('--id', type=int, default=13, help='game id')
+    parser.add_argument('--env', type=str, default='development', help='environment')
+    parser.add_argument('--out', type=str, default='game/config.dev.json', help='output file path')
+    parser.add_argument('--host', type=str, default='192.168.0.100', help='current host id')
+    args = parser.parse_args()
+
+    src = {}
+    with open(f'deploy/{args.env}.json', 'r', encoding='utf-8') as f:
+        src = json.load(f)
+
+
+    dst = {}
+    with open(args.out, 'r', encoding='utf-8') as f:
+        dst = json.load(f)
+        dst['id'] = f'game{args.id}'
+        dst['ip'] = args.host
+        dst['port'] = src['deploy']['game'][f'game{args.id}']['port']
+
+    with open(args.out, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(dst, indent=4, ensure_ascii=True))
+
+    convert('resources/table', 'game/table.dev')

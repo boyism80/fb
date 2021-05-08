@@ -47,13 +47,18 @@ def optimize():
         local('unzip -qq maps.zip')
 
     # for internal
-    optimizer.hosts('host.json')
+    hosts = optimizer.hosts()
+    with open('host.json', 'w', encoding='utf8') as f:
+        f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
 
     # for game
+    local('rm -rf temp && mkdir -p temp')
+    optimizer.convert(os.path.join('resources', 'table'), 'temp')
     optimizer.compress(maps=os.path.join('resources', 'maps'),
-                       tables=os.path.join('resources', 'table'),
+                       tables='temp',
                        scripts=os.path.join('game', 'scripts'),
                        dst='resources.zip')
+    local('rm -rf temp')
 
 @task
 @parallel

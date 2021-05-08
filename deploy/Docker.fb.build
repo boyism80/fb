@@ -1,21 +1,50 @@
 FROM ubuntu:18.04
   
-RUN apt-get update -y && apt-get upgrade -y && apt-get install make -y && apt-get install wget -y && apt-get install libjsoncpp-dev -y && apt-get install lua5.3-dev -y && apt-get install libmysqlcppconn-dev -y && apt-get install libmysqlclient-dev -y && apt-get install redis -y && apt-get install libssl-dev -y && apt-get install libncurses5-dev libncursesw5-dev -y && apt-get install python3-pip -y && apt-get install default-jre -y && apt-get install unzip -y && apt-get install libboost-program-options-dev -y && pip3 install --upgrade --ignore-installed pip setuptools && pip3 install fabric3  && pip3 install jinja2
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt-get install make -y
+RUN apt-get install wget -y
+RUN apt-get install libjsoncpp-dev -y
+RUN apt-get install lua5.3-dev -y
+RUN apt-get install libmysqlcppconn-dev -y
+RUN apt-get install libmysqlclient-dev -y
+RUN apt-get install redis -y
+RUN apt-get install libssl-dev -y
+RUN apt-get install libncurses5-dev libncursesw5-dev -y
+RUN apt-get install python3-pip -y
+RUN apt-get install default-jre -y
+RUN apt-get install unzip -y
+RUN apt-get install libboost-program-options-dev -y
+RUN pip3 install --upgrade --ignore-installed pip setuptools
+RUN pip3 install fabric3 
+RUN pip3 install jinja2
 
-RUN wget http://ftp.superuser.co.kr/pub/etc/zlib-1.1.4.tar.gz && tar xvfz zlib-1.1.4.tar.gz
+RUN wget http://ftp.superuser.co.kr/pub/etc/zlib-1.1.4.tar.gz
+RUN tar xvfz zlib-1.1.4.tar.gz
 WORKDIR /zlib-1.1.4
-RUN ./configure && make && make install
+RUN ./configure
+RUN make
+RUN make install
 WORKDIR /
-RUN rm -f zlib-1.1.4.tar.gz && rm -rf zlib-1.1.4
+RUN rm -f zlib-1.1.4.tar.gz
+RUN rm -rf zlib-1.1.4
 
 
-RUN wget -O boost_1_74_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz && tar xvf boost_1_74_0.tar.gz
+RUN wget -O boost_1_74_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz
+RUN tar xvf boost_1_74_0.tar.gz
 
 WORKDIR /boost_1_74_0
-RUN ./bootstrap.sh --prefix=/usr/ && ./b2 --with-program_options && ./b2 install
+RUN ./bootstrap.sh --prefix=/usr/
+RUN ./b2 --with-program_options
+RUN ./b2 install
 
 WORKDIR /
-RUN rm -f boost_1_74_0.tar.gz && rm -rf boost_1_74_0
+RUN rm -f boost_1_74_0.tar.gz
+RUN rm -rf boost_1_74_0
 
-RUN apt-get install software-properties-common -y && add-apt-repository ppa:ubuntu-toolchain-r/test -y && apt-get update -y && apt-get upgrade -y && apt-get install gcc-10 g++-10 -y && update-alternatives --install /usr/bin/gcc gcc 
-/usr/bin/gcc-10 102 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+RUN apt-get install software-properties-common -y
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt-get install gcc-10 g++-10 -y
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 102 --slave /usr/bin/g++ g++ /usr/bin/g++-10
