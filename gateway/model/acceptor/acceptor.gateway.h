@@ -16,7 +16,7 @@ namespace fb { namespace gateway {
 class acceptor : public fb::acceptor<fb::gateway::session>
 {
 private:
-    std::vector<entry>          _entries;
+    std::vector<entry>          _entrypoints;
     fb::ostream                 _entry_stream_cache;
     uint32_t                    _entry_crc32_cache;
     fb::ostream                 _connection_cache;

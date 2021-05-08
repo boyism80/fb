@@ -23,19 +23,19 @@ bool fb::gateway::acceptor::load_entries()
     try
     {
         // Load gateway list
-        auto entries = fb::config::get()["entries"];
-        for(auto i = entries.begin(); i != entries.end(); i++)
+        auto entrypoints = fb::config::get()["entrypoints"];
+        for(auto i = entrypoints.begin(); i != entrypoints.end(); i++)
         {
-            this->_entries.push_back(entry
+            this->_entrypoints.push_back(entry
             (
-                cp949(i.key().asCString()), 
+                cp949((*i)["name"].asCString()), 
                 cp949((*i)["desc"].asCString()), 
                 (*i)["ip"].asCString(), 
                 (*i)["port"].asInt()
             ));
         }
 
-        fb::protocol::gateway::response::hosts(this->_entries).serialize(this->_entry_stream_cache);
+        fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(this->_entry_stream_cache);
         this->_entry_crc32_cache = this->_entry_stream_cache.crc();
         return true;
     }
@@ -104,7 +104,7 @@ bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& 
     {
     case 0x00:
     {
-        const auto&         entry = this->_entries[request.index];
+        const auto&         entry = this->_entrypoints[request.index];
         this->transfer(socket, entry.ip(), entry.port());
         return true;
     }

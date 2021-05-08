@@ -8,14 +8,15 @@
         "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}
     },
-    "entries": {
+    "entrypoints": [
         {% for entry in deploy.gateway[name].entrypoints -%}
-        "{{  entry.name }}": {
+        {
+            "name": "{{  entry.name }}",
+            "desc": "{{ entry.desc }}",
             "ip": "{{ deploy.login[entry.login].ip }}",
-            "port": {{ deploy.login[entry.login].port }},
-            "desc": "{{ entry.desc }}"
+            "port": {{ deploy.login[entry.login].port }}
         }{% if not loop.last %}, 
         {% endif %}
         {%- endfor %}
-    }
+    ]
 }
