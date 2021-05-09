@@ -239,7 +239,7 @@ bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::
     if(response.offset == nullptr)
         return false;
 
-    session.before(session.map());
+    session.before(session.map(), session.position());
     session.map(nullptr);
     session.send(response);
     return true;
