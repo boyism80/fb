@@ -328,55 +328,115 @@ fb::game::container::map::~map()
 
 bool fb::game::container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto& config = fb::config::get();
-    auto current_host = config["id"].asString();
-    auto count = fb::table::load
+    auto                        mutex = std::make_unique<std::mutex>();
+    auto                        queue = std::queue<std::pair<uint16_t, std::unique_ptr<Json::Value>>>();
+
+    auto&                       config = fb::config::get();
+    auto                        host_mine = config["id"].asString();
+    auto                        count = fb::table::load
     (
         path, 
         [&] (Json::Value::iterator& i, double percentage)
         {
-            auto                data = *i;
-            uint16_t            key = std::stoi(i.key().asString());
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
-
-            // Parse common data
-            uint16_t            parent = data["parent"].asInt();
-            uint8_t             bgm = data["bgm"].asInt();
-            auto                effect = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
-            auto                option = this->to_option(data);
-            auto                host = data["host"].asString();
-
-            auto                required = (host == current_host);
-
-            // Load binary
-            std::vector<char> map_binary;
-            if (required && (this->load_data(key, map_binary) == false))
-                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_DATA);
-
-            // Load blocks
-            Json::Value         blocks;
-            if (required && (this->load_blocks(key, blocks) == false))
-                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
-
-            auto                map = new fb::game::map(key, parent, bgm, name, option, effect, host, map_binary.data(), map_binary.size());
-            if(required)
-            {
-                for (const auto block : blocks)
-                    map->block(block["x"].asInt(), block["y"].asInt(), true);
-            }
-
-            std::map<uint16_t, fb::game::map*>::insert(std::make_pair(key, map));
-            callback((map->name()), percentage);
+            // enqueue all meta files
+mutex->lock();
+            queue.push
+            (
+                std::make_pair
+                (
+                    std::stoi(i.key().asString()), 
+                    std::make_unique<Json::Value>(*i)
+                )
+            );
+mutex->unlock();
         },
         [&] (Json::Value::iterator& i, const std::string& e)
-        {
-            auto                data = *i;
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
-            error(name, e);
-        }
+        { }
     );
 
+    auto                                    num_threads = std::thread::hardware_concurrency();
+    auto                                    threads = std::make_unique<std::unique_ptr<std::thread>[]>(num_threads);
+#if defined DEBUG | defined _DEBUG
+    auto                                    begin = std::chrono::steady_clock::now();
+#endif
+    for(int i = 0; i < num_threads; i++)
+    {
+        threads[i] = std::make_unique<std::thread>
+        (
+            [&] ()
+            {
+                // dequeue all meta files
+                while(true)
+                {
+                    auto                    key = uint16_t(0);
+                    auto                    data = Json::Value();
+
+                    {   auto _ = std::lock_guard<std::mutex>(*mutex);
+
+                        if(queue.empty())
+                            break;
+
+                        key  = queue.front().first;
+                        data = *queue.front().second;
+                        queue.pop();
+                    }
+
+                    auto                    name = CP949(data["name"].asString(), PLATFORM::Windows);
+                    try
+                    {
+                        // Parse common data
+                        uint16_t            parent = data["parent"].asInt();
+                        uint8_t             bgm = data["bgm"].asInt();
+                        auto                effect = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
+                        auto                option = this->to_option(data);
+                        auto                host = data["host"].asString();
+                        auto                required = (host == host_mine);
+
+
+                        std::vector<char>   binary;
+                        Json::Value         blocks;
+                        if(required)
+                        {
+                            // Load binary
+                            if(this->load_data(key, binary) == false)
+                                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_DATA);
+
+                            // Load blocks
+                            if(this->load_blocks(key, blocks) == false)
+                                throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
+                        }
+
+                        auto                map = new fb::game::map(key, parent, bgm, name, option, effect, host, binary.data(), binary.size());
+                        for (const auto& block : blocks)
+                            map->block(block["x"].asInt(), block["y"].asInt(), true);
+
+                        {   auto _ = std::lock_guard<std::mutex>(*mutex);
+
+                            std::map<uint16_t, fb::game::map*>::insert(std::make_pair(key, map));
+                            
+                            auto                percentage = std::map<uint16_t, fb::game::map*>::size() * 100 / double(count);
+                            callback((map->name()), percentage);
+                        }
+                    }
+                    catch(std::exception& e)
+                    {   auto _ = std::lock_guard<std::mutex>(*mutex);
+                        
+                        error(name, e.what());
+                    }
+                }
+            }
+        );
+    }
+
+    for(int i = 0; i < num_threads; i++)
+        threads[i]->join();
+
     complete(count);
+
+#if defined DEBUG | defined _DEBUG
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+#endif
     return true;
 }
 

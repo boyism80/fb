@@ -2,6 +2,7 @@
 #define __FB_GAME_MASTER_H__
 
 #include <map>
+#include <queue>
 #include "model/map/map.h"
 #include "model/item/item.h"
 #include "model/npc/npc.h"
