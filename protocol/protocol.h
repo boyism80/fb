@@ -8,6 +8,13 @@
 
 namespace fb { namespace protocol { namespace internal {
 
+enum services
+{
+    SERVICE_GATEWAY, 
+    SERVICE_LOGIN, 
+    SERVICE_GAME
+};
+
 enum id : uint8_t
 {
     SUBSCRIBE,

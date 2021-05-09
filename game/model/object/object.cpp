@@ -766,7 +766,7 @@ bool fb::game::object::switch_process(const fb::game::map& map) const
     if(current == nullptr)
         return false;
 
-    return current->host != map.host;
+    return current->group != map.group;
 }
 
 void fb::game::object::handle_enter(fb::game::map& map, const point16_t& position)

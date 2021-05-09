@@ -332,7 +332,7 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
     auto                        queue = std::queue<std::pair<uint16_t, std::unique_ptr<Json::Value>>>();
 
     auto&                       config = fb::config::get();
-    auto                        host_mine = config["id"].asString();
+    auto                        group_mine = config["group"].asUInt();
     auto                        count = fb::table::load
     (
         path, 
@@ -389,9 +389,8 @@ mutex->unlock();
                         uint8_t             bgm = data["bgm"].asInt();
                         auto                effect = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
                         auto                option = this->to_option(data);
-                        auto                host = data["host"].asString();
-                        auto                required = (host == host_mine);
-
+                        int                 group = data["host group"].asUInt();
+                        auto                required = (group == group_mine);
 
                         std::vector<char>   binary;
                         Json::Value         blocks;
@@ -406,7 +405,7 @@ mutex->unlock();
                                 throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
                         }
 
-                        auto                map = new fb::game::map(key, parent, bgm, name, option, effect, host, binary.data(), binary.size());
+                        auto                map = new fb::game::map(key, parent, bgm, name, option, effect, group, binary.data(), binary.size());
                         for (const auto& block : blocks)
                             map->block(block["x"].asInt(), block["y"].asInt(), true);
 

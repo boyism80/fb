@@ -260,13 +260,13 @@ private:
 public:
     fb::game::objects               objects;
     fb::game::doors                 doors;
-    const std::string               host;
+    const uint32_t                  group;
 #pragma endregion
 
 
 #pragma region constructor / destructor
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, const std::string& host, const void* data, size_t size);
+    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, uint32_t group, const void* data, size_t size);
     ~map();
 #pragma endregion
 

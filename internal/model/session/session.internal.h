@@ -9,7 +9,9 @@ namespace fb { namespace internal {
 class session
 {
 public:
-    std::string                 name;
+    std::string                         name;
+    fb::protocol::internal::services    service;
+    uint16_t                            group;
 
 public:
     session();

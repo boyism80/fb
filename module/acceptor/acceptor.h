@@ -12,6 +12,8 @@
 #include "module/console/console.h"
 #include "module/thread/thread.h"
 
+using namespace std::chrono_literals;
+
 namespace fb { namespace base {
 
 template <template<class> class S, class T>

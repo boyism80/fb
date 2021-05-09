@@ -2,13 +2,13 @@
 
 fb::internal::container::host       fb::internal::table::hosts;
 
-std::string* fb::internal::container::host::operator[](uint32_t id)
+std::optional<uint8_t> fb::internal::container::host::operator[](uint32_t id)
 {
-    auto found = std::map<uint32_t, std::string>::find(id);
+    auto found = std::map<uint32_t, uint8_t>::find(id);
     if(found == this->end())
-        return nullptr;
+        return std::nullopt;
     else
-        return &(found->second);
+        return found->second;
 }
 
 bool fb::internal::container::host::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -19,9 +19,9 @@ bool fb::internal::container::host::load(const std::string& path, fb::table::han
         [&] (Json::Value::iterator& i, double percentage)
         {
             auto                key = i.key().asString();
-            auto                value = (*i).asString();
+            auto                value = (*i).asUInt();
 
-            this->insert(std::pair<uint32_t, std::string>(std::stoi(key), value));
+            this->insert(std::pair<uint32_t, uint8_t>(std::stoi(key), value));
             callback(key, percentage);
         },
         [&] (Json::Value::iterator& i, const std::string& e)

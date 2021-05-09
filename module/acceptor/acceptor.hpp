@@ -286,6 +286,7 @@ void fb::acceptor<T>::connect_internal()
             [&] (fb::base::socket<>& socket)
             {
                 this->_internal_connection.handle_disconnected();
+                std::this_thread::sleep_for(1000ms);
                 this->connect_internal();
             }
         )
@@ -300,6 +301,7 @@ void fb::acceptor<T>::connect_internal()
             if(error)
             {
                 this->_internal_connection.handle_connected(*this->_internal, false);
+                std::this_thread::sleep_for(1000ms);
                 this->connect_internal();
             }
             else

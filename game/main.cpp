@@ -392,7 +392,7 @@ int main(int argc, const char** argv)
             {
                 if(success)
                 {
-                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString()));
+                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::SERVICE_GAME, (uint8_t)config["group"].asUInt()));
                 }
                 else
                 {

@@ -102,7 +102,7 @@ fb::game::object* fb::game::objects::operator[](uint32_t seq) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, const std::string& host, const void* data, size_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, uint32_t group, const void* data, size_t size) :
     _id(id),
     _parent(parent),
     _bgm(bgm),
@@ -112,10 +112,10 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _tiles(nullptr),
     _sectors(nullptr),
     objects(this),
-    host(host)
+    group(group)
 {
     auto& config = fb::config::get();
-    if(config["id"].asString() != host)
+    if(config["group"].asUInt() != group)
         return;
 
     std::string what;

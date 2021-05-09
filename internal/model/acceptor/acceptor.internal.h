@@ -15,28 +15,34 @@ namespace fb { namespace internal {
 class user
 {
 public:
-    const std::string               game_id;
+    const uint16_t                  group;
 
 public:
-    user(const std::string& game_id) : 
-        game_id(game_id)
+    user(uint16_t group) : 
+        group(group)
     {}
 };
 
 class acceptor : public fb::base::acceptor<fb::internal::socket, fb::internal::session>
 {
 public:
-    typedef std::function<bool(fb::internal::socket<fb::internal::session>&)> handler;
-    typedef std::map<std::string, fb::internal::socket<fb::internal::session>*> subscriber_container;
+    typedef fb::internal::socket<fb::internal::session> service;
+    typedef std::function<bool(service&)>               handler;
+    typedef std::map<uint8_t, service*>                 subscriber_container;
 
 private:
     std::map<uint8_t, handler>      _handler_dict;
-    subscriber_container            _subscribers;
+    service*                        _gateway;
+    service*                        _login;
+    subscriber_container            _games;
     std::map<std::string, user*>    _users;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
     ~acceptor();
+
+private:
+    service*                        get(fb::protocol::internal::services type, uint8_t group = 0xFF);
 
 protected:
     bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback);

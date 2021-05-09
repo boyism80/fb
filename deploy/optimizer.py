@@ -53,7 +53,7 @@ def __convert_host(maps):
     reverse = { x['id'] : x for x in maps.values() }
     hosts = {}
     for id in reverse:
-        hosts[id] = reverse[id]['host']
+        hosts[id] = reverse[id]['host group']
 
     return hosts
 
@@ -102,7 +102,7 @@ def __convert_npc_spawn(path, maps, npcs):
 
     spawns = {}
     for spawn in data:
-        host = maps[spawn['map']]['host']
+        host = maps[spawn['map']]['host group']
         map_id = f"{maps[spawn['map']]['id']:06}"
 
         if map_id not in spawns:
@@ -248,6 +248,7 @@ if __name__ == '__main__':
         dst['id'] = f'game{args.id}'
         dst['ip'] = args.host
         dst['port'] = src['deploy']['game'][f'game{args.id}']['port']
+        dst['group'] = src['deploy']['game'][f'game{args.id}']['group']
 
     with open(args.out, 'w', encoding='utf-8') as f:
         f.write(json.dumps(dst, indent=4, ensure_ascii=True))

@@ -1,5 +1,6 @@
 {
     "id": "{{ name }}",
+    "group": {{ deploy.game[name].group }},
     "delay": 5,
     "ip":  "{{ deploy.game[name].ip }}",
     "port": {{ deploy.game[name].port }},

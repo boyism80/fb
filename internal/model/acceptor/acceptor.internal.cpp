@@ -1,7 +1,9 @@
 #include "acceptor.internal.h"
 
 fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay) : 
-    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, accept_delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, accept_delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt()),
+    _gateway(nullptr),
+    _login(nullptr)
 {
     this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
@@ -12,8 +14,26 @@ fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port
 
 fb::internal::acceptor::~acceptor()
 {
-    for(auto pair : this->_users)
+    for(auto& pair : this->_users)
         delete pair.second;
+}
+
+fb::internal::acceptor::service* fb::internal::acceptor::get(fb::protocol::internal::services type, uint8_t group)
+{
+    switch(type)
+    {
+    case fb::protocol::internal::services::SERVICE_GATEWAY:
+        return this->_gateway;
+
+    case fb::protocol::internal::services::SERVICE_LOGIN:
+        return this->_login;
+
+    case fb::protocol::internal::services::SERVICE_GAME:
+        return this->_games[group];
+
+    default:
+        return nullptr;
+    }
 }
 
 bool fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback)
@@ -34,22 +54,66 @@ bool fb::internal::acceptor::handle_connected(fb::internal::socket<fb::internal:
 bool fb::internal::acceptor::handle_disconnected(fb::internal::socket<fb::internal::session>& socket)
 {
     auto& c = fb::console::get();
-    auto name = socket.data()->name;
-    this->_subscribers.erase(name);
-    c.puts("%s 서버와 연결이 끊어졌습니다.", name.c_str());
+    auto subscriber = socket.data();
+    c.puts("%s 서버와 연결이 끊어졌습니다.", subscriber->name.c_str());
 
+    switch(subscriber->service)
+    {
+    case fb::protocol::internal::services::SERVICE_GATEWAY:
+    {
+        this->_gateway = nullptr;
+    } break;
+
+    case fb::protocol::internal::services::SERVICE_LOGIN:
+    {
+        this->_login = nullptr;
+    } break;
+
+    case fb::protocol::internal::services::SERVICE_GAME:
+    {
+        this->_games.erase(subscriber->group);
+    } break;
+    }
+    
     return false;
 }
 
 bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::subscribe& request)
 {
-    if(this->_subscribers[request.name] != nullptr)
-        return false;
-
-    this->_subscribers[request.name] = &socket;
-
     auto session = socket.data();
     session->name = request.name;
+    session->service = request.service;
+    session->group = request.group;
+
+    switch(request.service)
+    {
+    case fb::protocol::internal::services::SERVICE_GATEWAY:
+    {
+        if(this->_gateway != nullptr)
+            return false;
+
+        this->_gateway = &socket;
+    } break;
+
+    case fb::protocol::internal::services::SERVICE_LOGIN:
+    {
+        if(this->_login != nullptr)
+            return false;
+
+        this->_login = &socket;
+    } break;
+
+    case fb::protocol::internal::services::SERVICE_GAME:
+    {
+        if(this->_games[request.group] != nullptr)
+            return false;
+
+        this->_games[request.group] = &socket;
+    } break;
+
+    default:
+        return false;
+    }
 
     auto& c = fb::console::get();
     c.puts("%s 서버가 연결되었습니다.", request.name.c_str());
@@ -58,26 +122,48 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
 
 bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::transfer& request)
 {
+    auto group = std::optional<uint8_t>(0xFF);
+
     try
     {
-        auto game_id = fb::internal::table::hosts[request.map];
-        if(game_id == nullptr)
-            throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
-
-        auto subscriber = this->_subscribers[*game_id];
-        if(subscriber == nullptr)
-            throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
-
-        auto request_id = socket.data()->name;
-        if(request_id == "login" || request_id == "gateway")
+        switch(request.service)
         {
+        case fb::protocol::internal::services::SERVICE_GATEWAY:
+        {
+            if(this->_gateway == nullptr)
+                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
+
             auto found = this->_users.find(request.name);
             if(found != this->_users.end())
                 throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
+        } break;
+        case fb::protocol::internal::services::SERVICE_LOGIN:
+        {
+            if(this->_login == nullptr)
+                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
+
+            auto found = this->_users.find(request.name);
+            if(found != this->_users.end())
+                throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
+        } break;
+
+        case fb::protocol::internal::services::SERVICE_GAME:
+        {
+            group = fb::internal::table::hosts[request.map];
+            if(group.has_value() == false)
+                throw fb::internal::transfer_error(fb::protocol::internal::response::UNKNOWN);
+
+            if(this->_games[*group] == nullptr)
+                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
+
+        } break;
+
+        default:
+            return false;
         }
 
         auto& config = fb::config::get();
-        auto session = subscriber->data();
+        auto session = this->get(request.service, group.value())->data();
         this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd));
     }
     catch(fb::internal::transfer_error& e)
@@ -89,7 +175,7 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
 
             // send disconnection message
             auto game_id = fb::internal::table::hosts[request.map];
-            auto subscriber = this->_subscribers[*game_id];
+            auto subscriber = this->get(request.service, group.value());
             subscriber->send(fb::protocol::internal::response::logout(request.name));
         }
 
@@ -107,11 +193,11 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
 {
     try
     {
-        auto game_id = fb::internal::table::hosts[request.map];
-        if(game_id == nullptr)
+        auto group = fb::internal::table::hosts[request.map];
+        if(group.has_value() == false)
             return true;
 
-        auto subscriber = this->_subscribers[*game_id];
+        auto subscriber = this->get(fb::protocol::internal::services::SERVICE_GAME, *group);
         if(subscriber == nullptr)
             return true;
 
@@ -122,7 +208,7 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
             this->_users.erase(found);
         }
 
-        this->_users[request.name] = new fb::internal::user(*game_id);
+        this->_users[request.name] = new fb::internal::user(*group);
     }
     catch(std::exception& e)
     {
@@ -152,7 +238,7 @@ bool fb::internal::acceptor::handle_whisper(fb::internal::socket<fb::internal::s
         if(found == this->_users.end())
             throw std::exception();
 
-        auto subscriber = this->_subscribers[found->second->game_id];
+        auto subscriber = this->_games[found->second->group];
         if(subscriber == nullptr)
             throw std::exception();
 

@@ -305,7 +305,7 @@ void fb::game::mob::respawn_time(std::chrono::milliseconds ms)
 bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
 {
     auto& config = fb::config::get();
-    if(config["id"].asString() != this->_map->host)
+    if(config["group"].asUInt() != this->_map->group)
         return false;
 
     if(this->alive())

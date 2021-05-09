@@ -129,8 +129,8 @@ bool fb::login::acceptor::handle_account_complete(fb::socket<fb::login::session>
 
 bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
-    const auto id = request.id;
-    const auto pw = request.pw;
+    const auto& id = request.id;
+    const auto& pw = request.pw;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
     this->threads().dispatch
@@ -142,7 +142,7 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
                 id, pw,
                 [this, id, &socket] (uint32_t map)
                 {
-                    this->_internal->send(fb::protocol::internal::request::transfer(id, map, socket.native_handle()));
+                    this->_internal->send(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::SERVICE_GAME, map, socket.native_handle()));
                 },
                 [this, &socket] (const login_exception& e)
                 {
@@ -157,9 +157,9 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
 
 bool fb::login::acceptor::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
-    const auto id = request.name;
-    const auto pw = request.pw;
-    const auto new_pw = request.new_pw;
+    const auto& id = request.name;
+    const auto& pw = request.pw;
+    const auto& new_pw = request.new_pw;
     const auto birthday = request.birthday;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
