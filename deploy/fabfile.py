@@ -13,7 +13,7 @@ import time
 import copy
 
 env.user = 'ubuntu'
-env.key_filename = 'ssh/fb'
+env.key_filename = '/ssh/fb'
 env.port = 22
 env.timeout = 60
 

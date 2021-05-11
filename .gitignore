@@ -10,3 +10,4 @@ deploy/ubuntu
 bin
 __pycache__
 optimize.bat
+ssh
