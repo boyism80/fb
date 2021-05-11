@@ -85,6 +85,7 @@ def clean():
 
 @task
 def build(service):
+    local(f'docker pull cshyeon/fb:build')
     local(f'docker run -v $PWD:/app -i -w /app/{service} cshyeon/fb:build make -j4')
 
 
@@ -109,6 +110,7 @@ def deploy(service):
         put(f'dist/fb/{service}/{service}', '.', use_sudo=True, mode='0755')
 
         for name, config in configs['deploy'][service].items():
+            sudo(f'docker pull cshyeon/fb:latest')
             sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app -w /app -e LC_ALL=C.UTF-8 -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service} --env {name}", quiet=True)
 
 def current():
