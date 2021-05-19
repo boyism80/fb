@@ -1260,9 +1260,12 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
 
 void fb::game::acceptor::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto pair : fb::game::table::maps)
+    for(auto& pair : fb::game::table::maps)
     {
         auto                map = pair.second;
+        if(map->activated() == false)
+            continue;
+
         auto                thread = this->thread(*map);
         if(thread != nullptr && thread->id() != id)
             continue;
@@ -1291,14 +1294,17 @@ void fb::game::acceptor::handle_mob_respawn(std::chrono::steady_clock::duration 
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*>    spawned_mobs;
-    for(auto pair : fb::game::table::maps)
+    for(auto& pair : fb::game::table::maps)
     {
         auto                map = pair.second;
+        if(map->activated() == false)
+            continue;
+
         auto                thread = this->thread(*map);
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        for(auto pair : map->objects)
+        for(auto& pair : map->objects)
         {
             if(pair.second->type() != object::types::MOB)
                 continue;
@@ -1346,9 +1352,12 @@ void fb::game::acceptor::handle_mob_respawn(std::chrono::steady_clock::duration 
 
 void fb::game::acceptor::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto pair : fb::game::table::maps)
+    for(auto& pair : fb::game::table::maps)
     {
-        auto map = pair.second;
+        auto                map = pair.second;
+        if(map->activated() == false)
+            continue;
+
         auto                thread = this->thread(*map);
         if(thread != nullptr && thread->id() != id)
             continue;

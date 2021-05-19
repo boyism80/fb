@@ -93,7 +93,7 @@ uint32_t fb::game::sectors::index(const point16_t& position) const
 std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
 {
     auto sectors = std::set<fb::game::sector*>();
-    for(auto x : this->_activated_cache)
+    for(auto& x : this->_activated_cache)
     {
         auto nears = this->nears(x.first);
         sectors.insert(nears.begin(), nears.end());
@@ -247,4 +247,9 @@ std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::ob
     }
 
     return std::move(result);
+}
+
+bool fb::game::sectors::activated() const
+{
+    return this->_activated_cache.size() > 0;
 }

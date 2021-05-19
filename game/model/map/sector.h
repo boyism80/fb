@@ -78,6 +78,7 @@ public:
     std::vector<sector*>            nears(const point16_t& pivot) const;
     std::vector<object*>            objects(const point16_t& pivot, fb::game::object::types type) const;
     std::vector<object*>            activated_objects(fb::game::object::types type) const;
+    bool                            activated() const;
 };
 
 } }

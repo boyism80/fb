@@ -343,6 +343,14 @@ bool fb::game::map::update(fb::game::object& object)
     return object.sector(sector);
 }
 
+bool fb::game::map::activated() const
+{
+    if(this->_sectors == nullptr)
+        return false;
+
+    return this->_sectors->activated();
+}
+
 std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
 {
     if(this->_sectors == nullptr)

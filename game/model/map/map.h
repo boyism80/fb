@@ -296,6 +296,7 @@ public:
     const fb::game::map::warp*      warpable(const point16_t& position) const;
 
     bool                            update(fb::game::object& object);
+    bool                            activated() const;
     
     std::vector<object*>            nears(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>            belows(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
