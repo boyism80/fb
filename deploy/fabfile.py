@@ -17,15 +17,13 @@ env.key_filename = '/ssh/fb'
 env.port = 22
 env.timeout = 60
 
-LOCAL_ROOT = './deploy'
 CONFIGURATION = None
-TABLES = {}
 
 @task
 def environment(e):
     global CONFIGURATION
 
-    with open(f'{LOCAL_ROOT}/{e}.json') as f:
+    with open(f'deploy/{e}.json') as f:
         CONFIGURATION = json.load(f)
 
     for service in CONFIGURATION['deploy']:
@@ -104,14 +102,14 @@ def deploy(service):
         for name, config in configs['deploy'][service].items():
             context.update({'name': name})
 
-            template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"{LOCAL_ROOT}/template")).get_template(f'config.{service}.txt')
+            template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"deploy/template")).get_template(f'config.{service}.txt')
             sudo(f"echo '{template.render(context)}' > config.{name}.json", quiet=True)
 
         put(f'dist/fb/{service}/{service}', '.', use_sudo=True, mode='0755')
 
         for name, config in configs['deploy'][service].items():
             sudo(f'docker pull cshyeon/fb:latest')
-            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app -w /app -e LC_ALL=C.UTF-8 -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service} --env {name}", quiet=True)
+            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service} --env {name}", quiet=True)
 
 def current():
     global CONFIGURATION
@@ -155,3 +153,12 @@ def prune():
     with settings(warn_only=True):
         sudo('docker container prune -f', quiet=True)
         sudo('docker image prune -f', quiet=True)
+
+@task
+@parallel
+def restart():
+    configs = current()
+    container_names = [f'fb_{x}' for config in configs['deploy'].values() for x in config]
+
+    with settings(warn_only=True):
+        sudo(f"docker restart {' '.join(container_names)}", quiet=True)
