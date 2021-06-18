@@ -1,4 +1,10 @@
 {
+	"authorization":
+	{
+		"user": "ubuntu",
+		"port": 22,
+		"key": "/ssh/fb"
+	},
 	"deploy":
 	{
 		"internal":

@@ -12,11 +12,7 @@ import optimizer
 import time
 import copy
 
-env.user = 'ubuntu'
-env.key_filename = '/ssh/fb'
-env.port = 22
 env.timeout = 60
-
 CONFIGURATION = None
 
 @task
@@ -25,6 +21,10 @@ def environment(e):
 
     with open(f'deploy/{e}.json') as f:
         CONFIGURATION = json.load(f)
+
+    env.user = CONFIGURATION['authorization']['user']
+    env.key_filename = CONFIGURATION['authorization']['key']
+    env.port = CONFIGURATION['authorization']['port']
 
     for service in CONFIGURATION['deploy']:
         env['roledefs'][service] = {'hosts': []}
