@@ -66,6 +66,7 @@ public:
 
 public:
     void                    send(fb::game::object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(fb::game::object& object, std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)> fn, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
 

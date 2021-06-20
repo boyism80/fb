@@ -956,9 +956,21 @@ int fb::game::object::builtin_position(lua_State* lua)
     object->position(x, y, true);
 
     if(object->is(fb::game::object::types::SESSION))
-        acceptor->send(*object, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object)), acceptor::scope::PIVOT);
+    {
+        acceptor->send
+        (
+            *object, 
+            [object](const fb::game::object& to)
+            {
+                return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object), to));
+            }, 
+            acceptor::scope::PIVOT
+        );
+    }
     else
+    {
         acceptor->send(*object, fb::protocol::game::response::object::show(*object), acceptor::scope::PIVOT);
+    }
 
     if(object->is(object::types::SESSION))
     {

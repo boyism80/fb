@@ -33,12 +33,38 @@ class show : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
+    const fb::game::object&     to;
     const bool                  light;
 
 public:
-    show(const fb::game::session& session, bool light = false) : 
-        session(session), light(light)
+    show(const fb::game::session& session, const fb::game::object& to, bool light = false) : 
+        session(session), to(to), light(light)
     {}
+
+    show(const show&) = delete;
+
+private:
+    bool clock_visible() const
+    {
+        if(&this->session == &this->to)
+            return true;
+
+        if(this->to.is(fb::game::object::types::SESSION) == false)
+            return false;
+
+        // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
+        // return true
+
+        auto mine = this->session.group();
+        if(mine == nullptr)
+            return false;
+
+        auto your = static_cast<const fb::game::session&>(this->to).group();
+        if(your == nullptr)
+            return false;
+
+        return mine == your;
+    }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -57,8 +83,23 @@ public:
 
         out_stream.write_u32(this->session.sequence())
                   .write_u8(this->session.state() == fb::game::state::DISGUISE) // 변신유무
-                  .write_u8(this->session.sex()) // sex
-                  .write_u8(this->session.state()); // state
+                  .write_u8(this->session.sex()); // sex
+
+
+        switch(this->session.state())
+        {
+        case fb::game::state::HALF_CLOACK:
+        {
+            if(this->clock_visible())
+                out_stream.write_8(fb::game::state::HALF_CLOACK);
+            else
+                out_stream.write_8(fb::game::state::CLOACK);
+        } break;
+        default:
+        {
+            out_stream.write_u8(this->session.state());
+        } break;
+        }
 
         if(this->session.state() == fb::game::state::DISGUISE)
         {

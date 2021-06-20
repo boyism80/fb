@@ -355,6 +355,61 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
     }
 }
 
+void fb::game::acceptor::send(fb::game::object& object, std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)> fn, acceptor::scope scope, bool exclude_self, bool encrypt)
+{
+    switch(scope)
+    {
+    case acceptor::scope::SELF:
+        object.send(*fn(object).get(), encrypt);
+        break;
+
+    case acceptor::scope::PIVOT:
+    {
+        auto nears = object.showings(object::types::SESSION);
+        if(!exclude_self)
+            object.send(*fn(object).get(), encrypt);
+
+        for(auto& x : nears)
+            x->send(*fn(*x).get(), encrypt);
+    } break;
+
+    case acceptor::scope::GROUP:
+    {
+        if(object.is(object::types::SESSION) == false)
+            return;
+
+        auto& session = static_cast<fb::game::session&>(object);
+        auto group = session.group();
+        if(group == nullptr)
+            return;
+
+        for(const auto session : group->members())
+            session->send(*fn(*session).get(), encrypt);
+    } break;
+
+    case acceptor::scope::MAP:
+    {
+        for(const auto& pair : object.map()->objects)
+        {
+            if(exclude_self && pair.second == &object)
+                continue;
+
+            pair.second->send(*fn(*pair.second).get(), encrypt);
+        }
+    } break;
+
+    case acceptor::scope::WORLD:
+    {
+        for(const auto& pair : this->sockets)
+        {
+            auto session = pair.second->data();
+            session->send(*fn(*session).get(), encrypt);
+        }
+    } break;
+
+    }
+}
+
 void fb::game::acceptor::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
     for(const auto& pair : this->sockets)

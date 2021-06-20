@@ -32,8 +32,9 @@ namespace fb { namespace protocol { namespace base {
 class header
 {
 protected:
-    header() {}
-    ~header() {}
+    header() = default;
+public:
+    ~header() = default;
 
 public:
     virtual void            serialize(fb::ostream& out_stream) const {}

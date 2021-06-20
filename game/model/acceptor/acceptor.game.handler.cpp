@@ -20,15 +20,27 @@ void fb::game::acceptor::on_direction(fb::game::object& me)
 void fb::game::acceptor::on_show(fb::game::object& me, bool light)
 {
     if(me.is(fb::game::object::types::SESSION))
-        this->send(me, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(me), light), scope::PIVOT);
+    {
+        this->send
+        (
+            me, 
+            [&me, light](const fb::game::object& to)
+            {
+                return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::session&>(me), to, light));
+            }, 
+            scope::PIVOT
+        );
+    }
     else
+    {
         this->send(me, fb::protocol::game::response::object::show(me), scope::PIVOT);
+    }
 }
 
 void fb::game::acceptor::on_show(fb::game::object& me, fb::game::object& you, bool light)
 {
     if(you.is(fb::game::object::types::SESSION))
-        this->send(me, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(you), light), scope::SELF);
+        this->send(me, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(you), me, light), scope::SELF);
     else
         this->send(me, fb::protocol::game::response::object::show(you), scope::SELF);
 }
@@ -441,7 +453,7 @@ void fb::game::acceptor::on_warp(fb::game::session& me)
     this->send(me, fb::protocol::game::response::map::config(*map), scope::SELF);
     this->send(me, fb::protocol::game::response::map::bgm(*map), scope::SELF);
     this->send(me, fb::protocol::game::response::session::position(me), scope::SELF);
-    this->send(me, fb::protocol::game::response::session::show(me, false), scope::SELF);
+    this->send(me, fb::protocol::game::response::session::show(me, me, false), scope::SELF);
     this->send(me, fb::protocol::game::response::object::direction(me), scope::SELF);
 }
 
