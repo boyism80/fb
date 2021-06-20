@@ -206,6 +206,9 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
         {
             delete found->second;
             this->_users.erase(found);
+
+            // send disconnection message
+            subscriber->send(fb::protocol::internal::response::logout(request.name));
         }
 
         this->_users[request.name] = new fb::internal::user(*group);
