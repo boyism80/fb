@@ -1,4 +1,3 @@
-#include <boost/program_options.hpp>
 #include "resource.h"
 #include "module/db/db.h"
 #include "model/acceptor/acceptor.login.h"
@@ -20,13 +19,9 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        auto desc = boost::program_options::options_description("fb login");
-        desc.add_options()
-            ("env,e", boost::program_options::value<std::string>(), "environment");
-
-        boost::program_options::variables_map vmap;
-        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vmap);
-        boost::program_options::notify(vmap);
+        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
+        if(env == nullptr)
+            env = "dev";
 
         auto height = 8;
         c.box(0, 0, c.width()-1, height);
@@ -43,12 +38,6 @@ int main(int argc, const char** argv)
         c.cursor(0, height + 1);
     
         // Execute acceptor
-        auto env = vmap.count("env") ? vmap["env"].as<std::string>().c_str() : 
-#if defined DEBUG | defined _DEBUG
-            "dev";
-#else
-            nullptr;
-#endif
         auto& config = fb::config::get(env);
 
         // Execute acceptor

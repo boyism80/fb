@@ -1,4 +1,3 @@
-#include <boost/program_options.hpp>
 #include "resource.h"
 #include "model/acceptor/acceptor.internal.h"
 #include "model/table/table.internal.h"
@@ -19,20 +18,10 @@ int main(int argc, const char** argv)
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
-        auto desc = boost::program_options::options_description("fb internal");
-        desc.add_options()
-            ("env,e", boost::program_options::value<std::string>(), "environment");
+        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
+        if(env == nullptr)
+            env = "dev";
 
-        boost::program_options::variables_map vmap;
-        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vmap);
-        boost::program_options::notify(vmap);
-
-        auto env = vmap.count("env") ? vmap["env"].as<std::string>().c_str() : 
-#if defined DEBUG | defined _DEBUG
-            "dev";
-#else
-            nullptr;
-#endif
         auto& config = fb::config::get(env);
 
         auto height = 8;
