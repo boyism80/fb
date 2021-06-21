@@ -26,15 +26,8 @@ def environment(e):
     env.key_filename = CONFIGURATION['authorization']['key']
     env.port = CONFIGURATION['authorization']['port']
 
-    for service in CONFIGURATION['deploy']:
-        env['roledefs'][service] = {'hosts': []}
-
-        for name, config in CONFIGURATION['deploy'][service].items():
-            if config['ip'] not in env['roledefs'][service]['hosts']:
-                env['roledefs'][service]['hosts'].append(config['ip'])
-
-            if config['ip'] not in env['hosts']:
-                env['hosts'].append(config['ip'])
+    env.roledefs = {service:list(set([x['ip'] for x in configs.values()])) for service, configs in CONFIGURATION['deploy'].items()}
+    env.hosts = list(set([host for role in env.roledefs.values() for host in role]))
 
 @task
 @runs_once
