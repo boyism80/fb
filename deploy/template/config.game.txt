@@ -5,6 +5,7 @@
     "ip":  "{{ deploy.game[name].ip }}",
     "port": {{ deploy.game[name].port }},
     "thread": 2,
+    "save": 600,
     "internal": {
         "ip": "{{ deploy.internal[deploy.game[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.game[name].internal].port }}

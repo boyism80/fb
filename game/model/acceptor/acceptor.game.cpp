@@ -212,10 +212,10 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));   // 월드 메시지
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&acceptor::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
 
-    this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);     // 몹 행동 타이머
-    this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);        // 몹 리젠 타이머
-    this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);        // 버프 타이머
-    this->bind_timer(std::bind(&acceptor::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), 10min);     // DB 저장 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);                                             // 몹 행동 타이머
+    this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 몹 리젠 타이머
+    this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 버프 타이머
+    this->bind_timer(std::bind(&acceptor::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(config["save"].asInt()));      // DB 저장 타이머
 
     this->bind_command("맵이동", std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("사운드", std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2));
