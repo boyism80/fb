@@ -14,15 +14,19 @@ public:
     uint8_t                 enc_type;
     uint8_t                 key_size;
     uint8_t                 enc_key[0x09];
+    internal::services      from;
     std::string             name;
 
 public:
     void deserialize(fb::istream& in_stream)
     {
+        // base
         this->enc_type = in_stream.read_u8();
         this->key_size = in_stream.read_u8();
         in_stream.read((void*)this->enc_key, this->key_size);
-
+        this->from = (fb::protocol::internal::services)in_stream.read_u8();
+        
+        // additional parameters
         this->name = in_stream.readstr_u8();
     }
 };

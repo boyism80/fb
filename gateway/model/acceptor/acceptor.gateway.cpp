@@ -105,7 +105,7 @@ bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& 
     case 0x00:
     {
         const auto&         entry = this->_entrypoints[request.index];
-        this->transfer(socket, entry.ip(), entry.port());
+        this->transfer(socket, entry.ip(), entry.port(), fb::protocol::internal::services::SERVICE_GATEWAY);
         return true;
     }
 

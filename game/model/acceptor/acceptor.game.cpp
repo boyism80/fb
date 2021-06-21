@@ -500,7 +500,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
 
         fb::ostream         parameter;
         parameter.write(response.name);
-        this->transfer(*client, response.ip, response.port, parameter);
+        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
     }
     catch(std::exception& e)
     {
@@ -560,13 +560,16 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
     // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
 
+    // Where login from?
+    auto from = request.from;
+
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
     fb::db::query
     (
         request.name.c_str(),
-        [this, session](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
+        [this, session, from](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
         {
             auto&                       baseResult = results[0];
             if(baseResult.count() == 0)
@@ -637,7 +640,10 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             this->send(*session, fb::protocol::game::response::init(), scope::SELF);
             this->send(*session, fb::protocol::game::response::time(25), scope::SELF);
             this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
-            this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+            
+            if(from == fb::protocol::internal::services::SERVICE_LOGIN)
+                this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+
             this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
             this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
@@ -699,7 +705,7 @@ bool fb::game::acceptor::handle_exit(fb::socket<fb::game::session>& socket, cons
 {
     auto                    session = socket.data();
     const auto&             config = fb::config::get();
-    this->transfer(socket, config["login"]["ip"].asString(), config["login"]["port"].asInt());
+    this->transfer(socket, config["login"]["ip"].asString(), config["login"]["port"].asInt(), fb::protocol::internal::services::SERVICE_GAME);
     return true;
 }
 

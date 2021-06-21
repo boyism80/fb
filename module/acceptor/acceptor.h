@@ -55,10 +55,10 @@ public:
     void                                        handle_closed(fb::base::socket<T>& socket);
 
 protected:
-    void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port);
-    void                                        transfer(S<T>& socket, const std::string& ip, uint16_t port);
-    void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port, const fb::ostream& parameter);
-    void                                        transfer(S<T>& socket, const std::string& ip, uint16_t port, const fb::ostream& parameter);
+    void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from);
+    void                                        transfer(S<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from);
+    void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter);
+    void                                        transfer(S<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter);
 
 public:
     void                                        send_stream(S<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true);

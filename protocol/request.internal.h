@@ -45,18 +45,19 @@ public:
 
 public:
     std::string             name;
-    services                service;
+    services                from;
+    services                to;
     uint16_t                map;
     uint16_t                x, y;
     uint32_t                fd;
 
 public:
     transfer() {}
-    transfer(const std::string& name, services service, uint32_t map, uint32_t fd) : 
-        name(name), service(service), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
+    transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : 
+        name(name), from(from), to(to), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
     {}
-    transfer(const std::string& name, services service, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : 
-        name(name), service(service), fd(fd), map(map), x(x), y(y)
+    transfer(const std::string& name, services from, services to, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : 
+        name(name), from(from), to(to), fd(fd), map(map), x(x), y(y)
     {}
 
 public:
@@ -64,7 +65,8 @@ public:
     {
         out_stream.write_u8(id)
                   .writestr_u8(this->name, false)
-                  .write_u8(this->service)
+                  .write_u8(this->from)
+                  .write_u8(this->to)
                   .write_u16(this->map)
                   .write_u16(this->x)
                   .write_u16(this->y)
@@ -74,7 +76,8 @@ public:
     void deserialize(fb::istream& in_stream)
     {
         this->name = in_stream.readstr_u8(false);
-        this->service = (services)in_stream.read_u8();
+        this->from = (services)in_stream.read_u8();
+        this->to = (services)in_stream.read_u8();
         this->map = in_stream.read_u16();
         this->x = in_stream.read_u16();
         this->y = in_stream.read_u16();

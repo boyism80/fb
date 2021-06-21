@@ -147,13 +147,14 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port)
+void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
 {
     auto&                       crt = socket.crt();
     fb::ostream                 data;
     data.write_u8(crt.type())
         .write_u8(cryptor::KEY_SIZE)
-        .write(crt.key(), cryptor::KEY_SIZE);
+        .write(crt.key(), cryptor::KEY_SIZE)
+        .write_u8(from);
 
     fb::ostream                 out_stream;
     fb::protocol::response::transfer(ip, port, data).serialize(out_stream);
@@ -163,19 +164,20 @@ void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port)
+void fb::base::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
 {
-    this->transfer(socket, inet_addr(ip.c_str()), port);
+    this->transfer(socket, inet_addr(ip.c_str()), port, from);
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port, const fb::ostream& parameter)
+void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter)
 {
     auto&                       crt = socket.crt();
     fb::ostream                 data;
     data.write_u8(crt.type())
         .write_u8(cryptor::KEY_SIZE)
         .write(crt.key(), cryptor::KEY_SIZE)
+        .write_u8(from)
         .write(parameter.data(), parameter.size());
 
     fb::ostream                 out_stream;
@@ -186,9 +188,9 @@ void fb::base::acceptor<S, T>::transfer(S<T>& socket, uint32_t ip, uint16_t port
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port, const fb::ostream& parameter)
+void fb::base::acceptor<S, T>::transfer(S<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter)
 {
-    this->transfer(socket, inet_addr(ip.c_str()), port, parameter);
+    this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
 }
 
 template <template<class> class S, class T>

@@ -126,27 +126,8 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
 
     try
     {
-        switch(request.service)
+        switch(request.to)
         {
-        case fb::protocol::internal::services::SERVICE_GATEWAY:
-        {
-            if(this->_gateway == nullptr)
-                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
-
-            auto found = this->_users.find(request.name);
-            if(found != this->_users.end())
-                throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
-        } break;
-        case fb::protocol::internal::services::SERVICE_LOGIN:
-        {
-            if(this->_login == nullptr)
-                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
-
-            auto found = this->_users.find(request.name);
-            if(found != this->_users.end())
-                throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
-        } break;
-
         case fb::protocol::internal::services::SERVICE_GAME:
         {
             group = fb::internal::table::hosts[request.map];
@@ -156,6 +137,12 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
             if(this->_games[*group] == nullptr)
                 throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
 
+            if(request.from == fb::protocol::internal::services::SERVICE_LOGIN)
+            {
+                auto found = this->_users.find(request.name);
+                if(found != this->_users.end())
+                    throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
+            }
         } break;
 
         default:
@@ -163,8 +150,8 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
         }
 
         auto& config = fb::config::get();
-        auto session = this->get(request.service, group.value())->data();
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd));
+        auto session = this->get(request.to, group.value())->data();
+        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd, request.from));
     }
     catch(fb::internal::transfer_error& e)
     {
@@ -175,15 +162,15 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
 
             // send disconnection message
             auto game_id = fb::internal::table::hosts[request.map];
-            auto subscriber = this->get(request.service, group.value());
+            auto subscriber = this->get(request.to, group.value());
             subscriber->send(fb::protocol::internal::response::logout(request.name));
         }
 
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd));
+        this->send(socket, fb::protocol::internal::response::transfer(request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd, request.from));
     }
     catch(std::exception& e)
     {
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd));
+        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd, request.from));
     }
     
     return true;
@@ -206,9 +193,6 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
         {
             delete found->second;
             this->_users.erase(found);
-
-            // send disconnection message
-            subscriber->send(fb::protocol::internal::response::logout(request.name));
         }
 
         this->_users[request.name] = new fb::internal::user(*group);
