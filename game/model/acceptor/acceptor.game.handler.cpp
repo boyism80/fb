@@ -78,14 +78,19 @@ void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, cons
     if(thread == nullptr || thread == this->threads().current())
     {
         me.handle_enter(map, position);
+
+        if(me.is(fb::game::object::types::SESSION))
+            this->on_save(static_cast<fb::game::session&>(me));
     }
     else
     {
         thread->precedence.enqueue
         (
-            [&me, &map, position] (uint8_t) 
+            [this, &me, &map, position] (uint8_t) 
             {
                 me.handle_enter(map, position);
+                if(me.is(fb::game::object::types::SESSION))
+                    this->on_save(static_cast<fb::game::session&>(me));
             }
         );
     }

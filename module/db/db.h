@@ -3,6 +3,7 @@
 
 #include "mysql+++/mysql+++.h"
 #include "module/config/config.h"
+#include "module/thread/thread.h"
 #include <string>
 #include <boost/asio.hpp>
 #include <future>
@@ -92,12 +93,17 @@ public:
         if(ist._context == nullptr)
             return;
 
-        auto future = std::async
+        auto _name = new std::string(name);
+        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
+
+        fb::async::launch
         (
-            std::launch::async, 
-            std::bind(&db::_exec, &ist, std::placeholders::_1, std::placeholders::_2),
-            name,
-            format_string(format.c_str(), std::forward<Values>(values)...)
+            [&ist, _name, _fmt]()
+            {
+                ist._exec(_name->c_str(), _fmt->c_str());
+                delete _name;
+                delete _fmt;
+            }
         );
     }
 
@@ -108,13 +114,16 @@ public:
         if(ist._context == nullptr)
             return false;
 
-        auto future = std::async
+        auto _name = new std::string(name);
+        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
+        fb::async::launch
         (
-            std::launch::async, 
-            std::bind(&db::_query, &ist, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-            name,
-            format_string(format.c_str(), std::forward<Values>(values)...),
-            callback
+            [&ist, _name, _fmt, callback]()
+            {
+                ist._query(_name->c_str(), _fmt->c_str(), callback);
+                delete _name;
+                delete _fmt;
+            }
         );
 
         return true;
@@ -127,15 +136,17 @@ public:
         if(ist._context == nullptr)
             return false;
 
-        auto future = std::async
+        auto _name = new std::string(name);
+        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
+        fb::async::launch
         (
-            std::launch::async, 
-            std::bind(&db::_mquery, &ist, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-            name,
-            format_string(format.c_str(), std::forward<Values>(values)...),
-            callback
+            [&ist, _name, _fmt, callback]()
+            {
+                ist._mquery(_name->c_str(), _fmt->c_str(), callback);
+                delete _name;
+                delete _fmt;
+            }
         );
-
         return true;
     }
 

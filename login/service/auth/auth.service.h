@@ -11,6 +11,7 @@
 #include <ctime>
 #include <openssl/sha.h>
 #include "module/stream/stream.h"
+#include "module/thread/thread.h"
 #include "module/config/config.h"
 #include "model/session/session.login.h"
 #include "model/gateway/gateway.h"

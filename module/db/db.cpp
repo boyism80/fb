@@ -142,6 +142,9 @@ bool fb::db::release(const char* name, daotk::mysql::connection& connection)
 
 void fb::db::_exec(const char* name, const std::string& sql)
 {
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(5000ms);
+
     auto& connection = db::get(name);
     try
     {
@@ -171,12 +174,17 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries)
         sstream << queries[i];
     }
 
-    auto future = std::async
+    auto _name = new std::string(name);
+    auto _qry = new std::string(sstream.str());
+
+    fb::async::launch
     (
-        std::launch::async, 
-        std::bind(&db::_exec, &ist, std::placeholders::_1, std::placeholders::_2),
-        name,
-        sstream.str()
+        [&ist, _name, _qry]()
+        {
+            ist._exec(_name->c_str(), _qry->c_str());
+            delete _name;
+            delete _qry;
+        }
     );
 
     return true;
@@ -265,13 +273,17 @@ bool fb::db::query(const char* name, std::function<void(daotk::mysql::connection
         sstream << queries[i];
     }
 
-    auto future = std::async
+    auto _name = new std::string(name);
+    auto _qry = new std::string(sstream.str());
+
+    fb::async::launch
     (
-        std::launch::async, 
-        std::bind(&db::_mquery, &ist, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-        name, 
-        sstream.str(),
-        callback
+        [&ist, _name, _qry, callback]()
+        {
+            ist._mquery(_name->c_str(), _qry->c_str(), callback);
+            delete _name;
+            delete _qry;
+        }
     );
 
     return true;

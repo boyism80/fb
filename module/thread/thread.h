@@ -7,8 +7,11 @@
 #include <queue>
 #include <mutex>
 #include <map>
+#include <future>
 
 #define MUTEX_GUARD(x) auto __gd = std::lock_guard(x);
+
+using namespace std::chrono_literals;
 
 namespace fb {
 
@@ -104,11 +107,36 @@ public:
     static std::chrono::steady_clock::duration      now();
 };
 
+class async
+{
+private:
+    static std::unique_ptr<async>                   _ist;
+
+private:
+    std::thread                                     _async_thread;
+    std::vector<std::future<void>>                  _futures;
+    bool                                            _exit;
+    std::mutex                                      _async_mutex;
+
+public:
+    async();
+    ~async();
+
+private:
+    void                                            _launch(std::function<void()> fn);
+    void                                            async_handler();
+    static async*                                   get();
+
+public:
+    static void                                     launch(std::function<void()> fn);
+};
+
 
 class threads
 {
 public:
-    typedef std::map<std::thread::id, std::unique_ptr<fb::thread>>  unique_threads;
+    typedef std::unique_ptr<fb::thread>                             unique_thread;
+    typedef std::map<std::thread::id, unique_thread>                unique_threads;
     typedef std::unique_ptr<std::thread::id[]>                      unique_id_list;
 
 private:
