@@ -134,6 +134,7 @@ public:
     void                    handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id);
     void                    handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id);
     void                    handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id);
+    void                    handle_save_timer(std::chrono::steady_clock::duration now, std::thread::id id);
     bool                    handle_command(fb::game::session& session, const std::string& message);
 
 public:

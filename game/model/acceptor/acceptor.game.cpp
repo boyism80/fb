@@ -215,6 +215,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);     // 몹 행동 타이머
     this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);        // 몹 리젠 타이머
     this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);        // 버프 타이머
+    this->bind_timer(std::bind(&acceptor::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), 10min);     // DB 저장 타이머
 
     this->bind_command("맵이동", std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("사운드", std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2));
@@ -1443,6 +1444,34 @@ void fb::game::acceptor::handle_buff_timer(std::chrono::steady_clock::duration n
 
             for(auto finish : finishes)
                 pair.second->buffs.remove(finish->spell().name());
+        }
+    }
+}
+
+void fb::game::acceptor::handle_save_timer(std::chrono::steady_clock::duration now, std::thread::id id)
+{
+    auto& c = console::get();
+
+    for(auto& pair : fb::game::table::maps)
+    {
+        auto                map = pair.second;
+        if(map->activated() == false)
+            continue;
+
+        auto                thread = this->thread(*map);
+        if(thread != nullptr && thread->id() != id)
+            continue;
+
+        if(map->objects.size() == 0)
+            continue;
+
+        for(auto& pair : map->objects)
+        {
+            if(pair.second->is(fb::game::object::types::SESSION) == false)
+                continue;
+
+            auto session = static_cast<fb::game::session*>(pair.second);
+            this->on_save(*session);
         }
     }
 }
