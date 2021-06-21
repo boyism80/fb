@@ -67,6 +67,15 @@ int main(int argc, const char** argv)
             config["delay"].asInt()
         );
 
+        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
+        signal.async_wait
+        (
+            [&acceptor](const boost::system::error_code& error, int signal_number)
+            {
+                acceptor.get()->exit();
+            }
+        );
+
         io_context.run();
     }
     catch(std::exception& e)

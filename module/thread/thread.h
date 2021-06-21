@@ -129,6 +129,7 @@ private:
 
 public:
     static void                                     launch(std::function<void()> fn);
+    static void                                     exit();
 };
 
 
@@ -168,6 +169,7 @@ public:
 public:
     void                                            dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration, bool main = false);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
+    void                                            exit();
 
 public:
     fb::thread*                                     operator [] (uint8_t index) const;

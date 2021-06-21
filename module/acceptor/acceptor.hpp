@@ -5,6 +5,7 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _accept_delay(accept_delay),
+    _buffer(nullptr),
     _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
     _exit(false)
 {
@@ -15,6 +16,9 @@ template <template<class> class S, class T>
 fb::base::acceptor<S, T>::~acceptor()
 {
     this->_exit = true;
+
+    if(this->_buffer != nullptr)
+        delete _buffer;
 }
 
 template <template<class> class S, class T>
@@ -54,21 +58,21 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::accept()
 {
-    auto socket = new S<T>(this->_context, std::bind(&fb::base::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::base::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
+    this->_buffer = new S<T>(this->_context, std::bind(&fb::base::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::base::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
     this->async_accept
     (
-        *socket,
-        [this, socket](boost::system::error_code error)
+        *this->_buffer,
+        [this](boost::system::error_code error)
         {
             try
             {
+                auto socket = this->_buffer;
                 if(error)
                     throw std::runtime_error(error.message());
 
                 socket->data(this->handle_accepted(*socket));
-                this->sockets.push(*socket);
+                this->sockets.push(*this->_buffer);
 
-                this->accept();
                 this->handle_connected(*socket);
 
                 this->_threads.dispatch
@@ -80,6 +84,8 @@ void fb::base::acceptor<S, T>::accept()
                     std::chrono::seconds(this->_accept_delay),
                     true
                 );
+
+                this->accept();
             }
             catch(std::exception& e)
             {
@@ -237,6 +243,12 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
     else
         this->_threads[id]->queue.enqueue(fn);
     return true;
+}
+
+template <template<class> class S, class T>
+void fb::base::acceptor<S, T>::exit()
+{
+    this->handle_exit();
 }
 
 template <template<class> class S, class T>

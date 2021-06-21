@@ -61,13 +61,16 @@ void fb::queue::flush(uint8_t index)
 
 
 fb::thread::thread(uint8_t index) : 
-    _thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index),
     _index(index),
     _exit(false)
-{ }
+{ 
+    //this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
+}
 
 fb::thread::~thread()
-{}
+{
+    this->exit();
+}
 
 void fb::thread::handle_thread(uint8_t index)
 {
@@ -120,8 +123,12 @@ this->_mutex_timer.unlock();
 
 void fb::thread::exit()
 {
+this->_mutex_timer.lock();
+    this->_timers.clear();
+this->_mutex_timer.unlock();
+
     this->_exit = true;
-    this->_thread.join();
+    //this->_thread.join();
 }
 
 void fb::thread::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration)
@@ -296,6 +303,11 @@ void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clo
     }
 }
 
+void fb::threads::exit()
+{
+    this->_threads.clear();
+}
+
 fb::thread* fb::threads::operator[](uint8_t index) const
 {
     return this->at(index);
@@ -355,4 +367,10 @@ fb::async* fb::async::get()
 void fb::async::launch(std::function<void()> fn)
 {
     get()->_launch(fn);
+}
+
+void fb::async::exit()
+{
+    get()->_exit = true;
+    get()->_async_thread.join();
 }

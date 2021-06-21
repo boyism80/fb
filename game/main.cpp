@@ -358,10 +358,11 @@ int main(int argc, const char** argv)
     try
     {
         //_CrtSetBreakAlloc(157);
-    #ifdef _WIN32
+
+#ifdef _WIN32
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
-    #endif
+#endif
 
         const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
         if(env == nullptr)
@@ -403,6 +404,7 @@ int main(int argc, const char** argv)
                 c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
             }
         };
+
         auto acceptor = std::make_unique<fb::game::acceptor>
         (
             io_context, 
@@ -412,6 +414,19 @@ int main(int argc, const char** argv)
         );
 
         load_db(c, acceptor.get());
+
+        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
+        signal.async_wait
+        (
+            [&acceptor](const boost::system::error_code& error, int signal_number)
+            {
+                acceptor.get()->exit();
+            }
+        );
+
+        fb::async::launch([](){});
+        acceptor.get()->exit();
+
         io_context.run();
     }
     catch(std::exception& e)

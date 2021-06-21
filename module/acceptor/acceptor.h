@@ -20,6 +20,7 @@ template <template<class> class S, class T>
 class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
+    S<T>*                                       _buffer;
     fb::threads                                 _threads;
     bool                                        _exit;
 
@@ -49,6 +50,7 @@ protected:
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
     virtual uint8_t                             handle_thread_index(S<T>& socket) const { return 0xFF; }
+    virtual void                                handle_exit() { this->_threads.exit(); fb::async::exit(); this->_context.stop(); }
 
 public:
     void                                        handle_receive(fb::base::socket<T>& socket);
@@ -67,6 +69,7 @@ public:
 public:
     bool                                        precedence(S<T>*, fb::queue_callback fn);
     bool                                        dispatch(S<T>*, fb::queue_callback fn);
+    void                                        exit();
 
 public:
     operator boost::asio::io_context& () const;
