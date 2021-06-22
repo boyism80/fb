@@ -66,11 +66,7 @@ uint8_t fb::db::index(const char* name)
 fb::db::pool* fb::db::connections(const char* name)
 {
     auto index = fb::db::index(name);
-    auto connections = this->_pools[index];
-    if(connections == nullptr)
-        connections = new std::deque<daotk::mysql::connection*>(SIZE, nullptr);
-
-    return connections;
+    return this->_pools[index];
 }
 
 daotk::mysql::connection& fb::db::get(const char* name)

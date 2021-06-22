@@ -49,6 +49,7 @@ public:
 
 public:
     fb::game::map*                          name2map(const std::string& name);
+    void                                    clear();
 
 public:
     fb::game::map*                          operator [] (uint16_t id) const;

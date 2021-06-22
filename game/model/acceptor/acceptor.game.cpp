@@ -240,7 +240,9 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
 
 acceptor::~acceptor()
 { 
-    
+    // 맵을 제거하면서 맵 소유의 오브젝트 메모리를 해제해야함
+    // 이 작업을 하지 않으면 acceptor가 먼저 해제되어 listener가 유효하지 않아짐
+    fb::game::table::maps.clear();
 }
 
 bool acceptor::handle_connected(fb::socket<fb::game::session>& socket)
@@ -263,7 +265,7 @@ bool acceptor::handle_disconnected(fb::socket<fb::game::session>& socket)
 
 void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto pair : fb::game::table::maps)
+    for(auto& pair : fb::game::table::maps)
         pair.second->handle_timer(elapsed_milliseconds);
 }
 
@@ -286,7 +288,7 @@ bool fb::game::acceptor::exists(const fb::game::object& object) const
     if(this->threads().valid(this->thread(object)) == false)
         return false;
 
-    return this->_hash_dict.contains(&object);
+    return this->_hash_set.contains(&object);
 }
 
 void fb::game::acceptor::bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration)

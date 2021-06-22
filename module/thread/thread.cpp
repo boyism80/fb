@@ -64,7 +64,7 @@ fb::thread::thread(uint8_t index) :
     _index(index),
     _exit(false)
 { 
-    //this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
+    this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
 }
 
 fb::thread::~thread()
@@ -99,9 +99,9 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    auto copies = std::vector<fb::timer*>(this->_timers);
-    auto expired = std::vector<fb::timer*>();
-    for(auto timer : copies)
+    auto copies = std::vector<std::shared_ptr<fb::timer>>(this->_timers);
+    auto expired = std::vector<std::shared_ptr<fb::timer>>();
+    for(auto& timer : copies)
     {
         auto elapsed = std::chrono::steady_clock::now() - timer->begin;
         if(timer->duration > elapsed)
@@ -112,7 +112,7 @@ void fb::thread::handle_idle()
     }
 
 this->_mutex_timer.lock();
-    for(auto x : expired)
+    for(auto& x : expired)
     {
         auto found = std::find(this->_timers.begin(), this->_timers.end(), x);
         if(found != this->_timers.end())
@@ -128,7 +128,7 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 
     this->_exit = true;
-    //this->_thread.join();
+    this->_thread.join();
 }
 
 void fb::thread::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration)
@@ -136,13 +136,16 @@ void fb::thread::dispatch(std::function<void()> fn, const std::chrono::steady_cl
 
     this->_timers.push_back
     (
-        new fb::timer
+        std::shared_ptr<fb::timer>
         (
-            [fn] (std::chrono::steady_clock::duration, std::thread::id) 
-            {
-                fn(); 
-            }, 
-            duration
+            new fb::timer
+            (
+                [fn] (std::chrono::steady_clock::duration, std::thread::id) 
+                {
+                    fn(); 
+                }, 
+                duration
+            )
         )
     );
 }

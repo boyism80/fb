@@ -21,13 +21,21 @@ fb::game::table::~table()
 
 fb::game::map* fb::game::container::map::name2map(const std::string& name)
 {
-    for(auto pair : *this)
+    for(auto& pair : *this)
     {
         if(pair.second->name() == name)
             return pair.second;
     }
 
     return nullptr;
+}
+
+void fb::game::container::map::clear()
+{
+    for(auto& x : *this)
+        delete x.second;
+
+    std::map<uint16_t, fb::game::map*>::clear();
 }
 
 fb::game::map* fb::game::container::map::operator[](uint16_t id) const
@@ -145,7 +153,7 @@ fb::game::map::effects fb::game::container::map::to_effect(const std::string& ef
 fb::game::map::options fb::game::container::map::to_option(const Json::Value& data)
 {
     uint8_t                 flags = fb::game::map::options::NO_OPTION;
-    auto                    option = data["option"];
+    auto&                   option = data["option"];
 
     if(option["build in"].asBool())
         flags |= fb::game::map::options::BUILD_IN;
@@ -322,7 +330,7 @@ fb::game::container::map::map()
 
 fb::game::container::map::~map()
 {
-    for(auto x : *this)
+    for(auto& x : *this)
         delete x.second;
 }
 
@@ -452,7 +460,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                 return;
 
             auto            warps = *i;
-            for(auto js_warp : *i)
+            for(auto& js_warp : *i)
             {
                 const point16_t before(js_warp["before"]["x"].asInt(), js_warp["before"]["y"].asInt());
 
@@ -498,7 +506,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
         [&] (Json::Value::iterator& i, double percentage)
         {
             fb::game::item::master*     item = nullptr;
-            auto                        data = *i;
+            auto&                       data = *i;
             auto                        name = CP949(data["name"].asString(), PLATFORM::Windows);
 
             // Create x core
@@ -519,7 +527,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             // Equipment options
             if (item->attr(fb::game::item::attrs::ITEM_ATTR_EQUIPMENT) && data.isMember("equipment option"))
             {
-                auto            option = data["equipment option"];
+                auto&           option = data["equipment option"];
                 auto            equipment = static_cast<equipment::master*>(item);
 
                 equipment->durability(option["durability"].asInt());
@@ -547,7 +555,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             // Weapon options
             if (item->attr(fb::game::item::attrs::ITEM_ATTR_WEAPON))
             {
-                auto            option = data["equipment option"];
+                auto&           option = data["equipment option"];
                 auto            weapon = static_cast<fb::game::weapon::master*>(item);
 
                 weapon->damage_small(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt());
@@ -564,7 +572,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                        data = *i;
+            auto&                       data = *i;
             auto                        name = CP949(data["name"].asString(), PLATFORM::Windows);
             error(name, e);
         }
@@ -579,7 +587,7 @@ fb::game::container::npc::npc()
 
 fb::game::container::npc::~npc()
 {
-    for(auto x : *this)
+    for(auto& x : *this)
         delete x.second;
 }
 
@@ -590,12 +598,12 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
         path, 
         [&](Json::Value::iterator& i, double percentage)
         {
-            auto                data = *i;
+            auto&               data = *i;
             uint32_t            id = std::stoi(i.key().asString());
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
-            uint16_t        look = data["look"].asInt() + 0x7FFF;
-            uint8_t         color = data["color"].asInt();
+            uint16_t            look = data["look"].asInt() + 0x7FFF;
+            uint8_t             color = data["color"].asInt();
 
             std::map<uint16_t, fb::game::npc::master*>::insert(std::make_pair(id, new fb::game::npc::master(name, look, color)));
 
@@ -603,7 +611,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                data = *i;
+            auto&               data = *i;
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
             error(name, e);
         }
@@ -627,8 +635,8 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
             if (map == nullptr)
                 return;
 
-            auto                spawns = *i;
-            for (auto spawn : spawns)
+            auto&                spawns = *i;
+            for (auto& spawn : spawns)
             {
                 auto            npc_id = spawn["npc"].asInt();
                 auto            core = fb::game::table::npcs[npc_id];
@@ -718,7 +726,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
         [&] (Json::Value::iterator& i, double percentage)
         {
             uint16_t            id = std::stoi(i.key().asString());
-            auto                data = *i;
+            auto&               data = *i;
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
             uint16_t            look = data["look"].asInt() + 0x7FFF;
@@ -744,7 +752,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            auto                data = *i;
+            auto&               data = *i;
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
             error(name, e);
         }
@@ -810,8 +818,8 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob
             if (map == nullptr)
                 return;
 
-            auto                spawns = *i;
-            for (auto spawn : spawns)
+            auto&               spawns = *i;
+            for (auto& spawn : spawns)
             {
                 auto            mob_id = spawn["mob"].asInt();
                 auto            core = fb::game::table::mobs[mob_id];
@@ -854,7 +862,7 @@ fb::game::container::spell::spell()
 
 fb::game::container::spell::~spell()
 {
-    for(auto x : *this)
+    for(auto& x : *this)
         delete x.second;
 }
 
@@ -866,7 +874,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
         [&] (Json::Value::iterator& i, double percentage)
         {
             uint16_t            id = std::stoi(i.key().asString());
-            const auto          data = (*i);
+            const auto&         data = (*i);
             const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
 
             uint8_t             type = data["type"].asInt();
@@ -889,7 +897,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
         },
         [&] (Json::Value::iterator& i, const std::string& e)
         {
-            const auto          data = (*i);
+            const auto&         data = (*i);
             const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
             error(name, e);
         }
@@ -919,11 +927,11 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
             uint8_t             id = i.key().asInt();      // class key
             auto                data = new class_data();
 
-            auto                levels = (*i)["levels"];
+            auto&               levels = (*i)["levels"];
             for (auto i2 = levels.begin(); i2 != levels.end(); i2++)
             {
                 uint32_t        key = i2.key().asInt();
-                auto            ability = *i2;
+                auto&           ability = *i2;
                 auto            allocated = new level_ability(ability["strength"].asInt(),
                                                               ability["intelligence"].asInt(),
                                                               ability["dexteritry"].asInt(),
@@ -971,24 +979,24 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
         [&] (Json::Value::iterator& i, double percentage)
         {
             auto            key = i.key().asInt();
-            auto            data = *i;
+            auto&           data = *i;
             auto            itemmix = new fb::game::itemmix((float)data["percentage"].asDouble());
 
-            for(auto require : data["require"])
+            for(auto& require : data["require"])
             {
                 auto        item = fb::game::table::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
-            for(auto success: data["success"])
+            for(auto& success: data["success"])
             {
                 auto        item = fb::game::table::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
-            for(auto failed: data["failed"])
+            for(auto& failed: data["failed"])
             {
                 auto        item = fb::game::table::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
                 uint32_t    count = failed["count"].asInt();
@@ -1040,7 +1048,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
         [&] (Json::Value::iterator& i, double percentage)
         {
             auto                key = i.key().asInt();
-            auto                door = *i;
+            auto&               door = *i;
             auto                created = new fb::game::door::master();
             for(auto& e : door)
             {
@@ -1080,13 +1088,13 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
         path, 
         [&] (Json::Value::iterator& i, double percentage)
         {
-            auto                js_world = *i;
+            auto&               js_world = *i;
             auto                name = CP949(js_world["name"].asString(), PLATFORM::Windows);
             auto                world = new fb::game::wm::world(name);
-            for(auto js_group : js_world["world"])
+            for(auto& js_group : js_world["world"])
             {
                 auto            group = new fb::game::wm::group();
-                for(auto js_offset : js_group)
+                for(auto& js_offset : js_group)
                 {
                     auto        id = CP949(js_offset["id"].asString(), PLATFORM::Windows);
 

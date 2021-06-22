@@ -74,7 +74,7 @@ private:
     std::thread                                     _thread;
 
 private:
-    std::vector<timer*>                             _timers;
+    std::vector<std::shared_ptr<timer>>             _timers;
     std::mutex                                      _mutex_timer;
 
 public:

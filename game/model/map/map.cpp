@@ -9,6 +9,14 @@ fb::game::objects::objects(fb::game::map* owner) :
 
 fb::game::objects::~objects()
 {
+    // objecet 메모리를 해제하면서 erase가 되기 때문에
+    // foreach 사용하면 크래시가 나버림
+    auto i = this->begin();
+    while(i != this->end())
+    {
+        delete i->second;
+        i = this->begin();
+    }
 }
 
 uint16_t fb::game::objects::empty_seq()

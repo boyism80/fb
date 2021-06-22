@@ -15,7 +15,8 @@ public:
 
     ~leak()
     {
-        _CrtDumpMemoryLeaks();
+        // _CRTDBG_LEAK_CHECK_DF 플래그 설정시 맨 마지막에 invoke해줌
+        //_CrtDumpMemoryLeaks();
     }
 } mleak;
 

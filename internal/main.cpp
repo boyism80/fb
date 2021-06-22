@@ -70,7 +70,7 @@ int main(int argc, const char** argv)
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait
         (
-            [&acceptor](const boost::system::error_code& error, int signal_number)
+            [&acceptor](const boost::system::error_code& error, int signal)
             {
                 acceptor.get()->exit();
             }

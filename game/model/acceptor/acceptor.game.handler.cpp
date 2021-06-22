@@ -2,14 +2,14 @@
 
 void fb::game::acceptor::on_create(fb::game::object& me)
 {
-    if(this->_hash_dict.contains(&me) == false)
-        this->_hash_dict.insert(std::make_pair(&me, true));
+    if(this->_hash_set.contains(&me) == false)
+        this->_hash_set.insert(&me);
 }
 
 void fb::game::acceptor::on_destroy(fb::game::object& me)
 {
-    if(this->_hash_dict.contains(&me))
-        this->_hash_dict.erase(&me);
+    if(this->_hash_set.contains(&me))
+        this->_hash_set.erase(&me);
 }
 
 void fb::game::acceptor::on_direction(fb::game::object& me)

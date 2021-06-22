@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+#include <unordered_set>
 #include "module/db/db.h"
 #include "module/acceptor/acceptor.h"
 #include "module/config/config.h"
@@ -43,11 +44,11 @@ public:
 
 public:
     typedef std::map<std::string, std::function<bool(fb::game::session&, Json::Value&)>> command_dict;
-    typedef std::map<const fb::game::object*, bool> hash_dict;
+    typedef std::unordered_set<const fb::game::object*> hash_set;
 
 private:
     command_dict            _command_dict;
-    hash_dict               _hash_dict;
+    hash_set                _hash_set;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);

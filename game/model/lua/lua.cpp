@@ -304,7 +304,7 @@ void fb::game::lua::lua::bind_builtin_functions()
 {
     auto& main = fb::game::lua::main::get();
 
-    for(auto name : main.inheritances)
+    for(auto& name : main.inheritances)
     {
         /*
         * mt[name] = {}
@@ -336,7 +336,7 @@ void fb::game::lua::lua::bind_builtin_functions()
         lua_register(*this, name, func);
     }
 
-    for(auto pair : main.environments)
+    for(auto& pair : main.environments)
     {
         auto name = pair.first.c_str();
         auto data = pair.second;
@@ -489,8 +489,9 @@ void fb::game::lua::main::reserve(int capacity)
     this->busy.clear();
     for(int i = 0; i < capacity; i++)
     {
-        auto created = new lua(luaL_newstate());
-        this->idle.insert(std::make_pair((lua_State*)*created, created));
+        auto ptr = std::unique_ptr<lua>(new lua(luaL_newstate()));
+        auto key = (lua_State*)*ptr.get();
+        this->idle.insert(std::make_pair(key, std::move(ptr)));
     }
 }
 
@@ -500,9 +501,10 @@ lua& fb::game::lua::main::alloc()
 
     if(this->idle.empty())
     {
-        auto created = new lua(luaL_newstate());
-        this->busy.insert(std::make_pair((lua_State*)*created, std::unique_ptr<lua>(created)));
-        return *created;
+        auto ptr = std::unique_ptr<lua>(new lua(luaL_newstate()));
+        auto key = (lua_State*)*ptr.get();
+        this->busy.insert(std::make_pair(key, std::move(ptr)));
+        return *this->busy[key].get();
     }
     else
     {
@@ -534,10 +536,10 @@ lua& fb::game::lua::main::release(lua& lua)
 void fb::game::lua::main::update_inheritances()
 {
     std::map<std::string, int> references;
-    for(auto pair : this->relations)
+    for(auto& pair : this->relations)
     {
-        auto derived = pair.first;
-        auto based = pair.second;
+        auto& derived = pair.first;
+        auto& based = pair.second;
 
         if(references.find(derived) == references.end())
             references.insert(std::make_pair(derived, 0));
