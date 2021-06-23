@@ -140,31 +140,39 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
 
 uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed)
 {
-    this->assert_account(id, pw);
+    try
+    {
+        this->assert_account(id, pw);
 
-    db::query
-    (
-        id.c_str(),
-        [this, pw, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
-        {
-            try
+        db::query
+        (
+            id.c_str(),
+            [this, pw, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
             {
-                if(result.count() == 0)
-                    throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
+                try
+                {
+                    if(result.count() == 0)
+                        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-                if(result.get_value<std::string>(0) != this->sha256(pw))
-                    throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+                    if(result.get_value<std::string>(0) != this->sha256(pw))
+                        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-                success(result.get_value<uint32_t>(1));
-            }
-            catch(login_exception& e)
-            {
-                failed(e);
-            }
-        },
-        "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
-        id.c_str(), this->sha256(pw).c_str()
-    );
+                    success(result.get_value<uint32_t>(1));
+                }
+                catch(login_exception& e)
+                {
+                    failed(e);
+                }
+            },
+            "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
+            id.c_str(), this->sha256(pw).c_str()
+        );
+    }
+    catch(login_exception& e)
+    {
+        failed(e);
+    }
+
     return true;
 }
 
