@@ -562,7 +562,7 @@ void fb::game::lua::main::update_inheritances()
     );
 
     this->inheritances.clear();
-    for(auto pair : sorted)
+    for(auto& pair : sorted)
         this->inheritances.push_back(pair.first);
 }
 

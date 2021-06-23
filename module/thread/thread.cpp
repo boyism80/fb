@@ -186,10 +186,10 @@ fb::threads::threads(boost::asio::io_context& context, uint8_t count) :
 
     for(int i = 0; i < count; i++)
     {
-        auto thread = new fb::thread(i);
-        auto id = thread->id();
+        auto ptr = std::unique_ptr<fb::thread>(new fb::thread(i));
+        auto id = ptr->id();
         this->_keys[i] = id;
-        this->_threads.insert(std::make_pair(id, std::unique_ptr<fb::thread>(thread)));
+        this->_threads.insert(std::make_pair(id, std::move(ptr)));
     }
 }
 

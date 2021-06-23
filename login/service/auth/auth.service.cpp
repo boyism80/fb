@@ -61,6 +61,7 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
     SHA256_Update(&ctx, buffer, data.size());
+    delete[] buffer;
 
     uint8_t hash[SHA256_DIGEST_LENGTH];
     SHA256_Final(hash, &ctx);

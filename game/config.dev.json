@@ -4,7 +4,7 @@
     "delay": 5,
     "ip": "192.168.0.100",
     "port": 2016,
-    "thread": 1,
+    "thread": null,
     "save": 600,
     "internal": {
         "ip": "192.168.0.100",
