@@ -300,3 +300,9 @@ bool fb::game::acceptor::handle_command_armor_color(fb::game::session& session, 
         return true;
     }
 }
+
+bool fb::game::acceptor::handle_command_exit(fb::game::session& session, Json::Value& parameters)
+{
+    this->_internal->send(fb::protocol::internal::request::shutdown());
+    return true;
+}

@@ -95,7 +95,6 @@ daotk::mysql::connection& fb::db::get(const char* name)
             config["database"][index]["pwd"].asString(), 
             config["database"][index]["name"].asString()
         );
-        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
     }
 
     if(connection->is_open() == false)
@@ -110,8 +109,10 @@ daotk::mysql::connection& fb::db::get(const char* name)
             config["database"][index]["pwd"].asString(), 
             config["database"][index]["name"].asString()
         );
-        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
     }
+
+    if(connection->is_open())
+        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
 
     return *connection;
 }

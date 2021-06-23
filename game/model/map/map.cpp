@@ -9,14 +9,7 @@ fb::game::objects::objects(fb::game::map* owner) :
 
 fb::game::objects::~objects()
 {
-    // objecet 메모리를 해제하면서 erase가 되기 때문에
-    // foreach 사용하면 크래시가 나버림
-    auto i = this->begin();
-    while(i != this->end())
-    {
-        delete i->second;
-        i = this->begin();
-    }
+    this->clear();
 }
 
 uint16_t fb::game::objects::empty_seq()
@@ -99,6 +92,18 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
         return found->second;
 }
 
+void fb::game::objects::clear()
+{
+    auto i = this->begin();
+    while(i != this->end())
+    {
+        delete i->second;
+        i = this->begin();
+    }
+
+    std::map<uint32_t, fb::game::object*>::clear();
+}
+
 fb::game::object* fb::game::objects::operator[](uint32_t seq) const
 {
     const auto& found = this->find(seq);
@@ -174,6 +179,8 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
 fb::game::map::~map()
 {
+    this->objects.clear();
+
     if(this->_sectors != nullptr)
         delete this->_sectors;
 }

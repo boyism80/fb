@@ -11,7 +11,8 @@ fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, u
     this->bind<fb::protocol::login::request::account::complete>       (0x04, std::bind(&acceptor::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::login::request::account::change_pw>      (0x26, std::bind(&acceptor::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
 
-    this->bind<fb::protocol::internal::response::transfer>            (std::bind(&acceptor::handle_transfer,                  this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::transfer>            (std::bind(&acceptor::handle_in_transfer,               this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::shutdown>            (std::bind(&acceptor::handle_in_shutdown,               this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::login::acceptor::~acceptor()
@@ -36,7 +37,7 @@ bool fb::login::acceptor::handle_disconnected(fb::socket<fb::login::session>& so
     return false;
 }
 
-bool fb::login::acceptor::handle_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
+bool fb::login::acceptor::handle_in_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
 {
     auto client = this->sockets[response.fd];
 
@@ -61,6 +62,12 @@ bool fb::login::acceptor::handle_transfer(fb::internal::socket<>& socket, const 
         client->send(fb::protocol::login::response::message(e.what(), e.type()));
     }
 
+    return true;
+}
+
+bool fb::login::acceptor::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
+{
+    this->exit();
     return true;
 }
 

@@ -23,6 +23,7 @@ enum id : uint8_t
     LOGOUT,
     WHISPER,
     MESSAGE,
+    SHUTDOWN,
 };
 
 } } }

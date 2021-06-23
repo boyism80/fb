@@ -155,6 +155,7 @@ private:
 public:
     std::vector<object*>            filter(fb::game::object::types type) const;
     fb::game::object*               exists(point16_t position) const;
+    void                            clear();
 #pragma endregion
 
 #pragma region operator

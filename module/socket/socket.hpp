@@ -5,8 +5,7 @@ fb::base::socket<T>::socket(boost::asio::io_context& context, std::function<void
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
-{
-}
+{}
 
 template<typename T>
 inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
@@ -87,6 +86,16 @@ std::string fb::base::socket<T>::IP() const
     return this->remote_endpoint()
         .address()
         .to_string();
+}
+
+template<typename T>
+uint32_t fb::base::socket<T>::fd()
+{
+    uint32_t fd = this->native_handle();
+    if(fd != 0xFFFFFFFF)
+        this->_fd = fd;
+    
+    return this->_fd;
 }
 
 
@@ -172,13 +181,13 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(S<T>& session)
 {
-    std::map<uint32_t, std::unique_ptr<S<T>>>::insert(std::pair<uint32_t, std::unique_ptr<S<T>>>(session.native_handle(), std::unique_ptr<S<T>>(&session)));
+    std::map<uint32_t, std::unique_ptr<S<T>>>::insert(std::pair<uint32_t, std::unique_ptr<S<T>>>(session.fd(), std::unique_ptr<S<T>>(&session)));
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
-    std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.native_handle());
+    std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.fd());
 }
 
 template <template<class> class S, class T>

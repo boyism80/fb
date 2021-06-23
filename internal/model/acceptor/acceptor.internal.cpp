@@ -10,6 +10,7 @@ fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port
     this->bind<fb::protocol::internal::request::login>(std::bind(&acceptor::handle_login, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::logout>(std::bind(&acceptor::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::whisper>(std::bind(&acceptor::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::shutdown>(std::bind(&acceptor::handle_shutdown, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::internal::acceptor::~acceptor()
@@ -239,5 +240,20 @@ bool fb::internal::acceptor::handle_whisper(fb::internal::socket<fb::internal::s
     {
         this->send(socket, fb::protocol::internal::response::whisper(false, request.from, request.to, request.message));
     }
+    return true;
+}
+
+bool fb::internal::acceptor::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
+{
+    if(this->_gateway != nullptr)
+        this->send(*this->_gateway, fb::protocol::internal::response::shutdown());
+
+    if(this->_login != nullptr)
+        this->send(*this->_login, fb::protocol::internal::response::shutdown());
+
+    for(auto& x : this->_games)
+        this->send(*x.second, fb::protocol::internal::response::shutdown());
+
+    this->exit();
     return true;
 }

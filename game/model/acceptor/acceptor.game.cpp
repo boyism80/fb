@@ -175,7 +175,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
 
     this->bind<fb::protocol::game::request::login>            (0x10, std::bind(&acceptor::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (0x11, std::bind(&acceptor::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
-    this->bind<fb::protocol::game::request::exit>             (0x0B, std::bind(&acceptor::handle_exit,            this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
+    this->bind<fb::protocol::game::request::exit>             (0x0B, std::bind(&acceptor::handle_logout,          this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
     this->bind<fb::protocol::game::request::update_move>      (0x06, std::bind(&acceptor::handle_update_move,     this, std::placeholders::_1, std::placeholders::_2));   // 이동과 맵 데이터 업데이트 핸들러
     this->bind<fb::protocol::game::request::move>             (0x32, std::bind(&acceptor::handle_move,            this, std::placeholders::_1, std::placeholders::_2));   // 이동 핸들러
     this->bind<fb::protocol::game::request::attack>           (0x13, std::bind(&acceptor::handle_attack,          this, std::placeholders::_1, std::placeholders::_2));   // 공격 핸들러
@@ -211,6 +211,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind<fb::protocol::internal::response::whisper>     (std::bind(&acceptor::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));   // 귓속말
     this->bind<fb::protocol::internal::response::message>     (std::bind(&acceptor::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));   // 월드 메시지
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&acceptor::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
+    this->bind<fb::protocol::internal::response::shutdown>    (std::bind(&acceptor::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));   // 서버종료
 
     this->bind_timer(std::bind(&acceptor::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);                                             // 몹 행동 타이머
     this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 몹 리젠 타이머
@@ -236,14 +237,11 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_command("머리바꾸기", std::bind(&acceptor::handle_command_hair, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("머리염색", std::bind(&acceptor::handle_command_hair_color, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("갑옷염색", std::bind(&acceptor::handle_command_armor_color, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("서버종료", std::bind(&acceptor::handle_command_exit, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()
-{ 
-    // 맵을 제거하면서 맵 소유의 오브젝트 메모리를 해제해야함
-    // 이 작업을 하지 않으면 acceptor가 먼저 해제되어 listener가 유효하지 않아짐
-    fb::game::table::maps.clear();
-}
+{ }
 
 bool acceptor::handle_connected(fb::socket<fb::game::session>& socket)
 {
@@ -435,9 +433,24 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, bool e
     }
 }
 
+void fb::game::acceptor::save()
+{
+    for(auto& socket : this->sockets)
+    {
+        auto session = socket.second.get()->data();
+        this->on_save(*session);
+    }
+}
+
 uint8_t fb::game::acceptor::handle_thread_index(fb::socket<fb::game::session>& socket) const
 {
     return this->thread_index(*socket.data());
+}
+
+void fb::game::acceptor::handle_exit()
+{
+    fb::game::table::maps.clear();
+    
 }
 
 fb::thread* fb::game::acceptor::thread(const fb::game::map& map) const
@@ -553,6 +566,12 @@ bool fb::game::acceptor::handle_in_logout(fb::internal::socket<>& socket, const 
     if(session != nullptr)
         static_cast<fb::socket<fb::game::session>&>(*session).close();
     
+    return true;
+}
+
+bool fb::game::acceptor::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
+{
+    this->exit();
     return true;
 }
 
@@ -705,7 +724,7 @@ bool fb::game::acceptor::handle_direction(fb::socket<fb::game::session>& socket,
     return true;
 }
 
-bool fb::game::acceptor::handle_exit(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::exit& request)
+bool fb::game::acceptor::handle_logout(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::exit& request)
 {
     auto                    session = socket.data();
     const auto&             config = fb::config::get();

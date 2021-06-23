@@ -8,6 +8,7 @@
 #include <service/gateway/service.gateway.h>
 #include <zlib.h>
 #include "protocol/gateway.h"
+#include "protocol/internal.h"
 #include "module/encoding/encoding.h"
 #include "module/console/console.h"
 
@@ -45,6 +46,9 @@ public:
 public:
     bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
     bool                        handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
+
+public:
+    bool                        handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 };
 
 } }

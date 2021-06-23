@@ -24,6 +24,7 @@ protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
     std::unique_ptr<T>      _data;
+    uint32_t                _fd;
 
 public:
     std::mutex              mutex;
@@ -45,6 +46,7 @@ public:
     void                    data(T* value);
     T*                      data();
     std::string             IP() const;
+    uint32_t                fd();
 };
 
 template <template<class> class S, class T>
@@ -60,6 +62,7 @@ public:
     using std::map<uint32_t, std::unique_ptr<S<T>>>::begin;
     using std::map<uint32_t, std::unique_ptr<S<T>>>::end;
     using std::map<uint32_t, std::unique_ptr<S<T>>>::size;
+    using std::map<uint32_t, std::unique_ptr<S<T>>>::empty;
 
 private:
     void                    push(S<T>& session);

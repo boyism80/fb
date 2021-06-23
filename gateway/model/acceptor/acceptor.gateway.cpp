@@ -13,6 +13,8 @@ fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port,
     // Register event handler
     this->bind<fb::protocol::gateway::request::assert_version>  (0x00, std::bind(&acceptor::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::gateway::request::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
+
+    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&acceptor::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::gateway::acceptor::~acceptor()
@@ -118,4 +120,10 @@ bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& 
     default:
         return false;
     }
+}
+
+bool fb::gateway::acceptor::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
+{
+    this->exit();
+    return true;
 }

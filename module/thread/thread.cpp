@@ -123,12 +123,12 @@ this->_mutex_timer.unlock();
 
 void fb::thread::exit()
 {
+    this->_exit = true;
+    this->_thread.join();
+
 this->_mutex_timer.lock();
     this->_timers.clear();
 this->_mutex_timer.unlock();
-
-    this->_exit = true;
-    this->_thread.join();
 }
 
 void fb::thread::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration)
@@ -198,7 +198,7 @@ fb::thread* fb::threads::at(uint8_t index) const
     if(index > this->_threads.size() - 1)
         return nullptr;
 
-    auto id = this->_keys[index];
+    auto& id = this->_keys[index];
     return this->at(id);
 }
 
@@ -259,6 +259,11 @@ bool fb::threads::valid(fb::thread& thread) const
 {
     auto current = this->current();
     return current != nullptr && current->id() == thread.id();
+}
+
+size_t fb::threads::size() const
+{
+    return this->_threads.size();
 }
 
 void fb::threads::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration, bool main)
@@ -332,6 +337,7 @@ fb::async::async() :
 fb::async::~async()
 {
     this->_exit = true;
+    this->_async_thread.join();
 }
 
 void fb::async::_launch(std::function<void()> fn)
@@ -342,7 +348,7 @@ void fb::async::_launch(std::function<void()> fn)
 
 void fb::async::async_handler()
 {
-    while(!this->_exit)
+    while(!this->_futures.empty() || !this->_exit)
     {
         this->_async_mutex.lock();
         for(auto i = std::begin(this->_futures); i != std::end(this->_futures) /* !!! */;)
@@ -374,6 +380,5 @@ void fb::async::launch(std::function<void()> fn)
 
 void fb::async::exit()
 {
-    get()->_exit = true;
-    get()->_async_thread.join();
+    _ist.reset();
 }

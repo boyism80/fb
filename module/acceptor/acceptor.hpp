@@ -15,8 +15,6 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
 template <template<class> class S, class T>
 fb::base::acceptor<S, T>::~acceptor()
 {
-    this->_exit = true;
-
     if(this->_buffer != nullptr)
         delete _buffer;
 }
@@ -56,6 +54,20 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 }
 
 template <template<class> class S, class T>
+void fb::base::acceptor<S, T>::shutdown()
+{
+    // exiting
+    fb::async::exit();
+    this->threads().exit();
+
+    // do
+    this->handle_exit();
+
+    // exited
+    this->_context.stop();
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::accept()
 {
     this->_buffer = new S<T>(this->_context, std::bind(&fb::base::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::base::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
@@ -69,6 +81,9 @@ void fb::base::acceptor<S, T>::accept()
                 auto socket = this->_buffer;
                 if(error)
                     throw std::runtime_error(error.message());
+
+                if(this->_exit)
+                    throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
                 socket->data(this->handle_accepted(*socket));
                 this->sockets.push(*this->_buffer);
@@ -138,6 +153,9 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
             [this, casted] () 
             {
                 this->sockets.erase(*casted);
+
+                if(this->_exit && this->sockets.empty())
+                    this->shutdown();
             }
         );
     };
@@ -248,7 +266,17 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
-    this->handle_exit();
+    this->_exit = true;
+
+    if(this->sockets.empty())
+    {
+        this->shutdown();
+    }
+    else
+    {
+        for(auto& pair : this->sockets)
+            pair.second.get()->close();
+    }
 }
 
 template <template<class> class S, class T>
@@ -270,7 +298,9 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
 
 template <typename T>
 fb::acceptor<T>::~acceptor()
-{ }
+{
+    this->exit();
+}
 
 template <typename T>
 bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)

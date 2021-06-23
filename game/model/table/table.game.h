@@ -50,6 +50,7 @@ public:
 public:
     fb::game::map*                          name2map(const std::string& name);
     void                                    clear();
+    void                                    clear(std::function<bool(const fb::game::map&)> fn);
 
 public:
     fb::game::map*                          operator [] (uint16_t id) const;

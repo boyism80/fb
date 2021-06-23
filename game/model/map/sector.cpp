@@ -11,8 +11,7 @@ fb::game::sector::sector(uint32_t id, std::function<void(sector&)> state_changed
 }
 
 fb::game::sector::~sector()
-{
-}
+{}
 
 void fb::game::sector::push(fb::game::object& object)
 {

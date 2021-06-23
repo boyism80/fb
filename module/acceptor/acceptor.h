@@ -37,6 +37,7 @@ public:
     ~acceptor();
 
 private:
+    void                                        shutdown();
     virtual void                                handle_work(S<T>* socket, uint8_t id);
 
 protected:
@@ -50,7 +51,7 @@ protected:
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
     virtual uint8_t                             handle_thread_index(S<T>& socket) const { return 0xFF; }
-    virtual void                                handle_exit() { this->_threads.exit(); fb::async::exit(); this->_context.stop(); }
+    virtual void                                handle_exit() { }
 
 public:
     void                                        handle_receive(fb::base::socket<T>& socket);

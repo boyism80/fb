@@ -48,6 +48,7 @@ public:
 
 private:
     command_dict            _command_dict;
+    std::mutex              _hash_mutex;
     hash_set                _hash_set;
 
 public:
@@ -70,9 +71,11 @@ public:
     void                    send(fb::game::object& object, std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)> fn, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
+    void                    save();
 
 protected:
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const;
+    void                    handle_exit();
 
 public:
     fb::thread*             thread(const fb::game::map& map) const;
@@ -89,6 +92,7 @@ public:
     bool                    handle_in_whisper(fb::internal::socket<>&, const fb::protocol::internal::response::whisper&);
     bool                    handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
     bool                    handle_in_logout(fb::internal::socket<>&, const fb::protocol::internal::response::logout&);
+    bool                    handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
     // game event method
 public:
@@ -100,7 +104,7 @@ public:
 public:
     bool                    handle_login(fb::socket<fb::game::session>&, const fb::protocol::game::request::login&);
     bool                    handle_direction(fb::socket<fb::game::session>&, const fb::protocol::game::request::direction&);
-    bool                    handle_exit(fb::socket<fb::game::session>&, const fb::protocol::game::request::exit&);
+    bool                    handle_logout(fb::socket<fb::game::session>&, const fb::protocol::game::request::exit&);
     bool                    handle_move(fb::socket<fb::game::session>&, const fb::protocol::game::request::move&);
     bool                    handle_update_move(fb::socket<fb::game::session>&, const fb::protocol::game::request::update_move&);
     bool                    handle_attack(fb::socket<fb::game::session>&, const fb::protocol::game::request::attack&);
@@ -158,6 +162,7 @@ public:
     bool                    handle_command_hair(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_hair_color(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_armor_color(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_exit(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

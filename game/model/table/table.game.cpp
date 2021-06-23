@@ -38,6 +38,22 @@ void fb::game::container::map::clear()
     std::map<uint16_t, fb::game::map*>::clear();
 }
 
+void fb::game::container::map::clear(std::function<bool(const fb::game::map&)> fn)
+{
+    for(auto i = this->begin(); i != this->end();)
+    {
+        if(fn(*i->second))
+        {
+            delete i->second;
+            this->erase(i++);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+}
+
 fb::game::map* fb::game::container::map::operator[](uint16_t id) const
 {
     auto found = this->find(id);

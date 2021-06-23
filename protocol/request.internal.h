@@ -13,7 +13,7 @@ public:
 public:
     std::string             name;
     services                service;
-    uint8_t                group;
+    uint8_t                 group;
 
 public:
     subscribe() = default;
@@ -52,7 +52,7 @@ public:
     uint32_t                fd;
 
 public:
-    transfer() {}
+    transfer() = default;
     transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : 
         name(name), from(from), to(to), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
     {}
@@ -95,7 +95,7 @@ public:
     uint16_t                map;
 
 public:
-    login() {}
+    login() = default;
     login(const std::string& name, uint32_t map) : 
         name(name), map(map)
     {}
@@ -124,7 +124,7 @@ public:
     std::string             name;
 
 public:
-    logout() {}
+    logout() = default;
     logout(const std::string& name) : name(name) {}
 
 public:
@@ -151,7 +151,7 @@ public:
     std::string             message;
 
 public:
-    whisper() {}
+    whisper() = default;
     whisper(const std::string& from, const std::string& to, const std::string& message) : 
         from(from), to(to), message(message) 
     {}
@@ -171,6 +171,24 @@ public:
         this->to = in_stream.readstr_u8(false);
         this->message = in_stream.readstr_u8(false);
     }
+};
+
+class shutdown : public fb::protocol::base::header
+{
+public:
+    BIND_ID(SHUTDOWN)
+
+public:
+    shutdown() = default;
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    { 
+        out_stream.write_u8(id);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    { }
 };
 
 } } } }

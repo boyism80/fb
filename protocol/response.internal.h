@@ -159,6 +159,24 @@ public:
     }
 };
 
+class shutdown : public fb::protocol::base::header
+{
+public:
+    BIND_ID(SHUTDOWN)
+
+public:
+    shutdown() {}
+
+public:
+    void serialize(fb::ostream& out_stream) const
+    { 
+        out_stream.write_u8(id);
+    }
+
+    void deserialize(fb::istream& in_stream)
+    { }
+};
+
 } } } }
 
 #endif // !__PROTOCOL_RESPONSE_INTERNAL_H__

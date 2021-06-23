@@ -165,6 +165,7 @@ public:
     bool                                            valid(uint8_t index) const;
     bool                                            valid(fb::thread* thread) const;
     bool                                            valid(fb::thread& thread) const;
+    size_t                                          size() const;
 
 public:
     void                                            dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration, bool main = false);
