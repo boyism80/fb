@@ -256,7 +256,13 @@ bool acceptor::handle_disconnected(fb::socket<fb::game::session>& socket)
     c.puts("%s님이 접속을 종료했습니다.", session->name().c_str());
 
     if(session->transferring() == false)
+    {
+        // 월드맵 선택 중 종료
+        if(session->map() == nullptr)
+            session->before(nullptr);
+
         this->on_save(*session);
+    }
 
     session->map(nullptr);
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
