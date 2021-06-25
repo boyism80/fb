@@ -543,6 +543,9 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     if(map == nullptr)
     {
+        if(this->_map != nullptr)
+            this->_map->objects.remove(*this);
+
         this->leave(true);
         this->_map = nullptr;
         this->sector(nullptr);
@@ -788,7 +791,6 @@ void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& posi
     this->_position = position;
 
     this->leave(false);
-    //this->_listener->on_enter(*this, map, position);
 }
 
 bool fb::game::object::operator==(const object& right) const
