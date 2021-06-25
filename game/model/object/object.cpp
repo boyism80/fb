@@ -548,6 +548,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 
         this->leave(true);
         this->_map = nullptr;
+        this->_position = point16_t(1, 1); // 가상계 위치
         this->sector(nullptr);
     }
     else
