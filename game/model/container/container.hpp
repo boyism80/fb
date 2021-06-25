@@ -25,29 +25,7 @@ inline T* fb::game::base_container<T>::set(T* element, int position)
 {
     auto before = this->_elements[position];
     this->_elements[position] = element;
-    this->modify(position);
     return before;
-}
-template<typename T>
-inline void fb::game::base_container<T>::modify(uint8_t index)
-{
-    this->_modified = this->_modified | (static_cast<unsigned long long>(0x0000000000000001) << index);
-}
-template<typename T>
-inline bool fb::game::base_container<T>::modified() const
-{
-    return this->_modified != 0x0000000000000000;
-}
-template<typename T>
-inline bool fb::game::base_container<T>::modified(uint8_t index) const
-{
-    auto flag = (static_cast<unsigned long long>(0x0000000000000001) << index);
-    return (this->_modified & flag) == flag;
-}
-template<typename T>
-inline bool fb::game::base_container<T>::modified_reset()
-{
-    this->_modified = 0x0000000000000000;
 }
 template<typename T>
 inline uint8_t fb::game::base_container<T>::next() const
@@ -85,7 +63,6 @@ inline uint8_t fb::game::base_container<T>::add(T& element)
     if(next != 0xFF)
     {
         this->_elements[next] = &element;
-        this->modify(next);
     }
 
     return next;
@@ -97,7 +74,6 @@ inline uint8_t fb::game::base_container<T>::add(T& element, uint8_t index)
         return 0xFF;
 
     this->_elements[index] = &element;
-    this->modify(index);
     return index;
 }
 template<typename T>
@@ -118,7 +94,6 @@ inline bool fb::game::base_container<T>::remove(uint8_t index)
         return false;
 
     this->_elements[index] = nullptr;
-    this->modify(index);
     return true;
 }
 template<typename T>
@@ -131,8 +106,6 @@ inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
         return false;
 
     std::swap(this->_elements[src], this->_elements[dst]);
-    this->modify(src);
-    this->modify(dst);
     return true;
 }
 template<typename T>
