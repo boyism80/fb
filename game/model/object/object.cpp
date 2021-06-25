@@ -786,7 +786,8 @@ void fb::game::object::handle_enter(fb::game::map& map, const point16_t& positio
 void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& position)
 {
     this->before(this->_map, this->_position);
-    this->_map->objects.remove(*this);
+    if(this->_map != nullptr)
+        this->_map->objects.remove(*this);
     this->_map = &map;
     this->_position = position;
 
