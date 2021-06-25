@@ -496,8 +496,6 @@ void fb::game::object::leave(bool erase_nears)
         if(erase_nears)
             this->_listener->on_hide(*this, *x);
     }
-
-    this->_map->objects.remove(*this);
 }
 
 bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
@@ -785,7 +783,7 @@ void fb::game::object::handle_enter(fb::game::map& map, const point16_t& positio
 void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& position)
 {
     this->before(this->_map, this->_position);
-
+    this->_map->objects.remove(*this);
     this->_map = &map;
     this->_position = position;
 

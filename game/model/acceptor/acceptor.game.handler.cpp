@@ -78,7 +78,6 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position)
 {
     auto thread = this->thread(map);
-    
     if(thread == nullptr || thread == this->threads().current())
     {
         me.handle_enter(map, position);

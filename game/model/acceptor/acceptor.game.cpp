@@ -513,18 +513,21 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = client->data();
-        session->handle_transfer(*fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
+        this->dispatch(client, [this, client, session, response](uint8_t)
+        {
+            session->handle_transfer(*fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
 
-        this->on_save
-        (
-            *session,
-            [this, client, response](fb::game::session&)
-            {
-                fb::ostream         parameter;
-                parameter.write(response.name);
-                this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
-            }
-        );
+            this->on_save
+            (
+                *session,
+                [this, client, response](fb::game::session&)
+                {
+                    fb::ostream         parameter;
+                    parameter.write(response.name);
+                    this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
+                }
+            );
+        });
     }
     catch(std::exception& e)
     {
