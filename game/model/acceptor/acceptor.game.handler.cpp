@@ -562,10 +562,28 @@ void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dst)
 
 void fb::game::acceptor::on_save(session& me)
 {
-    db::query(me.name().c_str(), std::vector<std::string>
-    {
-        service::sql::session::update(me),
-        service::sql::item::update(me),
-        service::sql::spell::update(me),
-    });
+    this->on_save
+    (
+        me, 
+        [](fb::game::session&)
+        {}
+    );
+}
+
+void fb::game::acceptor::on_save(session& me, std::function<void(fb::game::session&)> fn)
+{
+    db::query
+    (
+        me.name().c_str(), 
+        [this, fn, &me]()
+        {
+            fn(me);
+        },
+        std::vector<std::string>
+        {
+            service::sql::session::update(me),
+            service::sql::item::update(me),
+            service::sql::spell::update(me),
+        }
+    );
 }

@@ -250,6 +250,7 @@ public:
 
     // listener : game
     void                    on_save(session& me);
+    void                    on_save(session& me, std::function<void(fb::game::session&)> fn);
 
 
     // built-in method

@@ -790,7 +790,7 @@ void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& posi
     this->_position = position;
 
     this->leave(false);
-    this->_listener->on_enter(*this, map, position);
+    //this->_listener->on_enter(*this, map, position);
 }
 
 bool fb::game::object::operator==(const object& right) const

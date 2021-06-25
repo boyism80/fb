@@ -15,6 +15,7 @@ private:
     T**                     _elements;
     uint8_t                 _size;
     bool                    _auto_release;
+    uint64_t                _modified;
 
 protected:
     base_container(life& owner, uint8_t size, bool auto_release = true);
@@ -22,6 +23,10 @@ protected:
 
 protected:
     T*                      set(T* element, int position);
+    void                    modify(uint8_t index);
+    bool                    modified() const;
+    bool                    modified(uint8_t index) const;
+    bool                    modified_reset();
 
 public:
     uint8_t                 next() const;

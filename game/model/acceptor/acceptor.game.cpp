@@ -515,9 +515,16 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
         auto session = client->data();
         session->handle_transfer(*fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
 
-        fb::ostream         parameter;
-        parameter.write(response.name);
-        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
+        this->on_save
+        (
+            *session,
+            [this, client, response](fb::game::session&)
+            {
+                fb::ostream         parameter;
+                parameter.write(response.name);
+                this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
+            }
+        );
     }
     catch(std::exception& e)
     {

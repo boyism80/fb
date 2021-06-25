@@ -35,7 +35,7 @@ private:
 
 public:
     db(const db&) = delete;
-    db(db&&) = delete;
+    db(db&) = delete;
     ~db();
 
 public:
@@ -51,7 +51,7 @@ private:
         while (true) {
             int needed = std::vsnprintf(&buf[0], size, fmt_str, args);
 
-            if (needed <= (int)size && needed >= 0)
+            if (needed <= (int)size & needed >= 0)
                 return &buf[0];
 
             size = (needed > 0) ? (needed + 1) : (size * 2);
@@ -77,8 +77,8 @@ private:
 
 private:
     void                                _exec(const char* name, const std::string& sql);
-    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback);
-    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback);
+    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
+    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> fn);
 
 private:
     static db&                          get();
@@ -149,9 +149,9 @@ public:
         );
         return true;
     }
-
-    static bool query(const char* name, std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries);
+    
     static bool query(const char* name, const std::vector<std::string>& queries);
+    static bool query(const char* name, std::function<void()> fn, const std::vector<std::string>& queries);
 };
 
 }

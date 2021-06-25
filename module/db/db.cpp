@@ -139,9 +139,6 @@ bool fb::db::release(const char* name, daotk::mysql::connection& connection)
 
 void fb::db::_exec(const char* name, const std::string& sql)
 {
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(5000ms);
-
     auto& connection = db::get(name);
     try
     {
@@ -154,6 +151,74 @@ void fb::db::_exec(const char* name, const std::string& sql)
     }
 
     this->release(name, connection);
+}
+
+void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
+{
+    auto connection = &db::get(name);
+    auto name_c = new std::string(name);
+
+    try
+    {
+        auto result = new daotk::mysql::result(connection->query(sql));
+
+        boost::asio::dispatch
+        (
+            *_context, 
+            [this, connection, name_c, &fn, result] () 
+            { 
+                fn(*connection, *result); 
+                delete result;
+                this->release(name_c->c_str(), *connection);
+                delete name_c;
+            }
+        );
+    }
+    catch(std::exception& e)
+    {
+        this->release(name, *connection);
+        console::get().puts(e.what());
+
+        delete name_c;
+    }
+}
+
+void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> fn)
+{
+    auto connection = &db::get(name);
+    auto name_c = new std::string(name);
+
+    try
+    {
+        auto results = new std::vector<daotk::mysql::result>(connection->mquery(sql));
+
+        boost::asio::dispatch
+        (
+            *_context, 
+            [this, connection, name_c, fn, results] () 
+            { 
+                fn(*connection, *results); 
+                delete results;
+                this->release(name_c->c_str(), *connection);
+                delete name_c;
+            }
+        );
+    }
+    catch(std::exception& e)
+    {
+        this->release(name, *connection);
+        console::get().puts(e.what());
+
+        delete name_c;
+    }
+}
+
+fb::db& fb::db::get()
+{
+    if(_ist.get() == nullptr)
+        _ist.reset(new fb::db());
+
+    return *_ist;
 }
 
 bool fb::db::query(const char* name, const std::vector<std::string>& queries)
@@ -187,75 +252,7 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries)
     return true;
 }
 
-void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback)
-{
-    auto connection = &db::get(name);
-    auto name_c = new std::string(name);
-
-    try
-    {
-        auto result = new daotk::mysql::result(connection->query(sql));
-
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection, name_c, callback, result] () 
-            { 
-                callback(*connection, *result); 
-                delete result;
-                this->release(name_c->c_str(), *connection);
-                delete name_c;
-            }
-        );
-    }
-    catch(std::exception& e)
-    {
-        this->release(name, *connection);
-        console::get().puts(e.what());
-
-        delete name_c;
-    }
-}
-
-void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback)
-{
-    auto connection = &db::get(name);
-    auto name_c = new std::string(name);
-
-    try
-    {
-        auto results = new std::vector<daotk::mysql::result>(connection->mquery(sql));
-
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection, name_c, callback, results] () 
-            { 
-                callback(*connection, *results); 
-                delete results;
-                this->release(name_c->c_str(), *connection);
-                delete name_c;
-            }
-        );
-    }
-    catch(std::exception& e)
-    {
-        this->release(name, *connection);
-        console::get().puts(e.what());
-
-        delete name_c;
-    }
-}
-
-fb::db& fb::db::get()
-{
-    if(_ist.get() == nullptr)
-        _ist.reset(new fb::db());
-
-    return *_ist;
-}
-
-bool fb::db::query(const char* name, std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::vector<std::string>& queries)
+bool fb::db::query(const char* name, std::function<void()> fn, const std::vector<std::string>& queries)
 {
     auto& ist = get();
     if(ist._context == nullptr)
@@ -275,9 +272,10 @@ bool fb::db::query(const char* name, std::function<void(daotk::mysql::connection
 
     fb::async::launch
     (
-        [&ist, _name, _qry, callback]()
+        [&ist, _name, _qry, fn]()
         {
-            ist._mquery(_name->c_str(), _qry->c_str(), callback);
+            ist._exec(_name->c_str(), _qry->c_str());
+            fn();
             delete _name;
             delete _qry;
         }
