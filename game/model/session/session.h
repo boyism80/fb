@@ -112,7 +112,6 @@ public:
 };
 #pragma endregion
 
-
 #pragma region exception
 public:
     DECLARE_EXCEPTION(require_class_exception, fb::game::message::exception::REQUIRE_CLASS)
@@ -121,7 +120,6 @@ public:
     DECLARE_EXCEPTION(no_conveyance_exception, fb::game::message::exception::NO_CONVEYANCE)
     DECLARE_EXCEPTION(disguise_exception, fb::game::message::exception::DISGUISE)
 #pragma endregion
-
 
 #pragma region lua
 public:
@@ -165,6 +163,7 @@ public:
 private:
     uint32_t                    _id;
     fb::socket<session>&        _socket;
+    bool                        _transferring;
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
@@ -230,6 +229,9 @@ protected:
     void                        handle_die(fb::game::object* from);
 
 public:
+     void                       handle_transfer(fb::game::map& map, const point16_t& position);
+
+public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
     object::types               type() const;
@@ -244,6 +246,9 @@ public:
 public:
     uint32_t                    id() const;
     void                        id(uint32_t id);
+
+    bool                        transferring() const;
+
     void                        attack();
     void                        action(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00);
 

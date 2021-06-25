@@ -12,6 +12,7 @@ session::session(fb::socket<fb::game::session>& socket, listener* listener) :
     life((life::master*)nullptr, listener, (uint32_t)socket.native_handle(), 0, 0, 0),
     _id(0xFFFFFFFF),
     _socket(socket),
+    _transferring(false),
     _look(0), _color(0), _armor_color(0),
     _disguise(0),
     _defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
@@ -145,6 +146,12 @@ void fb::game::session::handle_die(fb::game::object* from)
         listener->on_die(*this, from);
 }
 
+void fb::game::session::handle_transfer(fb::game::map& map, const point16_t& position)
+{
+    this->_transferring = true;
+    fb::game::object::handle_transfer(map, position);
+}
+
 
 fb::game::session::operator fb::socket<fb::game::session>& ()
 {
@@ -158,6 +165,11 @@ uint32_t fb::game::session::id() const
 void fb::game::session::id(uint32_t id)
 {
     this->_id = id;
+}
+
+bool fb::game::session::transferring() const
+{
+    return this->_transferring;
 }
 
 void fb::game::session::attack()
