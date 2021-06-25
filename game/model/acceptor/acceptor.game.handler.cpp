@@ -75,27 +75,35 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
 
-void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position)
+void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map* map, const point16_t& position)
 {
-    auto thread = this->thread(map);
-    if(thread == nullptr || thread == this->threads().current())
+    if(map != nullptr)
     {
-        me.handle_enter(map, position);
+        auto thread = this->thread(*map);
+        if(thread == nullptr || thread == this->threads().current())
+        {
+            me.handle_enter(*map, position);
 
-        if(me.is(fb::game::object::types::SESSION))
-            this->on_save(static_cast<fb::game::session&>(me));
+            if(me.is(fb::game::object::types::SESSION))
+                this->on_save(static_cast<fb::game::session&>(me));
+        }
+        else
+        {
+            thread->precedence.enqueue
+            (
+                [this, &me, map, position] (uint8_t) 
+                {
+                    me.handle_enter(*map, position);
+                    if(me.is(fb::game::object::types::SESSION))
+                        this->on_save(static_cast<fb::game::session&>(me));
+                }
+            );
+        }
     }
     else
     {
-        thread->precedence.enqueue
-        (
-            [this, &me, &map, position] (uint8_t) 
-            {
-                me.handle_enter(map, position);
-                if(me.is(fb::game::object::types::SESSION))
-                    this->on_save(static_cast<fb::game::session&>(me));
-            }
-        );
+        if(me.is(fb::game::object::types::SESSION))
+            this->on_save(static_cast<fb::game::session&>(me));
     }
 }
 
