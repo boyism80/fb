@@ -91,6 +91,29 @@ bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, cha
     return true;
 }
 
+fb::console& fb::console::put(const char* format, ...)
+{
+    va_list                 args;
+
+    va_start(args, format);
+    auto                    combined = this->format(format, &args);
+    va_end(args);
+
+    uint16_t                x, y;
+    this->cursor(&x, &y);
+
+#ifdef _WIN32
+    DWORD                   written;
+    this->_x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
+#else
+    mvprintw(y, x, combined.c_str());
+    refresh();
+#endif
+
+    this->next();
+    return *this;
+}
+
 fb::console& fb::console::puts(const char* format, ...)
 {
     va_list                 args;

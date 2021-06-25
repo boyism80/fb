@@ -46,6 +46,7 @@ private:
     std::string             format(const std::string& f, va_list* args);
 
 public:
+    fb::console&            put(const char* format, ...);
     fb::console&            puts(const char* format, ...);
     fb::console&            clear(uint16_t x, uint16_t y);
     fb::console&            trim();
