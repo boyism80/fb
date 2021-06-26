@@ -238,6 +238,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_command("머리염색", std::bind(&acceptor::handle_command_hair_color, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("갑옷염색", std::bind(&acceptor::handle_command_armor_color, this, std::placeholders::_1, std::placeholders::_2));
     this->bind_command("서버종료", std::bind(&acceptor::handle_command_exit, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("타일", std::bind(&acceptor::handle_command_tile, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 acceptor::~acceptor()

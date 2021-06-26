@@ -163,6 +163,7 @@ public:
     bool                    handle_command_hair_color(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_armor_color(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_exit(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_tile(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

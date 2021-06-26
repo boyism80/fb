@@ -306,3 +306,28 @@ bool fb::game::acceptor::handle_command_exit(fb::game::session& session, Json::V
     this->_internal->send(fb::protocol::internal::request::shutdown());
     return true;
 }
+
+bool fb::game::acceptor::handle_command_tile(fb::game::session& session, Json::Value& parameters)
+{
+    auto listener = session.get_listener<fb::game::session::listener>();
+    if(listener == nullptr)
+        return false;
+
+    auto map = session.map();
+    if(map == nullptr)
+        return false;
+    
+    auto tile = (*map)(session.x(), session.y());
+    if(tile == nullptr)
+        return false;
+
+    auto sstream = std::stringstream();
+    sstream << "맵타일 : " << tile->id;
+    listener->on_notify(session, sstream.str());
+
+    sstream.str("");
+    sstream << "오브젝트 : " << tile->object;
+    listener->on_notify(session, sstream.str());
+    
+    return true;
+}
