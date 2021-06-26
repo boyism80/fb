@@ -12,6 +12,7 @@ std::string fb::game::service::sql::session::update(fb::game::session& session)
 
     auto dict = std::map<std::string, std::string>
     {
+        { "admin",                       std::to_string((uint8_t)session.admin()) },
         { "look",                        std::to_string(session.look()) },
         { "color",                       std::to_string(session.color()) },
         { "sex",                         std::to_string(session.sex()) },

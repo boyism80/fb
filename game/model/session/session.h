@@ -164,6 +164,7 @@ private:
     uint32_t                    _id;
     fb::socket<session>&        _socket;
     bool                        _transferring;
+    bool                        _admin;
     std::string                 _name;
     uint16_t                    _look;
     uint8_t                     _color;
@@ -246,6 +247,9 @@ public:
 public:
     uint32_t                    id() const;
     void                        id(uint32_t id);
+
+    bool                        admin() const;
+    void                        admin(bool value);
 
     bool                        transferring() const;
 

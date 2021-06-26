@@ -112,6 +112,7 @@ CREATE TABLE `user` (
   `pw` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `birth` int(11) unsigned DEFAULT NULL,
   `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `admin` tinyint(4) NOT NULL DEFAULT '0',
   `look` smallint(5) unsigned NOT NULL DEFAULT '0',
   `color` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `sex` tinyint(1) NOT NULL DEFAULT '0',

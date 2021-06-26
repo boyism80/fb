@@ -620,6 +620,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             std::string					name;
             std::string					pw;
             uint32_t					birth;
+            bool                        admin;
             datetime					date;
             uint32_t					look;
             uint32_t					color;
@@ -651,10 +652,11 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             std::optional<uint32_t>		aux_top_color;
             std::optional<uint32_t>		aux_bot_color;
             std::optional<uint32_t>		clan;
-            baseResult.fetch(id, name, pw, birth, date, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
+            baseResult.fetch(id, name, pw, birth, date, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
             this->_internal->send(fb::protocol::internal::request::login(name, map));
 
             session->id(id);
+            session->admin(admin);
             session->color(color);
             session->direction(fb::game::direction(direction));
             session->look(look);
@@ -1130,7 +1132,7 @@ bool fb::game::acceptor::handle_user_list(fb::socket<fb::game::session>& socket,
 bool fb::game::acceptor::handle_chat(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::chat& request)
 {
     auto session = socket.data();
-    if(handle_command(*session, request.message) == true)
+    if(session->admin() && handle_command(*session, request.message))
         return true;
     
     std::stringstream           sstream;

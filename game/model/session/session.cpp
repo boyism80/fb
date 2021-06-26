@@ -167,6 +167,16 @@ void fb::game::session::id(uint32_t id)
     this->_id = id;
 }
 
+bool fb::game::session::admin() const
+{
+    return this->_admin;
+}
+
+void fb::game::session::admin(bool value)
+{
+    this->_admin = value;
+}
+
 bool fb::game::session::transferring() const
 {
     return this->_transferring;
