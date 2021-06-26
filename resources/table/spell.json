@@ -1326,5 +1326,25 @@
         "name": "토깽이포획",
         "type": 5,
         "concast": "scripts/spell/@토깽이포획.lua"
+    },
+    "10000": {
+        "name": "강제이동(상)",
+        "type": 5,
+        "cast": "scripts/spell/@강제이동(상).lua"
+    },
+    "10001": {
+        "name": "강제이동(하)",
+        "type": 5,
+        "cast": "scripts/spell/@강제이동(하).lua"
+    },
+    "10002": {
+        "name": "강제이동(좌)",
+        "type": 5,
+        "cast": "scripts/spell/@강제이동(좌).lua"
+    },
+    "10003": {
+        "name": "강제이동(우)",
+        "type": 5,
+        "cast": "scripts/spell/@강제이동(우).lua"
     }
 }
