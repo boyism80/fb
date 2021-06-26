@@ -502,7 +502,7 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
     }
     else
     {
-        auto listener = this->_owner->get_listener<fb::game::object::listener>();
+        auto listener = this->get_listener<fb::game::object::listener>();
         if(listener != nullptr)
             listener->on_show(*this, true);
 
