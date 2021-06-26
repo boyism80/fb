@@ -389,6 +389,7 @@ public:
     static int                  builtin_level(lua_State* lua);
     static int                  builtin_group(lua_State* lua);
     static int                  builtin_assert(lua_State* lua);
+    static int                  builtin_admin(lua_State* lua);
 
 #pragma endregion
 };

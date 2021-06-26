@@ -134,7 +134,7 @@ public:
 
 public:
     lua&                        resume(int argc);
-    int                         yield(int num_rets) { return lua_yield(*this, num_rets); }
+    int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();
 

@@ -1521,6 +1521,30 @@ int fb::game::session::builtin_assert(lua_State* lua)
     }
 }
 
+int fb::game::session::builtin_admin(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    if(session == nullptr || acceptor->exists(*session) == false)
+        return 0;
+
+    if(argc == 1)
+    {
+        thread->pushboolean(session->admin());
+        return 1;
+    }
+    else
+    {
+        session->admin(thread->toboolean(2));
+        return 0;
+    }
+}
+
 fb::game::session::container::container()
 {
 }
