@@ -331,3 +331,9 @@ bool fb::game::acceptor::handle_command_tile(fb::game::session& session, Json::V
     
     return true;
 }
+
+bool fb::game::acceptor::handle_command_save(fb::game::session& session, Json::Value& parameters)
+{
+    this->save();
+    return true;
+}
