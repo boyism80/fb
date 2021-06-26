@@ -218,27 +218,111 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 버프 타이머
     this->bind_timer(std::bind(&acceptor::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(config["save"].asInt()));      // DB 저장 타이머
 
-    this->bind_command("맵이동", std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("사운드", std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("액션", std::bind(&acceptor::handle_command_action, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("날씨", std::bind(&acceptor::handle_command_weather, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("밝기", std::bind(&acceptor::handle_command_bright, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("타이머", std::bind(&acceptor::handle_command_timer, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("이펙트", std::bind(&acceptor::handle_command_effect, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("변신", std::bind(&acceptor::handle_command_disguise, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("변신해제", std::bind(&acceptor::handle_command_undisguise, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("마법배우기", std::bind(&acceptor::handle_command_spell, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("몬스터생성", std::bind(&acceptor::handle_command_mob, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("직업바꾸기", std::bind(&acceptor::handle_command_class, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("레벨바꾸기", std::bind(&acceptor::handle_command_level, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("아이템생성", std::bind(&acceptor::handle_command_item, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("월드맵", std::bind(&acceptor::handle_command_world, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("스크립트", std::bind(&acceptor::handle_command_script, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("머리바꾸기", std::bind(&acceptor::handle_command_hair, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("머리염색", std::bind(&acceptor::handle_command_hair_color, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("갑옷염색", std::bind(&acceptor::handle_command_armor_color, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("서버종료", std::bind(&acceptor::handle_command_exit, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind_command("타일", std::bind(&acceptor::handle_command_tile, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind_command("맵이동", command 
+        { 
+            .fn = std::bind(&acceptor::handle_command_map, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("사운드", command
+        {
+            .fn = std::bind(&acceptor::handle_command_sound, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("액션", command
+        {
+            .fn = std::bind(&acceptor::handle_command_action, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("날씨", command
+        {
+            .fn = std::bind(&acceptor::handle_command_weather, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("밝기", command
+        {
+            .fn = std::bind(&acceptor::handle_command_bright, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("타이머", command
+        {
+            .fn = std::bind(&acceptor::handle_command_timer, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("이펙트", command
+        {
+            .fn = std::bind(&acceptor::handle_command_effect, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("변신", command
+        {
+            .fn = std::bind(&acceptor::handle_command_disguise, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("변신해제", command
+        {
+            .fn = std::bind(&acceptor::handle_command_undisguise, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("마법배우기", command
+        {
+            .fn = std::bind(&acceptor::handle_command_spell, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("몬스터생성", command
+        {
+            .fn = std::bind(&acceptor::handle_command_mob, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("직업바꾸기", command
+        {
+            .fn = std::bind(&acceptor::handle_command_class, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("레벨바꾸기", command
+        {
+            .fn = std::bind(&acceptor::handle_command_level, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("아이템생성", command
+        {
+            .fn = std::bind(&acceptor::handle_command_item, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("월드맵", command
+        {
+            .fn = std::bind(&acceptor::handle_command_world, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("스크립트", command
+        {
+            .fn = std::bind(&acceptor::handle_command_script, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("머리바꾸기", command
+        {
+            .fn = std::bind(&acceptor::handle_command_hair, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("머리염색", command
+        {
+            .fn = std::bind(&acceptor::handle_command_hair_color, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("갑옷염색", command
+        {
+            .fn = std::bind(&acceptor::handle_command_armor_color, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("서버종료", command
+        {
+            .fn = std::bind(&acceptor::handle_command_exit, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+    this->bind_command("타일", command
+        {
+            .fn = std::bind(&acceptor::handle_command_tile, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 acceptor::~acceptor()
@@ -304,9 +388,9 @@ void fb::game::acceptor::bind_timer(std::function<void(std::chrono::steady_clock
     threads.settimer(fn, duration);
 }
 
-void fb::game::acceptor::bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn)
+void fb::game::acceptor::bind_command(const std::string& cmd, const fb::game::acceptor::command& param)
 {
-    this->_command_dict.insert(std::make_pair(command, fn));
+    this->_command_dict.insert(std::make_pair(cmd, param));
 }
 
 fb::game::session* fb::game::acceptor::handle_accepted(fb::socket<fb::game::session>& socket)
@@ -1531,8 +1615,14 @@ bool fb::game::acceptor::handle_command(fb::game::session& session, const std::s
         splitted.push_back(unit);
     }
 
+    if(splitted.empty())
+        return false;
+
     auto found = this->_command_dict.find(splitted[0]);
     if (found == this->_command_dict.end())
+        return false;
+
+    if(found->second.admin && session.admin() == false)
         return false;
 
     Json::Value parameters;
@@ -1552,6 +1642,6 @@ bool fb::game::acceptor::handle_command(fb::game::session& session, const std::s
             parameters.append(*i);
     }
 
-    found->second(session, parameters);
+    found->second.fn(session, parameters);
     return true;
 }

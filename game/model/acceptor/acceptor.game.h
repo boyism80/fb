@@ -43,7 +43,17 @@ public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
 
 public:
-    typedef std::map<std::string, std::function<bool(fb::game::session&, Json::Value&)>> command_dict;
+    typedef std::function<bool(fb::game::session&, Json::Value&)> command_fn;
+
+    typedef struct __command
+    {
+    public:
+        command_fn          fn;
+        bool                admin;
+    } command;
+
+public:
+    typedef std::map<std::string, command> command_dict;
     typedef std::unordered_set<const fb::game::object*> hash_set;
 
 private:
@@ -58,7 +68,7 @@ public:
 private:
     fb::game::session*      find(const std::string& name) const;
     void                    bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration);
-    void                    bind_command(const std::string& command, std::function<bool(fb::game::session&, Json::Value&)> fn);
+    void                    bind_command(const std::string& cmd, const command& param);
 
 public:
     bool                    exists(const fb::game::object& object) const;
