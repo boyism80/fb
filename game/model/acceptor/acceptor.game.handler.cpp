@@ -67,7 +67,7 @@ void fb::game::acceptor::on_move(fb::game::object& me)
 void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
      lua::get()
-         .from("scripts/spell/%s.lua", buff.spell().uncast().c_str())
+         .from(buff.spell().uncast().c_str())
          .func("handle_uncast")
          .pushobject(me)
          .pushobject(buff.spell())
@@ -263,7 +263,7 @@ void fb::game::acceptor::on_equipment_off(session& me, equipment::slot slot, uin
 void fb::game::acceptor::on_item_active(session& me, item& item)
 {
     lua::get()
-        .from("scripts/item/%s.lua", item.active_script().c_str())
+        .from(item.active_script().c_str())
         .func("handle_active")
         .pushobject(me)
         .pushobject(item)

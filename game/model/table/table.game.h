@@ -3,6 +3,7 @@
 
 #include <map>
 #include <queue>
+#include <filesystem>
 #include "model/map/map.h"
 #include "model/item/item.h"
 #include "model/npc/npc.h"

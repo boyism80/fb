@@ -326,7 +326,7 @@ void fb::game::life::kill()
 bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
 {
     auto& thread = fb::game::lua::get();
-    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+    thread.from(spell.cast().c_str())
         .func("handle_spell");
 
     if(spell.type() != fb::game::spell::types::INPUT)
@@ -354,7 +354,7 @@ bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
 bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
 {
     auto& thread = fb::game::lua::get();
-    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+    thread.from(spell.cast().c_str())
         .func("handle_spell");
 
     if(spell.type() != fb::game::spell::types::TARGET)
@@ -380,7 +380,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
 bool fb::game::life::active(fb::game::spell& spell)
 {
     auto& thread = fb::game::lua::get();
-    thread.from("scripts/spell/%s.lua", spell.cast().c_str())
+    thread.from(spell.cast().c_str())
         .func("handle_spell");
 
     if(spell.type() != fb::game::spell::types::NORMAL)

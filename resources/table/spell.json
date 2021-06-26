@@ -2,1329 +2,1329 @@
     "1": {
         "name": "비영사천문",
         "type": 1,
-        "cast": "@비영사천문",
+        "cast": "scripts/spell/@비영사천문.lua",
         "message": "갈 곳은? 동(1), 서(2), 남(3), 북(4)?"
     },
     "2": {
         "name": "성황령",
         "type": 8,
-        "cast": "@성황령",
+        "cast": "scripts/spell/@성황령.lua",
         "message": "갈 곳은?(좌, 우)"
     },
     "3": {
         "name": "출두",
         "type": 1,
-        "cast": "@출두",
+        "cast": "scripts/spell/@출두.lua",
         "message": "출두할 대상은?"
     },
     "4": {
         "name": "소환",
         "type": 1,
-        "cast": "@소환",
+        "cast": "scripts/spell/@소환.lua",
         "message": "소환할 대상은?"
     },
     "5": {
         "name": "귀환",
         "type": 5,
-        "cast": "@귀환",
+        "cast": "scripts/spell/@귀환.lua",
         "message": "-"
     },
     "6": {
         "name": "백열장",
         "type": 2,
-        "cast": "@백열장",
+        "cast": "scripts/spell/@백열장.lua",
         "message": "대상은?"
     },
     "7": {
         "name": "자동보호",
         "type": 5,
-        "cast": "@자동보호",
-        "uncast": "@자동보호해제",
+        "cast": "scripts/spell/@자동보호.lua",
+        "uncast": "scsripts/spell/@자동보호해제",
         "message": "-"
     },
     "8": {
         "name": "자동무장",
         "type": 5,
-        "cast": "@자동무장",
-        "uncast": "@자동무장해제",
+        "cast": "scripts/spell/@자동무장.lua",
+        "uncast": "scsripts/spell/@자동무장해제",
         "message": "-"
     },
     "9": {
         "name": "사자후전사",
         "type": 1,
-        "cast": "@사자후전사",
+        "cast": "scripts/spell/@사자후전사.lua",
         "message": "할 말은?"
     },
     "10": {
         "name": "사자후도적",
         "type": 1,
-        "cast": "@사자후도적",
+        "cast": "scripts/spell/@사자후도적.lua",
         "message": "할 말은?"
     },
     "11": {
         "name": "사자후술사",
         "type": 1,
-        "cast": "@사자후술사",
+        "cast": "scripts/spell/@사자후술사.lua",
         "message": "할 말은?"
     },
     "12": {
         "name": "사자후도사",
         "type": 1,
-        "cast": "@사자후도사",
+        "cast": "scripts/spell/@사자후도사.lua",
         "message": "할 말은?"
     },
     "13": {
         "name": "자동투명",
         "type": 5,
-        "cast": "@자동투명",
-        "uncast": "@자동투명해제",
+        "cast": "scripts/spell/@자동투명.lua",
+        "uncast": "scsripts/spell/@자동투명해제",
         "message": "-"
     },
     "1001": {
         "name": "신검합일",
         "type": 1,
-        "cast": "@신검합일",
-        "uncast": "@신검합일해제",
+        "cast": "scripts/spell/@신검합일.lua",
+        "uncast": "scsripts/spell/@신검합일해제",
         "message": "무기의 이름은?"
     },
     "1002": {
         "name": "검신검귀",
         "type": 1,
-        "cast": "@검신검귀",
-        "uncast": "@검신검귀해제",
+        "cast": "scripts/spell/@검신검귀.lua",
+        "uncast": "scsripts/spell/@검신검귀해제",
         "message": "무기의 이름은?"
     },
     "1003": {
         "name": "대력검신",
         "type": 1,
-        "cast": "@대력검신",
-        "uncast": "@대력검신해제",
+        "cast": "scripts/spell/@대력검신.lua",
+        "uncast": "scsripts/spell/@대력검신해제",
         "message": "무기의 이름은?"
     },
     "1004": {
         "name": "유인",
         "type": 2,
-        "cast": "@유인",
+        "cast": "scripts/spell/@유인.lua",
         "message": "대상은?"
     },
     "1005": {
         "name": "신의축복",
         "type": 5,
-        "cast": "@신의축복",
-        "uncast": "@신의축복해제",
+        "cast": "scripts/spell/@신의축복.lua",
+        "uncast": "scsripts/spell/@신의축복해제",
         "message": "-"
     },
     "1006": {
         "name": "후면공격",
         "type": 5,
-        "cast": "@후면공격",
-        "uncast": "@후면공격해제",
+        "cast": "scripts/spell/@후면공격.lua",
+        "uncast": "scsripts/spell/@후면공격해제",
         "message": "-"
     },
     "1007": {
         "name": "측면공격",
         "type": 5,
-        "cast": "@측면공격",
-        "uncast": "@측면공격해제",
+        "cast": "scripts/spell/@측면공격.lua",
+        "uncast": "scsripts/spell/@측면공격해제",
         "message": "-"
     },
     "1008": {
         "name": "백호령",
         "type": 5,
-        "cast": "@백호령",
-        "uncast": "@백호령해제",
+        "cast": "scripts/spell/@백호령.lua",
+        "uncast": "scsripts/spell/@백호령해제",
         "message": "-"
     },
     "1009": {
         "name": "이중공격",
         "type": 5,
-        "cast": "@이중공격",
-        "uncast": "@이중공격해제",
+        "cast": "scripts/spell/@이중공격.lua",
+        "uncast": "scsripts/spell/@이중공격해제",
         "message": "-"
     },
     "1010": {
         "name": "삼중공격",
         "type": 5,
-        "cast": "@삼중공격",
-        "uncast": "@삼중공격해제",
+        "cast": "scripts/spell/@삼중공격.lua",
+        "uncast": "scsripts/spell/@삼중공격해제",
         "message": "-"
     },
     "1011": {
         "name": "사중공격",
         "type": 5,
-        "cast": "@사중공격",
-        "uncast": "@사중공격해제",
+        "cast": "scripts/spell/@사중공격.lua",
+        "uncast": "scsripts/spell/@사중공격해제",
         "message": "-"
     },
     "1012": {
         "name": "오중공격",
         "type": 5,
-        "cast": "@오중공격",
-        "uncast": "@오중공격해제",
+        "cast": "scripts/spell/@오중공격.lua",
+        "uncast": "scsripts/spell/@오중공격해제",
         "message": "-"
     },
     "1013": {
         "name": "진백호령",
         "type": 5,
-        "cast": "@진백호령",
-        "uncast": "@진백호령해제",
+        "cast": "scripts/spell/@진백호령.lua",
+        "uncast": "scsripts/spell/@진백호령해제",
         "message": "-"
     },
     "1014": {
         "name": "건곤대나이",
         "type": 5,
-        "cast": "@건곤대나이",
+        "cast": "scripts/spell/@건곤대나이.lua",
         "message": "-"
     },
     "1015": {
         "name": "동귀어진",
         "type": 5,
-        "cast": "@동귀어진",
+        "cast": "scripts/spell/@동귀어진.lua",
         "message": "-"
     },
     "1016": {
         "name": "백호참",
         "type": 5,
-        "cast": "@백호참",
+        "cast": "scripts/spell/@백호참.lua",
         "message": "-"
     },
     "1017": {
         "name": "어검술",
         "type": 5,
-        "cast": "@어검술",
+        "cast": "scripts/spell/@어검술.lua",
         "message": "-"
     },
     "1018": {
         "name": "초혼비무",
         "type": 5,
-        "cast": "@초혼비무",
+        "cast": "scripts/spell/@초혼비무.lua",
         "message": "-"
     },
     "1019": {
         "name": "쇄혼비무",
         "type": 5,
-        "cast": "@쇄혼비무",
+        "cast": "scripts/spell/@쇄혼비무.lua",
         "message": "-"
     },
     "1020": {
         "name": "포효검황",
         "type": 5,
-        "cast": "@포효검황",
+        "cast": "scripts/spell/@포효검황.lua",
         "message": "-"
     },
     "1021": {
         "name": "혈겁만파",
         "type": 5,
-        "cast": "@혈겁만파",
+        "cast": "scripts/spell/@혈겁만파.lua",
         "message": "-"
     },
     "1022": {
         "name": "극'백호참",
         "type": 5,
-        "cast": "@극'백호참",
+        "cast": "scripts/spell/@극.lua'백호참",
         "message": "-"
     },
     "1023": {
         "name": "운공체식",
         "type": 5,
-        "cast": "@운공체식",
+        "cast": "scripts/spell/@운공체식.lua",
         "message": "-"
     },
     "1024": {
         "name": "바다의기원",
         "type": 2,
-        "cast": "@바다의기원",
+        "cast": "scripts/spell/@바다의기원.lua",
         "message": "대상은?"
     },
     "2001": {
         "name": "누리의빛",
         "type": 5,
-        "cast": "@누리의빛",
+        "cast": "scripts/spell/@누리의빛.lua",
         "message": "-"
     },
     "2002": {
         "name": "금수",
         "type": 1,
-        "cast": "@금수",
-        "uncast": "@금수해제",
+        "cast": "scripts/spell/@금수.lua",
+        "uncast": "scsripts/spell/@금수해제",
         "message": "변신할 동물은?"
     },
     "2003": {
         "name": "대지의빛",
         "type": 2,
-        "cast": "@대지의빛",
+        "cast": "scripts/spell/@대지의빛.lua",
         "message": "대상은?"
     },
     "2004": {
         "name": "경수",
         "type": 1,
-        "cast": "@경수",
-        "uncast": "@경수해제",
+        "cast": "scripts/spell/@경수.lua",
+        "uncast": "scsripts/spell/@경수해제",
         "message": "변신할 동물은?"
     },
     "2005": {
         "name": "바다의빛",
         "type": 2,
-        "cast": "@바다의빛",
+        "cast": "scripts/spell/@바다의빛.lua",
         "message": "대상은?"
     },
     "2006": {
         "name": "야수",
         "type": 1,
-        "cast": "@야수",
-        "uncast": "@야수해제",
+        "cast": "scripts/spell/@야수.lua",
+        "uncast": "scsripts/spell/@야수해제",
         "message": "변신할 동물은?"
     },
     "2007": {
         "name": "맹수",
         "type": 1,
-        "cast": "@맹수",
-        "uncast": "@맹수해제",
+        "cast": "scripts/spell/@맹수.lua",
+        "uncast": "scsripts/spell/@맹수해제",
         "message": "변신할 동물은?"
     },
     "2008": {
         "name": "노획",
         "type": 5,
-        "cast": "@노획",
+        "cast": "scripts/spell/@노획.lua",
         "message": "-"
     },
     "2009": {
         "name": "망각",
         "type": 2,
-        "cast": "@망각",
+        "cast": "scripts/spell/@망각.lua",
         "message": "대상은?"
     },
     "2010": {
         "name": "누리의힘",
         "type": 5,
-        "cast": "@누리의힘",
-        "uncast": "@누리의힘해제",
+        "cast": "scripts/spell/@누리의힘.lua",
+        "uncast": "scsripts/spell/@누리의힘해제",
         "message": "-"
     },
     "2011": {
         "name": "무영보법",
         "type": 5,
-        "cast": "@무영보법",
-        "uncast": "@무영보법해제",
+        "cast": "scripts/spell/@무영보법.lua",
+        "uncast": "scsripts/spell/@무영보법해제",
         "message": "-"
     },
     "2012": {
         "name": "투명",
         "type": 5,
-        "cast": "@투명",
-        "uncast": "@투명해제",
+        "cast": "scripts/spell/@투명.lua",
+        "uncast": "scsripts/spell/@투명해제",
         "message": "-"
     },
     "2013": {
         "name": "분신",
         "type": 5,
-        "cast": "@분신",
-        "uncast": "@분신해제",
+        "cast": "scripts/spell/@분신.lua",
+        "uncast": "scsripts/spell/@분신해제",
         "message": "-"
     },
     "2014": {
         "name": "기문방술",
         "type": 5,
-        "cast": "@기문방술",
-        "uncast": "@기문방술해제",
+        "cast": "scripts/spell/@기문방술.lua",
+        "uncast": "scsripts/spell/@기문방술해제",
         "message": "-"
     },
     "2015": {
         "name": "비영승보",
         "type": 5,
-        "cast": "@비영승보",
+        "cast": "scripts/spell/@비영승보.lua",
         "message": "-"
     },
     "2016": {
         "name": "필살검무",
         "type": 5,
-        "cast": "@필살검무",
+        "cast": "scripts/spell/@필살검무.lua",
         "message": "-"
     },
     "2017": {
         "name": "흡성대법",
         "type": 2,
-        "cast": "@흡성대법",
+        "cast": "scripts/spell/@흡성대법.lua",
         "message": "-"
     },
     "2018": {
         "name": "이기어검",
         "type": 5,
-        "cast": "@이기어검",
+        "cast": "scripts/spell/@이기어검.lua",
         "message": "-"
     },
     "2019": {
         "name": "이기어검술",
         "type": 5,
-        "uncast": "@이기어검술해제",
+        "uncast": "scsripts/spell/@이기어검술해제",
         "message": "-"
     },
     "2020": {
         "name": "무형검",
         "type": 5,
-        "cast": "@무형검",
+        "cast": "scripts/spell/@무형검.lua",
         "message": "-"
     },
     "2021": {
         "name": "무형술",
         "type": 5,
-        "uncast": "@무형술해제",
+        "uncast": "scsripts/spell/@무형술해제",
         "message": "-"
     },
     "2022": {
         "name": "파천검무",
         "type": 5,
-        "cast": "@파천검무",
+        "cast": "scripts/spell/@파천검무.lua",
         "message": "-"
     },
     "2023": {
         "name": "분혼경천",
         "type": 5,
-        "cast": "@분혼경천",
+        "cast": "scripts/spell/@분혼경천.lua",
         "message": "-"
     },
     "2024": {
         "name": "운기",
         "type": 5,
-        "cast": "@운기",
-        "uncast": "@운기해제",
-        "concast": "@운기지속",
+        "cast": "scripts/spell/@운기.lua",
+        "uncast": "scsripts/spell/@운기해제",
+        "concast": "scripts/spell/@운기지속.lua",
         "message": "-"
     },
     "2025": {
         "name": "전혈",
         "type": 5,
-        "cast": "@전혈",
-        "uncast": "@전혈해제",
+        "cast": "scripts/spell/@전혈.lua",
+        "uncast": "scsripts/spell/@전혈해제",
         "message": "-"
     },
     "2026": {
         "name": "개혈체식",
         "type": 5,
-        "cast": "@개혈체식",
+        "cast": "scripts/spell/@개혈체식.lua",
         "message": "-"
     },
     "2027": {
         "name": "백호검무",
         "type": 5,
-        "cast": "@백호검무",
+        "cast": "scripts/spell/@백호검무.lua",
         "message": "-"
     },
     "3001": {
         "name": "대지의힘",
         "type": 2,
-        "cast": "@대지의힘",
-        "uncast": "@대지의힘해제",
+        "cast": "scripts/spell/@대지의힘.lua",
+        "uncast": "scsripts/spell/@대지의힘해제",
         "message": "대상은?"
     },
     "3002": {
         "name": "화염주",
         "type": 2,
-        "cast": "@화염주",
+        "cast": "scripts/spell/@화염주.lua",
         "message": "대상은?"
     },
     "3003": {
         "name": "자무주",
         "type": 2,
-        "cast": "@자무주",
+        "cast": "scripts/spell/@자무주.lua",
         "message": "대상은?"
     },
     "3004": {
         "name": "백열주",
         "type": 2,
-        "cast": "@백열주",
+        "cast": "scripts/spell/@백열주.lua",
         "message": "대상은?"
     },
     "3005": {
         "name": "뢰진주",
         "type": 2,
-        "cast": "@뢰진주",
+        "cast": "scripts/spell/@뢰진주.lua",
         "message": "대상은?"
     },
     "3006": {
         "name": "화영열주",
         "type": 2,
-        "cast": "@화영열주",
+        "cast": "scripts/spell/@화영열주.lua",
         "message": "대상은?"
     },
     "3007": {
         "name": "자영무주",
         "type": 2,
-        "cast": "@자영무주",
+        "cast": "scripts/spell/@자영무주.lua",
         "message": "대상은?"
     },
     "3008": {
         "name": "백령주",
         "type": 2,
-        "cast": "@백령주",
+        "cast": "scripts/spell/@백령주.lua",
         "message": "대상은?"
     },
     "3009": {
         "name": "뢰격주",
         "type": 2,
-        "cast": "@뢰격주",
+        "cast": "scripts/spell/@뢰격주.lua",
         "message": "대상은?"
     },
     "3010": {
         "name": "화열참주",
         "type": 2,
-        "cast": "@화열참주",
+        "cast": "scripts/spell/@화열참주.lua",
         "message": "대상은?"
     },
     "3011": {
         "name": "자천무주",
         "type": 2,
-        "cast": "@자천무주",
+        "cast": "scripts/spell/@자천무주.lua",
         "message": "대상은?"
     },
     "3012": {
         "name": "백열참주",
         "type": 2,
-        "cast": "@백열참주",
+        "cast": "scripts/spell/@백열참주.lua",
         "message": "대상은?"
     },
     "3013": {
         "name": "뢰격참주",
         "type": 2,
-        "cast": "@뢰격참주",
+        "cast": "scripts/spell/@뢰격참주.lua",
         "message": "대상은?"
     },
     "3014": {
         "name": "진화열참주",
         "type": 2,
-        "cast": "@진화열참주",
+        "cast": "scripts/spell/@진화열참주.lua",
         "message": "대상은?"
     },
     "3015": {
         "name": "진자천무주",
         "type": 2,
-        "cast": "@진자천무주",
+        "cast": "scripts/spell/@진자천무주.lua",
         "message": "대상은?"
     },
     "3016": {
         "name": "진백열참주",
         "type": 2,
-        "cast": "@진백열참주",
+        "cast": "scripts/spell/@진백열참주.lua",
         "message": "대상은?"
     },
     "3017": {
         "name": "진뢰격참주",
         "type": 2,
-        "cast": "@진뢰격참주",
+        "cast": "scripts/spell/@진뢰격참주.lua",
         "message": "대상은?"
     },
     "3018": {
         "name": "극진화열참주",
         "type": 2,
-        "cast": "@극진화열참주",
+        "cast": "scripts/spell/@극진화열참주.lua",
         "message": "대상은?"
     },
     "3019": {
         "name": "극진자천무주",
         "type": 2,
-        "cast": "@극진자천무주",
+        "cast": "scripts/spell/@극진자천무주.lua",
         "message": "대상은?"
     },
     "3020": {
         "name": "극진백열참주",
         "type": 2,
-        "cast": "@극진백열참주",
+        "cast": "scripts/spell/@극진백열참주.lua",
         "message": "대상은?"
     },
     "3021": {
         "name": "극진뢰격참주",
         "type": 2,
-        "cast": "@극진뢰격참주",
+        "cast": "scripts/spell/@극진뢰격참주.lua",
         "message": "대상은?"
     },
     "3022": {
         "name": "화염주'첨",
         "type": 5,
-        "cast": "@화염주'첨",
+        "cast": "scripts/spell/@화염주.lua'첨",
         "message": "-"
     },
     "3023": {
         "name": "자무주'첨",
         "type": 5,
-        "cast": "@자무주'첨",
+        "cast": "scripts/spell/@자무주.lua'첨",
         "message": "-"
     },
     "3024": {
         "name": "백열주'첨",
         "type": 5,
-        "cast": "@백열주'첨",
+        "cast": "scripts/spell/@백열주.lua'첨",
         "message": "-"
     },
     "3025": {
         "name": "뢰진주'첨",
         "type": 5,
-        "cast": "@뢰진주'첨",
+        "cast": "scripts/spell/@뢰진주.lua'첨",
         "message": "-"
     },
     "3026": {
         "name": "화영열주'첨",
         "type": 5,
-        "cast": "@화영열주'첨",
+        "cast": "scripts/spell/@화영열주.lua'첨",
         "message": "-"
     },
     "3027": {
         "name": "자영무주'첨",
         "type": 5,
-        "cast": "@자영무주'첨",
+        "cast": "scripts/spell/@자영무주.lua'첨",
         "message": "-"
     },
     "3028": {
         "name": "백령주'첨",
         "type": 5,
-        "cast": "@백령주'첨",
+        "cast": "scripts/spell/@백령주.lua'첨",
         "message": "-"
     },
     "3029": {
         "name": "뢰격주'첨",
         "type": 5,
-        "cast": "@뢰격주'첨",
+        "cast": "scripts/spell/@뢰격주.lua'첨",
         "message": "-"
     },
     "3030": {
         "name": "화열참주'첨",
         "type": 5,
-        "cast": "@화열참주'첨",
+        "cast": "scripts/spell/@화열참주.lua'첨",
         "message": "-"
     },
     "3031": {
         "name": "자천무주'첨",
         "type": 5,
-        "cast": "@자천무주'첨",
+        "cast": "scripts/spell/@자천무주.lua'첨",
         "message": "-"
     },
     "3032": {
         "name": "백열참주'첨",
         "type": 5,
-        "cast": "@백열참주'첨",
+        "cast": "scripts/spell/@백열참주.lua'첨",
         "message": "-"
     },
     "3033": {
         "name": "뢰격참주'첨",
         "type": 5,
-        "cast": "@뢰격참주'첨",
+        "cast": "scripts/spell/@뢰격참주.lua'첨",
         "message": "-"
     },
     "3034": {
         "name": "진화열참주'첨",
         "type": 5,
-        "cast": "@진화열참주'첨",
+        "cast": "scripts/spell/@진화열참주.lua'첨",
         "message": "-"
     },
     "3035": {
         "name": "진자천무주'첨",
         "type": 5,
-        "cast": "@진자천무주'첨",
+        "cast": "scripts/spell/@진자천무주.lua'첨",
         "message": "-"
     },
     "3036": {
         "name": "진백열참주'첨",
         "type": 5,
-        "cast": "@진백열참주'첨",
+        "cast": "scripts/spell/@진백열참주.lua'첨",
         "message": "-"
     },
     "3037": {
         "name": "진뢰격참주'첨",
         "type": 5,
-        "cast": "@진뢰격참주'첨",
+        "cast": "scripts/spell/@진뢰격참주.lua'첨",
         "message": "-"
     },
     "3038": {
         "name": "극진화열참주'첨",
         "type": 5,
-        "cast": "@극진화열참주'첨",
+        "cast": "scripts/spell/@극진화열참주.lua'첨",
         "message": "-"
     },
     "3039": {
         "name": "극진자천무주'첨",
         "type": 5,
-        "cast": "@극진자천무주'첨",
+        "cast": "scripts/spell/@극진자천무주.lua'첨",
         "message": "-"
     },
     "3040": {
         "name": "극진백열참주'첨",
         "type": 5,
-        "cast": "@극진백열참주'첨",
+        "cast": "scripts/spell/@극진백열참주.lua'첨",
         "message": "-"
     },
     "3041": {
         "name": "극진뢰격참주'첨",
         "type": 5,
-        "cast": "@극진뢰격참주'첨",
+        "cast": "scripts/spell/@극진뢰격참주.lua'첨",
         "message": "-"
     },
     "3042": {
         "name": "성려멸주",
         "type": 2,
-        "cast": "@성려멸주",
+        "cast": "scripts/spell/@성려멸주.lua",
         "message": "대상은?"
     },
     "3043": {
         "name": "헬파이어",
         "type": 2,
-        "cast": "@헬파이어",
+        "cast": "scripts/spell/@헬파이어.lua",
         "message": "대상은?"
     },
     "3044": {
         "name": "삼매진화",
         "type": 2,
-        "cast": "@삼매진화",
+        "cast": "scripts/spell/@삼매진화.lua",
         "message": "대상은?"
     },
     "3045": {
         "name": "지폭지술",
         "type": 5,
-        "cast": "@지폭지술",
+        "cast": "scripts/spell/@지폭지술.lua",
         "message": "-"
     },
     "3046": {
         "name": "폭류유성",
         "type": 5,
-        "cast": "@폭류유성",
+        "cast": "scripts/spell/@폭류유성.lua",
         "message": "-"
     },
     "3047": {
         "name": "현자의기원",
         "type": 2,
-        "cast": "@현자의기원",
+        "cast": "scripts/spell/@현자의기원.lua",
         "message": "대상은?"
     },
     "3048": {
         "name": "환기",
         "type": 5,
-        "cast": "@환기",
-        "uncast": "@환기해제",
-        "concast": "@환기지속",
+        "cast": "scripts/spell/@환기.lua",
+        "uncast": "scsripts/spell/@환기해제",
+        "concast": "scripts/spell/@환기지속.lua",
         "message": "-"
     },
     "3049": {
         "name": "노도성황",
         "type": 2,
-        "cast": "@노도성황",
-        "concast": "@노도성황지속",
+        "cast": "scripts/spell/@노도성황.lua",
+        "concast": "scripts/spell/@노도성황지속.lua",
         "message": "대상은?"
     },
     "3050": {
         "name": "몬스터노도성황",
         "type": 2,
-        "concast": "@몬스터노도성황지속",
+        "concast": "scripts/spell/@몬스터노도성황지속.lua",
         "message": "-"
     },
     "3051": {
         "name": "저주",
         "type": 2,
-        "cast": "@저주",
-        "uncast": "@저주해제",
+        "cast": "scripts/spell/@저주.lua",
+        "uncast": "scsripts/spell/@저주해제",
         "message": "대상은?"
     },
     "3052": {
         "name": "마비",
         "type": 2,
-        "cast": "@마비",
-        "uncast": "@마비해제",
+        "cast": "scripts/spell/@마비.lua",
+        "uncast": "scsripts/spell/@마비해제",
         "message": "대상은?"
     },
     "3053": {
         "name": "절망",
         "type": 2,
-        "cast": "@절망",
-        "uncast": "@절망해제",
-        "concast": "@절망지속",
+        "cast": "scripts/spell/@절망.lua",
+        "uncast": "scsripts/spell/@절망해제",
+        "concast": "scripts/spell/@절망지속.lua",
         "message": "대상은?"
     },
     "3054": {
         "name": "혼돈",
         "type": 2,
-        "cast": "@혼돈",
+        "cast": "scripts/spell/@혼돈.lua",
         "message": "대상은?"
     },
     "3055": {
         "name": "호체주술",
         "type": 5,
-        "cast": "@호체주술",
-        "uncast": "@호체주술해제",
+        "cast": "scripts/spell/@호체주술.lua",
+        "uncast": "scsripts/spell/@호체주술해제",
         "message": "-"
     },
     "3056": {
         "name": "마기지체",
         "type": 5,
-        "cast": "@마기지체",
-        "uncast": "@마기지체해제",
-        "concast": "@마기지체지속",
+        "cast": "scripts/spell/@마기지체.lua",
+        "uncast": "scsripts/spell/@마기지체해제",
+        "concast": "scripts/spell/@마기지체지속.lua",
         "message": "-"
     },
     "3057": {
         "name": "마기지체저주",
         "type": 5,
-        "uncast": "@마기지체저주해제",
+        "uncast": "scsripts/spell/@마기지체저주해제",
         "message": "-"
     },
     "3058": {
         "name": "만파지독",
         "type": 5,
-        "cast": "@만파지독",
-        "uncast": "@만파지독해제",
+        "cast": "scripts/spell/@만파지독.lua",
+        "uncast": "scsripts/spell/@만파지독해제",
         "message": "-"
     },
     "3059": {
         "name": "중독",
         "type": 2,
-        "cast": "@중독",
-        "uncast": "@중독해제",
-        "concast": "@중독지속",
+        "cast": "scripts/spell/@중독.lua",
+        "uncast": "scsripts/spell/@중독해제",
+        "concast": "scripts/spell/@중독지속.lua",
         "message": "대상은?"
     },
     "3060": {
         "name": "몬스터중독",
         "type": 5,
-        "concast": "@몬스터중독지속",
+        "concast": "scripts/spell/@몬스터중독지속.lua",
         "message": "-"
     },
     "4001": {
         "name": "소혼강신",
         "type": 1,
-        "cast": "@소혼강신",
+        "cast": "scripts/spell/@소혼강신.lua",
         "message": "소환할 동물은?"
     },
     "4002": {
         "name": "공력증강",
         "type": 5,
-        "cast": "@공력증강",
+        "cast": "scripts/spell/@공력증강.lua",
         "message": "-"
     },
     "4003": {
         "name": "무장",
         "type": 2,
-        "cast": "@무장",
-        "uncast": "@무장해제",
+        "cast": "scripts/spell/@무장.lua",
+        "uncast": "scsripts/spell/@무장해제",
         "message": "대상은?"
     },
     "4004": {
         "name": "보호",
         "type": 2,
-        "cast": "@보호",
-        "uncast": "@보호해제",
+        "cast": "scripts/spell/@보호.lua",
+        "uncast": "scsripts/spell/@보호해제",
         "message": "대상은?"
     },
     "4005": {
         "name": "차폐",
         "type": 5,
-        "cast": "@차폐",
-        "uncast": "@차폐해제",
+        "cast": "scripts/spell/@차폐.lua",
+        "uncast": "scsripts/spell/@차폐해제",
         "message": "-"
     },
     "4006": {
         "name": "시력회복",
         "type": 2,
-        "cast": "@시력회복",
+        "cast": "scripts/spell/@시력회복.lua",
         "message": "대상은?"
     },
     "4007": {
         "name": "파혼술",
         "type": 2,
-        "cast": "@파혼술",
+        "cast": "scripts/spell/@파혼술.lua",
         "message": "대상은?"
     },
     "4008": {
         "name": "심안투영",
         "type": 5,
-        "cast": "@심안투영",
-        "uncast": "@심안투영해제",
+        "cast": "scripts/spell/@심안투영.lua",
+        "uncast": "scsripts/spell/@심안투영해제",
         "message": "-"
     },
     "4009": {
         "name": "혼마술",
         "type": 2,
-        "cast": "@혼마술",
-        "uncast": "@혼마술해제",
+        "cast": "scripts/spell/@혼마술.lua",
+        "uncast": "scsripts/spell/@혼마술해제",
         "message": "대상은?"
     },
     "4010": {
         "name": "공력주입",
         "type": 2,
-        "cast": "@공력주입",
+        "cast": "scripts/spell/@공력주입.lua",
         "message": "대상은?"
     },
     "4011": {
         "name": "금강불체",
         "type": 5,
-        "cast": "@금강불체",
-        "uncast": "@금강불체해제",
+        "cast": "scripts/spell/@금강불체.lua",
+        "uncast": "scsripts/spell/@금강불체해제",
         "message": "-"
     },
     "4012": {
         "name": "무력화",
         "type": 2,
-        "cast": "@무력화",
+        "cast": "scripts/spell/@무력화.lua",
         "message": "대상은?"
     },
     "4013": {
         "name": "환마술",
         "type": 5,
-        "cast": "@환마술",
-        "uncast": "@환마술해제",
+        "cast": "scripts/spell/@환마술.lua",
+        "uncast": "scsripts/spell/@환마술해제",
         "message": "-"
     },
     "4014": {
         "name": "부활",
         "type": 9,
-        "cast": "@부활",
+        "cast": "scripts/spell/@부활.lua",
         "message": "대상은?"
     },
     "4015": {
         "name": "반탄공",
         "type": 5,
-        "cast": "@반탄공",
-        "uncast": "@반탄공해제",
+        "cast": "scripts/spell/@반탄공.lua",
+        "uncast": "scsripts/spell/@반탄공해제",
         "message": "-"
     },
     "4016": {
         "name": "신령지익",
         "type": 5,
-        "cast": "@신령지익",
-        "uncast": "@신령지익해제",
-        "concast": "@신령지익지속",
+        "cast": "scripts/spell/@신령지익.lua",
+        "uncast": "scsripts/spell/@신령지익해제",
+        "concast": "scripts/spell/@신령지익지속.lua",
         "message": "-"
     },
     "4017": {
         "name": "신령지익진",
         "type": 5,
-        "uncast": "@신령지익진해제",
-        "concast": "@신령지익진지속",
+        "uncast": "scsripts/spell/@신령지익진해제",
+        "concast": "scripts/spell/@신령지익진지속.lua",
         "message": "-"
     },
     "4018": {
         "name": "파력무참",
         "type": 5,
-        "cast": "@파력무참",
-        "uncast": "@파력무참해제",
-        "concast": "@파력무참지속",
+        "cast": "scripts/spell/@파력무참.lua",
+        "uncast": "scsripts/spell/@파력무참해제",
+        "concast": "scripts/spell/@파력무참지속.lua",
         "message": "-"
     },
     "4019": {
         "name": "파력무참진",
         "type": 5,
-        "uncast": "@파력무참진해제",
-        "concast": "@파력무참진지속",
+        "uncast": "scsripts/spell/@파력무참진해제",
+        "concast": "scripts/spell/@파력무참진지속.lua",
         "message": "-"
     },
     "4020": {
         "name": "환군마술",
         "type": 5,
-        "cast": "@환군마술",
-        "uncast": "@환군마술해제",
+        "cast": "scripts/spell/@환군마술.lua",
+        "uncast": "scsripts/spell/@환군마술해제",
         "message": "-"
     },
     "4021": {
         "name": "귀염추혼소",
         "type": 5,
-        "cast": "@귀염추혼소",
-        "uncast": "@귀염추혼소해제",
+        "cast": "scripts/spell/@귀염추혼소.lua",
+        "uncast": "scsripts/spell/@귀염추혼소해제",
         "message": "-"
     },
     "4022": {
         "name": "퇴마주",
         "type": 2,
-        "cast": "@퇴마주",
+        "cast": "scripts/spell/@퇴마주.lua",
         "message": "대상은?"
     },
     "4023": {
         "name": "해독",
         "type": 2,
-        "cast": "@해독",
+        "cast": "scripts/spell/@해독.lua",
         "message": "대상은?"
     },
     "4024": {
         "name": "활력",
         "type": 2,
-        "cast": "@활력",
+        "cast": "scripts/spell/@활력.lua",
         "message": "대상은?"
     },
     "4025": {
         "name": "누리의기원",
         "type": 5,
-        "cast": "@누리의기원",
+        "cast": "scripts/spell/@누리의기원.lua",
         "message": "-"
     },
     "4026": {
         "name": "바다의기원",
         "type": 5,
-        "cast": "@바다의기원",
+        "cast": "scripts/spell/@바다의기원.lua",
         "message": "-"
     },
     "4027": {
         "name": "대지의기원",
         "type": 2,
-        "cast": "@대지의기원",
+        "cast": "scripts/spell/@대지의기원.lua",
         "message": "대상은?"
     },
     "4028": {
         "name": "동해의기원",
         "type": 2,
-        "cast": "@동해의기원",
+        "cast": "scripts/spell/@동해의기원.lua",
         "message": "대상은?"
     },
     "4029": {
         "name": "하늘의기원",
         "type": 5,
-        "cast": "@하늘의기원",
+        "cast": "scripts/spell/@하늘의기원.lua",
         "message": "-"
     },
     "4030": {
         "name": "천공의기원",
         "type": 2,
-        "cast": "@천공의기원",
+        "cast": "scripts/spell/@천공의기원.lua",
         "message": "대상은?"
     },
     "4031": {
         "name": "천공의희원",
         "type": 5,
-        "cast": "@천공의희원",
+        "cast": "scripts/spell/@천공의희원.lua",
         "message": "-"
     },
     "4032": {
         "name": "구름의기원",
         "type": 2,
-        "cast": "@구름의기원",
+        "cast": "scripts/spell/@구름의기원.lua",
         "message": "대상은?"
     },
     "4033": {
         "name": "구름의희원",
         "type": 5,
-        "cast": "@구름의희원",
+        "cast": "scripts/spell/@구름의희원.lua",
         "message": "-"
     },
     "4034": {
         "name": "태양의기원",
         "type": 2,
-        "cast": "@태양의기원",
+        "cast": "scripts/spell/@태양의기원.lua",
         "message": "대상은?"
     },
     "4035": {
         "name": "태양의희원",
         "type": 5,
-        "cast": "@태양의희원",
+        "cast": "scripts/spell/@태양의희원.lua",
         "message": "-"
     },
     "4036": {
         "name": "생명의기원",
         "type": 2,
-        "cast": "@생명의기원",
+        "cast": "scripts/spell/@생명의기원.lua",
         "message": "대상은?"
     },
     "4037": {
         "name": "백호의희원",
         "type": 2,
-        "cast": "@백호의희원",
+        "cast": "scripts/spell/@백호의희원.lua",
         "message": "대상은?"
     },
     "4038": {
         "name": "신령의기원",
         "type": 2,
-        "cast": "@신령의기원",
+        "cast": "scripts/spell/@신령의기원.lua",
         "message": "대상은?"
     },
     "4039": {
         "name": "신령의기원'첨",
         "type": 5,
-        "cast": "@신령의기원'첨",
+        "cast": "scripts/spell/@신령의기원.lua'첨",
         "message": "-"
     },
     "4040": {
         "name": "백호의희원'첨",
         "type": 5,
-        "cast": "@백호의희원'첨",
+        "cast": "scripts/spell/@백호의희원.lua'첨",
         "message": "-"
     },
     "4041": {
         "name": "봉황의기원",
         "type": 2,
-        "cast": "@봉황의기원",
+        "cast": "scripts/spell/@봉황의기원.lua",
         "message": "대상은?"
     },
     "4042": {
         "name": "지진",
         "type": 2,
-        "cast": "@지진",
+        "cast": "scripts/spell/@지진.lua",
         "message": "대상은?"
     },
     "5001": {
         "name": "신의소환",
         "type": 1,
-        "cast": "@신의소환",
+        "cast": "scripts/spell/@신의소환.lua",
         "message": "소환할 대상은?"
     },
     "5002": {
         "name": "신의출두",
         "type": 1,
-        "cast": "@신의출두",
+        "cast": "scripts/spell/@신의출두.lua",
         "message": "출두할 대상은?"
     },
     "5003": {
         "name": "잠복근무",
         "type": 5,
-        "cast": "@잠복근무",
+        "cast": "scripts/spell/@잠복근무.lua",
         "message": "-"
     },
     "5004": {
         "name": "생성　",
         "type": 1,
-        "cast": "@생성　",
+        "cast": "scripts/spell/@생성　.lua",
         "message": "생성할 아이템은?"
     },
     "5005": {
         "name": "맵번호",
         "type": 1,
-        "cast": "@맵번호",
+        "cast": "scripts/spell/@맵번호.lua",
         "message": "검색할 맵 이름은?"
     },
     "5006": {
         "name": "세계후",
         "type": 1,
-        "cast": "@세계후",
+        "cast": "scripts/spell/@세계후.lua",
         "message": "할 말은?"
     },
     "5007": {
         "name": "감시",
         "type": 2,
-        "cast": "@감시",
+        "cast": "scripts/spell/@감시.lua",
         "message": "대상은?"
     },
     "5008": {
         "name": "강제이동",
         "type": 5,
-        "cast": "@강제이동",
+        "cast": "scripts/spell/@강제이동.lua",
         "message": "-"
     },
     "5009": {
         "name": "압록지정",
         "type": 12,
-        "cast": "@압록지정",
+        "cast": "scripts/spell/@압록지정.lua",
         "message": "-"
     },
     "6001": {
         "name": "왕의저주",
         "type": 5,
-        "uncast": "@왕의저주해제",
+        "uncast": "scsripts/spell/@왕의저주해제",
         "message": "-"
     },
     "6002": {
         "name": "금고주인의저주",
         "type": 5,
-        "uncast": "@금고주인의저주해제",
+        "uncast": "scsripts/spell/@금고주인의저주해제",
         "message": "-"
     },
     "6003": {
         "name": "귀신퇴치부적",
         "type": 5,
-        "uncast": "@귀신퇴치부적해제",
-        "concast": "@귀신퇴치부적",
+        "uncast": "scsripts/spell/@귀신퇴치부적해제",
+        "concast": "scripts/spell/@귀신퇴치부적.lua",
         "message": "-"
     },
     "6004": {
         "name": "표신궁고문서6찾기",
         "type": 5,
-        "uncast": "@표신궁고문서6해제",
-        "concast": "@표신궁고문서6",
+        "uncast": "scsripts/spell/@표신궁고문서6해제",
+        "concast": "scripts/spell/@표신궁고문서6.lua",
         "message": "-"
     },
     "6005": {
         "name": "동충하초인삼",
         "type": 5,
-        "uncast": "@동충하초인삼해제",
-        "concast": "@동충하초인삼",
+        "uncast": "scsripts/spell/@동충하초인삼해제",
+        "concast": "scripts/spell/@동충하초인삼.lua",
         "message": "-"
     },
     "6006": {
         "name": "만리향씨앗",
         "type": 5,
-        "uncast": "@만리향씨앗해제",
-        "concast": "@만리향씨앗",
+        "uncast": "scsripts/spell/@만리향씨앗해제",
+        "concast": "scripts/spell/@만리향씨앗.lua",
         "message": "-"
     },
     "6007": {
         "name": "변신시약",
         "type": 5,
-        "cast": "@변신시약",
-        "uncast": "@변신시약해제",
+        "cast": "scripts/spell/@변신시약.lua",
+        "uncast": "scsripts/spell/@변신시약해제",
         "message": "-"
     },
     "6008": {
         "name": "만리장성수리",
         "type": 5,
-        "uncast": "@만리장성수리해제",
-        "concast": "@만리장성수리",
+        "uncast": "scsripts/spell/@만리장성수리해제",
+        "concast": "scripts/spell/@만리장성수리.lua",
         "message": "-"
     },
     "6009": {
         "name": "적심토",
         "type": 5,
-        "uncast": "@적심토해제",
-        "concast": "@적심토",
+        "uncast": "scsripts/spell/@적심토해제",
+        "concast": "scripts/spell/@적심토.lua",
         "message": "-"
     },
     "6010": {
         "name": "멍석말이",
         "type": 5,
-        "cast": "@멍석말이",
-        "concast": "@멍석말이지속",
+        "cast": "scripts/spell/@멍석말이.lua",
+        "concast": "scripts/spell/@멍석말이지속.lua",
         "message": "-"
     },
     "6011": {
         "name": "승급보상",
         "type": 5,
-        "uncast": "@승급보상",
+        "uncast": "scsripts/spell/@승급보상",
         "message": "-"
     },
     "6012": {
         "name": "결혼체크",
         "type": 5,
-        "uncast": "@결혼체크",
+        "uncast": "scsripts/spell/@결혼체크",
         "message": "-"
     },
     "6013": {
         "name": "옥좌점령",
         "type": 5,
-        "concast": "@옥좌점령",
+        "concast": "scripts/spell/@옥좌점령.lua",
         "message": "-"
     },
     "6014": {
         "name": "거륵주독",
         "type": 5,
-        "concast": "@거륵주독지속",
+        "concast": "scripts/spell/@거륵주독지속.lua",
         "message": "-"
     },
     "6015": {
         "name": "록란조",
         "type": 5,
-        "concast": "@록란조지속",
+        "concast": "scripts/spell/@록란조지속.lua",
         "message": "-"
     },
     "6016": {
         "name": "태자의장난감",
         "type": 5,
-        "uncast": "@태자의장난감해제",
-        "concast": "@태자의장난감",
+        "uncast": "scsripts/spell/@태자의장난감해제",
+        "concast": "scripts/spell/@태자의장난감.lua",
         "message": "-"
     },
     "6017": {
         "name": "주작의검",
         "type": 5,
-        "concast": "@주작의검",
+        "concast": "scripts/spell/@주작의검.lua",
         "message": "-"
     },
     "6018": {
         "name": "현무의검",
         "type": 5,
-        "concast": "@현무의검",
+        "concast": "scripts/spell/@현무의검.lua",
         "message": "-"
     },
     "6019": {
         "name": "청룡의검",
         "type": 5,
-        "concast": "@청룡의검",
+        "concast": "scripts/spell/@청룡의검.lua",
         "message": "-"
     },
     "6020": {
         "name": "백호의검",
         "type": 5,
-        "concast": "@백호의검",
+        "concast": "scripts/spell/@백호의검.lua",
         "message": "-"
     },
     "6021": {
         "name": "산신의보물지도",
         "type": 5,
-        "uncast": "@산신의보물지도해제",
-        "concast": "@산신의보물지도",
+        "uncast": "scsripts/spell/@산신의보물지도해제",
+        "concast": "scripts/spell/@산신의보물지도.lua",
         "message": "-"
     },
     "6022": {
         "name": "여신의이슬",
         "type": 5,
-        "uncast": "@여신의이슬해제",
-        "concast": "@여신의이슬",
+        "uncast": "scsripts/spell/@여신의이슬해제",
+        "concast": "scripts/spell/@여신의이슬.lua",
         "message": "-"
     },
     "6023": {
         "name": "청심초",
         "type": 5,
-        "uncast": "@청심초해제",
-        "concast": "@청심초",
+        "uncast": "scsripts/spell/@청심초해제",
+        "concast": "scripts/spell/@청심초.lua",
         "message": "-"
     },
     "7001": {
         "name": "복홍잡기",
         "type": 5,
-        "concast": "@복홍잡기",
+        "concast": "scripts/spell/@복홍잡기.lua",
         "message": "-"
     },
     "7002": {
         "name": "태자전음문서",
         "type": 5,
-        "cast": "@태자전음문서",
+        "cast": "scripts/spell/@태자전음문서.lua",
         "message": "-"
     },
     "7003": {
         "name": "게장군포박",
         "type": 5,
-        "concast": "@게장군포박",
+        "concast": "scripts/spell/@게장군포박.lua",
         "message": "-"
     },
     "7004": {
         "name": "문어장군포박",
         "type": 5,
-        "concast": "@문어장군포박",
+        "concast": "scripts/spell/@문어장군포박.lua",
         "message": "-"
     },
     "7005": {
         "name": "해마병사잡기",
         "type": 5,
-        "cast": "@해마병사잡기",
+        "cast": "scripts/spell/@해마병사잡기.lua",
         "message": "-"
     },
     "7006": {
         "name": "해마장군잡기",
         "type": 5,
-        "cast": "@해마장군잡기",
+        "cast": "scripts/spell/@해마장군잡기.lua",
         "message": "-"
     },
     "7007": {
         "name": "인어장군잡기",
         "type": 5,
-        "concast": "@인어장군잡기",
+        "concast": "scripts/spell/@인어장군잡기.lua",
         "message": "-"
     },
     "7008": {
         "name": "상어장군잡기",
         "type": 5,
-        "concast": "@상어장군잡기",
+        "concast": "scripts/spell/@상어장군잡기.lua",
         "message": "-"
     },
     "7009": {
         "name": "해파리장군잡기",
         "type": 5,
-        "concast": "@해파리장군잡기",
+        "concast": "scripts/spell/@해파리장군잡기.lua",
         "message": "-"
     },
     "7010": {
         "name": "전략문서",
         "type": 5,
-        "cast": "@전략문서",
+        "cast": "scripts/spell/@전략문서.lua",
         "message": "-"
     },
     "7011": {
         "name": "청의태자포획",
         "type": 5,
-        "concast": "@청의태자포획",
+        "concast": "scripts/spell/@청의태자포획.lua",
         "message": "-"
     },
     "7012": {
         "name": "토깽이포획",
         "type": 5,
-        "concast": "@토깽이포획"
+        "concast": "scripts/spell/@토깽이포획.lua"
     }
 }

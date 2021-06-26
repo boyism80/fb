@@ -529,7 +529,9 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             item = this->create(std::stoi(i.key().asString()), data);
 
             // Common options
-            item->active_script(CP949(data["script"]["active"].asString(), PLATFORM::Windows));
+            auto                        active = CP949(data["script"]["active"].asString(), PLATFORM::Windows);
+            if(std::filesystem::exists(active))
+                item->active_script(active);
             item->price(data["price"].asInt());
             item->trade(data["trade"]["enabled"].asBool());
             item->entrust_enabled(data["entrust"]["enabled"].asBool());
@@ -563,8 +565,13 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
                 equipment->healing_cycle(option["healing_cycle"].asInt());
                 equipment->defensive_physical(option["defensive"]["physical"].asInt());
                 equipment->defensive_magical(option["defensive"]["magical"].asInt());
-                equipment->dress_script(CP949(data["script"]["dress"].asString(), PLATFORM::Windows));
-                equipment->undress_script(CP949(data["script"]["undress"].asString(), PLATFORM::Windows));
+                auto            dress = CP949(data["script"]["dress"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(dress))
+                    equipment->dress_script(dress);
+
+                auto            undress = CP949(data["script"]["undress"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(undress))
+                    equipment->undress_script(undress);
             }
 
 
@@ -676,7 +683,8 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
 
                 auto                cloned = new fb::game::npc(core, listener);
                 cloned->direction(direction);
-                cloned->script(script);
+                if(std::filesystem::exists(script))
+                    cloned->script(script);
                 cloned->map(map, position);
             }
 
@@ -759,8 +767,14 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
             mob->offensive(this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)));
             mob->size(this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)));
             mob->speed(std::chrono::milliseconds(data["speed"].asInt()));
-            mob->script_attack(CP949(data["script"]["attack"].asString(), PLATFORM::Windows));
-            mob->script_die(CP949(data["script"]["die"].asString(), PLATFORM::Windows));
+
+            auto                attack = CP949(data["script"]["attack"].asString(), PLATFORM::Windows);
+            if(std::filesystem::exists(attack))
+                mob->script_attack(attack);
+
+            auto                die = CP949(data["script"]["die"].asString(), PLATFORM::Windows);
+            if(std::filesystem::exists(die))
+                mob->script_die(die);
 
             std::map<uint16_t, fb::game::mob::master*>::insert(std::make_pair(id, mob));
 
@@ -794,7 +808,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
                 throw std::runtime_error(buffer);
             }
 
-            for(auto x : *i)
+            for(auto& x : *i)
             {
                 float       percentage = x["percentage"].asFloat();
                 auto        item_name = CP949(x["item"].asString(), PLATFORM::Windows);
