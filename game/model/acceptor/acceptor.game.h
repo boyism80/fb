@@ -175,6 +175,7 @@ public:
     bool                    handle_command_exit(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_tile(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_save(fb::game::session& session, Json::Value& parameters);
+    bool                    handle_command_mapobj(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

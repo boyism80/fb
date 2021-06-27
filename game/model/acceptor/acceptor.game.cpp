@@ -328,6 +328,12 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
             .fn = std::bind(&acceptor::handle_command_save, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
+
+    this->bind_command("맵오브젝트", command
+        {
+            .fn = std::bind(&acceptor::handle_command_mapobj, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 acceptor::~acceptor()

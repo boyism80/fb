@@ -337,3 +337,21 @@ bool fb::game::acceptor::handle_command_save(fb::game::session& session, Json::V
     this->save();
     return true;
 }
+
+bool fb::game::acceptor::handle_command_mapobj(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        return false;
+
+    if(parameters[0].isNumeric() == false)
+        return false;
+
+    auto value = parameters[0].asInt();
+
+    auto map = session.map();
+    if(map == nullptr)
+        return false;
+
+    (*map)(session.x(), session.y())->object = value;
+    return true;
+}
