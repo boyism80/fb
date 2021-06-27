@@ -18,7 +18,7 @@ bool fb::table::load(const std::string& path, Json::Value& json)
     return true;
 }
 
-uint32_t fb::table::load(const std::string& path, std::function<void(Json::Value::iterator&, double)> on_callback, std::function<void(Json::Value::iterator& i, const std::string& error)> on_error)
+uint32_t fb::table::load(const std::string& path, std::function<void(Json::Value&, Json::Value&, double)> callback, std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async)
 {
     Json::Value             data;
     if(fb::table::load(path, data) == false)
@@ -26,17 +26,59 @@ uint32_t fb::table::load(const std::string& path, std::function<void(Json::Value
 
     auto                    count = data.size();
     auto                    read = 0;
+    auto                    queue = std::queue<std::pair<Json::Value, std::unique_ptr<Json::Value>>>();
+    auto                    mutex = std::mutex();
+
     for(auto i = data.begin(); i != data.end(); i++)
     {
-        try
+        queue.push(std::make_pair(i.key(), std::make_unique<Json::Value>(*i)));
+    }
+
+    auto                    fn = [&]()
+    {
+        while(true)
         {
-            auto percentage = (read++ * 100) / double(count);
-            on_callback(i, percentage);
+            auto            key = Json::Value();
+            auto            data = Json::Value();
+
+            {   auto _ = std::lock_guard<std::mutex>(mutex);
+                
+                if(queue.empty())
+                    break;
+
+                auto&       entity = queue.front();
+                key                = entity.first;
+                data               = *entity.second;
+                queue.pop();
+            }
+
+            auto percentage = 0.0;
+            try
+            {
+                {   auto _ = std::lock_guard<std::mutex>(mutex);
+                    percentage = (read++ * 100) / double(count);
+                }
+
+                callback(key, data, percentage);
+            }
+            catch(std::exception& e)
+            {
+                error(key, data, e.what());
+            }
         }
-        catch(std::exception& e)
+    };
+
+    if(async)
+    {
+        auto tasks = std::queue<std::future<void>>();
+        for(int i = 0; i < std::thread::hardware_concurrency(); i++)
         {
-            on_error(i, e.what());
+            tasks.push(std::async(std::launch::async, fn));
         }
+    }
+    else
+    {
+        fn();
     }
 
     return count;

@@ -16,20 +16,20 @@ bool fb::internal::container::host::load(const std::string& path, fb::table::han
     auto count = fb::table::load
     (
         path, 
-        [&] (Json::Value::iterator& i, double percentage)
+        [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                key = i.key().asString();
-            auto                value = (*i).asUInt();
+            auto                id = key.asString();
+            auto                value = data.asUInt();
 
-            this->insert(std::pair<uint32_t, uint8_t>(std::stoi(key), value));
-            callback(key, percentage);
+            this->insert(std::pair<uint32_t, uint8_t>(std::stoi(id), value));
+            callback(id, percentage);
         },
-        [&] (Json::Value::iterator& i, const std::string& e)
+        [&] (Json::Value& key, Json::Value& data, const std::string& e)
         {
-            auto                key = i.key().asString();
-            error(key, e);
-        }
-        );
+            error(key.asString(), e);
+        },
+        false
+    );
 
     complete(count);
     return true;
