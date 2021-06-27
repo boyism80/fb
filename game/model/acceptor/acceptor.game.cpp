@@ -386,7 +386,7 @@ uint32_t fb::game::acceptor::elapsed_seconds(const datetime& datetime)
 
     auto tm = std::tm();
     sstream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return std::difftime(std::time(nullptr), std::mktime(&tm));
+    return std::difftime(std::mktime(fb::now()), std::mktime(&tm));
 }
 
 std::string fb::game::acceptor::elapsed_message(const datetime& datetime)
