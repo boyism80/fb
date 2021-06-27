@@ -2,6 +2,7 @@
 #define __SQL_SERVICE_H__
 
 #include "module/service/service.h"
+#include "module/time/time.h"
 
 namespace fb { namespace game { 
 

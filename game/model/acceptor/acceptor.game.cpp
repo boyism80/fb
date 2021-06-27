@@ -145,7 +145,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt()),
+    _time(fb::now())
 {
     const auto& config = fb::config::get();
 
@@ -217,6 +218,7 @@ acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t acce
     this->bind_timer(std::bind(&acceptor::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 몹 리젠 타이머
     this->bind_timer(std::bind(&acceptor::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 버프 타이머
     this->bind_timer(std::bind(&acceptor::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(config["save"].asInt()));      // DB 저장 타이머
+    this->bind_timer(std::bind(&acceptor::handle_time,         this, std::placeholders::_1, std::placeholders::_2), 1min);                                              // 세계 시간 타이머
 
     this->bind_command("맵이동", command 
         { 
@@ -369,6 +371,51 @@ void fb::game::acceptor::handle_timer(uint64_t elapsed_milliseconds)
 {
     for(auto& pair : fb::game::table::maps)
         pair.second->handle_timer(elapsed_milliseconds);
+}
+
+uint32_t fb::game::acceptor::elapsed_seconds(const datetime& datetime)
+{
+    auto sstream = std::stringstream();
+    sstream << 
+        datetime.year << '-' << 
+        datetime.month << '-' << 
+        datetime.day << ' ' << 
+        datetime.hour << ':' <<
+        datetime.minute << ':' <<
+        datetime.sec;
+
+    auto tm = std::tm();
+    sstream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return std::difftime(std::time(nullptr), std::mktime(&tm));
+}
+
+std::string fb::game::acceptor::elapsed_message(const datetime& datetime)
+{
+    auto elapsed = this->elapsed_seconds(datetime);
+
+    auto minutes = uint32_t(elapsed / 60);
+    if(minutes > 0)
+    {
+        auto sstream = std::stringstream();
+        auto hours = minutes / 60; minutes = minutes % 60;
+        auto days = hours / 24; hours = hours % 24;
+
+        if(days > 0)
+            sstream << days << "일 ";
+
+        if(hours > 0)
+            sstream << hours << "시간 ";
+
+        if(minutes > 0)
+            sstream << minutes << "분만에 바람으로...";
+
+        auto msg = sstream.str();
+        return msg;
+    }
+    else
+    {
+        return std::string();
+    }
 }
 
 fb::game::session* fb::game::acceptor::find(const std::string& name) const
@@ -718,6 +765,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             uint32_t					birth;
             bool                        admin;
             datetime					date;
+            datetime                    last_login;
             uint32_t					look;
             uint32_t					color;
             uint32_t					sex;
@@ -748,7 +796,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             std::optional<uint32_t>		aux_top_color;
             std::optional<uint32_t>		aux_bot_color;
             std::optional<uint32_t>		clan;
-            baseResult.fetch(id, name, pw, birth, date, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
+            baseResult.fetch(id, name, pw, birth, date, last_login, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
             this->_internal->send(fb::protocol::internal::request::login(name, map));
 
             session->id(id);
@@ -777,11 +825,15 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             session->map(fb::game::table::maps[map], point16_t(position_x, position_y));
 
             this->send(*session, fb::protocol::game::response::init(), scope::SELF);
-            this->send(*session, fb::protocol::game::response::time(25), scope::SELF);
+            this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
             this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
             
             if(from == fb::protocol::internal::services::SERVICE_LOGIN)
-                this->send(*session, fb::protocol::game::response::message("0시간 1분만에 바람으로", message::type::STATE), scope::SELF);
+            {
+                auto msg = this->elapsed_message(last_login);
+                if(msg.empty() == false)
+                    this->send(*session, fb::protocol::game::response::message(msg, message::type::STATE), scope::SELF);
+            }
 
             this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
             this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
@@ -793,7 +845,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                     return true;
 
                 auto& items = fb::game::table::items;
-                auto item = items[master.value()]->make<fb::game::item>(this);
+                auto  item = items[master.value()]->make<fb::game::item>(this);
                 if(item == nullptr)
                     return true;
 
@@ -1611,6 +1663,15 @@ void fb::game::acceptor::handle_save_timer(std::chrono::steady_clock::duration n
             this->on_save(*session);
         }
     }
+}
+
+void fb::game::acceptor::handle_time(std::chrono::steady_clock::duration now, std::thread::id id)
+{
+    auto updated = fb::now();
+    if(this->_time->tm_hour != updated->tm_hour)
+        this->send(fb::protocol::game::response::time(updated->tm_hour));
+
+    this->_time = updated;
 }
 
 bool fb::game::acceptor::handle_command(fb::game::session& session, const std::string& message)

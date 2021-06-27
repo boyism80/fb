@@ -60,12 +60,15 @@ private:
     command_dict            _command_dict;
     std::mutex              _hash_mutex;
     hash_set                _hash_set;
+    tm*                     _time;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
     ~acceptor();
 
 private:
+    uint32_t                elapsed_seconds(const datetime& datetime);
+    std::string             elapsed_message(const datetime& datetime);
     fb::game::session*      find(const std::string& name) const;
     void                    bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
@@ -150,6 +153,7 @@ public:
     void                    handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id);
     void                    handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id);
     void                    handle_save_timer(std::chrono::steady_clock::duration now, std::thread::id id);
+    void                    handle_time(std::chrono::steady_clock::duration now, std::thread::id id);
     bool                    handle_command(fb::game::session& session, const std::string& message);
 
 public:

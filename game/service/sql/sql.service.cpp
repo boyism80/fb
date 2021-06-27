@@ -2,6 +2,18 @@
 #include "model/map/map.h"
 #include "sql.service.h"
 
+std::string nowstr()
+{
+    std::stringstream sstream;
+    sstream << '\'' << std::put_time(fb::now(), "%Y-%m-%d %H:%M:%S") << '\'';
+
+    auto now_s = sstream.str();
+    std::cout << now_s;
+
+    return sstream.str();
+}
+
+
 std::string fb::game::service::sql::session::update(fb::game::session& session)
 {
     auto map = session.map();
@@ -12,6 +24,7 @@ std::string fb::game::service::sql::session::update(fb::game::session& session)
 
     auto dict = std::map<std::string, std::string>
     {
+        { "last_login",                  nowstr() },
         { "admin",                       std::to_string((uint8_t)session.admin()) },
         { "look",                        std::to_string(session.look()) },
         { "color",                       std::to_string(session.color()) },

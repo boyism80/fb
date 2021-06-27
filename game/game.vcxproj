@@ -176,6 +176,7 @@
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\table\table.cpp" />
     <ClCompile Include="..\module\thread\thread.cpp" />
+    <ClCompile Include="..\module\time\time.cpp" />
     <ClCompile Include="builtin\builtin_function.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.command.cpp" />
     <ClCompile Include="model\acceptor\acceptor.game.cpp" />
@@ -218,6 +219,7 @@
     <ClInclude Include="..\module\string\string.h" />
     <ClInclude Include="..\module\table\table.h" />
     <ClInclude Include="..\module\thread\thread.h" />
+    <ClInclude Include="..\module\time\time.h" />
     <ClInclude Include="builtin\builtin_function.h" />
     <ClInclude Include="builtin\builtin_function.hpp" />
     <ClInclude Include="model\acceptor\acceptor.game.h" />

@@ -119,6 +119,9 @@
     <Filter Include="module\thread">
       <UniqueIdentifier>{b62461a3-b9e9-4664-834e-1c279745c8ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="module\time">
+      <UniqueIdentifier>{cca60f19-d2c5-43bd-889c-fd83f19457b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -219,6 +222,9 @@
     </ClCompile>
     <ClCompile Include="..\module\thread\thread.cpp">
       <Filter>module\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="..\module\time\time.cpp">
+      <Filter>module\time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -344,6 +350,9 @@
     </ClInclude>
     <ClInclude Include="..\module\thread\thread.h">
       <Filter>module\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\module\time\time.h">
+      <Filter>module\time</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
