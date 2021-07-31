@@ -66,8 +66,12 @@ void fb::game::acceptor::on_move(fb::game::object& me)
 
 void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
+    auto& uncast = buff.spell().uncast();
+    if(uncast.empty())
+        return;
+
      lua::get()
-         .from(buff.spell().uncast().c_str())
+         .from(uncast.c_str())
          .func("handle_uncast")
          .pushobject(me)
          .pushobject(buff.spell())

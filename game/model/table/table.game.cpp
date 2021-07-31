@@ -882,18 +882,37 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
 
             uint8_t             type = data["type"].asInt();
 
-            std::string         cast, uncast, concast, message;
+            std::string         cast;
             if (data.isMember("cast"))
+            {
                 cast = CP949(data["cast"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(cast) == false)
+                    cast = "";
+            }
 
+            std::string         uncast;
             if (data.isMember("uncast"))
+            {
                 uncast = CP949(data["uncast"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(uncast) == false)
+                    uncast = "";
+            }
 
+            std::string         concast;
             if (data.isMember("concast"))
+            {
                 concast = CP949(data["concast"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(concast) == false)
+                    concast = "";
+            }
 
+            std::string         message;
             if (data.isMember("message"))
+            {
                 message = CP949(data["message"].asString(), PLATFORM::Windows);
+                if(std::filesystem::exists(message) == false)
+                    message = "";
+            }
 
             {
                 auto _ = std::lock_guard(*mutex);
