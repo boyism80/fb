@@ -12,84 +12,12 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-#pragma region listener
+#pragma region forward nested declaration
 public:
-interface listener : public virtual fb::game::object::listener,
-    public virtual fb::game::spell::listener
-{
-    virtual void on_attack(life& me, object* you) = 0;
-    virtual void on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
-    virtual void on_kill(life& me, life& you) = 0;
-    virtual void on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_die(life& me, object* you) = 0;
+    interface listener;
 
-    virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
-    virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
-    virtual void on_hp(life& me, uint32_t before, uint32_t current) = 0;
-    virtual void on_mp(life& me, uint32_t before, uint32_t current) = 0;
-};
-#pragma endregion
-
-
-#pragma region master class
 public:
-    class master : public fb::game::object::master
-    {
-#pragma region lua
-    public:
-        LUA_PROTOTYPE
-#pragma endregion
-
-
-#pragma region protected field
-    protected:
-        fb::game::defensive         _defensive;
-        uint32_t                    _hp, _mp;
-        uint32_t                    _experience;
-#pragma endregion
-
-
-#pragma region friend
-    public:
-        friend class fb::game::life;
-#pragma endregion
-
-
-#pragma region constructor / destructor
-    public:
-        master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
-        master(const master& master, uint32_t hp, uint32_t mp);
-        master(const master& master);
-        virtual ~master();
-#pragma endregion
-
-
-#pragma region public method
-    public:
-        uint32_t                    hp() const;
-        void                        hp(uint32_t value);
-
-        uint32_t                    mp() const;
-        void                        mp(uint32_t value);
-
-        uint32_t                    experience() const;
-        void                        experience(uint32_t value);
-
-        uint32_t                    defensive_physical() const;
-        void                        defensive_physical(uint8_t value);
-
-        uint32_t                    defensive_magical() const;
-        void                        defensive_magical(uint8_t value);
-#pragma endregion
-
-
-#pragma region built-in method
-    public:
-        static int                  builtin_hp(lua_State* lua);
-        static int                  builtin_mp(lua_State* lua);
-#pragma endregion
-    };
-
+    class master;
 #pragma endregion
 
 #pragma region protected field
@@ -98,12 +26,10 @@ protected:
     fb::game::condition         _condition;
 #pragma endregion
 
-
 #pragma region public field
 public:
     fb::game::spells            spells;
 #pragma endregion
-
 
 #pragma region constructor / destructor
 protected:
@@ -113,12 +39,10 @@ protected:
     virtual ~life();
 #pragma endregion
 
-
 #pragma region protected method
 protected:
     uint32_t                    calculate_damage(uint32_t value, const fb::game::life& life) const;
 #pragma endregion
-
 
 #pragma region public method
 public:
@@ -188,6 +112,77 @@ public:
     static int                  builtin_damage(lua_State* lua);
 #pragma endregion
 };
+
+#pragma region interface
+interface life::listener : public virtual fb::game::object::listener,
+    public virtual fb::game::spell::listener
+{
+    virtual void                on_attack(life& me, object* you) = 0;
+    virtual void                on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void                on_kill(life& me, life& you) = 0;
+    virtual void                on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void                on_die(life& me, object* you) = 0;
+
+    virtual void                on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void                on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void                on_hp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void                on_mp(life& me, uint32_t before, uint32_t current) = 0;
+};
+#pragma endregion
+
+#pragma region master
+class life::master : public fb::game::object::master
+{
+#pragma region friend
+public:
+    friend class life;
+#pragma endregion
+
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+#pragma endregion
+
+#pragma region protected field
+protected:
+    fb::game::defensive         defensive;
+    uint32_t                    _hp, _mp;
+    uint32_t                    _experience;
+#pragma endregion
+
+#pragma region constructor / destructor
+public:
+    master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+    master(const master& master, uint32_t hp, uint32_t mp);
+    master(const master& master);
+    virtual ~master();
+#pragma endregion
+
+#pragma region public method
+public:
+    uint32_t                    hp() const;
+    void                        hp(uint32_t value);
+
+    uint32_t                    mp() const;
+    void                        mp(uint32_t value);
+
+    uint32_t                    experience() const;
+    void                        experience(uint32_t value);
+
+    uint32_t                    defensive_physical() const;
+    void                        defensive_physical(uint8_t value);
+
+    uint32_t                    defensive_magical() const;
+    void                        defensive_magical(uint8_t value);
+#pragma endregion
+
+#pragma region built-in method
+public:
+    static int                  builtin_hp(lua_State* lua);
+    static int                  builtin_mp(lua_State* lua);
+#pragma endregion
+};
+#pragma endregion
 
 } }
 

@@ -39,40 +39,47 @@ class acceptor :
 public:
     LUA_PROTOTYPE
 
+#pragma region enum
 public:
     enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
+#pragma endregion
 
+#pragma region forward nested declaration
+public:
+    struct command;
+#pragma endregion
+
+#pragma region type definition
 public:
     typedef std::function<bool(fb::game::session&, Json::Value&)> command_fn;
-
-    typedef struct __command
-    {
-    public:
-        command_fn          fn;
-        bool                admin;
-    } command;
-
-public:
     typedef std::map<std::string, command> command_dict;
     typedef std::unordered_set<const fb::game::object*> hash_set;
+#pragma endregion
 
+#pragma region private field
 private:
     command_dict            _command_dict;
     std::mutex              _hash_mutex;
     hash_set                _hash_set;
     tm*                     _time;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
     ~acceptor();
+#pragma endregion
 
+#pragma region private method
 private:
     uint32_t                elapsed_seconds(const datetime& datetime);
     std::string             elapsed_message(const datetime& datetime);
     fb::game::session*      find(const std::string& name) const;
     void                    bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
+#pragma endregion
 
+#pragma region public method
 public:
     bool                    exists(const fb::game::object& object) const;
 
@@ -86,15 +93,17 @@ public:
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
     void                    save();
 
-protected:
-    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const;
-    void                    handle_exit();
-
 public:
     fb::thread*             thread(const fb::game::map& map) const;
     uint8_t                 thread_index(const fb::game::map& map) const;
     fb::thread*             thread(const fb::game::object& obj) const;
     uint8_t                 thread_index(const fb::game::object& obj) const;
+#pragma endregion
+
+#pragma region handler method
+protected:
+    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const;
+    void                    handle_exit();
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
@@ -180,7 +189,9 @@ public:
     bool                    handle_command_tile(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_save(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_mapobj(fb::game::session& session, Json::Value& parameters);
+#pragma endregion
 
+#pragma region listener method
 public:
     // listener : object
     void                    on_create(fb::game::object& me);
@@ -268,9 +279,9 @@ public:
     // listener : game
     void                    on_save(session& me);
     void                    on_save(session& me, std::function<void(fb::game::session&)> fn);
+#pragma endregion
 
-
-    // built-in method
+#pragma region built-in method
 public:
     static int              builtin_seed(lua_State* lua);
     static int              builtin_sleep(lua_State* lua);
@@ -280,6 +291,15 @@ public:
     static int              builtin_name2item(lua_State* lua);
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);
+#pragma endregion
+};
+
+
+struct acceptor::command
+{
+public:
+    acceptor::command_fn    fn;
+    bool                    admin;
 };
 
 } }

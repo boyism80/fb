@@ -15,6 +15,7 @@ extern "C"
 #include "module/socket/socket.h"
 #include "module/encoding/encoding.h"
 
+#pragma region definition
 #define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\
                                             static const std::string        LUA_METATABLE_NAME;\
                                             virtual const std::string& metaname() const { return this->LUA_METATABLE_NAME; }
@@ -27,19 +28,24 @@ extern "C"
                                             };
 
 #define LUA_PENDING (LUA_ERRERR+1)
+#pragma endregion
 
 namespace fb { namespace game { namespace lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 100;
 
+#pragma region forward declaration
 class luable;
 class lua;
 class main;
+#pragma endregion
 
+#pragma region global function
 lua&                            get();
 lua*                            get(lua_State* lua);
 void                            reserve(int capacity = DEFAULT_POOL_SIZE);
 void                            bind_function(const std::string& name, lua_CFunction fn);
+#pragma endregion
 
 class luable
 {
@@ -58,25 +64,36 @@ public:
     virtual ~luable();
 #pragma endregion
 
+#pragma region built-in method
 public:
     static int                  builtin_gc(lua_State* lua);
+#pragma endregion
 };
 
 class lua
 {
-private:
-    static std::mutex           _mutex;
-
+#pragma region friend
 private:
     friend class main;
+#pragma endregion
 
+#pragma region static field
+private:
+    static std::mutex           _mutex;
+#pragma endregion
+
+#pragma region private field
 private:
     int                         _state;
     int                         _ref;
+#pragma endregion
 
+#pragma region protected field
 protected:
     lua_State*                  _lua;
+#pragma endregion
 
+#pragma region constructor / destructor
 protected:
     lua(lua_State* lua);
     lua(const lua&) = delete;
@@ -88,10 +105,14 @@ public:
 public:
     lua& operator = (lua&) = delete;
     lua& operator = (const lua&) = delete;
+#pragma endregion
 
+#pragma region private method
 private:
     void                        bind_builtin_functions();
+#pragma endregion
 
+#pragma region public method
 public:
     lua&                        from(const char* format, ...);
     lua&                        func(const char* format, ...);
@@ -141,11 +162,14 @@ public:
 public:
     bool                        pending() const;
     void                        pending(bool value);
+#pragma endregion
 
-
+#pragma region operator
 public:
     operator                    lua_State* () const;
+#pragma endregion
 
+#pragma region template method
 public:
     template <typename T>
     T* env(const char* key)
@@ -158,34 +182,46 @@ public:
 
         return ret;
     }
+#pragma endregion
 };
 
 
 class main
 {
+#pragma region friend
 public:
     friend class lua;
+#pragma endregion
 
+#pragma region type definition
 public:
     typedef std::map<std::string, const luaL_Reg*>      builtin_func_map;
     typedef std::map<std::string, lua_CFunction>        builtin_funcs;
     typedef std::map<std::string, std::string>          relation_map;
     typedef std::map<std::string, void*>                environment_map;
     typedef std::map<lua_State*, std::unique_ptr<lua>>  unique_lua_map;
+#pragma endregion
 
+#pragma region private field
 private:
     builtin_func_map            builtin_local_funcs;
     builtin_funcs               builtin_global_funcs;
     relation_map                relations;
     environment_map             environments;
     std::list<std::string>      inheritances;
+#pragma endregion
 
+#pragma region public field
 public:
     unique_lua_map              idle, busy;
+#pragma endregion
 
+#pragma region static field
 private:
     static std::unique_ptr<main> _instance;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     main() = default;
     main(const main&&) = delete;
@@ -194,19 +230,27 @@ public:
 public:
     main& operator = (main&) = delete;
     main& operator = (main&&) = delete;
+#pragma endregion
 
+#pragma region private method
 private:
     void                        update_inheritances();
+#pragma endregion
 
+#pragma region public method
 public:
     void                        reserve(int capacity = DEFAULT_POOL_SIZE);
     lua&                        alloc();
     lua*                        get(lua_State& lua);
     lua&                        release(lua& lua);
+#pragma endregion
 
+#pragma region static method
 public:
     static main&                get();
+#pragma endregion
 
+#pragma region template method
 public:
     template <typename T>
     void bind_class()
@@ -240,8 +284,10 @@ public:
     {
         this->environments.insert(std::make_pair(std::string(key), (void*)data));
     }
+#pragma endregion
 };
 
+#pragma region global template function
 template <typename T>
 void bind_class()
 {
@@ -262,6 +308,7 @@ void env(const char* key, T* data)
     auto& main = fb::game::lua::main::get();
     main.env(key, data);
 }
+#pragma endregion
 
 } } }
 

@@ -13,6 +13,9 @@ class sectors;
 class sector : private std::vector<fb::game::object*>
 {
 public:
+    friend class sectors;
+
+public:
     using std::vector<fb::game::object*>::begin;
     using std::vector<fb::game::object*>::cbegin;
     using std::vector<fb::game::object*>::end;
@@ -21,9 +24,6 @@ public:
     using std::vector<fb::game::object*>::at;
     using std::vector<fb::game::object*>::operator[];
     using std::vector<fb::game::object*>::size;
-
-public:
-    friend class fb::game::sectors;
 
 private:
     const uint32_t                  _id;

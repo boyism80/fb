@@ -6,38 +6,18 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class session;
 class item;
+#pragma endregion
 
 class trade
 {
-#pragma region listener
 public:
-interface listener
-{
-    virtual void on_trade_begin(session& me, session& you) = 0;
-    virtual void on_trade_bundle(session& me) = 0;
-    virtual void on_trade_item(session& me, session& from, uint8_t index) = 0;
-    virtual void on_trade_money(session& me, session& from) = 0;
-    virtual void on_trade_cancel(session& me, session& from) = 0;
-    virtual void on_trade_lock(session& me, bool mine) = 0;
-    virtual void on_trade_failed(session& me) = 0;
-    virtual void on_trade_success(session& me) = 0;
-};
-#pragma endregion
+    enum state : uint8_t;
 
-#pragma region enum
 public:
-    enum state : uint8_t
-    {
-        REQUEST                             = 0x00,
-        UP_ITEM                             = 0x01,
-        ITEM_COUNT                          = 0x02,
-        UP_MONEY                            = 0x03,
-        CANCEL                              = 0x04,
-        LOCK                                = 0x05,
-    };
-#pragma endregion
+    interface listener;
 
 private:
     session&                                _owner;
@@ -76,6 +56,28 @@ public:
 
     const std::vector<fb::game::item*>&     items() const;
     const fb::game::item*                   item(uint8_t index) const;
+};
+
+enum trade::state : uint8_t
+{
+    REQUEST                                 = 0x00,
+    UP_ITEM                                 = 0x01,
+    ITEM_COUNT                              = 0x02,
+    UP_MONEY                                = 0x03,
+    CANCEL                                  = 0x04,
+    LOCK                                    = 0x05,
+};
+
+interface trade::listener
+{
+    virtual void                            on_trade_begin(session& me, session& you) = 0;
+    virtual void                            on_trade_bundle(session& me) = 0;
+    virtual void                            on_trade_item(session& me, session& from, uint8_t index) = 0;
+    virtual void                            on_trade_money(session& me, session& from) = 0;
+    virtual void                            on_trade_cancel(session& me, session& from) = 0;
+    virtual void                            on_trade_lock(session& me, bool mine) = 0;
+    virtual void                            on_trade_failed(session& me) = 0;
+    virtual void                            on_trade_success(session& me) = 0;
 };
 
 } }

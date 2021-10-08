@@ -4,10 +4,11 @@
 #include "model/life/life.h"
 #include "model/item/item.h"
 
-
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class session;
+#pragma endregion
 
 class mob : public life
 {
@@ -16,43 +17,17 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-#pragma region listener
+#pragma region forward nested declaration
 public:
-interface listener : public virtual fb::game::life::listener
-{
-    virtual void on_attack(mob& me, object* you) = 0;
-    virtual void on_hit(mob& me, life& you, uint32_t damage, bool critical) = 0;
-    virtual void on_kill(mob& me, life& you) = 0;
-    virtual void on_damaged(mob& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_die(mob& me, object* you) = 0;
-};
-#pragma endregion
+    interface listener;
 
-#pragma region structure
 public:
-    typedef struct _damage
-    {
-    public:
-        uint16_t min, max;
+    class master;
 
-    public:
-        _damage() : _damage(0, 0) {}
-        _damage(uint16_t min, uint16_t max) : min(min), max(max) {}
-    } damage;
-
-    typedef struct _drop
-    {
-    public:
-        float percentage;
-        const fb::game::item::master* item;
-
-    public:
-        _drop() : percentage(0), item(NULL) {}
-        _drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) {}
-        _drop(const _drop& right) : percentage(right.percentage), item(right.item) {}
-    } drop;
+public:
+    struct damage;
+    struct drop;
 #pragma endregion
-
 
 #pragma region enum
 public:
@@ -60,83 +35,6 @@ public:
 
     enum sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
 #pragma endregion
-
-
-#pragma region master class
-public:
-class master : public fb::game::life::master
-{
-public:
-#pragma region lua
-    LUA_PROTOTYPE
-#pragma endregion
-
-
-#pragma region private field
-private:
-    mob::damage                             _damage;
-    offensive_type                          _offensive_type;
-    sizes                                   _size;
-    std::chrono::milliseconds               _speed;
-    std::string                             _script_attack, _script_die;
-    std::vector<drop>                       _items;
-#pragma endregion
-
-
-#pragma region friend
-public:
-    friend class mob;
-#pragma endregion
-
-
-#pragma region constructor / destructor
-public:
-    master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
-    master(const life::master& master);
-    ~master();
-#pragma endregion
-
-
-#pragma region public method
-public:
-    object::types                           type() const { return fb::game::object::types::MOB; }
-    object*                                 make(listener* listener) const;
-
-public:
-    uint16_t                                damage_min() const;
-    void                                    damage_min(uint16_t value);
-
-    uint16_t                                damage_max() const;
-    void                                    damage_max(uint16_t value);
-
-    mob::sizes                              size() const;
-    void                                    size(mob::sizes value);
-
-    std::chrono::milliseconds               speed() const;
-    void                                    speed(std::chrono::milliseconds value);
-
-    const std::string&                      script_attack() const;
-    void                                    script_attack(const std::string& value);
-
-    const std::string&                      script_die() const;
-    void                                    script_die(const std::string& value);
-
-    offensive_type                          offensive() const;
-    void                                    offensive(offensive_type value);
-
-    void                                    dropitem_add(const mob::drop& money);
-    void                                    dropitem_add(const fb::game::item::master* item, float percentage);
-    const std::vector<drop>&                items() const;
-#pragma endregion
-
-
-#pragma region built-in method
-public:
-    static int                              builtin_speed(lua_State* lua);
-#pragma endregion
-};
-#pragma endregion
-
 
 #pragma region private field
 private:
@@ -151,7 +49,6 @@ private:
     fb::game::life*                         _target;
     lua::lua*                               _attack_thread;
 #pragma endregion
-    
 
 #pragma region constructor / destructor
 public:
@@ -165,7 +62,6 @@ private:
     fb::game::life*                         find_target();
     bool                                    near_target(fb::game::direction& out) const;
 #pragma endregion
-
 
 #pragma region public method
 public:
@@ -219,6 +115,114 @@ public:
     void                                    handle_die(fb::game::object* from);
 #pragma endregion
 };
+
+#pragma region interface
+interface mob::listener : public virtual fb::game::life::listener
+{
+    virtual void                            on_attack(mob& me, object* you) = 0;
+    virtual void                            on_hit(mob& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void                            on_kill(mob& me, life& you) = 0;
+    virtual void                            on_damaged(mob& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void                            on_die(mob& me, object* you) = 0;
+};
+#pragma endregion
+
+#pragma region damage
+struct mob::damage
+{
+public:
+    uint16_t min, max;
+
+public:
+    damage() : damage(0, 0) {}
+    damage(uint16_t min, uint16_t max) : min(min), max(max) {}
+};
+#pragma endregion
+
+#pragma region drop
+struct mob::drop
+{
+public:
+    float percentage;
+    const fb::game::item::master* item;
+
+public:
+    drop() : percentage(0), item(NULL) {}
+    drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) {}
+    drop(const drop& right) : percentage(right.percentage), item(right.item) {}
+};
+#pragma endregion
+
+#pragma region nested class
+class mob::master : public fb::game::life::master
+{
+#pragma region friend
+public:
+    friend class mob;
+#pragma endregion
+
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+#pragma endregion
+
+
+#pragma region private field
+private:
+    mob::damage                             _damage;
+    offensive_type                          _offensive_type;
+    sizes                                   _size;
+    std::chrono::milliseconds               _speed;
+    std::string                             _script_attack, _script_die;
+    std::vector<drop>                       _items;
+#pragma endregion
+
+
+#pragma region constructor / destructor
+public:
+    master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
+    master(const life::master& master);
+    ~master();
+#pragma endregion
+
+#pragma region public method
+public:
+    object::types                           type() const { return fb::game::object::types::MOB; }
+    object*                                 make(listener* listener) const;
+
+public:
+    uint16_t                                damage_min() const;
+    void                                    damage_min(uint16_t value);
+
+    uint16_t                                damage_max() const;
+    void                                    damage_max(uint16_t value);
+
+    mob::sizes                              size() const;
+    void                                    size(mob::sizes value);
+
+    std::chrono::milliseconds               speed() const;
+    void                                    speed(std::chrono::milliseconds value);
+
+    const std::string&                      script_attack() const;
+    void                                    script_attack(const std::string& value);
+
+    const std::string&                      script_die() const;
+    void                                    script_die(const std::string& value);
+
+    offensive_type                          offensive() const;
+    void                                    offensive(offensive_type value);
+
+    void                                    dropitem_add(const mob::drop& money);
+    void                                    dropitem_add(const fb::game::item::master* item, float percentage);
+    const std::vector<drop>&                items() const;
+#pragma endregion
+
+#pragma region built-in method
+public:
+    static int                              builtin_speed(lua_State* lua);
+#pragma endregion
+};
+#pragma endregion
 
 } }
 

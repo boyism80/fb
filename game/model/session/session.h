@@ -19,26 +19,20 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class map;
 class clan;
 class group;
 class session;
+#pragma endregion
 
 namespace lua {
 
 class dialog
 {
-#pragma region listener
+#pragma region forward nested declaration
 public:
-interface listener
-{
-    virtual void on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-};
+    interface listener;
 #pragma endregion
 
 private:
@@ -82,6 +76,11 @@ public:
 
 class session : public life
 {
+#pragma region friend
+    friend class group;
+    friend class clan;
+#pragma endregion
+
 public:
     using fb::game::object::map;
 
@@ -126,37 +125,9 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-#pragma region listener
+#pragma region forward nested declaration
 public:
-interface listener : public virtual fb::game::life::listener, 
-        public virtual fb::game::lua::dialog::listener,
-        public virtual fb::game::trade::listener,
-        public virtual fb::game::equipment::listener
-{
-public:
-    virtual void on_attack(session& me, object* you) = 0;
-    virtual void on_hit(session& me, life& you, uint32_t damage, bool critical) = 0;
-    virtual void on_kill(session& me, life& you) = 0;
-    virtual void on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void on_hold(session& me) = 0;
-    virtual void on_die(session& me, object* you) = 0;
-    virtual void on_action(session& me, fb::game::action action, duration duration, uint8_t sound) = 0;
-    virtual void on_updated(session& me, state_level level = state_level::LEVEL_MIN) = 0;
-    virtual void on_money_changed(session& me, uint32_t value) = 0;
-    virtual void on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
-    virtual void on_option(session& me, fb::game::options option, bool enabled) = 0;
-    virtual void on_level_up(session& me) = 0;
-    virtual void on_warp(fb::game::session& me) = 0;
-    virtual void on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
-    virtual void on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
-    virtual void on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
-    virtual void on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;
-};
-#pragma endregion
-
-#pragma region friend
-    friend fb::game::group;
-    friend fb::game::clan;
+    interface                   listener;
 #pragma endregion
 
 #pragma region private field
@@ -238,7 +209,7 @@ public:
     object::types               type() const;
 #pragma endregion
 
-#pragma region operator method
+#pragma region operator
 public:
     operator                    fb::socket<fb::game::session>& ();
 #pragma endregion
@@ -392,6 +363,43 @@ public:
     static int                  builtin_admin(lua_State* lua);
 
 #pragma endregion
+};
+
+
+interface lua::dialog::listener
+{
+    virtual void                on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+};
+
+
+interface session::listener : public virtual fb::game::life::listener, 
+    public virtual              fb::game::lua::dialog::listener,
+    public virtual              fb::game::trade::listener,
+    public virtual              fb::game::equipment::listener
+{
+public:
+    virtual void                on_attack(session& me, object* you) = 0;
+    virtual void                on_hit(session& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void                on_kill(session& me, life& you) = 0;
+    virtual void                on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void                on_hold(session& me) = 0;
+    virtual void                on_die(session& me, object* you) = 0;
+    virtual void                on_action(session& me, fb::game::action action, duration duration, uint8_t sound) = 0;
+    virtual void                on_updated(session& me, state_level level = state_level::LEVEL_MIN) = 0;
+    virtual void                on_money_changed(session& me, uint32_t value) = 0;
+    virtual void                on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
+    virtual void                on_option(session& me, fb::game::options option, bool enabled) = 0;
+    virtual void                on_level_up(session& me) = 0;
+    virtual void                on_warp(fb::game::session& me) = 0;
+    virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
+    virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void                on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;
 };
 
 } }

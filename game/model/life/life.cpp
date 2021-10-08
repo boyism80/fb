@@ -59,22 +59,22 @@ void fb::game::life::master::experience(uint32_t value)
 
 uint32_t fb::game::life::master::defensive_physical() const
 {
-    return this->_defensive.physical;
+    return this->defensive.physical;
 }
 
 void fb::game::life::master::defensive_physical(uint8_t value)
 {
-    this->_defensive.physical = value;
+    this->defensive.physical = value;
 }
 
 uint32_t fb::game::life::master::defensive_magical() const
 {
-    return this->_defensive.magical;
+    return this->defensive.magical;
 }
 
 void fb::game::life::master::defensive_magical(uint8_t value)
 {
-    this->_defensive.magical = value;
+    this->defensive.magical = value;
 }
 
 int fb::game::life::master::builtin_hp(lua_State* lua)
@@ -279,12 +279,12 @@ uint32_t fb::game::life::experience() const
 
 uint32_t fb::game::life::defensive_physical() const
 {
-    return static_cast<const master*>(this->_master)->_defensive.physical;
+    return static_cast<const master*>(this->_master)->defensive.physical;
 }
 
 uint32_t fb::game::life::defensive_magical() const
 {
-    return static_cast<const master*>(this->_master)->_defensive.magical;
+    return static_cast<const master*>(this->_master)->defensive.magical;
 }
 
 fb::game::condition fb::game::life::condition() const

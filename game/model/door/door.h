@@ -7,8 +7,10 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class map;
 class session;
+#pragma endregion
 
 class door : public lua::luable
 {
@@ -17,51 +19,34 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
+#pragma region forward nested declaration
 public:
-    typedef struct _element
-    {
-        uint16_t                    open;
-        uint16_t                    close;
+    struct element;
 
-        _element(uint16_t open, uint16_t close) : open(open), close(close) {}
-        ~_element() {}
-    } element;
+public:
+    class master;
+#pragma endregion
 
-    class master : private std::vector<element>
-    {
-    public:
-        using std::vector<element>::begin;
-        using std::vector<element>::end;
-        using std::vector<element>::cbegin;
-        using std::vector<element>::cend;
-        using std::vector<element>::rbegin;
-        using std::vector<element>::rend;
-        using std::vector<element>::crbegin;
-        using std::vector<element>::crend;
-        using std::vector<element>::size;
-        using std::vector<element>::push_back;
-        using std::vector<element>::operator[];
-
-    private:
-        bool                    matched(const map& map, const point16_t& position, bool open) const;
-
-    public:
-        bool                    find(const map& map, point16_t& position, bool open) const;
-    };
-
+#pragma region private field
 private:
     fb::game::map*              _owner;
     master&                     _master;
     bool                        _opened;
     bool                        _locked;
+#pragma endregion
 
+#pragma region public field
 public:
     const point16_t             position;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     door(fb::game::map* owner, door::master& master, const point16_t position, bool opened);
     ~door();
+#pragma endregion
 
+#pragma region public method
 public:
     const door::master&         based() const;
     bool                        toggle();
@@ -69,6 +54,7 @@ public:
     bool                        locked() const;
     void                        lock(bool value);
     const fb::game::map&        map() const;
+#pragma endregion
 
 #pragma region built-in method
 public:
@@ -82,6 +68,7 @@ public:
 
 class doors : private std::vector<std::unique_ptr<door>>
 {
+#pragma region using
 public:
     using std::vector<std::unique_ptr<door>>::begin;
     using std::vector<std::unique_ptr<door>>::end;
@@ -90,15 +77,51 @@ public:
     using std::vector<std::unique_ptr<door>>::rbegin;
     using std::vector<std::unique_ptr<door>>::rend;
     using std::vector<std::unique_ptr<door>>::size;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     doors();
     ~doors();
+#pragma endregion
 
+#pragma region public method
 public:
     void                        add(map* map, fb::game::door::master& master, const point16_t position, bool opened);
     door*                       find(const point16_t position);
     door*                       find(const session& session);
+#pragma endregion
+};
+
+struct door::element
+{
+    uint16_t                    open;
+    uint16_t                    close;
+
+    element(uint16_t open, uint16_t close) : open(open), close(close) {}
+    ~element() {}
+};
+
+class door::master : private std::vector<door::element>
+{
+public:
+    using std::vector<door::element>::begin;
+    using std::vector<door::element>::end;
+    using std::vector<door::element>::cbegin;
+    using std::vector<door::element>::cend;
+    using std::vector<door::element>::rbegin;
+    using std::vector<door::element>::rend;
+    using std::vector<door::element>::crbegin;
+    using std::vector<door::element>::crend;
+    using std::vector<door::element>::size;
+    using std::vector<door::element>::push_back;
+    using std::vector<door::element>::operator[];
+
+private:
+    bool                    matched(const fb::game::map& map, const point16_t& position, bool open) const;
+
+public:
+    bool                    find(const fb::game::map& map, point16_t& position, bool open) const;
 };
 
 } }

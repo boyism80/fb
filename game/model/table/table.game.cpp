@@ -282,48 +282,48 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
     if(types == "auxiliary")
         return new fb::game::auxiliary::master(id, name, icon, look, color);
 
-    if(types == "arrow")
-        return new fb::game::arrow::master(id, name, icon, look, color);
+    if(types == "bow")
+        return new fb::game::bow::master(id, name, icon, look, color);
 
     return nullptr;
 }
 
-fb::game::item::item_limit fb::game::container::item::to_limit(const Json::Value& data)
+fb::game::item::conditions fb::game::container::item::to_condition(const Json::Value& data)
 {
-    fb::game::item::item_limit limit;
-    if(data.isMember("limit") == false)
-        return limit;
+    fb::game::item::conditions condition;
+    if(data.isMember("condition") == false)
+        return condition;
 
-    if(data["limit"].isMember("level"))
-        limit.level = data["limit"]["level"].asInt();
+    if(data["condition"].isMember("level"))
+        condition.level = data["condition"]["level"].asInt();
 
-    if(data["limit"].isMember("strength"))
-        limit.strength = data["limit"]["strength"].asInt();
+    if(data["condition"].isMember("strength"))
+        condition.strength = data["condition"]["strength"].asInt();
 
-    if(data["limit"].isMember("dexteritry"))
-        limit.dexteritry = data["limit"]["dexteritry"].asInt();
+    if(data["condition"].isMember("dexteritry"))
+        condition.dexteritry = data["condition"]["dexteritry"].asInt();
 
-    if(data["limit"].isMember("intelligence"))
-        limit.intelligence = data["limit"]["intelligence"].asInt();
+    if(data["condition"].isMember("intelligence"))
+        condition.intelligence = data["condition"]["intelligence"].asInt();
 
-    if(data["limit"].isMember("class"))
-        limit.cls = data["limit"]["class"].asInt();
+    if(data["condition"].isMember("class"))
+        condition.cls = data["condition"]["class"].asInt();
 
-    if(data["limit"].isMember("promotion"))
-        limit.promotion = data["limit"]["promotion"].asInt();
+    if(data["condition"].isMember("promotion"))
+        condition.promotion = data["condition"]["promotion"].asInt();
 
-    if(data["limit"].isMember("sex"))
+    if(data["condition"].isMember("sex"))
     {
-        auto sex = CP949(data["limit"]["sex"].asString(), PLATFORM::Windows);
+        auto sex = CP949(data["condition"]["sex"].asString(), PLATFORM::Windows);
         if(sex == "man")
-            limit.sex = fb::game::sex::MAN;
+            condition.sex = fb::game::sex::MAN;
         else if(sex == "woman")
-            limit.sex = fb::game::sex::WOMAN;
+            condition.sex = fb::game::sex::WOMAN;
         else
             throw std::runtime_error(fb::game::message::assets::INVALID_SEX);
     }
 
-    return limit;
+    return condition;
 }
 
 fb::game::item::penalties fb::game::container::item::to_penalty(const std::string& penalty)
@@ -439,11 +439,11 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                 else
                 {
                     const point16_t after(js_warp["after"]["x"].asInt(), js_warp["after"]["y"].asInt());
-                    const range8_t  limit(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
+                    const range8_t  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
 
                     auto        next_map_id = js_warp["to"].asInt();
                     auto        next_map = fb::game::table::maps[next_map_id];
-                    map->push_warp(next_map, before, after, limit);
+                    map->push_warp(next_map, before, after, condition);
                 }
             }
 
@@ -485,7 +485,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             item->entrust_enabled(data["entrust"]["enabled"].asBool());
             item->entrust_price(data["entrust"]["price"].asInt());
             item->desc(CP949(data["desc"].asString(), PLATFORM::Windows));
-            item->limit(this->to_limit(data));
+            item->condition(this->to_condition(data));
             item->penalty(this->to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)));
 
 

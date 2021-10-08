@@ -20,20 +20,42 @@ class sectors;
 
 class object : public lua::luable
 {
-#pragma region listener
+#pragma region forward nested declaration
 public:
-    interface listener
+    interface listener;
+
+public:
+    class master;
+#pragma endregion
+
+#pragma region structure
+public:
+    struct cache
     {
-        virtual void on_direction(fb::game::object& me) = 0;
-        virtual void on_show(fb::game::object& me, bool light) = 0;
-        virtual void on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
-        virtual void on_hide(fb::game::object& me) = 0;
-        virtual void on_hide(fb::game::object& me, fb::game::object& you) = 0;
-        virtual void on_move(fb::game::object& me) = 0;
-        virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
-        virtual void on_create(fb::game::object& me) = 0;
-        virtual void on_destroy(fb::game::object& me) = 0;
-        virtual void on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) = 0;
+        fb::game::map*                      map;
+        point16_t                           position;
+
+    public:
+        cache() : map(nullptr)
+        {}
+        cache(fb::game::map* map, const point16_t& position) : map(map), position(position)
+        {}
+        ~cache() 
+        {}
+    };
+#pragma endregion
+
+#pragma region enum
+public:
+    enum types : uint32_t
+    { 
+        UNKNOWN = 0x00, 
+        ITEM    = 0x01, 
+        NPC     = 0x02, 
+        MOB     = 0x04, 
+        SESSION = 0x08, 
+        LIFE    = (MOB | SESSION),
+        OBJECT  = (ITEM | NPC | MOB) 
     };
 #pragma endregion
 
@@ -47,111 +69,9 @@ public:
     friend fb::game::items;
 #pragma endregion
 
-#pragma region enum of object
-public:
-    enum types 
-    { 
-        UNKNOWN = 0x00, 
-        ITEM    = 0x01, 
-        NPC     = 0x02, 
-        MOB     = 0x04, 
-        SESSION = 0x08, 
-        LIFE    = (MOB | SESSION),
-        OBJECT  = (ITEM | NPC | MOB) 
-    };
-#pragma endregion
-
-#pragma region master class
-public:
-class master : public lua::luable
-{
-#pragma region lua
-public:
-    LUA_PROTOTYPE
-#pragma endregion
-
-
-#pragma region protected field
-protected:
-    std::string                         _name;
-    uint16_t                            _look;
-    uint8_t                             _color;
-#pragma endregion
-
-
-#pragma region friend
-public:
-    friend class fb::game::object;
-#pragma endregion
-
-
-#pragma region template
-public:
-    template <typename T>
-    T* make(fb::game::object::listener* listener) const
-    {
-        return new T(static_cast<const typename T::master*>(this), dynamic_cast<typename T::listener*>(listener));
-    }
-#pragma endregion
-
-
-#pragma region constructor / destructor
-public:
-    master(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
-    virtual ~master();
-#pragma endregion
-
-
-#pragma region protected method
-protected:
-    uint8_t                             dialog_look_type() const;
-#pragma endregion
-
-
-#pragma region public method
-public:
-    virtual object::types               type() const;
-
-    const std::string&                  name() const;
-    void                                name(const std::string& value);
-
-    uint16_t                            look() const;
-    void                                look(uint16_t value);
-
-    uint8_t                             color() const;
-    void                                color(uint8_t value);
-#pragma endregion
-        
-
-#pragma region build-in method
-public:
-    static int                          builtin_name(lua_State* lua);
-    static int                          builtin_look(lua_State* lua);
-    static int                          builtin_color(lua_State* lua);
-    static int                          builtin_dialog(lua_State* lua);
-#pragma endregion
-};
-#pragma endregion
-
-#pragma region cache
-typedef struct _cache_tag
-{
-    fb::game::map*                      map;
-    point16_t                           position;
-
-public:
-    _cache_tag() : map(nullptr)
-    {}
-    _cache_tag(fb::game::map* map, const point16_t& position) : map(map), position(position)
-    {}
-    ~_cache_tag() 
-    {}
-} cache;
-#pragma endregion
-
 #pragma region private field
 private:
-    listener*                           _listener;
+    fb::game::object::listener*         _listener;
     bool                                _visible;
     fb::game::sector*                   _sector;
 #pragma endregion
@@ -246,12 +166,12 @@ public:
     std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
 
     // 내 시야에서 보여지는 오브젝트들
-    std::vector<object*>                showings(object::types type = object::types::UNKNOWN) const;
-    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before_me = false, bool before_you = false);
+    std::vector<object*>                showings(object::types type = fb::game::object::types::UNKNOWN) const;
+    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = fb::game::object::types::UNKNOWN, bool before_me = false, bool before_you = false);
 
     // 자기 시야에 내가 있는 오브젝트들
-    std::vector<object*>                showns(object::types type = object::types::UNKNOWN) const;
-    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = object::types::UNKNOWN, bool before_me = false, bool before_you = false);
+    std::vector<object*>                showns(object::types type = fb::game::object::types::UNKNOWN) const;
+    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = fb::game::object::types::UNKNOWN, bool before_me = false, bool before_you = false);
 
     bool                                visible() const;
     void                                visible(bool value);
@@ -309,6 +229,92 @@ public:
     static int                          builtin_is(lua_State* lua);
 #pragma endregion
 };
+
+
+#pragma region interface
+interface object::listener
+{
+    virtual void                        on_direction(fb::game::object& me) = 0;
+    virtual void                        on_show(fb::game::object& me, bool light) = 0;
+    virtual void                        on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
+    virtual void                        on_hide(fb::game::object& me) = 0;
+    virtual void                        on_hide(fb::game::object& me, fb::game::object& you) = 0;
+    virtual void                        on_move(fb::game::object& me) = 0;
+    virtual void                        on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    virtual void                        on_create(fb::game::object& me) = 0;
+    virtual void                        on_destroy(fb::game::object& me) = 0;
+    virtual void                        on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) = 0;
+};
+#pragma endregion
+
+#pragma region master
+class object::master : public lua::luable
+{
+#pragma region friend
+public:
+    friend class fb::game::object;
+#pragma endregion
+
+#pragma region lua
+public:
+    LUA_PROTOTYPE
+#pragma endregion
+
+
+#pragma region protected field
+protected:
+    std::string                         _name;
+    uint16_t                            _look;
+    uint8_t                             _color;
+#pragma endregion
+
+#pragma region template
+public:
+    template <typename T>
+    T* make(fb::game::object::listener* listener) const
+    {
+        return new T(static_cast<const typename T::master*>(this), dynamic_cast<typename T::listener*>(listener));
+    }
+#pragma endregion
+
+
+#pragma region constructor / destructor
+public:
+    master(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
+    virtual ~master();
+#pragma endregion
+
+
+#pragma region protected method
+protected:
+    uint8_t                             dialog_look_type() const;
+#pragma endregion
+
+
+#pragma region public method
+public:
+    virtual object::types               type() const;
+
+    const std::string&                  name() const;
+    void                                name(const std::string& value);
+
+    uint16_t                            look() const;
+    void                                look(uint16_t value);
+
+    uint8_t                             color() const;
+    void                                color(uint8_t value);
+#pragma endregion
+
+
+#pragma region build-in method
+public:
+    static int                          builtin_name(lua_State* lua);
+    static int                          builtin_look(lua_State* lua);
+    static int                          builtin_color(lua_State* lua);
+    static int                          builtin_dialog(lua_State* lua);
+#pragma endregion
+};
+#pragma endregion
 
 } }
 

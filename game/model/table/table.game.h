@@ -24,7 +24,7 @@ namespace container {
 
 class map : private std::map<uint16_t, fb::game::map*>
 {
-private:
+public:
     friend class fb::game::table;
 
 public:
@@ -76,7 +76,7 @@ public:
 
 private:
     static fb::game::item::master*          create(uint32_t id, const Json::Value& data);
-    static fb::game::item::item_limit       to_limit(const Json::Value& data);
+    static fb::game::item::conditions       to_condition(const Json::Value& data);
     static fb::game::item::penalties        to_penalty(const std::string& penalty);
 
 public:

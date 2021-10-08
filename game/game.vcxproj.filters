@@ -139,9 +139,6 @@
     <ClCompile Include="model\group\group.cpp">
       <Filter>model\group</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.cpp">
-      <Filter>model\item</Filter>
-    </ClCompile>
     <ClCompile Include="model\lua\lua.cpp">
       <Filter>model\lua</Filter>
     </ClCompile>
@@ -226,6 +223,51 @@
     <ClCompile Include="..\module\time\time.cpp">
       <Filter>module\time</Filter>
     </ClCompile>
+    <ClCompile Include="model\item\item.equipment.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.helmet.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.ring.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.shield.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.weapon.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.pack.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\itemmix.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\items.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.base.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.cash.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.consume.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.armor.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.auxiliary.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\item\item.equipment.bow.cpp">
+      <Filter>model\item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -251,9 +293,6 @@
     </ClInclude>
     <ClInclude Include="model\group\group.h">
       <Filter>model\group</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.h">
-      <Filter>model\item</Filter>
     </ClInclude>
     <ClInclude Include="model\lua\lua.h">
       <Filter>model\lua</Filter>
@@ -353,6 +392,51 @@
     </ClInclude>
     <ClInclude Include="..\module\time\time.h">
       <Filter>module\time</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.bow.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.helmet.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.ring.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.shield.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.weapon.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.pack.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\itemmix.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\items.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.base.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.cash.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.consume.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.armor.h">
+      <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\item\item.equipment.auxiliary.h">
+      <Filter>model\item</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

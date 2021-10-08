@@ -9,8 +9,10 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class object;
 class life;
+#pragma endregion
 
 class spell : public lua::luable
 {
@@ -19,21 +21,15 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-#pragma region listener
+#pragma region forward nested declaration
 public:
-interface listener
-{
-    virtual void on_spell_update(life& me, uint8_t index) = 0;
-    virtual void on_spell_remove(life& me, uint8_t index) = 0;
-};
+    interface listener;
 #pragma endregion
-
 
 #pragma region static const field
 public:
-    static const uint32_t   MAX_SLOT = 52;
+    static const uint32_t       MAX_SLOT = 52;
 #pragma endregion
-
 
 #pragma region enum
 public:
@@ -45,7 +41,6 @@ public:
     };
 #pragma endregion
 
-
 #pragma region private field
 private:
     uint16_t                    _id;
@@ -55,13 +50,11 @@ private:
     std::string                 _message;
 #pragma endregion
 
-
 #pragma region constructor / destructor
 public:
     spell(uint16_t id, fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
 #pragma endregion
-
 
 #pragma region public method
 public:
@@ -73,12 +66,6 @@ public:
     const std::string&          concast() const;
     const std::string&          message() const;
 #pragma endregion
-
-
-#pragma region make stream method
-public:
-#pragma endregion
-
 
 #pragma region built-in method
 public:
@@ -164,6 +151,13 @@ public:
     buff*                       operator [] (const std::string& name) const;
 };
 
+
+
+interface spell::listener
+{
+    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+};
 
 } }
 

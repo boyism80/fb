@@ -337,7 +337,7 @@ public:
 
         out_stream.write(*class_name);
 
-        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->session.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT), this->session.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT), this->session.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT)};
+        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(equipment::position::EQUIPMENT_LEFT), this->session.items.ring(equipment::position::EQUIPMENT_RIGHT), this->session.items.auxiliary(equipment::position::EQUIPMENT_LEFT), this->session.items.auxiliary(equipment::position::EQUIPMENT_RIGHT)};
         for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
         {
             if(equipments[i] == nullptr)
@@ -427,19 +427,19 @@ public:
         out_stream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
                   .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-        auto                    ring_l = this->session.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 왼손
+        auto                    ring_l = this->session.items.ring(equipment::position::EQUIPMENT_LEFT); // 왼손
         out_stream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
                   .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-        auto                    ring_r = this->session.items.ring(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 오른손
+        auto                    ring_r = this->session.items.ring(equipment::position::EQUIPMENT_RIGHT); // 오른손
         out_stream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
                   .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-        auto                    aux_l = this->session.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_LEFT); // 보조1
+        auto                    aux_l = this->session.items.auxiliary(equipment::position::EQUIPMENT_LEFT); // 보조1
         out_stream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
                   .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-        auto                    aux_r = this->session.items.auxiliary(equipment::EQUIPMENT_POSITION::EQUIPMENT_RIGHT); // 보조2
+        auto                    aux_r = this->session.items.auxiliary(equipment::position::EQUIPMENT_RIGHT); // 보조2
         out_stream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
                   .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 

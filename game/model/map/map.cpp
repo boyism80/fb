@@ -323,9 +323,9 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-void fb::game::map::push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit)
+void fb::game::map::push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition)
 {
-    this->_warps.push_back(std::make_unique<warp>(map, before, after, limit));
+    this->_warps.push_back(std::make_unique<warp>(map, before, after, condition));
 }
 
 void fb::game::map::push_warp(fb::game::wm::offset* offset, const point16_t& before)

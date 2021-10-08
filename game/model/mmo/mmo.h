@@ -8,6 +8,7 @@
 #include "module/stream/stream.h"
 #include "module/common/type.h"
 
+#pragma region type definition
 #ifndef interface
 #define interface struct
 #endif
@@ -17,6 +18,7 @@
                                         public:\
                                             name() : std::runtime_error(msg) {}\
                                         };
+#pragma endregion
 
 namespace fb { namespace game {
 
@@ -135,17 +137,17 @@ enum state_level : uint8_t
     LEVEL_MIN = EXP_MONEY | CONDITION,
 };
 
-typedef struct _legend
+struct legend
 {
     uint8_t                 look;
     uint8_t                 color;
     std::string             content;
 
 public:
-    _legend() : look(0), color(0) {}
-    _legend(uint8_t look, uint8_t color, const std::string& content) : look(look), color(color), content(content) {}
-    _legend(const _legend& right) : _legend(right.look, right.color, right.content) {}
-} legend;
+    legend() : look(0), color(0) {}
+    legend(uint8_t look, uint8_t color, const std::string& content) : look(look), color(color), content(content) {}
+    legend(const legend& right) : legend(right.look, right.color, right.content) {}
+};
 
 class legend_container : private std::vector<legend>
 {
@@ -163,27 +165,27 @@ public:
     legend_container&       push(uint8_t look, uint8_t color, const std::string& content);
 };
 
-typedef struct _defensive
+struct defensive
 {
 public:
     int16_t physical, magical;
 
 public:
-    _defensive() : _defensive(100, 0) {}
-    _defensive(int16_t physical, int16_t magical) : physical(physical), magical(magical) {}
-} defensive;
+    defensive() : defensive(100, 0) {}
+    defensive(int16_t physical, int16_t magical) : physical(physical), magical(magical) {}
+};
 
-typedef struct _level_ability
+struct level_ability
 {
 public:
     uint8_t strength, intelligence, dexteritry;
     uint32_t base_hp, base_mp, exp;
 
 public:
-    _level_ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp);
-    ~_level_ability();
+    level_ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp);
+    ~level_ability();
 
-} level_ability;
+};
 
 class class_data
 {

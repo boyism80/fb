@@ -14,50 +14,61 @@
 
 namespace fb { namespace game {
 
+#pragma region forward declaration
 class object;
 class map;
 class mob;
 class session;
+#pragma endregion
 
 namespace wm {
 
-typedef struct __destination_tag
+struct destination
 {
+#pragma region public field
 public:
     point16_t               position;
     fb::game::map*          map;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
-    __destination_tag() : 
+    destination() : 
         map(nullptr)
     {}
 
-    __destination_tag(const point16_t& position, fb::game::map* map) : 
+    destination(const point16_t& position, fb::game::map* map) : 
         position(position), map(map)
     {}
-} destination;
+#pragma endregion
+};
 
-typedef struct __offset_tag
+struct offset
 {
+#pragma region public field
 public:
     const std::string       id;
     const std::string       name;
     const point16_t         position;
     const destination       dst;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
-    __offset_tag(const std::string& id, const std::string& name, const point16_t& position, const destination& dst) : 
+    offset(const std::string& id, const std::string& name, const point16_t& position, const destination& dst) : 
         id(id), name(name), position(position), dst(dst)
     {}
 
-    __offset_tag(const struct __offset_tag& right) : 
-        __offset_tag(right.id, right.name, right.position, right.dst)
+    offset(const struct offset& right) : 
+        offset(right.id, right.name, right.position, right.dst)
     {}
+#pragma endregion
 
-} offset;
+};
 
 class group : private std::vector<std::unique_ptr<offset>>
 {
+#pragma region using
 public:
     using std::vector<std::unique_ptr<offset>>::begin;
     using std::vector<std::unique_ptr<offset>>::end;
@@ -65,7 +76,9 @@ public:
     using std::vector<std::unique_ptr<offset>>::cend;
     using std::vector<std::unique_ptr<offset>>::size;
     using std::vector<std::unique_ptr<offset>>::operator[];
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     group() = default;
     group(const group&) = delete;
@@ -75,20 +88,28 @@ public:
 public:
     group& operator = (group&) = delete;
     group& operator = (group&&) = delete;
+#pragma endregion
 
+#pragma region public method
 public:
     void                                push(offset* offset);
     bool                                contains(const offset& offset) const;
+#pragma endregion
 };
 
 class world : private std::vector<std::unique_ptr<group>>
 {
+#pragma region private field
 private:
     std::vector<offset*>                _offsets;
+#pragma endregion
 
+#pragma region public field
 public:
     const std::string                   name;
+#pragma endregion
 
+#pragma region using
 public:
     using std::vector<std::unique_ptr<group>>::begin;
     using std::vector<std::unique_ptr<group>>::end;
@@ -96,7 +117,9 @@ public:
     using std::vector<std::unique_ptr<group>>::cend;
     using std::vector<std::unique_ptr<group>>::size;
     using std::vector<std::unique_ptr<group>>::operator[];
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     world(const std::string& name);
     world(const world&) = delete;
@@ -106,12 +129,15 @@ public:
 public:
     world& operator = (world&) = delete;
     world& operator = (world&&) = delete;
+#pragma endregion
 
+#pragma region public method
 public:
     void                                push(group* group);
     const std::vector<offset*>&         offsets() const;
     const fb::game::wm::group*          find(const std::string& name) const;
     const fb::game::wm::group*          find(const fb::game::map& map) const;
+#pragma endregion
 };
 
 }
@@ -122,10 +148,13 @@ class objects : private std::map<uint32_t, fb::game::object*>
     friend fb::game::object;
 #pragma endregion
 
+#pragma region private field
 private:
     fb::game::map*                  _owner;
     uint16_t                        _sequence;
+#pragma endregion
 
+#pragma region using
 public:
     using std::map<uint32_t, fb::game::object*>::begin;
     using std::map<uint32_t, fb::game::object*>::end;
@@ -137,10 +166,13 @@ public:
     using std::map<uint32_t, fb::game::object*>::crend;
     using std::map<uint32_t, fb::game::object*>::size;
     using std::map<uint32_t, fb::game::object*>::at;
+#pragma endregion
 
+#pragma region constructor / destructor
 public:
     objects(fb::game::map* owner);
     ~objects();
+#pragma endregion
 
 #pragma region private method
 private:
@@ -149,7 +181,6 @@ private:
     uint16_t                        add(fb::game::object& object, const point16_t& position);
     bool                            remove(fb::game::object& object);
 #pragma endregion
-
 
 #pragma region public method
 public:
@@ -170,7 +201,6 @@ class map : public lua::luable
 public:
     LUA_PROTOTYPE
 #pragma endregion
-
 
 #pragma region enum
 public:
@@ -193,7 +223,6 @@ public:
     };
 #pragma endregion
 
-
 #pragma region static const field
     static const uint32_t           MAX_SCREEN_WIDTH   = 17;
     static const uint32_t           HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
@@ -201,46 +230,17 @@ public:
     static const uint32_t           HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
 #pragma endregion
 
-
-#pragma region structure
+#pragma region forward nested declaration
 public:
-    typedef struct _tile
-    {
-        uint16_t                    id;
-        uint16_t                    object;
-        bool                        blocked;
-    } tile;
-
-    typedef struct _warp
-    {
-    public:
-        // default warp
-        fb::game::map*              map;
-        const point16_t             before, after;
-        const range8_t              limit;
-
-        // world warp
-        const fb::game::wm::offset* offset;
-
-    public:
-        _warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t limit) : 
-            map(map), before(before), after(after), limit(limit), offset(nullptr) {}
-        _warp(const fb::game::wm::offset* offset, const point16_t& before) : 
-            map(nullptr), before(before), after(0, 0), limit(0, 0), offset(offset)
-        {}
-        _warp(const _warp& right) : 
-            map(right.map), before(right.before), after(right.after), limit(right.limit), offset(right.offset)
-        {}
-        ~_warp() {}
-    } warp;
+    struct tile;
+    struct warp;
 #pragma endregion
 
-#pragma region types
+#pragma region type definition
 public:
     typedef std::unique_ptr<tile[]>             unique_tiles;
     typedef std::vector<std::unique_ptr<warp>>  unique_warps;
 #pragma endregion
-
 
 #pragma region private field
 private:
@@ -256,7 +256,6 @@ private:
     fb::game::sectors*              _sectors;
 #pragma endregion
 
-
 #pragma region public field
 public:
     fb::game::objects               objects;
@@ -264,13 +263,11 @@ public:
     const uint32_t                  group;
 #pragma endregion
 
-
 #pragma region constructor / destructor
 public:
     map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, uint32_t group, const void* data, size_t size);
     ~map();
 #pragma endregion
-
 
 #pragma region public method
 public:
@@ -292,7 +289,7 @@ public:
     bool                            movable(const fb::game::object& object, fb::game::direction direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
-    void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& limit);
+    void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition);
     void                            push_warp(fb::game::wm::offset* offset, const point16_t& before);
     const fb::game::map::warp*      warpable(const point16_t& position) const;
 
@@ -304,18 +301,15 @@ public:
     std::vector<object*>            activateds(fb::game::object::types type = fb::game::object::types::UNKNOWN);
 #pragma endregion
 
-
 #pragma region event method
 public:
     void                            handle_timer(uint64_t elapsed_milliseconds);
 #pragma endregion
 
-
-#pragma region operator method
+#pragma region operator
 public:
     tile*                           operator () (uint16_t x, uint16_t y) const;
 #pragma endregion
-
 
 #pragma region built-in method
 public:
@@ -329,6 +323,39 @@ public:
     static int                      builtin_doors(lua_State* lua);
 #pragma endregion
 };
+
+
+#pragma region nested structure
+struct map::tile
+{
+    uint16_t                        id;
+    uint16_t                        object;
+    bool                            blocked;
+};
+
+struct map::warp
+{
+public:
+    // default warp
+    fb::game::map*                  map;
+    const point16_t                 before, after;
+    const range8_t                  condition;
+
+    // world warp
+    const fb::game::wm::offset*     offset;
+
+public:
+    warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t condition) : 
+        map(map), before(before), after(after), condition(condition), offset(nullptr) {}
+    warp(const fb::game::wm::offset* offset, const point16_t& before) : 
+        map(nullptr), before(before), after(0, 0), condition(0, 0), offset(offset)
+    {}
+    warp(const warp& right) : 
+        map(right.map), before(right.before), after(right.after), condition(right.condition), offset(right.offset)
+    {}
+    ~warp() {}
+};
+#pragma endregion
 
 } }
 

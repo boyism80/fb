@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/game
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/builtin_fn.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/builtin_fn.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../module/config/config.cpp
 	mkdir -p $(BUILD)
@@ -85,9 +85,61 @@ $(BUILD)/group.o: ./model/group/group.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./model/group/group.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/group.o
 
-$(BUILD)/item.o: ./model/item/item.cpp
+$(BUILD)/item.base.o: ./model/item/item.base.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.o
+	$(CXX) $(STD) -c ./model/item/item.base.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.base.o
+
+$(BUILD)/item.cash.o: ./model/item/item.cash.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.cash.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.cash.o
+
+$(BUILD)/item.consume.o: ./model/item/item.consume.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.consume.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.consume.o
+
+$(BUILD)/item.pack.o: ./model/item/item.pack.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.pack.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.pack.o
+
+$(BUILD)/item.equipment.o: ./model/item/item.equipment.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.o
+
+$(BUILD)/item.equipment.weapon.o: ./model/item/item.equipment.weapon.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.weapon.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.weapon.o
+
+$(BUILD)/item.equipment.armor.o: ./model/item/item.equipment.armor.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.armor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.armor.o
+
+$(BUILD)/item.equipment.cppelmet.o: ./model/item/item.equipment.helmet.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.helmet.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.cppelmet.o
+
+$(BUILD)/item.equipment.shield.o: ./model/item/item.equipment.shield.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.shield.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.shield.o
+
+$(BUILD)/item.equipment.ring.o: ./model/item/item.equipment.ring.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.ring.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.ring.o
+
+$(BUILD)/item.equipment.auxiliary.o: ./model/item/item.equipment.auxiliary.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.auxiliary.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.auxiliary.o
+
+$(BUILD)/item.equipment.bow.o: ./model/item/item.equipment.bow.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/item.equipment.bow.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.bow.o
+
+$(BUILD)/itemmix.o: ./model/item/itemmix.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/itemmix.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/itemmix.o
+
+$(BUILD)/items.o: ./model/item/items.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./model/item/items.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/items.o
 
 $(BUILD)/life.o: ./model/life/life.cpp
 	mkdir -p $(BUILD)
