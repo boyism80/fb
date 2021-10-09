@@ -114,7 +114,7 @@ public:
             auto armor = this->session.items.armor();
             if(armor != nullptr)
             {
-                out_stream.write_u8((uint8_t)armor->dress())
+                out_stream.write_u8((uint8_t)armor->based<fb::game::armor>()->dress)
                           .write_u8(session.current_armor_color());
             }
             else
@@ -126,7 +126,7 @@ public:
             auto weapon = this->session.items.weapon();
             if(weapon != nullptr)
             {
-                out_stream.write_u16(weapon->dress())
+                out_stream.write_u16(weapon->based<fb::game::weapon>()->dress)
                           .write_u8(weapon->color());
             }
             else
@@ -138,7 +138,7 @@ public:
             auto shield = this->session.items.shield();
             if(shield != nullptr)
             {
-                out_stream.write_u8((uint8_t)shield->dress())
+                out_stream.write_u8((uint8_t)shield->based<fb::game::shield>()->dress)
                           .write_u8(shield->color());
             }
             else
@@ -411,13 +411,13 @@ public:
             out_stream.write_u16(this->session.look())
                       .write_u8(this->session.color());
 
-            out_stream.write_u8(armor != nullptr ? armor->dress() : 0xFF)
+            out_stream.write_u8(armor != nullptr ? armor->based<fb::game::armor>()->dress : 0xFF)
                       .write_u8(this->session.current_armor_color());
 
-            out_stream.write_u16(weapon != nullptr ? weapon->dress() : 0xFFFF)
+            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::game::weapon>()->dress : 0xFFFF)
                       .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-            out_stream.write_u8(shield != nullptr ? shield->dress() : 0xFF)
+            out_stream.write_u8(shield != nullptr ? shield->based<fb::game::shield>()->dress : 0xFF)
                       .write_u8(shield != nullptr ? shield->color() : 0x00);
         }
 

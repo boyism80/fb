@@ -1,9 +1,30 @@
 #include "model/item/item.consume.h"
 #include "model/session/session.h"
 
-fb::game::consume::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity) : 
-    fb::game::item::master(id, name, look, color, capacity)
-{}
+fb::game::consume::master::master(const std::string& name,
+                               uint16_t look,
+                               uint8_t color,
+                               uint32_t id,
+                               uint32_t price,
+                               const fb::game::item::conditions& condition,
+                               penalties penalty,
+                               uint16_t capacity,
+                               const fb::game::item::trade& trade,
+                               const fb::game::item::storage& storage,
+                               std::string desc,
+                               std::string active_script) : fb::game::item::master(name,
+                                                                                   look, 
+                                                                                   color,
+                                                                                   id,
+                                                                                   price,
+                                                                                   condition,
+                                                                                   penalty,
+                                                                                   capacity,
+                                                                                   trade,
+                                                                                   storage,
+                                                                                   desc,
+                                                                                   active_script)
+{ }
 
 fb::game::consume::master::~master()
 {}
@@ -11,7 +32,7 @@ fb::game::consume::master::~master()
 fb::game::item::attrs fb::game::consume::master::attr() const
 {
     item::attrs attr = item::attrs::ITEM_ATTR_CONSUME;
-    if(this->_capacity > 1)
+    if(this->capacity > 1)
         attr = item::attrs(attr | item::attrs::ITEM_ATTR_BUNDLE);
 
     return attr;

@@ -81,7 +81,7 @@ public:
 #pragma region structure
 public:
     struct trade;
-    struct entrust;
+    struct storage;
     struct conditions;
 
 #pragma endregion
@@ -135,15 +135,6 @@ public:
     virtual bool                        empty() const;
 
 public:
-    uint32_t                            price() const;
-    uint16_t                            capacity() const;
-    bool                                unique() const;
-    bool                                entrust_enabled() const;
-    uint32_t                            entrust_price() const;
-    const conditions&                   condition() const;
-    penalties                           penalty() const;
-    const std::string&                  desc() const;
-    const std::string&                  active_script() const;
     attrs                               attr() const;
     bool                                attr(fb::game::item::attrs flag) const;
     fb::game::session*                  owner() const;
@@ -178,48 +169,46 @@ struct item::trade
 public:
     friend class item;
 
-private:
-    bool                            _enabled;
+public:
+    const bool                          enabled;
 
 public:
-    explicit trade(bool enabled = true) : _enabled(enabled) {}
-
-public:
-    bool                            enabled() const { return this->_enabled; }
-    void                            enabled(bool value) { this->_enabled = value; }
+    explicit trade(bool enabled) : enabled(enabled) {}
 };
 
-struct item::entrust
+struct item::storage
 {
 public:
     friend class item;
 
-private:
-    bool                            _enabled;
-    uint32_t                        _price;
+public:
+    bool                                enabled;
+    uint32_t                            price;
 
 public:
-    explicit entrust(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
-
-public:
-    bool                            enabled() const { return this->_enabled; }
-    void                            enabled(bool value) { this->_enabled = value; }
-
-    uint32_t                        price() const { return this->_price; }
-    void                            price(uint32_t value) { this->_price = value; }
+    explicit storage(bool enabled, uint32_t price) : enabled(enabled), price(price) {}
 };
 
 struct fb::game::item::conditions
 {
-    uint8_t                         level;
-    uint8_t                         strength;
-    uint8_t                         dexteritry;
-    uint8_t                         intelligence;
-    uint8_t                         cls, promotion;
-    fb::game::sex                   sex;
+public:
+    const uint8_t                       level;
+    const uint8_t                       strength;
+    const uint8_t                       dexteritry;
+    const uint8_t                       intelligence;
+    const uint8_t                       cls;
+    const uint8_t                       promotion;
+    const fb::game::sex                 sex;
 
 public:
     conditions();
+    conditions(uint8_t level,
+               uint8_t strength,
+               uint8_t dexteritry,
+               uint8_t intelligence,
+               uint8_t cls,
+               uint8_t promotion,
+               fb::game::sex sex);
     conditions(const fb::game::item::conditions& right);
 };
 
@@ -234,34 +223,40 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-#pragma region protected field
-protected:
-    uint32_t                            _id;
-    uint32_t                            _price;
-    fb::game::item::conditions          _condition;
-    penalties                           _penalty;
-    uint16_t                            _capacity;
-    fb::game::item::trade               _trade;
-    fb::game::item::entrust             _entrust;
-    bool                                _bundle;
-    std::string                         _tooltip, _desc;
-    std::string                         _active_script;
+#pragma region public field
+public:
+    const uint32_t                      id;
+    const uint32_t                      price;
+    const fb::game::item::conditions    condition;
+    const penalties                     penalty;
+    const uint16_t                      capacity;
+    const fb::game::item::trade         trade;
+    const fb::game::item::storage       storage;
+    const std::string                   desc;
+    const std::string                   active_script;
 #pragma endregion
 
 #pragma region constructor / destructor
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1, 
-        const fb::game::item::conditions& condition = fb::game::item::DEFAULT_CONDITION);
-    master(const fb::game::object::master& master);
+    master(const std::string&                name, 
+           uint16_t                          look, 
+           uint8_t                           color,
+           uint32_t                          id,
+           uint32_t                          price,
+           const fb::game::item::conditions& condition,
+           penalties                         penalty,
+           uint16_t                          capacity,
+           const fb::game::item::trade&      trade,
+           const fb::game::item::storage&    storage,
+           std::string                       desc,
+           std::string                       active_script);
     virtual ~master();
 #pragma endregion
-
 
 #pragma region override method
 public:
     fb::game::object::types             type() const { return object::ITEM; }
 #pragma endregion
-
 
 #pragma region virtual method
 public:
@@ -279,38 +274,6 @@ public:
         created->count(count);
         return created;
     }
-#pragma endregion
-
-#pragma region public method
-public:
-    uint32_t                            id() const;
-    void                                id(uint32_t id);
-    uint32_t                            price() const;
-    void                                price(uint32_t value);
-
-    uint16_t                            capacity() const;
-    void                                capacity(uint16_t value);
-
-    bool                                trade() const;
-    void                                trade(bool value);
-
-    bool                                entrust_enabled() const;
-    void                                entrust_enabled(bool value);
-
-    uint32_t                            entrust_price() const;
-    void                                entrust_price(uint32_t value);
-
-    const conditions&                   condition() const;
-    void                                condition(const item::conditions& value);
-
-    penalties                           penalty() const;
-    void                                penalty(penalties value);
-
-    const std::string&                  desc() const;
-    void                                desc(const std::string& value);
-
-    const std::string&                  active_script() const;
-    void                                active_script(const std::string& value);
 #pragma endregion
 
 #pragma region built-in method

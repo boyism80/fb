@@ -2,79 +2,21 @@
 #include "model/map/map.h"
 #include "life.h"
 
-fb::game::life::master::master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-    object::master(name, look, color),
-    _hp(hp), _mp(mp),
-    _experience(0)
-{}
-
-
-fb::game::life::master::master(const master& master, uint32_t hp, uint32_t mp) : 
-    fb::game::object::master(master),
-    _hp(hp), _mp(mp),
-    _experience(0)
-{
-}
-
-fb::game::life::master::master(const master& right) : 
-    fb::game::object::master(right),
-    _hp(right._hp), _mp(right._mp),
-    _experience(right._experience)
-{
-}
+fb::game::life::master::master(const std::string& name, 
+        uint16_t look,
+        uint8_t color,
+        const fb::game::defensive& defensive,
+        uint32_t hp,
+        uint32_t mp,
+        uint32_t experience) : object::master(name, look, color),
+                               defensive(defensive),
+                               hp(hp),
+                               mp(mp),
+                               experience(experience)
+{ }
 
 fb::game::life::master::~master()
 {
-}
-
-uint32_t fb::game::life::master::hp() const
-{
-    return this->_hp;
-}
-
-void fb::game::life::master::hp(uint32_t value)
-{
-    this->_hp = value;
-}
-
-uint32_t fb::game::life::master::mp() const
-{
-    return this->_mp;
-}
-
-void fb::game::life::master::mp(uint32_t value)
-{
-    this->_mp = value;
-}
-
-uint32_t fb::game::life::master::experience() const
-{
-    return this->_experience;
-}
-
-void fb::game::life::master::experience(uint32_t value)
-{
-    this->_experience = value;
-}
-
-uint32_t fb::game::life::master::defensive_physical() const
-{
-    return this->defensive.physical;
-}
-
-void fb::game::life::master::defensive_physical(uint8_t value)
-{
-    this->defensive.physical = value;
-}
-
-uint32_t fb::game::life::master::defensive_magical() const
-{
-    return this->defensive.magical;
-}
-
-void fb::game::life::master::defensive_magical(uint8_t value)
-{
-    this->defensive.magical = value;
 }
 
 int fb::game::life::master::builtin_hp(lua_State* lua)
@@ -88,7 +30,7 @@ int fb::game::life::master::builtin_hp(lua_State* lua)
         return 0;
     
 
-    thread->pushinteger(object->_hp);
+    thread->pushinteger(object->hp);
     return 1;
 }
 
@@ -103,7 +45,7 @@ int fb::game::life::master::builtin_mp(lua_State* lua)
         return 0;
     
 
-    thread->pushinteger(object->_mp);
+    thread->pushinteger(object->mp);
     return 1;
 }
 
@@ -264,17 +206,17 @@ void fb::game::life::mp(uint32_t value)
 
 uint32_t fb::game::life::base_hp() const
 {
-    return static_cast<const master*>(this->_master)->_hp;
+    return static_cast<const master*>(this->_master)->hp;
 }
 
 uint32_t fb::game::life::base_mp() const
 {
-    return static_cast<const master*>(this->_master)->_mp;
+    return static_cast<const master*>(this->_master)->mp;
 }
 
 uint32_t fb::game::life::experience() const
 {
-    return static_cast<const master*>(this->_master)->_experience;
+    return static_cast<const master*>(this->_master)->experience;
 }
 
 uint32_t fb::game::life::defensive_physical() const
@@ -511,7 +453,7 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     
     auto master = object->based<fb::game::life>();
 
-    thread->pushinteger(master->_hp);
+    thread->pushinteger(master->hp);
     return 1;
 }
 
@@ -528,7 +470,7 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     
     auto master = object->based<fb::game::life>();
 
-    thread->pushinteger(master->_mp);
+    thread->pushinteger(master->mp);
     return 1;
 }
 

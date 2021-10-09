@@ -28,7 +28,6 @@ public:
 public:
     std::optional<uint16_t>             durability() const;
     void                                durability(std::optional<uint16_t> value);
-    uint16_t                            base_durability() const;
 #pragma endregion
 
 #pragma region override method
@@ -45,11 +44,23 @@ class pack::master : public fb::game::item::master
 public:
     friend class pack;
 
-private:
-    uint16_t                            _durability;
+public:
+    uint16_t                            durability;
 
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t durability = 200);
+    master(const std::string&                name, 
+           uint16_t                          look, 
+           uint8_t                           color,
+           uint32_t                          id,
+           uint32_t                          price,
+           const fb::game::item::conditions& condition,
+           penalties                         penalty,
+           uint16_t                          capacity,
+           const fb::game::item::trade&      trade,
+           const fb::game::item::storage&    storage,
+           std::string                       desc,
+           std::string                       active_script,
+           uint16_t                          durability);
     ~master();
 
 public:

@@ -144,36 +144,23 @@ public:
 #pragma endregion
 
 #pragma region protected field
-protected:
-    fb::game::defensive         defensive;
-    uint32_t                    _hp, _mp;
-    uint32_t                    _experience;
+public:
+    const fb::game::defensive   defensive;
+    const uint32_t              hp;
+    const uint32_t              mp;
+    const uint32_t              experience;
 #pragma endregion
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
-    master(const master& master, uint32_t hp, uint32_t mp);
-    master(const master& master);
+    master(const std::string& name, 
+        uint16_t look, 
+        uint8_t color,
+        const fb::game::defensive& defensive, 
+        uint32_t hp, 
+        uint32_t mp, 
+        uint32_t experience);
     virtual ~master();
-#pragma endregion
-
-#pragma region public method
-public:
-    uint32_t                    hp() const;
-    void                        hp(uint32_t value);
-
-    uint32_t                    mp() const;
-    void                        mp(uint32_t value);
-
-    uint32_t                    experience() const;
-    void                        experience(uint32_t value);
-
-    uint32_t                    defensive_physical() const;
-    void                        defensive_physical(uint8_t value);
-
-    uint32_t                    defensive_magical() const;
-    void                        defensive_magical(uint8_t value);
 #pragma endregion
 
 #pragma region built-in method

@@ -60,36 +60,8 @@ public:
     bool                                active();
 
 public:
-    uint16_t                            dress() const;
-
     std::optional<uint16_t>             durability() const;
     void                                durability(std::optional<uint16_t> value);
-    uint16_t                            durability_base() const;
-
-    bool                                repair_enabled() const;
-    float                               repair_price() const;
-
-    bool                                rename_enabled() const;
-    uint32_t                            rename_price() const;
-
-    int16_t                             defensive_physical() const;
-    int16_t                             defensive_magical() const;
-
-
-    uint8_t                             hit() const;
-    uint8_t                             damage() const;
-    
-    uint8_t                             strength() const;
-    uint8_t                             intelligence() const;
-    uint8_t                             dexteritry() const;
-
-    uint32_t                            base_hp() const;
-    uint32_t                            base_mp() const;
-
-    float                               hp_percentage() const;
-    float                               mp_percentage() const;
-
-    uint8_t                             healing_cycle() const;
 #pragma endregion
 
 
@@ -164,88 +136,56 @@ class equipment::master : public fb::game::item::master
 public:
     friend class equipment;
 
-protected:
-    uint16_t                            _dress;
-    uint16_t                            _durability;
-    fb::game::equipment::repair         _repair;
-    fb::game::equipment::rename         _rename;
-    std::string                         _dress_script, _undress_script;
+public:
+    const uint16_t                      dress;
+    const uint16_t                      durability;
+    const fb::game::equipment::repair   repair;
+    const fb::game::equipment::rename   rename;
+    const std::string                   dress_script, undress_script;
 
-    uint8_t                             _hit, _damage;
-    uint8_t                             _strength, _intelligence, _dexteritry;
-    uint32_t                            _base_hp, _base_mp;
-    float                               _hp_percentage, _mp_percentage;
-    uint8_t                             _healing_cycle;
-    fb::game::defensive                 _defensive;
+    const uint8_t                       hit, damage;
+    const uint8_t                       strength, intelligence, dexteritry;
+    const uint32_t                      base_hp, base_mp;
+    const float                         hp_percentage, mp_percentage;
+    const uint8_t                       healing_cycle;
+    const fb::game::defensive           defensive;
 
 public:
     master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+    master(const std::string&                  name, 
+           uint16_t                            look, 
+           uint8_t                             color,
+           uint32_t                            id,
+           uint32_t                            price,
+           const fb::game::item::conditions&   condition,
+           penalties                           penalty,
+           uint16_t                            capacity,
+           const fb::game::item::trade&        trade,
+           const fb::game::item::storage&      storage,
+           std::string                         desc,
+           std::string                         active_script,
+           uint16_t                            dress,
+           uint16_t                            durability,
+           const fb::game::equipment::repair&  repair,
+           const fb::game::equipment::rename&  rename,
+           const std::string&                  dress_script,
+           const std::string&                  undress_script,
+           uint8_t                             hit,
+           uint8_t                             damage,
+           uint8_t                             strength,
+           uint8_t                             intelligence,
+           uint8_t                             dexteritry,
+           uint32_t                            base_hp,
+           uint32_t                            base_mp,
+           float                               hp_percentage,
+           float                               mp_percentage,
+           uint8_t                             healing_cycle,
+           const fb::game::defensive&          defensive);
     ~master();
 
 public:
     virtual fb::game::item::attrs       attr() const;
     virtual fb::game::item*             make(fb::game::item::listener* listener) const;
-
-public:
-    uint16_t                            dress() const;
-
-    std::optional<uint16_t>             durability() const;
-    void                                durability(uint16_t value);
-
-    bool                                repair_enabled() const;
-    void                                repair_enabled(bool value);
-
-    float                               repair_price() const;
-    void                                repair_price(float value);
-
-    bool                                rename_enabled() const;
-    void                                rename_enabled(bool value);
-
-    uint32_t                            rename_price() const;
-    void                                rename_price(uint32_t value);
-
-    int16_t                             defensive_physical() const;
-    void                                defensive_physical(int16_t value);
-
-    int16_t                             defensive_magical() const;
-    void                                defensive_magical(int16_t value);
-
-
-    uint8_t                             hit() const;
-    void                                hit(uint8_t value);
-
-    uint8_t                             damage() const;
-    void                                damage(uint8_t value);
-
-    uint8_t                             strength() const;
-    void                                strength(uint8_t value);
-
-    uint8_t                             intelligence() const;
-    void                                intelligence(uint8_t value);
-
-    uint8_t                             dexteritry() const;
-    void                                dexteritry(uint8_t value);
-
-    uint32_t                            base_hp() const;
-    void                                base_hp(uint32_t value);
-
-    uint32_t                            base_mp() const;
-    void                                base_mp(uint32_t value);
-
-    float                               hp_percentage() const;
-    void                                hp_percentage(float value);
-
-    float                               mp_percentage() const;
-    void                                mp_percentage(float value);
-
-    uint8_t                             healing_cycle() const;
-    void                                healing_cycle(uint8_t value);
-
-    const std::string&                  dress_script() const;
-    void                                dress_script(const std::string& value);
-
-    const std::string&                  undress_script() const;
-    void                                undress_script(const std::string& value);
 };
 #pragma endregion
 

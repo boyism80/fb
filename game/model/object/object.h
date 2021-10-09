@@ -260,12 +260,11 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-
-#pragma region protected field
-protected:
-    std::string                         _name;
-    uint16_t                            _look;
-    uint8_t                             _color;
+#pragma region public field
+public:
+    const std::string                   name;
+    const uint16_t                      look;
+    const uint8_t                       color;
 #pragma endregion
 
 #pragma region template
@@ -277,34 +276,21 @@ public:
     }
 #pragma endregion
 
-
 #pragma region constructor / destructor
 public:
-    master(const std::string& name = "", uint16_t look = 0, uint8_t color = 0);
+    master(const std::string& name, uint16_t look, uint8_t color);
     virtual ~master();
 #pragma endregion
-
 
 #pragma region protected method
 protected:
     uint8_t                             dialog_look_type() const;
 #pragma endregion
 
-
 #pragma region public method
 public:
     virtual object::types               type() const;
-
-    const std::string&                  name() const;
-    void                                name(const std::string& value);
-
-    uint16_t                            look() const;
-    void                                look(uint16_t value);
-
-    uint8_t                             color() const;
-    void                                color(uint8_t value);
 #pragma endregion
-
 
 #pragma region build-in method
 public:

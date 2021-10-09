@@ -6,9 +6,9 @@
 #include "builtin/builtin_function.h"
 
 fb::game::object::master::master(const std::string& name, uint16_t look, uint8_t color) : 
-    _name(name),
-    _look(look),
-    _color(color)
+    name(name),
+    look(look),
+    color(color)
 {
 }
 
@@ -18,42 +18,12 @@ fb::game::object::master::~master()
 
 uint8_t fb::game::object::master::dialog_look_type() const
 {
-    return this->look() > 0xBFFF ? 0x02 : 0x01;
+    return this->look > 0xBFFF ? 0x02 : 0x01;
 }
 
 fb::game::object::types fb::game::object::master::type() const
 {
     return types::UNKNOWN;
-}
-
-const std::string& fb::game::object::master::name() const
-{
-    return this->_name;
-}
-
-void fb::game::object::master::name(const std::string& value)
-{
-    this->_name = value;
-}
-
-uint16_t fb::game::object::master::look() const
-{
-    return this->_look;
-}
-
-void fb::game::object::master::look(uint16_t value)
-{
-    this->_look = value;
-}
-
-uint8_t fb::game::object::master::color() const
-{
-    return this->_color;
-}
-
-void fb::game::object::master::color(uint8_t value)
-{
-    this->_color = value;
 }
 
 int fb::game::object::master::builtin_name(lua_State* lua)
@@ -68,7 +38,7 @@ int fb::game::object::master::builtin_name(lua_State* lua)
         return 0;
     
 
-    thread->pushstring(object->_name);
+    thread->pushstring(object->name);
     return 1;
 }
 
@@ -84,7 +54,7 @@ int fb::game::object::master::builtin_look(lua_State* lua)
         return 0;
     
 
-    thread->pushinteger(object->_look);
+    thread->pushinteger(object->look);
     return 1;
 }
 
@@ -100,7 +70,7 @@ int fb::game::object::master::builtin_color(lua_State* lua)
         return 0;
     
 
-    thread->pushinteger(object->_color);
+    thread->pushinteger(object->color);
     return 1;
 }
 
@@ -160,17 +130,17 @@ bool fb::game::object::is(object::types type) const
 
 const std::string& fb::game::object::name() const
 {
-    return this->_master->name();
+    return this->_master->name;
 }
 
 uint16_t fb::game::object::look() const
 {
-    return this->_master->look();
+    return this->_master->look;
 }
 
 uint8_t fb::game::object::color() const
 {
-    return this->_master->color();
+    return this->_master->color;
 }
 
 fb::game::object::types fb::game::object::type() const

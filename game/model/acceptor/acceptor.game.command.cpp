@@ -119,7 +119,7 @@ bool fb::game::acceptor::handle_command_disguise(fb::game::session& session, Jso
     if(mob == nullptr)
         return true;
 
-    session.disguise(mob->look());
+    session.disguise(mob->look);
     this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
     this->send(session, fb::protocol::game::response::session::action(session, action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
     this->send(session, fb::protocol::game::response::object::sound(session, sound::type(0x0019)), scope::PIVOT);

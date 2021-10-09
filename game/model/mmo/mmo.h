@@ -139,9 +139,10 @@ enum state_level : uint8_t
 
 struct legend
 {
-    uint8_t                 look;
-    uint8_t                 color;
-    std::string             content;
+public:
+    const uint8_t           look;
+    const uint8_t           color;
+    const std::string       content;
 
 public:
     legend() : look(0), color(0) {}

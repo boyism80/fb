@@ -1,11 +1,64 @@
 #include "model/item/item.equipment.h"
 #include "model/acceptor/acceptor.game.h"
 
-fb::game::equipment::master::master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, uint16_t durability) : 
-    fb::game::item::master(id, name, look, color),
-    _dress(dress),
-    _durability(durability)
-{}
+fb::game::equipment::master::master(const std::string&                  name, 
+                                    uint16_t                            look, 
+                                    uint8_t                             color,
+                                    uint32_t                            id,
+                                    uint32_t                            price,
+                                    const fb::game::item::conditions&   condition,
+                                    penalties                           penalty,
+                                    uint16_t                            capacity,
+                                    const fb::game::item::trade&        trade,
+                                    const fb::game::item::storage&      storage,
+                                    std::string                         desc,
+                                    std::string                         active_script,
+                                    uint16_t                            dress,
+                                    uint16_t                            durability,
+                                    const fb::game::equipment::repair&  repair,
+                                    const fb::game::equipment::rename&  rename,
+                                    const std::string&                  dress_script,
+                                    const std::string&                  undress_script,
+                                    uint8_t                             hit,
+                                    uint8_t                             damage,
+                                    uint8_t                             strength,
+                                    uint8_t                             intelligence,
+                                    uint8_t                             dexteritry,
+                                    uint32_t                            base_hp,
+                                    uint32_t                            base_mp,
+                                    float                               hp_percentage,
+                                    float                               mp_percentage,
+                                    uint8_t                             healing_cycle,
+                                    const fb::game::defensive&          defensive) : fb::game::item::master(name, 
+                                                                                                            look, 
+                                                                                                            color, 
+                                                                                                            id, 
+                                                                                                            price, 
+                                                                                                            condition, 
+                                                                                                            penalty, 
+                                                                                                            capacity, 
+                                                                                                            trade, 
+                                                                                                            storage, 
+                                                                                                            desc, 
+                                                                                                            active_script),
+                                                                                     dress(dress),
+                                                                                     durability(durability),
+                                                                                     repair(repair),
+                                                                                     rename(rename),
+                                                                                     dress_script(dress_script),
+                                                                                     undress_script(undress_script),
+                                                                                     hit(hit),
+                                                                                     damage(damage),
+                                                                                     strength(strength),
+                                                                                     intelligence(intelligence),
+                                                                                     dexteritry(dexteritry),
+                                                                                     base_hp(base_hp),
+                                                                                     base_mp(base_mp),
+                                                                                     hp_percentage(hp_percentage),
+                                                                                     mp_percentage(mp_percentage),
+                                                                                     healing_cycle(healing_cycle),
+                                                                                     defensive(defensive)
+{ }
 
 fb::game::equipment::master::~master()
 {}
@@ -20,205 +73,10 @@ fb::game::item* fb::game::equipment::master::make(fb::game::item::listener* list
     return new fb::game::equipment(this, dynamic_cast<fb::game::equipment::listener*>(listener));
 }
 
-uint16_t fb::game::equipment::master::dress() const
-{
-    return this->_dress;
-}
-
-int16_t fb::game::equipment::master::defensive_physical() const
-{
-    return this->_defensive.physical;
-}
-
-void fb::game::equipment::master::defensive_physical(int16_t value)
-{
-    this->_defensive.physical = value;
-}
-
-int16_t fb::game::equipment::master::defensive_magical() const
-{
-    return this->_defensive.magical;
-}
-
-void fb::game::equipment::master::defensive_magical(int16_t value)
-{
-    this->_defensive.magical = value;
-}
-
-uint8_t fb::game::equipment::master::hit() const
-{
-    return this->_hit;
-}
-
-void fb::game::equipment::master::hit(uint8_t value)
-{
-    this->_hit = value;
-}
-
-uint8_t fb::game::equipment::master::damage() const
-{
-    return this->_damage;
-}
-
-void fb::game::equipment::master::damage(uint8_t value)
-{
-    this->_damage = value;
-}
-
-uint8_t fb::game::equipment::master::strength() const
-{
-    return this->_strength;
-}
-
-void fb::game::equipment::master::strength(uint8_t value)
-{
-    this->_strength = value;
-}
-
-uint8_t fb::game::equipment::master::intelligence() const
-{
-    return this->_intelligence;
-}
-
-void fb::game::equipment::master::intelligence(uint8_t value)
-{
-    this->_intelligence = value;
-}
-
-uint8_t fb::game::equipment::master::dexteritry() const
-{
-    return this->_dexteritry;
-}
-
-void fb::game::equipment::master::dexteritry(uint8_t value)
-{
-    this->_dexteritry = value;
-}
-
-uint32_t fb::game::equipment::master::base_hp() const
-{
-    return this->_base_hp;
-}
-
-void fb::game::equipment::master::base_hp(uint32_t value)
-{
-    this->_base_hp = value;
-}
-
-uint32_t fb::game::equipment::master::base_mp() const
-{
-    return this->_base_mp;
-}
-
-void fb::game::equipment::master::base_mp(uint32_t value)
-{
-    this->_base_mp = value;
-}
-
-float fb::game::equipment::master::hp_percentage() const
-{
-    return this->_hp_percentage;
-}
-
-void fb::game::equipment::master::hp_percentage(float value)
-{
-    this->_hp_percentage = value;
-}
-
-float fb::game::equipment::master::mp_percentage() const
-{
-    return this->_mp_percentage;
-}
-
-void fb::game::equipment::master::mp_percentage(float value)
-{
-    this->_mp_percentage = value;
-}
-
-uint8_t fb::game::equipment::master::healing_cycle() const
-{
-    return this->_healing_cycle;
-}
-
-void fb::game::equipment::master::healing_cycle(uint8_t value)
-{
-    this->_healing_cycle = value;
-}
-
-const std::string& fb::game::equipment::master::dress_script() const
-{
-    return this->_dress_script;
-}
-
-void fb::game::equipment::master::dress_script(const std::string& value)
-{
-    this->_dress_script = value;
-}
-
-const std::string& fb::game::equipment::master::undress_script() const
-{
-    return this->_undress_script;
-}
-
-void fb::game::equipment::master::undress_script(const std::string& value)
-{
-    this->_undress_script = value;
-}
-
-std::optional<uint16_t> fb::game::equipment::master::durability() const
-{
-    return this->_durability;
-}
-
-void fb::game::equipment::master::durability(uint16_t value)
-{
-    this->_durability = value;
-}
-
-bool fb::game::equipment::master::repair_enabled() const
-{
-    return this->_repair._enabled;
-}
-
-void fb::game::equipment::master::repair_enabled(bool value)
-{
-    this->_repair._enabled = value;
-}
-
-float fb::game::equipment::master::repair_price() const
-{
-    return this->_repair._price;
-}
-
-void fb::game::equipment::master::repair_price(float value)
-{
-    this->_repair._price = value;
-}
-
-bool fb::game::equipment::master::rename_enabled() const
-{
-    return this->_rename._enabled;
-}
-
-void fb::game::equipment::master::rename_enabled(bool value)
-{
-    this->_rename._enabled = value;
-}
-
-uint32_t fb::game::equipment::master::rename_price() const
-{
-    return this->_rename._price;
-}
-
-void fb::game::equipment::master::rename_price(uint32_t value)
-{
-    this->_rename._price = value;
-}
-
 fb::game::equipment::equipment(const equipment::master* master, listener* listener) : 
     item(master, listener)
 {
-    this->_durability = static_cast<const equipment::master*>(this->_master)->_durability;
+    this->_durability = master->durability;
 }
 
 fb::game::equipment::equipment(const equipment& right) :
@@ -231,8 +89,9 @@ fb::game::equipment::~equipment()
 
 const std::string fb::game::equipment::name_trade() const
 {
-    std::stringstream sstream;
-    float                   percentage = this->_durability / float(this->durability_base()) * 100;
+    std::stringstream       sstream;
+    auto                    master = this->based<fb::game::equipment>();
+    float                   percentage = this->_durability / float(master->durability) * 100;
     sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
 
     return sstream.str();
@@ -308,11 +167,6 @@ bool fb::game::equipment::active()
     return true;
 }
 
-uint16_t fb::game::equipment::dress() const
-{
-    return static_cast<const master*>(this->_master)->_dress;
-}
-
 std::optional<uint16_t> fb::game::equipment::durability() const
 {
     return this->_durability;
@@ -323,91 +177,6 @@ void fb::game::equipment::durability(std::optional<uint16_t> value)
     this->_durability = value.value_or(0);
 }
 
-uint16_t fb::game::equipment::durability_base() const
-{
-    return static_cast<const master*>(this->_master)->_durability;
-}
-
-bool fb::game::equipment::repair_enabled() const
-{
-    return static_cast<const master*>(this->_master)->_repair._enabled;
-}
-
-float fb::game::equipment::repair_price() const
-{
-    return static_cast<const master*>(this->_master)->_repair._price;
-}
-
-bool fb::game::equipment::rename_enabled() const
-{
-    return static_cast<const master*>(this->_master)->_rename._enabled;
-}
-
-uint32_t fb::game::equipment::rename_price() const
-{
-    return static_cast<const master*>(this->_master)->_rename._price;
-}
-
-int16_t fb::game::equipment::defensive_physical() const
-{
-    return static_cast<const master*>(this->_master)->_defensive.physical;
-}
-
-int16_t fb::game::equipment::defensive_magical() const
-{
-    return static_cast<const master*>(this->_master)->_defensive.magical;
-}
-
-uint8_t fb::game::equipment::hit() const
-{
-    return static_cast<const master*>(this->_master)->_hit;
-}
-
-uint8_t fb::game::equipment::damage() const
-{
-    return static_cast<const master*>(this->_master)->_damage;
-}
-
-uint8_t fb::game::equipment::strength() const
-{
-    return static_cast<const master*>(this->_master)->_strength;
-}
-
-uint8_t fb::game::equipment::intelligence() const
-{
-    return static_cast<const master*>(this->_master)->_intelligence;
-}
-
-uint8_t fb::game::equipment::dexteritry() const
-{
-    return static_cast<const master*>(this->_master)->_dexteritry;
-}
-
-uint32_t fb::game::equipment::base_hp() const
-{
-    return static_cast<const master*>(this->_master)->_base_hp;
-}
-
-uint32_t fb::game::equipment::base_mp() const
-{
-    return static_cast<const master*>(this->_master)->_base_mp;
-}
-
-float fb::game::equipment::hp_percentage() const
-{
-    return static_cast<const master*>(this->_master)->_hp_percentage;
-}
-
-float fb::game::equipment::mp_percentage() const
-{
-    return static_cast<const master*>(this->_master)->_mp_percentage;
-}
-
-uint8_t fb::game::equipment::healing_cycle() const
-{
-    return static_cast<const master*>(this->_master)->_healing_cycle;
-}
-
 std::string fb::game::equipment::mid_message() const
 {
     return std::string();
@@ -416,43 +185,43 @@ std::string fb::game::equipment::mid_message() const
 std::string fb::game::equipment::tip_message() const
 {
     std::stringstream           sstream;
+    auto                        master = this->based<fb::game::equipment>();
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(this->durability_base()) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)this->durability_base()) * 100 << '%' << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(master->durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)master->durability) * 100 << '%' << std::endl;
     sstream << this->mid_message();
-    sstream << "무장:   " << std::to_string(this->defensive_physical()) << " Hit:  " << std::to_string(this->hit()) << " Dam:  " << std::to_string(this->damage());
+    sstream << "무장:   " << std::to_string(master->defensive.physical) << " Hit:  " << std::to_string(master->hit) << " Dam:  " << std::to_string(master->damage);
 
-    if(this->base_hp())
-        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(this->base_hp());
+    if(master->base_hp)
+        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(master->base_hp);
 
-    if(this->base_mp())
-        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(this->base_mp());
+    if(master->base_mp)
+        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(master->base_mp);
 
-    if(this->strength())
-        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(this->strength());
+    if(master->strength)
+        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(master->strength);
 
-    if(this->dexteritry())
-        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(this->dexteritry());
+    if(master->dexteritry)
+        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(master->dexteritry);
 
-    if(this->intelligence())
-        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(this->intelligence());
+    if(master->intelligence)
+        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(master->intelligence);
 
-    if(this->healing_cycle())
-        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(this->healing_cycle());
+    if(master->healing_cycle)
+        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(master->healing_cycle);
 
     std::stringstream class_stream;
 
     class_stream << std::endl << std::setw(14) << std::left;
-    auto condition = this->condition();
-    if(condition.cls == 0)
+    
+    if(master->condition.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::table::classes.class2name(condition.cls, 0) << "용";
-    sstream << class_stream.str() << "레벨 " << std::to_string(condition.level) << " 이상";
+        class_stream << fb::game::table::classes.class2name(master->condition.cls, 0) << "용";
+    sstream << class_stream.str() << "레벨 " << std::to_string(master->condition.level) << " 이상";
 
-    const std::string desc = this->desc();
-    if(desc.empty() == false)
-        sstream << std::endl << std::endl << desc;
+    if(master->desc.empty() == false)
+        sstream << std::endl << std::endl << master->desc;
 
     return sstream.str();
 }

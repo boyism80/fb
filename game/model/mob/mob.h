@@ -68,15 +68,6 @@ public:
     bool                                    action();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
-    uint16_t                                damage_min() const;
-    uint16_t                                damage_max() const;
-    mob::sizes                              size() const;
-    std::chrono::milliseconds               speed() const;
-    
-    const std::string&                      script_attack() const;
-    const std::string&                      script_die() const;
-    offensive_type                          offensive() const;
-
     const point16_t&                        spawn_point() const;
     void                                    spawn_point(uint16_t x, uint16_t y);
     void                                    spawn_point(const point16_t point);
@@ -166,22 +157,34 @@ public:
     LUA_PROTOTYPE
 #pragma endregion
 
-
 #pragma region private field
-private:
-    mob::damage                             _damage;
-    offensive_type                          _offensive_type;
-    sizes                                   _size;
-    std::chrono::milliseconds               _speed;
-    std::string                             _script_attack, _script_die;
     std::vector<drop>                       _items;
 #pragma endregion
 
+#pragma region public field
+public:
+    const mob::damage                       damage;
+    const offensive_type                    offensive_type;
+    const sizes                             size;
+    const std::chrono::milliseconds         speed;
+    const std::string                       script_attack, script_die;
+#pragma endregion
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp);
-    master(const life::master& master);
+    master(const std::string& name, 
+        uint16_t look, 
+        uint8_t color,
+        const fb::game::defensive& defensive, 
+        uint32_t hp, 
+        uint32_t mp, 
+        uint32_t experience,
+        const mob::damage& damage,
+        mob::offensive_type offensive_type,
+        sizes size,
+        std::chrono::milliseconds speed,
+        const std::string& script_attack,
+        const std::string& script_die);
     ~master();
 #pragma endregion
 
@@ -191,27 +194,6 @@ public:
     object*                                 make(listener* listener) const;
 
 public:
-    uint16_t                                damage_min() const;
-    void                                    damage_min(uint16_t value);
-
-    uint16_t                                damage_max() const;
-    void                                    damage_max(uint16_t value);
-
-    mob::sizes                              size() const;
-    void                                    size(mob::sizes value);
-
-    std::chrono::milliseconds               speed() const;
-    void                                    speed(std::chrono::milliseconds value);
-
-    const std::string&                      script_attack() const;
-    void                                    script_attack(const std::string& value);
-
-    const std::string&                      script_die() const;
-    void                                    script_die(const std::string& value);
-
-    offensive_type                          offensive() const;
-    void                                    offensive(offensive_type value);
-
     void                                    dropitem_add(const mob::drop& money);
     void                                    dropitem_add(const fb::game::item::master* item, float percentage);
     const std::vector<drop>&                items() const;

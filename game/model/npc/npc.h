@@ -65,7 +65,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color = 0);
+    master(const std::string& name, uint16_t look, uint8_t color);
     ~master();
 #pragma endregion
 

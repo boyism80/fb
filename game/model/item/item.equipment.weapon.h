@@ -27,15 +27,6 @@ public:
     ~weapon();
 #pragma endregion
 
-#pragma region public method
-public:
-    fb::game::weapon::types             weapon_type() const;
-    const range32_t&                    damage_small() const;
-    const range32_t&                    damage_large() const;
-    uint16_t                            sound() const;
-    const std::string&                  spell() const;
-#pragma endregion
-
 #pragma region override method
 protected:
     std::string                         mid_message() const;
@@ -58,31 +49,51 @@ class weapon::master : public equipment::master
 public:
     friend class weapon;
 
-private:
-    weapon::damage_range                _damage_range;
-    uint16_t                            _sound;
-    std::string                         _spell;
+public:
+    const weapon::damage_range          damage_range;
+    const uint16_t                      sound;
+    const std::string                   spell;
 
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color);
-    master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color, const range32_t& small, const range32_t& large);
+    master(const std::string&                  name, 
+           uint16_t                            look, 
+           uint8_t                             color,
+           uint32_t                            id,
+           uint32_t                            price,
+           const fb::game::item::conditions&   condition,
+           penalties                           penalty,
+           uint16_t                            capacity,
+           const fb::game::item::trade&        trade,
+           const fb::game::item::storage&      storage,
+           std::string                         desc,
+           std::string                         active_script,
+           uint16_t                            dress,
+           uint16_t                            durability,
+           const fb::game::equipment::repair&  repair,
+           const fb::game::equipment::rename&  rename,
+           const std::string&                  dress_script,
+           const std::string&                  undress_script,
+           uint8_t                             hit,
+           uint8_t                             damage,
+           uint8_t                             strength,
+           uint8_t                             intelligence,
+           uint8_t                             dexteritry,
+           uint32_t                            base_hp,
+           uint32_t                            base_mp,
+           float                               hp_percentage,
+           float                               mp_percentage,
+           uint8_t                             healing_cycle,
+           const fb::game::defensive&          defensive,
+           const range32_t&                    small, 
+           const range32_t&                    large,
+           uint16_t                            sound,
+           const std::string&                  spell);
     ~master();
 
 public:
     virtual fb::game::item::attrs       attr() const;
     virtual fb::game::item*             make(fb::game::item::listener* listener) const;
     fb::game::weapon::types             weapon_type() const;
-
-    const range32_t&                    damage_small() const;
-    void                                damage_small(uint32_t min, uint32_t max);
-    const range32_t&                    damage_large() const;
-    void                                damage_large(uint32_t min, uint32_t max);
-
-    uint16_t                            sound() const;
-    void                                sound(uint16_t value);
-
-    const std::string&                  spell() const;
-    void                                spell(const std::string& value);
 
 };
 #pragma endregion

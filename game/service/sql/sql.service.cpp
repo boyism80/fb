@@ -69,13 +69,14 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
     for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
     {
         auto item = session.items[i];
+        auto master = item != nullptr ? item->based<fb::game::item>() : nullptr;
         auto durability = (item != nullptr) ? item->durability() : std::nullopt;
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
             std::to_string(i),
             std::to_string(fb::game::equipment::slot::UNKNOWN_SLOT),
-            (item == nullptr) ? "NULL" : std::to_string(item->based<fb::game::item::master>()->id()),
+            (item == nullptr) ? "NULL" : std::to_string(master->id),
             (item == nullptr) ? "NULL" : std::to_string(item->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
@@ -83,10 +84,11 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
     }
 
     const auto& equipments = session.items.equipments();
-    for(auto pair : equipments)
+    for(auto& pair : equipments)
     {
         auto slot = pair.first;
         auto equipment = pair.second;
+        auto master = equipment != nullptr ? equipment->based<fb::game::equipment>() : nullptr;
 
         auto durability = (equipment != nullptr) ? equipment->durability() : std::nullopt;
         auto parameter = std::vector<std::string>
@@ -94,7 +96,7 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
             std::to_string(session.id()),
             std::to_string(-1),
             std::to_string(slot),
-            (equipment == nullptr) ? "NULL" : std::to_string(equipment->based<fb::game::item::master>()->id()),
+            (equipment == nullptr) ? "NULL" : std::to_string(master->id),
             (equipment == nullptr) ? "NULL" : std::to_string(equipment->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };

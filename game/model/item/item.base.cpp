@@ -1,6 +1,8 @@
 #include "model/item/item.base.h"
 #include "model/acceptor/acceptor.game.h"
 
+const fb::game::item::conditions fb::game::item::DEFAULT_CONDITION;
+
 fb::game::item::conditions::conditions() : 
     level(0),
     strength(0),
@@ -9,6 +11,46 @@ fb::game::item::conditions::conditions() :
     cls(0),
     promotion(0),
     sex(fb::game::sex::BOTH)
+{ }
+
+fb::game::item::conditions::conditions(uint8_t level,
+    uint8_t strength,
+    uint8_t dexteritry,
+    uint8_t intelligence,
+    uint8_t cls,
+    uint8_t promotion,
+    fb::game::sex sex) : 
+    level(level),
+    strength(strength),
+    dexteritry(dexteritry),
+    intelligence(intelligence),
+    cls(cls),
+    promotion(promotion),
+    sex(sex)
+{ }
+
+fb::game::item::master::master(const std::string&                name, 
+                               uint16_t                          look, 
+                               uint8_t                           color,
+                               uint32_t                          id,
+                               uint32_t                          price,
+                               const fb::game::item::conditions& condition,
+                               penalties                         penalty,
+                               uint16_t                          capacity,
+                               const fb::game::item::trade&      trade,
+                               const fb::game::item::storage&    storage,
+                               std::string                       desc,
+                               std::string                       active_script) : 
+    fb::game::object::master(name, look, color),
+    id(id),
+    price(price),
+    condition(condition),
+    penalty(penalty),
+    capacity(capacity),
+    trade(trade),
+    storage(storage),
+    desc(desc),
+    active_script(active_script)
 { }
 
 fb::game::item::conditions::conditions(const conditions& right) : 
@@ -21,124 +63,8 @@ fb::game::item::conditions::conditions(const conditions& right) :
     sex(right.sex)
 { }
 
-fb::game::item::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color, uint16_t capacity, const fb::game::item::conditions& condition) : 
-    fb::game::object::master(name, look, color),
-    _id(id),
-    _price(0),
-    _capacity(capacity),
-    _condition(condition),
-    _penalty(penalties::DROP),
-    _trade(true),
-    _bundle(false),
-    _entrust(0)
-{}
-
-fb::game::item::master::master(const fb::game::object::master& master) : 
-    fb::game::object::master(master)
-{}
-
 fb::game::item::master::~master()
 {}
-
-uint32_t fb::game::item::master::id() const
-{
-    return this->_id;
-}
-
-void fb::game::item::master::id(uint32_t id)
-{
-    this->_id = id;
-}
-
-uint32_t fb::game::item::master::price() const
-{
-    return this->_price;
-}
-
-void fb::game::item::master::price(uint32_t value)
-{
-    this->_price = value;
-}
-
-uint16_t fb::game::item::master::capacity() const
-{
-    return this->_capacity;
-}
-
-void fb::game::item::master::capacity(uint16_t value)
-{
-    this->_capacity = value;
-}
-
-bool fb::game::item::master::trade() const
-{
-    return this->_trade._enabled;
-}
-
-void fb::game::item::master::trade(bool value)
-{
-    this->_trade._enabled = value;
-}
-
-bool fb::game::item::master::entrust_enabled() const
-{
-    return this->_entrust._enabled;
-}
-
-void fb::game::item::master::entrust_enabled(bool value)
-{
-    this->_entrust._enabled = value;
-}
-
-uint32_t fb::game::item::master::entrust_price() const
-{
-    return this->_entrust._price;
-}
-
-void fb::game::item::master::entrust_price(uint32_t value)
-{
-    this->_entrust._price = value;
-}
-
-const fb::game::item::conditions& fb::game::item::master::condition() const
-{
-    return this->_condition;
-}
-
-void fb::game::item::master::condition(const item::conditions& value)
-{
-    this->_condition = value;
-}
-
-fb::game::item::penalties fb::game::item::master::penalty() const
-{
-    return this->_penalty;
-}
-
-void fb::game::item::master::penalty(penalties value)
-{
-    this->_penalty = value;
-}
-
-const std::string& fb::game::item::master::desc() const
-{
-    return this->_desc;
-}
-
-void fb::game::item::master::desc(const std::string& value)
-{
-    this->_desc = value;
-}
-
-const std::string& fb::game::item::master::active_script() const
-{
-    return this->_active_script;
-}
-
-void fb::game::item::master::active_script(const std::string& value)
-{
-    this->_active_script = value;
-}
 
 int fb::game::item::master::builtin_make(lua_State* lua)
 {
@@ -177,7 +103,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
 fb::game::item::attrs fb::game::item::master::attr() const
 {
     auto                    attr = attrs::ITEM_ATTR_NONE;
-    if(this->capacity() > 1)
+    if(this->capacity > 1)
         attr = attrs(attr | attrs::ITEM_ATTR_BUNDLE);
     return attr;
 }
@@ -245,9 +171,10 @@ void fb::game::item::durability(std::optional<uint16_t> value)
 std::string fb::game::item::tip_message() const
 {
     std::stringstream       sstream;
+    auto                    master = this->based<fb::game::item>();
 
-    sstream << "가격: " << this->price();
-    const std::string& desc = this->desc();
+    sstream << "가격: " << master->price;
+    const std::string& desc = master->desc;
     if(desc.empty() == false)
         sstream << std::endl << std::endl << desc;
     return sstream.str();
@@ -272,7 +199,8 @@ uint16_t fb::game::item::reduce(uint16_t count)
 
 uint16_t fb::game::item::free_space() const
 {
-    return this->capacity() - this->_count;
+    auto master = this->based<fb::game::item>();
+    return master->capacity - this->_count;
 }
 
 uint16_t fb::game::item::count() const
@@ -282,57 +210,13 @@ uint16_t fb::game::item::count() const
 
 void fb::game::item::count(uint16_t value)
 {
-    this->_count = std::min(value, this->capacity());
+    auto master = this->based<fb::game::item>();
+    this->_count = std::min(value, master->capacity);
 }
 
 bool fb::game::item::empty() const
 {
     return this->_count == 0;
-}
-
-uint32_t fb::game::item::price() const
-{
-    return static_cast<const master*>(this->_master)->_price;
-}
-
-uint16_t fb::game::item::capacity() const
-{
-    return static_cast<const master*>(this->_master)->_capacity;
-}
-
-bool fb::game::item::unique() const
-{
-    return !static_cast<const master*>(this->_master)->_trade._enabled;
-}
-
-bool fb::game::item::entrust_enabled() const
-{
-    return static_cast<const master*>(this->_master)->_entrust._enabled;
-}
-
-uint32_t fb::game::item::entrust_price() const
-{
-    return static_cast<const master*>(this->_master)->_entrust._price;
-}
-
-const fb::game::item::conditions& fb::game::item::condition() const
-{
-    return static_cast<const master*>(this->_master)->_condition;
-}
-
-fb::game::item::penalties fb::game::item::penalty() const
-{
-    return static_cast<const master*>(this->_master)->_penalty;
-}
-
-const std::string& fb::game::item::desc() const
-{
-    return static_cast<const master*>(this->_master)->_desc;
-}
-
-const std::string& fb::game::item::active_script() const
-{
-    return static_cast<const master*>(this->_master)->_active_script;
 }
 
 fb::game::item::attrs fb::game::item::attr() const
@@ -369,7 +253,8 @@ bool fb::game::item::active()
 
 fb::game::item* fb::game::item::split(uint16_t count)
 {
-    if(this->unique())
+    auto master = this->based<fb::game::item>();
+    if(master->trade.enabled == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     auto listener = this->_owner != nullptr ? this->_owner->get_listener<fb::game::session::listener>() : nullptr;
@@ -399,10 +284,12 @@ void fb::game::item::merge(fb::game::item& item)
     auto listener = this->_owner->get_listener<fb::game::session::listener>();
     if(listener != nullptr)
     {
+        auto master = this->based<fb::game::item>();
+
         if(before != this->_count)
             listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
 
-        if(remain > 0 && this->_count == this->based<fb::game::item>()->capacity())
+        if(remain > 0 && this->_count == master->capacity)
             listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
     }
 }

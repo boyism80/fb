@@ -2,21 +2,27 @@
 #include "model/map/map.h"
 #include "mob.h"
 
-fb::game::mob::master::master(const std::string& name, uint16_t look, uint8_t color, uint32_t hp, uint32_t mp) : 
-    fb::game::life::master(name, look, color, hp, mp),
-    _damage(0, 0),
-    _offensive_type(offensive_type::NONE),
-    _size(sizes::SMALL),
-    _speed(1000)
-{ }
+fb::game::mob::master::master(const std::string& name,
+                              uint16_t look,
+                              uint8_t color,
+                              const fb::game::defensive& defensive,
+                              uint32_t hp,
+                              uint32_t mp,
+                              uint32_t experience,
+                              const mob::damage& damage,
+                              mob::offensive_type offensive_type,
+                              sizes size,
+                              std::chrono::milliseconds speed,
+                              const std::string& script_attack,
+                              const std::string& script_die) : fb::game::life::master(name, look, color, defensive, hp, mp, experience),
+                                                               damage(damage),
+                                                               offensive_type(offensive_type),
+                                                               size(size),
+                                                               speed(speed),
+                                                               script_attack(script_attack),
+                                                               script_die(script_die)
 
-fb::game::mob::master::master(const life::master& master) :
-    life::master(master),
-    _damage(0, 0),
-    _offensive_type(offensive_type::NONE),
-    _size(sizes::SMALL),
-    _speed(1000)
-{}
+{ }
 
 fb::game::mob::master::~master()
 {}
@@ -24,76 +30,6 @@ fb::game::mob::master::~master()
 fb::game::object* fb::game::mob::master::make(listener* listener) const
 {
     return new mob(this, listener);
-}
-
-uint16_t fb::game::mob::master::damage_min() const
-{
-    return this->_damage.min;
-}
-
-void fb::game::mob::master::damage_min(uint16_t value)
-{
-    this->_damage.min = value;
-}
-
-uint16_t fb::game::mob::master::damage_max() const
-{
-    return this->_damage.max;
-}
-
-void fb::game::mob::master::damage_max(uint16_t value)
-{
-    this->_damage.max = value;
-}
-
-fb::game::mob::sizes fb::game::mob::master::size() const
-{
-    return this->_size;
-}
-
-void fb::game::mob::master::size(mob::sizes value)
-{
-    this->_size = value;
-}
-
-std::chrono::milliseconds fb::game::mob::master::speed() const
-{
-    return this->_speed;
-}
-
-void fb::game::mob::master::speed(std::chrono::milliseconds value)
-{
-    this->_speed = value;
-}
-
-const std::string& fb::game::mob::master::script_attack() const
-{
-    return this->_script_attack;
-}
-
-void fb::game::mob::master::script_attack(const std::string& value)
-{
-    this->_script_attack = value;
-}
-
-const std::string& fb::game::mob::master::script_die() const
-{
-    return this->_script_die;
-}
-
-void fb::game::mob::master::script_die(const std::string& value)
-{
-    this->_script_die = value;
-}
-
-fb::game::mob::offensive_type fb::game::mob::master::offensive() const
-{
-    return this->_offensive_type;
-}
-
-void fb::game::mob::master::offensive(offensive_type value)
-{
-    this->_offensive_type = value;
 }
 
 void fb::game::mob::master::dropitem_add(const mob::drop& money)
@@ -121,7 +57,7 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
     if(mob == nullptr)
         return 0;
 
-    lua_pushinteger(lua, mob->_speed.count());
+    lua_pushinteger(lua, mob->speed.count());
     return 1;
 }
 
@@ -160,14 +96,14 @@ bool fb::game::mob::action()
 {
     this->fix();
 
-    auto& script = this->script_attack();
-    if(script.empty())
+    auto master = this->based<fb::game::mob>();
+    if(master->script_attack.empty())
         return false;
 
     if(this->_attack_thread == nullptr)
     {
         this->_attack_thread = &fb::game::lua::get();
-        this->_attack_thread->from(script.c_str())
+        this->_attack_thread->from(master->script_attack.c_str())
             .func("handle_attack")
             .pushobject(this);
 
@@ -203,41 +139,6 @@ uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool cri
         this->visible(false);
 
     return value;
-}
-
-uint16_t fb::game::mob::damage_min() const
-{
-    return static_cast<const master*>(this->_master)->_damage.min;
-}
-
-uint16_t fb::game::mob::damage_max() const
-{
-    return static_cast<const master*>(this->_master)->_damage.max;
-}
-
-fb::game::mob::sizes fb::game::mob::size() const
-{
-    return static_cast<const master*>(this->_master)->_size;
-}
-
-std::chrono::milliseconds fb::game::mob::speed() const
-{
-    return static_cast<const master*>(this->_master)->_speed;
-}
-
-const std::string& fb::game::mob::script_attack() const
-{
-    return static_cast<const master*>(this->_master)->_script_attack;
-}
-
-const std::string& fb::game::mob::script_die() const
-{
-    return static_cast<const master*>(this->_master)->_script_die;
-}
-
-fb::game::mob::offensive_type fb::game::mob::offensive() const
-{
-    return static_cast<const master*>(this->_master)->_offensive_type;
 }
 
 const fb::game::point16_t& fb::game::mob::spawn_point() const
@@ -363,7 +264,8 @@ fb::game::life* fb::game::mob::fix()
     }
     catch(...)
     {
-        if(this->offensive() == mob::offensive_type::CONTAINMENT)
+        auto master = this->based<fb::game::mob>();
+        if(master->offensive_type == mob::offensive_type::CONTAINMENT)
             this->_target = this->find_target();
         else
             this->_target = nullptr;
@@ -419,7 +321,8 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 {
     try
     {
-        if(now < this->_action_time + this->speed())
+        auto master = this->based<fb::game::mob>();
+        if(now < this->_action_time + master->speed)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
@@ -471,8 +374,9 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 
 uint32_t fb::game::mob::handle_calculate_damage(bool critical) const
 {
-    auto difference = std::abs(this->damage_max() - this->damage_min());
-    return this->damage_min() + (std::rand() % difference);
+    auto master = this->based<fb::game::mob>();
+    auto difference = std::abs(master->damage.max - master->damage.min);
+    return master->damage.min + (std::rand() % difference);
 }
 
 void fb::game::mob::handle_attack(fb::game::object* target)

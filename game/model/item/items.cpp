@@ -527,7 +527,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 void fb::game::items::pickup(bool boost)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto                    listener = this->_owner.get_listener<fb::game::session::listener>();
 
     try
     {
@@ -593,7 +593,8 @@ bool fb::game::items::throws(uint8_t index)
         if(item == nullptr)
             return false;
 
-        if(item->unique())
+        auto                    master = item->based<fb::game::item>();
+        if(master->trade.enabled == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = this->_owner.map();

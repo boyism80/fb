@@ -33,7 +33,18 @@ public:
     friend class consume;
 
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0, uint16_t capacity = 1);
+    master(const std::string&                name, 
+           uint16_t                          look, 
+           uint8_t                           color,
+           uint32_t                          id,
+           uint32_t                          price,
+           const fb::game::item::conditions& condition,
+           penalties                         penalty,
+           uint16_t                          capacity,
+           const fb::game::item::trade&      trade,
+           const fb::game::item::storage&    storage,
+           std::string                       desc,
+           std::string                       active_script);
     ~master();
 
 public:

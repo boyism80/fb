@@ -84,6 +84,7 @@ void fb::game::session::handle_update()
 uint32_t fb::game::session::handle_calculate_damage(bool critical) const
 {
     auto                    weapon = this->items.weapon();
+    auto                    master = weapon->based<fb::game::weapon>();
 
     if(weapon == nullptr) // no weapon
     {
@@ -91,12 +92,12 @@ uint32_t fb::game::session::handle_calculate_damage(bool critical) const
     }
     else if(critical)
     {
-        auto                range = weapon->damage_large();
+        auto                range = master->damage_range.large;
         return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
     }
     else // normal
     {
-        auto                range = weapon->damage_small();
+        auto                range = master->damage_range.small;
         return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
     }
 }
