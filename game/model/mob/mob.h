@@ -164,7 +164,7 @@ public:
 #pragma region public field
 public:
     const mob::damage                       damage;
-    const offensive_type                    offensive_type;
+    const offensive_type                    offensive;
     const sizes                             size;
     const std::chrono::milliseconds         speed;
     const std::string                       script_attack, script_die;

@@ -16,7 +16,7 @@ fb::game::mob::master::master(const std::string& name,
                               const std::string& script_attack,
                               const std::string& script_die) : fb::game::life::master(name, look, color, defensive, hp, mp, experience),
                                                                damage(damage),
-                                                               offensive_type(offensive_type),
+                                                               offensive(offensive_type),
                                                                size(size),
                                                                speed(speed),
                                                                script_attack(script_attack),
@@ -265,7 +265,7 @@ fb::game::life* fb::game::mob::fix()
     catch(...)
     {
         auto master = this->based<fb::game::mob>();
-        if(master->offensive_type == mob::offensive_type::CONTAINMENT)
+        if(master->offensive == mob::offensive_type::CONTAINMENT)
             this->_target = this->find_target();
         else
             this->_target = nullptr;

@@ -506,7 +506,7 @@ void fb::game::acceptor::on_damaged(mob& me, object* you, uint32_t damage, bool 
 {
     if(me.alive())
     {
-        if(me.based<fb::game::mob>()->offensive_type != fb::game::mob::offensive_type::NONE && you != nullptr)
+        if(me.based<fb::game::mob>()->offensive != fb::game::mob::offensive_type::NONE && you != nullptr)
         {
             me.target(static_cast<fb::game::life*>(you));
         }
