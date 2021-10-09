@@ -1,5 +1,0 @@
-#include "model/session/session.h"
-#include "model/acceptor/acceptor.game.h"
-#include "model/map/map.h"
-#include "model/table/table.game.h"
-#include "model/item/item.h"

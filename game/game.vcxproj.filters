@@ -256,9 +256,6 @@
     <ClCompile Include="model\item\item.consume.cpp">
       <Filter>model\item</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.cpp">
-      <Filter>model\item</Filter>
-    </ClCompile>
     <ClCompile Include="model\item\item.equipment.armor.cpp">
       <Filter>model\item</Filter>
     </ClCompile>

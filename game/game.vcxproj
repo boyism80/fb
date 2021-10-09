@@ -189,7 +189,6 @@
     <ClCompile Include="model\item\item.base.cpp" />
     <ClCompile Include="model\item\item.cash.cpp" />
     <ClCompile Include="model\item\item.consume.cpp" />
-    <ClCompile Include="model\item\item.cpp" />
     <ClCompile Include="model\item\item.equipment.armor.cpp" />
     <ClCompile Include="model\item\item.equipment.auxiliary.cpp" />
     <ClCompile Include="model\item\item.equipment.bow.cpp" />
