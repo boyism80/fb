@@ -189,24 +189,24 @@ public:
 
 #pragma region override method
 protected:
-    void                        handle_hold();
-    void                        handle_switch_process(fb::game::map& map, const point16_t& position);
-    void                        handle_warp();
-    void                        handle_update();
-    uint32_t                    handle_calculate_damage(bool critical) const;
-    void                        handle_attack(fb::game::object* target);
-    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical);
-    void                        handle_kill(fb::game::life& you);
-    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
-    void                        handle_die(fb::game::object* from);
+    void                        handle_hold() override;
+    void                        handle_switch_process(fb::game::map& map, const point16_t& position) override;
+    void                        handle_warp() override;
+    void                        handle_update() override;
+    uint32_t                    handle_calculate_damage(bool critical) const override;
+    void                        handle_attack(fb::game::object* target) override;
+    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical) override;
+    void                        handle_kill(fb::game::life& you) override;
+    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical) override;
+    void                        handle_die(fb::game::object* from) override;
 
 public:
-     void                       handle_transfer(fb::game::map& map, const point16_t& position);
+    void                        handle_transfer(fb::game::map& map, const point16_t& position) override;
 
 public:
-    void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
-    void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
-    object::types               type() const;
+    void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) override;
+    void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) override;
+    object::types               type() const override;
 #pragma endregion
 
 #pragma region operator

@@ -20,7 +20,8 @@ fb::game::mob::master::master(const std::string& name,
                                                                size(size),
                                                                speed(speed),
                                                                script_attack(script_attack),
-                                                               script_die(script_die)
+                                                               script_die(script_die),
+                                                               items(_items)
 
 { }
 
@@ -32,19 +33,9 @@ fb::game::object* fb::game::mob::master::make(listener* listener) const
     return new mob(this, listener);
 }
 
-void fb::game::mob::master::dropitem_add(const mob::drop& money)
+void fb::game::mob::master::push_drop(const drop& drop)
 {
-    this->_items.push_back(money);
-}
-
-void fb::game::mob::master::dropitem_add(const fb::game::item::master* item, float percentage)
-{
-    this->_items.push_back(drop(item, percentage));
-}
-
-const std::vector<fb::game::mob::drop>& fb::game::mob::master::items() const
-{
-    return this->_items;
+    this->_items.push_back(drop);
 }
 
 int fb::game::mob::master::builtin_speed(lua_State* lua)
@@ -297,10 +288,10 @@ fb::game::life* fb::game::mob::find_target()
     return this->_target;
 }
 
-const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
-{
-    return static_cast<const master*>(this->_master)->items();
-}
+//const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
+//{
+//    return static_cast<const master*>(this->_master)->items();
+//}
 
 bool fb::game::mob::near_target(fb::game::direction& out) const
 {

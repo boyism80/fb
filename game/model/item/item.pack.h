@@ -32,8 +32,8 @@ public:
 
 #pragma region override method
 public:
-    const std::string                   name_styled() const;
-    bool                                active();
+    const std::string                   name_styled() const override;
+    bool                                active() override;
 #pragma endregion
 };
 

@@ -29,7 +29,7 @@ public:
 
 #pragma region override method
 protected:
-    std::string                         mid_message() const;
+    std::string                         mid_message() const override;
 #pragma endregion
 };
 

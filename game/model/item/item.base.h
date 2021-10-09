@@ -255,7 +255,7 @@ public:
 
 #pragma region override method
 public:
-    fb::game::object::types             type() const { return object::ITEM; }
+    fb::game::object::types             type() const override { return object::ITEM; }
 #pragma endregion
 
 #pragma region virtual method

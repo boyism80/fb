@@ -98,12 +98,12 @@ public:
 #pragma endregion
 
 #pragma region override method
-    uint32_t                                handle_calculate_damage(bool critical) const;
-    void                                    handle_attack(fb::game::object* target);
-    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical);
-    void                                    handle_kill(fb::game::life& you);
-    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
-    void                                    handle_die(fb::game::object* from);
+    uint32_t                                handle_calculate_damage(bool critical) const override;
+    void                                    handle_attack(fb::game::object* target) override;
+    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical) override;
+    void                                    handle_kill(fb::game::life& you) override;
+    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical) override;
+    void                                    handle_die(fb::game::object* from) override;
 #pragma endregion
 };
 
@@ -158,6 +158,7 @@ public:
 #pragma endregion
 
 #pragma region private field
+private:
     std::vector<drop>                       _items;
 #pragma endregion
 
@@ -168,6 +169,7 @@ public:
     const sizes                             size;
     const std::chrono::milliseconds         speed;
     const std::string                       script_attack, script_die;
+    const std::vector<drop>&                items;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -194,9 +196,7 @@ public:
     object*                                 make(listener* listener) const;
 
 public:
-    void                                    dropitem_add(const mob::drop& money);
-    void                                    dropitem_add(const fb::game::item::master* item, float percentage);
-    const std::vector<drop>&                items() const;
+    void                                    push_drop(const drop& drop);
 #pragma endregion
 
 #pragma region built-in method

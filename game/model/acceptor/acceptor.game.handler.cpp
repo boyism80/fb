@@ -535,7 +535,7 @@ void fb::game::acceptor::on_die(mob& me, object* you)
 
     // 드롭 아이템 떨구기
     std::vector<object*> dropped_items;
-    for(auto candidate : me.items())
+    for(auto& candidate : me.based<fb::game::mob>()->items)
     {
         if(std::rand() % 100 > candidate.percentage)
             continue;

@@ -746,7 +746,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
 
                 {
                     auto _ = std::lock_guard(*mutex);
-                    core->dropitem_add(item_core, percentage);
+                    core->push_drop(fb::game::mob::drop(item_core, percentage));
                 }
             }
 
