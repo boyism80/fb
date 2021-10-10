@@ -309,7 +309,7 @@ bool fb::game::acceptor::handle_command_exit(fb::game::session& session, Json::V
 
 bool fb::game::acceptor::handle_command_tile(fb::game::session& session, Json::Value& parameters)
 {
-    auto listener = session.get_listener<fb::game::session::listener>();
+    auto listener = session.get_listener<fb::game::session>();
     if(listener == nullptr)
         return false;
 

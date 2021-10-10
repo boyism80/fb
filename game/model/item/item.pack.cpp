@@ -83,7 +83,7 @@ bool fb::game::pack::active()
     if(this->_durability <= 0)
         this->count(0);
     
-    auto listener = this->_owner->get_listener<fb::game::session::listener>();
+    auto listener = this->_owner->get_listener<fb::game::session>();
     if(listener != nullptr)
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 

@@ -22,7 +22,7 @@ fb::game::itemmix::builder& fb::game::itemmix::builder::push(uint8_t index)
 
 bool fb::game::itemmix::builder::mix()
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {

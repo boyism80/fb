@@ -81,7 +81,7 @@ public:
     bool                        active(fb::game::spell& spell, fb::game::object& to);
 #pragma endregion
 
-#pragma region handler
+#pragma region virtual method
 protected:
     virtual void                handle_update() {}
     virtual uint32_t            handle_calculate_damage(bool critical) const = 0;
@@ -93,6 +93,7 @@ protected:
     virtual void                handle_die(fb::game::object* from);
 
 public:
+    virtual uint32_t            handle_exp() const { return 0; }
     virtual void                handle_kill(fb::game::life& you);
 
 #pragma endregion

@@ -98,12 +98,16 @@ public:
 #pragma endregion
 
 #pragma region override method
+protected:
     uint32_t                                handle_calculate_damage(bool critical) const override;
     void                                    handle_attack(fb::game::object* target) override;
     void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical) override;
     void                                    handle_kill(fb::game::life& you) override;
     void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical) override;
     void                                    handle_die(fb::game::object* from) override;
+
+public:
+    uint32_t                                handle_exp() const override;
 #pragma endregion
 };
 

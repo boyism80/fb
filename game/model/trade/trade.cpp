@@ -33,7 +33,7 @@ fb::game::session* fb::game::trade::you() const
 
 bool fb::game::trade::begin(session& you)
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
@@ -123,7 +123,7 @@ bool fb::game::trade::trading() const
 
 bool fb::game::trade::up(fb::game::item& item)
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
     auto master = item.based<fb::game::item>();
 
     try
@@ -169,7 +169,7 @@ bool fb::game::trade::up(fb::game::item& item)
 
 bool fb::game::trade::up(uint8_t money)
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
@@ -206,7 +206,7 @@ uint32_t fb::game::trade::money() const
 
 bool fb::game::trade::count(uint16_t count)
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
@@ -246,7 +246,7 @@ bool fb::game::trade::count(uint16_t count)
 
 bool fb::game::trade::cancel()
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
@@ -345,7 +345,7 @@ bool fb::game::trade::flushable() const
 
 bool fb::game::trade::lock()
 {
-    auto listener = this->_owner.get_listener<fb::game::session::listener>();
+    auto listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {

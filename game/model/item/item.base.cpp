@@ -134,7 +134,7 @@ fb::game::item::item(const fb::game::item::master* master, fb::game::item::liste
 {}
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right._master, right.get_listener<fb::game::object::listener>()),
+    fb::game::object(right._master, right.get_listener<fb::game::object>()),
     _owner(nullptr),
     _count(right._count)
 { }
@@ -240,7 +240,7 @@ void fb::game::item::owner(fb::game::session* owner)
     if(owner == nullptr)
         this->set_listener(nullptr);
     else
-        this->set_listener(owner->get_listener<fb::game::item::listener>());
+        this->set_listener(owner->get_listener<fb::game::item>());
 }
 
 bool fb::game::item::active()
@@ -257,7 +257,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
     if(master->trade.enabled == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
-    auto listener = this->_owner != nullptr ? this->_owner->get_listener<fb::game::session::listener>() : nullptr;
+    auto listener = this->_owner != nullptr ? this->_owner->get_listener<fb::game::session>() : nullptr;
     if(this->attr(item::attrs::ITEM_ATTR_BUNDLE) && this->_count > count)
     {
         this->_count -= count;
@@ -281,7 +281,7 @@ void fb::game::item::merge(fb::game::item& item)
     auto remain = this->fill(item.count());
     item.count(remain);
 
-    auto listener = this->_owner->get_listener<fb::game::session::listener>();
+    auto listener = this->_owner->get_listener<fb::game::session>();
     if(listener != nullptr)
     {
         auto master = this->based<fb::game::item>();

@@ -105,7 +105,7 @@ fb::game::spells::~spells()
 uint8_t fb::game::spells::add(spell& element)
 {
     auto index = fb::game::base_container<fb::game::spell>::add(element);
-    auto listener = this->owner().get_listener<fb::game::spell::listener>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(index != 0xFF && listener != nullptr)
         listener->on_spell_update(this->owner(), index);
@@ -115,7 +115,7 @@ uint8_t fb::game::spells::add(spell& element)
 
 uint8_t fb::game::spells::add(spell& element, uint8_t index)
 {
-    auto listener = this->owner().get_listener<fb::game::spell::listener>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(fb::game::base_container<fb::game::spell>::add(element, index) != 0xFF && listener != nullptr)
         listener->on_spell_update(this->owner(), index);
@@ -142,7 +142,7 @@ uint8_t fb::game::spells::add(spell* element, uint8_t index)
 bool fb::game::spells::remove(uint8_t index)
 {
     auto success = fb::game::base_container<fb::game::spell>::remove(index);
-    auto listener = this->owner().get_listener<fb::game::spell::listener>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(success && listener != nullptr)
         listener->on_spell_remove(this->owner(), index);
@@ -155,7 +155,7 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dst)
     if(fb::game::base_container<fb::game::spell>::swap(src, dst) == false)
         return false;
 
-    auto listener = this->owner().get_listener<fb::game::spell::listener>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
     if(listener != nullptr)
     {
         const auto              right = this->at(src);
@@ -273,7 +273,7 @@ bool fb::game::buffs::remove(const std::string& name)
 
     this->erase(found);
     
-    auto listener = this->_owner.get_listener<fb::game::object::listener>();
+    auto listener = this->_owner.get_listener<fb::game::object>();
     if(listener != nullptr)
         listener->on_unbuff(this->_owner, *buff);
     return true;

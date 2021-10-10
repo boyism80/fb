@@ -162,16 +162,6 @@ void fb::game::acceptor::on_attack(session& me, object* you)
         auto            sound = weapon->based<fb::game::weapon>()->sound;
         this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::sound::type(sound) : fb::game::sound::SWING), scope::PIVOT);
     }
-
-    auto& thread = fb::game::lua::get();
-    thread.from("scripts/common/attack.lua")
-          .func("handle_attack")
-          .pushobject(me);
-    if(you != nullptr)
-        thread.pushobject(*you);
-    else
-        thread.pushnil();
-    thread.resume(2);
 }
 
 void fb::game::acceptor::on_hit(session& me, life& you, uint32_t damage, bool critical)
@@ -201,9 +191,7 @@ void fb::game::acceptor::on_hold(session& me)
 }
 
 void fb::game::acceptor::on_die(session& me, object* you)
-{
-    me.state(state::GHOST);
-}
+{ }
 
 void fb::game::acceptor::on_notify(session& me, const std::string& message, fb::game::message::type type)
 {
@@ -475,7 +463,7 @@ void fb::game::acceptor::on_transfer(fb::game::session& me, fb::game::map& map, 
     parameter.write(me.name());
 
     auto& socket = static_cast<fb::socket<fb::game::session>&>(me);
-    auto fd = socket.native_handle();
+    auto  fd     = socket.native_handle();
     this->_internal->send(fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::SERVICE_GAME, fb::protocol::internal::services::SERVICE_GAME, map.id(), position.x, position.y, fd));
 }
 
@@ -503,51 +491,11 @@ void fb::game::acceptor::on_kill(mob& me, life& you)
 {}
 
 void fb::game::acceptor::on_damaged(mob& me, object* you, uint32_t damage, bool critical)
-{
-    if(me.alive())
-    {
-        if(me.based<fb::game::mob>()->offensive != fb::game::mob::offensive_type::NONE && you != nullptr)
-        {
-            me.target(static_cast<fb::game::life*>(you));
-        }
-    }
-    else if(you != nullptr && you->is(object::types::SESSION))
-    {
-        auto&                   slayer = static_cast<fb::game::session&>(*you);
-        auto                    range = fb::game::table::classes.exp(slayer.cls(), slayer.level());
-        // 3.3% 제한한 경험치
-        auto                    exp = me.experience();
-#if defined DEBUG | defined _DEBUG
-        exp *= 100;
-#else
-        if (slayer.max_level() == false)
-            exp = std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
-#endif
-        slayer.experience_add(exp, true);
-    }
-}
+{ }
 
 void fb::game::acceptor::on_die(mob& me, object* you)
 {
-    // 몹 체력을 다 깎았으면 죽인다.
     this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);
-    me.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
-
-    // 드롭 아이템 떨구기
-    std::vector<object*> dropped_items;
-    for(auto& candidate : me.based<fb::game::mob>()->items)
-    {
-        if(std::rand() % 100 > candidate.percentage)
-            continue;
-
-        auto            item = static_cast<fb::game::item*>(candidate.item->make(this));
-        item->map(me.map(), me.position());
-
-        dropped_items.push_back(item);
-    }
-
-    if(dropped_items.size() != 0)
-        this->send(me, fb::protocol::game::response::object::show(dropped_items), scope::PIVOT, true);
 }
 
 void fb::game::acceptor::on_item_remove(session& me, uint8_t index, item::delete_attr attr)

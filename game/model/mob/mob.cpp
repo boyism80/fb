@@ -1,6 +1,7 @@
 #include "model/session/session.h"
 #include "model/map/map.h"
 #include "mob.h"
+#include "module/thread/thread.h"
 
 fb::game::mob::master::master(const std::string& name,
                               uint16_t look,
@@ -374,7 +375,7 @@ void fb::game::mob::handle_attack(fb::game::object* target)
 {
     fb::game::life::handle_attack(target);
 
-    auto listener = this->get_listener<fb::game::mob::listener>();
+    auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_attack(*this, target);
 }
@@ -383,7 +384,7 @@ void fb::game::mob::handle_hit(fb::game::life& you, uint32_t damage, bool critic
 {
     fb::game::life::handle_hit(you, damage, critical);
 
-    auto listener = this->get_listener<fb::game::mob::listener>();
+    auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_hit(*this, you, damage, critical);
 }
@@ -392,7 +393,7 @@ void fb::game::mob::handle_kill(fb::game::life& you)
 {
     fb::game::life::handle_kill(you);
 
-    auto listener = this->get_listener<fb::game::mob::listener>();
+    auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_kill(*this, you);
 }
@@ -401,16 +402,40 @@ void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool
 {
     fb::game::life::handle_damaged(from, damage, critical);
 
-    auto listener = this->get_listener<fb::game::mob::listener>();
+    auto master = this->based<fb::game::mob>();
+    if(master->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(fb::game::object::types::LIFE))
+    {
+        this->target(static_cast<fb::game::life*>(from));
+    }
+
+    auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_damaged(*this, from, damage, critical);
+}
+
+uint32_t fb::game::mob::handle_exp() const
+{
+    auto master = this->based<fb::game::mob>();
+    return master->experience;
 }
 
 void fb::game::mob::handle_die(fb::game::object* from)
 {
     fb::game::life::handle_die(from);
 
-    auto listener = this->get_listener<fb::game::mob::listener>();
+    this->dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
+
+    // 드롭 아이템 떨구기
+    for(auto& candidate : this->based<fb::game::mob>()->items)
+    {
+        if(std::rand() % 100 > candidate.percentage)
+            continue;
+
+        auto item = static_cast<fb::game::item*>(candidate.item->make(this->get_listener<fb::game::item>()));
+        item->map(this->map(), this->position());
+    }
+
+    auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_die(*this, from);
 }
