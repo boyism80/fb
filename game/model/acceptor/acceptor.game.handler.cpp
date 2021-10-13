@@ -87,7 +87,7 @@ void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, cons
         me.handle_enter(map, position);
 
         if(me.is(fb::game::object::types::SESSION))
-            this->on_save(static_cast<fb::game::session&>(me));
+            this->save(static_cast<fb::game::session&>(me));
     }
     else
     {
@@ -97,7 +97,7 @@ void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, cons
             {
                 me.handle_enter(map, position);
                 if(me.is(fb::game::object::types::SESSION))
-                    this->on_save(static_cast<fb::game::session&>(me));
+                    this->save(static_cast<fb::game::session&>(me));
             }
         );
     }
@@ -510,31 +510,3 @@ void fb::game::acceptor::on_item_update(session& me, uint8_t index)
 
 void fb::game::acceptor::on_item_swap(session& me, uint8_t src, uint8_t dst)
 { }
-
-void fb::game::acceptor::on_save(session& me)
-{
-    this->on_save
-    (
-        me, 
-        [](fb::game::session&)
-        {}
-    );
-}
-
-void fb::game::acceptor::on_save(session& me, std::function<void(fb::game::session&)> fn)
-{
-    db::query
-    (
-        me.name().c_str(), 
-        [this, fn, &me]()
-        {
-            fn(me);
-        },
-        std::vector<std::string>
-        {
-            service::sql::session::update(me),
-            service::sql::item::update(me),
-            service::sql::spell::update(me),
-        }
-    );
-}

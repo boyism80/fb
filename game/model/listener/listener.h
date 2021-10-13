@@ -9,11 +9,7 @@ namespace fb { namespace game {
 
 interface listener : public virtual session::listener,
     public virtual mob::listener
-{
-public:
-    // game
-    virtual void on_save(session& me, std::function<void(fb::game::session&)> fn) = 0;
-};
+{ };
 
 
 } }

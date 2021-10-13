@@ -359,7 +359,7 @@ bool acceptor::handle_disconnected(fb::socket<fb::game::session>& socket)
         if(session->map() == nullptr)
             session->before(nullptr);
 
-        this->on_save(*session);
+        this->save(*session);
     }
 
     session->map(nullptr);
@@ -589,12 +589,40 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, bool e
     }
 }
 
+void fb::game::acceptor::save(fb::game::session& session)
+{
+    this->save(session, [] (fb::game::session&) {});
+}
+
+void fb::game::acceptor::save(fb::game::session& session, std::function<void(fb::game::session&)> fn)
+{
+    db::query
+    (
+        session.name().c_str(), 
+        [this, fn, &session]()
+        {
+            fn(session);
+        },
+        std::vector<std::string>
+        {
+            service::sql::session::update(session),
+            service::sql::item::update(session),
+            service::sql::spell::update(session),
+        }
+    );
+}
+
 void fb::game::acceptor::save()
+{
+    this->save([] (fb::game::session& x) {});
+}
+
+void fb::game::acceptor::save(std::function<void(fb::game::session&)> fn)
 {
     for(auto& socket : this->sockets)
     {
         auto session = socket.second.get()->data();
-        this->on_save(*session);
+        this->save(*session, fn);
     }
 }
 
@@ -673,7 +701,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
         {
             session->handle_transfer(*fb::game::table::maps[response.map], fb::game::point16_t(response.x, response.y));
 
-            this->on_save
+            this->save
             (
                 *session,
                 [this, client, response](fb::game::session&)
@@ -1512,7 +1540,7 @@ bool fb::game::acceptor::handle_world(fb::socket<fb::game::session>& socket, con
         session->before(before.map);
     
     session->map(after.map, after.position);
-    this->on_save(*session);
+    this->save(*session);
     return true;
 }
 
@@ -1665,7 +1693,7 @@ void fb::game::acceptor::handle_save_timer(std::chrono::steady_clock::duration n
                 continue;
 
             auto session = static_cast<fb::game::session*>(pair.second);
-            this->on_save(*session);
+            this->save(*session);
         }
     }
 }
