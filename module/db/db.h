@@ -77,8 +77,8 @@ private:
 
 private:
     void                                _exec(const char* name, const std::string& sql);
-    void                                _query(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
-    void                                _mquery(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
+    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
+    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
 
 private:
     static db&                          get();

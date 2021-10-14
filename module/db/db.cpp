@@ -153,7 +153,7 @@ void fb::db::_exec(const char* name, const std::string& sql)
     this->release(name, connection);
 }
 
-void fb::db::_query(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
+void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
 {
     auto connection = &db::get(name);
     auto name_c = new std::string(name);
@@ -183,7 +183,7 @@ void fb::db::_query(const char* name, const std::string& sql, const const std::f
     }
 }
 
-void fb::db::_mquery(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
+void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
 {
     auto connection = &db::get(name);
     auto name_c = new std::string(name);
