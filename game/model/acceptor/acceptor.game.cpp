@@ -445,7 +445,7 @@ bool fb::game::acceptor::exists(const fb::game::object& object) const
     return this->_hash_set.contains(&object);
 }
 
-void fb::game::acceptor::bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration)
+void fb::game::acceptor::bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration)
 {
     auto& threads = this->threads();
     threads.settimer(fn, duration);
@@ -513,7 +513,7 @@ void fb::game::acceptor::send(object& object, const fb::protocol::base::header& 
     }
 }
 
-void fb::game::acceptor::send(fb::game::object& object, std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)> fn, acceptor::scope scope, bool exclude_self, bool encrypt)
+void fb::game::acceptor::send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, acceptor::scope scope, bool exclude_self, bool encrypt)
 {
     switch(scope)
     {
@@ -594,7 +594,7 @@ void fb::game::acceptor::save(fb::game::session& session)
     this->save(session, [] (fb::game::session&) {});
 }
 
-void fb::game::acceptor::save(fb::game::session& session, std::function<void(fb::game::session&)> fn)
+void fb::game::acceptor::save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn)
 {
     db::query
     (
@@ -617,7 +617,7 @@ void fb::game::acceptor::save()
     this->save([] (fb::game::session& x) {});
 }
 
-void fb::game::acceptor::save(std::function<void(fb::game::session&)> fn)
+void fb::game::acceptor::save(const std::function<void(fb::game::session&)>& fn)
 {
     for(auto& socket : this->sockets)
     {

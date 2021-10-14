@@ -46,7 +46,7 @@ protected:
     const fb::threads&                          threads() const;
 
 protected:
-    virtual bool                                handle_parse(S<T>& session, std::function<bool(S<T>&)> callback) = 0;
+    virtual bool                                handle_parse(S<T>& session, const std::function<bool(S<T>&)>& callback) = 0;
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
@@ -155,14 +155,14 @@ private:
     bool                        call(fb::socket<T>& socket, uint8_t cmd);
 
 protected:
-    bool                        handle_parse(fb::socket<T>& socket, std::function<bool(fb::socket<T>&)> callback);
+    bool                        handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback);
 
 public:
     template <typename R>
-    void                        bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn);
+    void                        bind(uint8_t cmd, const std::function<bool(fb::socket<T>&, R&)>& fn);
 
     template <typename R>
-    void                        bind(std::function<bool(fb::internal::socket<>&, R&)> fb);
+    void                        bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn);
 };
 
 }

@@ -31,7 +31,7 @@ private:
     bool                            _activated;
 
 public:
-    sector(uint32_t id, std::function<void(sector&)> state_changed);
+    sector(uint32_t id, const std::function<void(sector&)>& state_changed);
     ~sector();
 
 public:

@@ -100,7 +100,7 @@ public:
     void                                            exit();
 
 public:
-    void                                            dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration);
+    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
 
 public:
@@ -123,12 +123,12 @@ public:
     ~async();
 
 private:
-    void                                            _launch(std::function<void()> fn);
+    void                                            _launch(const std::function<void()>& fn);
     void                                            async_handler();
     static async*                                   get();
 
 public:
-    static void                                     launch(std::function<void()> fn);
+    static void                                     launch(const std::function<void()>& fn);
     static void                                     exit();
 };
 
@@ -168,7 +168,7 @@ public:
     size_t                                          size() const;
 
 public:
-    void                                            dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration, bool main = false);
+    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main = false);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
     void                                            exit();
 

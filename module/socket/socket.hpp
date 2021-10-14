@@ -1,7 +1,7 @@
 #include "socket.h"
 
 template<typename T>
-fb::base::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+fb::base::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
@@ -105,13 +105,13 @@ uint32_t fb::base::socket<T>::fd()
 // fb::socket
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
 {
 }
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     fb::socket<T>(context, handle_received, handle_closed)
 {
     this->_crt = crt;
@@ -157,7 +157,7 @@ fb::socket<T>::operator fb::cryptor& ()
 
 // fb::internal::socket
 template <typename T>
-fb::internal::socket<T>::socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_received, std::function<void(fb::base::socket<T>&)> handle_closed) : 
+fb::internal::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
 {}
 

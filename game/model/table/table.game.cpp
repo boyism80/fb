@@ -38,7 +38,7 @@ void fb::game::container::map::clear()
     std::map<uint16_t, fb::game::map*>::clear();
 }
 
-void fb::game::container::map::clear(std::function<bool(const fb::game::map&)> fn)
+void fb::game::container::map::clear(const std::function<bool(const fb::game::map&)>& fn)
 {
     for(auto i = this->begin(); i != this->end();)
     {

@@ -37,7 +37,7 @@ fb::internal::acceptor::service* fb::internal::acceptor::get(fb::protocol::inter
     }
 }
 
-bool fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback)
+bool fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
 {
     return fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::acceptor::handler>>(socket, this->_handler_dict);
 }

@@ -18,7 +18,7 @@ typedef std::function<void(const std::string&, const std::string&)>     handle_e
 typedef std::function<void(uint32_t)>                                   handle_complete;
 
 bool                        load(const std::string& path, Json::Value& json);
-uint32_t                    load(const std::string& path, std::function<void(Json::Value&, Json::Value&, double)> callback, std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async = true);
+uint32_t                    load(const std::string& path, const std::function<void(Json::Value&, Json::Value&, double)>& callback, const std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async = true);
 
 } }
 

@@ -358,7 +358,7 @@ void fb::acceptor<T>::connect_internal()
 }
 
 template <typename T>
-bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, std::function<bool(fb::socket<T>&)> callback)
+bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback)
 {
     static constexpr uint8_t    not_crt_cmd[] = {0x00, 0x10};
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
@@ -424,7 +424,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, std::function<bool(fb:
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> fn)
+void fb::acceptor<T>::bind(uint8_t cmd, const std::function<bool(fb::socket<T>&, R&)>& fn)
 {
     this->_public_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
     {
@@ -437,7 +437,7 @@ void fb::acceptor<T>::bind(uint8_t cmd, std::function<bool(fb::socket<T>&, R&)> 
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(std::function<bool(fb::internal::socket<>&, R&)> fn)
+void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn)
 {
     this->_private_handler_dict[R::id] = [this, fn](fb::internal::socket<>& socket)
     {

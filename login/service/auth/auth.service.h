@@ -82,13 +82,13 @@ private:
     std::string                 sha256(const std::string& data) const;
 
 public:
-    void                        exists(const std::string& name, std::function<void(const std::string&, bool)> callback);
+    void                        exists(const std::string& name, const std::function<void(const std::string&, bool)>& callback);
 
     void                        assert_account(const std::string& id, const std::string& pw) const;
-    void                        create_account(const std::string& id, const std::string& pw, std::function<void(const std::string&)> success, std::function<void(const std::string&, const login_exception&)> failed);
+    void                        create_account(const std::string& id, const std::string& pw, const std::function<void(const std::string&)>& success, const std::function<void(const std::string&, const login_exception&)>& failed);
     void                        init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    uint32_t                    login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed);
-    void                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, std::function<void()> success, std::function<void(const login_exception&)> failed);
+    uint32_t                    login(const std::string& id, const std::string& pw, const std::function<void(uint32_t)>& success, const std::function<void(const login_exception&)>& failed);
+    void                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, const std::function<void()>& success, const std::function<void(const login_exception&)>& failed);
 };
 
 } } }

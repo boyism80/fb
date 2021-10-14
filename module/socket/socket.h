@@ -30,7 +30,7 @@ public:
     std::mutex              mutex;
 
 protected:
-    socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
+    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
     ~socket() = default;
 
 protected:
@@ -84,8 +84,8 @@ private:
     fb::cryptor             _crt;
 
 public:
-    socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
-    socket(boost::asio::io_context& context, const fb::cryptor& crt, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
+    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
+    socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
     ~socket() = default;
     
 protected:
@@ -109,7 +109,7 @@ template <typename T = void*>
 class socket : public fb::base::socket<T>
 {
 public:
-    socket(boost::asio::io_context& context, std::function<void(fb::base::socket<T>&)> handle_receive, std::function<void(fb::base::socket<T>&)> handle_closed);
+    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
     ~socket();
 
 protected:

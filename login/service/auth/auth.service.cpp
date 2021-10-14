@@ -73,7 +73,7 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
-void fb::login::service::auth::exists(const std::string& name, std::function<void(const std::string&, bool)> callback)
+void fb::login::service::auth::exists(const std::string& name, const std::function<void(const std::string&, bool)>& callback)
 {
     db::query
     (
@@ -109,7 +109,7 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-void fb::login::service::auth::create_account(const std::string& id, const std::string& pw, std::function<void(const std::string&)> success, std::function<void(const std::string&, const login_exception&)> failed)
+void fb::login::service::auth::create_account(const std::string& id, const std::string& pw, const std::function<void(const std::string&)>& success, const std::function<void(const std::string&, const login_exception&)>& failed)
 {
     this->assert_account(id, pw);
 
@@ -139,7 +139,7 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
     db::query(id.c_str(), fb::login::service::sql::auth::update(id, hair, sex, nation, creature));
 }
 
-uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, std::function<void(uint32_t)> success, std::function<void(const login_exception&)> failed)
+uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, const std::function<void(uint32_t)>& success, const std::function<void(const login_exception&)>& failed)
 {
     try
     {
@@ -177,7 +177,7 @@ uint32_t fb::login::service::auth::login(const std::string& id, const std::strin
     return true;
 }
 
-void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, std::function<void()> success, std::function<void(const login_exception&)> failed)
+void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, const std::function<void()>& success, const std::function<void(const login_exception&)>& failed)
 {
     try
     { 

@@ -75,7 +75,7 @@ private:
     uint32_t                elapsed_seconds(const datetime& datetime);
     std::string             elapsed_message(const datetime& datetime);
     fb::game::session*      find(const std::string& name) const;
-    void                    bind_timer(std::function<void(std::chrono::steady_clock::duration, std::thread::id)> fn, const std::chrono::steady_clock::duration& duration);
+    void                    bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
 #pragma endregion
 
@@ -88,13 +88,13 @@ public:
 
 public:
     void                    send(fb::game::object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
-    void                    send(fb::game::object& object, std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)> fn, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
     void                    save(fb::game::session& session);
-    void                    save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
+    void                    save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn);
     void                    save();
-    void                    save(std::function<void(fb::game::session&)> fn);
+    void                    save(const std::function<void(fb::game::session&)>& fn);
 
 public:
     fb::thread*             thread(const fb::game::map& map) const;

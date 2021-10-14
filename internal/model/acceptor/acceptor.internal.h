@@ -45,7 +45,7 @@ private:
     service*                        get(fb::protocol::internal::services type, uint8_t group = 0xFF);
 
 protected:
-    bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, std::function<bool(fb::internal::socket<fb::internal::session>&)> callback);
+    bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback);
     
 public:
     fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket);
@@ -56,7 +56,7 @@ public:
 
 public:
     template <typename R>
-    void                            bind(std::function<bool(fb::internal::socket<fb::internal::session>&, R&)> fn)
+    void                            bind(const std::function<bool(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
         _handler_dict[R::id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
         {

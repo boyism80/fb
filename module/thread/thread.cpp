@@ -131,7 +131,7 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 }
 
-void fb::thread::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration)
+void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration)
 {   MUTEX_GUARD(this->_mutex_timer)
 
     this->_timers.push_back
@@ -266,7 +266,7 @@ size_t fb::threads::size() const
     return this->_threads.size();
 }
 
-void fb::threads::dispatch(std::function<void()> fn, const std::chrono::steady_clock::duration& duration, bool main)
+void fb::threads::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main)
 {
     auto current = this->current();
     if(main || current == nullptr)
@@ -340,7 +340,7 @@ fb::async::~async()
     this->_async_thread.join();
 }
 
-void fb::async::_launch(std::function<void()> fn)
+void fb::async::_launch(const std::function<void()>& fn)
 {
     auto gd = std::lock_guard(this->_async_mutex);
     this->_futures.push_back(std::async(std::launch::async, fn));
@@ -373,7 +373,7 @@ fb::async* fb::async::get()
     return _ist.get();
 }
 
-void fb::async::launch(std::function<void()> fn)
+void fb::async::launch(const std::function<void()>& fn)
 {
     get()->_launch(fn);
 }

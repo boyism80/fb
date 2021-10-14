@@ -18,7 +18,7 @@ bool fb::table::load(const std::string& path, Json::Value& json)
     return true;
 }
 
-uint32_t fb::table::load(const std::string& path, std::function<void(Json::Value&, Json::Value&, double)> callback, std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async)
+uint32_t fb::table::load(const std::string& path, const std::function<void(Json::Value&, Json::Value&, double)>& callback, const std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async)
 {
     Json::Value             data;
     if(fb::table::load(path, data) == false)

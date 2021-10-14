@@ -3,7 +3,7 @@
 #include "model/session/session.h"
 #include "model/mob/mob.h"
 
-fb::game::sector::sector(uint32_t id, std::function<void(sector&)> state_changed) : 
+fb::game::sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) : 
     _id(id),
     _state_changed(state_changed),
     _activated(false)

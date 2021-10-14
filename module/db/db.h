@@ -77,8 +77,8 @@ private:
 
 private:
     void                                _exec(const char* name, const std::string& sql);
-    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
-    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> fn);
+    void                                _query(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
+    void                                _mquery(const char* name, const std::string& sql, const const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
 
 private:
     static db&                          get();
@@ -108,7 +108,7 @@ public:
     }
 
     template <typename... Values>
-    static bool query(const char* name, std::function<void(daotk::mysql::connection&, daotk::mysql::result&)> callback, const std::string& format, Values... values)
+    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
     {
         auto& ist = get();
         if(ist._context == nullptr)
@@ -130,7 +130,7 @@ public:
     }
 
     template <typename... Values>
-    static bool query(const char* name, std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)> callback, const std::string& format, Values... values)
+    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
     {
         auto& ist = get();
         if(ist._context == nullptr)
@@ -151,7 +151,7 @@ public:
     }
     
     static bool query(const char* name, const std::vector<std::string>& queries);
-    static bool query(const char* name, std::function<void()> fn, const std::vector<std::string>& queries);
+    static bool query(const char* name, const std::function<void()>& fn, const std::vector<std::string>& queries);
 };
 
 }
