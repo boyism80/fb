@@ -15,7 +15,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템1"
+            "active": "scripts/item/@낙랑아이템1.lua"
         },
         "desc": "낙랑의두루마리1"
     },
@@ -35,7 +35,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템2"
+            "active": "scripts/item/@낙랑아이템2.lua"
         },
         "desc": "낙랑의두루마리2"
     },
@@ -55,7 +55,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템3"
+            "active": "scripts/item/@낙랑아이템3.lua"
         },
         "desc": "낙랑의두루마리3"
     },
@@ -75,7 +75,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템4"
+            "active": "scripts/item/@낙랑아이템4.lua"
         },
         "desc": "낙랑의두루마리4"
     },
@@ -95,7 +95,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템5"
+            "active": "scripts/item/@낙랑아이템5.lua"
         },
         "desc": "낙랑의두루마리5"
     },
@@ -115,7 +115,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템6"
+            "active": "scripts/item/@낙랑아이템6.lua"
         },
         "desc": "낙랑의두루마리6"
     },
@@ -135,7 +135,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템7"
+            "active": "scripts/item/@낙랑아이템7.lua"
         },
         "desc": "낙랑의두루마리7"
     },
@@ -155,7 +155,7 @@
         "bundle type": "default",
         "available": true,
         "script": {
-            "active": "낙랑아이템8"
+            "active": "scripts/item/@낙랑아이템8.lua"
         },
         "desc": "낙랑의두루마리8"
     },
@@ -176,7 +176,7 @@
         "bundle type": "bundle",
         "capacity": 100,
         "script": {
-            "active": "낙랑아이템2갯수체크"
+            "active": "scripts/item/@낙랑아이템2갯수체크.lua"
         },
         "desc": "도토리와 비슷해 보이지만..."
     },

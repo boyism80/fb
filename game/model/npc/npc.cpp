@@ -34,28 +34,20 @@ int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
     return ::builtin_item_dialog<fb::game::npc::master>(lua);
 }
 
-fb::game::npc::npc(const fb::game::npc::master* master, listener* listener) : 
-    fb::game::object(master, listener)
+fb::game::npc::npc(const fb::game::npc::master* master, const std::string& script, listener* listener) : 
+    fb::game::object(master, listener),
+    script(script)
 {
 }
 
 fb::game::npc::npc(const npc& right) :
-    object(right)
+    object(right),
+    script(right.script)
 {
 }
 
 fb::game::npc::~npc()
 {
-}
-
-const std::string& fb::game::npc::script() const
-{
-    return this->_script;
-}
-
-void fb::game::npc::script(const std::string& value)
-{
-    this->_script = value;
 }
 
 fb::game::npc* fb::game::npc::make()

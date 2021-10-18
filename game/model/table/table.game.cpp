@@ -607,11 +607,12 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
                 else
                     throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
-                auto                cloned = new fb::game::npc(core, listener);
-                cloned->direction(direction);
-                if(std::filesystem::exists(script))
-                    cloned->script(script);
+                if(std::filesystem::exists(script) == false)
+                    script = "";
 
+                auto                cloned = new fb::game::npc(core, script, listener);
+                cloned->direction(direction);
+                
                 {
                     auto _ = std::lock_guard(*mutex);
                     cloned->map(map, position);

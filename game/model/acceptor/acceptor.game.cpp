@@ -676,8 +676,12 @@ void fb::game::acceptor::handle_click_mob(fb::game::session& session, fb::game::
 
 void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
 {
+    auto& script = npc.script();
+    if(script == "")
+        return;
+
     session.dialog
-        .from("scripts/script.lua")
+        .from(script.c_str())
         .func("handle_click")
         .pushobject(session)
         .pushobject(npc)

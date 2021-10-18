@@ -17,23 +17,19 @@ public:
     class master;
 #pragma endregion
 
-#pragma region private field
-private:
-    std::string                 _script;
+#pragma region public field
+public:
+    std::string                 script;
 #pragma endregion
 
 #pragma region constructor
 public:
-    npc(const master* master, listener* listener);
+    npc(const master* master, const std::string& script, listener* listener);
     npc(const npc& right);
     ~npc();
 #pragma endregion
 
 #pragma region public method
-public:
-    const std::string&          script() const;
-    void                        script(const std::string& value);
-
 public:
     npc*                        make();
 #pragma endregion
