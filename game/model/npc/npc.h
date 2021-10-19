@@ -17,14 +17,9 @@ public:
     class master;
 #pragma endregion
 
-#pragma region public field
-public:
-    std::string                 script;
-#pragma endregion
-
 #pragma region constructor
 public:
-    npc(const master* master, const std::string& script, listener* listener);
+    npc(const master* master, listener* listener);
     npc(const npc& right);
     ~npc();
 #pragma endregion
@@ -54,6 +49,11 @@ public:
     interface listener;
 #pragma endregion
 
+#pragma region public field
+public:
+    std::string                 script;
+#pragma endregion
+
 #pragma region friend
 public:
     friend class npc;
@@ -61,7 +61,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color);
+    master(const std::string& name, uint16_t look, uint8_t color, const std::string& script);
     ~master();
 #pragma endregion
 

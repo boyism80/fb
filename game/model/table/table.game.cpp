@@ -1,17 +1,17 @@
 #include "model/session/session.h"
 #include "table.game.h"
 
-std::vector<fb::game::clan*>            fb::game::table::clans;
-fb::game::board                         fb::game::table::board;
-fb::game::container::map                fb::game::table::maps;
-fb::game::container::worlds             fb::game::table::worlds;
-fb::game::container::item               fb::game::table::items;
-fb::game::container::npc                fb::game::table::npcs;
-fb::game::container::mob                fb::game::table::mobs;
-fb::game::container::spell              fb::game::table::spells;
-fb::game::container::cls                fb::game::table::classes;
-fb::game::container::mix                fb::game::table::mixes;
-fb::game::container::door               fb::game::table::doors;
+std::vector<fb::game::clan*> fb::game::table::clans;
+fb::game::board              fb::game::table::board;
+fb::game::container::map     fb::game::table::maps;
+fb::game::container::worlds  fb::game::table::worlds;
+fb::game::container::item    fb::game::table::items;
+fb::game::container::npc     fb::game::table::npcs;
+fb::game::container::mob     fb::game::table::mobs;
+fb::game::container::spell   fb::game::table::spells;
+fb::game::container::cls     fb::game::table::classes;
+fb::game::container::mix     fb::game::table::mixes;
+fb::game::container::door    fb::game::table::doors;
 
 fb::game::table::table()
 {}
@@ -239,19 +239,19 @@ fb::game::container::item::~item()
 
 fb::game::item::master* fb::game::container::item::create(uint32_t id, const Json::Value& data)
 {
-    std::string         types           = CP949(data["type"].asString(), PLATFORM::Windows);
-    std::string         name            = CP949(data["name"].asString(), PLATFORM::Windows);
-    uint16_t            icon            = data["icon"].asInt() + 0xBFFF;
-    uint8_t             color           = data["color"].asInt();
+    std::string         types         = CP949(data["type"].asString(), PLATFORM::Windows);
+    std::string         name          = CP949(data["name"].asString(), PLATFORM::Windows);
+    uint16_t            icon          = data["icon"].asInt() + 0xBFFF;
+    uint8_t             color         = data["color"].asInt();
 
-    auto                price           = data["price"].asInt();
-    auto                condition       = to_condition(data);
-    auto                penalty         = to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows));
-    auto                capacity        = std::max(1, data["capacity"].asInt());
-    auto                trade           = fb::game::item::trade(data["trade"]["enabled"].asBool());
-    auto                storage         = fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt());
-    auto                desc            = CP949(data["desc"].asString(), PLATFORM::Windows);
-    auto                script_active   = CP949(data["script"]["active"].asString(), PLATFORM::Windows);
+    auto                price         = data["price"].asInt();
+    auto                condition     = to_condition(data);
+    auto                penalty       = to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows));
+    auto                capacity      = std::max(1, data["capacity"].asInt());
+    auto                trade         = fb::game::item::trade(data["trade"]["enabled"].asBool());
+    auto                storage       = fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt());
+    auto                desc          = CP949(data["desc"].asString(), PLATFORM::Windows);
+    auto                script_active = CP949(data["script"]["active"].asString(), PLATFORM::Windows);
     if(std::filesystem::exists(script_active) == false)
         script_active = "";
 
@@ -281,26 +281,26 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             return new fb::game::consume::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active);
     }
 
-    auto&               option             = data["equipment option"];
-    auto                look               = option["look"].asInt();
-    auto                durability         = option["durability"].asInt();
-    auto                repair             = fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble());
-    auto                rename             = fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt());
-    auto                hit                = option["hit"].asInt();
-    auto                damage             = option["damage"].asInt();
-    auto                strength           = option["strength"].asInt();
-    auto                intelligence       = option["intelligence"].asInt();
-    auto                dexteritry         = option["dexteritry"].asInt();
-    auto                base_hp            = option["base_hp"].asInt();
-    auto                base_mp            = option["base_mp"].asInt();
-    auto                hp_percent         = option["hp percent"].asInt();
-    auto                mp_percent         = option["mp percent"].asInt();
-    auto                healing_cycle      = option["healing_cycle"].asInt();
-    auto                defensive          = fb::game::defensive(option["defensive"]["physical"].asInt(), option["defensive"]["magical"].asInt());
-    auto                script_dress       = CP949(data["script"]["dress"].asString(), PLATFORM::Windows);
+    auto&               option         = data["equipment option"];
+    auto                look           = option["look"].asInt();
+    auto                durability     = option["durability"].asInt();
+    auto                repair         = fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble());
+    auto                rename         = fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt());
+    auto                hit            = option["hit"].asInt();
+    auto                damage         = option["damage"].asInt();
+    auto                strength       = option["strength"].asInt();
+    auto                intelligence   = option["intelligence"].asInt();
+    auto                dexteritry     = option["dexteritry"].asInt();
+    auto                base_hp        = option["base_hp"].asInt();
+    auto                base_mp        = option["base_mp"].asInt();
+    auto                hp_percent     = option["hp percent"].asInt();
+    auto                mp_percent     = option["mp percent"].asInt();
+    auto                healing_cycle  = option["healing_cycle"].asInt();
+    auto                defensive      = fb::game::defensive(option["defensive"]["physical"].asInt(), option["defensive"]["magical"].asInt());
+    auto                script_dress   = CP949(data["script"]["dress"].asString(), PLATFORM::Windows);
     if(std::filesystem::exists(script_dress) == false)
         script_dress = "";
-    auto                script_undress     = CP949(data["script"]["undress"].asString(), PLATFORM::Windows);
+    auto                script_undress = CP949(data["script"]["undress"].asString(), PLATFORM::Windows);
     if(std::filesystem::exists(script_undress))
         script_undress = "";
 
@@ -387,23 +387,23 @@ fb::game::container::map::~map()
 
 bool fb::game::container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
-    auto&                       config = fb::config::get();
-    auto                        group_mine = config["group"].asUInt();
-    auto                        count = fb::table::load
+    auto                        mutex       = std::make_unique<std::mutex>();
+    auto&                       config      = fb::config::get();
+    auto                        group_mine  = config["group"].asUInt();
+    auto                        count       = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                id = std::stoi(key.asString());
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
+            auto                id          = std::stoi(key.asString());
+            auto                name        = CP949(data["name"].asString(), PLATFORM::Windows);
             // Parse common data
-            uint16_t            parent = data["parent"].asInt();
-            uint8_t             bgm = data["bgm"].asInt();
-            auto                effect = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
-            auto                option = this->to_option(data);
-            int                 group = data["host group"].asUInt();
-            auto                required = (group == group_mine);
+            uint16_t            parent      = data["parent"].asInt();
+            uint8_t             bgm         = data["bgm"].asInt();
+            auto                effect      = this->to_effect(CP949(data["effect"].asString(), PLATFORM::Windows));
+            auto                option      = this->to_option(data);
+            int                 group       = data["host group"].asUInt();
+            auto                required    = (group == group_mine);
 
             std::vector<char>   binary;
             Json::Value         blocks;
@@ -442,15 +442,15 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
 
 bool fb::game::container::map::load_warps(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
+    auto                        mutex       = std::make_unique<std::mutex>();
 
-    auto                        count = fb::table::load
+    auto                        count       = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map_id      = std::stoi(key.asString());
+            auto                map         = fb::game::table::maps[map_id];
             if (map == nullptr)
                 return;
 
@@ -461,14 +461,14 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
 
                 if(js_warp.isMember("world"))
                 {
-                    auto        widx = js_warp["world"]["wm"].asInt();
-                    auto        world = fb::game::table::worlds[widx];
+                    auto        widx        = js_warp["world"]["wm"].asInt();
+                    auto        world       = fb::game::table::worlds[widx];
 
-                    auto        gidx = js_warp["world"]["group"].asInt();
-                    auto&       group = (*world)[gidx];
+                    auto        gidx        = js_warp["world"]["group"].asInt();
+                    auto&       group       = (*world)[gidx];
 
-                    auto        oidx = js_warp["world"]["offset"].asInt();
-                    auto&       offset = (*group)[oidx];
+                    auto        oidx        = js_warp["world"]["offset"].asInt();
+                    auto&       offset      = (*group)[oidx];
                     map->push_warp(offset.get(), before);
                 }
                 else
@@ -477,7 +477,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                     const range8_t  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
 
                     auto        next_map_id = js_warp["to"].asInt();
-                    auto        next_map = fb::game::table::maps[next_map_id];
+                    auto        next_map    = fb::game::table::maps[next_map_id];
                     map->push_warp(next_map, before, after, condition);
                 }
             }
@@ -487,8 +487,8 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
         {
             auto _ = std::lock_guard(*mutex);
-            auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map_id      = std::stoi(key.asString());
+            auto                map         = fb::game::table::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -540,21 +540,23 @@ fb::game::container::npc::~npc()
 
 bool fb::game::container::npc::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
-    auto                        count = fb::table::load
+    auto                        mutex   = std::make_unique<std::mutex>();
+    auto                        count   = fb::table::load
     (
         path, 
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
-            uint32_t            id = std::stoi(key.asString());
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
-
-            uint16_t            look = data["look"].asInt() + 0x7FFF;
-            uint8_t             color = data["color"].asInt();
+            uint32_t            id      = std::stoi(key.asString());
+            auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
+            uint16_t            look    = data["look"].asInt() + 0x7FFF;
+            uint8_t             color   = data["color"].asInt();
+            auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
+            if(std::filesystem::exists(script) == false)
+                script = "";
 
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, fb::game::npc::master*>::insert(std::make_pair(id, new fb::game::npc::master(name, look, color)));
+                std::map<uint16_t, fb::game::npc::master*>::insert(std::make_pair(id, new fb::game::npc::master(name, look, color, script)));
                 callback(name, percentage);
             }
         },
@@ -572,30 +574,29 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
 
 bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
-    auto&                       config = fb::config::get();
-    auto                        current_host = config["id"].asString();
-    auto                        count = fb::table::load
+    auto                        mutex           = std::make_unique<std::mutex>();
+    auto&                       config          = fb::config::get();
+    auto                        current_host    = config["id"].asString();
+    auto                        count           = fb::table::load
     (
         path, 
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map_id          = std::stoi(key.asString());
+            auto                map             = fb::game::table::maps[map_id];
             if (map == nullptr)
                 return;
 
             for (auto& spawn : data)
             {
-                auto            npc_id = spawn["npc"].asInt();
-                auto            core = fb::game::table::npcs[npc_id];
+                auto            npc_id          = spawn["npc"].asInt();
+                auto            core            = fb::game::table::npcs[npc_id];
                 if (core == nullptr)
                     continue;
 
                 point16_t       position(spawn["position"]["x"].asInt(), spawn["position"]["y"].asInt());
-                auto            script = CP949(spawn["script"].asString(), PLATFORM::Windows);
-                auto            direction_str = CP949(spawn["direction"].asString(), PLATFORM::Windows);
-                auto            direction = fb::game::direction::BOTTOM;
+                auto            direction_str   = CP949(spawn["direction"].asString(), PLATFORM::Windows);
+                auto            direction       = fb::game::direction::BOTTOM;
                 if (direction_str == "top")
                     direction = fb::game::direction::TOP;
                 else if (direction_str == "right")
@@ -607,10 +608,7 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
                 else
                     throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
-                if(std::filesystem::exists(script) == false)
-                    script = "";
-
-                auto                cloned = new fb::game::npc(core, script, listener);
+                auto                cloned      = new fb::game::npc(core, listener);
                 cloned->direction(direction);
                 
                 {
@@ -624,7 +622,7 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map    = fb::game::table::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -718,15 +716,15 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
 
 bool fb::game::container::mob::load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
+    auto                        mutex       = std::make_unique<std::mutex>();
     char                        buffer[256] = {0,};
-    auto                        count = fb::table::load
+    auto                        count       = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                name = CP949(key.asString(), PLATFORM::Windows);
-            auto                core = fb::game::table::mobs.name2mob(name);
+            auto                name        = CP949(key.asString(), PLATFORM::Windows);
+            auto                core        = fb::game::table::mobs.name2mob(name);
             if (core == nullptr)
             {
                 sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str());
@@ -735,9 +733,9 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
 
             for(auto& x : data)
             {
-                float       percentage = x["percentage"].asFloat();
-                auto        item_name = CP949(x["item"].asString(), PLATFORM::Windows);
-                auto        item_core = fb::game::table::items.name2item(item_name);
+                float       percentage      = x["percentage"].asFloat();
+                auto        item_name       = CP949(x["item"].asString(), PLATFORM::Windows);
+                auto        item_core       = fb::game::table::items.name2item(item_name);
 
                 if (item_core == nullptr)
                 {
@@ -770,30 +768,30 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
 
 bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        mutex = std::make_unique<std::mutex>();
-    auto                        count = fb::table::load
+    auto                        mutex   = std::make_unique<std::mutex>();
+    auto                        count   = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map_id  = std::stoi(key.asString());
+            auto                map     = fb::game::table::maps[map_id];
             if (map == nullptr)
                 return;
 
             for (auto& spawn : data)
             {
-                auto            mob_id = spawn["mob"].asInt();
-                auto            core = fb::game::table::mobs[mob_id];
+                auto            mob_id  = spawn["mob"].asInt();
+                auto            core    = fb::game::table::mobs[mob_id];
                 if (core == nullptr)
                     continue;
 
-                uint16_t        x0 = spawn["area"]["x0"].asInt();
-                uint16_t        x1 = spawn["area"]["x1"].asInt();
-                uint16_t        y0 = spawn["area"]["y0"].asInt();
-                uint16_t        y1 = spawn["area"]["y1"].asInt();
-                uint16_t        count = spawn["count"].asInt();
-                uint32_t        rezen = spawn["rezen time"].asInt();
+                uint16_t        x0      = spawn["area"]["x0"].asInt();
+                uint16_t        x1      = spawn["area"]["x1"].asInt();
+                uint16_t        y0      = spawn["area"]["y0"].asInt();
+                uint16_t        y1      = spawn["area"]["y1"].asInt();
+                uint16_t        count   = spawn["count"].asInt();
+                uint32_t        rezen   = spawn["rezen time"].asInt();
 
                 {
                     auto _ = std::lock_guard(*mutex);
@@ -816,8 +814,8 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
         {
             auto _ = std::lock_guard(*mutex);
-            auto                map_id = std::stoi(key.asString());
-            auto                map = fb::game::table::maps[map_id];
+            auto                map_id  = std::stoi(key.asString());
+            auto                map     = fb::game::table::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -843,9 +841,8 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            uint16_t            id = std::stoi(key.asString());
+            uint16_t            id   = std::stoi(key.asString());
             const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
-
             uint8_t             type = data["type"].asInt();
 
             std::string         cast;
@@ -915,14 +912,14 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            uint8_t             id = key.asInt();      // class key
+            uint8_t             id      = key.asInt();      // class key
             auto                classes = new class_data();
 
-            auto&               levels = data["levels"];
+            auto&               levels  = data["levels"];
             for (auto i2 = levels.begin(); i2 != levels.end(); i2++)
             {
-                uint32_t        key = i2.key().asInt();
-                auto&           ability = *i2;
+                uint32_t        key       = i2.key().asInt();
+                auto&           ability   = *i2;
                 auto            allocated = new level_ability(ability["strength"].asInt(),
                                                               ability["intelligence"].asInt(),
                                                               ability["dexteritry"].asInt(),
@@ -966,32 +963,32 @@ fb::game::container::mix::~mix()
 
 bool fb::game::container::mix::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        count = fb::table::load
+    auto                        count   = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                id = key.asInt();
+            auto                id      = key.asInt();
             auto                itemmix = new fb::game::itemmix((float)data["percentage"].asDouble());
 
             for(auto& require : data["require"])
             {
-                auto            item = fb::game::table::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
-                uint32_t        count = require["count"].asInt();
+                auto            item    = fb::game::table::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
+                uint32_t        count   = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
             for(auto& success: data["success"])
             {
-                auto            item = fb::game::table::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
-                uint32_t        count = success["count"].asInt();
+                auto            item    = fb::game::table::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
+                uint32_t        count   = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
             for(auto& failed: data["failed"])
             {
-                auto            item = fb::game::table::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
-                uint32_t        count = failed["count"].asInt();
+                auto            item    = fb::game::table::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
+                uint32_t        count   = failed["count"].asInt();
                 itemmix->failed_add(item, count);
             }
 
@@ -1035,17 +1032,17 @@ fb::game::container::door::~door()
 
 bool fb::game::container::door::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        count = fb::table::load
+    auto                        count   = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                id = key.asInt();
+            auto                id      = key.asInt();
             auto                created = new fb::game::door::master();
             for(auto& e : data)
             {
-                auto            open  = e["open"].asInt();
-                auto            close = e["close"].asInt();
+                auto            open    = e["open"].asInt();
+                auto            close   = e["close"].asInt();
                 created->push_back(fb::game::door::element(open, close));
             }
 
@@ -1054,7 +1051,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
         {
-            auto                id = key.asInt();
+            auto                id      = key.asInt();
             error(std::to_string(id), e);
         },
         false
@@ -1076,19 +1073,19 @@ fb::game::container::worlds::~worlds()
 
 bool fb::game::container::worlds::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
-    auto                        count = fb::table::load
+    auto                        count   = fb::table::load
     (
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
-            auto                world = new fb::game::wm::world(name);
+            auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
+            auto                world   = new fb::game::wm::world(name);
             for(auto& js_group : data["world"])
             {
-                auto            group = new fb::game::wm::group();
+                auto            group   = new fb::game::wm::group();
                 for(auto& js_offset : js_group)
                 {
-                    auto        id = CP949(js_offset["id"].asString(), PLATFORM::Windows);
+                    auto        id      = CP949(js_offset["id"].asString(), PLATFORM::Windows);
 
                     group->push(new fb::game::wm::offset
                     (

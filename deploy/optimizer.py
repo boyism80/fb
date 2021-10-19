@@ -8,54 +8,39 @@ import argparse
 
 
 def __load_maps(path):
-    maps = {}
+    map_set = {}
     with open(path, 'r', encoding='utf8') as f:
-        maps = json.load(f)
+        map_set = json.load(f)
 
-    reverse = {}
-    for id in maps:
-        name = maps[id]['name']
-        reverse[name] = maps[id]
-        reverse[name]['id'] = int(id)
+    for id, map in map_set.items():
+        map['id'] = int(id)
 
-    return reverse
-
+    return {map['name']:map for map in map_set.values()}
 
 def __load_npcs(path):
-    npcs = {}
+    npc_set = {}
     with open(path, 'r', encoding='utf8') as f:
-        npcs = json.load(f)
+        npc_set = json.load(f)
 
-    reverse = {}
-    for id in npcs:
-        name = npcs[id]['name']
-        reverse[name] = npcs[id]
-        reverse[name]['id'] = int(id)
-
-    return reverse
-
+    for id, npc in npc_set.items():
+        npc['id'] = int(id)
+    
+    return {npc['name']:npc for npc in npc_set.values()}
 
 def __load_mobs(path):
-    mobs = {}
+    mob_set = {}
     with open(path, 'r', encoding='utf8') as f:
-        mobs = json.load(f)
+        mob_set = json.load(f)
 
-    reverse = {}
-    for id in mobs:
-        name = mobs[id]['name']
-        reverse[name] = mobs[id]
-        reverse[name]['id'] = int(id)
+    for id, mob in mob_set.items():
+        mob['id'] = int(id)
 
-    return reverse
+    return {mob['name']:mob for mob in mob_set.values()}
 
 
-def __convert_host(maps):
-    reverse = { x['id'] : x for x in maps.values() }
-    hosts = {}
-    for id in reverse:
-        hosts[id] = reverse[id]['host group']
-
-    return hosts
+def __convert_host(map_set):
+    map_set = {x['id']:x for x in map_set.values()}
+    return {id:map[id]['host group'] for id, map in map_set}
 
 
 def __convert_warps(path, world_path, maps):
@@ -69,30 +54,26 @@ def __convert_warps(path, world_path, maps):
 
         return None, None, None
 
-    worlds = None
+    world_set = None
     with open(world_path, 'r', encoding='utf8') as f:
-        worlds = json.load(f)
+        world_set = json.load(f)
 
     data = None
     with open(path, 'r', encoding='utf8') as f:
         data = json.load(f)
 
-    warps = {}
-    for name in maps:
-        id = maps[name]['id']
-        warps[id] = data[name] if name in data else []
-    
-    for id in warps:
-        for warp in warps[id]:
+    warp_set = {map['id']:data[name] if name in data else [] for name, map in maps.items()}
+    for id in warp_set:
+        for warp in warp_set[id]:
             if 'world' in warp:
-                wm, group, offset = find_index(worlds, warp['world'])
+                wm, group, offset = find_index(world_set, warp['world'])
                 warp['world'] = { 'wm': wm, 'group': group, 'offset': offset }
             else:
                 name = warp['map']
                 warp['to'] = int(maps[name]['id'])
                 del warp['map']
 
-    return warps
+    return warp_set
 
 
 def __convert_npc_spawn(path, maps, npcs):

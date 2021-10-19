@@ -6,8 +6,7 @@
         "position": {
             "x": 10,
             "y": 9
-        },
-        "script": "scripts/npc/@낙랑.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -16,8 +15,7 @@
         "position": {
             "x": 10,
             "y": 9
-        },
-        "script": "scripts/npc/@낙랑.lua"
+        }
     },
     {
         "direction": "right",
@@ -26,8 +24,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@쥬모.lua"
+        }
     },
     {
         "direction": "right",
@@ -36,8 +33,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@쥬모.lua"
+        }
     },
     {
         "direction": "right",
@@ -46,8 +42,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@쥬모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -56,8 +51,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -66,8 +60,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -76,8 +69,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -86,8 +78,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -96,8 +87,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@부여성떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -106,8 +96,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -116,8 +105,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@부여포목.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -126,8 +114,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@부여갑옷점.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -136,8 +123,7 @@
         "position": {
             "x": 4,
             "y": 4
-        },
-        "script": "scripts/npc/@용상인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -146,8 +132,7 @@
         "position": {
             "x": 110,
             "y": 88
-        },
-        "script": "scripts/npc/@얼음돌이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -156,8 +141,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -166,8 +150,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -176,8 +159,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -186,8 +168,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -196,8 +177,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -206,8 +186,7 @@
         "position": {
             "x": 3,
             "y": 4
-        },
-        "script": "scripts/npc/@방물장수.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -216,8 +195,7 @@
         "position": {
             "x": 37,
             "y": 77
-        },
-        "script": "scripts/npc/@나무꾼.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -226,8 +204,7 @@
         "position": {
             "x": 24,
             "y": 4
-        },
-        "script": "scripts/npc/@금고주인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -236,8 +213,7 @@
         "position": {
             "x": 25,
             "y": 8
-        },
-        "script": "scripts/npc/@주막행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -246,8 +222,7 @@
         "position": {
             "x": 79,
             "y": 153
-        },
-        "script": "scripts/npc/@남문행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -256,8 +231,7 @@
         "position": {
             "x": 26,
             "y": 4
-        },
-        "script": "scripts/npc/@선착행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -266,8 +240,7 @@
         "position": {
             "x": 75,
             "y": 54
-        },
-        "script": "scripts/npc/@영채.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -276,8 +249,7 @@
         "position": {
             "x": 23,
             "y": 35
-        },
-        "script": "scripts/npc/@장돌뱅이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -286,8 +258,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -296,8 +267,7 @@
         "position": {
             "x": 28,
             "y": 5
-        },
-        "script": "scripts/npc/@미궁상점.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -306,8 +276,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠마누라.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -316,8 +285,7 @@
         "position": {
             "x": 7,
             "y": 4
-        },
-        "script": "scripts/npc/@건포상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -326,8 +294,7 @@
         "position": {
             "x": 54,
             "y": 122
-        },
-        "script": "scripts/npc/@채희.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -336,8 +303,7 @@
         "position": {
             "x": 32,
             "y": 10
-        },
-        "script": "scripts/npc/@시계장인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -346,8 +312,7 @@
         "position": {
             "x": 10,
             "y": 4
-        },
-        "script": "scripts/npc/@문파대리인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -356,8 +321,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -366,8 +330,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -376,8 +339,7 @@
         "position": {
             "x": 24,
             "y": 4
-        },
-        "script": "scripts/npc/@금고주인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -386,8 +348,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@백삼.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -396,8 +357,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@백이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -406,8 +366,7 @@
         "position": {
             "x": 56,
             "y": 39
-        },
-        "script": "scripts/npc/@고구려무도가.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -416,8 +375,7 @@
         "position": {
             "x": 10,
             "y": 4
-        },
-        "script": "scripts/npc/@문파대리인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -426,8 +384,7 @@
         "position": {
             "x": 35,
             "y": 3
-        },
-        "script": "scripts/npc/@고구려선원.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -436,8 +393,7 @@
         "position": {
             "x": 23,
             "y": 34
-        },
-        "script": "scripts/npc/@장돌뱅이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -446,8 +402,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -456,8 +411,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@벽돌장수.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -466,8 +420,7 @@
         "position": {
             "x": 22,
             "y": 7
-        },
-        "script": "scripts/npc/@혼례식도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -476,8 +429,7 @@
         "position": {
             "x": 15,
             "y": 6
-        },
-        "script": "scripts/npc/@주례사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -486,8 +438,7 @@
         "position": {
             "x": 18,
             "y": 9
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -496,8 +447,7 @@
         "position": {
             "x": 10,
             "y": 9
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -506,8 +456,7 @@
         "position": {
             "x": 20,
             "y": 11
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -516,8 +465,7 @@
         "position": {
             "x": 21,
             "y": 11
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -526,8 +474,7 @@
         "position": {
             "x": 20,
             "y": 14
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -536,8 +483,7 @@
         "position": {
             "x": 21,
             "y": 14
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -546,8 +492,7 @@
         "position": {
             "x": 20,
             "y": 17
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -556,8 +501,7 @@
         "position": {
             "x": 21,
             "y": 17
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -566,8 +510,7 @@
         "position": {
             "x": 20,
             "y": 20
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -576,8 +519,7 @@
         "position": {
             "x": 21,
             "y": 20
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -586,8 +528,7 @@
         "position": {
             "x": 20,
             "y": 23
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -596,8 +537,7 @@
         "position": {
             "x": 21,
             "y": 23
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -606,8 +546,7 @@
         "position": {
             "x": 20,
             "y": 26
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -616,8 +555,7 @@
         "position": {
             "x": 21,
             "y": 26
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -626,8 +564,7 @@
         "position": {
             "x": 20,
             "y": 29
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -636,8 +573,7 @@
         "position": {
             "x": 21,
             "y": 29
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -646,8 +582,7 @@
         "position": {
             "x": 20,
             "y": 32
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -656,8 +591,7 @@
         "position": {
             "x": 21,
             "y": 32
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -666,8 +600,7 @@
         "position": {
             "x": 7,
             "y": 11
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -676,8 +609,7 @@
         "position": {
             "x": 8,
             "y": 11
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -686,8 +618,7 @@
         "position": {
             "x": 7,
             "y": 14
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -696,8 +627,7 @@
         "position": {
             "x": 8,
             "y": 14
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -706,8 +636,7 @@
         "position": {
             "x": 7,
             "y": 17
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -716,8 +645,7 @@
         "position": {
             "x": 8,
             "y": 17
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -726,8 +654,7 @@
         "position": {
             "x": 7,
             "y": 20
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -736,8 +663,7 @@
         "position": {
             "x": 8,
             "y": 20
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -746,8 +672,7 @@
         "position": {
             "x": 7,
             "y": 23
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -756,8 +681,7 @@
         "position": {
             "x": 8,
             "y": 23
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -766,8 +690,7 @@
         "position": {
             "x": 7,
             "y": 26
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -776,8 +699,7 @@
         "position": {
             "x": 8,
             "y": 26
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -786,8 +708,7 @@
         "position": {
             "x": 7,
             "y": 29
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -796,8 +717,7 @@
         "position": {
             "x": 8,
             "y": 29
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -806,8 +726,7 @@
         "position": {
             "x": 7,
             "y": 32
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -816,8 +735,7 @@
         "position": {
             "x": 8,
             "y": 32
-        },
-        "script": "scripts/npc/@부여경비병.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -826,8 +744,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@부여왕.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -836,8 +753,7 @@
         "position": {
             "x": 29,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -846,8 +762,7 @@
         "position": {
             "x": 13,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -856,8 +771,7 @@
         "position": {
             "x": 38,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -866,8 +780,7 @@
         "position": {
             "x": 30,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -876,8 +789,7 @@
         "position": {
             "x": 39,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -886,8 +798,7 @@
         "position": {
             "x": 122,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -896,8 +807,7 @@
         "position": {
             "x": 17,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -906,8 +816,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -916,8 +825,7 @@
         "position": {
             "x": 86,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -926,8 +834,7 @@
         "position": {
             "x": 105,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -936,8 +843,7 @@
         "position": {
             "x": 127,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -946,8 +852,7 @@
         "position": {
             "x": 97,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -956,8 +861,7 @@
         "position": {
             "x": 89,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -966,8 +870,7 @@
         "position": {
             "x": 71,
             "y": 127
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -976,8 +879,7 @@
         "position": {
             "x": 11,
             "y": 11
-        },
-        "script": "scripts/npc/@랑구륜.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -986,8 +888,7 @@
         "position": {
             "x": 1,
             "y": 1
-        },
-        "script": "scripts/npc/@은구륜.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -996,8 +897,7 @@
         "position": {
             "x": 21,
             "y": 21
-        },
-        "script": "scripts/npc/@부구륜.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1006,8 +906,7 @@
         "position": {
             "x": 1,
             "y": 21
-        },
-        "script": "scripts/npc/@정구륜.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1016,8 +915,7 @@
         "position": {
             "x": 21,
             "y": 1
-        },
-        "script": "scripts/npc/@선구륜.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1026,8 +924,7 @@
         "position": {
             "x": 10,
             "y": 13
-        },
-        "script": "scripts/npc/@천성현.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1036,8 +933,7 @@
         "position": {
             "x": 10,
             "y": 10
-        },
-        "script": "scripts/npc/@천성랑.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1046,8 +942,7 @@
         "position": {
             "x": 65,
             "y": 6
-        },
-        "script": "scripts/npc/@용노인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1056,8 +951,7 @@
         "position": {
             "x": 29,
             "y": 53
-        },
-        "script": "scripts/npc/@폭12지입장.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1066,8 +960,7 @@
         "position": {
             "x": 30,
             "y": 53
-        },
-        "script": "scripts/npc/@방송쿠폰.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1076,8 +969,7 @@
         "position": {
             "x": 29,
             "y": 31
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1086,8 +978,7 @@
         "position": {
             "x": 31,
             "y": 2
-        },
-        "script": "scripts/npc/@수선도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1096,8 +987,7 @@
         "position": {
             "x": 29,
             "y": 2
-        },
-        "script": "scripts/npc/@천선도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1106,8 +996,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1116,8 +1005,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@천금장인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1126,8 +1014,7 @@
         "position": {
             "x": 15,
             "y": 17
-        },
-        "script": "scripts/npc/@한빙장.lua"
+        }
     },
     {
         "direction": "right",
@@ -1136,8 +1023,7 @@
         "position": {
             "x": 11,
             "y": 6
-        },
-        "script": "scripts/npc/@쥬모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1146,8 +1032,7 @@
         "position": {
             "x": 12,
             "y": 3
-        },
-        "script": "scripts/npc/@일본소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1156,8 +1041,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1166,8 +1050,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1176,8 +1059,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1186,8 +1068,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1196,8 +1077,7 @@
         "position": {
             "x": 14,
             "y": 3
-        },
-        "script": "scripts/npc/@파괴왕.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1206,8 +1086,7 @@
         "position": {
             "x": 10,
             "y": 15
-        },
-        "script": "scripts/npc/@안도.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1216,8 +1095,7 @@
         "position": {
             "x": 9,
             "y": 12
-        },
-        "script": "scripts/npc/@표신궁역사가.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1226,8 +1104,7 @@
         "position": {
             "x": 37,
             "y": 6
-        },
-        "script": "scripts/npc/@호위무사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1236,8 +1113,7 @@
         "position": {
             "x": 12,
             "y": 7
-        },
-        "script": "scripts/npc/@용왕.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1246,8 +1122,7 @@
         "position": {
             "x": 9,
             "y": 7
-        },
-        "script": "scripts/npc/@좌선녀.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1256,8 +1131,7 @@
         "position": {
             "x": 17,
             "y": 9
-        },
-        "script": "scripts/npc/@거북장군.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1266,8 +1140,7 @@
         "position": {
             "x": 15,
             "y": 7
-        },
-        "script": "scripts/npc/@우선녀.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1276,8 +1149,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산100층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1286,8 +1158,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1296,8 +1167,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1306,8 +1176,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1316,8 +1185,7 @@
         "position": {
             "x": 23,
             "y": 7
-        },
-        "script": "scripts/npc/@도재영.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1326,8 +1194,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산200층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1336,8 +1203,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1346,8 +1212,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1356,8 +1221,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1366,8 +1230,7 @@
         "position": {
             "x": 22,
             "y": 7
-        },
-        "script": "scripts/npc/@도성연.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1376,8 +1239,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산300층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1386,8 +1248,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1396,8 +1257,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1406,8 +1266,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1416,8 +1275,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산400층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1426,8 +1284,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1436,8 +1293,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1446,8 +1302,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1456,8 +1311,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@도태연.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1466,8 +1320,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산500층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1476,8 +1329,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1486,8 +1338,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1496,8 +1347,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1506,8 +1356,7 @@
         "position": {
             "x": 23,
             "y": 6
-        },
-        "script": "scripts/npc/@황만령.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1516,8 +1365,7 @@
         "position": {
             "x": 25,
             "y": 6
-        },
-        "script": "scripts/npc/@하문주.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1526,8 +1374,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산600층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1536,8 +1383,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1546,8 +1392,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1556,8 +1401,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1566,8 +1410,7 @@
         "position": {
             "x": 23,
             "y": 6
-        },
-        "script": "scripts/npc/@우가풍.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1576,8 +1419,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산700층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1586,8 +1428,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1596,8 +1437,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1606,8 +1446,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1616,8 +1455,7 @@
         "position": {
             "x": 21,
             "y": 12
-        },
-        "script": "scripts/npc/@하태현.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1626,8 +1464,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산800층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1636,8 +1473,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1646,8 +1482,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1656,8 +1491,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1666,8 +1500,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@도삭산900층주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1676,8 +1509,7 @@
         "position": {
             "x": 5,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1686,8 +1518,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1696,8 +1527,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1706,8 +1536,7 @@
         "position": {
             "x": 6,
             "y": 9
-        },
-        "script": "scripts/npc/@마석주.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1716,8 +1545,7 @@
         "position": {
             "x": 11,
             "y": 9
-        },
-        "script": "scripts/npc/@무타.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1726,8 +1554,7 @@
         "position": {
             "x": 16,
             "y": 7
-        },
-        "script": "scripts/npc/@장안황제.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1736,8 +1563,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@대방갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1746,8 +1572,7 @@
         "position": {
             "x": 19,
             "y": 10
-        },
-        "script": "scripts/npc/@망치상인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1756,8 +1581,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@대방성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1766,8 +1590,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1776,8 +1599,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@낙양갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1786,8 +1608,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1796,8 +1617,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1806,8 +1626,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@현도갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1816,8 +1635,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@장안갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1826,8 +1644,7 @@
         "position": {
             "x": 114,
             "y": 142
-        },
-        "script": "scripts/npc/@중국공주.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1836,8 +1653,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@상해갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1846,8 +1662,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@남부갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1856,8 +1671,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1866,8 +1680,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1876,8 +1689,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@남부갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1886,8 +1698,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@남부갑옷.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1896,8 +1707,7 @@
         "position": {
             "x": 14,
             "y": 6
-        },
-        "script": "scripts/npc/@중국주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1906,8 +1716,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1916,8 +1725,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1926,8 +1734,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1936,8 +1743,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1946,8 +1752,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1956,8 +1761,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1966,8 +1770,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1976,8 +1779,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1986,8 +1788,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -1996,8 +1797,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2006,8 +1806,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2016,8 +1815,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2026,8 +1824,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2036,8 +1833,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2046,8 +1842,7 @@
         "position": {
             "x": 137,
             "y": 153
-        },
-        "script": "scripts/npc/@마타.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2056,8 +1851,7 @@
         "position": {
             "x": 34,
             "y": 21
-        },
-        "script": "scripts/npc/@조왕의동생.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2066,8 +1860,7 @@
         "position": {
             "x": 11,
             "y": 5
-        },
-        "script": "scripts/npc/@돈유합의달인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2076,8 +1869,7 @@
         "position": {
             "x": 13,
             "y": 5
-        },
-        "script": "scripts/npc/@보약의달인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2086,8 +1878,7 @@
         "position": {
             "x": 20,
             "y": 30
-        },
-        "script": "scripts/npc/@소림사승려.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2096,8 +1887,7 @@
         "position": {
             "x": 32,
             "y": 3
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2106,8 +1896,7 @@
         "position": {
             "x": 33,
             "y": 3
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2116,8 +1905,7 @@
         "position": {
             "x": 34,
             "y": 3
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2126,8 +1914,7 @@
         "position": {
             "x": 32,
             "y": 4
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2136,8 +1923,7 @@
         "position": {
             "x": 33,
             "y": 4
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2146,8 +1932,7 @@
         "position": {
             "x": 34,
             "y": 4
-        },
-        "script": "scripts/npc/@산소소탕병사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2156,8 +1941,7 @@
         "position": {
             "x": 33,
             "y": 5
-        },
-        "script": "scripts/npc/@산소소탕대장.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2166,8 +1950,7 @@
         "position": {
             "x": 12,
             "y": 9
-        },
-        "script": "scripts/npc/@서천좌상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2176,8 +1959,7 @@
         "position": {
             "x": 19,
             "y": 9
-        },
-        "script": "scripts/npc/@장안성대장간.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2186,8 +1968,7 @@
         "position": {
             "x": 114,
             "y": 142
-        },
-        "script": "scripts/npc/@중국공주.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2196,8 +1977,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@대방성푸줏간.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2206,8 +1986,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@현도성푸줏간.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2216,8 +1995,7 @@
         "position": {
             "x": 6,
             "y": 9
-        },
-        "script": "scripts/npc/@장안성장군.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2226,8 +2004,7 @@
         "position": {
             "x": 8,
             "y": 12
-        },
-        "script": "scripts/npc/@남천좌상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2236,8 +2013,7 @@
         "position": {
             "x": 44,
             "y": 63
-        },
-        "script": "scripts/npc/@병든아이어머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2246,8 +2022,7 @@
         "position": {
             "x": 43,
             "y": 63
-        },
-        "script": "scripts/npc/@병든아이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2256,8 +2031,7 @@
         "position": {
             "x": 62,
             "y": 44
-        },
-        "script": "scripts/npc/@복건성태자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2266,8 +2040,7 @@
         "position": {
             "x": 28,
             "y": 26
-        },
-        "script": "scripts/npc/@상해주민.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2276,8 +2049,7 @@
         "position": {
             "x": 23,
             "y": 8
-        },
-        "script": "scripts/npc/@주경원.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2286,8 +2058,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@광동성푸줏간.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2296,8 +2067,7 @@
         "position": {
             "x": 9,
             "y": 9
-        },
-        "script": "scripts/npc/@흉노상점1.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2306,8 +2076,7 @@
         "position": {
             "x": 8,
             "y": 6
-        },
-        "script": "scripts/npc/@흉노상점2.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2316,8 +2085,7 @@
         "position": {
             "x": 9,
             "y": 9
-        },
-        "script": "scripts/npc/@흉노상점3.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2326,8 +2094,7 @@
         "position": {
             "x": 8,
             "y": 6
-        },
-        "script": "scripts/npc/@흉노상점4.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2336,8 +2103,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@북방상점1.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2346,8 +2112,7 @@
         "position": {
             "x": 9,
             "y": 7
-        },
-        "script": "scripts/npc/@북방상점2.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2356,8 +2121,7 @@
         "position": {
             "x": 8,
             "y": 6
-        },
-        "script": "scripts/npc/@북방상점3.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2366,8 +2130,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@북방상점4.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2376,8 +2139,7 @@
         "position": {
             "x": 9,
             "y": 9
-        },
-        "script": "scripts/npc/@사천족제사장.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2386,8 +2148,7 @@
         "position": {
             "x": 2,
             "y": 6
-        },
-        "script": "scripts/npc/@백의장인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2396,8 +2157,7 @@
         "position": {
             "x": 9,
             "y": 7
-        },
-        "script": "scripts/npc/@북천황신수.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2406,8 +2166,7 @@
         "position": {
             "x": 9,
             "y": 7
-        },
-        "script": "scripts/npc/@환상의섬잡화.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2416,8 +2175,7 @@
         "position": {
             "x": 7,
             "y": 7
-        },
-        "script": "scripts/npc/@환상의섬대장장이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2426,8 +2184,7 @@
         "position": {
             "x": 8,
             "y": 7
-        },
-        "script": "scripts/npc/@환상의섬포목상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2436,8 +2193,7 @@
         "position": {
             "x": 10,
             "y": 7
-        },
-        "script": "scripts/npc/@쥬모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2446,8 +2202,7 @@
         "position": {
             "x": 17,
             "y": 7
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2456,8 +2211,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2466,8 +2220,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2476,8 +2229,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2486,8 +2238,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2496,8 +2247,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2506,8 +2256,7 @@
         "position": {
             "x": 9,
             "y": 8
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2516,8 +2265,7 @@
         "position": {
             "x": 13,
             "y": 7
-        },
-        "script": "scripts/npc/@원주민주술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2526,8 +2274,7 @@
         "position": {
             "x": 101,
             "y": 66
-        },
-        "script": "scripts/npc/@전전.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2536,8 +2283,7 @@
         "position": {
             "x": 125,
             "y": 74
-        },
-        "script": "scripts/npc/@먹염.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2546,8 +2292,7 @@
         "position": {
             "x": 18,
             "y": 99
-        },
-        "script": "scripts/npc/@파바로.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2556,8 +2301,7 @@
         "position": {
             "x": 17,
             "y": 23
-        },
-        "script": "scripts/npc/@고균도선착행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2566,8 +2310,7 @@
         "position": {
             "x": 18,
             "y": 17
-        },
-        "script": "scripts/npc/@조염.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2576,8 +2319,7 @@
         "position": {
             "x": 16,
             "y": 5
-        },
-        "script": "scripts/npc/@진백랑.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2586,8 +2328,7 @@
         "position": {
             "x": 16,
             "y": 120
-        },
-        "script": "scripts/npc/@진진.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2596,8 +2337,7 @@
         "position": {
             "x": 138,
             "y": 82
-        },
-        "script": "scripts/npc/@퉁퉁대감.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2606,8 +2346,7 @@
         "position": {
             "x": 121,
             "y": 93
-        },
-        "script": "scripts/npc/@통통대감.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2616,8 +2355,7 @@
         "position": {
             "x": 19,
             "y": 147
-        },
-        "script": "scripts/npc/@탕탕대감.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2626,8 +2364,7 @@
         "position": {
             "x": 109,
             "y": 139
-        },
-        "script": "scripts/npc/@준준.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2636,8 +2373,7 @@
         "position": {
             "x": 21,
             "y": 77
-        },
-        "script": "scripts/npc/@한상약.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2646,8 +2382,7 @@
         "position": {
             "x": 162,
             "y": 182
-        },
-        "script": "scripts/npc/@원주민정령사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2656,8 +2391,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@망치상인.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2666,8 +2400,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@일본포목상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2676,8 +2409,7 @@
         "position": {
             "x": 4,
             "y": 4
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2686,8 +2418,7 @@
         "position": {
             "x": 3,
             "y": 3
-        },
-        "script": "scripts/npc/@국내포목.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2696,8 +2427,7 @@
         "position": {
             "x": 5,
             "y": 3
-        },
-        "script": "scripts/npc/@비단장수.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2706,8 +2436,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "right",
@@ -2716,8 +2445,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@왈숙네.lua"
+        }
     },
     {
         "direction": "right",
@@ -2726,8 +2454,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@왈숙네.lua"
+        }
     },
     {
         "direction": "right",
@@ -2736,8 +2463,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@왈숙네.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2746,8 +2472,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@털보.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2756,8 +2481,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@떼보.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2766,8 +2490,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2776,8 +2499,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2786,8 +2508,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2796,8 +2517,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2806,8 +2526,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2816,8 +2535,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2826,8 +2544,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2836,8 +2553,7 @@
         "position": {
             "x": 46,
             "y": 114
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2846,8 +2562,7 @@
         "position": {
             "x": 194,
             "y": 124
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2856,8 +2571,7 @@
         "position": {
             "x": 101,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2866,8 +2580,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2876,8 +2589,7 @@
         "position": {
             "x": 197,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2886,8 +2598,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2896,8 +2607,7 @@
         "position": {
             "x": 29,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2906,8 +2616,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2916,8 +2625,7 @@
         "position": {
             "x": 41,
             "y": 25
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2926,8 +2634,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2936,8 +2643,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2946,8 +2652,7 @@
         "position": {
             "x": 14,
             "y": 5
-        },
-        "script": "scripts/npc/@고구려왕.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2956,8 +2661,7 @@
         "position": {
             "x": 8,
             "y": 6
-        },
-        "script": "scripts/npc/@고균도푸줏간.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2966,8 +2670,7 @@
         "position": {
             "x": 21,
             "y": 132
-        },
-        "script": "scripts/npc/@나무꾼.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2976,8 +2679,7 @@
         "position": {
             "x": 25,
             "y": 8
-        },
-        "script": "scripts/npc/@주막행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2986,8 +2688,7 @@
         "position": {
             "x": 112,
             "y": 217
-        },
-        "script": "scripts/npc/@남문행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -2996,8 +2697,7 @@
         "position": {
             "x": 26,
             "y": 4
-        },
-        "script": "scripts/npc/@선착행자.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3006,8 +2706,7 @@
         "position": {
             "x": 112,
             "y": 93
-        },
-        "script": "scripts/npc/@영채.lua"
+        }
     },
     {
         "direction": "right",
@@ -3016,8 +2715,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3026,8 +2724,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3036,8 +2733,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3046,8 +2742,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3056,8 +2751,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3066,8 +2760,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3076,8 +2769,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3086,8 +2778,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@동부여떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3096,8 +2787,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3106,8 +2796,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3116,8 +2805,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3126,8 +2814,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3136,8 +2823,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3146,8 +2832,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3156,8 +2841,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3166,8 +2850,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3176,8 +2859,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3186,8 +2868,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3196,8 +2877,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3206,8 +2886,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3216,8 +2895,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3226,8 +2904,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3236,8 +2913,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3246,8 +2922,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@송원떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3256,8 +2931,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3266,8 +2940,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3276,8 +2949,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3286,8 +2958,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3296,8 +2967,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3306,8 +2976,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3316,8 +2985,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3326,8 +2994,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3336,8 +3003,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3346,8 +3012,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3356,8 +3021,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3366,8 +3030,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3376,8 +3039,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3386,8 +3048,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3396,8 +3057,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@장훈떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3406,8 +3066,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3416,8 +3075,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3426,8 +3084,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3436,8 +3093,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3446,8 +3102,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3456,8 +3111,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3466,8 +3120,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3476,8 +3129,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3486,8 +3138,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3496,8 +3147,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3506,8 +3156,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3516,8 +3165,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3526,8 +3174,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3536,8 +3183,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3546,8 +3192,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3556,8 +3201,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3566,8 +3210,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3576,8 +3219,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3586,8 +3228,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3596,8 +3237,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3606,8 +3246,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3616,8 +3255,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3626,8 +3264,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3636,8 +3273,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3646,8 +3282,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3656,8 +3291,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3666,8 +3300,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3676,8 +3309,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3686,8 +3318,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3696,8 +3327,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3706,8 +3336,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3716,8 +3345,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3726,8 +3354,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3736,8 +3363,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3746,8 +3372,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3756,8 +3381,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3766,8 +3390,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3776,8 +3399,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3786,8 +3408,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3796,8 +3417,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3806,8 +3426,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3816,8 +3435,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3826,8 +3444,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3836,8 +3453,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3846,8 +3462,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3856,8 +3471,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3866,8 +3480,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3876,8 +3489,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3886,8 +3498,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3896,8 +3507,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3906,8 +3516,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3916,8 +3525,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3926,8 +3534,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -3936,8 +3543,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3946,8 +3552,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -3956,8 +3561,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3966,8 +3570,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3976,8 +3579,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3986,8 +3588,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -3996,8 +3597,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4006,8 +3606,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4016,8 +3615,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4026,8 +3624,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4036,8 +3633,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4046,8 +3642,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4056,8 +3651,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4066,8 +3660,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4076,8 +3669,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4086,8 +3678,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4096,8 +3687,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4106,8 +3696,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4116,8 +3705,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4126,8 +3714,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4136,8 +3723,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4146,8 +3732,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4156,8 +3741,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4166,8 +3750,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4176,8 +3759,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4186,8 +3768,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4196,8 +3777,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4206,8 +3786,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4216,8 +3795,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4226,8 +3804,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4236,8 +3813,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4246,8 +3822,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4256,8 +3831,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4266,8 +3840,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4276,8 +3849,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4286,8 +3858,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4296,8 +3867,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4306,8 +3876,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4316,8 +3885,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4326,8 +3894,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4336,8 +3903,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4346,8 +3912,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4356,8 +3921,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4366,8 +3930,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4376,8 +3939,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4386,8 +3948,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4396,8 +3957,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4406,8 +3966,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4416,8 +3975,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4426,8 +3984,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4436,8 +3993,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4446,8 +4002,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4456,8 +4011,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4466,8 +4020,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4476,8 +4029,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4486,8 +4038,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4496,8 +4047,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4506,8 +4056,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4516,8 +4065,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4526,8 +4074,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4536,8 +4083,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4546,8 +4092,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4556,8 +4101,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4566,8 +4110,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4576,8 +4119,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4586,8 +4128,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4596,8 +4137,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4606,8 +4146,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4616,8 +4155,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4626,8 +4164,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4636,8 +4173,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4646,8 +4182,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4656,8 +4191,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4666,8 +4200,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4676,8 +4209,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4686,8 +4218,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4696,8 +4227,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4706,8 +4236,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4716,8 +4245,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4726,8 +4254,7 @@
         "position": {
             "x": 6,
             "y": 4
-        },
-        "script": "scripts/npc/@소소.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4736,8 +4263,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4746,8 +4272,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4756,8 +4281,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4766,8 +4290,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4776,8 +4299,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4786,8 +4308,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4796,8 +4317,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4806,8 +4326,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4816,8 +4335,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4826,8 +4344,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4836,8 +4353,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4846,8 +4362,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -4856,8 +4371,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4866,8 +4380,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -4876,8 +4389,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4886,8 +4398,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4896,8 +4407,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4906,8 +4416,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4916,8 +4425,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4926,8 +4434,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4936,8 +4443,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4946,8 +4452,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4956,8 +4461,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4966,8 +4470,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4976,8 +4479,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4986,8 +4488,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -4996,8 +4497,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5006,8 +4506,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5016,8 +4515,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5026,8 +4524,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5036,8 +4533,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5046,8 +4542,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5056,8 +4551,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5066,8 +4560,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5076,8 +4569,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5086,8 +4578,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5096,8 +4587,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5106,8 +4596,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5116,8 +4605,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5126,8 +4614,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5136,8 +4623,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5146,8 +4632,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5156,8 +4641,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5166,8 +4650,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5176,8 +4659,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5186,8 +4668,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5196,8 +4677,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5206,8 +4686,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5216,8 +4695,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5226,8 +4704,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5236,8 +4713,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5246,8 +4722,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5256,8 +4731,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5266,8 +4740,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5276,8 +4749,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5286,8 +4758,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5296,8 +4767,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5306,8 +4776,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5316,8 +4785,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5326,8 +4794,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5336,8 +4803,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5346,8 +4812,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5356,8 +4821,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5366,8 +4830,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5376,8 +4839,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5386,8 +4848,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5396,8 +4857,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5406,8 +4866,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5416,8 +4875,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5426,8 +4884,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5436,8 +4893,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5446,8 +4902,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5456,8 +4911,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5466,8 +4920,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5476,8 +4929,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5486,8 +4938,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5496,8 +4947,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5506,8 +4956,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5516,8 +4965,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5526,8 +4974,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5536,8 +4983,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5546,8 +4992,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5556,8 +5001,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5566,8 +5010,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5576,8 +5019,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5586,8 +5028,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5596,8 +5037,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5606,8 +5046,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5616,8 +5055,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5626,8 +5064,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5636,8 +5073,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5646,8 +5082,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5656,8 +5091,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5666,8 +5100,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5676,8 +5109,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5686,8 +5118,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5696,8 +5127,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5706,8 +5136,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5716,8 +5145,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5726,8 +5154,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5736,8 +5163,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5746,8 +5172,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5756,8 +5181,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5766,8 +5190,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5776,8 +5199,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5786,8 +5208,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5796,8 +5217,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5806,8 +5226,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5816,8 +5235,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5826,8 +5244,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5836,8 +5253,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5846,8 +5262,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5856,8 +5271,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5866,8 +5280,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5876,8 +5289,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5886,8 +5298,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5896,8 +5307,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "right",
@@ -5906,8 +5316,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5916,8 +5325,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "right",
@@ -5926,8 +5334,7 @@
         "position": {
             "x": 6,
             "y": 8
-        },
-        "script": "scripts/npc/@타성주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5936,8 +5343,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5946,8 +5352,7 @@
         "position": {
             "x": 2,
             "y": 4
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5956,8 +5361,7 @@
         "position": {
             "x": 3,
             "y": 5
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5966,8 +5370,7 @@
         "position": {
             "x": 5,
             "y": 5
-        },
-        "script": "scripts/npc/@떡쇠.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5976,8 +5379,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@옥이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5986,8 +5388,7 @@
         "position": {
             "x": 4,
             "y": 5
-        },
-        "script": "scripts/npc/@예쁜이.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -5996,8 +5397,7 @@
         "position": {
             "x": 5,
             "y": 4
-        },
-        "script": "scripts/npc/@뭉치.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6006,8 +5406,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업전사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6016,8 +5415,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도적.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6026,8 +5424,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업술사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6036,8 +5433,7 @@
         "position": {
             "x": 6,
             "y": 6
-        },
-        "script": "scripts/npc/@직업도사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6046,8 +5442,7 @@
         "position": {
             "x": 6,
             "y": 5
-        },
-        "script": "scripts/npc/@영혼사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6056,8 +5451,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6066,8 +5460,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6076,8 +5469,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6086,8 +5478,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6096,8 +5487,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6106,8 +5496,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6116,8 +5505,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6126,8 +5514,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6136,8 +5523,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6146,8 +5532,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6156,8 +5541,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6166,8 +5550,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6176,8 +5559,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6186,8 +5568,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6196,8 +5577,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6206,8 +5586,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6216,8 +5595,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6226,8 +5604,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6236,8 +5613,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6246,8 +5622,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6256,8 +5631,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6266,8 +5640,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6276,8 +5649,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6286,8 +5658,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6296,8 +5667,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6306,8 +5676,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6316,8 +5685,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6326,8 +5694,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6336,8 +5703,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6346,8 +5712,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6356,8 +5721,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6366,8 +5730,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6376,8 +5739,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6386,8 +5748,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6396,8 +5757,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6406,8 +5766,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6416,8 +5775,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6426,8 +5784,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6436,8 +5793,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6446,8 +5802,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6456,8 +5811,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6466,8 +5820,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6476,8 +5829,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6486,8 +5838,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6496,8 +5847,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6506,8 +5856,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6516,8 +5865,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6526,8 +5874,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6536,8 +5883,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6546,8 +5892,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6556,8 +5901,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6566,8 +5910,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6576,8 +5919,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6586,8 +5928,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6596,8 +5937,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6606,8 +5946,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6616,8 +5955,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6626,8 +5964,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6636,8 +5973,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6646,8 +5982,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6656,8 +5991,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6666,8 +6000,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6676,8 +6009,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6686,8 +6018,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6696,8 +6027,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6706,8 +6036,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6716,8 +6045,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6726,8 +6054,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6736,8 +6063,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6746,8 +6072,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6756,8 +6081,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6766,8 +6090,7 @@
         "position": {
             "x": 11,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6776,8 +6099,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6786,8 +6108,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6796,8 +6117,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6806,8 +6126,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6816,8 +6135,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6826,8 +6144,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6836,8 +6153,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6846,8 +6162,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6856,8 +6171,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6866,8 +6180,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6876,8 +6189,7 @@
         "position": {
             "x": 68,
             "y": 123
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6886,8 +6198,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6896,8 +6207,7 @@
         "position": {
             "x": 11,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6906,8 +6216,7 @@
         "position": {
             "x": 41,
             "y": 28
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6916,8 +6225,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6926,8 +6234,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6936,8 +6243,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6946,8 +6252,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6956,8 +6261,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6966,8 +6270,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6976,8 +6279,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6986,8 +6288,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -6996,8 +6297,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7006,8 +6306,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7016,8 +6315,7 @@
         "position": {
             "x": 68,
             "y": 123
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7026,8 +6324,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7036,8 +6333,7 @@
         "position": {
             "x": 14,
             "y": 78
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7046,8 +6342,7 @@
         "position": {
             "x": 41,
             "y": 29
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7056,8 +6351,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7066,8 +6360,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7076,8 +6369,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7086,8 +6378,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7096,8 +6387,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7106,8 +6396,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7116,8 +6405,7 @@
         "position": {
             "x": 102,
             "y": 24
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7126,8 +6414,7 @@
         "position": {
             "x": 128,
             "y": 49
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7136,8 +6423,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7146,8 +6432,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7156,8 +6441,7 @@
         "position": {
             "x": 68,
             "y": 121
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7166,8 +6450,7 @@
         "position": {
             "x": 30,
             "y": 40
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7176,8 +6459,7 @@
         "position": {
             "x": 14,
             "y": 79
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7186,8 +6468,7 @@
         "position": {
             "x": 41,
             "y": 29
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7196,8 +6477,7 @@
         "position": {
             "x": 31,
             "y": 46
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7206,8 +6486,7 @@
         "position": {
             "x": 43,
             "y": 146
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7216,8 +6495,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7226,8 +6504,7 @@
         "position": {
             "x": 21,
             "y": 144
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7236,8 +6513,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7246,8 +6522,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7256,8 +6531,7 @@
         "position": {
             "x": 102,
             "y": 23
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7266,8 +6540,7 @@
         "position": {
             "x": 128,
             "y": 48
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7276,8 +6549,7 @@
         "position": {
             "x": 98,
             "y": 114
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7286,8 +6558,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7296,8 +6567,7 @@
         "position": {
             "x": 68,
             "y": 122
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7306,8 +6576,7 @@
         "position": {
             "x": 30,
             "y": 41
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7316,8 +6585,7 @@
         "position": {
             "x": 14,
             "y": 79
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7326,8 +6594,7 @@
         "position": {
             "x": 41,
             "y": 29
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7336,8 +6603,7 @@
         "position": {
             "x": 31,
             "y": 47
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7346,8 +6612,7 @@
         "position": {
             "x": 40,
             "y": 144
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7356,8 +6621,7 @@
         "position": {
             "x": 123,
             "y": 144
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7366,8 +6630,7 @@
         "position": {
             "x": 18,
             "y": 141
-        },
-        "script": "scripts/npc/@인형굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7376,8 +6639,7 @@
         "position": {
             "x": 110,
             "y": 126
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7386,8 +6648,7 @@
         "position": {
             "x": 87,
             "y": 26
-        },
-        "script": "scripts/npc/@유령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7396,8 +6657,7 @@
         "position": {
             "x": 102,
             "y": 24
-        },
-        "script": "scripts/npc/@흑령굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7406,8 +6666,7 @@
         "position": {
             "x": 128,
             "y": 49
-        },
-        "script": "scripts/npc/@전갈굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7416,8 +6675,7 @@
         "position": {
             "x": 98,
             "y": 113
-        },
-        "script": "scripts/npc/@물망동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7426,8 +6684,7 @@
         "position": {
             "x": 86,
             "y": 143
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7436,8 +6693,7 @@
         "position": {
             "x": 68,
             "y": 121
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7446,8 +6702,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7456,8 +6711,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7466,8 +6720,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7476,8 +6729,7 @@
         "position": {
             "x": 198,
             "y": 72
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7486,8 +6738,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7496,8 +6747,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7506,8 +6756,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7516,8 +6765,7 @@
         "position": {
             "x": 29,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7526,8 +6774,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7536,8 +6783,7 @@
         "position": {
             "x": 41,
             "y": 25
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7546,8 +6792,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7556,8 +6801,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7566,8 +6810,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7576,8 +6819,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7586,8 +6828,7 @@
         "position": {
             "x": 129,
             "y": 25
-        },
-        "script": "scripts/npc/@사슴굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7596,8 +6837,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7606,8 +6846,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7616,8 +6855,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7626,8 +6864,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7636,8 +6873,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7646,8 +6882,7 @@
         "position": {
             "x": 32,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7656,8 +6891,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7666,8 +6900,7 @@
         "position": {
             "x": 41,
             "y": 24
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7676,8 +6909,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7686,8 +6918,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7696,8 +6927,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7706,8 +6936,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7716,8 +6945,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7726,8 +6954,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7736,8 +6963,7 @@
         "position": {
             "x": 18,
             "y": 165
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7746,8 +6972,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7756,8 +6981,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7766,8 +6990,7 @@
         "position": {
             "x": 29,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7776,8 +6999,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7786,8 +7008,7 @@
         "position": {
             "x": 41,
             "y": 25
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7796,8 +7017,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7806,8 +7026,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7816,8 +7035,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7826,8 +7044,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7836,8 +7053,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7846,8 +7062,7 @@
         "position": {
             "x": 21,
             "y": 165
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7856,8 +7071,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7866,8 +7080,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7876,8 +7089,7 @@
         "position": {
             "x": 29,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7886,8 +7098,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7896,8 +7107,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7906,8 +7116,7 @@
         "position": {
             "x": 37,
             "y": 63
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7916,8 +7125,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7926,8 +7134,7 @@
         "position": {
             "x": 45,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7936,8 +7143,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7946,8 +7152,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7956,8 +7161,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7966,8 +7170,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7976,8 +7179,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7986,8 +7188,7 @@
         "position": {
             "x": 32,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -7996,8 +7197,7 @@
         "position": {
             "x": 78,
             "y": 36
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8006,8 +7206,7 @@
         "position": {
             "x": 41,
             "y": 24
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8016,8 +7215,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8026,8 +7224,7 @@
         "position": {
             "x": 37,
             "y": 59
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8036,8 +7233,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8046,8 +7242,7 @@
         "position": {
             "x": 46,
             "y": 111
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8056,8 +7251,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8066,8 +7260,7 @@
         "position": {
             "x": 198,
             "y": 72
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8076,8 +7269,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8086,8 +7278,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8096,8 +7287,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8106,8 +7296,7 @@
         "position": {
             "x": 32,
             "y": 31
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8116,8 +7305,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8126,8 +7314,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8136,8 +7323,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8146,8 +7332,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8156,8 +7341,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8166,8 +7350,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8176,8 +7359,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8186,8 +7368,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8196,8 +7377,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8206,8 +7386,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8216,8 +7395,7 @@
         "position": {
             "x": 32,
             "y": 27
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8226,8 +7404,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8236,8 +7413,7 @@
         "position": {
             "x": 41,
             "y": 24
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8246,8 +7422,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8256,8 +7431,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8266,8 +7440,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8276,8 +7449,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8286,8 +7458,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8296,8 +7467,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8306,8 +7476,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8316,8 +7485,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8326,8 +7494,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8336,8 +7503,7 @@
         "position": {
             "x": 32,
             "y": 31
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8346,8 +7512,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8356,8 +7521,7 @@
         "position": {
             "x": 44,
             "y": 29
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8366,8 +7530,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8376,8 +7539,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8386,8 +7548,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8396,8 +7557,7 @@
         "position": {
             "x": 44,
             "y": 113
-        },
-        "script": "scripts/npc/@쥐굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8406,8 +7566,7 @@
         "position": {
             "x": 193,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8416,8 +7575,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8426,8 +7584,7 @@
         "position": {
             "x": 18,
             "y": 164
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8436,8 +7593,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8446,8 +7602,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8456,8 +7611,7 @@
         "position": {
             "x": 32,
             "y": 31
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8466,8 +7620,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8476,8 +7629,7 @@
         "position": {
             "x": 44,
             "y": 29
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8486,8 +7638,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8496,8 +7647,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8506,8 +7656,7 @@
         "position": {
             "x": 37,
             "y": 173
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8516,8 +7665,7 @@
         "position": {
             "x": 192,
             "y": 123
-        },
-        "script": "scripts/npc/@돼지굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8526,8 +7674,7 @@
         "position": {
             "x": 198,
             "y": 71
-        },
-        "script": "scripts/npc/@곰굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8536,8 +7683,7 @@
         "position": {
             "x": 18,
             "y": 165
-        },
-        "script": "scripts/npc/@여우굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8546,8 +7692,7 @@
         "position": {
             "x": 194,
             "y": 140
-        },
-        "script": "scripts/npc/@자호굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8556,8 +7701,7 @@
         "position": {
             "x": 149,
             "y": 18
-        },
-        "script": "scripts/npc/@해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8566,8 +7710,7 @@
         "position": {
             "x": 32,
             "y": 31
-        },
-        "script": "scripts/npc/@흑해골굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8576,8 +7719,7 @@
         "position": {
             "x": 78,
             "y": 35
-        },
-        "script": "scripts/npc/@사마귀굴도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8586,8 +7728,7 @@
         "position": {
             "x": 44,
             "y": 29
-        },
-        "script": "scripts/npc/@백륜동도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8596,8 +7737,7 @@
         "position": {
             "x": 136,
             "y": 204
-        },
-        "script": "scripts/npc/@비밀세작도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8606,8 +7746,7 @@
         "position": {
             "x": 37,
             "y": 65
-        },
-        "script": "scripts/npc/@흉가도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8616,8 +7755,7 @@
         "position": {
             "x": 14,
             "y": 8
-        },
-        "script": "scripts/npc/@신부여주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8626,8 +7764,7 @@
         "position": {
             "x": 14,
             "y": 8
-        },
-        "script": "scripts/npc/@신부여주모.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8636,8 +7773,7 @@
         "position": {
             "x": 17,
             "y": 36
-        },
-        "script": "scripts/npc/@부여섬선원.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8646,8 +7782,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@부여섬뱃사공.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8656,8 +7791,7 @@
         "position": {
             "x": 9,
             "y": 20
-        },
-        "script": "scripts/npc/@부여고균도매표상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8666,8 +7800,7 @@
         "position": {
             "x": 41,
             "y": 8
-        },
-        "script": "scripts/npc/@암표상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8676,8 +7809,7 @@
         "position": {
             "x": 17,
             "y": 36
-        },
-        "script": "scripts/npc/@고구려섬선원.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8686,8 +7818,7 @@
         "position": {
             "x": 20,
             "y": 20
-        },
-        "script": "scripts/npc/@고구려고균도매표상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8696,8 +7827,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@고구려섬뱃사공.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8706,8 +7836,7 @@
         "position": {
             "x": 58,
             "y": 16
-        },
-        "script": "scripts/npc/@부여.lua-일본섬선원"
+        }
     },
     {
         "direction": "bottom",
@@ -8716,8 +7845,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@부여.lua-일본섬뱃사공"
+        }
     },
     {
         "direction": "bottom",
@@ -8726,8 +7854,7 @@
         "position": {
             "x": 58,
             "y": 16
-        },
-        "script": "scripts/npc/@고구려.lua-일본섬선원"
+        }
     },
     {
         "direction": "bottom",
@@ -8736,8 +7863,7 @@
         "position": {
             "x": 7,
             "y": 5
-        },
-        "script": "scripts/npc/@고구려.lua-일본섬뱃사공"
+        }
     },
     {
         "direction": "bottom",
@@ -8746,8 +7872,7 @@
         "position": {
             "x": 30,
             "y": 2
-        },
-        "script": "scripts/npc/@말단선원.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8756,8 +7881,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8766,8 +7890,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8776,8 +7899,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8786,8 +7908,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8796,8 +7917,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8806,8 +7926,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8816,8 +7935,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8826,8 +7944,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8836,8 +7953,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8846,8 +7962,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8856,8 +7971,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8866,8 +7980,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무달.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8876,8 +7989,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8886,8 +7998,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8896,8 +8007,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8906,8 +8016,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8916,8 +8025,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8926,8 +8034,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8936,8 +8043,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8946,8 +8052,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8956,8 +8061,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8966,8 +8070,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8976,8 +8079,7 @@
         "position": {
             "x": 12,
             "y": 8
-        },
-        "script": "scripts/npc/@무두.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8986,8 +8088,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -8996,8 +8097,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9006,8 +8106,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9016,8 +8115,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9026,8 +8124,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9036,8 +8133,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9046,8 +8142,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9056,8 +8151,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9066,8 +8160,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9076,8 +8169,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9086,8 +8178,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9096,8 +8187,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9106,8 +8196,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9116,8 +8205,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9126,8 +8214,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9136,8 +8223,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9146,8 +8232,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9156,8 +8241,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9166,8 +8250,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9176,8 +8259,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9186,8 +8268,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9196,8 +8277,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9206,8 +8286,7 @@
         "position": {
             "x": 7,
             "y": 8
-        },
-        "script": "scripts/npc/@열쇠교환상.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9216,8 +8295,7 @@
         "position": {
             "x": 29,
             "y": 33
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9226,8 +8304,7 @@
         "position": {
             "x": 29,
             "y": 33
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9236,8 +8313,7 @@
         "position": {
             "x": 29,
             "y": 33
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9246,8 +8322,7 @@
         "position": {
             "x": 29,
             "y": 33
-        },
-        "script": "scripts/npc/@성황할머니.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9256,8 +8331,7 @@
         "position": {
             "x": 27,
             "y": 33
-        },
-        "script": "scripts/npc/@청룡성문지기.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9266,8 +8340,7 @@
         "position": {
             "x": 27,
             "y": 33
-        },
-        "script": "scripts/npc/@주작성문지기.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9276,8 +8349,7 @@
         "position": {
             "x": 27,
             "y": 33
-        },
-        "script": "scripts/npc/@백호성문지기.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9286,8 +8358,7 @@
         "position": {
             "x": 27,
             "y": 33
-        },
-        "script": "scripts/npc/@현무성문지기.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9296,8 +8367,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9306,8 +8376,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9316,8 +8385,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9326,8 +8394,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9336,8 +8403,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9346,8 +8412,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9356,8 +8421,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9366,8 +8430,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9376,8 +8439,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9386,8 +8448,7 @@
         "position": {
             "x": 32,
             "y": 117
-        },
-        "script": "scripts/npc/@초보사냥도우미.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9396,8 +8457,7 @@
         "position": {
             "x": 11,
             "y": 14
-        },
-        "script": "scripts/npc/@혜천대사.lua"
+        }
     },
     {
         "direction": "bottom",
@@ -9406,7 +8466,6 @@
         "position": {
             "x": 19,
             "y": 14
-        },
-        "script": "scripts/npc/@철수나한.lua"
+        }
     }
 ]
