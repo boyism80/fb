@@ -40,7 +40,7 @@ def __load_mobs(path):
 
 def __convert_host(map_set):
     map_set = {x['id']:x for x in map_set.values()}
-    return {id:map[id]['host group'] for id, map in map_set}
+    return {id:map['host group'] for id, map in map_set.items()}
 
 
 def __convert_warps(path, world_path, maps):
