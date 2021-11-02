@@ -9,12 +9,10 @@ fb::game::object::master::master(const std::string& name, uint16_t look, uint8_t
     name(name),
     look(look),
     color(color)
-{
-}
+{ }
 
 fb::game::object::master::~master()
-{
-}
+{ }
 
 uint8_t fb::game::object::master::dialog_look_type() const
 {
@@ -106,8 +104,7 @@ fb::game::object::object(const fb::game::object::master* master, listener* liste
 
 fb::game::object::object(const object& right) :
     object(right._master, right._listener, right.sequence(), right._position, right._direction, right._map)
-{
-}
+{ }
 
 fb::game::object::~object()
 {
@@ -636,7 +633,7 @@ std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direc
         );
     }
     catch(std::exception&)
-    {}
+    { }
 
     return std::move(result);
 }
@@ -654,7 +651,7 @@ std::vector<fb::game::object*> fb::game::object::forwards(fb::game::object::type
 std::vector<fb::game::object*> fb::game::object::showns(object::types type) const
 {
     if(this->_map == nullptr)
-        return std::vector<fb::game::object*> {};
+        return std::vector<fb::game::object*> { };
     else
         return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
 }
@@ -680,7 +677,7 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
 std::vector<object*> fb::game::object::showings(object::types type) const
 {
     if(this->_map == nullptr)
-        return std::vector<object*> {};
+        return std::vector<object*> { };
     else
         return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
 }
@@ -730,7 +727,7 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
 
 bool fb::game::object::switch_process(const fb::game::map& map) const
 {
-    if(this->is(fb::game::object::SESSION) == false)
+    if(this->is(fb::game::object::types::SESSION) == false)
         return false;
 
     auto session = static_cast<const fb::game::session*>(this);

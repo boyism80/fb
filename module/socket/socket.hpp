@@ -5,7 +5,7 @@ fb::base::socket<T>::socket(boost::asio::io_context& context, const std::functio
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
-{}
+{ }
 
 template<typename T>
 inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
@@ -23,7 +23,7 @@ inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, b
         *this, 
         buffer, 
         [this] (const boost::system::error_code error, size_t bytes_transferred)
-        {}
+        { }
     );
 }
 
@@ -107,8 +107,7 @@ uint32_t fb::base::socket<T>::fd()
 template<typename T>
 fb::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
-{
-}
+{ }
 
 template<typename T>
 fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
@@ -159,11 +158,11 @@ fb::socket<T>::operator fb::cryptor& ()
 template <typename T>
 fb::internal::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
-{}
+{ }
 
 template <typename T>
 fb::internal::socket<T>::~socket()
-{}
+{ }
 
 template <typename T>
 bool fb::internal::socket<T>::on_wrap(fb::ostream& out)

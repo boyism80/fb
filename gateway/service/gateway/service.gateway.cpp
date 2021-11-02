@@ -1,12 +1,10 @@
 #include "service.gateway.h"
 
 fb::gateway::service::gateway::gateway()
-{
-}
+{ }
 
 fb::gateway::service::gateway::~gateway()
-{
-}
+{ }
 
 void fb::gateway::service::gateway::assert_client(const fb::protocol::gateway::request::assert_version& request)
 {

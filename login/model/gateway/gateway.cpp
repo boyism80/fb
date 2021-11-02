@@ -32,8 +32,7 @@ uint16_t fb::login::gateway::port() const
 }
 
 fb::login::gateways::gateways()
-{
-}
+{ }
 
 fb::login::gateways::~gateways()
 {

@@ -28,7 +28,7 @@ public:
 public:
     DECLARE_EXCEPTION(auth_exception, fb::game::message::board::NOT_AUTH)
 
-    typedef std::vector<std::unique_ptr<section>> unique_sections;
+    using unique_sections = std::vector<std::unique_ptr<section>>;
 #pragma endregion
 
 #pragma region private field

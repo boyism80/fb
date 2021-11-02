@@ -215,8 +215,8 @@ void fb::db::_mquery(const char* name, const std::string& sql, const std::functi
 
 fb::db& fb::db::get()
 {
-    if(_ist.get() == nullptr)
-        _ist.reset(new fb::db());
+    static std::once_flag flag;
+    std::call_once(flag, [] () { _ist.reset(new fb::db()); });
 
     return *_ist;
 }

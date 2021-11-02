@@ -12,9 +12,9 @@ public:
     static constexpr uint32_t   KEY_SIZE = 0x09;
 
 private:
-    uint8_t                 _type;
-    uint8_t*                _key;
-    uint8_t                 _sequence;
+    uint8_t                 _type     = 0;
+    uint8_t*                _key      = nullptr;
+    uint8_t                 _sequence = 0;
 
 public:
     cryptor();

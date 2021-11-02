@@ -29,7 +29,7 @@ public:
 
 #pragma region override method
 protected:
-    std::string                         mid_message() const override;
+    std::string                         mid_message() const final;
 #pragma endregion
 };
 
@@ -41,7 +41,7 @@ public:
     range32_t                           small, large;
 
 public:
-    damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) {}
+    damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) { }
 };
 
 class weapon::master : public equipment::master

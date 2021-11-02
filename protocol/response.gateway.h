@@ -16,7 +16,7 @@ public:
 public:
     crt(const fb::cryptor& cryptor, uint32_t entry_crc) : 
         cryptor(cryptor), entry_crc(entry_crc)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -39,7 +39,7 @@ public:
 public:
     hosts(const std::vector<fb::gateway::entry>& entries) : 
         entries(entries)
-    {}
+    { }
 
     void serialize(fb::ostream& out_stream) const
     {

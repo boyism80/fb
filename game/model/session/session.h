@@ -132,48 +132,51 @@ public:
 
 #pragma region private field
 private:
-    uint32_t                    _id;
+    uint32_t                    _id              = 0xFFFFFFFF;
     fb::socket<session>&        _socket;
-    bool                        _transferring;
-    bool                        _admin;
+    bool                        _transferring    = false;
+    bool                        _admin           = false;
     std::string                 _name;
-    uint16_t                    _look;
-    uint8_t                     _color;
-    std::optional<uint8_t>      _armor_color;
+    uint16_t                    _look            = 0;
+    uint8_t                     _color           = 0;
+    std::optional<uint8_t>      _armor_color     = 0;
 
     defensive                   _defensive;
-    uint32_t                    _base_hp, _base_mp;
-    uint32_t                    _experience;
+    uint32_t                    _base_hp         = 0;
+    uint32_t                    _base_mp         = 0;
+    uint32_t                    _experience      = 0;
 
 private:
-    uint8_t                     _strength, _intelligence, _dexteritry;
-    uint8_t                     _damage; // 공격수정
-    uint8_t                     _hit; // 명중수정
-    uint8_t                     _regenerative; // 재생력
+    uint8_t                     _strength        = 0;
+    uint8_t                     _intelligence    = 0;
+    uint8_t                     _dexteritry      = 0;
+    uint8_t                     _damage          = 0; // 공격수정
+    uint8_t                     _hit             = 0; // 명중수정
+    uint8_t                     _regenerative    = 0; // 재생력
 
-    fb::game::nation            _nation;
-    fb::game::creature          _creature;
+    fb::game::nation            _nation          = nation::GOGURYEO;
+    fb::game::creature          _creature        = creature::DRAGON;
     fb::game::sex               _sex;
-    fb::game::state             _state;
-    uint8_t                     _level;
-    uint8_t                     _class, _promotion;
-    uint32_t                    _money;
-    std::optional<uint16_t>     _disguise;
-
-    bool                        _options[0x0B+1];
+    fb::game::state             _state           = state::NORMAL;
+    uint8_t                     _level           = 1;
+    uint8_t                     _class           = 0;
+    uint8_t                     _promotion       = 0;
+    uint32_t                    _money           = 0;
+    std::optional<uint16_t>     _disguise        = 0;
+    bool                        _options[0x0B+1] = {0,};
 
     std::string                 _title;
 
-    fb::game::group*            _group;
-    fb::game::clan*             _clan;
+    fb::game::group*            _group           = nullptr;
+    fb::game::clan*             _clan            = nullptr;
 #pragma endregion
 
 #pragma region public field
 public:
-    fb::game::trade             trade;
-    fb::game::items             items;
+    fb::game::trade             trade            = fb::game::trade(*this);
+    fb::game::items             items            = fb::game::items(*this);
+    lua::dialog                 dialog           = lua::dialog(*this);
     legend_container            legends;
-    lua::dialog                 dialog;
 #pragma endregion
 
 #pragma region hide parent method
@@ -189,24 +192,24 @@ public:
 
 #pragma region override method
 protected:
-    void                        handle_hold() override;
-    void                        handle_switch_process(fb::game::map& map, const point16_t& position) override;
-    void                        handle_warp() override;
-    void                        handle_update() override;
-    uint32_t                    handle_calculate_damage(bool critical) const override;
-    void                        handle_attack(fb::game::object* target) override;
-    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical) override;
-    void                        handle_kill(fb::game::life& you) override;
-    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical) override;
-    void                        handle_die(fb::game::object* from) override;
+    void                        handle_hold() final;
+    void                        handle_switch_process(fb::game::map& map, const point16_t& position) final;
+    void                        handle_warp() final;
+    void                        handle_update() final;
+    uint32_t                    handle_calculate_damage(bool critical) const final;
+    void                        handle_attack(fb::game::object* target) final;
+    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical) final;
+    void                        handle_kill(fb::game::life& you) final;
+    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
+    void                        handle_die(fb::game::object* from) final;
 
 public:
-    void                        handle_transfer(fb::game::map& map, const point16_t& position) override;
+    void                        handle_transfer(fb::game::map& map, const point16_t& position) final;
 
 public:
-    void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) override;
-    void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) override;
-    object::types               type() const override;
+    void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
+    void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
+    object::types               type() const final;
 #pragma endregion
 
 #pragma region operator

@@ -83,7 +83,7 @@ public:
 
 #pragma region virtual method
 protected:
-    virtual void                handle_update() {}
+    virtual void                handle_update() { }
     virtual uint32_t            handle_calculate_damage(bool critical) const = 0;
     virtual bool                handle_calculate_critical(fb::game::life& you) const;
     virtual bool                handle_calculate_miss(fb::game::life& you) const;

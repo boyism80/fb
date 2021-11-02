@@ -14,7 +14,7 @@ public:
 public:
     dialog(const fb::game::session& me) : 
         me(me)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -44,7 +44,7 @@ public:
 public:
     upload(const fb::game::session& me, uint8_t index, bool mine) : 
         me(me), index(index), mine(mine)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -66,7 +66,7 @@ class bundle : public fb::protocol::base::header
 {
 public:
     bundle()
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -86,7 +86,7 @@ public:
 public:
     money(const fb::game::session& me, bool mine) : 
         me(me), mine(mine)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -107,7 +107,7 @@ public:
 public:
     close(const std::string& message) : 
         message(message)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -123,7 +123,7 @@ class lock : public fb::protocol::base::header
 {
 public:
     lock()
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

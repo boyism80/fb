@@ -47,7 +47,7 @@ public:
 class exit : public fb::protocol::base::header
 {
 public:
-    void deserialize(fb::istream& in_stream) {}
+    void deserialize(fb::istream& in_stream) { }
 };
 
 
@@ -92,7 +92,7 @@ public:
 class attack : public fb::protocol::base::header
 {
 public:
-    void deserialize(fb::istream& in_stream) {}
+    void deserialize(fb::istream& in_stream) { }
 };
 
 
@@ -125,19 +125,19 @@ public:
 class refresh : public fb::protocol::base::header
 {
 public:
-    void deserialize(fb::istream& in_stream) {}
+    void deserialize(fb::istream& in_stream) { }
 };
 
 class front_info : public fb::protocol::base::header
 {
 public:
-    void deserialize(fb::istream& in_stream) {}
+    void deserialize(fb::istream& in_stream) { }
 };
 
 class self_info : public fb::protocol::base::header
 {
 public:
-    void deserialize(fb::istream& in_stream) {}
+    void deserialize(fb::istream& in_stream) { }
 };
 
 
@@ -328,7 +328,7 @@ class door : public fb::protocol::base::header
 {
 public:
     void deserialize(fb::istream& in_stream)
-    {}
+    { }
 };
 
 

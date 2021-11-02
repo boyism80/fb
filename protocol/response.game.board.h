@@ -10,7 +10,7 @@ class sections : public fb::protocol::base::header
 {
 public:
     sections()
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -40,7 +40,7 @@ public:
 public:
     articles(uint16_t section_id, uint16_t offset) : 
         section_id(section_id), offset(offset)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -93,7 +93,7 @@ public:
 public:
     article(uint16_t section_id, uint16_t article_id, const fb::game::session& me) : 
         section_id(section_id), article_id(article_id), me(me)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -131,7 +131,7 @@ public:
 public:
     message(const std::string& text, bool success, bool refresh = false) : 
         text(text), success(success), refresh(refresh)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

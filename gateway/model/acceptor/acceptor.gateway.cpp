@@ -18,7 +18,7 @@ fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port,
 }
 
 fb::gateway::acceptor::~acceptor()
-{}
+{ }
 
 bool fb::gateway::acceptor::load_entries()
 {

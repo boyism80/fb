@@ -9,7 +9,7 @@ fb::game::group::group(session& leader) :
 }
 
 fb::game::group::~group()
-{}
+{ }
 
 fb::game::session* fb::game::group::enter(session& session)
 {

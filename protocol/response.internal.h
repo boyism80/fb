@@ -29,10 +29,10 @@ public:
     services                from;
 
 public:
-    transfer() {}
+    transfer() { }
     transfer(const std::string& name, transfer_code code, uint16_t map, uint16_t x, uint16_t y, const std::string& ip, uint16_t port, uint32_t fd, services from) : 
         name(name), code(code), map(map), x(x), y(y), ip(ip), port(port), fd(fd), from(from)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -72,10 +72,10 @@ public:
     std::string             name;
 
 public:
-    logout() {}
+    logout() { }
     logout(const std::string& name) : 
         name(name)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -102,10 +102,10 @@ public:
     std::string             message;
 
 public:
-    whisper() {}
+    whisper() { }
     whisper(bool success, const std::string& from, const std::string& to, const std::string& message) : 
         success(success), from(from), to(to), message(message)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -137,10 +137,10 @@ public:
     uint8_t                 type;
 
 public:
-    message() {}
+    message() { }
     message(const std::string& to, const std::string& contents, uint8_t type) : 
         to(to), contents(contents), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -165,7 +165,7 @@ public:
     BIND_ID(SHUTDOWN)
 
 public:
-    shutdown() {}
+    shutdown() { }
 
 public:
     void serialize(fb::ostream& out_stream) const

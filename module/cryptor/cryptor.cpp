@@ -18,9 +18,9 @@ uint32_t fb::cryptor::HEX_TABLE[10][0x100] =
 #pragma endregion
 
 fb::cryptor::cryptor() : cryptor(0, (uint8_t*)"NexonInc.")
-{}
+{ }
 
-fb::cryptor::cryptor(uint8_t types, const uint8_t* key) : _key(NULL), _sequence(0), _type(types)
+fb::cryptor::cryptor(uint8_t types, const uint8_t* key) : _type(types)
 {
     this->_key = new uint8_t[KEY_SIZE * 4];
     for(int i = 0; i < 4; i++)
@@ -28,7 +28,7 @@ fb::cryptor::cryptor(uint8_t types, const uint8_t* key) : _key(NULL), _sequence(
 }
 
 fb::cryptor::cryptor(const cryptor& crt) : cryptor(crt._type, crt._key)
-{}
+{ }
 
 fb::cryptor::~cryptor()
 {

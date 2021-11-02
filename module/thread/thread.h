@@ -15,8 +15,8 @@ using namespace std::chrono_literals;
 
 namespace fb {
 
-typedef std::function<void(std::chrono::steady_clock::duration, std::thread::id)>   thread_callback;
-typedef std::function<void(uint8_t)>                                                queue_callback;
+using thread_callback = std::function<void(std::chrono::steady_clock::duration, std::thread::id)> ;
+using queue_callback  = std::function<void(uint8_t)>;
 
 class thread;
 
@@ -69,8 +69,8 @@ public:
 class thread
 {
 private:
-    uint8_t                                         _index;
-    bool                                            _exit;
+    uint8_t                                         _index = 0;
+    bool                                            _exit  = false;
     std::thread                                     _thread;
 
 private:
@@ -136,9 +136,9 @@ public:
 class threads
 {
 public:
-    typedef std::unique_ptr<fb::thread>                             unique_thread;
-    typedef std::map<std::thread::id, unique_thread>                unique_threads;
-    typedef std::unique_ptr<std::thread::id[]>                      unique_id_list;
+    using unique_thread  = std::unique_ptr<fb::thread>;
+    using unique_threads = std::map<std::thread::id, unique_thread>;
+    using unique_id_list = std::unique_ptr<std::thread::id[]>;
 
 private:
     boost::asio::io_context&                        _context;

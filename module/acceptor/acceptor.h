@@ -78,13 +78,13 @@ public:
 
 } }
 
-typedef struct __INTERNAL_CONNECTION_TAG
+struct INTERNAL_CONNECTION
 {
     std::string                                     ip;
     uint16_t                                        port;
     std::function<void(fb::base::socket<>&, bool)>  handle_connected;
     std::function<void()>                           handle_disconnected;
-} INTERNAL_CONNECTION;
+};
 
 
 namespace fb { namespace internal {
@@ -138,8 +138,8 @@ template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    typedef std::function<bool(fb::socket<T>&)>             public_handler;
-    typedef std::function<bool(fb::internal::socket<>&)>    private_handler;
+    using public_handler                = std::function<bool(fb::socket<T>&)>;
+    using private_handler               = std::function<bool(fb::internal::socket<>&)>;
 
 private:
     std::map<uint8_t, public_handler>   _public_handler_dict;

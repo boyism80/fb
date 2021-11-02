@@ -17,10 +17,10 @@ public:
 public:
     direction(const fb::game::object& object) : 
         direction(object.sequence(), object.direction())
-    {}
+    { }
     direction(uint32_t sequence, fb::game::direction value) : 
         sequence(sequence), value(value)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -41,11 +41,11 @@ private:
 public:
     show(const fb::game::object& object) : 
         object(&object), objects(nullptr)
-    {}
+    { }
 
     show(const std::vector<fb::game::object*>& objects) : 
         object(nullptr), objects(&objects)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -100,10 +100,10 @@ public:
 public:
     hide(const fb::game::object& object) : 
         hide(object.sequence())
-    {}
+    { }
     hide(uint32_t id) : 
         id(id)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -124,7 +124,7 @@ public:
 public:
     chat(const fb::game::object& me, const uint8_t type, const std::string message) : 
         me(me), type(type), message(message)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -147,10 +147,10 @@ public:
 public:
     move(const fb::game::object& object, bool from_before = true) : 
         move(object.sequence(), object.direction(), object.before().position, object.position(), from_before)
-    {}
+    { }
     move(const uint32_t id, fb::game::direction direction, const point16_t& before, const point16_t& current, bool from_before) : 
         id(id), direction(direction), before(before), current(current), from_before(from_before)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -173,7 +173,7 @@ public:
 public:
     sound(const fb::game::object& me, fb::game::sound::type value) : 
         me(me), value(value)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -201,7 +201,7 @@ public:
 public:
     effect(const fb::game::object& me, uint8_t value) : 
         me(me), value(value)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

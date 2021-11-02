@@ -38,8 +38,8 @@ public:
     ~header() = default;
 
 public:
-    virtual void            serialize(fb::ostream& out_stream) const {}
-    virtual void            deserialize(fb::istream& in_stream) {}
+    virtual void            serialize(fb::ostream& out_stream) const { }
+    virtual void            deserialize(fb::istream& in_stream) { }
 };
 
 } } }

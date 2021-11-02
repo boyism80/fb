@@ -20,20 +20,20 @@ public:
 public:
     user(uint16_t group) : 
         group(group)
-    {}
+    { }
 };
 
 class acceptor : public fb::base::acceptor<fb::internal::socket, fb::internal::session>
 {
 public:
-    typedef fb::internal::socket<fb::internal::session> service;
-    typedef std::function<bool(service&)>               handler;
-    typedef std::map<uint8_t, service*>                 subscriber_container;
+    using service                   = fb::internal::socket<fb::internal::session>;
+    using handler                   = std::function<bool(service&)>;
+    using subscriber_container      = std::map<uint8_t, service*>;
 
 private:
     std::map<uint8_t, handler>      _handler_dict;
-    service*                        _gateway;
-    service*                        _login;
+    service*                        _gateway = nullptr;
+    service*                        _login   = nullptr;
     subscriber_container            _games;
     std::map<std::string, user*>    _users;
 

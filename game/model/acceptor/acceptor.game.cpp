@@ -145,8 +145,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt()),
-    _time(fb::now())
+    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     const auto& config = fb::config::get();
 
@@ -591,7 +590,7 @@ void fb::game::acceptor::send(const fb::protocol::base::header& response, bool e
 
 void fb::game::acceptor::save(fb::game::session& session)
 {
-    this->save(session, [] (fb::game::session&) {});
+    this->save(session, [] (fb::game::session&) { });
 }
 
 void fb::game::acceptor::save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn)
@@ -614,7 +613,7 @@ void fb::game::acceptor::save(fb::game::session& session, const std::function<vo
 
 void fb::game::acceptor::save()
 {
-    this->save([] (fb::game::session& x) {});
+    this->save([] (fb::game::session& x) { });
 }
 
 void fb::game::acceptor::save(const std::function<void(fb::game::session&)>& fn)

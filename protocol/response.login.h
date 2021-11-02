@@ -13,7 +13,7 @@ public:
 public:
     agreement(const std::string& contents) : 
         contents(contents)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -35,7 +35,7 @@ public:
 public:
     message(const std::string& text, uint8_t type) : 
         text(text), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

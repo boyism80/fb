@@ -57,10 +57,10 @@ fb::game::ring::master::master(const std::string&                  name,
                                                                                                             mp_percentage,
                                                                                                             healing_cycle,
                                                                                                             defensive)
-{}
+{ }
 
 fb::game::ring::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::ring::master::attr() const
 {
@@ -76,14 +76,11 @@ fb::game::item* fb::game::ring::master::make(fb::game::item::listener* listener)
 
 fb::game::ring::ring(const master* master, listener* listener) : 
     equipment(master, listener)
-{
-}
+{ }
 
 fb::game::ring::ring(const ring& right) : 
     equipment(right)
-{
-}
+{ }
 
 fb::game::ring::~ring()
-{
-}
+{ }

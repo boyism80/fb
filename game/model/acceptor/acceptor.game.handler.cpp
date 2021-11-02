@@ -104,16 +104,13 @@ void fb::game::acceptor::on_enter(fb::game::object& me, fb::game::map& map, cons
 }
 
 void fb::game::acceptor::on_attack(life& me, object* you)
-{
-}
+{ }
 
 void fb::game::acceptor::on_hit(life& me, life& you, uint32_t damage, bool critical)
-{
-}
+{ }
 
 void fb::game::acceptor::on_kill(life& me, life& you)
-{
-}
+{ }
 
 void fb::game::acceptor::on_damaged(life& me, object* you, uint32_t damage, bool critical)
 {
@@ -121,24 +118,19 @@ void fb::game::acceptor::on_damaged(life& me, object* you, uint32_t damage, bool
 }
 
 void fb::game::acceptor::on_die(life& me, object* you)
-{
-}
+{ }
 
 void fb::game::acceptor::on_heal_hp(life& me, uint32_t value, fb::game::object* from)
-{
-}
+{ }
 
 void fb::game::acceptor::on_heal_mp(life& me, uint32_t value, fb::game::object* from)
-{
-}
+{ }
 
 void fb::game::acceptor::on_hp(life& me, uint32_t before, uint32_t current)
-{
-}
+{ }
 
 void fb::game::acceptor::on_mp(life& me, uint32_t before, uint32_t current)
-{
-}
+{ }
 
 void fb::game::acceptor::on_action(session& me, action action, duration duration, uint8_t sound)
 {
@@ -179,11 +171,10 @@ void fb::game::acceptor::on_hit(session& me, life& you, uint32_t damage, bool cr
 }
 
 void fb::game::acceptor::on_kill(session& me, life& you)
-{}
+{ }
 
 void fb::game::acceptor::on_damaged(session& me, object* you, uint32_t damage, bool critical)
-{
-}
+{ }
 
 void fb::game::acceptor::on_hold(session& me)
 {
@@ -468,8 +459,7 @@ void fb::game::acceptor::on_transfer(fb::game::session& me, fb::game::map& map, 
 }
 
 void fb::game::acceptor::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)
-{
-}
+{ }
 
 void fb::game::acceptor::on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items)
 { }
@@ -488,7 +478,7 @@ void fb::game::acceptor::on_hit(mob& me, life& you, uint32_t damage, bool critic
 }
 
 void fb::game::acceptor::on_kill(mob& me, life& you)
-{}
+{ }
 
 void fb::game::acceptor::on_damaged(mob& me, object* you, uint32_t damage, bool critical)
 { }

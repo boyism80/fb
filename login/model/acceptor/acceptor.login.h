@@ -15,7 +15,7 @@ namespace fb { namespace login {
 class acceptor : public fb::acceptor<fb::login::session>
 {
 private:
-    fb::protocol::login::response::agreement    _agreement;
+    fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
 
 public:

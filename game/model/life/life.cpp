@@ -16,8 +16,7 @@ fb::game::life::master::master(const std::string& name,
 { }
 
 fb::game::life::master::~master()
-{
-}
+{ }
 
 int fb::game::life::master::builtin_hp(lua_State* lua)
 {
@@ -56,8 +55,7 @@ fb::game::life::life(const master* master, listener* listener) :
     _mp(0),
     _condition(fb::game::condition::NONE),
     spells(*this)
-{
-}
+{ }
 
 fb::game::life::life(master* master, listener* listener, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
     object(master, listener, id),
@@ -65,8 +63,7 @@ fb::game::life::life(master* master, listener* listener, uint32_t id, uint32_t h
     _mp(mp),
     _condition(fb::game::condition::NONE),
     spells(*this)
-{
-}
+{ }
 
 fb::game::life::life(const fb::game::object& object, listener* listener, uint32_t hp, uint32_t mp, uint32_t exp) : 
     fb::game::object(object),
@@ -74,13 +71,11 @@ fb::game::life::life(const fb::game::object& object, listener* listener, uint32_
     _mp(mp),
     _condition(fb::game::condition::NONE),
     spells(*this)
-{
-}
+{ }
 
 
 fb::game::life::~life()
-{
-}
+{ }
 
 uint32_t fb::game::life::calculate_damage(uint32_t value, const fb::game::life& life) const
 {

@@ -93,15 +93,15 @@ public:
 
 #pragma region static const field
     
-    static const conditions             DEFAULT_CONDITION;
-    static const uint32_t               MAX_SLOT = 52;
+    static const conditions                 DEFAULT_CONDITION;
+    static const uint32_t                   MAX_SLOT = 52;
 
 #pragma endregion
 
 #pragma region protected field
 protected:
-    uint16_t                            _count;
-    session*                            _owner;
+    uint16_t                                _count;
+    session*                                _owner;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -114,39 +114,39 @@ public:
 #pragma region virtual method
 
 public:
-    virtual std::string                 tip_message() const;
+    virtual std::string                     tip_message() const;
 
 public:
-    virtual const std::string           name_styled() const;
-    virtual const std::string           name_trade() const;
-    virtual std::optional<uint16_t>     durability() const;
-    virtual void                        durability(std::optional<uint16_t> value);
+    virtual const std::string               name_styled() const;
+    virtual const std::string               name_trade() const;
+    virtual std::optional<uint16_t>         durability() const;
+    virtual void                            durability(std::optional<uint16_t> value);
 
 #pragma endregion
 
 #pragma region public method
 
 public:
-    uint16_t                            fill(uint16_t count);
-    uint16_t                            reduce(uint16_t count);
-    uint16_t                            free_space() const;
-    uint16_t                            count() const;
-    void                                count(uint16_t value);
-    virtual bool                        empty() const;
+    uint16_t                                fill(uint16_t count);
+    uint16_t                                reduce(uint16_t count);
+    uint16_t                                free_space() const;
+    uint16_t                                count() const;
+    void                                    count(uint16_t value);
+    virtual bool                            empty() const;
 
 public:
-    attrs                               attr() const;
-    bool                                attr(fb::game::item::attrs flag) const;
-    fb::game::session*                  owner() const;
-    void                                owner(fb::game::session* owner);
+    attrs                                   attr() const;
+    bool                                    attr(fb::game::item::attrs flag) const;
+    fb::game::session*                      owner() const;
+    void                                    owner(fb::game::session* owner);
 
 #pragma endregion
 
 #pragma region event method
 public:
-    virtual bool                        active();
-    virtual item*                       split(uint16_t count = 1);
-    virtual void                        merge(fb::game::item& item);
+    virtual bool                            active();
+    virtual item*                           split(uint16_t count = 1);
+    virtual void                            merge(fb::game::item& item);
 
 #pragma endregion
 };
@@ -170,10 +170,10 @@ public:
     friend class item;
 
 public:
-    const bool                          enabled;
+    const bool                              enabled;
 
 public:
-    explicit trade(bool enabled) : enabled(enabled) {}
+    explicit trade(bool enabled) : enabled(enabled) { }
 };
 
 struct item::storage
@@ -182,23 +182,23 @@ public:
     friend class item;
 
 public:
-    bool                                enabled;
-    uint32_t                            price;
+    bool                                    enabled;
+    uint32_t                                price;
 
 public:
-    explicit storage(bool enabled, uint32_t price) : enabled(enabled), price(price) {}
+    explicit storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
 };
 
 struct fb::game::item::conditions
 {
 public:
-    const uint8_t                       level;
-    const uint8_t                       strength;
-    const uint8_t                       dexteritry;
-    const uint8_t                       intelligence;
-    const uint8_t                       cls;
-    const uint8_t                       promotion;
-    const fb::game::sex                 sex;
+    const uint8_t                           level           = 0;
+    const uint8_t                           strength        = 0;
+    const uint8_t                           dexteritry      = 0;
+    const uint8_t                           intelligence    = 0;
+    const uint8_t                           cls             = 0;
+    const uint8_t                           promotion       = 0;
+    const fb::game::sex                     sex             = fb::game::sex::BOTH;
 
 public:
     conditions();
@@ -225,15 +225,15 @@ public:
 
 #pragma region public field
 public:
-    const uint32_t                      id;
-    const uint32_t                      price;
-    const fb::game::item::conditions    condition;
-    const penalties                     penalty;
-    const uint16_t                      capacity;
-    const fb::game::item::trade         trade;
-    const fb::game::item::storage       storage;
-    const std::string                   desc;
-    const std::string                   active_script;
+    const uint32_t                           id;
+    const uint32_t                           price;
+    const fb::game::item::conditions         condition;
+    const penalties                          penalty;
+    const uint16_t                           capacity;
+    const fb::game::item::trade              trade;
+    const fb::game::item::storage            storage;
+    const std::string                        desc;
+    const std::string                        active_script;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -255,14 +255,14 @@ public:
 
 #pragma region override method
 public:
-    fb::game::object::types             type() const override { return object::ITEM; }
+    fb::game::object::types                  type() const override { return object::ITEM; }
 #pragma endregion
 
 #pragma region virtual method
 public:
-    virtual fb::game::item::attrs       attr() const;
-    bool                                attr(fb::game::item::attrs flag) const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item::attrs            attr() const;
+    bool                                     attr(fb::game::item::attrs flag) const;
+    virtual fb::game::item*                  make(fb::game::item::listener* listener) const;
 #pragma endregion
 
 #pragma region template method
@@ -278,7 +278,7 @@ public:
 
 #pragma region built-in method
 public:
-    static int                          builtin_make(lua_State* lua);
+    static int                               builtin_make(lua_State* lua);
 #pragma endregion
 
 };

@@ -60,7 +60,7 @@ fb::game::bow::master::master(const std::string&                  name,
 { }
 
 fb::game::bow::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::bow::master::attr() const
 {
@@ -76,14 +76,11 @@ fb::game::item* fb::game::bow::master::make(fb::game::item::listener* listener) 
 
 fb::game::bow::bow(const master* master, listener* listener) : 
     equipment(master, listener)
-{
-}
+{ }
 
 fb::game::bow::bow(const bow& right) : 
     equipment(right)
-{
-}
+{ }
 
 fb::game::bow::~bow()
-{
-}
+{ }

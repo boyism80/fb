@@ -1,5 +1,5 @@
-#ifndef	__ENCODING_H__
-#define	__ENCODING_H__
+#ifndef    __ENCODING_H__
+#define    __ENCODING_H__
 
 #ifdef _WIN32
 #include <Windows.h>

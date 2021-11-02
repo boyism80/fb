@@ -11,46 +11,47 @@ enum sex       : uint8_t { MAN = 0x00, WOMAN = 0x01, BOTH = 0x02};
 enum action    : uint8_t { ATTACK = 0x01, ARROW = 0x03, EMOTION = 0x0B, PICKUP = 0x04, PICKUP_SILENT = 0x05, CAST_SPELL = 0x06, EAT = 0x08, };
 enum state     : uint8_t { NORMAL = 0x00, GHOST = 0x01, TRANSLUCENCY = 0x02, RIDING = 0x03, DISGUISE = 0x04, HALF_CLOACK = 0x05, CLOACK = 0x06, };
 
-typedef struct _point8
+struct point8_t
 {
 public:
-    uint8_t x, y;
+    uint8_t x = 0;
+    uint8_t y = 0;
 
 public:
-    _point8() : x(0), y(0) 
-    {}
-    _point8(uint8_t x, uint8_t y) : x(x), y(y)
-    {}
+    point8_t() = default;
+    point8_t(uint8_t x, uint8_t y) : x(x), y(y)
+    { }
 
-} point8_t;
+};
 
-typedef struct _size8
+struct size8_t
 {
 public:
-    uint8_t width, height;
+    uint8_t width  = 0;
+    uint8_t height = 0;
 
 public:
-    _size8() : width(0), height(0)
-    {}
-    _size8(uint8_t width, uint8_t height) : width(width), height(height)
-    {}
+    size8_t() = default;
+    size8_t(uint8_t width, uint8_t height) : width(width), height(height)
+    { }
 
 public:
     bool empty() { return this->width == 0 || this->height == 0; }
 
-} size8_t;
+};
 
-typedef struct _point16
+struct point16_t
 {
 public:
-    uint16_t x, y;
+    uint16_t x = 0;
+    uint16_t y = 0;
 
 public:
-    _point16() { x = y = 0; }
-    _point16(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
+    point16_t() = default;
+    point16_t(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
 
 public:
-    struct _point16& move(direction direction, uint16_t step = 1)
+    struct point16_t& move(direction direction, uint16_t step = 1)
     {
         switch(direction)
         {
@@ -74,12 +75,12 @@ public:
         return *this;
     }
 
-    struct _point16& forward(direction direction, uint16_t step = 1)
+    struct point16_t& forward(direction direction, uint16_t step = 1)
     {
         return this->move(direction, step);
     }
 
-    struct _point16& backward(direction direction, uint16_t step = 1)
+    struct point16_t& backward(direction direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
@@ -104,7 +105,7 @@ public:
         return this->move(newdir, step);
     }
 
-    struct _point16& left(direction direction, uint16_t step = 1)
+    struct point16_t& left(direction direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
@@ -129,7 +130,7 @@ public:
         return this->move(newdir, step);
     }
 
-    struct _point16& right(direction direction, uint16_t step = 1)
+    struct point16_t& right(direction direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
@@ -155,100 +156,98 @@ public:
     }
 
 public:
-    bool operator == (const struct _point16& right) const
+    bool operator == (const struct point16_t& right) const
     {
         return (this->x == right.x) && (this->y == right.y);
     }
 
-    bool operator != (const struct _point16& right) const
+    bool operator != (const struct point16_t& right) const
     {
         return !(this->operator==(right));
     }
-} point16_t;
+};
 
-typedef struct _size16
+struct size16_t
 {
 public:
-    uint16_t width, height;
+    uint16_t width  = 0;
+    uint16_t height = 0;
 
 public:
-    _size16() : width(0), height(0)
-    {}
-    _size16(uint16_t width, uint16_t height) : width(width), height(height)
-    {}
-    _size16(const struct _size16& right) : width(right.width), height(right.height)
-    {}
+    size16_t() = default;
+    size16_t(uint16_t width, uint16_t height) : width(width), height(height)
+    { }
+    size16_t(const struct size16_t& right) : width(right.width), height(right.height)
+    { }
 
 public:
     bool empty() { return this->width == 0 || this->height == 0; }
 
-} size16_t;
+};
 
-typedef struct _mutable_uint8_t
+struct mutable_uint16_t
 {
 public:
-    uint8_t master, current;
+    uint16_t master  = 0;
+    uint16_t current = 0;
 
 public:
-    _mutable_uint8_t(uint8_t value) { this->master = this->current = value; }
+    mutable_uint16_t() = default;
+    mutable_uint16_t(uint16_t value) : master(value), current(value) 
+    { }
+    mutable_uint16_t(uint16_t master, uint16_t current) : master(master), current(current)
+    { }
+};
 
-} mutable_uint8_t;
-
-typedef struct _mutable_uint16_t
+struct mutable_uint32_t
 {
 public:
-    uint16_t master, current;
+    uint32_t master  = 0;
+    uint32_t current = 0;
 
 public:
-    _mutable_uint16_t(uint16_t value) : master(value), current(value) 
-    {}
-    _mutable_uint16_t(uint16_t master, uint16_t current) : master(master), current(current)
-    {}
+    mutable_uint32_t() = default;
+    mutable_uint32_t(uint32_t value) : master(value), current(value)
+    { }
+    mutable_uint32_t(uint32_t master, uint32_t current) : master(master), current(current)
+    { }
+};
 
-} mutable_uint16_t;
-
-typedef struct _mutable_uint32_t
+struct range8_t
 {
 public:
-    uint32_t master, current;
+    uint8_t min = 0;
+    uint8_t max = 0;
 
 public:
-    _mutable_uint32_t(uint32_t value) : master(value), current(value)
-    {}
-    _mutable_uint32_t(uint32_t master, uint32_t current) : master(master), current(current)
-    {}
+    range8_t() = default;
+    range8_t(uint8_t min, uint8_t max) : min(min), max(max)
+    { }
+};
 
-} mutable_uint32_t;
-
-typedef struct _range8_t
+struct range16_t
 {
 public:
-    uint8_t min, max;
+    uint16_t min = 0;
+    uint16_t max = 0;
 
 public:
-    _range8_t(uint8_t min, uint8_t max) : min(min), max(max)
-    {}
-} range8_t;
+    range16_t() = default;
+    range16_t(uint16_t min, uint16_t max) : min(min), max(max)
+    { }
+};
 
-typedef struct _range16_t
+struct range32_t
 {
 public:
-    uint16_t min, max;
+    uint32_t min = 0;
+    uint32_t max = 0;
 
 public:
-    _range16_t(uint16_t min, uint16_t max) : min(min), max(max)
-    {}
-} range16_t;
-
-typedef struct _range32_t
-{
-public:
-    uint32_t min, max;
-
-public:
-    _range32_t(uint32_t min, uint32_t max) : min(min), max(max)
-    {}
-} range32_t;
+    range32_t() = default;
+    range32_t(uint32_t min, uint32_t max) : min(min), max(max)
+    { }
+};
 
 } }
 

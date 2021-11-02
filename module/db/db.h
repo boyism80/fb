@@ -22,8 +22,8 @@ private:
     static const uint32_t                           SIZE = 10;
 
 public:
-    typedef std::deque<daotk::mysql::connection*>   pool;
-    typedef std::vector<pool*>                      pools;
+    using pool  = std::deque<daotk::mysql::connection*>;
+    using pools = std::vector<pool*>;
 
 private:
     pools                                           _pools;

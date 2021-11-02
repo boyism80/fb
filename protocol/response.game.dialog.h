@@ -18,11 +18,11 @@ public:
 public:
     common(const fb::game::object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : 
         object(object), message(message), button_prev(button_prev), button_next(button_next), interaction(interaction)
-    {}
+    { }
 
     common(const fb::game::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : 
         common(*object.based(), message, button_prev, button_next, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -56,11 +56,11 @@ public:
 public:
     menu(const fb::game::npc::master& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : 
         npc(npc), menus(menus), message(message), interaction(interaction)
-    {}
+    { }
 
     menu(const fb::game::npc& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : 
         menu(*npc.based<fb::game::npc>(), menus, message, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -108,11 +108,11 @@ public:
 public:
     slot(const fb::game::npc::master& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : 
         npc(npc), slots(slots), message(message), interaction(interaction)
-    {}
+    { }
 
     slot(const fb::game::npc& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : 
         slot(*npc.based<fb::game::npc>(), slots, message, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -150,11 +150,11 @@ public:
 public:
     item(const fb::game::npc::master& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
-    {}
+    { }
 
     item(const fb::game::npc& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
         item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -201,11 +201,11 @@ public:
 public:
     input(const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : 
         npc(npc), message(message), interaction(interaction)
-    {}
+    { }
 
     input(const fb::game::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : 
         input(*npc.based<fb::game::npc>(), message, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -240,11 +240,11 @@ public:
 public:
     input_ext(const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : 
         npc(npc), message(message), top(top), bottom(bottom), maxlen(maxlen), button_prev(button_prev), interaction(interaction)
-    {}
+    { }
 
     input_ext(const fb::game::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : 
         input_ext(*npc.based<fb::game::npc>(), message, top, bottom, maxlen, button_prev, interaction)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

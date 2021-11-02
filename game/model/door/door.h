@@ -29,10 +29,10 @@ public:
 
 #pragma region private field
 private:
-    fb::game::map*              _owner;
     master&                     _master;
-    bool                        _opened;
-    bool                        _locked;
+    fb::game::map*              _owner  = nullptr;
+    bool                        _opened = false;
+    bool                        _locked = false;
 #pragma endregion
 
 #pragma region public field
@@ -98,8 +98,8 @@ struct door::element
     uint16_t                    open;
     uint16_t                    close;
 
-    element(uint16_t open, uint16_t close) : open(open), close(close) {}
-    ~element() {}
+    element(uint16_t open, uint16_t close) : open(open), close(close) { }
+    ~element() { }
 };
 
 class door::master : private std::vector<door::element>

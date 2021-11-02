@@ -35,11 +35,11 @@ public:
 public:
     destination() : 
         map(nullptr)
-    {}
+    { }
 
     destination(const point16_t& position, fb::game::map* map) : 
         position(position), map(map)
-    {}
+    { }
 #pragma endregion
 };
 
@@ -57,11 +57,11 @@ public:
 public:
     offset(const std::string& id, const std::string& name, const point16_t& position, const destination& dst) : 
         id(id), name(name), position(position), dst(dst)
-    {}
+    { }
 
     offset(const struct offset& right) : 
         offset(right.id, right.name, right.position, right.dst)
-    {}
+    { }
 #pragma endregion
 
 };
@@ -150,8 +150,8 @@ class objects : private std::map<uint32_t, fb::game::object*>
 
 #pragma region private field
 private:
-    fb::game::map*                  _owner;
-    uint16_t                        _sequence;
+    fb::game::map*                  _owner    = nullptr;
+    uint16_t                        _sequence = 1;
 #pragma endregion
 
 #pragma region using
@@ -238,27 +238,27 @@ public:
 
 #pragma region type definition
 public:
-    typedef std::unique_ptr<tile[]>             unique_tiles;
-    typedef std::vector<std::unique_ptr<warp>>  unique_warps;
+    using unique_tiles              = std::unique_ptr<tile[]>;
+    using unique_warps              = std::vector<std::unique_ptr<warp>>;
 #pragma endregion
 
 #pragma region private field
 private:
-    uint16_t                        _id;
-    uint16_t                        _parent;
+    uint16_t                        _id       = 0;
+    uint16_t                        _parent   = 0;
     size16_t                        _size;
-    unique_tiles                    _tiles;
+    unique_tiles                    _tiles    = nullptr;
     std::string                     _name;
-    options                         _option;
-    effects                         _effect;
-    uint8_t                         _bgm;
+    options                         _option   = options::NO_OPTION;
+    effects                         _effect   = effects::NO_EFFECT;
+    uint8_t                         _bgm      = 0;
     unique_warps                    _warps;
-    fb::game::sectors*              _sectors;
+    fb::game::sectors*              _sectors  = nullptr;
 #pragma endregion
 
 #pragma region public field
 public:
-    fb::game::objects               objects;
+    fb::game::objects               objects = fb::game::objects(this);
     fb::game::doors                 doors;
     const uint32_t                  group;
 #pragma endregion
@@ -346,14 +346,14 @@ public:
 
 public:
     warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t condition) : 
-        map(map), before(before), after(after), condition(condition), offset(nullptr) {}
+        map(map), before(before), after(after), condition(condition), offset(nullptr) { }
     warp(const fb::game::wm::offset* offset, const point16_t& before) : 
         map(nullptr), before(before), after(0, 0), condition(0, 0), offset(offset)
-    {}
+    { }
     warp(const warp& right) : 
         map(right.map), before(right.before), after(right.after), condition(right.condition), offset(right.offset)
-    {}
-    ~warp() {}
+    { }
+    ~warp() { }
 };
 #pragma endregion
 

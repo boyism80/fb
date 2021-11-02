@@ -4,12 +4,10 @@
 
 fb::game::itemmix::builder::builder(session& owner) : 
     _owner(owner)
-{
-}
+{ }
 
 fb::game::itemmix::builder::~builder()
-{
-}
+{ }
 
 fb::game::itemmix::builder& fb::game::itemmix::builder::push(uint8_t index)
 {

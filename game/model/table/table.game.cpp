@@ -14,10 +14,10 @@ fb::game::container::mix     fb::game::table::mixes;
 fb::game::container::door    fb::game::table::doors;
 
 fb::game::table::table()
-{}
+{ }
 
 fb::game::table::~table()
-{}
+{ }
 
 fb::game::map* fb::game::container::map::name2map(const std::string& name)
 {
@@ -204,7 +204,7 @@ bool fb::game::container::map::load_data(uint16_t id, std::vector<char>& buffer)
     if(map_file.is_open() == false)
         return false;
 
-    buffer = std::vector<char>(std::istreambuf_iterator<char>(map_file), {});
+    buffer = std::vector<char>(std::istreambuf_iterator<char>(map_file), { });
     map_file.close();
 
     return true;
@@ -229,7 +229,7 @@ bool fb::game::container::map::load_blocks(uint16_t id, Json::Value& buffer)
 }
 
 fb::game::container::item::item()
-{}
+{ }
 
 fb::game::container::item::~item()
 {
@@ -377,7 +377,7 @@ fb::game::item::penalties fb::game::container::item::to_penalty(const std::strin
 }
 
 fb::game::container::map::map()
-{}
+{ }
 
 fb::game::container::map::~map()
 {
@@ -530,7 +530,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
 }
 
 fb::game::container::npc::npc()
-{}
+{ }
 
 fb::game::container::npc::~npc()
 {
@@ -632,7 +632,7 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
 }
 
 fb::game::container::mob::mob()
-{}
+{ }
 
 fb::game::container::mob::~mob()
 {
@@ -825,7 +825,7 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob
 }
 
 fb::game::container::spell::spell()
-{}
+{ }
 
 fb::game::container::spell::~spell()
 {
@@ -896,8 +896,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
 }
 
 fb::game::container::cls::cls()
-{
-}
+{ }
 
 fb::game::container::cls::~cls()
 {
@@ -952,8 +951,7 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
 }
 
 fb::game::container::mix::mix()
-{
-}
+{ }
 
 fb::game::container::mix::~mix()
 {
@@ -1022,7 +1020,7 @@ fb::game::itemmix* fb::game::container::mix::find(const std::vector<fb::game::it
 }
 
 fb::game::container::door::door()
-{}
+{ }
 
 fb::game::container::door::~door()
 {
@@ -1062,8 +1060,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
 }
 
 fb::game::container::worlds::worlds()
-{
-}
+{ }
 
 fb::game::container::worlds::~worlds()
 {

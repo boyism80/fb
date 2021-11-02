@@ -3,17 +3,11 @@
 #include "model/table/table.game.h"
 
 fb::game::trade::trade(session& owner) : 
-    _owner(owner),
-    _selected(nullptr),
-    _money(0),
-    _locked(false),
-    _you(nullptr)
-{
-}
+    _owner(owner)
+{ }
 
 fb::game::trade::~trade()
-{
-}
+{ }
 
 uint8_t fb::game::trade::find(fb::game::item& item) const
 {

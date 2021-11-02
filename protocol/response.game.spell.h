@@ -15,10 +15,10 @@ public:
 public:
     buff(const std::string& name, uint32_t time) : 
         name(name), time(time)
-    {}
+    { }
     buff(const fb::game::buff& buff) : 
         name(buff.spell().name()), time(buff.time())
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -37,7 +37,7 @@ public:
 public:
     unbuff(const fb::game::buff& buff) : 
         buff(buff)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -57,7 +57,7 @@ public:
 public:
     update(const fb::game::life& me, uint8_t index) : 
         me(me), index(index)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -85,7 +85,7 @@ public:
 public:
     remove(const fb::game::life& me, uint8_t index) : 
         me(me), index(index)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

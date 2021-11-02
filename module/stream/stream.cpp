@@ -1,23 +1,21 @@
 #include "stream.h"
 
-fb::buffer::buffer(size_t size) : _offset(0)
+fb::buffer::buffer(size_t size)
 {
     this->reserve(size);
 }
 
-fb::buffer::buffer(const uint8_t* data, size_t size) : _offset(0)
+fb::buffer::buffer(const uint8_t* data, size_t size)
 {
     std::vector<uint8_t>::reserve(size);
     std::vector<uint8_t>::assign(data, data + size);
 }
 
 fb::buffer::buffer(const buffer & right) : fb::buffer((uint8_t*)right.data(), right.size())
-{
-}
+{ }
 
 fb::buffer::~buffer()
-{
-}
+{ }
 
 uint32_t fb::buffer::offset() const
 {
@@ -55,16 +53,13 @@ uint32_t fb::buffer::crc() const
 }
 
 fb::istream::istream(size_t size) : buffer(size)
-{
-}
+{ }
 
 fb::istream::istream(const uint8_t* data, size_t size) : buffer(data, size)
-{
-}
+{ }
 
 fb::istream::~istream()
-{
-}
+{ }
 
 int8_t fb::istream::read_8()
 {
@@ -195,8 +190,7 @@ void fb::istream::flush()
 }
 
 fb::ostream::ostream(size_t size) : buffer(size)
-{
-}
+{ }
 
 fb::ostream::ostream(const uint8_t* data, size_t size) : buffer(size)
 {
@@ -204,8 +198,7 @@ fb::ostream::ostream(const uint8_t* data, size_t size) : buffer(size)
 }
 
 fb::ostream::~ostream()
-{
-}
+{ }
 
 fb::ostream& fb::ostream::write_8(int8_t value)
 {

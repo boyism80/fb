@@ -54,7 +54,7 @@ public:
 public:
     update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) : 
         map(map), position(position), size(size), crc(crc)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -105,7 +105,7 @@ public:
 public:
     bgm(const fb::game::map& map, uint16_t volume = 100) : 
         map(map), volume(volume)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -132,7 +132,7 @@ public:
 public:
     config(const fb::game::map& map) : 
         map(map)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -155,7 +155,7 @@ public:
 public:
     worlds(const fb::game::wm::offset& offset) : 
         offset(&offset)
-    {}
+    { }
     worlds(const std::string& id)
     {
         try

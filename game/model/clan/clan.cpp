@@ -2,17 +2,14 @@
 
 fb::game::clan::clan(const std::string& name, fb::game::session& owner, const session::container& members) : 
     _name(name), _owner(owner), _members(members)
-{
-}
+{ }
 
 fb::game::clan::clan(const std::string& name, const std::string& title, fb::game::session& owner, const session::container& members) : 
     _name(name), _title(title), _owner(owner), _members(members)
-{
-}
+{ }
 
 fb::game::clan::~clan()
-{
-}
+{ }
 
 const fb::game::session& fb::game::clan::owner() const
 {

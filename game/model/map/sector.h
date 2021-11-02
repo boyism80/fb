@@ -28,7 +28,7 @@ public:
 private:
     const uint32_t                  _id;
     std::function<void(sector&)>    _state_changed;
-    bool                            _activated;
+    bool                            _activated = false;
 
 public:
     sector(uint32_t id, const std::function<void(sector&)>& state_changed);
@@ -44,7 +44,7 @@ public:
 class sectors
 {
 public:
-    typedef std::vector<std::unique_ptr<sector>>    unique_sectors;
+    using unique_sectors = std::vector<std::unique_ptr<sector>>;
 
 private:
     const size16_t                  _map_size;

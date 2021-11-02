@@ -4,12 +4,8 @@
 
 fb::game::items::items(session& owner) :
     base_container(owner, item::MAX_SLOT),
-    _owner(static_cast<fb::game::session&>(owner)),
-    _weapon(nullptr), _armor(nullptr), _helmet(nullptr), _shield(nullptr)
-{
-    memset(this->_rings, 0, sizeof(this->_rings));
-    memset(this->_auxiliaries, 0, sizeof(this->_auxiliaries));
-}
+    _owner(static_cast<fb::game::session&>(owner))
+{ }
 
 fb::game::items::~items()
 {

@@ -19,7 +19,7 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
  public:
      action(const fb::game::life& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
          me(me), value(value), duration(duration), sound(sound)
-     {}
+     { }
 
  public:
      void serialize(fb::ostream& out_stream) const
@@ -44,7 +44,7 @@ public:
     show_hp(const fb::game::life& me, uint32_t damage, bool critical) : 
         me(me), damage(damage), critical(critical),
         percentage(this->me.hp() / float(this->me.base_hp()) * 100)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -66,9 +66,9 @@ public:
 public:
     die(const fb::game::life& life) : 
         die(life.sequence())
-    {}
+    { }
     die(uint32_t id) : id(id)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

@@ -11,8 +11,7 @@ fb::gateway::entry::entry(const std::string & name, const std::string & desc, co
 
 fb::gateway::entry::entry(const entry & right) : 
     entry(right._name, right._desc, right._ip, right._port)
-{
-}
+{ }
 
 fb::gateway::entry::~entry()
 { }

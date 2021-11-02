@@ -16,7 +16,7 @@
 #define DECLARE_EXCEPTION(name, msg)    class name : public std::runtime_error\
                                         {\
                                         public:\
-                                            name() : std::runtime_error(msg) {}\
+                                            name() : std::runtime_error(msg) { }\
                                         };
 #pragma endregion
 
@@ -145,9 +145,9 @@ public:
     const std::string       content;
 
 public:
-    legend() : look(0), color(0) {}
-    legend(uint8_t look, uint8_t color, const std::string& content) : look(look), color(color), content(content) {}
-    legend(const legend& right) : legend(right.look, right.color, right.content) {}
+    legend() : look(0), color(0) { }
+    legend(uint8_t look, uint8_t color, const std::string& content) : look(look), color(color), content(content) { }
+    legend(const legend& right) : legend(right.look, right.color, right.content) { }
 };
 
 class legend_container : private std::vector<legend>
@@ -172,8 +172,8 @@ public:
     int16_t physical, magical;
 
 public:
-    defensive() : defensive(100, 0) {}
-    defensive(int16_t physical, int16_t magical) : physical(physical), magical(magical) {}
+    defensive() : defensive(100, 0) { }
+    defensive(int16_t physical, int16_t magical) : physical(physical), magical(magical) { }
 };
 
 struct level_ability

@@ -2,10 +2,8 @@
 #include "model/acceptor/acceptor.game.h"
 
 fb::game::objects::objects(fb::game::map* owner) : 
-    _sequence(1),
     _owner(owner)
-{
-}
+{ }
 
 fb::game::objects::~objects()
 {
@@ -122,9 +120,6 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    _tiles(nullptr),
-    _sectors(nullptr),
-    objects(this),
     group(group)
 {
     auto& config = fb::config::get();
@@ -369,7 +364,7 @@ bool fb::game::map::activated() const
 std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
 {
     if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*> {};
+        return std::vector<fb::game::object*> { };
     else
         return this->_sectors->objects(pivot, type);
 }
@@ -395,7 +390,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
         );
     }
     catch(std::exception&)
-    {}
+    { }
 
     return std::move(objects);
 }
@@ -403,7 +398,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
 std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types type)
 {
     if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*> {};
+        return std::vector<fb::game::object*> { };
     else
         return this->_sectors->activated_objects(type);
 }
@@ -615,8 +610,7 @@ bool fb::game::wm::group::contains(const offset& offset) const
 
 fb::game::wm::world::world(const std::string& name) : 
     name(name)
-{
-}
+{ }
 
 void fb::game::wm::world::push(group* group)
 {

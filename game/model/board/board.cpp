@@ -9,10 +9,10 @@ fb::game::board::article::article(uint16_t id, const std::string& title, const s
     _month(month), _day(day),
     _color(color),
     _deleted(deleted)
-{}
+{ }
 
 fb::game::board::article::~article()
-{}
+{ }
 
 uint16_t fb::game::board::article::id() const
 {
@@ -65,11 +65,10 @@ void fb::game::board::article::deleted(bool value)
 //
 fb::game::board::section::section(const std::string & title) : 
     _title(title)
-{
-}
+{ }
 
 fb::game::board::section::~section()
-{}
+{ }
 
 const std::string& fb::game::board::section::title() const
 {
@@ -141,11 +140,10 @@ const fb::game::board::article* fb::game::board::section::find(uint16_t id) cons
 // board methods
 //
 fb::game::board::board()
-{
-}
+{ }
 
 fb::game::board::~board()
-{}
+{ }
 
 const std::vector<std::unique_ptr<fb::game::board::section>>& fb::game::board::sections() const
 {

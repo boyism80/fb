@@ -36,16 +36,13 @@ void fb::game::lua::luable::to_lua(lua_State* lua) const
 }
 
 fb::game::lua::luable::luable()
-{
-}
+{ }
 
 fb::game::lua::luable::luable(uint32_t id)
-{
-}
+{ }
 
 fb::game::lua::luable::~luable()
-{
-}
+{ }
 
 int fb::game::lua::luable::builtin_gc(lua_State* lua)
 {
@@ -70,7 +67,7 @@ lua::lua(lua_State* lua) : _lua(lua)
     lua_pushinteger(*this, fb::game::object::types::MOB);
     lua_setglobal(*this, "MOB");
     lua_pushinteger(*this, fb::game::object::types::SESSION);
-    lua_setglobal(*this, "SESSION");
+    lua_setglobal(*this, "session");
     lua_pushinteger(*this, fb::game::object::types::LIFE);
     lua_setglobal(*this, "LIFE");
     lua_pushinteger(*this, fb::game::object::types::OBJECT);

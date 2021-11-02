@@ -17,12 +17,12 @@ private:
     fb::game::session&                  _owner;
 
 private:
-    fb::game::weapon*                   _weapon;
-    fb::game::armor*                    _armor;
-    fb::game::helmet*                   _helmet;
-    fb::game::shield*                   _shield;
-    fb::game::ring*                     _rings[2];
-    fb::game::auxiliary*                _auxiliaries[2];
+    fb::game::weapon*                   _weapon          = nullptr;
+    fb::game::armor*                    _armor           = nullptr;
+    fb::game::helmet*                   _helmet          = nullptr;
+    fb::game::shield*                   _shield          = nullptr;
+    fb::game::ring*                     _rings[2]        = { nullptr, nullptr };
+    fb::game::auxiliary*                _auxiliaries[2]  = { nullptr, nullptr };
 #pragma endregion
 
 #pragma region constructor / destructor

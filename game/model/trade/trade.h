@@ -21,11 +21,11 @@ public:
 
 private:
     session&                                _owner;
-    session*                                _you;
+    session*                                _you      = nullptr;
     std::vector<fb::game::item*>            _items;
-    fb::game::item*                         _selected;
-    uint32_t                                _money;
-    bool                                    _locked;
+    fb::game::item*                         _selected = nullptr;
+    uint32_t                                _money    = 0;
+    bool                                    _locked   = false;
 
 public:
     trade(session& owner);

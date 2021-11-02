@@ -9,10 +9,10 @@ const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(0xFFFFFFFF, "금덩어�
 
 fb::game::cash::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
     fb::game::item::master(name, look, color, id, 0, fb::game::item::conditions(), fb::game::item::penalties::NONE, 0, fb::game::item::trade(false), fb::game::item::storage(false, 0), "", "")
-{}
+{ }
 
 fb::game::cash::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::cash::master::attr() const
 {
@@ -36,8 +36,7 @@ fb::game::cash::cash(uint32_t chunk, listener* listener) :
 }
 
 fb::game::cash::~cash()
-{
-}
+{ }
 
 const std::string fb::game::cash::name_styled() const
 {

@@ -27,7 +27,7 @@ fb::game::consume::master::master(const std::string& name,
 { }
 
 fb::game::consume::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::consume::master::attr() const
 {
@@ -47,14 +47,14 @@ fb::game::item* fb::game::consume::master::make(fb::game::item::listener* listen
 
 fb::game::consume::consume(const fb::game::consume::master* master, listener* listener, uint16_t count) : 
     fb::game::item(master, listener, count)
-{}
+{ }
 
 fb::game::consume::consume(const consume& right) : 
     fb::game::item(right)
-{}
+{ }
 
 fb::game::consume::~consume()
-{}
+{ }
 
 bool fb::game::consume::active()
 {

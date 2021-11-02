@@ -20,9 +20,6 @@ bool SetConsoleIcon(int id)
 #endif
 
 fb::console::console()
-#ifdef _WIN32
-    : _x(0), _y(0)
-#endif
 {
 #ifdef _WIN32
     this->_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -247,8 +244,7 @@ void fb::console::cursor(uint16_t* x, uint16_t* y) const
 
 fb::console& fb::console::get()
 {
-    if(_ist.get() == nullptr)
-        _ist.reset(new console());
-
+    static std::once_flag flag;
+    std::call_once(flag, [] () { _ist.reset(new console()); });
     return *_ist;
 }

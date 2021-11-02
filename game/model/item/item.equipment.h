@@ -99,7 +99,7 @@ private:
     float                               _price;
 
 public:
-    explicit repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) {}
+    explicit repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) { }
 
 public:
     bool                                enabled() const { return this->_enabled; }
@@ -119,7 +119,7 @@ private:
     uint32_t                            _price;
 
 public:
-    explicit rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) {}
+    explicit rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) { }
 
 public:
     bool                                enabled() const { return this->_enabled; }

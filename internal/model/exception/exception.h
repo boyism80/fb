@@ -13,7 +13,7 @@ public:
 
 public:
     transfer_error(fb::protocol::internal::response::transfer_code code) : code(code)
-    {}
+    { }
 };
 
 } }

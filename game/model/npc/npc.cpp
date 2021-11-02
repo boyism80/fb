@@ -7,10 +7,10 @@ using namespace fb::game;
 fb::game::npc::master::master(const std::string& name, uint16_t look, uint8_t color, const std::string& script) : 
     fb::game::object::master(name, look, color),
     script(script)
-{}
+{ }
 
 fb::game::npc::master::~master()
-{}
+{ }
 
 fb::game::object* fb::game::npc::master::make(listener* listener) const
 {
@@ -37,17 +37,14 @@ int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
 
 fb::game::npc::npc(const fb::game::npc::master* master, listener* listener) : 
     fb::game::object(master, listener)
-{
-}
+{ }
 
 fb::game::npc::npc(const npc& right) :
     object(right)
-{
-}
+{ }
 
 fb::game::npc::~npc()
-{
-}
+{ }
 
 fb::game::npc* fb::game::npc::make()
 {

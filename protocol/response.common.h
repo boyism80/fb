@@ -15,7 +15,7 @@ public:
 public:
     transfer(uint32_t ip, uint16_t port, const fb::buffer& parameter) : 
         ip(ip), port(port), parameter(parameter)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

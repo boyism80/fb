@@ -10,27 +10,8 @@ using namespace fb::game;
 
 session::session(fb::socket<fb::game::session>& socket, listener* listener) : 
     life((life::master*)nullptr, listener, (uint32_t)socket.native_handle(), 0, 0, 0),
-    _id(0xFFFFFFFF),
-    _socket(socket),
-    _transferring(false),
-    _look(0), _color(0), _armor_color(0),
-    _disguise(0),
-    _defensive(0, 0), _base_hp(0), _base_mp(0), _experience(0),
-    _nation(nation::GOGURYEO),
-    _creature(creature::DRAGON),
-    _state(state::NORMAL),
-    _level(1),
-    _class(0),
-    _promotion(0),
-    _money(0),
-    _group(nullptr),
-    _clan(nullptr),
-    trade(*this),
-    items(*this),
-    dialog(*this)
-{
-    memset(this->_options, 0, sizeof(this->_options));
-}
+    _socket(socket)
+{ }
 
 session::~session()
 {
@@ -1572,8 +1553,7 @@ int fb::game::session::builtin_admin(lua_State* lua)
 }
 
 fb::game::session::container::container()
-{
-}
+{ }
 
 fb::game::session::container::container(const std::vector<fb::game::session*>& right)
 {
@@ -1581,8 +1561,7 @@ fb::game::session::container::container(const std::vector<fb::game::session*>& r
 }
 
 fb::game::session::container::~container()
-{
-}
+{ }
 
 session::container& fb::game::session::container::push(fb::game::session& session)
 {
@@ -1622,11 +1601,10 @@ fb::game::session* fb::game::session::container::operator[](const std::string& n
 fb::game::lua::dialog::dialog(fb::game::session& owner) : 
     _owner(owner),
     _thread(nullptr)
-{
-}
+{ }
 
 fb::game::lua::dialog::~dialog()
-{}
+{ }
 
 fb::game::lua::dialog& fb::game::lua::dialog::pushstring(const std::string& value)
 {

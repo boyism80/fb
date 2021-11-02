@@ -2,7 +2,7 @@
 
 fb::config::config(const char* env)
 {
-    std::ifstream       ifstream;
+    std::ifstream           ifstream;
     try
     {
         std::stringstream   sstream;
@@ -40,9 +40,9 @@ fb::config::config(const char* env)
 
 const Json::Value& fb::config::get(const char* env)
 {
+    static std::once_flag flag;
     static std::unique_ptr<fb::config> _ist;
-    if(_ist == nullptr)
-        _ist = std::unique_ptr<fb::config>(new fb::config(env));
 
+    std::call_once(flag, [env] () { _ist = std::unique_ptr<fb::config>(new fb::config(env)); });
     return _ist->_json;
 }

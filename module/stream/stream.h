@@ -20,7 +20,7 @@ public:
     enum endian { LITTLE = 0, BIG = 1};
 
 protected:
-    uint32_t                _offset;
+    uint32_t                _offset = 0;
 
 public:
     buffer(size_t size = 1024);
@@ -67,7 +67,7 @@ public:
 class ostream : public buffer
 {
 public:
-    typedef std::vector<uint8_t>::iterator iterator;
+    using iterator = std::vector<uint8_t>::iterator;
 
 public:
     ostream(size_t size = 1024);

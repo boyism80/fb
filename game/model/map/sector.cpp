@@ -5,13 +5,11 @@
 
 fb::game::sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) : 
     _id(id),
-    _state_changed(state_changed),
-    _activated(false)
-{
-}
+    _state_changed(state_changed)
+{ }
 
 fb::game::sector::~sector()
-{}
+{ }
 
 void fb::game::sector::push(fb::game::object& object)
 {

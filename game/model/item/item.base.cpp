@@ -3,14 +3,7 @@
 
 const fb::game::item::conditions fb::game::item::DEFAULT_CONDITION;
 
-fb::game::item::conditions::conditions() : 
-    level(0),
-    strength(0),
-    dexteritry(0),
-    intelligence(0),
-    cls(0),
-    promotion(0),
-    sex(fb::game::sex::BOTH)
+fb::game::item::conditions::conditions()
 { }
 
 fb::game::item::conditions::conditions(uint8_t level,
@@ -64,7 +57,7 @@ fb::game::item::conditions::conditions(const conditions& right) :
 { }
 
 fb::game::item::master::~master()
-{}
+{ }
 
 int fb::game::item::master::builtin_make(lua_State* lua)
 {
@@ -131,7 +124,7 @@ fb::game::item::item(const fb::game::item::master* master, fb::game::item::liste
     fb::game::object(master, listener),
     _owner(nullptr),
     _count(count)
-{}
+{ }
 
 fb::game::item::item(const fb::game::item& right) : 
     fb::game::object(right._master, right.get_listener<fb::game::object>()),
@@ -164,7 +157,7 @@ std::optional<uint16_t> fb::game::item::durability() const
 }
 
 void fb::game::item::durability(std::optional<uint16_t> value)
-{}
+{ }
 
 
 

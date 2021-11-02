@@ -60,7 +60,7 @@ fb::game::helmet::master::master(const std::string&                  name,
 { }
 
 fb::game::helmet::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::helmet::master::attr() const
 {
@@ -76,14 +76,11 @@ fb::game::item* fb::game::helmet::master::make(fb::game::item::listener* listene
 
 fb::game::helmet::helmet(const master* master, listener* listener) : 
     equipment(master, listener)
-{
-}
+{ }
 
 fb::game::helmet::helmet(const helmet& right) : 
     equipment(right)
-{
-}
+{ }
 
 fb::game::helmet::~helmet()
-{
-}
+{ }

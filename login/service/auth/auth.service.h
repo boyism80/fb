@@ -33,7 +33,7 @@ private:
     uint8_t                 _exc_type;
 
 public:
-    login_exception(uint8_t type, const std::string& what) : std::runtime_error(what), _exc_type(type) {}
+    login_exception(uint8_t type, const std::string& what) : std::runtime_error(what), _exc_type(type) { }
 
 public:
     uint8_t                 type() const { return this->_exc_type; }
@@ -42,25 +42,25 @@ public:
 class id_exception : public login_exception
 {
 public:
-    id_exception(const std::string& what) : login_exception(0x0E, what) {}
+    id_exception(const std::string& what) : login_exception(0x0E, what) { }
 };
 
 class pw_exception : public login_exception
 {
 public:
-    pw_exception(const std::string& what) : login_exception(0x0F, what) {}
+    pw_exception(const std::string& what) : login_exception(0x0F, what) { }
 };
 
 class newpw_exception : public login_exception
 {
 public:
-    newpw_exception(const std::string& what) : login_exception(0x05, what) {}
+    newpw_exception(const std::string& what) : login_exception(0x05, what) { }
 };
 
 class btd_exception : public login_exception
 {
 public:
-    btd_exception() : login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY) {}
+    btd_exception() : login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY) { }
 };
 
 #pragma endregion

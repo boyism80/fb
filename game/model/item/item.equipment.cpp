@@ -61,7 +61,7 @@ fb::game::equipment::master::master(const std::string&                  name,
 { }
 
 fb::game::equipment::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::equipment::master::attr() const
 {
@@ -81,10 +81,10 @@ fb::game::equipment::equipment(const equipment::master* master, listener* listen
 
 fb::game::equipment::equipment(const equipment& right) :
     item(right)
-{}
+{ }
 
 fb::game::equipment::~equipment()
-{}
+{ }
 
 
 const std::string fb::game::equipment::name_trade() const

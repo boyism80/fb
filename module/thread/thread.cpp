@@ -6,10 +6,10 @@ fb::timer::timer(fb::thread_callback fn, std::chrono::steady_clock::duration dur
     fn(fn),
     duration(duration),
     begin(std::chrono::steady_clock::now())
-{}
+{ }
 
 fb::timer::~timer()
-{}
+{ }
 
 
 
@@ -61,8 +61,7 @@ void fb::queue::flush(uint8_t index)
 
 
 fb::thread::thread(uint8_t index) : 
-    _index(index),
-    _exit(false)
+    _index(index)
 { 
     this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
 }

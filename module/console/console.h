@@ -14,6 +14,7 @@ bool SetConsoleIcon(int id);
 #include <cstring>
 #include <optional>
 #include <memory>
+#include <mutex>
 #include "module/encoding/encoding.h"
 
 namespace fb {
@@ -26,9 +27,11 @@ private:
 private:
 #ifdef _WIN32
     HANDLE                  _stdout;
-    int                     _x, _y;
+    int                     _x       = 0;
+    int                     _y       = 0;
 #endif
-    uint16_t                _width, _height;
+    uint16_t                _width   = 0;
+    uint16_t                _height  = 0;
 
 private:
     console();

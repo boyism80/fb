@@ -15,7 +15,7 @@ public:
 public:
     tip(uint16_t position, const std::string& message) : 
         position(position), message(message)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -36,7 +36,7 @@ public:
 public:
     update(const fb::game::session& me, uint8_t index) : 
         me(me), index(index)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -65,7 +65,7 @@ public:
 public:
     update_slot(const fb::game::session& me, fb::game::equipment::slot slot) : 
         me(me), slot(slot)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -129,7 +129,7 @@ public:
 public:
     remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count = 0) : 
         types(types), index(index), count(count)
-    {}
+    { }
 public:
     void serialize(fb::ostream& out_stream) const
     {
@@ -149,7 +149,7 @@ public:
 public:
     unequip(equipment::slot slot) : 
         slot(slot)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

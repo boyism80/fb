@@ -68,7 +68,7 @@ fb::game::weapon::master::master(const std::string&                  name,
 
 
 fb::game::weapon::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::weapon::master::attr() const
 {
@@ -104,14 +104,14 @@ fb::game::weapon::types fb::game::weapon::master::weapon_type() const
 
 fb::game::weapon::weapon(const master* master, listener* listener) : 
     equipment(master, listener)
-{}
+{ }
 
 fb::game::weapon::weapon(const weapon& right) : 
     equipment(right)
-{}
+{ }
 
 fb::game::weapon::~weapon()
-{}
+{ }
 
 std::string fb::game::weapon::mid_message() const
 {

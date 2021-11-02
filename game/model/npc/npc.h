@@ -81,7 +81,7 @@ public:
 
 
 interface npc::master::listener : public virtual fb::game::object::listener
-{};
+{ };
 
 } }
 

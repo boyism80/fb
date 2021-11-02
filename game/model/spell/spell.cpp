@@ -9,12 +9,10 @@ fb::game::spell::spell(uint16_t id, types type, const std::string& name, const s
     _uncast(uncast),
     _concast(concast),
     _message(message)
-{
-}
+{ }
 
 fb::game::spell::~spell()
-{
-}
+{ }
 
 uint16_t fb::game::spell::id() const
 {
@@ -95,12 +93,10 @@ int fb::game::spell::builtin_message(lua_State* lua)
 
 fb::game::spells::spells(life& owner) : 
     base_container(owner, spell::MAX_SLOT, false)
-{
-}
+{ }
 
 fb::game::spells::~spells()
-{
-}
+{ }
 
 uint8_t fb::game::spells::add(spell& element)
 {
@@ -177,12 +173,10 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dst)
 fb::game::buff::buff(const fb::game::spell* spell, uint32_t time) : 
     _spell(spell),
     _time(time)
-{
-}
+{ }
 
 fb::game::buff::~buff()
-{
-}
+{ }
 
 const fb::game::spell& fb::game::buff::spell() const
 {
@@ -221,8 +215,7 @@ fb::game::buff::operator const fb::game::spell* () const
 
 fb::game::buffs::buffs(fb::game::object& owner) : 
     _owner(owner)
-{
-}
+{ }
 
 fb::game::buffs::~buffs()
 {

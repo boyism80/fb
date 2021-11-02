@@ -51,9 +51,9 @@ public:
 
 #pragma region type definition
 public:
-    typedef std::function<bool(fb::game::session&, Json::Value&)> command_fn;
-    typedef std::map<std::string, command> command_dict;
-    typedef std::unordered_set<const fb::game::object*> hash_set;
+    using command_fn        = std::function<bool(fb::game::session&, Json::Value&)>;
+    using command_dict      = std::map<std::string, command>;
+    using hash_set          = std::unordered_set<const fb::game::object*>;
 #pragma endregion
 
 #pragma region private field
@@ -61,7 +61,7 @@ private:
     command_dict            _command_dict;
     std::mutex              _hash_mutex;
     hash_set                _hash_set;
-    tm*                     _time;
+    tm*                     _time = fb::now();
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -197,87 +197,87 @@ public:
 #pragma region listener method
 public:
     // listener : object
-    void                    on_create(fb::game::object& me) override;
-    void                    on_destroy(fb::game::object& me) override;
-    void                    on_direction(fb::game::object& me) override;
-    void                    on_show(fb::game::object& me, bool light) override;
-    void                    on_show(fb::game::object& me, fb::game::object& you, bool light) override;
-    void                    on_hide(fb::game::object& me) override;
-    void                    on_hide(fb::game::object& me, fb::game::object& you) override;
-    void                    on_move(fb::game::object& me) override;
-    void                    on_unbuff(fb::game::object& me, fb::game::buff& buff) override;
-    void                    on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) override;
+    void                    on_create(fb::game::object& me) final;
+    void                    on_destroy(fb::game::object& me) final;
+    void                    on_direction(fb::game::object& me) final;
+    void                    on_show(fb::game::object& me, bool light) final;
+    void                    on_show(fb::game::object& me, fb::game::object& you, bool light) final;
+    void                    on_hide(fb::game::object& me) final;
+    void                    on_hide(fb::game::object& me, fb::game::object& you) final;
+    void                    on_move(fb::game::object& me) final;
+    void                    on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
+    void                    on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) final;
 
     // listener : life
-    void                    on_attack(life& me, object* you) override;
-    void                    on_hit(life& me, life& you, uint32_t damage, bool critical) override;
-    void                    on_kill(life& me, life& you) override;
-    void                    on_damaged(life& me, object* you, uint32_t damage, bool critical) override;
-    void                    on_die(life& me, object* you) override;
+    void                    on_attack(life& me, object* you) final;
+    void                    on_hit(life& me, life& you, uint32_t damage, bool critical) final;
+    void                    on_kill(life& me, life& you) final;
+    void                    on_damaged(life& me, object* you, uint32_t damage, bool critical) final;
+    void                    on_die(life& me, object* you) final;
 
-    void                    on_heal_hp(life& me, uint32_t value, fb::game::object* from) override;
-    void                    on_heal_mp(life& me, uint32_t value, fb::game::object* from) override;
-    void                    on_hp(life& me, uint32_t before, uint32_t current) override;
-    void                    on_mp(life& me, uint32_t before, uint32_t current) override;
+    void                    on_heal_hp(life& me, uint32_t value, fb::game::object* from) final;
+    void                    on_heal_mp(life& me, uint32_t value, fb::game::object* from) final;
+    void                    on_hp(life& me, uint32_t before, uint32_t current) final;
+    void                    on_mp(life& me, uint32_t before, uint32_t current) final;
 
     // listener : session
-    void                    on_attack(session& me, object* you) override;
-    void                    on_hit(session& me, life& you, uint32_t damage, bool critical) override;
-    void                    on_kill(session& me, life& you) override;
-    void                    on_damaged(session& me, object* you, uint32_t damage, bool critical) override;
-    void                    on_hold(session& me) override;
-    void                    on_die(session& me, object* you) override;
-    void                    on_action(session& me, action action, duration duration, uint8_t sound) override;
-    void                    on_updated(session& me, fb::game::state_level level) override;
-    void                    on_money_changed(session& me, uint32_t value) override;
-    void                    on_notify(session& me, const std::string& message, message::type type) override;
-    void                    on_option(session& me, fb::game::options option, bool enabled) override;
-    void                    on_level_up(session& me) override;
-    void                    on_warp(fb::game::session& me) override;
-    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position) override;
-    void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) override;
-    void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) override;
-    void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) override;
+    void                    on_attack(session& me, object* you) final;
+    void                    on_hit(session& me, life& you, uint32_t damage, bool critical) final;
+    void                    on_kill(session& me, life& you) final;
+    void                    on_damaged(session& me, object* you, uint32_t damage, bool critical) final;
+    void                    on_hold(session& me) final;
+    void                    on_die(session& me, object* you) final;
+    void                    on_action(session& me, action action, duration duration, uint8_t sound) final;
+    void                    on_updated(session& me, fb::game::state_level level) final;
+    void                    on_money_changed(session& me, uint32_t value) final;
+    void                    on_notify(session& me, const std::string& message, message::type type) final;
+    void                    on_option(session& me, fb::game::options option, bool enabled) final;
+    void                    on_level_up(session& me) final;
+    void                    on_warp(fb::game::session& me) final;
+    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position) final;
+    void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
+    void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
+    void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) final;
 
     // listener : mob
-    void                    on_attack(mob& me, object* you) override;
-    void                    on_hit(mob& me, life& you, uint32_t damage, bool critical) override;
-    void                    on_kill(mob& me, life& you) override;
-    void                    on_damaged(mob& me, object* you, uint32_t damage, bool critical) override;
-    void                    on_die(mob& me, object* you) override;
+    void                    on_attack(mob& me, object* you) final;
+    void                    on_hit(mob& me, life& you, uint32_t damage, bool critical) final;
+    void                    on_kill(mob& me, life& you) final;
+    void                    on_damaged(mob& me, object* you, uint32_t damage, bool critical) final;
+    void                    on_die(mob& me, object* you) final;
 
     // listener : item
-    void                    on_item_remove(session& me, uint8_t index, item::delete_attr attr) override;
-    void                    on_item_update(session& me, uint8_t index) override;
-    void                    on_item_swap(session& me, uint8_t src, uint8_t dst) override;
-    void                    on_equipment_on(session& me, item& item, equipment::slot slot) override;
-    void                    on_equipment_off(session& me, equipment::slot slot, uint8_t index) override;
-    void                    on_item_active(session& me, item& item) override;
-    void                    on_item_throws(session& me, item& item, const point16_t& to) override;
+    void                    on_item_remove(session& me, uint8_t index, item::delete_attr attr) final;
+    void                    on_item_update(session& me, uint8_t index) final;
+    void                    on_item_swap(session& me, uint8_t src, uint8_t dst) final;
+    void                    on_equipment_on(session& me, item& item, equipment::slot slot) final;
+    void                    on_equipment_off(session& me, equipment::slot slot, uint8_t index) final;
+    void                    on_item_active(session& me, item& item) final;
+    void                    on_item_throws(session& me, item& item, const point16_t& to) final;
 
     // listener : spell
-    void                    on_spell_update(life& me, uint8_t index) override;
-    void                    on_spell_remove(life& me, uint8_t index) override;
+    void                    on_spell_update(life& me, uint8_t index) final;
+    void                    on_spell_remove(life& me, uint8_t index) final;
 
 
     // listener : trade
-    void                    on_trade_begin(session& me, session& you) override;
-    void                    on_trade_bundle(session& me) override;
-    void                    on_trade_item(session& me, session& from, uint8_t index) override;
-    void                    on_trade_money(session& me, session& from) override;
-    void                    on_trade_cancel(session& me, session& from) override;
-    void                    on_trade_lock(session& me, bool mine) override;
-    void                    on_trade_failed(session& me) override;
-    void                    on_trade_success(session& me) override;
+    void                    on_trade_begin(session& me, session& you) final;
+    void                    on_trade_bundle(session& me) final;
+    void                    on_trade_item(session& me, session& from, uint8_t index) final;
+    void                    on_trade_money(session& me, session& from) final;
+    void                    on_trade_cancel(session& me, session& from) final;
+    void                    on_trade_lock(session& me, bool mine) final;
+    void                    on_trade_failed(session& me) final;
+    void                    on_trade_success(session& me) final;
 
 
     // listener : dialog
-    void                    on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override;
+    void                    on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
 #pragma endregion
 
 #pragma region built-in method

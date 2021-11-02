@@ -195,11 +195,11 @@ public:
 
 #pragma region type definition
 public:
-    typedef std::map<std::string, const luaL_Reg*>      builtin_func_map;
-    typedef std::map<std::string, lua_CFunction>        builtin_funcs;
-    typedef std::map<std::string, std::string>          relation_map;
-    typedef std::map<std::string, void*>                environment_map;
-    typedef std::map<lua_State*, std::unique_ptr<lua>>  unique_lua_map;
+    using builtin_func_map      = std::map<std::string, const luaL_Reg*>;
+    using builtin_funcs         = std::map<std::string, lua_CFunction>;
+    using relation_map          = std::map<std::string, std::string>;
+    using environment_map       = std::map<std::string, void*>;
+    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<lua>>;
 #pragma endregion
 
 #pragma region private field

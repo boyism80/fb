@@ -44,14 +44,11 @@ fb::game::door::door(fb::game::map* owner, fb::game::door::master& master, const
     _owner(owner),
     _master(master), 
     position(position), 
-    _opened(opened),
-    _locked(false)
-{
-}
+    _opened(opened)
+{ }
 
 fb::game::door::~door()
-{
-}
+{ }
 
 const fb::game::door::master& fb::game::door::based() const
 {
@@ -167,11 +164,10 @@ int fb::game::door::builtin_update(lua_State* lua)
 }
 
 fb::game::doors::doors()
-{
-}
+{ }
 
 fb::game::doors::~doors()
-{}
+{ }
 
 void fb::game::doors::add(map* map, fb::game::door::master& master, const point16_t position, bool opened)
 {

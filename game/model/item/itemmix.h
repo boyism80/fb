@@ -30,13 +30,13 @@ public:
 
 #pragma region constructor / destructor
 public:
-    itemmix(float percentage = 100.0f) : percentage(percentage) {}
+    itemmix(float percentage = 100.0f) : percentage(percentage) { }
     itemmix(const class itemmix& right) : 
         require(right.require.begin(), right.require.end()),
         success(right.success.begin(), right.success.end()),
         failed(right.failed.begin(), right.failed.end()),
         percentage(right.percentage)
-    {}
+    { }
 #pragma endregion
 
 #pragma region private method
@@ -78,8 +78,8 @@ public:
     uint32_t                            count;      // 갯수
 
 public:
-    element(fb::game::item::master* item, uint32_t count) : item(item), count(count) {}
-    element(const element& right) : item(right.item), count(right.count) {}
+    element(fb::game::item::master* item, uint32_t count) : item(item), count(count) { }
+    element(const element& right) : item(right.item), count(right.count) { }
 };
 #pragma endregion
 

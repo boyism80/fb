@@ -99,15 +99,15 @@ public:
 
 #pragma region override method
 protected:
-    uint32_t                                handle_calculate_damage(bool critical) const override;
-    void                                    handle_attack(fb::game::object* target) override;
-    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical) override;
-    void                                    handle_kill(fb::game::life& you) override;
-    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical) override;
-    void                                    handle_die(fb::game::object* from) override;
+    uint32_t                                handle_calculate_damage(bool critical) const final;
+    void                                    handle_attack(fb::game::object* target) final;
+    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical) final;
+    void                                    handle_kill(fb::game::life& you) final;
+    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
+    void                                    handle_die(fb::game::object* from) final;
 
 public:
-    uint32_t                                handle_exp() const override;
+    uint32_t                                handle_exp() const final;
 #pragma endregion
 };
 
@@ -129,8 +129,8 @@ public:
     uint16_t min, max;
 
 public:
-    damage() : damage(0, 0) {}
-    damage(uint16_t min, uint16_t max) : min(min), max(max) {}
+    damage() : damage(0, 0) { }
+    damage(uint16_t min, uint16_t max) : min(min), max(max) { }
 };
 #pragma endregion
 
@@ -142,9 +142,9 @@ public:
     const fb::game::item::master* item;
 
 public:
-    drop() : percentage(0), item(NULL) {}
-    drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) {}
-    drop(const drop& right) : percentage(right.percentage), item(right.item) {}
+    drop() : percentage(0), item(NULL) { }
+    drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) { }
+    drop(const drop& right) : percentage(right.percentage), item(right.item) { }
 };
 #pragma endregion
 

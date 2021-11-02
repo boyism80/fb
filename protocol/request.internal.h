@@ -19,7 +19,7 @@ public:
     subscribe() = default;
     subscribe(const std::string& name, services service, uint8_t group) : 
         name(name), service(service), group(group)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -55,10 +55,10 @@ public:
     transfer() = default;
     transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : 
         name(name), from(from), to(to), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
-    {}
+    { }
     transfer(const std::string& name, services from, services to, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : 
         name(name), from(from), to(to), fd(fd), map(map), x(x), y(y)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -98,7 +98,7 @@ public:
     login() = default;
     login(const std::string& name, uint32_t map) : 
         name(name), map(map)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -125,7 +125,7 @@ public:
 
 public:
     logout() = default;
-    logout(const std::string& name) : name(name) {}
+    logout(const std::string& name) : name(name) { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -154,7 +154,7 @@ public:
     whisper() = default;
     whisper(const std::string& from, const std::string& to, const std::string& message) : 
         from(from), to(to), message(message) 
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

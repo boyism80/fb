@@ -57,10 +57,10 @@ fb::game::auxiliary::master::master(const std::string&                  name,
                                                                                                                  mp_percentage,
                                                                                                                  healing_cycle,
                                                                                                                  defensive)
-{}
+{ }
 
 fb::game::auxiliary::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::auxiliary::master::attr() const
 {
@@ -76,14 +76,11 @@ fb::game::item* fb::game::auxiliary::master::make(fb::game::item::listener* list
 
 fb::game::auxiliary::auxiliary(const master* master, listener* listener) : 
     equipment(master, listener)
-{
-}
+{ }
 
 fb::game::auxiliary::auxiliary(const auxiliary& right) : 
     equipment(right)
-{
-}
+{ }
 
 fb::game::auxiliary::~auxiliary()
-{
-}
+{ }

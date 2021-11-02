@@ -29,7 +29,7 @@ fb::game::pack::master::master(const std::string& name,
 { }
 
 fb::game::pack::master::~master()
-{}
+{ }
 
 fb::game::item::attrs fb::game::pack::master::attr() const
 {
@@ -50,10 +50,10 @@ fb::game::pack::pack(const fb::game::pack::master* master, listener* listener) :
 fb::game::pack::pack(const pack& right) : 
     item(right),
     _durability(right._durability)
-{}
+{ }
 
 fb::game::pack::~pack()
-{}
+{ }
 
 
 std::optional<uint16_t> fb::game::pack::durability() const

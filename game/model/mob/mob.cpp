@@ -27,7 +27,7 @@ fb::game::mob::master::master(const std::string& name,
 { }
 
 fb::game::mob::master::~master()
-{}
+{ }
 
 fb::game::object* fb::game::mob::master::make(listener* listener) const
 {
@@ -79,10 +79,10 @@ fb::game::mob::mob(const mob& right) :
     _dead_time(right._dead_time),
     _respawn_time(right._respawn_time),
     _target(right._target)
-{}
+{ }
 
 fb::game::mob::~mob()
-{}
+{ }
 
 bool fb::game::mob::action()
 {
@@ -299,7 +299,7 @@ bool fb::game::mob::near_target(fb::game::direction& out) const
     for(int i = 0; i < 4; i++)
     {
         auto                direction = fb::game::direction(i);
-        if(this->side(direction, fb::game::object::SESSION) != this->_target)
+        if(this->side(direction, fb::game::object::types::SESSION) != this->_target)
             continue;
 
         out = direction;

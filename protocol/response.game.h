@@ -10,7 +10,7 @@ class init : public fb::protocol::base::header
 {
 public:
     init()
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -30,7 +30,7 @@ public:
 public:
     message(const std::string& text, fb::game::message::type type) : 
         text(text), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -44,7 +44,7 @@ public:
 class user_list : public fb::protocol::base::header
 {
 private:
-    typedef fb::base::socket_container<fb::socket, fb::game::session> container;
+    using container = fb::base::socket_container<fb::socket, fb::game::session>;
 
 public:
     const fb::game::session&                me;
@@ -53,7 +53,7 @@ public:
 public:
     user_list(const fb::game::session& me, const container& sockets) : 
         me(me), sockets(sockets)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -86,7 +86,7 @@ public:
 public:
     chat(const fb::game::object& me, const std::string& text, fb::game::chat::type type) : 
         me(me), text(text), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -106,7 +106,7 @@ public:
 public:
     time(uint8_t hours) : 
         hours(hours)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -126,7 +126,7 @@ public:
 public:
     weather(fb::game::weather::type value) : 
         value(value)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -145,7 +145,7 @@ public:
 public:
     bright(uint8_t value) : 
         value(value)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -165,7 +165,7 @@ public:
 public:
     timer(uint32_t time, fb::game::timer::type type = fb::game::timer::type::DECREASE) : 
         time(time), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const

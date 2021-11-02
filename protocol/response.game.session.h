@@ -18,7 +18,7 @@ public:
 public:
     message(const std::string& text, fb::game::message::type type) : 
         text(text), type(type)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -39,7 +39,7 @@ public:
 public:
     show(const fb::game::session& session, const fb::game::object& to, bool light = false) : 
         session(session), to(to), light(light)
-    {}
+    { }
 
     show(const show&) = delete;
 
@@ -161,7 +161,7 @@ public:
 public:
     id(const fb::game::session& session) : 
         session(session)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -184,7 +184,7 @@ public:
 public:
     state(const fb::game::session& session, fb::game::state_level level) : 
         session(session), level(level)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -245,7 +245,7 @@ public:
 public:
     position(const fb::game::session& session) : 
         session(session)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -286,7 +286,7 @@ public:
 public:
     internal_info(const fb::game::session& session) : 
         session(session)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -375,7 +375,7 @@ public:
 public:
     external_info(const fb::game::session& session) : 
         session(session)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -481,7 +481,7 @@ public:
 public:
     option(const fb::game::session& session) : 
         session(session)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -506,7 +506,7 @@ public:
 public:
     throws(const fb::game::session& session, const fb::game::item& item, const point16_t& to) : 
         session(session), item(item), to(to)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -537,7 +537,7 @@ public:
 public:
     action(const fb::game::session& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
         me(me), value(value), duration(duration), sound(sound)
-    {}
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
