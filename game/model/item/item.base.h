@@ -186,7 +186,7 @@ public:
     uint32_t                                price;
 
 public:
-    explicit storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
+    storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
 };
 
 struct fb::game::item::conditions

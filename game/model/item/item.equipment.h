@@ -119,7 +119,7 @@ private:
     uint32_t                            _price;
 
 public:
-    explicit rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) { }
+    rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) { }
 
 public:
     bool                                enabled() const { return this->_enabled; }
