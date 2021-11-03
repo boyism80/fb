@@ -14,7 +14,7 @@ public:
 
 #pragma region private field
 private:
-    uint16_t                            _durability;
+    uint16_t                            _durability = 0;
 #pragma endregion
 
 #pragma region constructor / destructor

@@ -100,8 +100,8 @@ public:
 
 #pragma region protected field
 protected:
-    uint16_t                                _count;
-    session*                                _owner;
+    uint16_t                                _count = 0;
+    session*                                _owner = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor

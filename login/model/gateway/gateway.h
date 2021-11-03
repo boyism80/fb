@@ -12,8 +12,8 @@ class gateway
 private:
     std::string             _name;
     std::string             _desc;
-    uint32_t                _ip;
-    uint16_t                _port;
+    uint32_t                _ip   = 0;
+    uint16_t                _port = 0;
 
 public:
     gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);

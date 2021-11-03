@@ -19,7 +19,7 @@ public:
 
 #pragma region private field
 private:
-    uint32_t                            _chunk;
+    uint32_t                            _chunk = 0;
 #pragma endregion
 
 #pragma region constructor / destructor

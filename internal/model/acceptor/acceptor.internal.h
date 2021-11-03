@@ -15,7 +15,7 @@ namespace fb { namespace internal {
 class user
 {
 public:
-    const uint16_t                  group;
+    const uint16_t                  group = 0;
 
 public:
     user(uint16_t group) : 

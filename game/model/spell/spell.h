@@ -43,8 +43,8 @@ public:
 
 #pragma region private field
 private:
-    uint16_t                    _id;
-    fb::game::spell::types      _type;
+    uint16_t                    _id     = 0;
+    fb::game::spell::types      _type   = fb::game::spell::types::NORMAL;
     std::string                 _name;
     std::string                 _cast, _uncast, _concast;
     std::string                 _message;
@@ -96,8 +96,8 @@ public:
 class buff
 {
 private:
-    const fb::game::spell*      _spell;
-    uint32_t                    _time;
+    const fb::game::spell*      _spell  = nullptr;
+    uint32_t                    _time   = 0;
 
 public:
     buff(const spell* spell, uint32_t time);

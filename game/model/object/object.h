@@ -32,8 +32,8 @@ public:
 public:
     struct cache
     {
-        fb::game::map*                      map;
-        point16_t                           position;
+        fb::game::map*                      map      = nullptr;
+        point16_t                           position = point16_t(0, 0);
 
     public:
         cache() : map(nullptr)
@@ -71,20 +71,20 @@ public:
 
 #pragma region private field
 private:
-    fb::game::object::listener*         _listener;
-    bool                                _visible;
-    fb::game::sector*                   _sector;
+    fb::game::object::listener*         _listener   = nullptr;
+    bool                                _visible    = false;
+    fb::game::sector*                   _sector     = nullptr;
 #pragma endregion
 
 #pragma region protected field
 protected:
-    uint32_t                            _sequence;
+    uint32_t                            _sequence   = 0;
     const fb::game::object::master*     _master;
     cache                               _before;
 
-    point16_t                           _position;
-    fb::game::direction                 _direction;
-    fb::game::map*                      _map;
+    point16_t                           _position   = point16_t(0, 0);
+    fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
+    fb::game::map*                      _map        = nullptr;
 #pragma endregion
 
 #pragma region public field
@@ -263,8 +263,8 @@ public:
 #pragma region public field
 public:
     const std::string                   name;
-    const uint16_t                      look;
-    const uint8_t                       color;
+    const uint16_t                      look  = 0;
+    const uint8_t                       color = 0;
 #pragma endregion
 
 #pragma region template

@@ -27,8 +27,8 @@ struct destination
 {
 #pragma region public field
 public:
-    point16_t               position;
-    fb::game::map*          map;
+    point16_t               position = point16_t(0, 0);
+    fb::game::map*          map      = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -49,7 +49,7 @@ struct offset
 public:
     const std::string       id;
     const std::string       name;
-    const point16_t         position;
+    const point16_t         position = 0;
     const destination       dst;
 #pragma endregion
 
@@ -246,7 +246,7 @@ public:
 private:
     uint16_t                        _id       = 0;
     uint16_t                        _parent   = 0;
-    size16_t                        _size;
+    size16_t                        _size     = size16_t(0, 0);
     unique_tiles                    _tiles    = nullptr;
     std::string                     _name;
     options                         _option   = options::NO_OPTION;

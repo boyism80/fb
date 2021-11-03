@@ -44,7 +44,7 @@ public:
     
 #pragma region protected field
 protected:
-    uint16_t                            _durability;
+    uint16_t                            _durability = 0;
 #pragma endregion
 
 #pragma region constructor / destructor
@@ -95,11 +95,11 @@ public:
     friend class equipment;
 
 private:
-    bool                                _enabled;
-    float                               _price;
+    bool                                _enabled = false;
+    float                               _price   = 0.0f;
 
 public:
-    explicit repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) { }
+    repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) { }
 
 public:
     bool                                enabled() const { return this->_enabled; }
@@ -115,8 +115,8 @@ public:
     friend class equipment;
 
 private:
-    bool                                _enabled;
-    uint32_t                            _price;
+    bool                                _enabled = false;
+    uint32_t                            _price   = 0;
 
 public:
     rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) { }

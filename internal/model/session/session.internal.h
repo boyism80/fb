@@ -11,7 +11,7 @@ class session
 public:
     std::string                         name;
     fb::protocol::internal::services    service;
-    uint16_t                            group;
+    uint16_t                            group = 0;
 
 public:
     session();

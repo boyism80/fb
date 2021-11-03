@@ -37,7 +37,7 @@ public:
 
 private:
     session&                _owner;
-    lua*                    _thread;
+    lua*                    _thread = nullptr;
 
 public:
     dialog(fb::game::session& owner);
@@ -156,7 +156,7 @@ private:
 
     fb::game::nation            _nation          = nation::GOGURYEO;
     fb::game::creature          _creature        = creature::DRAGON;
-    fb::game::sex               _sex;
+    fb::game::sex               _sex             = fb::game::sex::BOTH;
     fb::game::state             _state           = state::NORMAL;
     uint8_t                     _level           = 1;
     uint8_t                     _class           = 0;

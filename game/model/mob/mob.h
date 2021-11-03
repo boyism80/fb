@@ -38,13 +38,13 @@ public:
 
 #pragma region private field
 private:
-    listener*                               _listener;
-    point16_t                               _spawn_point;
-    size16_t                                _spawn_size;
+    listener*                               _listener     = nullptr;
+    point16_t                               _spawn_point  = point16_t(0, 0);
+    size16_t                                _spawn_size   = size16_t(0, 0);
 
-    std::chrono::milliseconds               _action_time; // ms
-    std::chrono::milliseconds               _dead_time; // ms
-    std::chrono::milliseconds               _respawn_time; // seconds
+    std::chrono::milliseconds               _action_time  = 0ms; // ms
+    std::chrono::milliseconds               _dead_time    = 0ms; // ms
+    std::chrono::milliseconds               _respawn_time = 0s; // seconds
 
     fb::game::life*                         _target;
     lua::lua*                               _attack_thread;

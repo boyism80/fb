@@ -12,9 +12,9 @@ class base_container
 {
 private:
     life&                   _owner;
-    T**                     _elements;
-    uint8_t                 _size;
-    bool                    _auto_release;
+    T**                     _elements       = nullptr;
+    uint8_t                 _size           = 0;
+    bool                    _auto_release   = false;
 
 protected:
     base_container(life& owner, uint8_t size, bool auto_release = true);

@@ -22,8 +22,8 @@ public:
 
 #pragma region protected field
 protected:
-    uint32_t                    _hp, _mp;
-    fb::game::condition         _condition;
+    uint32_t                    _hp = 0, _mp = 0;
+    fb::game::condition         _condition = fb::game::condition::NONE;
 #pragma endregion
 
 #pragma region public field
@@ -147,9 +147,9 @@ public:
 #pragma region protected field
 public:
     const fb::game::defensive   defensive;
-    const uint32_t              hp;
-    const uint32_t              mp;
-    const uint32_t              experience;
+    const uint32_t              hp          = 0;
+    const uint32_t              mp          = 0;
+    const uint32_t              experience  = 0;
 #pragma endregion
 
 #pragma region constructor / destructor

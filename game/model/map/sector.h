@@ -26,9 +26,9 @@ public:
     using std::vector<fb::game::object*>::size;
 
 private:
-    const uint32_t                  _id;
+    const uint32_t                  _id         = 0;
+    bool                            _activated  = false;
     std::function<void(sector&)>    _state_changed;
-    bool                            _activated = false;
 
 public:
     sector(uint32_t id, const std::function<void(sector&)>& state_changed);
@@ -47,10 +47,10 @@ public:
     using unique_sectors = std::vector<std::unique_ptr<sector>>;
 
 private:
-    const size16_t                  _map_size;
-    const size16_t                  _size;
-    const uint32_t                  _rows, _columns;
-    const uint32_t                  _count;
+    const size16_t                  _map_size = size16_t(0, 0);
+    const size16_t                  _size     = size16_t(0, 0);
+    const uint32_t                  _rows = 0, _columns = 0;
+    const uint32_t                  _count = 0;
     unique_sectors                  _pool;
     std::map<uint32_t, sector*>     _activated_cache;
 

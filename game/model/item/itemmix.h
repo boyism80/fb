@@ -25,7 +25,7 @@ public:
     std::vector<element>                require;   // 재료 아이템
     std::vector<element>                success;   // 성공시 얻는 아이템
     std::vector<element>                failed;    // 실패시 얻는 아이템
-    float                               percentage;
+    float                               percentage = 0.0f;
 #pragma endregion
 
 #pragma region constructor / destructor

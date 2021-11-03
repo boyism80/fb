@@ -22,11 +22,11 @@ class acceptor : public boost::asio::ip::tcp::acceptor
 private:
     S<T>*                                       _buffer;
     fb::threads                                 _threads;
-    bool                                        _exit;
+    bool                                        _exit = false;
 
 protected:
     boost::asio::io_context&                    _context;
-    uint8_t                                     _accept_delay;
+    uint8_t                                     _accept_delay = 0;
     std::unique_ptr<fb::internal::socket<>>     _internal;
 
 public:

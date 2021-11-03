@@ -84,13 +84,13 @@ private:
 
 #pragma region private field
 private:
-    int                         _state;
-    int                         _ref;
+    int                         _state  = 0;
+    int                         _ref    = 0;
 #pragma endregion
 
 #pragma region protected field
 protected:
-    lua_State*                  _lua;
+    lua_State*                  _lua    = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor
