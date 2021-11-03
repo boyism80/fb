@@ -49,7 +49,7 @@ struct offset
 public:
     const std::string       id;
     const std::string       name;
-    const point16_t         position = 0;
+    const point16_t         position = point16_t(0, 0);
     const destination       dst;
 #pragma endregion
 

@@ -1,8 +1,11 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
+#include <chrono>
 #include "model/life/life.h"
 #include "model/item/item.h"
+
+using namespace std::chrono_literals;
 
 namespace fb { namespace game {
 
