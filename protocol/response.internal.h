@@ -5,7 +5,7 @@
 
 namespace fb { namespace protocol { namespace internal { namespace response {
 
-enum transfer_code : uint8_t
+enum class transfer_code : uint8_t
 {
     SUCCESS,
     CONNECTED,

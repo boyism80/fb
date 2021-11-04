@@ -15,7 +15,7 @@ class board
 {
 #pragma region enum
 public:
-    enum button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
+    enum class button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
 #pragma endregion
 
 #pragma region forward nested declaration

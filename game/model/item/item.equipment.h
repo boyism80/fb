@@ -9,7 +9,7 @@ class equipment : public item
 {
 #pragma region enum
 public:
-    enum slot : uint8_t
+    enum class slot : uint8_t
     {
         UNKNOWN_SLOT                    = 0,
         WEAPON_SLOT                     = 1,
@@ -22,7 +22,7 @@ public:
         RIGHT_AUX_SLOT                  = 21,
     };
 
-    enum position : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
+    enum class position : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
 #pragma endregion
 
 #pragma region forward nested declaration

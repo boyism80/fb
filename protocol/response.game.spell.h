@@ -71,7 +71,7 @@ public:
             .write_u8(spell->type())
             .write(spell->name());
 
-        if(spell->type() < 3)
+        if(static_cast<int>(spell->type()) < 3)
             out_stream.write(spell->message());
     }
 };

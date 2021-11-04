@@ -124,6 +124,12 @@ public:
     lua&                        pushobject(const luable* object);
     lua&                        pushobject(const luable& object);
 
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    lua&                        pushinteger(T value)
+    {
+        return this->pushinteger(static_cast<lua_Integer>(value));
+    }
+
     const std::string           tostring(int offset);
     const std::string           arg_string(int offset) { return tostring(offset); }
     const std::string           ret_string(int offset) { return tostring(-offset); }
@@ -311,5 +317,11 @@ void env(const char* key, T* data)
 #pragma endregion
 
 } } }
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+void lua_pushinteger(lua_State *L, T value)
+{
+    lua_pushinteger(L, static_cast<lua_Integer>(value));
+}
 
 #endif // !__LUA_H__

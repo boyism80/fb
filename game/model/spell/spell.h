@@ -33,7 +33,7 @@ public:
 
 #pragma region enum
 public:
-    enum types : uint8_t
+    enum class types : uint8_t
     {
         INPUT   = 0x01, 
         TARGET  = 0x02,

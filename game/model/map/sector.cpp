@@ -41,7 +41,7 @@ void fb::game::sector::erase(fb::game::object& object)
             this->begin(), this->end(),
             [] (fb::game::object* x) 
             {
-                return x->is(fb::game::object::SESSION);
+                return x->is(fb::game::object::types::SESSION);
             }
         ) != this->end();
         

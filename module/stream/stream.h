@@ -17,7 +17,7 @@ namespace fb {
 class buffer : public std::vector<uint8_t>
 {
 public:
-    enum endian { LITTLE = 0, BIG = 1};
+    enum class endian { LITTLE = 0, BIG = 1};
 
 protected:
     uint32_t                _offset = 0;
@@ -76,11 +76,47 @@ public:
 
 public:
     ostream&                write_8(int8_t value);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_8(T value)
+    {
+        return write_8(static_cast<int8_t>(value));
+    }
+
     ostream&                write_u8(uint8_t value);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_u8(T value)
+    {
+        return write_u8(static_cast<uint8_t>(value));
+    }
+
     ostream&                write_16(int16_t value, buffer::endian endian = buffer::endian::BIG);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_16(T value, buffer::endian endian = buffer::endian::BIG)
+    {
+        return write_16(static_cast<int16_t>(value), endian);
+    }
+
     ostream&                write_u16(uint16_t value, buffer::endian endian = buffer::endian::BIG);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_u16(T value, buffer::endian endian = buffer::endian::BIG)
+    {
+        return write_u16(static_cast<uint16_t>(value), endian);
+    }
+
     ostream&                write_32(int32_t value, buffer::endian endian = buffer::endian::BIG);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_32(T value, buffer::endian endian = buffer::endian::BIG)
+    {
+        return write_32(static_cast<int32_t>(value), endian);
+    }
+
     ostream&                write_u32(uint32_t value, buffer::endian endian = buffer::endian::BIG);
+    template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+    ostream&                write_u32(T value, buffer::endian endian = buffer::endian::BIG)
+    {
+        return write_u32(static_cast<uint32_t>(value), endian);
+    }
+
     ostream&                writestr_u8(const std::string& value, bool encoding = true);
     ostream&                writestr_u16(const std::string& value, buffer::endian endian = buffer::endian::BIG, bool encoding = true);
     ostream&                writestr_u32(const std::string& value, buffer::endian endian = buffer::endian::BIG, bool encoding = true);

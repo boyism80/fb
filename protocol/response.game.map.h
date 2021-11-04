@@ -141,7 +141,7 @@ public:
                   .write_u16(this->map.id()) // id
                   .write_u16(this->map.width()) // width
                   .write_u16(this->map.height()) // height
-                  .write_u8(this->map.option() & fb::game::map::options::BUILD_IN ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
+                  .write_u8(enum_in(this->map.option(), fb::game::map::options::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
                   .write(this->map.name(), true);
     }
 };

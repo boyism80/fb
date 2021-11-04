@@ -696,7 +696,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
         if(client == nullptr)
             return true;
 
-        if(response.code != fb::protocol::internal::response::SUCCESS)
+        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = client->data();
@@ -888,7 +888,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
                 item->count(count.value());
                 item->durability(durability);
 
-                if(slot == fb::game::equipment::slot::UNKNOWN_SLOT)
+                if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
                     session->items.add(*item, index);
                 else
                     session->items.wear((fb::game::equipment::slot)slot, static_cast<fb::game::equipment*>(item));
@@ -994,7 +994,7 @@ bool fb::game::acceptor::handle_pickup(fb::socket<fb::game::session>& socket, co
 bool fb::game::acceptor::handle_emotion(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::emotion& request)
 {
     auto session = socket.data();
-    session->action(action(action::EMOTION + request.emotion), duration::DURATION_EMOTION);
+    session->action(action(static_cast<int>(action::EMOTION) + request.emotion), duration::DURATION_EMOTION);
     return true;
 }
 
@@ -1170,7 +1170,7 @@ bool fb::game::acceptor::handle_trade(fb::socket<fb::game::session>& socket, con
     if(you == nullptr)
         return true;
 
-    switch(request.action)
+    switch(static_cast<trade::state>(request.action))
     {
     case trade::state::REQUEST:
     {
@@ -1325,7 +1325,7 @@ bool fb::game::acceptor::handle_chat(fb::socket<fb::game::session>& socket, cons
     else
         sstream << session->name() << ": " << request.message;
 
-    this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? chat::SHOUT : chat::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
+    this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? chat::type::SHOUT : chat::type::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     return true;
 }
 

@@ -211,11 +211,11 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
     {
         // 내 이전 위치에서 내 시야에 보이는 오브젝트들
-        auto befores = fb::game::object::showings(nears_before, *this, fb::game::object::UNKNOWN, true, false);
+        auto befores = fb::game::object::showings(nears_before, *this, fb::game::object::types::UNKNOWN, true, false);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내 시야에 보이는 오브젝트들
-        auto afters = fb::game::object::showings(nears_after, *this, fb::game::object::UNKNOWN, false, false);
+        auto afters = fb::game::object::showings(nears_after, *this, fb::game::object::types::UNKNOWN, false, false);
         std::sort(afters.begin(), afters.end());
 
         // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
@@ -242,11 +242,11 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
     {
         // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::UNKNOWN, true, false);
+        auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::types::UNKNOWN, true, false);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::UNKNOWN, false, false);
+        auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::types::UNKNOWN, false, false);
         std::sort(afters.begin(), afters.end());
 
         // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
@@ -1026,7 +1026,7 @@ int fb::game::object::builtin_message(lua_State* lua)
         return 0;
     
     auto message = thread->tostring(2);
-    auto type = argc < 3 ? fb::game::message::STATE : thread->tointeger(3);
+    auto type = argc < 3 ? static_cast<int>(fb::game::message::type::STATE) : thread->tointeger(3);
 
     if(object->type() == object::types::SESSION)
         acceptor->send(*object, fb::protocol::game::response::message(message, fb::game::message::type(type)), acceptor::scope::SELF);

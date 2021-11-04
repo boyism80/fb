@@ -118,11 +118,11 @@ class chat : public fb::protocol::base::header
 {
 public:
     const fb::game::object&     me;
-    const uint8_t               type;
+    const fb::game::chat::type  type;
     const std::string           message;
 
 public:
-    chat(const fb::game::object& me, const uint8_t type, const std::string message) : 
+    chat(const fb::game::object& me, const fb::game::chat::type type, const std::string message) : 
         me(me), type(type), message(message)
     { }
 

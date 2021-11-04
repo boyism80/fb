@@ -17,7 +17,7 @@ public:
 
 #pragma region enum
 public:
-    enum types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
+    enum class types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
 #pragma endregion
 
 #pragma region constructor / destructor

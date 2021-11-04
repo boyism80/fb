@@ -168,7 +168,7 @@ fb::game::map::effects fb::game::container::map::to_effect(const std::string& ef
 
 fb::game::map::options fb::game::container::map::to_option(const Json::Value& data)
 {
-    uint8_t                 flags = fb::game::map::options::NO_OPTION;
+    auto                    flags = fb::game::map::options::NO_OPTION;
     auto&                   option = data["option"];
 
     if(option["build in"].asBool())
@@ -192,7 +192,7 @@ fb::game::map::options fb::game::container::map::to_option(const Json::Value& da
     if(option["enabled die penalty"].asBool())
         flags |= fb::game::map::options::DISABLE_DIE_PENALTY;
 
-    return fb::game::map::options(flags);
+    return flags;
 }
 
 bool fb::game::container::map::load_data(uint16_t id, std::vector<char>& buffer)

@@ -41,7 +41,7 @@ public:
 
 #pragma region enum
 public:
-    enum scope { SELF, PIVOT, GROUP, MAP, WORLD };
+    enum class scope { SELF, PIVOT, GROUP, MAP, WORLD };
 #pragma endregion
 
 #pragma region forward nested declaration

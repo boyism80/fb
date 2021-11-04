@@ -280,29 +280,29 @@ fb::game::equipment* fb::game::items::wear(fb::game::equipment::slot slot, fb::g
 {
     switch(slot) // equipment::slot
     {
-    case equipment::WEAPON_SLOT:
+    case equipment::slot::WEAPON_SLOT:
         return this->_owner.items.weapon(static_cast<fb::game::weapon*>(item));
 
-    case equipment::ARMOR_SLOT:
+    case equipment::slot::ARMOR_SLOT:
         return this->_owner.items.armor(static_cast<fb::game::armor*>(item));
 
-    case equipment::SHIELD_SLOT:
+    case equipment::slot::SHIELD_SLOT:
         return this->_owner.items.shield(static_cast<fb::game::shield*>(item));
 
-    case equipment::HELMET_SLOT:
+    case equipment::slot::HELMET_SLOT:
         return this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
 
-    case equipment::LEFT_HAND_SLOT:
+    case equipment::slot::LEFT_HAND_SLOT:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::EQUIPMENT_LEFT);
         break;
 
-    case equipment::RIGHT_HAND_SLOT:
+    case equipment::slot::RIGHT_HAND_SLOT:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::EQUIPMENT_RIGHT);
 
-    case equipment::LEFT_AUX_SLOT:
+    case equipment::slot::LEFT_AUX_SLOT:
         return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::EQUIPMENT_LEFT);
 
-    case equipment::RIGHT_AUX_SLOT:
+    case equipment::slot::RIGHT_AUX_SLOT:
         return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::EQUIPMENT_RIGHT);
 
     default:
@@ -388,14 +388,14 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
 
 fb::game::ring* fb::game::items::ring(equipment::position position) const
 {
-    return this->_rings[position];
+    return this->_rings[static_cast<int>(position)];
 }
 
 fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
 {
     fb::game::ring*         before = nullptr;
 
-    if(this->_rings[equipment::position::EQUIPMENT_LEFT] == nullptr)
+    if(this->_rings[static_cast<int>(equipment::position::EQUIPMENT_LEFT)] == nullptr)
     {
         before = this->ring(ring, equipment::position::EQUIPMENT_LEFT);
     }
@@ -414,8 +414,8 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
 
 fb::game::ring* fb::game::items::ring(fb::game::ring* ring, equipment::position position)
 {
-    auto before = this->_rings[position];
-    this->_rings[position] = ring;
+    auto before = this->_rings[static_cast<int>(position)];
+    this->_rings[static_cast<int>(position)] = ring;
 
     auto listener = this->_owner.get_listener<fb::game::session>();
     if(listener != nullptr)
@@ -426,14 +426,14 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, equipment::position 
 
 fb::game::auxiliary* fb::game::items::auxiliary(equipment::position position) const
 {
-    return this->_auxiliaries[position];
+    return this->_auxiliaries[static_cast<int>(position)];
 }
 
 fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
 {
     fb::game::auxiliary*         before = nullptr;
 
-    if(this->_auxiliaries[equipment::position::EQUIPMENT_LEFT] == nullptr)
+    if(this->_auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_LEFT)] == nullptr)
     {
         before = this->auxiliary(auxiliary, equipment::position::EQUIPMENT_LEFT);
     }
@@ -452,8 +452,8 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
 
 fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, equipment::position position)
 {
-    auto before = this->_auxiliaries[position];
-    this->_auxiliaries[position] = auxiliary;
+    auto before = this->_auxiliaries[static_cast<int>(position)];
+    this->_auxiliaries[static_cast<int>(position)] = auxiliary;
 
     auto listener = this->_owner.get_listener<fb::game::session>();
     if(listener != nullptr)
@@ -697,9 +697,9 @@ std::map<fb::game::equipment::slot, fb::game::item*> fb::game::items::equipments
         {equipment::slot::ARMOR_SLOT,       _armor},
         {equipment::slot::SHIELD_SLOT,      _shield},
         {equipment::slot::HELMET_SLOT,      _helmet},
-        {equipment::slot::LEFT_HAND_SLOT,   _rings[equipment::position::EQUIPMENT_LEFT]},
-        {equipment::slot::RIGHT_HAND_SLOT,  _rings[equipment::position::EQUIPMENT_RIGHT]},
-        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[equipment::position::EQUIPMENT_LEFT]},
-        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[equipment::position::EQUIPMENT_RIGHT]}
+        {equipment::slot::LEFT_HAND_SLOT,   _rings[static_cast<int>(equipment::position::EQUIPMENT_LEFT)]},
+        {equipment::slot::RIGHT_HAND_SLOT,  _rings[static_cast<int>(equipment::position::EQUIPMENT_RIGHT)]},
+        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_LEFT)]},
+        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_RIGHT)]}
     };
 }

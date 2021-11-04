@@ -192,7 +192,7 @@ public:
         out_stream.write_u8(0x08) // cmd
                   .write_u8(this->level);
 
-        if(this->level & state_level::BASED)
+        if(enum_in(this->level, state_level::BASED))
         {
             out_stream.write_u8(this->session.nation()) // nation
                       .write_u8(this->session.creature()) // creature
@@ -210,19 +210,19 @@ public:
                       .write_u8(0x00);
         }
 
-        if(level & state_level::HP_MP)
+        if(enum_in(this->level, state_level::HP_MP))
         {
             out_stream.write_u32(this->session.hp())  // current hp
                       .write_u32(this->session.mp()); // current mp
         }
 
-        if(level & state_level::EXP_MONEY)
+        if(enum_in(this->level, state_level::EXP_MONEY))
         {
             out_stream.write_u32(this->session.experience())  // exp
                       .write_u32(this->session.money()); // money
         }
 
-        if(level & state_level::CONDITION)
+        if(enum_in(this->level, state_level::CONDITION))
         {
             out_stream.write_u8(this->session.condition_contains(fb::game::condition::MOVE))  // condition::move
                       .write_u8(this->session.condition_contains(fb::game::condition::SIGHT))  // condition::sight

@@ -14,7 +14,7 @@ class item;
 class trade
 {
 public:
-    enum state : uint8_t;
+    enum class state : uint8_t;
 
 public:
     interface listener;
@@ -58,7 +58,7 @@ public:
     const fb::game::item*                   item(uint8_t index) const;
 };
 
-enum trade::state : uint8_t
+enum class trade::state : uint8_t
 {
     REQUEST                                 = 0x00,
     UP_ITEM                                 = 0x01,

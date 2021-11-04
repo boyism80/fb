@@ -47,7 +47,7 @@ public:
 
 #pragma region enum
 public:
-    enum types : uint32_t
+    enum class types : uint32_t
     { 
         UNKNOWN = 0x00, 
         ITEM    = 0x01, 

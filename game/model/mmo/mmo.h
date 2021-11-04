@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include <type_traits>
 #include "module/socket/socket.h"
 #include "module/stream/stream.h"
 #include "module/common/type.h"
@@ -20,11 +21,57 @@
                                         };
 #pragma endregion
 
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T operator | (T flag1, T flag2)
+{
+    return static_cast<T>(static_cast<int>(flag1) | static_cast<int>(flag2));
+}
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T operator |= (T& flag1, const T& flag2)
+{
+    flag1 = static_cast<T>(static_cast<int>(flag1) | static_cast<int>(flag2));
+    return flag1;
+}
+
+template <typename T1, typename T2, typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type, typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
+bool operator && (const T1& flag1, const T2& flag2)
+{
+    return static_cast<int>(flag1) && static_cast<int>(flag2);
+}
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T operator & (T flag1, T flag2)
+{
+    return static_cast<T>(static_cast<int>(flag1) & static_cast<int>(flag2));
+}
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T operator &= (T& flag1, const T& flag2)
+{
+    flag1 = static_cast<T>(static_cast<int>(flag1) & static_cast<int>(flag2));
+    return flag1;
+}
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T operator ~ (T& flag)
+{
+    flag = static_cast<T>(~static_cast<int>(flag));
+    return flag;
+}
+
+template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+bool enum_in(T src, T value)
+{
+    return (static_cast<int>(src) & static_cast<int>(value)) == static_cast<int>(value);
+}
+
+
 namespace fb { namespace game {
 
 namespace dialog
 {
-    enum interaction : uint8_t
+    enum class interaction : uint8_t
     {
         NORMAL              = 0x00,
         INPUT               = 0x01,
@@ -37,7 +84,7 @@ namespace dialog
 
 namespace timer
 {
-    enum type : uint8_t
+    enum class type : uint8_t
     {
         INCREASE            = 0x01,
         DECREASE            = 0x02,
@@ -46,7 +93,7 @@ namespace timer
 
 namespace weather
 {
-    enum type : uint8_t
+    enum class type : uint8_t
     {
         NORMAL              = 0x00,
         RAIN                = 0x01,
@@ -57,7 +104,7 @@ namespace weather
 
 namespace chat
 {
-    enum type : uint8_t
+    enum class type : uint8_t
     {
         NORMAL              = 0x00,
         SHOUT               = 0x01,
@@ -68,7 +115,7 @@ namespace chat
 
 namespace swap
 {
-    enum type : uint8_t
+    enum class type : uint8_t
     {
         ITEM                = 0x00,
         SPELL               = 0x01,
@@ -77,12 +124,12 @@ namespace swap
 
 namespace message
 {
-    enum type : uint8_t
+    enum class type : uint8_t
     {
         NOTIFY      = 0x00,
         BLUE        = 0x01,
         STATE       = 0x03,
-        SHOUT       = 0x04,
+        SHOUT       = 0x04,\
         WORLD       = 0x05,
         POPUP       = 0x08,
         YELLOW      = 0x0B,
@@ -90,7 +137,7 @@ namespace message
     };
 }
 
-enum options : uint8_t
+enum class options : uint8_t
 {
     RIDE                    = 0x00,
     WHISPER                 = 0x01,
@@ -108,7 +155,7 @@ enum options : uint8_t
 
 namespace sound
 {
-    enum type : uint16_t
+    enum class type : uint16_t
     {
         SWING               = 0x014B,
         EAT                 = 0x0006,
@@ -118,7 +165,7 @@ namespace sound
     };
 }
 
-enum duration : uint8_t
+enum class duration : uint8_t
 {
     DURATION_FAST           = 0x0F,
     DURATION_EAT            = 0x27,
@@ -129,7 +176,7 @@ enum duration : uint8_t
     DURATION_THROW          = 0x28,
 };
 
-enum state_level : uint8_t
+enum class state_level : uint8_t
 {
     BASED = 0x40, HP_MP = 0x20, EXP_MONEY = 0x10, CONDITION = 0x08,
     LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION,

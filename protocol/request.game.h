@@ -189,7 +189,7 @@ public:
     {
         this->action = in_stream.read_u8();
         this->fd = in_stream.read_u32();
-        switch(action)
+        switch(static_cast<fb::game::trade::state>(this->action))
         {
         case fb::game::trade::state::UP_ITEM:
             this->parameter.index = in_stream.read_u8();
@@ -265,18 +265,18 @@ public:
 class dialog : public fb::protocol::base::header
 {
 public:
-    uint8_t                 interaction;
-    uint8_t                 action;     // NORMAL
-    std::string             message;    // INPUT
-    uint16_t                index;      // MENU
-    uint16_t                pursuit;    // SELL
-    std::string             name;       // SELL
+    fb::game::dialog::interaction   interaction;
+    uint8_t                         action;     // NORMAL
+    std::string                     message;    // INPUT
+    uint16_t                        index;      // MENU
+    uint16_t                        pursuit;    // SELL
+    std::string                     name;       // SELL
 
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->interaction = in_stream.read_u8();
-        switch(this->interaction)
+        this->interaction = static_cast<fb::game::dialog::interaction>(in_stream.read_u8());
+        switch(static_cast<fb::game::dialog::interaction>(this->interaction))
         {
         case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
         {

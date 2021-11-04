@@ -8,7 +8,7 @@
 
 namespace fb { namespace protocol { namespace internal {
 
-enum services
+enum class services : uint8_t
 {
     SERVICE_GATEWAY, 
     SERVICE_LOGIN, 

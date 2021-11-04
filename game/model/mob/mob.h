@@ -34,9 +34,9 @@ public:
 
 #pragma region enum
 public:
-    enum offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
+    enum class offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
 
-    enum sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
+    enum class sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
 #pragma endregion
 
 #pragma region private field

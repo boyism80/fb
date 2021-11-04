@@ -152,7 +152,8 @@ void fb::game::acceptor::on_attack(session& me, object* you)
     if (weapon != nullptr)
     {
         auto            sound = weapon->based<fb::game::weapon>()->sound;
-        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::sound::type(sound) : fb::game::sound::SWING), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::sound::type(sound) : fb::game::sound::type
+::SWING), scope::PIVOT);
     }
 }
 

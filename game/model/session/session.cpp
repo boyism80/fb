@@ -771,18 +771,18 @@ void fb::game::session::regenerative(uint8_t value)
 
 bool fb::game::session::option(options key) const
 {
-    if(key > 0x1B)
+    if(static_cast<int>(key) > 0x1B)
         return false;
 
-    return this->_options[key];
+    return this->_options[static_cast<int>(key)];
 }
 
 void fb::game::session::option(options key, bool value)
 {
-    if(key > 0x1B)
+    if(static_cast<int>(key) > 0x1B)
         return;
 
-    if(this->_options[key] == value)
+    if(this->_options[static_cast<int>(key)] == value)
         return;
 
     auto listener = this->get_listener<fb::game::session>();
@@ -793,16 +793,16 @@ void fb::game::session::option(options key, bool value)
         listener->on_option(*this, key, value);
     }
 
-    this->_options[key] = value;
+    this->_options[static_cast<int>(key)] = value;
 }
 
 bool fb::game::session::option_toggle(options key)
 {
-    if(key > 0x1B)
+    if(static_cast<int>(key) > 0x1B)
         return false;
 
-    this->option(key, !this->_options[key]);
-    return this->_options[key];
+    this->option(key, !this->_options[static_cast<int>(key)]);
+    return this->_options[static_cast<int>(key)];
 }
 
 const std::string& fb::game::session::title() const
@@ -1341,7 +1341,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
 
         auto acceptor = thread->env<fb::game::acceptor>("acceptor");
-        auto dropped = session->items.remove(index, item::delete_attr::DELETE_REMOVED);
+        auto dropped = session->items.remove(index, 1, item::delete_attr::DELETE_REMOVED);
         if(dropped != nullptr)
             delete dropped;
     }

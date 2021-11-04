@@ -97,13 +97,13 @@ fb::game::item::attrs fb::game::item::master::attr() const
 {
     auto                    attr = attrs::ITEM_ATTR_NONE;
     if(this->capacity > 1)
-        attr = attrs(attr | attrs::ITEM_ATTR_BUNDLE);
+        attr = attrs((uint32_t)attr | (uint32_t)attrs::ITEM_ATTR_BUNDLE);
     return attr;
 }
 
 bool fb::game::item::master::attr(fb::game::item::attrs flag) const
 {
-    return (this->attr() & flag) == flag;
+    return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
 fb::game::item* fb::game::item::master::make(fb::game::item::listener* listener) const

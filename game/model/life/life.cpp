@@ -554,7 +554,7 @@ int fb::game::life::builtin_action(lua_State* lua)
         return 0;
     
     auto action = thread->tointeger(2);
-    auto duration = argc < 3 ? fb::game::duration::DURATION_SPELL : thread->tointeger(3);
+    auto duration = argc < 3 ? static_cast<int>(fb::game::duration::DURATION_SPELL) : thread->tointeger(3);
     auto sound = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
 
     acceptor->send(*life, fb::protocol::game::response::life::action(*life, fb::game::action(action), fb::game::duration(duration), sound), acceptor::scope::PIVOT);

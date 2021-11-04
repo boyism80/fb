@@ -219,9 +219,9 @@ lua::lua(lua_State* lua) : _lua(lua)
     lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
 
-    lua_pushinteger(*this, fb::game::equipment::EQUIPMENT_LEFT);
+    lua_pushinteger(*this, fb::game::equipment::position::EQUIPMENT_LEFT);
     lua_setglobal(*this, "EQUIPMENT_POSITION_LEFT");
-    lua_pushinteger(*this, fb::game::equipment::EQUIPMENT_RIGHT);
+    lua_pushinteger(*this, fb::game::equipment::position::EQUIPMENT_RIGHT);
     lua_setglobal(*this, "EQUIPMENT_POSITION_RIGHT");
 
     lua_pushinteger(*this, fb::game::equipment::slot::UNKNOWN_SLOT);

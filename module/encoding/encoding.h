@@ -12,7 +12,7 @@
 #include <string>
 #include <cstring>
 
-enum PLATFORM
+enum class PLATFORM
 {
     Windows,
     Linux,

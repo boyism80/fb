@@ -204,7 +204,7 @@ public:
 
 #pragma region enum
 public:
-    enum options : uint8_t 
+    enum class options : uint8_t 
     { 
         NO_OPTION                   = 0x00,
         BUILD_IN                    = 0x01,
@@ -215,7 +215,7 @@ public:
         ENABLE_PK                   = 0x20,
         DISABLE_DIE_PENALTY         = 0x30 
     };
-    enum effects : uint8_t 
+    enum class effects : uint8_t 
     { 
         NO_EFFECT = 0x00,
         FIRE = 0x01,

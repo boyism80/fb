@@ -67,7 +67,7 @@ bool fb::game::consume::active()
     if(listener != nullptr)
     {
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
-        listener->on_action(*this->_owner, fb::game::action::EAT, fb::game::duration::DURATION_EAT, fb::game::sound::EAT);
+        listener->on_action(*this->_owner, fb::game::action::EAT, fb::game::duration::DURATION_EAT, static_cast<uint8_t>(fb::game::sound::type::EAT));
     }
 
     if(this->empty())

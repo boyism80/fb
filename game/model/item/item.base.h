@@ -35,9 +35,9 @@ public:
 
 #pragma region enum
 public:
-    enum penalties { NONE, DROP, DESTRUCTION };
+    enum class penalties { NONE, DROP, DESTRUCTION };
 
-    enum delete_attr : uint8_t
+    enum class delete_attr : uint8_t
     {
         DELETE_REMOVED                  = 0x00,
         DELETE_DROP                     = 0x01,
@@ -54,7 +54,7 @@ public:
         DELETE_DESTROY                  = 0x0D,
     };
 
-    enum attrs : uint32_t
+    enum class attrs : uint32_t
     {
         ITEM_ATTR_NONE                  = 0x00000000,
         ITEM_ATTR_CONSUME               = 0x00000001,
@@ -255,7 +255,7 @@ public:
 
 #pragma region override method
 public:
-    fb::game::object::types                  type() const override { return object::ITEM; }
+    fb::game::object::types                  type() const override { return object::types::ITEM; }
 #pragma endregion
 
 #pragma region virtual method

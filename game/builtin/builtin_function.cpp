@@ -110,7 +110,7 @@ int fb::game::acceptor::builtin_timer(lua_State* lua)
     auto value = (uint32_t)thread->tointeger(1);
     auto decrease = thread->toboolean(2);
 
-    acceptor->send(fb::protocol::game::response::timer(value, decrease ? timer::DECREASE : timer::INCREASE));
+    acceptor->send(fb::protocol::game::response::timer(value, decrease ? timer::type::DECREASE : timer::type::INCREASE));
     return 0;
 }
 

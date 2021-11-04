@@ -76,7 +76,7 @@ public:
     void                                pickup(bool boost);
     bool                                throws(uint8_t index);
 
-    fb::game::item*                     remove(uint8_t index, uint16_t copunt = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
+    fb::game::item*                     remove(uint8_t index, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::DELETE_NONE);
 
     std::map<equipment::slot, item*>    equipments() const;
