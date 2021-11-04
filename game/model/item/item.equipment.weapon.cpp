@@ -72,7 +72,7 @@ fb::game::weapon::master::~master()
 
 fb::game::item::attrs fb::game::weapon::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_WEAPON;
+    return item::attrs::WEAPON;
 }
 
 fb::game::item* fb::game::weapon::master::make(fb::game::item::listener* listener) const

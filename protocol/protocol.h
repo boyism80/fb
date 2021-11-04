@@ -10,9 +10,9 @@ namespace fb { namespace protocol { namespace internal {
 
 enum class services : uint8_t
 {
-    SERVICE_GATEWAY, 
-    SERVICE_LOGIN, 
-    SERVICE_GAME
+    GATEWAY, 
+    LOGIN, 
+    GAME
 };
 
 enum id : uint8_t

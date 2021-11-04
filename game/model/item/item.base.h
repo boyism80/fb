@@ -39,37 +39,37 @@ public:
 
     enum class delete_attr : uint8_t
     {
-        DELETE_REMOVED                  = 0x00,
-        DELETE_DROP                     = 0x01,
-        DELETE_EAT                      = 0x02,
-        DELETE_SMOKE                    = 0x03,
-        DELETE_THROW                    = 0x04,
-        DELETE_SHOOT                    = 0x05,
-        DELETE_REDUCE                   = 0x06,
-        DELETE_STICK                    = 0x07,
-        DELETE_DECAY                    = 0x08,
-        DELETE_GIVE                     = 0x09,
-        DELETE_SELL                     = 0x0A,
-        DELETE_NONE                     = 0x0C,
-        DELETE_DESTROY                  = 0x0D,
+        REMOVED     = 0x00,
+        DROP        = 0x01,
+        EAT         = 0x02,
+        SMOKE       = 0x03,
+        THROW       = 0x04,
+        SHOOT       = 0x05,
+        REDUCE      = 0x06,
+        STICK       = 0x07,
+        DECAY       = 0x08,
+        GIVE        = 0x09,
+        SELL        = 0x0A,
+        NONE        = 0x0C,
+        DESTROY     = 0x0D,
     };
 
     enum class attrs : uint32_t
     {
-        ITEM_ATTR_NONE                  = 0x00000000,
-        ITEM_ATTR_CONSUME               = 0x00000001,
-        ITEM_ATTR_BUNDLE                = 0x00000002,
-        ITEM_ATTR_SCRIPT                = 0x00000003,
-        ITEM_ATTR_CASH                  = 0x00000004,
-        ITEM_ATTR_PACK                  = ITEM_ATTR_CONSUME   | 0x00000100,
-        ITEM_ATTR_EQUIPMENT             = 0x10000000,
-        ITEM_ATTR_WEAPON                = ITEM_ATTR_EQUIPMENT | 0x00000100,
-        ITEM_ATTR_ARMOR                 = ITEM_ATTR_EQUIPMENT | 0x00000200,
-        ITEM_ATTR_SHIELD                = ITEM_ATTR_EQUIPMENT | 0x00000400,
-        ITEM_ATTR_HELMET                = ITEM_ATTR_EQUIPMENT | 0x00000800,
-        ITEM_ATTR_RING                  = ITEM_ATTR_EQUIPMENT | 0x00001000,
-        ITEM_ATTR_AUXILIARY             = ITEM_ATTR_EQUIPMENT | 0x00002000,
-        ITEM_ATTR_ARROW                 = ITEM_ATTR_EQUIPMENT | 0x00004000,
+        NONE        = 0x00000000,
+        CONSUME     = 0x00000001,
+        BUNDLE      = 0x00000002,
+        SCRIPT      = 0x00000003,
+        CASH        = 0x00000004,
+        PACK        = CONSUME   | 0x00000100,
+        EQUIPMENT   = 0x10000000,
+        WEAPON      = EQUIPMENT | 0x00000100,
+        ARMOR       = EQUIPMENT | 0x00000200,
+        SHIELD      = EQUIPMENT | 0x00000400,
+        HELMET      = EQUIPMENT | 0x00000800,
+        RING        = EQUIPMENT | 0x00001000,
+        AUXILIARY   = EQUIPMENT | 0x00002000,
+        ARROW       = EQUIPMENT | 0x00004000,
     };
 #pragma endregion
 
@@ -155,7 +155,7 @@ public:
 #pragma region nested listener
 interface item::listener : public virtual fb::game::object::listener
 {
-    virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::DELETE_NONE) = 0;
+    virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::NONE) = 0;
     virtual void on_item_update(session& me, uint8_t index) = 0;
     virtual void on_item_swap(session& me, uint8_t src, uint8_t dst) = 0;
     virtual void on_item_active(session& me, item& item) = 0;

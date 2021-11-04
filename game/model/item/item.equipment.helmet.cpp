@@ -64,7 +64,7 @@ fb::game::helmet::master::~master()
 
 fb::game::item::attrs fb::game::helmet::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_HELMET;
+    return item::attrs::HELMET;
 }
 
 fb::game::item* fb::game::helmet::master::make(fb::game::item::listener* listener) const

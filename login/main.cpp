@@ -52,7 +52,7 @@ int main(int argc, const char** argv)
             {
                 if(success)
                 {
-                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::SERVICE_LOGIN, 0xFF));
+                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::LOGIN, 0xFF));
                 }
                 else
                 {

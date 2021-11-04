@@ -16,7 +16,7 @@ fb::game::cash::master::~master()
 
 fb::game::item::attrs fb::game::cash::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_CASH;
+    return item::attrs::CASH;
 }
 
 fb::game::item* fb::game::cash::master::make(fb::game::item::listener* listener) const

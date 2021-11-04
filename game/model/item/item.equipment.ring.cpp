@@ -64,7 +64,7 @@ fb::game::ring::master::~master()
 
 fb::game::item::attrs fb::game::ring::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_RING;
+    return item::attrs::RING;
 }
 
 fb::game::item* fb::game::ring::master::make(fb::game::item::listener* listener) const

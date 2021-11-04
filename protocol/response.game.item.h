@@ -91,19 +91,19 @@ public:
             break;
 
         case equipment::slot::LEFT_HAND_SLOT:
-            item = this->me.items.ring(equipment::position::EQUIPMENT_LEFT);
+            item = this->me.items.ring(equipment::position::LEFT);
             break;
 
         case equipment::slot::RIGHT_HAND_SLOT:
-            item = this->me.items.ring(equipment::position::EQUIPMENT_RIGHT);
+            item = this->me.items.ring(equipment::position::RIGHT);
             break;
 
         case equipment::slot::LEFT_AUX_SLOT:
-            item = this->me.items.auxiliary(equipment::position::EQUIPMENT_LEFT);
+            item = this->me.items.auxiliary(equipment::position::LEFT);
             break;
 
         case equipment::slot::RIGHT_AUX_SLOT:
-            item = this->me.items.auxiliary(equipment::position::EQUIPMENT_RIGHT);
+            item = this->me.items.auxiliary(equipment::position::RIGHT);
             break;
 
         default:

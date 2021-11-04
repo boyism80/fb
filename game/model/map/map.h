@@ -217,9 +217,9 @@ public:
     };
     enum class effects : uint8_t 
     { 
-        NO_EFFECT = 0x00,
-        FIRE = 0x01,
-        WATER = 0x02 
+        NONE                        = 0x00,
+        FIRE                        = 0x01,
+        WATER                       = 0x02 
     };
 #pragma endregion
 
@@ -250,7 +250,7 @@ private:
     unique_tiles                    _tiles    = nullptr;
     std::string                     _name;
     options                         _option   = options::NO_OPTION;
-    effects                         _effect   = effects::NO_EFFECT;
+    effects                         _effect   = effects::NONE;
     uint8_t                         _bgm      = 0;
     unique_warps                    _warps;
     fb::game::sectors*              _sectors  = nullptr;

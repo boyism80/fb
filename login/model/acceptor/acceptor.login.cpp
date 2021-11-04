@@ -45,16 +45,16 @@ bool fb::login::acceptor::handle_in_transfer(fb::internal::socket<>& socket, con
         if(client == nullptr)
             return true;
 
-        if(response.code == fb::protocol::internal::response::CONNECTED)
+        if(response.code == fb::protocol::internal::response::transfer_code::CONNECTED)
             throw id_exception("이미 접속중입니다.");
 
-        if(response.code != fb::protocol::internal::response::SUCCESS)
+        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw id_exception("비바람이 휘몰아치고 있습니다.");
 
         client->send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
         parameter.write(response.name);
-        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_LOGIN, parameter);
+        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
     }
     catch(login_exception& e)
     {
@@ -148,7 +148,7 @@ bool fb::login::acceptor::handle_login(fb::socket<fb::login::session>& socket, c
                 id, pw,
                 [this, id, &socket] (uint32_t map)
                 {
-                    this->_internal->send(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::SERVICE_LOGIN, fb::protocol::internal::services::SERVICE_GAME, map, socket.native_handle()));
+                    this->_internal->send(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, socket.native_handle()));
                 },
                 [this, &socket] (const login_exception& e)
                 {

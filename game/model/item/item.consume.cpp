@@ -31,9 +31,9 @@ fb::game::consume::master::~master()
 
 fb::game::item::attrs fb::game::consume::master::attr() const
 {
-    item::attrs attr = item::attrs::ITEM_ATTR_CONSUME;
+    item::attrs attr = item::attrs::CONSUME;
     if(this->capacity > 1)
-        attr = item::attrs(attr | item::attrs::ITEM_ATTR_BUNDLE);
+        attr = item::attrs(attr | item::attrs::BUNDLE);
 
     return attr;
 }
@@ -71,6 +71,6 @@ bool fb::game::consume::active()
     }
 
     if(this->empty())
-        this->_owner->items.remove(*this, -1, item::delete_attr::DELETE_EAT);
+        this->_owner->items.remove(*this, -1, item::delete_attr::EAT);
     return true;
 }

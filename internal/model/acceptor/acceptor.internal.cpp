@@ -21,13 +21,13 @@ fb::internal::acceptor::service* fb::internal::acceptor::get(fb::protocol::inter
 {
     switch(type)
     {
-    case fb::protocol::internal::services::SERVICE_GATEWAY:
+    case fb::protocol::internal::services::GATEWAY:
         return this->_gateway;
 
-    case fb::protocol::internal::services::SERVICE_LOGIN:
+    case fb::protocol::internal::services::LOGIN:
         return this->_login;
 
-    case fb::protocol::internal::services::SERVICE_GAME:
+    case fb::protocol::internal::services::GAME:
         return this->_games[group];
 
     default:
@@ -58,17 +58,17 @@ bool fb::internal::acceptor::handle_disconnected(fb::internal::socket<fb::intern
 
     switch(subscriber->service)
     {
-    case fb::protocol::internal::services::SERVICE_GATEWAY:
+    case fb::protocol::internal::services::GATEWAY:
     {
         this->_gateway = nullptr;
     } break;
 
-    case fb::protocol::internal::services::SERVICE_LOGIN:
+    case fb::protocol::internal::services::LOGIN:
     {
         this->_login = nullptr;
     } break;
 
-    case fb::protocol::internal::services::SERVICE_GAME:
+    case fb::protocol::internal::services::GAME:
     {
         this->_games.erase(subscriber->group);
     } break;
@@ -86,7 +86,7 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
 
     switch(request.service)
     {
-    case fb::protocol::internal::services::SERVICE_GATEWAY:
+    case fb::protocol::internal::services::GATEWAY:
     {
         if(this->_gateway != nullptr)
             return false;
@@ -94,7 +94,7 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
         this->_gateway = &socket;
     } break;
 
-    case fb::protocol::internal::services::SERVICE_LOGIN:
+    case fb::protocol::internal::services::LOGIN:
     {
         if(this->_login != nullptr)
             return false;
@@ -102,7 +102,7 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
         this->_login = &socket;
     } break;
 
-    case fb::protocol::internal::services::SERVICE_GAME:
+    case fb::protocol::internal::services::GAME:
     {
         if(this->_games[request.group] != nullptr)
             return false;
@@ -127,20 +127,20 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
     {
         switch(request.to)
         {
-        case fb::protocol::internal::services::SERVICE_GAME:
+        case fb::protocol::internal::services::GAME:
         {
             group = fb::internal::table::hosts[request.map];
             if(group.has_value() == false)
-                throw fb::internal::transfer_error(fb::protocol::internal::response::UNKNOWN);
+                throw fb::internal::transfer_error(fb::protocol::internal::response::transfer_code::UNKNOWN);
 
             if(this->_games[*group] == nullptr)
-                throw fb::internal::transfer_error(fb::protocol::internal::response::NOT_READY);
+                throw fb::internal::transfer_error(fb::protocol::internal::response::transfer_code::NOT_READY);
 
-            if(request.from == fb::protocol::internal::services::SERVICE_LOGIN)
+            if(request.from == fb::protocol::internal::services::LOGIN)
             {
                 auto found = this->_users.find(request.name);
                 if(found != this->_users.end())
-                    throw fb::internal::transfer_error(fb::protocol::internal::response::CONNECTED);
+                    throw fb::internal::transfer_error(fb::protocol::internal::response::transfer_code::CONNECTED);
             }
         } break;
 
@@ -154,7 +154,7 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
     }
     catch(fb::internal::transfer_error& e)
     {
-        if(e.code == fb::protocol::internal::response::CONNECTED)
+        if(e.code == fb::protocol::internal::response::transfer_code::CONNECTED)
         {
             delete this->_users[request.name];
             this->_users.erase(request.name);
@@ -183,7 +183,7 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
         if(group.has_value() == false)
             return true;
 
-        auto subscriber = this->get(fb::protocol::internal::services::SERVICE_GAME, *group);
+        auto subscriber = this->get(fb::protocol::internal::services::GAME, *group);
         if(subscriber == nullptr)
             return true;
 

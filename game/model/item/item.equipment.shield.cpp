@@ -64,7 +64,7 @@ fb::game::shield::master::~master()
 
 fb::game::item::attrs fb::game::shield::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_SHIELD;
+    return item::attrs::SHIELD;
 }
 
 fb::game::item* fb::game::shield::master::make(fb::game::item::listener* listener) const

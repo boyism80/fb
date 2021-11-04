@@ -22,7 +22,7 @@ public:
         RIGHT_AUX_SLOT                  = 21,
     };
 
-    enum class position : uint8_t { EQUIPMENT_LEFT = 0, EQUIPMENT_RIGHT = 1, };
+    enum class position : uint8_t { LEFT = 0, RIGHT = 1, };
 #pragma endregion
 
 #pragma region forward nested declaration

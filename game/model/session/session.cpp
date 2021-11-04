@@ -1341,7 +1341,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
 
         auto acceptor = thread->env<fb::game::acceptor>("acceptor");
-        auto dropped = session->items.remove(index, 1, item::delete_attr::DELETE_REMOVED);
+        auto dropped = session->items.remove(index, 1, item::delete_attr::REMOVED);
         if(dropped != nullptr)
             delete dropped;
     }

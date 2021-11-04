@@ -64,7 +64,7 @@ fb::game::bow::master::~master()
 
 fb::game::item::attrs fb::game::bow::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_ARROW;
+    return item::attrs::ARROW;
 }
 
 fb::game::item* fb::game::bow::master::make(fb::game::item::listener* listener) const

@@ -33,7 +33,7 @@ fb::game::pack::master::~master()
 
 fb::game::item::attrs fb::game::pack::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_PACK;
+    return item::attrs::PACK;
 }
 
 fb::game::item* fb::game::pack::master::make(fb::game::item::listener* listener) const
@@ -88,7 +88,7 @@ bool fb::game::pack::active()
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if(this->empty())
-        this->_owner->items.remove(*this, 0xFF, item::delete_attr::DELETE_REDUCE);
+        this->_owner->items.remove(*this, 0xFF, item::delete_attr::REDUCE);
 
     return true;
 }

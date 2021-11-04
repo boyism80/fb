@@ -144,7 +144,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             continue;
 
         auto exists = (fb::game::item*)nullptr;
-        if(item->attr(item::attrs::ITEM_ATTR_BUNDLE))
+        if(item->attr(item::attrs::BUNDLE))
         {
             auto exists = this->find(*item->based<fb::game::item>());
             if(exists == nullptr)
@@ -293,17 +293,17 @@ fb::game::equipment* fb::game::items::wear(fb::game::equipment::slot slot, fb::g
         return this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
 
     case equipment::slot::LEFT_HAND_SLOT:
-        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::EQUIPMENT_LEFT);
+        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::LEFT);
         break;
 
     case equipment::slot::RIGHT_HAND_SLOT:
-        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::EQUIPMENT_RIGHT);
+        return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::RIGHT);
 
     case equipment::slot::LEFT_AUX_SLOT:
-        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::EQUIPMENT_LEFT);
+        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::LEFT);
 
     case equipment::slot::RIGHT_AUX_SLOT:
-        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::EQUIPMENT_RIGHT);
+        return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::RIGHT);
 
     default:
         throw std::runtime_error("invalid equipment slot");
@@ -395,13 +395,13 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
 {
     fb::game::ring*         before = nullptr;
 
-    if(this->_rings[static_cast<int>(equipment::position::EQUIPMENT_LEFT)] == nullptr)
+    if(this->_rings[static_cast<int>(equipment::position::LEFT)] == nullptr)
     {
-        before = this->ring(ring, equipment::position::EQUIPMENT_LEFT);
+        before = this->ring(ring, equipment::position::LEFT);
     }
     else
     {
-        before = this->ring(ring, equipment::position::EQUIPMENT_RIGHT);
+        before = this->ring(ring, equipment::position::RIGHT);
     }
     ring->owner(&this->_owner);
 
@@ -433,13 +433,13 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
 {
     fb::game::auxiliary*         before = nullptr;
 
-    if(this->_auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_LEFT)] == nullptr)
+    if(this->_auxiliaries[static_cast<int>(equipment::position::LEFT)] == nullptr)
     {
-        before = this->auxiliary(auxiliary, equipment::position::EQUIPMENT_LEFT);
+        before = this->auxiliary(auxiliary, equipment::position::LEFT);
     }
     else
     {
-        before = this->auxiliary(auxiliary, equipment::position::EQUIPMENT_RIGHT);
+        before = this->auxiliary(auxiliary, equipment::position::RIGHT);
     }
     auxiliary->owner(&this->_owner);
 
@@ -503,7 +503,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
     {
         owner.assert_state({state::RIDING, state::GHOST});
 
-        auto                    dropped = this->remove(index, count, item::delete_attr::DELETE_DROP);
+        auto                    dropped = this->remove(index, count, item::delete_attr::DROP);
         if(dropped != nullptr)
         {
             dropped->map(owner.map(), owner.position());
@@ -542,7 +542,7 @@ void fb::game::items::pickup(bool boost)
         {
             auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);
-            if(below->attr(fb::game::item::attrs::ITEM_ATTR_CASH))
+            if(below->attr(fb::game::item::attrs::CASH))
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = owner.money_add(cash->chunk());
@@ -597,7 +597,7 @@ bool fb::game::items::throws(uint8_t index)
         if(map == nullptr)
             throw std::exception();
 
-        auto                    dropped = this->remove(index, 1, item::delete_attr::DELETE_THROW);
+        auto                    dropped = this->remove(index, 1, item::delete_attr::THROW);
         auto                    position = this->_owner.position();
         for(int i = 0; i < 7; i++)
         {
@@ -697,9 +697,9 @@ std::map<fb::game::equipment::slot, fb::game::item*> fb::game::items::equipments
         {equipment::slot::ARMOR_SLOT,       _armor},
         {equipment::slot::SHIELD_SLOT,      _shield},
         {equipment::slot::HELMET_SLOT,      _helmet},
-        {equipment::slot::LEFT_HAND_SLOT,   _rings[static_cast<int>(equipment::position::EQUIPMENT_LEFT)]},
-        {equipment::slot::RIGHT_HAND_SLOT,  _rings[static_cast<int>(equipment::position::EQUIPMENT_RIGHT)]},
-        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_LEFT)]},
-        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[static_cast<int>(equipment::position::EQUIPMENT_RIGHT)]}
+        {equipment::slot::LEFT_HAND_SLOT,   _rings[static_cast<int>(equipment::position::LEFT)]},
+        {equipment::slot::RIGHT_HAND_SLOT,  _rings[static_cast<int>(equipment::position::RIGHT)]},
+        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[static_cast<int>(equipment::position::LEFT)]},
+        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[static_cast<int>(equipment::position::RIGHT)]}
     };
 }

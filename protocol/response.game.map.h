@@ -61,7 +61,7 @@ public:
     {
         out_stream.write_u8(0x06);
 
-        if(this->map.effect() == fb::game::map::effects::NO_EFFECT)
+        if(this->map.effect() == fb::game::map::effects::NONE)
             out_stream.write_u8(0x00);
         else
             out_stream.write_u8(0x04).write_u8(this->map.effect());

@@ -128,7 +128,7 @@ bool fb::game::trade::up(fb::game::item& item)
         if(master->trade.enabled == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
-        if(enum_in(item.attr(), fb::game::item::attrs::ITEM_ATTR_BUNDLE) && item.count() > 1)
+        if(enum_in(item.attr(), fb::game::item::attrs::BUNDLE) && item.count() > 1)
         {
             // 묶음 단위의 아이템 형식 거래 시도
             this->_selected = &item;
@@ -270,7 +270,7 @@ bool fb::game::trade::cancel()
 
 uint8_t fb::game::trade::add(fb::game::item& item)
 {
-    if(enum_in(item.attr(), item::attrs::ITEM_ATTR_BUNDLE))
+    if(enum_in(item.attr(), item::attrs::BUNDLE))
     {
         auto exists = this->find(item);
         if(exists != 0xFF)
@@ -318,7 +318,7 @@ bool fb::game::trade::flushable() const
         if(item == nullptr)
             continue;
 
-        if(enum_in(item->attr(), item::attrs::ITEM_ATTR_BUNDLE) == false)
+        if(enum_in(item->attr(), item::attrs::BUNDLE) == false)
             continue;
 
         auto index = this->find(*item);

@@ -163,7 +163,7 @@ fb::game::map::effects fb::game::container::map::to_effect(const std::string& ef
     if(effect == "water")
         return fb::game::map::effects::WATER;
 
-    return fb::game::map::effects::NO_EFFECT;
+    return fb::game::map::effects::NONE;
 }
 
 fb::game::map::options fb::game::container::map::to_option(const Json::Value& data)

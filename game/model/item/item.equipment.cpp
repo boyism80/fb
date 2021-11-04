@@ -65,7 +65,7 @@ fb::game::equipment::master::~master()
 
 fb::game::item::attrs fb::game::equipment::master::attr() const
 {
-    return item::attrs::ITEM_ATTR_EQUIPMENT;
+    return item::attrs::EQUIPMENT;
 }
 
 fb::game::item* fb::game::equipment::master::make(fb::game::item::listener* listener) const
@@ -103,28 +103,28 @@ bool fb::game::equipment::active()
     auto                    slot = equipment::slot::UNKNOWN_SLOT;
     switch(this->attr())
     {
-    case item::attrs::ITEM_ATTR_WEAPON:
+    case item::attrs::WEAPON:
         before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
         slot = equipment::slot::WEAPON_SLOT;
         break;
 
-    case item::attrs::ITEM_ATTR_ARMOR:
+    case item::attrs::ARMOR:
         before = this->_owner->items.armor(static_cast<fb::game::armor*>(this));
         slot = equipment::slot::ARMOR_SLOT;
         break;
 
-    case item::attrs::ITEM_ATTR_SHIELD:
+    case item::attrs::SHIELD:
         before = this->_owner->items.shield(static_cast<fb::game::shield*>(this));
         slot = equipment::slot::SHIELD_SLOT;
         break;
 
-    case item::attrs::ITEM_ATTR_HELMET:
+    case item::attrs::HELMET:
         before = this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
         slot = equipment::slot::HELMET_SLOT;
         break;
 
-    case item::attrs::ITEM_ATTR_RING:
-        if(this->_owner->items.ring(equipment::position::EQUIPMENT_LEFT) == nullptr)
+    case item::attrs::RING:
+        if(this->_owner->items.ring(equipment::position::LEFT) == nullptr)
         {
             slot = equipment::slot::LEFT_HAND_SLOT;
         }
@@ -137,8 +137,8 @@ bool fb::game::equipment::active()
         break;
 
 
-    case item::attrs::ITEM_ATTR_AUXILIARY:
-        if(this->_owner->items.auxiliary(equipment::position::EQUIPMENT_LEFT) == nullptr)
+    case item::attrs::AUXILIARY:
+        if(this->_owner->items.auxiliary(equipment::position::LEFT) == nullptr)
         {
             slot = equipment::slot::LEFT_AUX_SLOT;
         }

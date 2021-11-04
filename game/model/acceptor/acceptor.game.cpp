@@ -711,7 +711,7 @@ bool fb::game::acceptor::handle_in_transfer(fb::internal::socket<>& socket, cons
                 {
                     fb::ostream         parameter;
                     parameter.write(response.name);
-                    this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::SERVICE_GAME, parameter);
+                    this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
                 }
             );
         });
@@ -864,7 +864,7 @@ bool fb::game::acceptor::handle_login(fb::socket<fb::game::session>& socket, con
             this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
             this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
             
-            if(from == fb::protocol::internal::services::SERVICE_LOGIN)
+            if(from == fb::protocol::internal::services::LOGIN)
             {
                 auto msg = this->elapsed_message(last_login);
                 if(msg.empty() == false)
@@ -932,7 +932,7 @@ bool fb::game::acceptor::handle_logout(fb::socket<fb::game::session>& socket, co
 {
     auto                    session = socket.data();
     const auto&             config = fb::config::get();
-    this->transfer(socket, config["login"]["ip"].asString(), config["login"]["port"].asInt(), fb::protocol::internal::services::SERVICE_GAME);
+    this->transfer(socket, config["login"]["ip"].asString(), config["login"]["port"].asInt(), fb::protocol::internal::services::GAME);
     return true;
 }
 
