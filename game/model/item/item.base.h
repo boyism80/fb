@@ -170,7 +170,7 @@ public:
     friend class item;
 
 public:
-    const bool                              enabled;
+    const bool                              enabled = false;
 
 public:
     explicit trade(bool enabled) : enabled(enabled) { }
@@ -182,8 +182,8 @@ public:
     friend class item;
 
 public:
-    bool                                    enabled;
-    uint32_t                                price;
+    const bool                              enabled = false;
+    const uint32_t                          price   = 0;
 
 public:
     storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
