@@ -230,13 +230,13 @@ public:
     void                        attack();
     void                        action(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00);
 
-    const std::string&          name() const;
+    const std::string&          name() const final;
     void                        name(const std::string& value);
 
-    uint16_t                    look() const;
+    uint16_t                    look() const final;
     void                        look(uint16_t value);
 
-    uint8_t                     color() const;
+    uint8_t                     color() const final;
     void                        color(uint8_t value);
 
     std::optional<uint8_t>      armor_color() const;
