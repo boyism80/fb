@@ -19,7 +19,7 @@ class db
 {
 private:
     static std::unique_ptr<db>                      _ist;
-    static const uint32_t                           SIZE = 10;
+    static constexpr uint32_t                       SIZE = 10;
 
 public:
     using pool  = std::deque<daotk::mysql::connection*>;

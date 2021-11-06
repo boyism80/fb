@@ -28,7 +28,7 @@ public:
 
 #pragma region static const field
 public:
-    static const uint32_t       MAX_SLOT = 52;
+    static constexpr uint32_t   MAX_SLOT = 52;
 #pragma endregion
 
 #pragma region enum

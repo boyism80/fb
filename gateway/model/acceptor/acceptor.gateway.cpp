@@ -3,7 +3,7 @@
 fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
     fb::acceptor<fb::gateway::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
-    static const char* message = "CONNECTED SERVER\n";
+    static constexpr const char* message = "CONNECTED SERVER\n";
     this->_connection_cache.write_u8(0x7E)
                            .write_u8(0x1B)
                            .write((const void*)message, strlen(message));
@@ -25,7 +25,7 @@ bool fb::gateway::acceptor::load_entries()
     try
     {
         // Load gateway list
-        auto entrypoints = fb::config::get()["entrypoints"];
+        auto& entrypoints = fb::config::get()["entrypoints"];
         for(auto i = entrypoints.begin(); i != entrypoints.end(); i++)
         {
             this->_entrypoints.push_back(entry

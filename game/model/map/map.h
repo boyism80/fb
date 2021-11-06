@@ -224,10 +224,10 @@ public:
 #pragma endregion
 
 #pragma region static const field
-    static const uint32_t           MAX_SCREEN_WIDTH   = 17;
-    static const uint32_t           HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
-    static const uint32_t           MAX_SCREEN_HEIGHT  = 15;
-    static const uint32_t           HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
+    static constexpr uint32_t       MAX_SCREEN_WIDTH   = 17;
+    static constexpr uint32_t       HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
+    static constexpr uint32_t       MAX_SCREEN_HEIGHT  = 15;
+    static constexpr uint32_t       HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
 #pragma endregion
 
 #pragma region forward nested declaration
