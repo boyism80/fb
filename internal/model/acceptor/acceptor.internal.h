@@ -38,7 +38,7 @@ private:
     std::map<std::string, user*>    _users;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay);
+    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~acceptor();
 
 private:

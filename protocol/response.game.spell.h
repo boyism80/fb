@@ -1,6 +1,7 @@
 #ifndef __PROTOCOL_RESPONSE_GAME_SPELL_H__
 #define __PROTOCOL_RESPONSE_GAME_SPELL_H__
 
+#include <chrono>
 #include "protocol/protocol.h"
 #include "model/spell/spell.h"
 
@@ -9,8 +10,8 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class buff : public fb::protocol::base::header
 {
 public:
-    const std::string       name;
-    const uint32_t          time;
+    const std::string               name;
+    const std::chrono::milliseconds time;
 
 public:
     buff(const std::string& name, uint32_t time) : 
@@ -25,7 +26,7 @@ public:
     {
         out_stream.write_u8(0x3A)
                   .write(this->name)
-                  .write_u32(this->time);
+                  .write_u32(this->time.count() / 1000);
     }
 };
 

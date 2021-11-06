@@ -1,10 +1,10 @@
 #include "acceptor.h"
 
 template <template<class> class S, class T>
-fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, uint8_t num_threads) : 
+fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
-    _accept_delay(accept_delay),
+    _delay(delay),
     _buffer(nullptr),
     _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
     _exit(false)
@@ -96,7 +96,7 @@ void fb::base::acceptor<S, T>::accept()
                     {
                         socket->recv();
                     },
-                    std::chrono::seconds(this->_accept_delay),
+                    this->_delay,
                     true
                 );
 
@@ -289,8 +289,8 @@ inline fb::base::acceptor<S, T>::operator boost::asio::io_context& () const
 
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads) : 
-    fb::base::acceptor<fb::socket, T>(context, port, accept_delay, num_threads),
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads) : 
+    fb::base::acceptor<fb::socket, T>(context, port, delay, num_threads),
     _internal_connection(internal_connection)
 {
     this->connect_internal();

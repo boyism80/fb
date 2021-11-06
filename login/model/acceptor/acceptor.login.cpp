@@ -1,7 +1,7 @@
 #include "acceptor.login.h"
 
-fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::login::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+fb::login::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
+    fb::acceptor<fb::login::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     // Register event handler
     this->bind<fb::protocol::login::request::login>                   (0x03, std::bind(&acceptor::handle_login,               this, std::placeholders::_1, std::placeholders::_2));

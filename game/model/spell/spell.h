@@ -2,6 +2,7 @@
 #define __SPELL_H__
 
 #include <vector>
+#include <chrono>
 #include "model/mmo/mmo.h"
 #include "model/container/container.h"
 #include "model/lua/lua.h"
@@ -97,7 +98,7 @@ class buff
 {
 private:
     const fb::game::spell*      _spell  = nullptr;
-    uint32_t                    _time   = 0;
+    std::chrono::milliseconds   _time;
 
 public:
     buff(const spell* spell, uint32_t time);
@@ -105,8 +106,9 @@ public:
 
 public:
     const fb::game::spell&      spell() const;
-    uint32_t                    time() const;
-    void                        time(uint32_t value);
+    std::chrono::milliseconds   time() const;
+    template <class _Rep, class _Period>
+    void                        time(const std::chrono::duration<_Rep, _Period>& value) { this->_time = std::chrono::duration_cast<std::chrono::milliseconds>(value); }
     void                        time_inc(uint32_t inc);
     void                        time_dec(uint32_t dec);
 

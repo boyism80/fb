@@ -183,14 +183,9 @@ const fb::game::spell& fb::game::buff::spell() const
     return *this->_spell;
 }
 
-uint32_t fb::game::buff::time() const
+std::chrono::milliseconds fb::game::buff::time() const
 {
     return this->_time;
-}
-
-void fb::game::buff::time(uint32_t value)
-{
-    this->_time = value;
 }
 
 void fb::game::buff::time_inc(uint32_t inc)

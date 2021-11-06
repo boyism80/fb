@@ -26,7 +26,7 @@ private:
     service::gateway            _gateway_service;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection);
+    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
     ~acceptor();
 
 private:

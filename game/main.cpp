@@ -409,7 +409,7 @@ int main(int argc, const char** argv)
         (
             io_context, 
             config["port"].asInt(), 
-            config["delay"].asInt(),
+            std::chrono::seconds(config["delay"].asInt()),
             connection
         );
 

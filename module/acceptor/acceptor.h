@@ -3,6 +3,7 @@
 
 #include <map>
 #include <ctime>
+#include <chrono>
 #include <boost/asio.hpp>
 #include <zlib.h>
 #include <functional>
@@ -26,14 +27,14 @@ private:
 
 protected:
     boost::asio::io_context&                    _context;
-    uint8_t                                     _accept_delay = 0;
+    std::chrono::seconds                        _delay;
     std::unique_ptr<fb::internal::socket<>>     _internal;
 
 public:
     fb::base::socket_container<S, T>            sockets;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads = 0);
     ~acceptor();
 
 private:
@@ -147,7 +148,7 @@ private:
     const INTERNAL_CONNECTION           _internal_connection;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads = 0);
     ~acceptor();
 
 private:

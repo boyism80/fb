@@ -64,7 +64,7 @@ int main(int argc, const char** argv)
         (
             io_context, 
             config["port"].asInt(), 
-            config["delay"].asInt()
+            std::chrono::seconds(config["delay"].asInt())
         );
 
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);

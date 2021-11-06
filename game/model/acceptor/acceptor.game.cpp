@@ -144,8 +144,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 {"leader",              fb::game::group::builtin_leader},
 END_LUA_EXTENSION
 
-acceptor::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t accept_delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, accept_delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+acceptor::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
+    fb::acceptor<fb::game::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     const auto& config = fb::config::get();
 
@@ -1663,7 +1663,7 @@ void fb::game::acceptor::handle_buff_timer(std::chrono::steady_clock::duration n
             for(auto buff : pair.second->buffs)
             {
                 buff->time_dec(1);
-                if(buff->time() <= 0)
+                if(buff->time() <= 0ms)
                     finishes.push_back(buff);
             }
 
