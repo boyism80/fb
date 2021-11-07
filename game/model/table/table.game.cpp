@@ -147,7 +147,7 @@ uint32_t fb::game::container::cls::exp(uint8_t class_id, uint8_t level)
         if(level > 99)
             return 0;
 
-        return this->operator[](class_id)->level_abilities[level]->exp;
+        return this->operator[](class_id)->abilities[level]->exp;
     }
     catch(std::exception&)
     {
@@ -918,20 +918,18 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
             for (auto i2 = levels.begin(); i2 != levels.end(); i2++)
             {
                 uint32_t        key       = i2.key().asInt();
-                auto&           ability   = *i2;
-                auto            allocated = new level_ability(ability["strength"].asInt(),
-                                                              ability["intelligence"].asInt(),
-                                                              ability["dexteritry"].asInt(),
-                                                              ability["hp"].asInt(),
-                                                              ability["mp"].asInt(),
-                                                              (uint32_t)ability["exp"].asInt64());
-
-                classes->add_level_ability(allocated);
+                auto&           data      = *i2;
+                classes->push(fb::game::ability(data["strength"].asInt(),
+                                                data["intelligence"].asInt(),
+                                                data["dexteritry"].asInt(),
+                                                data["hp"].asInt(),
+                                                data["mp"].asInt(),
+                                                (uint32_t)data["exp"].asInt64()));
             }
 
             for (auto& promotion : data["promotions"])
             {
-                classes->add_promotion(CP949(promotion.asString(), PLATFORM::Windows));
+                classes->push(CP949(promotion.asString(), PLATFORM::Windows));
             }
 
 

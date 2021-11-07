@@ -223,15 +223,16 @@ public:
     defensive(int16_t physical, int16_t magical) : physical(physical), magical(magical) { }
 };
 
-struct level_ability
+struct ability
 {
 public:
     uint8_t strength, intelligence, dexteritry;
     uint32_t base_hp, base_mp, exp;
 
 public:
-    level_ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp);
-    ~level_ability();
+    ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp);
+    ability(const ability& right);
+    ~ability();
 
 };
 
@@ -239,15 +240,15 @@ class class_data
 {
 public:
     std::vector<std::string> promotions;
-    std::vector<level_ability*> level_abilities;
+    std::vector<std::unique_ptr<ability>> abilities;
 
 public:
     class_data();
     ~class_data();
 
 public:
-    void add_level_ability(level_ability* data);
-    void add_promotion(const std::string& name);
+    void push(const ability& ability);
+    void push(const std::string& name);
 };
 
 } }
