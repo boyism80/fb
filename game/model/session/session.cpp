@@ -65,7 +65,7 @@ void fb::game::session::handle_update()
 uint32_t fb::game::session::handle_calculate_damage(bool critical) const
 {
     auto                    weapon = this->items.weapon();
-    auto                    master = weapon->based<fb::game::weapon>();
+    auto                    master = weapon != nullptr ? weapon->based<fb::game::weapon>() : nullptr;
 
     if(weapon == nullptr) // no weapon
     {
@@ -89,7 +89,7 @@ void fb::game::session::handle_attack(fb::game::object* you)
 
     auto& thread = fb::game::lua::get();
     thread.from("scripts/common/attack.lua")
-          .func("handle_attack")
+          .func("on_attack")
           .pushobject(*this);
     if(you != nullptr)
         thread.pushobject(*you);

@@ -96,7 +96,7 @@ bool fb::game::mob::action()
     {
         this->_attack_thread = &fb::game::lua::get();
         this->_attack_thread->from(master->script_attack.c_str())
-            .func("handle_attack")
+            .func("on_attack")
             .pushobject(this);
 
         if(this->_target != nullptr)

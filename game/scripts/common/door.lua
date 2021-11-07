@@ -1,4 +1,4 @@
-function handle_door(session)
+function on_door(session)
 	local map = session:map()
 	local door = map:door(session)
 	if door == nil then

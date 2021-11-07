@@ -111,6 +111,7 @@ public:
     static int                  builtin_action(lua_State* lua);
     static int                  builtin_spell(lua_State* lua);
     static int                  builtin_damage(lua_State* lua);
+    static int                  builtin_cast(lua_State* lua);
 #pragma endregion
 };
 

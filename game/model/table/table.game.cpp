@@ -1,5 +1,42 @@
 #include "model/session/session.h"
 #include "table.game.h"
+#include <regex>
+
+void assert_script(const std::string& script, const std::string& regex, const std::string& fnName, const std::function<void(const std::string&)>& callback)
+{
+    if(script.empty())
+        return;
+
+    if(std::filesystem::exists(script) == false)
+    {
+        std::stringstream sstream;
+        sstream << script
+                << " 파일이 존재하지 않습니다.";
+
+        callback(script);
+        throw std::runtime_error(sstream.str());
+    }
+
+    auto in = std::ifstream(script);
+    auto buffer = std::stringstream();
+    buffer << in.rdbuf();
+
+
+    auto re = std::regex(regex);
+    auto matches = std::smatch();
+    auto source = buffer.str();
+    if(std::regex_search(source, matches, re) == false)
+    {
+        std::stringstream sstream;
+        sstream << script
+                << " 파일에 "
+                << fnName
+                << " 함수가 존재하지 않습니다.";
+
+        callback(script);
+        throw std::runtime_error(sstream.str());
+    }
+}
 
 std::vector<fb::game::clan*> fb::game::table::clans;
 fb::game::board              fb::game::table::board;
@@ -252,9 +289,16 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
     auto                storage       = fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt());
     auto                desc          = CP949(data["desc"].asString(), PLATFORM::Windows);
     auto                script_active = CP949(data["script"]["active"].asString(), PLATFORM::Windows);
-    if(std::filesystem::exists(script_active) == false)
-        script_active = "";
-
+    assert_script(script_active, "function\\s+(on_active)\\(\\w+,\\s*\\w+\\)", "on_active", [](const std::string& script) 
+    {
+#if defined DEBUG | defined _DEBUG
+        auto out = std::ofstream(script, std::ios_base::app);
+        out << "\n\nfunction on_active(me, item)\n"
+            << "\n"
+            << "end";
+#endif
+    });
+    
     if(types == "stuff")
     {
         return new fb::game::item::master(name, 
@@ -298,11 +342,26 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
     auto                healing_cycle  = option["healing_cycle"].asInt();
     auto                defensive      = fb::game::defensive(option["defensive"]["physical"].asInt(), option["defensive"]["magical"].asInt());
     auto                script_dress   = CP949(data["script"]["dress"].asString(), PLATFORM::Windows);
-    if(std::filesystem::exists(script_dress) == false)
-        script_dress = "";
+    assert_script(script_dress, "function\\s+(on_dress)\\(\\w+,\\s*\\w+\\)", "on_dress", [](const std::string& script) 
+    {
+#if defined DEBUG | defined _DEBUG
+        auto out = std::ofstream(script, std::ios_base::app);
+        out << "\n\nfunction on_dress(me, item)\n"
+            << "\n"
+            << "end";
+#endif
+    });
+
     auto                script_undress = CP949(data["script"]["undress"].asString(), PLATFORM::Windows);
-    if(std::filesystem::exists(script_undress))
-        script_undress = "";
+    assert_script(script_undress, "function\\s+(on_undress)\\(\\w+,\\s*\\w+\\)", "on_undress", [](const std::string& script) 
+    {
+#if defined DEBUG | defined _DEBUG
+        auto out = std::ofstream(script, std::ios_base::app);
+        out << "\n\nfunction on_undress(me, item)\n"
+            << "\n"
+            << "end";
+#endif
+    });
 
     
     if(types == "weapon")
@@ -551,8 +610,15 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
             uint16_t            look    = data["look"].asInt() + 0x7FFF;
             uint8_t             color   = data["color"].asInt();
             auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
-            if(std::filesystem::exists(script) == false)
-                script = "";
+            assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const std::string& script) 
+            {
+#if defined DEBUG | defined _DEBUG
+                auto out = std::ofstream(script, std::ios_base::app);
+                out << "\n\nfunction on_interact(me, npc)\n"
+                    << "\n"
+                    << "end";
+#endif
+            });
 
             {
                 auto _ = std::lock_guard(*mutex);
@@ -682,18 +748,32 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
             uint16_t            id = std::stoi(key.asString());
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
-            uint16_t            look = data["look"].asInt() + 0x7FFF;
-            uint8_t             color = data["color"].asInt();
+            uint16_t            look    = data["look"].asInt() + 0x7FFF;
+            uint8_t             color   = data["color"].asInt();
             uint32_t            base_hp = data["hp"].asInt();
             uint32_t            base_mp = data["mp"].asInt();
 
             auto                script_attack = CP949(data["script"]["attack"].asString(), PLATFORM::Windows);
-            if(std::filesystem::exists(script_attack))
-                script_attack = "";
+            assert_script(script_attack, "function\\s+(on_attack)\\(\\w+,\\s*\\w+\\)", "on_attack", [](const std::string& script) 
+            {
+#if defined DEBUG | defined _DEBUG
+                auto out = std::ofstream(script, std::ios_base::app);
+                out << "\n\nfunction on_attack(me, you)\n"
+                    << "    return false\n"
+                    << "end";
+#endif
+            });
 
             auto                script_die = CP949(data["script"]["die"].asString(), PLATFORM::Windows);
-            if(std::filesystem::exists(script_die))
-                script_die = "";
+            assert_script(script_die, "function\\s+(on_die)\\(\\w+,\\s*\\w+\\)", "on_die", [](const std::string& script) 
+            {
+#if defined DEBUG | defined _DEBUG
+                auto out = std::ofstream(script, std::ios_base::app);
+                out << "\n\nfunction on_die(me, you)\n"
+                    << "\n"
+                    << "end";
+#endif
+            });
 
             auto                mob = new fb::game::mob::master(name, look, color, fb::game::defensive(data["defensive"]["physical"].asInt(), data["defensive"]["magical"].asInt()), base_hp, base_mp, data["experience"].asInt(), fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()), this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)), this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)), std::chrono::milliseconds(data["speed"].asInt()), script_attack, script_die);
             {
@@ -849,6 +929,15 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             if (data.isMember("cast"))
             {
                 cast = CP949(data["cast"].asString(), PLATFORM::Windows);
+                assert_script(cast, "function\\s+(on_cast)\\(\\w+,\\s*.*\\)", "on_cast", [](const std::string& script) 
+                {
+#if defined DEBUG | defined _DEBUG
+                    auto out = std::ofstream(script, std::ios_base::app);
+                    out << "\n\nfunction on_cast(me, spell)\n"
+                        << "\n"
+                        << "end";
+#endif
+                });
                 if(std::filesystem::exists(cast) == false)
                     cast = "";
             }
@@ -857,6 +946,15 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             if (data.isMember("uncast"))
             {
                 uncast = CP949(data["uncast"].asString(), PLATFORM::Windows);
+                assert_script(uncast, "function\\s+(on_uncast)\\(\\w+,\\s*\\w+\\)", "on_uncast", [](const std::string& script) 
+                {
+#if defined DEBUG | defined _DEBUG
+                    auto out = std::ofstream(script, std::ios_base::app);
+                    out << "\n\nfunction on_uncast(me, spell)\n"
+                        << "\n"
+                        << "end";
+#endif
+                });
                 if(std::filesystem::exists(uncast) == false)
                     uncast = "";
             }
@@ -865,6 +963,15 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             if (data.isMember("concast"))
             {
                 concast = CP949(data["concast"].asString(), PLATFORM::Windows);
+                assert_script(concast, "function\\s+(on_concast)\\(\\w+,\\s*\\w+\\)", "on_concast", [](const std::string& script) 
+                {
+#if defined DEBUG | defined _DEBUG
+                    auto out = std::ofstream(script, std::ios_base::app);
+                    out << "\n\nfunction on_concast(me, spell)\n"
+                        << "\n"
+                        << "end";
+#endif
+                });
                 if(std::filesystem::exists(concast) == false)
                     concast = "";
             }
@@ -873,8 +980,6 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             if (data.isMember("message"))
             {
                 message = CP949(data["message"].asString(), PLATFORM::Windows);
-                if(std::filesystem::exists(message) == false)
-                    message = "";
             }
 
             {

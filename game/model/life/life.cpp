@@ -264,7 +264,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
 {
     auto& thread = fb::game::lua::get();
     thread.from(spell.cast().c_str())
-        .func("handle_spell");
+        .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::INPUT)
         return false;
@@ -292,7 +292,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
 {
     auto& thread = fb::game::lua::get();
     thread.from(spell.cast().c_str())
-        .func("handle_spell");
+        .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::TARGET)
         return false;
@@ -308,8 +308,8 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
         return true;
 
     thread.pushobject(this)
-        .pushobject(spell)
         .pushobject(&to)
+        .pushobject(spell)
         .resume(3);
     return true;
 }
@@ -318,7 +318,7 @@ bool fb::game::life::active(fb::game::spell& spell)
 {
     auto& thread = fb::game::lua::get();
     thread.from(spell.cast().c_str())
-        .func("handle_spell");
+        .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::NORMAL)
         return false;
@@ -584,13 +584,13 @@ int fb::game::life::builtin_damage(lua_State* lua)
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
-    
+
     auto acceptor = thread->env<fb::game::acceptor>("acceptor");
     auto argc = thread->argc();
     auto me = thread->touserdata<fb::game::life>(1);
     if(me == nullptr || acceptor->exists(*me) == false)
         return 0;
-    
+
     auto you = thread->touserdata<fb::game::life>(2);
     if(you == nullptr || acceptor->exists(*you) == false)
         return 0;
@@ -600,4 +600,41 @@ int fb::game::life::builtin_damage(lua_State* lua)
     me->hp_down(damage, you, false);
     thread->pushboolean(you->visible());
     return 1;
+}
+
+int fb::game::life::builtin_cast(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto argc = thread->argc();
+    auto me = thread->touserdata<fb::game::life>(1);
+    if(me == nullptr || acceptor->exists(*me) == false)
+        return 0;
+
+    auto you = thread->touserdata<fb::game::life>(2);
+    if(you == nullptr || acceptor->exists(*you) == false)
+        you = nullptr;
+
+    auto name = thread->tostring(3);
+    auto spell = fb::game::table::spells.name2spell(name);
+    if(spell == nullptr)
+        return 0;
+
+    auto& x = lua::get();
+    x.from(spell->cast().c_str())
+     .func("on_cast")
+     .pushobject(me);
+
+    if(you != nullptr)
+        x.pushobject(you);
+    else
+        x.pushnil();
+
+    x.pushobject(spell)
+     .resume(3);
+
+    return 0;
 }

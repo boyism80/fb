@@ -1,4 +1,4 @@
-function handle_active(session, item)
+function handle_active(me, item)
 	local map = session:map()
 	local door = map:door(session)
 	if door == nil then

@@ -72,7 +72,7 @@ void fb::game::acceptor::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 
      lua::get()
          .from(uncast.c_str())
-         .func("handle_uncast")
+         .func("on_uncast")
          .pushobject(me)
          .pushobject(buff.spell())
          .resume(2);
@@ -248,7 +248,7 @@ void fb::game::acceptor::on_item_active(session& me, item& item)
 {
     lua::get()
         .from(item.based<fb::game::item>()->active_script.c_str())
-        .func("handle_active")
+        .func("on_active")
         .pushobject(me)
         .pushobject(item)
         .resume(2);

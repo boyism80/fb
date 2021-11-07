@@ -568,7 +568,7 @@ void fb::game::items::pickup(bool boost)
 
         lua::get()
             .from("scripts/common/pickup.lua")
-            .func("handle_pickup")
+            .func("on_pickup")
             .pushobject(owner)
             .resume(1);
     }

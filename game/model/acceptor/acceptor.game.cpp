@@ -98,6 +98,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"action",              fb::game::life::builtin_action},
 {"spell",               fb::game::life::builtin_spell},
 {"damage",              fb::game::life::builtin_damage},
+{"cast",                fb::game::life::builtin_cast},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item::master, "fb.game.item.core")
@@ -681,7 +682,7 @@ void fb::game::acceptor::handle_click_npc(fb::game::session& session, fb::game::
 
     session.dialog
         .from(master->script.c_str())
-        .func("handle_click")
+        .func("on_interact")
         .pushobject(session)
         .pushobject(npc)
         .resume(2);
@@ -1515,7 +1516,7 @@ bool fb::game::acceptor::handle_door(fb::socket<fb::game::session>& socket, cons
     auto session = socket.data();
     lua::get()
         .from("scripts/common/door.lua")
-        .func("handle_door")
+        .func("on_door")
         .pushobject(session)
         .resume(1);
     return true;
