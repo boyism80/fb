@@ -8,8 +8,8 @@
 
 using namespace fb::game;
 
-session::session(fb::socket<fb::game::session>& socket, listener* listener) : 
-    life((life::master*)nullptr, listener, (uint32_t)socket.native_handle(), 0, 0, 0),
+session::session(fb::socket<fb::game::session>& socket, fb::game::context* context) : 
+    life(context, nullptr, (uint32_t)socket.native_handle(), 0, 0, 0),
     _socket(socket)
 { }
 
@@ -37,29 +37,25 @@ object::types fb::game::session::type() const
 void fb::game::session::handle_hold()
 {
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_hold(*this);
+    listener->on_hold(*this);
 }
 
 void fb::game::session::handle_switch_process(fb::game::map& map, const point16_t& position)
 {
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_transfer(*this, map, position);
+    listener->on_transfer(*this, map, position);
 }
 
 void fb::game::session::handle_warp()
 {
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_warp(*this);
+    listener->on_warp(*this);
 }
 
 void fb::game::session::handle_update()
 {
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
+    listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
 }
 
 uint32_t fb::game::session::handle_calculate_damage(bool critical) const
@@ -98,8 +94,7 @@ void fb::game::session::handle_attack(fb::game::object* you)
     thread.resume(2);
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_attack(*this, you);
+    listener->on_attack(*this, you);
 }
 
 void fb::game::session::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
@@ -107,8 +102,7 @@ void fb::game::session::handle_hit(fb::game::life& you, uint32_t damage, bool cr
     fb::game::life::handle_hit(you, damage, critical);
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_hit(*this, you, damage, critical);
+    listener->on_hit(*this, you, damage, critical);
 }
 
 void fb::game::session::handle_kill(fb::game::life& you)
@@ -129,8 +123,7 @@ void fb::game::session::handle_kill(fb::game::life& you)
     }
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_kill(*this, you);
+    listener->on_kill(*this, you);
 }
 
 void fb::game::session::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
@@ -138,8 +131,7 @@ void fb::game::session::handle_damaged(fb::game::object* from, uint32_t damage, 
     fb::game::life::handle_damaged(from, damage, critical);
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_damaged(*this, from, damage, critical);
+    listener->on_damaged(*this, from, damage, critical);
 }
 
 void fb::game::session::handle_die(fb::game::object* from)
@@ -149,8 +141,7 @@ void fb::game::session::handle_die(fb::game::object* from)
     this->state(state::GHOST);
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_die(*this, from);
+    listener->on_die(*this, from);
 }
 
 void fb::game::session::handle_transfer(fb::game::map& map, const point16_t& position)
@@ -211,14 +202,11 @@ void fb::game::session::action(fb::game::action action, fb::game::duration durat
     try
     {
         this->assert_state({state::GHOST, state::RIDING});
-
-        if(listener != nullptr)
-            listener->on_action(*this, action, duration, sound);
+        listener->on_action(*this, action, duration, sound);
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        listener->on_notify(*this, e.what());
     }
 }
 
@@ -242,8 +230,7 @@ void fb::game::session::look(uint16_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_look = value;
-    if(listener != nullptr)
-        listener->on_show(*this, false);
+    listener->on_show(*this, false);
 }
 
 uint8_t fb::game::session::color() const
@@ -256,8 +243,7 @@ void fb::game::session::color(uint8_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_color = value;
-    if(listener != nullptr)
-        listener->on_show(*this, false);
+    listener->on_show(*this, false);
 }
 
 std::optional<uint8_t> fb::game::session::armor_color() const
@@ -270,8 +256,7 @@ void fb::game::session::armor_color(std::optional<uint8_t> value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_armor_color = value;
-    if(listener != nullptr)
-        listener->on_show(*this, false);
+    listener->on_show(*this, false);
 }
 
 uint8_t fb::game::session::current_armor_color() const
@@ -291,8 +276,7 @@ void fb::game::session::disguise(uint16_t value)
 
     this->_disguise = value;
     this->state(state::DISGUISE);
-    if(listener != nullptr)
-        listener->on_updated(*this, state_level::LEVEL_MAX);
+    listener->on_updated(*this, state_level::LEVEL_MAX);
 }
 
 void fb::game::session::undisguise()
@@ -303,8 +287,7 @@ void fb::game::session::undisguise()
     if(this->state() == fb::game::state::DISGUISE)
         this->state(state::NORMAL);
 
-    if(listener != nullptr)
-        listener->on_updated(*this, state_level::LEVEL_MAX);
+    listener->on_updated(*this, state_level::LEVEL_MAX);
 }
 
 uint32_t fb::game::session::defensive_physical() const
@@ -425,12 +408,8 @@ bool fb::game::session::level_up()
     this->level(this->_level + 1);
 
     auto listener = this->get_listener<fb::game::session>();
-
-    if(listener != nullptr)
-    {
-        listener->on_level_up(*this);
-        listener->on_notify(*this, message::level::UP);
-    }
+    listener->on_level_up(*this);
+    listener->on_notify(*this, message::level::UP);
 
     return true;
 }
@@ -463,8 +442,7 @@ void fb::game::session::state(fb::game::state value)
     this->_state = value;
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(*this, false);
+    listener->on_show(*this, false);
 }
 
 uint8_t fb::game::session::cls() const
@@ -545,8 +523,7 @@ void fb::game::session::experience(uint32_t value)
     this->_experience = value;
 
     auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_updated(*this, state_level::LEVEL_MIN);
 }
 
 uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
@@ -585,9 +562,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             {
                 std::stringstream       sstream;
                 sstream << "경험치가 " << value << '(' << int(this->experience_percent()) << "%) 올랐습니다.";
-
-                if(listener != nullptr)
-                    listener->on_notify(*this, sstream.str());
+                listener->on_notify(*this, sstream.str());
             }
         }
 
@@ -612,7 +587,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr && notify)
+        if(notify)
             listener->on_notify(*this, e.what());
     }
 
@@ -666,11 +641,8 @@ void fb::game::session::money(uint32_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_money = value;
-    if(listener != nullptr)
-    {
-        listener->on_updated(*this, state_level::LEVEL_MIN);
-        listener->on_money_changed(*this, value);
-    }
+    listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_money_changed(*this, value);
 }
 
 uint32_t fb::game::session::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -720,21 +692,17 @@ uint32_t fb::game::session::money_drop(uint32_t value)
 
         auto lack = this->money_reduce(value);
 
-        auto cash = new fb::game::cash(value, listener);
+        auto cash = new fb::game::cash(this->context(), value);
         cash->map(this->_map, this->_position);
 
         this->action(action::PICKUP, duration::DURATION_PICKUP);
-
-        if(listener != nullptr)
-            listener->on_notify(*this, message::money::DROP);
+        listener->on_notify(*this, message::money::DROP);
 
         return lack;
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
-
+        listener->on_notify(*this, e.what());
         return 0;
     }
 }
@@ -786,12 +754,8 @@ void fb::game::session::option(options key, bool value)
         return;
 
     auto listener = this->get_listener<fb::game::session>();
-
-    if(listener != nullptr)
-    {
-        listener->on_updated(*this, state_level::LEVEL_MIN);
-        listener->on_option(*this, key, value);
-    }
+    listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_option(*this, key, value);
 
     this->_options[static_cast<int>(key)] = value;
 }
@@ -855,16 +819,12 @@ bool fb::game::session::move(fb::game::direction direction, const point16_t& bef
 
     if(this->_position != before)
     {
-        if(listener != nullptr)
-            listener->on_hold(*this);
-        
+        listener->on_hold(*this);
         return false;
     }
     else if(object::move(direction) == false)
     {
-        if(listener != nullptr)
-            listener->on_hold(*this);
-        
+        listener->on_hold(*this);
         return false;
     }
     else
@@ -894,14 +854,11 @@ void fb::game::session::ride(fb::game::mob& horse)
         this->state(state::RIDING);
         horse.kill();
         horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
-
-        if(listener != nullptr)
-            listener->on_notify(*this, message::ride::ON);
+        listener->on_notify(*this, message::ride::ON);
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        listener->on_notify(*this, e.what());
     }
 }
 
@@ -921,14 +878,13 @@ void fb::game::session::ride()
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        listener->on_notify(*this, e.what());
     }
 }
 
-void fb::game::session::unride(fb::game::mob::listener* listener)
+void fb::game::session::unride()
 {
-    auto _listener = this->get_listener<fb::game::session>();
+    auto listener = this->get_listener<fb::game::session>();
 
     try
     {
@@ -937,17 +893,15 @@ void fb::game::session::unride(fb::game::mob::listener* listener)
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto master = fb::game::table::mobs.name2mob("말");
-        auto horse = new fb::game::mob(master, listener, true);
+        auto horse = new fb::game::mob(this->context(), master, true);
         horse->map(this->_map, this->position_forward());
         
         this->state(state::NORMAL);
-        if(_listener != nullptr)
-            _listener->on_notify(*this, message::ride::OFF);
+        listener->on_notify(*this, message::ride::OFF);
     }
     catch(std::exception& e)
     {
-        if(_listener != nullptr)
-            _listener->on_notify(*this, e.what());
+        listener->on_notify(*this, e.what());
     }
 }
 
@@ -1282,7 +1236,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = master->make<fb::game::item>(context);
+        auto item = master->make(context);
         auto slot = session->items.add(item);
         item->to_lua(lua);
 
@@ -1703,8 +1657,7 @@ bool fb::game::lua::dialog::resume(int argc)
 void fb::game::lua::dialog::show(const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, object, message, button_prev, button_next, interaction);
+    listener->on_dialog(this->_owner, object, message, button_prev, button_next, interaction);
 }
 
 void fb::game::lua::dialog::show(const object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
@@ -1715,8 +1668,7 @@ void fb::game::lua::dialog::show(const object& object, const std::string& messag
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, npc, message, menus, interaction);
+    listener->on_dialog(this->_owner, npc, message, menus, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
@@ -1727,8 +1679,7 @@ void fb::game::lua::dialog::show(const npc& npc, const std::string& message, con
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
+    listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
@@ -1739,8 +1690,7 @@ void fb::game::lua::dialog::show(const npc& npc, const std::string& message, con
 void fb::game::lua::dialog::show(const npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, npc, message, cores, interaction);
+    listener->on_dialog(this->_owner, npc, message, cores, interaction);
 }
 
 void fb::game::lua::dialog::show(const npc& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
@@ -1751,8 +1701,7 @@ void fb::game::lua::dialog::show(const npc& npc, const std::string& message, con
 void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, npc, message, interaction);
+    listener->on_dialog(this->_owner, npc, message, interaction);
 }
 
 void fb::game::lua::dialog::input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction)
@@ -1763,8 +1712,7 @@ void fb::game::lua::dialog::input(const npc& npc, const std::string& message, fb
 void fb::game::lua::dialog::input(const npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_dialog(this->_owner, npc, message, top, bottom, maxlen, prev, interaction);
+    listener->on_dialog(this->_owner, npc, message, top, bottom, maxlen, prev, interaction);
 }
 
 void fb::game::lua::dialog::input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)

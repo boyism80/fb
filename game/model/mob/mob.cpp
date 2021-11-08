@@ -29,11 +29,6 @@ fb::game::mob::master::master(const std::string& name,
 fb::game::mob::master::~master()
 { }
 
-fb::game::object* fb::game::mob::master::make(listener* listener) const
-{
-    return new mob(this, listener);
-}
-
 void fb::game::mob::master::push_drop(const drop& drop)
 {
     this->_items.push_back(drop);
@@ -55,8 +50,8 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
 
 
 
-fb::game::mob::mob(const mob::master* master, listener* listener, bool alive) : 
-    life(master, listener),
+fb::game::mob::mob(fb::game::context* context, const mob::master* master, bool alive) : 
+    life(context, master),
     _action_time(0),
     _dead_time(0),
     _respawn_time(0),
@@ -376,8 +371,7 @@ void fb::game::mob::handle_attack(fb::game::object* target)
     fb::game::life::handle_attack(target);
 
     auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_attack(*this, target);
+    listener->on_attack(*this, target);
 }
 
 void fb::game::mob::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
@@ -385,8 +379,7 @@ void fb::game::mob::handle_hit(fb::game::life& you, uint32_t damage, bool critic
     fb::game::life::handle_hit(you, damage, critical);
 
     auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_hit(*this, you, damage, critical);
+    listener->on_hit(*this, you, damage, critical);
 }
 
 void fb::game::mob::handle_kill(fb::game::life& you)
@@ -394,8 +387,7 @@ void fb::game::mob::handle_kill(fb::game::life& you)
     fb::game::life::handle_kill(you);
 
     auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_kill(*this, you);
+    listener->on_kill(*this, you);
 }
 
 void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
@@ -409,8 +401,7 @@ void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool
     }
 
     auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_damaged(*this, from, damage, critical);
+    listener->on_damaged(*this, from, damage, critical);
 }
 
 uint32_t fb::game::mob::handle_exp() const
@@ -431,11 +422,10 @@ void fb::game::mob::handle_die(fb::game::object* from)
         if(std::rand() % 100 > candidate.percentage)
             continue;
 
-        auto item = static_cast<fb::game::item*>(candidate.item->make(this->get_listener<fb::game::item>()));
+        auto item = candidate.item->make(this->context());
         item->map(this->map(), this->position());
     }
 
     auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_die(*this, from);
+    listener->on_die(*this, from);
 }

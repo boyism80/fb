@@ -19,14 +19,14 @@ public:
 
 #pragma region constructor
 public:
-    npc(const master* master, listener* listener);
+    npc(fb::game::context* context, const master* master);
     npc(const npc& right);
     ~npc();
 #pragma endregion
 
 #pragma region public method
 public:
-    npc*                        make();
+    npc*                        make(fb::game::context* context);
 #pragma endregion
 
 #pragma region built-in method
@@ -68,7 +68,6 @@ public:
 #pragma region public method
 public:
     object::types               type() const { return object::types::NPC; }
-    object*                     make(listener* listener) const;
 #pragma endregion
 
 #pragma region built-in method

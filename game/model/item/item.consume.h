@@ -14,7 +14,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    consume(const master* master, listener* listener, uint16_t count = 1);
+    consume(fb::game::context* context, const master* master, uint16_t count = 1);
     consume(const consume& right);
     ~consume();
 #pragma endregion
@@ -49,7 +49,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    fb::game::item*                     make(fb::game::item::listener* listener) const;
+    fb::game::item*                     make(fb::game::context* context) const;
 };
 #pragma endregion
 

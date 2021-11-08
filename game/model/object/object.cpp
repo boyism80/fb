@@ -86,9 +86,10 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 
 
 // fb::game::object
-fb::game::object::object(const fb::game::object::master* master, listener* listener, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
+fb::game::object::object(fb::game::context* context, const fb::game::object::master* master, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
     luable(id),
-    _listener(listener),
+    _context(context),
+    _listener(context),
     _sequence(0xFFFFFFFF),
     _master(master),
     _position(position),
@@ -98,19 +99,16 @@ fb::game::object::object(const fb::game::object::master* master, listener* liste
     _visible(true),
     _sector(nullptr)
 {
-    if(this->_listener != nullptr)
-        this->_listener->on_create(*this);
+    this->_listener->on_create(*this);
 }
 
 fb::game::object::object(const object& right) :
-    object(right._master, right._listener, right.sequence(), right._position, right._direction, right._map)
+    object(right._context, right._master, right.sequence(), right._position, right._direction, right._map)
 { }
 
 fb::game::object::~object()
 {
-    if(this->_listener != nullptr)
-        this->_listener->on_destroy(*this);
-
+    this->_listener->on_destroy(*this);
     this->map(nullptr);
 }
 
@@ -316,8 +314,7 @@ bool fb::game::object::move(fb::game::direction direction)
         return false;
 
     this->position(after);
-    if(this->_listener != nullptr)
-        this->_listener->on_move(*this);
+    this->_listener->on_move(*this);
 
     return true;
 }
@@ -386,8 +383,7 @@ bool fb::game::object::direction(fb::game::direction value)
         return true;
 
     this->_direction = value;
-    if(this->_listener != nullptr)
-        this->_listener->on_direction(*this);
+    this->_listener->on_direction(*this);
 
     return true;
 }
@@ -536,8 +532,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
         if(this->_map != nullptr)
             this->map(nullptr);
 
-        if(this->_listener != nullptr)
-            this->_listener->on_enter(*this, *map, position);
+        this->_listener->on_enter(*this, *map, position);
     }
 }
 

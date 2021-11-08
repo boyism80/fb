@@ -67,15 +67,15 @@ fb::game::item::attrs fb::game::ring::master::attr() const
     return item::attrs::RING;
 }
 
-fb::game::item* fb::game::ring::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::ring::master::make(fb::game::context* context) const
 {
-    return new fb::game::ring(this, dynamic_cast<fb::game::equipment::listener*>(listener));
+    return new fb::game::ring(context, this);
 }
 
 
 
-fb::game::ring::ring(const master* master, listener* listener) : 
-    equipment(master, listener)
+fb::game::ring::ring(fb::game::context* context, const master* master) : 
+    equipment(context, master)
 { }
 
 fb::game::ring::ring(const ring& right) : 

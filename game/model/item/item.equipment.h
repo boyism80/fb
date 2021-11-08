@@ -49,7 +49,7 @@ protected:
 
 #pragma region constructor / destructor
 public:
-    equipment(const fb::game::equipment::master* master, fb::game::equipment::listener* listener);
+    equipment(fb::game::context* context, const fb::game::equipment::master* master);
     equipment(const fb::game::equipment& right);
     virtual ~equipment();
 #pragma endregion
@@ -185,7 +185,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::context* context) const;
 };
 #pragma endregion
 

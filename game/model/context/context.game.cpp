@@ -1090,7 +1090,7 @@ bool fb::game::context::handle_option_changed(fb::socket<fb::game::session>& soc
     if(option == options::RIDE)
     {
         if(session->state() == state::RIDING)
-            session->unride(this);
+            session->unride();
         else
             session->ride();
     }

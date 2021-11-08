@@ -67,15 +67,15 @@ fb::game::item::attrs fb::game::helmet::master::attr() const
     return item::attrs::HELMET;
 }
 
-fb::game::item* fb::game::helmet::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::helmet::master::make(fb::game::context* context) const
 {
-    return new fb::game::helmet(this, dynamic_cast<fb::game::equipment::listener*>(listener));
+    return new fb::game::helmet(context, this);
 }
 
 
 
-fb::game::helmet::helmet(const master* master, listener* listener) : 
-    equipment(master, listener)
+fb::game::helmet::helmet(fb::game::context* context, const master* master) : 
+    equipment(context, master)
 { }
 
 fb::game::helmet::helmet(const helmet& right) : 

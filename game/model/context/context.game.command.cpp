@@ -145,7 +145,7 @@ bool fb::game::context::handle_command_mob(fb::game::session& session, Json::Val
     if(core == nullptr)
         return true;
 
-    auto mob = new fb::game::mob(core, this, true);
+    auto mob = new fb::game::mob(this, core, true);
     auto map = session.map();
     mob->map(map, session.position());
     return true;
@@ -310,9 +310,6 @@ bool fb::game::context::handle_command_exit(fb::game::session& session, Json::Va
 bool fb::game::context::handle_command_tile(fb::game::session& session, Json::Value& parameters)
 {
     auto listener = session.get_listener<fb::game::session>();
-    if(listener == nullptr)
-        return false;
-
     auto map = session.map();
     if(map == nullptr)
         return false;

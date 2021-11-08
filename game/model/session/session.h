@@ -186,7 +186,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    session(fb::socket<fb::game::session>& socket, listener* listener);
+    session(fb::socket<fb::game::session>& socket, fb::game::context* context);
     ~session();
 #pragma endregion
 
@@ -337,7 +337,7 @@ public:
 
     void                        ride(fb::game::mob& horse);
     void                        ride();
-    void                        unride(fb::game::mob::listener* listener);
+    void                        unride();
     bool                        alive() const;
 #pragma endregion
 

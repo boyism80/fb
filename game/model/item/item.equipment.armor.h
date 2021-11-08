@@ -14,7 +14,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    armor(const fb::game::armor::master* master, listener* listener);
+    armor(fb::game::context* context, const fb::game::armor::master* master);
     armor(const fb::game::armor& right);
     ~armor();
 #pragma endregion
@@ -58,7 +58,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::context* context) const;
 };
 #pragma endregion
 

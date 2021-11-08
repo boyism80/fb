@@ -218,7 +218,7 @@ bool fb::game::context::handle_command_item(fb::game::session& session, Json::Va
     if(core == nullptr)
         return false;
 
-    auto item = core->make<fb::game::item>(this);
+    auto item = core->make<fb::game::item>(this, this);
     item->map(session.map(), session.position());
     return true;
 }

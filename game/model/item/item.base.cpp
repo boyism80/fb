@@ -106,9 +106,9 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
-fb::game::item* fb::game::item::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::item::master::make(fb::game::context* context) const
 {
-    return new fb::game::item(this, listener);
+    return new fb::game::item(context, this);
 }
 
 
@@ -120,14 +120,14 @@ fb::game::item* fb::game::item::master::make(fb::game::item::listener* listener)
 // class item
 //
 
-fb::game::item::item(const fb::game::item::master* master, fb::game::item::listener* listener, uint16_t count) : 
-    fb::game::object(master, listener),
+fb::game::item::item(fb::game::context* context, const fb::game::item::master* master, uint16_t count) : 
+    fb::game::object(context, master),
     _owner(nullptr),
     _count(count)
 { }
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right._master, right.get_listener<fb::game::object>()),
+    fb::game::object(right.context(), right._master),
     _owner(nullptr),
     _count(right._count)
 { }
@@ -230,10 +230,6 @@ fb::game::session* fb::game::item::owner() const
 void fb::game::item::owner(fb::game::session* owner)
 {
     this->_owner = owner;
-    if(owner == nullptr)
-        this->set_listener(nullptr);
-    else
-        this->set_listener(owner->get_listener<fb::game::item>());
 }
 
 bool fb::game::item::active()
@@ -250,11 +246,10 @@ fb::game::item* fb::game::item::split(uint16_t count)
     if(master->trade.enabled == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
-    auto listener = this->_owner != nullptr ? this->_owner->get_listener<fb::game::session>() : nullptr;
     if(this->attr(item::attrs::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        return this->based<fb::game::item>()->make(listener, count);
+        return this->based<fb::game::item>()->make(this->context(), count);
     }
     else
     {
@@ -275,14 +270,10 @@ void fb::game::item::merge(fb::game::item& item)
     item.count(remain);
 
     auto listener = this->_owner->get_listener<fb::game::session>();
-    if(listener != nullptr)
-    {
-        auto master = this->based<fb::game::item>();
+    auto master = this->based<fb::game::item>();
+    if(before != this->_count)
+        listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
 
-        if(before != this->_count)
-            listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
-
-        if(remain > 0 && this->_count == master->capacity)
-            listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
-    }
+    if(remain > 0 && this->_count == master->capacity)
+        listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
 }

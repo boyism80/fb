@@ -9,6 +9,7 @@
 namespace fb { namespace game {
 
 #pragma region forward declaration
+class context;
 class map;
 class session;
 class buffs;
@@ -71,7 +72,8 @@ public:
 
 #pragma region private field
 private:
-    fb::game::object::listener*         _listener   = nullptr;
+    context*                            _context;
+    fb::game::object::listener*         _listener;
     bool                                _visible    = false;
     fb::game::sector*                   _sector     = nullptr;
 #pragma endregion
@@ -94,7 +96,7 @@ public:
 
 #pragma region constructor / destructor
 protected:
-    object(const master* master, listener* listener, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
+    object(context* context, const master* master, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
     object(const object& right);
 public:
     virtual ~object();
@@ -109,9 +111,9 @@ private:
 
 #pragma region public method
 public:
+    inline context*                     context() const { return this->_context; }
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
-    void                                set_listener(fb::game::object::listener* listener) { this->_listener = listener; }
 
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
@@ -270,9 +272,9 @@ public:
 #pragma region template
 public:
     template <typename T>
-    T* make(fb::game::object::listener* listener) const
+    T* make(fb::game::context* context) const
     {
-        return new T(static_cast<const typename T::master*>(this), dynamic_cast<typename T::listener*>(listener));
+        return new T(context, static_cast<const typename T::master*>(this));
     }
 #pragma endregion
 

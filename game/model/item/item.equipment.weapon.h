@@ -22,7 +22,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    weapon(const fb::game::weapon::master* master, listener* listener);
+    weapon(fb::game::context* context, const fb::game::weapon::master* master);
     weapon(const fb::game::weapon& right);
     ~weapon();
 #pragma endregion
@@ -92,7 +92,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::context* context) const;
     fb::game::weapon::types             weapon_type() const;
 
 };

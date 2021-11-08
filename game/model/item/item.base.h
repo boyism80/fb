@@ -106,7 +106,7 @@ protected:
 
 #pragma region constructor / destructor
 public:
-    item(const fb::game::item::master* master, fb::game::item::listener* listener, uint16_t count = 1);
+    item(fb::game::context* context, const fb::game::item::master* master, uint16_t count = 1);
     item(const item& right);
     virtual ~item();
 #pragma endregion
@@ -262,15 +262,15 @@ public:
 public:
     virtual fb::game::item::attrs            attr() const;
     bool                                     attr(fb::game::item::attrs flag) const;
-    virtual fb::game::item*                  make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*                  make(fb::game::context* context) const;
 #pragma endregion
 
 #pragma region template method
 public:
     template <typename T = fb::game::item>
-    T* make(fb::game::item::listener* listener, int count = 1) const 
+    T* make(fb::game::context* context, int count = 1) const 
     {
-        auto created = static_cast<T*>(this->make(listener)); 
+        auto created = static_cast<T*>(this->make(context)); 
         created->count(count);
         return created;
     }

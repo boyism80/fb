@@ -10,7 +10,7 @@
 #include "module/console/console.h"
 #include "model/table/table.game.h"
 
-bool load_db(fb::console& c, fb::game::listener* listener)
+bool load_db(fb::console& c, fb::game::context* context)
 {
     auto& config = fb::config::get();
 
@@ -277,7 +277,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     if(fb::game::table::npcs.load_spawn
     (
         config["table"]["npc spawn"].asString(),
-        listener, 
+        context, 
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)
@@ -302,7 +302,7 @@ bool load_db(fb::console& c, fb::game::listener* listener)
     if(fb::game::table::mobs.load_spawn
     (
         config["table"]["mob spawn"].asString(),
-        listener, 
+        context, 
         [&] (const std::string& name, double percentage)
         {
             c.cursor(0, pivot)

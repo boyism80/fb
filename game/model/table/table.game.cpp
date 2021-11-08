@@ -638,7 +638,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
     return true;
 }
 
-bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::context* context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto                        mutex           = std::make_unique<std::mutex>();
     auto&                       config          = fb::config::get();
@@ -674,7 +674,7 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::npc
                 else
                     throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
 
-                auto                cloned      = new fb::game::npc(core, listener);
+                auto                cloned      = core->make<fb::game::npc>(context);
                 cloned->direction(direction);
                 
                 {
@@ -846,7 +846,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
     return true;
 }
 
-bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob::listener* listener, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::context* context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto                        mutex   = std::make_unique<std::mutex>();
     auto                        count   = fb::table::load
@@ -877,7 +877,7 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::mob
                     auto _ = std::lock_guard(*mutex);
                     for (int i = 0; i < count; i++)
                     {
-                        auto        mob = static_cast<fb::game::mob*>(core->make(listener));
+                        auto        mob = core->make<fb::game::mob>(context);
                         mob->spawn_point(x0, y0);
                         mob->spawn_size(x1, y1);
                         mob->respawn_time(std::chrono::seconds(rezen));

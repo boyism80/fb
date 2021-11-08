@@ -49,33 +49,30 @@ bool fb::game::itemmix::builder::mix()
         {
             for(auto& success : itemmix->success)
             {
-                auto        item = static_cast<fb::game::item*>(success.item->make(listener));
+                auto        item = success.item->make(this->_owner.context());
                 item->count(success.count);
                 this->_owner.items.add(item);
             }
 
-            if(listener != nullptr)
-                listener->on_notify(this->_owner, fb::game::message::mix::SUCCESS);
+            listener->on_notify(this->_owner, fb::game::message::mix::SUCCESS);
         }
         else
         {
             for(auto& failed : itemmix->failed)
             {
-                auto        item = static_cast<fb::game::item*>(failed.item->make(listener));
+                auto        item = static_cast<fb::game::item*>(failed.item->make(this->_owner.context()));
                 item->count(failed.count);
                 this->_owner.items.add(item);
             }
 
-            if(listener != nullptr)
-                listener->on_notify(this->_owner, fb::game::message::mix::FAILED);
+            listener->on_notify(this->_owner, fb::game::message::mix::FAILED);
         }
 
         return true;
     }
     catch(std::exception& e)
     { 
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
+        listener->on_notify(this->_owner, e.what());
         return false;
     }
 }

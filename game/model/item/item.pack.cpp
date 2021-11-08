@@ -36,13 +36,13 @@ fb::game::item::attrs fb::game::pack::master::attr() const
     return item::attrs::PACK;
 }
 
-fb::game::item* fb::game::pack::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::pack::master::make(fb::game::context* context) const
 {
-    return new fb::game::pack(this, listener);
+    return new fb::game::pack(context, this);
 }
 
-fb::game::pack::pack(const fb::game::pack::master* master, listener* listener) : 
-    fb::game::item(master, listener)
+fb::game::pack::pack(fb::game::context* context, const fb::game::pack::master* master) : 
+    fb::game::item(context, master)
 {
     this->_durability = master->durability;
 }
@@ -84,8 +84,7 @@ bool fb::game::pack::active()
         this->count(0);
     
     auto listener = this->_owner->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+    listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if(this->empty())
         this->_owner->items.remove(*this, 0xFF, item::delete_attr::REDUCE);

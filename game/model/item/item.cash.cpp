@@ -19,9 +19,9 @@ fb::game::item::attrs fb::game::cash::master::attr() const
     return item::attrs::CASH;
 }
 
-fb::game::item* fb::game::cash::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::cash::master::make(fb::game::context* context) const
 {
-    return new cash(0, listener);
+    return new cash(context, 0);
 }
 
 
@@ -29,8 +29,8 @@ fb::game::item* fb::game::cash::master::make(fb::game::item::listener* listener)
 //
 // class cash
 //
-fb::game::cash::cash(uint32_t chunk, listener* listener) : 
-    fb::game::item(nullptr, listener)
+fb::game::cash::cash(fb::game::context* context, uint32_t chunk) : 
+    fb::game::item(context, nullptr)
 {
     this->chunk(chunk);
 }
@@ -80,8 +80,7 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
     else
     {
         auto listener = this->get_listener<fb::game::object>();
-        if(listener != nullptr)
-            listener->on_show(*this, true);
+        listener->on_show(*this, true);
 
         return this;
     }

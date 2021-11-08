@@ -24,7 +24,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    cash(uint32_t chunk, listener* listener);
+    cash(fb::game::context* context, uint32_t chunk);
     ~cash();
 #pragma endregion
 
@@ -53,7 +53,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::context* context) const;
 };
 #pragma endregion
 

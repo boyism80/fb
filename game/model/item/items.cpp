@@ -100,20 +100,15 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
         }
 
         auto index = this->add(item);
-        if(listener != nullptr)
-        {
-            listener->on_updated(this->_owner, state_level::LEVEL_MAX);
-            listener->on_show(this->_owner, false);
-            listener->on_equipment_off(this->_owner, slot, index);
-        }
+        listener->on_updated(this->_owner, state_level::LEVEL_MAX);
+        listener->on_show(this->_owner, false);
+        listener->on_equipment_off(this->_owner, slot, index);
         
         return index;
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
-
+        listener->on_notify(this->_owner, e.what());
         return 0xFF;
     }
 }
@@ -159,8 +154,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
 
             auto index = this->index(*exists);
             
-            if(listener != nullptr)
-                updates.insert(std::make_pair(index, exists));
+            updates.insert(std::make_pair(index, exists));
             indices.push_back(index);
         }
         else
@@ -174,16 +168,12 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             if(item->_map != nullptr)
                 item->map(nullptr);
 
-            if(listener != nullptr)
-                updates.insert(std::make_pair(index, item));
-
+            updates.insert(std::make_pair(index, item));
             indices.push_back(index);
         }
     }
 
-    if(listener != nullptr)
-        listener->on_item_changed(this->_owner, updates);
-
+    listener->on_item_changed(this->_owner, updates);
     return std::move(indices);
 }
 
@@ -195,7 +185,7 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
     item.owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr && item.empty() == false)
+    if(item.empty() == false)
         listener->on_item_update(static_cast<session&>(this->owner()), index);
 
     return index;
@@ -236,9 +226,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
-
+        listener->on_notify(this->_owner, e.what());
         return nullptr;
     }
 }
@@ -323,8 +311,7 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
     weapon->owner(&this->_owner);
     
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -342,8 +329,7 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
     armor->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -361,8 +347,7 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
     shield->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -380,8 +365,7 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
     helmet->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -406,8 +390,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
     ring->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -418,8 +401,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, equipment::position 
     this->_rings[static_cast<int>(position)] = ring;
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -444,8 +426,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     auxiliary->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -456,8 +437,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
 
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_show(this->_owner, true);
+    listener->on_show(this->_owner, true);
     
     return before;
 }
@@ -514,8 +494,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(owner, e.what());
+        listener->on_notify(owner, e.what());
         return nullptr;
     }
 }
@@ -548,12 +527,9 @@ void fb::game::items::pickup(bool boost)
                 auto        remain = owner.money_add(cash->chunk());
                 cash->chunk(remain); // 먹고 남은 돈으로 설정
 
-                if(listener != nullptr)
-                {
-                    if(remain != 0)
-                        listener->on_notify(this->_owner, message::money::FULL);
-                    listener->on_updated(owner, state_level::LEVEL_MIN);
-                }
+                if(remain != 0)
+                    listener->on_notify(this->_owner, message::money::FULL);
+                listener->on_updated(owner, state_level::LEVEL_MIN);
             }
             else
             {
@@ -574,8 +550,7 @@ void fb::game::items::pickup(bool boost)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(owner, e.what());
+        listener->on_notify(owner, e.what());
     }
 }
 
@@ -610,16 +585,13 @@ bool fb::game::items::throws(uint8_t index)
             }
         }
 
-        if(listener != nullptr)
-            listener->on_item_throws(this->_owner, *dropped, position);
-        
+        listener->on_item_throws(this->_owner, *dropped, position);
         dropped->map(map, position);
         return true;
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
+        listener->on_notify(this->_owner, e.what());
         return false;
     }
 }
@@ -636,11 +608,9 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::del
     if(splitted == item)
     {
         fb::game::base_container<fb::game::item>::remove(index);
-        if(listener != nullptr)
-            listener->on_item_remove(this->_owner, index, attr);
+        listener->on_item_remove(this->_owner, index, attr);
     }
 
-    if(listener != nullptr)
     {
         auto current = this->at(index);
         
@@ -669,7 +639,6 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
         return false;
     
     auto listener = this->_owner.get_listener<fb::game::session>();
-    if(listener != nullptr)
     {
         const auto              right = this->at(src);
         if(right != nullptr)

@@ -68,13 +68,13 @@ fb::game::item::attrs fb::game::equipment::master::attr() const
     return item::attrs::EQUIPMENT;
 }
 
-fb::game::item* fb::game::equipment::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::equipment::master::make(fb::game::context* context) const
 {
-    return new fb::game::equipment(this, dynamic_cast<fb::game::equipment::listener*>(listener));
+    return new fb::game::equipment(context, this);
 }
 
-fb::game::equipment::equipment(const equipment::master* master, listener* listener) : 
-    item(master, listener)
+fb::game::equipment::equipment(fb::game::context* context, const equipment::master* master) : 
+    item(context, master)
 {
     this->_durability = master->durability;
 }
@@ -161,8 +161,7 @@ bool fb::game::equipment::active()
     this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_equipment_on(*this->_owner, *this, slot);
+    listener->on_equipment_on(*this->_owner, *this, slot);
 
     return true;
 }

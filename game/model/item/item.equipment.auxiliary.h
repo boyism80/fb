@@ -14,7 +14,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    auxiliary(const master* master, listener* listener);
+    auxiliary(fb::game::context* context, const master* master);
     auxiliary(const auxiliary& right);
     ~auxiliary();
 #pragma endregion
@@ -58,7 +58,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::item::listener* listener) const;
+    virtual fb::game::item*             make(fb::game::context* context) const;
 };
 #pragma endregion
 

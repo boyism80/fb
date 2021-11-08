@@ -75,9 +75,9 @@ fb::game::item::attrs fb::game::weapon::master::attr() const
     return item::attrs::WEAPON;
 }
 
-fb::game::item* fb::game::weapon::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::weapon::master::make(fb::game::context* context) const
 {
-    return new fb::game::weapon(this, dynamic_cast<fb::game::equipment::listener*>(listener));
+    return new fb::game::weapon(context, this);
 }
 
 fb::game::weapon::types fb::game::weapon::master::weapon_type() const
@@ -102,8 +102,8 @@ fb::game::weapon::types fb::game::weapon::master::weapon_type() const
 }
 
 
-fb::game::weapon::weapon(const master* master, listener* listener) : 
-    equipment(master, listener)
+fb::game::weapon::weapon(fb::game::context* context, const master* master) : 
+    equipment(context, master)
 { }
 
 fb::game::weapon::weapon(const weapon& right) : 

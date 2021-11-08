@@ -67,15 +67,15 @@ fb::game::item::attrs fb::game::auxiliary::master::attr() const
     return item::attrs::AUXILIARY;
 }
 
-fb::game::item* fb::game::auxiliary::master::make(fb::game::item::listener* listener) const
+fb::game::item* fb::game::auxiliary::master::make(fb::game::context* context) const
 {
-    return new fb::game::auxiliary(this, dynamic_cast<fb::game::equipment::listener*>(listener));
+    return new fb::game::auxiliary(context, this);
 }
 
 
 
-fb::game::auxiliary::auxiliary(const master* master, listener* listener) : 
-    equipment(master, listener)
+fb::game::auxiliary::auxiliary(fb::game::context* context, const master* master) : 
+    equipment(context, master)
 { }
 
 fb::game::auxiliary::auxiliary(const auxiliary& right) : 

@@ -55,7 +55,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    mob(const mob::master* master, listener* listener, bool alive = false);
+    mob(fb::game::context* context, const mob::master* master, bool alive = false);
     mob(const mob& right);
     ~mob();
 #pragma endregion
@@ -200,7 +200,6 @@ public:
 #pragma region public method
 public:
     object::types                           type() const { return fb::game::object::types::MOB; }
-    object*                                 make(listener* listener) const;
 
 public:
     void                                    push_drop(const drop& drop);
