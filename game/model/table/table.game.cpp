@@ -972,8 +972,6 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                         << "end";
 #endif
                 });
-                if(std::filesystem::exists(concast) == false)
-                    concast = "";
             }
 
             std::string         message;
