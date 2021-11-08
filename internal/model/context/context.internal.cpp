@@ -1,23 +1,23 @@
-#include "acceptor.internal.h"
+#include "context.internal.h"
 
-fb::internal::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
+fb::internal::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
     fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
-    this->bind<fb::protocol::internal::request::subscribe>(std::bind(&acceptor::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::transfer>(std::bind(&acceptor::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::login>(std::bind(&acceptor::handle_login, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::logout>(std::bind(&acceptor::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::whisper>(std::bind(&acceptor::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::shutdown>(std::bind(&acceptor::handle_shutdown, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::subscribe>(std::bind(&context::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::transfer>(std::bind(&context::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::login>(std::bind(&context::handle_login, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::logout>(std::bind(&context::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::whisper>(std::bind(&context::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::shutdown>(std::bind(&context::handle_shutdown, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-fb::internal::acceptor::~acceptor()
+fb::internal::context::~context()
 {
     for(auto& pair : this->_users)
         delete pair.second;
 }
 
-fb::internal::acceptor::service* fb::internal::acceptor::get(fb::protocol::internal::services type, uint8_t group)
+fb::internal::context::service* fb::internal::context::get(fb::protocol::internal::services type, uint8_t group)
 {
     switch(type)
     {
@@ -35,22 +35,22 @@ fb::internal::acceptor::service* fb::internal::acceptor::get(fb::protocol::inter
     }
 }
 
-bool fb::internal::acceptor::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
+bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
 {
-    return fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::acceptor::handler>>(socket, this->_handler_dict);
+    return fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::context::handler>>(socket, this->_handler_dict);
 }
 
-fb::internal::session* fb::internal::acceptor::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
+fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
 {
     return new fb::internal::session();
 }
 
-bool fb::internal::acceptor::handle_connected(fb::internal::socket<fb::internal::session>& socket)
+bool fb::internal::context::handle_connected(fb::internal::socket<fb::internal::session>& socket)
 {
     return true;
 }
 
-bool fb::internal::acceptor::handle_disconnected(fb::internal::socket<fb::internal::session>& socket)
+bool fb::internal::context::handle_disconnected(fb::internal::socket<fb::internal::session>& socket)
 {
     auto& c = fb::console::get();
     auto subscriber = socket.data();
@@ -77,7 +77,7 @@ bool fb::internal::acceptor::handle_disconnected(fb::internal::socket<fb::intern
     return false;
 }
 
-bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::subscribe& request)
+bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::subscribe& request)
 {
     auto session = socket.data();
     session->name = request.name;
@@ -119,7 +119,7 @@ bool fb::internal::acceptor::handle_subscribe(fb::internal::socket<fb::internal:
     return true;
 }
 
-bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::transfer& request)
+bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::transfer& request)
 {
     auto group = std::optional<uint8_t>(0xFF);
 
@@ -175,7 +175,7 @@ bool fb::internal::acceptor::handle_transfer(fb::internal::socket<fb::internal::
     return true;
 }
 
-bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
+bool fb::internal::context::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
 {
     try
     {
@@ -204,7 +204,7 @@ bool fb::internal::acceptor::handle_login(fb::internal::socket<fb::internal::ses
     return true;
 }
 
-bool fb::internal::acceptor::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
+bool fb::internal::context::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
 {
     auto found = this->_users.find(request.name);
     if(found != this->_users.end())
@@ -216,7 +216,7 @@ bool fb::internal::acceptor::handle_logout(fb::internal::socket<fb::internal::se
     return true;
 }
 
-bool fb::internal::acceptor::handle_whisper(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::whisper& request)
+bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::whisper& request)
 {
     try
     {
@@ -241,7 +241,7 @@ bool fb::internal::acceptor::handle_whisper(fb::internal::socket<fb::internal::s
     return true;
 }
 
-bool fb::internal::acceptor::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
+bool fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
 {
     if(this->_gateway != nullptr)
         this->send(*this->_gateway, fb::protocol::internal::response::shutdown());

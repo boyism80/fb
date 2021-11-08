@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/game
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/builtin_fn.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/builtin_fn.o $(BUILD)/context.game.o $(BUILD)/context.game.handler.o $(BUILD)/context.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/acceptor.game.o $(BUILD)/acceptor.game.handler.o $(BUILD)/acceptor.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.game.o $(BUILD)/context.game.handler.o $(BUILD)/context.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../module/config/config.cpp
 	mkdir -p $(BUILD)
@@ -57,17 +57,17 @@ $(BUILD)/builtin_fn.o: ./builtin/builtin_function.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./builtin/builtin_function.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/builtin_fn.o
 
-$(BUILD)/acceptor.game.o: ./model/acceptor/acceptor.game.cpp
+$(BUILD)/context.game.o: ./model/context/context.game.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/acceptor/acceptor.game.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.game.o
+	$(CXX) $(STD) -c ./model/context/context.game.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.o
 
-$(BUILD)/acceptor.game.handler.o: ./model/acceptor/acceptor.game.handler.cpp
+$(BUILD)/context.game.handler.o: ./model/context/context.game.handler.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/acceptor/acceptor.game.handler.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.game.handler.o
+	$(CXX) $(STD) -c ./model/context/context.game.handler.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.handler.o
 
-$(BUILD)/acceptor.game.command.o: ./model/acceptor/acceptor.game.command.cpp
+$(BUILD)/context.game.command.o: ./model/context/context.game.command.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/acceptor/acceptor.game.command.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.game.command.o
+	$(CXX) $(STD) -c ./model/context/context.game.command.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.command.o
 
 $(BUILD)/board.o: ./model/board/board.cpp
 	mkdir -p $(BUILD)

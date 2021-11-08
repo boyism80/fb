@@ -1,5 +1,5 @@
 #include "model/map/map.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 
 fb::game::objects::objects(fb::game::map* owner) : 
     _owner(owner)
@@ -545,13 +545,13 @@ int fb::game::map::builtin_door(lua_State* lua)
     if(thread == nullptr)
         return 0;
     
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto context = thread->env<fb::game::context>("context");
     auto map = thread->touserdata<fb::game::map>(1);
     if(map == nullptr)
         return 0;
     
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || acceptor->exists(*session) == false)
+    if(session == nullptr || context->exists(*session) == false)
         return 0;
 
 

@@ -14,7 +14,7 @@
 
 namespace fb { namespace gateway {
 
-class acceptor : public fb::acceptor<fb::gateway::session>
+class context : public fb::acceptor<fb::gateway::session>
 {
 private:
     std::vector<entry>          _entrypoints;
@@ -26,8 +26,8 @@ private:
     service::gateway            _gateway_service;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
-    ~acceptor();
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    ~context();
 
 private:
     bool                        load_entries();

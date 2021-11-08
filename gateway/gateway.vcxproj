@@ -170,7 +170,7 @@
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\thread\thread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\acceptor\acceptor.gateway.cpp" />
+    <ClCompile Include="model\context\context.gateway.cpp" />
     <ClCompile Include="model\gateway\gateway.cpp" />
     <ClCompile Include="model\session\session.gateway.cpp" />
     <ClCompile Include="service\gateway\service.gateway.cpp" />
@@ -189,7 +189,7 @@
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="model\acceptor\acceptor.gateway.h" />
+    <ClInclude Include="model\context\context.gateway.h" />
     <ClInclude Include="model\gateway\gateway.h" />
     <ClInclude Include="model\session\session.gateway.h" />
     <ClInclude Include="resource.h" />

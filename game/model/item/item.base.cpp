@@ -1,5 +1,5 @@
 #include "model/item/item.base.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 
 const fb::game::item::conditions fb::game::item::DEFAULT_CONDITION;
 
@@ -65,9 +65,9 @@ int fb::game::item::master::builtin_make(lua_State* lua)
     if(thread == nullptr)
         return 0;
     
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto context = thread->env<fb::game::context>("context");
     auto master = thread->touserdata<fb::game::item::master>(1);
-    auto object = master->make(acceptor);
+    auto object = master->make(context);
 
     auto map = thread->touserdata<fb::game::map>(2);
     object->map(map);
@@ -87,7 +87,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
         object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
     }
 
-    acceptor->send(*object, fb::protocol::game::response::object::show(*object), acceptor::scope::PIVOT);
+    context->send(*object, fb::protocol::game::response::object::show(*object), fb::game::context::scope::PIVOT);
 
     object->to_lua(lua);
     return 1;

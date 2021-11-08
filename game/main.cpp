@@ -3,7 +3,7 @@
 #include "module/socket/socket.h"
 #include "module/config/config.h"
 #include "module/leak.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 #include "module/string/string.h"
 #include "protocol/internal.h"
 #include "model/lua/lua.h"
@@ -405,7 +405,7 @@ int main(int argc, const char** argv)
             }
         };
 
-        auto acceptor = std::make_unique<fb::game::acceptor>
+        auto context = std::make_unique<fb::game::context>
         (
             io_context, 
             config["port"].asInt(), 
@@ -413,14 +413,14 @@ int main(int argc, const char** argv)
             connection
         );
 
-        load_db(c, acceptor.get());
+        load_db(c, context.get());
 
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait
         (
-            [&acceptor](const boost::system::error_code& error, int signal)
+            [&context](const boost::system::error_code& error, int signal)
             {
-                acceptor.get()->exit();
+                context.get()->exit();
             }
         );
 

@@ -1,5 +1,5 @@
 #include "model/item/item.equipment.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 
 fb::game::equipment::master::master(const std::string&                  name, 
                                     uint16_t                            look, 

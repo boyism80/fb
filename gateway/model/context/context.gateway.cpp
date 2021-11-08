@@ -1,6 +1,6 @@
-#include "model/acceptor/acceptor.gateway.h"
+#include "model/context/context.gateway.h"
 
-fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
+fb::gateway::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
     fb::acceptor<fb::gateway::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
@@ -11,16 +11,16 @@ fb::gateway::acceptor::acceptor(boost::asio::io_context& context, uint16_t port,
     this->load_entries();
 
     // Register event handler
-    this->bind<fb::protocol::gateway::request::assert_version>  (0x00, std::bind(&acceptor::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::gateway::request::entry_list>      (0x57, std::bind(&acceptor::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::assert_version>  (0x00, std::bind(&context::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::entry_list>      (0x57, std::bind(&context::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
 
-    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&acceptor::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&context::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));
 }
 
-fb::gateway::acceptor::~acceptor()
+fb::gateway::context::~context()
 { }
 
-bool fb::gateway::acceptor::load_entries()
+bool fb::gateway::context::load_entries()
 {
     try
     {
@@ -47,7 +47,7 @@ bool fb::gateway::acceptor::load_entries()
     }
 }
 
-fb::ostream fb::gateway::acceptor::make_crt_stream(const fb::cryptor& crt)
+fb::ostream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
 {
     fb::ostream             ostream;
     ostream.write_u8(0x00)      // cmd : 0x00
@@ -61,12 +61,12 @@ fb::ostream fb::gateway::acceptor::make_crt_stream(const fb::cryptor& crt)
     return ostream;
 }
 
-fb::gateway::session* fb::gateway::acceptor::handle_accepted(fb::socket<fb::gateway::session>& socket)
+fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gateway::session>& socket)
 {
     return new fb::gateway::session();
 }
 
-bool fb::gateway::acceptor::handle_connected(fb::socket<fb::gateway::session>& socket)
+bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
     socket.send(this->_connection_cache, false);
 
@@ -75,14 +75,14 @@ bool fb::gateway::acceptor::handle_connected(fb::socket<fb::gateway::session>& s
     return true;
 }
 
-bool fb::gateway::acceptor::handle_disconnected(fb::socket<fb::gateway::session>& socket)
+bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
     auto& c = fb::console::get();
     c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 
-bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
+bool fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
 {
     try
     {
@@ -100,7 +100,7 @@ bool fb::gateway::acceptor::handle_check_version(fb::socket<fb::gateway::session
     }
 }
 
-bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
+bool fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
 {
     switch(request.action)
     {
@@ -122,7 +122,7 @@ bool fb::gateway::acceptor::handle_entry_list(fb::socket<fb::gateway::session>& 
     }
 }
 
-bool fb::gateway::acceptor::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
+bool fb::gateway::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
 {
     this->exit();
     return true;

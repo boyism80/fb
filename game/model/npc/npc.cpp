@@ -1,5 +1,5 @@
 #include "model/npc/npc.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 #include "builtin/builtin_function.h"
 
 using namespace fb::game;

@@ -36,9 +36,6 @@
     <Filter Include="module\stream">
       <UniqueIdentifier>{181a5a45-e2f1-467c-8ddb-c802bd0317ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\acceptor">
-      <UniqueIdentifier>{9094eaa8-9f52-45f6-a60c-675735a1003f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model\session">
       <UniqueIdentifier>{983e47f2-2b66-45e3-8676-bfd04f187602}</UniqueIdentifier>
     </Filter>
@@ -53,6 +50,9 @@
     </Filter>
     <Filter Include="module\thread">
       <UniqueIdentifier>{4a4a4877-e074-4af7-8e15-46d0fbc255fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\context">
+      <UniqueIdentifier>{9094eaa8-9f52-45f6-a60c-675735a1003f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +71,6 @@
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
     </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.internal.cpp">
-      <Filter>model\acceptor</Filter>
-    </ClCompile>
     <ClCompile Include="model\session\session.internal.cpp">
       <Filter>model\session</Filter>
     </ClCompile>
@@ -85,6 +82,9 @@
     </ClCompile>
     <ClCompile Include="..\module\thread\thread.cpp">
       <Filter>module\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="model\context\context.internal.cpp">
+      <Filter>model\context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -109,9 +109,6 @@
     <ClInclude Include="..\module\socket\socket.h">
       <Filter>module\socket</Filter>
     </ClInclude>
-    <ClInclude Include="model\acceptor\acceptor.internal.h">
-      <Filter>model\acceptor</Filter>
-    </ClInclude>
     <ClInclude Include="model\session\session.internal.h">
       <Filter>model\session</Filter>
     </ClInclude>
@@ -135,6 +132,9 @@
     </ClInclude>
     <ClInclude Include="..\module\thread\thread.h">
       <Filter>module\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="model\context\context.internal.h">
+      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

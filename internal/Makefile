@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/internal
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/acceptor.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/context.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/acceptor.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/context.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../module/config/config.cpp
 	mkdir -p $(BUILD)
@@ -37,9 +37,9 @@ $(BUILD)/thread.o: ../module/thread/thread.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ../module/thread/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
 
-$(BUILD)/acceptor.internal.o: ./model/acceptor/acceptor.internal.cpp
+$(BUILD)/context.internal.o: ./model/context/context.internal.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/acceptor/acceptor.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.internal.o
+	$(CXX) $(STD) -c ./model/context/context.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.internal.o
 
 $(BUILD)/session.internal.o: ./model/session/session.internal.cpp
 	mkdir -p $(BUILD)

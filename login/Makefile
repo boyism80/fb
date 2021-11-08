@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/login
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw -lboost_program_options
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/context.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/acceptor.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/context.login.o $(BUILD)/gateway.o $(BUILD)/session.login.o $(BUILD)/auth.service.o $(BUILD)/sql.service.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../module/config/config.cpp
 	mkdir -p $(BUILD)
@@ -41,9 +41,9 @@ $(BUILD)/thread.o: ../module/thread/thread.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ../module/thread/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
 
-$(BUILD)/acceptor.login.o: ./model/acceptor/acceptor.login.cpp
+$(BUILD)/context.login.o: ./model/context/context.login.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/acceptor/acceptor.login.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/acceptor.login.o
+	$(CXX) $(STD) -c ./model/context/context.login.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.login.o
 
 $(BUILD)/gateway.o: ./model/gateway/gateway.cpp
 	mkdir -p $(BUILD)

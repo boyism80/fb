@@ -1,6 +1,6 @@
 #include "resource.h"
 #include "module/db/db.h"
-#include "model/acceptor/acceptor.login.h"
+#include "model/context/context.login.h"
 #include "module/leak.h"
 #include "module/console/console.h"
 #include "module/config/config.h"
@@ -77,7 +77,7 @@ int main(int argc, const char** argv)
                 c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
             }
         };
-        auto acceptor = std::make_unique<fb::login::acceptor>
+        auto context = std::make_unique<fb::login::context>
         (
             io_context, 
             config["port"].asInt(), 
@@ -88,9 +88,9 @@ int main(int argc, const char** argv)
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait
         (
-            [&acceptor](const boost::system::error_code& error, int signal)
+            [&context](const boost::system::error_code& error, int signal)
             {
-                acceptor.get()->exit();
+                context.get()->exit();
             }
         );
 

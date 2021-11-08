@@ -11,9 +11,6 @@
     <Filter Include="model">
       <UniqueIdentifier>{eb4d2575-42ce-443c-a2a3-f8a1770da1c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\acceptor">
-      <UniqueIdentifier>{5d511dad-e82b-4912-8657-c05f5e52ae17}</UniqueIdentifier>
-    </Filter>
     <Filter Include="module">
       <UniqueIdentifier>{8f161fa2-5b43-42b4-9952-cfd7cf4c2d4f}</UniqueIdentifier>
     </Filter>
@@ -65,13 +62,13 @@
     <Filter Include="module\thread">
       <UniqueIdentifier>{a51ceb5b-b239-41d1-b3b8-c4e615b914dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\context">
+      <UniqueIdentifier>{5d511dad-e82b-4912-8657-c05f5e52ae17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.login.cpp">
-      <Filter>model\acceptor</Filter>
     </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
@@ -109,13 +106,13 @@
     <ClCompile Include="..\module\thread\thread.cpp">
       <Filter>module\thread</Filter>
     </ClCompile>
+    <ClCompile Include="model\context\context.login.cpp">
+      <Filter>model\context</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="model\acceptor\acceptor.login.h">
-      <Filter>model\acceptor</Filter>
     </ClInclude>
     <ClInclude Include="..\module\leak.h">
       <Filter>module</Filter>
@@ -170,6 +167,9 @@
     </ClInclude>
     <ClInclude Include="..\module\thread\thread.h">
       <Filter>module\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="model\context\context.login.h">
+      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

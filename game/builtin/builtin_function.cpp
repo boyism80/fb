@@ -1,9 +1,9 @@
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 #include "builtin/builtin_function.h"
 
 using namespace fb::game;
 
-int fb::game::acceptor::builtin_seed(lua_State* lua)
+int fb::game::context::builtin_seed(lua_State* lua)
 {
     static std::random_device random;
     static std::mt19937 gen(random());
@@ -18,7 +18,7 @@ int fb::game::acceptor::builtin_seed(lua_State* lua)
     return 1;
 }
 
-int fb::game::acceptor::builtin_sleep(lua_State* lua)
+int fb::game::context::builtin_sleep(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -27,8 +27,8 @@ int fb::game::acceptor::builtin_sleep(lua_State* lua)
     auto ms = (uint32_t)thread->tointeger(1);
     thread->pending(true);
 
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
-    acceptor->threads().dispatch
+    auto context = thread->env<fb::game::context>("context");
+    context->threads().dispatch
     (
         [lua] ()
         {
@@ -44,7 +44,7 @@ int fb::game::acceptor::builtin_sleep(lua_State* lua)
     return thread->yield(0);
 }
 
-int fb::game::acceptor::builtin_name2mob(lua_State* lua)
+int fb::game::context::builtin_name2mob(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -58,7 +58,7 @@ int fb::game::acceptor::builtin_name2mob(lua_State* lua)
     return 1;
 }
 
-int fb::game::acceptor::builtin_name2npc(lua_State* lua)
+int fb::game::context::builtin_name2npc(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -72,7 +72,7 @@ int fb::game::acceptor::builtin_name2npc(lua_State* lua)
     return 1;
 }
 
-int fb::game::acceptor::builtin_name2map(lua_State* lua)
+int fb::game::context::builtin_name2map(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -86,7 +86,7 @@ int fb::game::acceptor::builtin_name2map(lua_State* lua)
     return 1;
 }
 
-int fb::game::acceptor::builtin_name2item(lua_State* lua)
+int fb::game::context::builtin_name2item(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -100,29 +100,29 @@ int fb::game::acceptor::builtin_name2item(lua_State* lua)
     return 1;
 }
 
-int fb::game::acceptor::builtin_timer(lua_State* lua)
+int fb::game::context::builtin_timer(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
     
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto context = thread->env<fb::game::context>("context");
     auto value = (uint32_t)thread->tointeger(1);
     auto decrease = thread->toboolean(2);
 
-    acceptor->send(fb::protocol::game::response::timer(value, decrease ? timer::type::DECREASE : timer::type::INCREASE));
+    context->send(fb::protocol::game::response::timer(value, decrease ? timer::type::DECREASE : timer::type::INCREASE));
     return 0;
 }
 
-int fb::game::acceptor::builtin_weather(lua_State* lua)
+int fb::game::context::builtin_weather(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
     
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto context = thread->env<fb::game::context>("context");
     auto value = (uint32_t)thread->tointeger(1);
 
-    acceptor->send(fb::protocol::game::response::weather(weather::type(value)));
+    context->send(fb::protocol::game::response::weather(weather::type(value)));
     return 0;
 }

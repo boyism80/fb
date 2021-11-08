@@ -1,5 +1,5 @@
 #include "resource.h"
-#include "model/acceptor/acceptor.internal.h"
+#include "model/context/context.internal.h"
 #include "model/table/table.internal.h"
 #include "module/leak.h"
 #include "module/console/console.h"
@@ -60,7 +60,7 @@ int main(int argc, const char** argv)
 
         // Execute acceptor
         boost::asio::io_context io_context;
-        auto acceptor = std::make_unique<fb::internal::acceptor>
+        auto context = std::make_unique<fb::internal::context>
         (
             io_context, 
             config["port"].asInt(), 
@@ -70,9 +70,9 @@ int main(int argc, const char** argv)
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait
         (
-            [&acceptor](const boost::system::error_code& error, int signal)
+            [&context](const boost::system::error_code& error, int signal)
             {
-                acceptor.get()->exit();
+                context.get()->exit();
             }
         );
 

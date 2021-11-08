@@ -32,7 +32,7 @@ namespace fb { namespace game {
 #pragma region exceptions
 #pragma endregion
 
-class acceptor : 
+class context : 
     public fb::acceptor<fb::game::session>, 
     public fb::game::listener
 {
@@ -52,22 +52,22 @@ public:
 #pragma region type definition
 public:
     using command_fn        = std::function<bool(fb::game::session&, Json::Value&)>;
-    using command_dict      = std::map<std::string, command>;
-    using hash_set          = std::unordered_set<const fb::game::object*>;
+    using commands          = std::map<std::string, command>;
+    using object_set        = std::unordered_set<const fb::game::object*>;
 #pragma endregion
 
 #pragma region private field
 private:
-    command_dict            _command_dict;
+    commands                _commands;
     std::mutex              _hash_mutex;
-    hash_set                _hash_set;
+    object_set              _objects;
     tm*                     _time = fb::now();
 #pragma endregion
 
 #pragma region constructor / destructor
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
-    ~acceptor();
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    ~context();
 #pragma endregion
 
 #pragma region private method
@@ -87,8 +87,8 @@ public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
 
 public:
-    void                    send(fb::game::object& object, const fb::protocol::base::header& header, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
-    void                    send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, acceptor::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(fb::game::object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self = false, bool encrypt = true);
+    void                    send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, context::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
     void                    save(fb::game::session& session);
@@ -294,10 +294,10 @@ public:
 };
 
 
-struct acceptor::command
+struct context::command
 {
 public:
-    acceptor::command_fn    fn;
+    context::command_fn     fn;
     bool                    admin;
 };
 

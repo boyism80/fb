@@ -1,7 +1,7 @@
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 using namespace fb::game;
 
-bool fb::game::acceptor::handle_command_map(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_map(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -28,7 +28,7 @@ bool fb::game::acceptor::handle_command_map(fb::game::session& session, Json::Va
     return true;
 }
 
-bool fb::game::acceptor::handle_command_sound(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_sound(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -41,7 +41,7 @@ bool fb::game::acceptor::handle_command_sound(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_action(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_action(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -54,7 +54,7 @@ bool fb::game::acceptor::handle_command_action(fb::game::session& session, Json:
     return true;
 }
 
-bool fb::game::acceptor::handle_command_weather(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_weather(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -67,7 +67,7 @@ bool fb::game::acceptor::handle_command_weather(fb::game::session& session, Json
     return true;
 }
 
-bool fb::game::acceptor::handle_command_bright(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_bright(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -80,7 +80,7 @@ bool fb::game::acceptor::handle_command_bright(fb::game::session& session, Json:
     return true;
 }
 
-bool fb::game::acceptor::handle_command_timer(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_timer(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -93,7 +93,7 @@ bool fb::game::acceptor::handle_command_timer(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_effect(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_effect(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -106,7 +106,7 @@ bool fb::game::acceptor::handle_command_effect(fb::game::session& session, Json:
     return true;
 }
 
-bool fb::game::acceptor::handle_command_disguise(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_disguise(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -126,13 +126,13 @@ bool fb::game::acceptor::handle_command_disguise(fb::game::session& session, Jso
     return true;
 }
 
-bool fb::game::acceptor::handle_command_undisguise(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_undisguise(fb::game::session& session, Json::Value& parameters)
 {
     session.undisguise();
     return true;
 }
 
-bool fb::game::acceptor::handle_command_mob(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_mob(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -151,7 +151,7 @@ bool fb::game::acceptor::handle_command_mob(fb::game::session& session, Json::Va
     return true;
 }
 
-bool fb::game::acceptor::handle_command_class(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_class(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -171,7 +171,7 @@ bool fb::game::acceptor::handle_command_class(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_level(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_level(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -185,7 +185,7 @@ bool fb::game::acceptor::handle_command_level(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_spell(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_spell(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -205,7 +205,7 @@ bool fb::game::acceptor::handle_command_spell(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_item(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_item(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -226,7 +226,7 @@ bool fb::game::acceptor::handle_command_item(fb::game::session& session, Json::V
     return true;
 }
 
-bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_world(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -245,7 +245,7 @@ bool fb::game::acceptor::handle_command_world(fb::game::session& session, Json::
     return true;
 }
 
-bool fb::game::acceptor::handle_command_script(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_script(fb::game::session& session, Json::Value& parameters)
 {
     session.dialog
         .from("scripts/test.lua")
@@ -256,7 +256,7 @@ bool fb::game::acceptor::handle_command_script(fb::game::session& session, Json:
     return true;
 }
 
-bool fb::game::acceptor::handle_command_hair(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_hair(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -269,7 +269,7 @@ bool fb::game::acceptor::handle_command_hair(fb::game::session& session, Json::V
     return true;
 }
 
-bool fb::game::acceptor::handle_command_hair_color(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_hair_color(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;
@@ -282,7 +282,7 @@ bool fb::game::acceptor::handle_command_hair_color(fb::game::session& session, J
     return true;
 }
 
-bool fb::game::acceptor::handle_command_armor_color(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_armor_color(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() == 0)
     {
@@ -301,13 +301,13 @@ bool fb::game::acceptor::handle_command_armor_color(fb::game::session& session, 
     }
 }
 
-bool fb::game::acceptor::handle_command_exit(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_exit(fb::game::session& session, Json::Value& parameters)
 {
     this->_internal->send(fb::protocol::internal::request::shutdown());
     return true;
 }
 
-bool fb::game::acceptor::handle_command_tile(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_tile(fb::game::session& session, Json::Value& parameters)
 {
     auto listener = session.get_listener<fb::game::session>();
     if(listener == nullptr)
@@ -332,13 +332,13 @@ bool fb::game::acceptor::handle_command_tile(fb::game::session& session, Json::V
     return true;
 }
 
-bool fb::game::acceptor::handle_command_save(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_save(fb::game::session& session, Json::Value& parameters)
 {
     this->save();
     return true;
 }
 
-bool fb::game::acceptor::handle_command_mapobj(fb::game::session& session, Json::Value& parameters)
+bool fb::game::context::handle_command_mapobj(fb::game::session& session, Json::Value& parameters)
 {
     if(parameters.size() < 1)
         return false;

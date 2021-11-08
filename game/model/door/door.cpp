@@ -1,7 +1,7 @@
 #include "model/door/door.h"
 #include "model/map/map.h"
 #include "model/session/session.h"
-#include "model/acceptor/acceptor.game.h"
+#include "model/context/context.game.h"
 
 bool fb::game::door::master::matched(const fb::game::map& map, const point16_t& position, bool open) const
 {
@@ -155,11 +155,11 @@ int fb::game::door::builtin_update(lua_State* lua)
     auto door = thread->touserdata<fb::game::door>(1);
 
     auto master = door->based();
-    auto acceptor = thread->env<fb::game::acceptor>("acceptor");
+    auto context = thread->env<fb::game::context>("context");
 
     const auto& map = door->map();
     const auto size = size8_t((uint8_t)master.size(), 1);
-    acceptor->send(fb::protocol::game::response::map::update(map, door->position, size), map);
+    context->send(fb::protocol::game::response::map::update(map, door->position, size), map);
     return 0;
 }
 

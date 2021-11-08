@@ -53,9 +53,6 @@
     <Filter Include="model\spell">
       <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\acceptor">
-      <UniqueIdentifier>{5ebddb78-6e01-43f3-bc4c-033801cee9b6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model\mob">
       <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
     </Filter>
@@ -122,6 +119,9 @@
     <Filter Include="module\time">
       <UniqueIdentifier>{cca60f19-d2c5-43bd-889c-fd83f19457b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\context">
+      <UniqueIdentifier>{2567a9ef-0a8b-49b6-8bdb-ec1cbad3cfba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -181,9 +181,6 @@
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
     </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.game.cpp">
-      <Filter>model\acceptor</Filter>
-    </ClCompile>
     <ClCompile Include="..\module\service\service.cpp">
       <Filter>module\service</Filter>
     </ClCompile>
@@ -192,9 +189,6 @@
     </ClCompile>
     <ClCompile Include="model\listener\listener.cpp">
       <Filter>model\listener</Filter>
-    </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.game.handler.cpp">
-      <Filter>model\acceptor</Filter>
     </ClCompile>
     <ClCompile Include="model\map\sector.cpp">
       <Filter>model\map</Filter>
@@ -210,9 +204,6 @@
     </ClCompile>
     <ClCompile Include="..\module\table\table.cpp">
       <Filter>module\table</Filter>
-    </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.game.command.cpp">
-      <Filter>model\acceptor</Filter>
     </ClCompile>
     <ClCompile Include="service\sql\sql.service.cpp">
       <Filter>service\sql</Filter>
@@ -264,6 +255,15 @@
     </ClCompile>
     <ClCompile Include="model\item\item.equipment.bow.cpp">
       <Filter>model\item</Filter>
+    </ClCompile>
+    <ClCompile Include="model\context\context.game.cpp">
+      <Filter>model\context</Filter>
+    </ClCompile>
+    <ClCompile Include="model\context\context.game.handler.cpp">
+      <Filter>model\context</Filter>
+    </ClCompile>
+    <ClCompile Include="model\context\context.game.command.cpp">
+      <Filter>model\context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -341,9 +341,6 @@
     </ClInclude>
     <ClInclude Include="..\module\leak.h">
       <Filter>module</Filter>
-    </ClInclude>
-    <ClInclude Include="model\acceptor\acceptor.game.h">
-      <Filter>model\acceptor</Filter>
     </ClInclude>
     <ClInclude Include="..\module\service\service.h">
       <Filter>module\service</Filter>
@@ -434,6 +431,9 @@
     </ClInclude>
     <ClInclude Include="model\item\item.equipment.auxiliary.h">
       <Filter>model\item</Filter>
+    </ClInclude>
+    <ClInclude Include="model\context\context.game.h">
+      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,15 +12,15 @@
 
 namespace fb { namespace login {
 
-class acceptor : public fb::acceptor<fb::login::session>
+class context : public fb::acceptor<fb::login::session>
 {
 private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
-    ~acceptor();
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    ~context();
 
     // override
 public:

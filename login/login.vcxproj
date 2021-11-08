@@ -184,7 +184,7 @@
     <ClCompile Include="..\module\stream\stream.cpp" />
     <ClCompile Include="..\module\thread\thread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\acceptor\acceptor.login.cpp" />
+    <ClCompile Include="model\context\context.login.cpp" />
     <ClCompile Include="model\gateway\gateway.cpp" />
     <ClCompile Include="model\session\session.login.cpp" />
     <ClCompile Include="service\auth\auth.service.cpp" />
@@ -205,7 +205,7 @@
     <ClInclude Include="..\module\socket\socket.hpp" />
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="model\acceptor\acceptor.login.h" />
+    <ClInclude Include="model\context\context.login.h" />
     <ClInclude Include="model\gateway\gateway.h" />
     <ClInclude Include="model\session\session.login.h" />
     <ClInclude Include="resource.h" />

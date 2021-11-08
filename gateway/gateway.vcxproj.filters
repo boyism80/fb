@@ -29,9 +29,6 @@
     <Filter Include="model">
       <UniqueIdentifier>{bc41ca58-ba04-4b97-ae93-6517af8b1d7b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\acceptor">
-      <UniqueIdentifier>{88234285-22c2-40fd-9b31-0774aced2f62}</UniqueIdentifier>
-    </Filter>
     <Filter Include="model\session">
       <UniqueIdentifier>{292bca3c-2aed-4149-8e78-43980d942e63}</UniqueIdentifier>
     </Filter>
@@ -59,6 +56,9 @@
     <Filter Include="module\thread">
       <UniqueIdentifier>{c7bd8159-293a-4588-8ac5-edc325c6b91f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="model\context">
+      <UniqueIdentifier>{88234285-22c2-40fd-9b31-0774aced2f62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,9 +72,6 @@
     </ClCompile>
     <ClCompile Include="..\module\stream\stream.cpp">
       <Filter>module\stream</Filter>
-    </ClCompile>
-    <ClCompile Include="model\acceptor\acceptor.gateway.cpp">
-      <Filter>model\acceptor</Filter>
     </ClCompile>
     <ClCompile Include="model\session\session.gateway.cpp">
       <Filter>model\session</Filter>
@@ -96,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="..\module\thread\thread.cpp">
       <Filter>module\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="model\context\context.gateway.cpp">
+      <Filter>model\context</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="model\acceptor\acceptor.gateway.h">
-      <Filter>model\acceptor</Filter>
     </ClInclude>
     <ClInclude Include="model\session\session.gateway.h">
       <Filter>model\session</Filter>
@@ -152,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="..\module\thread\thread.h">
       <Filter>module\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="model\context\context.gateway.h">
+      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

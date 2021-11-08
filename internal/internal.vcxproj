@@ -181,7 +181,7 @@
     <ClCompile Include="..\module\table\table.cpp" />
     <ClCompile Include="..\module\thread\thread.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\acceptor\acceptor.internal.cpp" />
+    <ClCompile Include="model\context\context.internal.cpp" />
     <ClCompile Include="model\session\session.internal.cpp" />
     <ClCompile Include="model\table\table.internal.cpp" />
   </ItemGroup>
@@ -197,7 +197,7 @@
     <ClInclude Include="..\module\stream\stream.h" />
     <ClInclude Include="..\module\table\table.h" />
     <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="model\acceptor\acceptor.internal.h" />
+    <ClInclude Include="model\context\context.internal.h" />
     <ClInclude Include="model\exception\exception.h" />
     <ClInclude Include="model\session\session.internal.h" />
     <ClInclude Include="model\table\table.internal.h" />

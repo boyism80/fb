@@ -23,7 +23,7 @@ public:
     { }
 };
 
-class acceptor : public fb::base::acceptor<fb::internal::socket, fb::internal::session>
+class context : public fb::base::acceptor<fb::internal::socket, fb::internal::session>
 {
 public:
     using service                   = fb::internal::socket<fb::internal::session>;
@@ -38,8 +38,8 @@ private:
     std::map<std::string, user*>    _users;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
-    ~acceptor();
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
+    ~context();
 
 private:
     service*                        get(fb::protocol::internal::services type, uint8_t group = 0xFF);
