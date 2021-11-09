@@ -67,7 +67,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
     
     auto context = thread->env<fb::game::context>("context");
     auto master = thread->touserdata<fb::game::item::master>(1);
-    auto object = master->make(context);
+    auto object = master->make(*context);
 
     auto map = thread->touserdata<fb::game::map>(2);
     object->map(map);
@@ -106,7 +106,7 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
-fb::game::item* fb::game::item::master::make(fb::game::context* context) const
+fb::game::item* fb::game::item::master::make(fb::game::context& context) const
 {
     return new fb::game::item(context, this);
 }
@@ -120,7 +120,7 @@ fb::game::item* fb::game::item::master::make(fb::game::context* context) const
 // class item
 //
 
-fb::game::item::item(fb::game::context* context, const fb::game::item::master* master, uint16_t count) : 
+fb::game::item::item(fb::game::context& context, const fb::game::item::master* master, uint16_t count) : 
     fb::game::object(context, master),
     _owner(nullptr),
     _count(count)

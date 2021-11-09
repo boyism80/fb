@@ -8,7 +8,7 @@
 
 using namespace fb::game;
 
-session::session(fb::socket<fb::game::session>& socket, fb::game::context* context) : 
+session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
     life(context, nullptr, (uint32_t)socket.native_handle(), 0, 0, 0),
     _socket(socket)
 { }
@@ -1236,7 +1236,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = master->make(context);
+        auto item = master->make(*context);
         auto slot = session->items.add(item);
         item->to_lua(lua);
 

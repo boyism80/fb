@@ -638,7 +638,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
     return true;
 }
 
-bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::context* context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto                        mutex           = std::make_unique<std::mutex>();
     auto&                       config          = fb::config::get();
@@ -846,7 +846,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
     return true;
 }
 
-bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::context* context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
     auto                        mutex   = std::make_unique<std::mutex>();
     auto                        count   = fb::table::load

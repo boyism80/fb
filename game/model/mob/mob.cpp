@@ -50,7 +50,7 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
 
 
 
-fb::game::mob::mob(fb::game::context* context, const mob::master* master, bool alive) : 
+fb::game::mob::mob(fb::game::context& context, const mob::master* master, bool alive) : 
     life(context, master),
     _action_time(0),
     _dead_time(0),

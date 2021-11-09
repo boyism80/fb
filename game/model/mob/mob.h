@@ -55,7 +55,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    mob(fb::game::context* context, const mob::master* master, bool alive = false);
+    mob(fb::game::context& context, const mob::master* master, bool alive = false);
     mob(const mob& right);
     ~mob();
 #pragma endregion

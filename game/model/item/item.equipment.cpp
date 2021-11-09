@@ -68,12 +68,12 @@ fb::game::item::attrs fb::game::equipment::master::attr() const
     return item::attrs::EQUIPMENT;
 }
 
-fb::game::item* fb::game::equipment::master::make(fb::game::context* context) const
+fb::game::item* fb::game::equipment::master::make(fb::game::context& context) const
 {
     return new fb::game::equipment(context, this);
 }
 
-fb::game::equipment::equipment(fb::game::context* context, const equipment::master* master) : 
+fb::game::equipment::equipment(fb::game::context& context, const equipment::master* master) : 
     item(context, master)
 {
     this->_durability = master->durability;

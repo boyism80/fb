@@ -33,8 +33,8 @@ public:
 
 #pragma region constructor / destructor
 protected:
-    life(fb::game::context* context, const master* master);
-    life(fb::game::context* context, master* master, uint32_t id, uint32_t hp = 0, uint32_t mp = 0, uint32_t exp = 0);
+    life(fb::game::context& context, const master* master);
+    life(fb::game::context& context, master* master, uint32_t id, uint32_t hp = 0, uint32_t mp = 0, uint32_t exp = 0);
     life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp);
     virtual ~life();
 #pragma endregion

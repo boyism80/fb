@@ -19,14 +19,14 @@ public:
 
 #pragma region constructor
 public:
-    npc(fb::game::context* context, const master* master);
+    npc(fb::game::context& context, const master* master);
     npc(const npc& right);
     ~npc();
 #pragma endregion
 
 #pragma region public method
 public:
-    npc*                        make(fb::game::context* context);
+    npc*                        make(fb::game::context& context);
 #pragma endregion
 
 #pragma region built-in method

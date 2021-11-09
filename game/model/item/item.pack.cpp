@@ -36,12 +36,12 @@ fb::game::item::attrs fb::game::pack::master::attr() const
     return item::attrs::PACK;
 }
 
-fb::game::item* fb::game::pack::master::make(fb::game::context* context) const
+fb::game::item* fb::game::pack::master::make(fb::game::context& context) const
 {
     return new fb::game::pack(context, this);
 }
 
-fb::game::pack::pack(fb::game::context* context, const fb::game::pack::master* master) : 
+fb::game::pack::pack(fb::game::context& context, const fb::game::pack::master* master) : 
     fb::game::item(context, master)
 {
     this->_durability = master->durability;

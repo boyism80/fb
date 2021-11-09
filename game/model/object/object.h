@@ -72,7 +72,7 @@ public:
 
 #pragma region private field
 private:
-    context*                            _context;
+    context&                            _context;
     fb::game::object::listener*         _listener;
     bool                                _visible    = false;
     fb::game::sector*                   _sector     = nullptr;
@@ -96,7 +96,7 @@ public:
 
 #pragma region constructor / destructor
 protected:
-    object(context* context, const master* master, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
+    object(context& context, const master* master, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
     object(const object& right);
 public:
     virtual ~object();
@@ -111,7 +111,7 @@ private:
 
 #pragma region public method
 public:
-    inline context*                     context() const { return this->_context; }
+    inline context&                     context() const { return this->_context; }
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
 
@@ -272,7 +272,7 @@ public:
 #pragma region template
 public:
     template <typename T>
-    T* make(fb::game::context* context) const
+    T* make(fb::game::context& context) const
     {
         return new T(context, static_cast<const typename T::master*>(this));
     }

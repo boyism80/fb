@@ -75,7 +75,7 @@ fb::game::item::attrs fb::game::weapon::master::attr() const
     return item::attrs::WEAPON;
 }
 
-fb::game::item* fb::game::weapon::master::make(fb::game::context* context) const
+fb::game::item* fb::game::weapon::master::make(fb::game::context& context) const
 {
     return new fb::game::weapon(context, this);
 }
@@ -102,7 +102,7 @@ fb::game::weapon::types fb::game::weapon::master::weapon_type() const
 }
 
 
-fb::game::weapon::weapon(fb::game::context* context, const master* master) : 
+fb::game::weapon::weapon(fb::game::context& context, const master* master) : 
     equipment(context, master)
 { }
 

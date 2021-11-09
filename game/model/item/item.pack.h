@@ -19,7 +19,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    pack(fb::game::context* context, const master* master);
+    pack(fb::game::context& context, const master* master);
     pack(const pack& right);
     ~pack();
 #pragma endregion
@@ -65,7 +65,7 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::context* context) const;
+    virtual fb::game::item*             make(fb::game::context& context) const;
 };
 #pragma endregion
 

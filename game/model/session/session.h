@@ -186,7 +186,7 @@ private:
 
 #pragma region constructor / destructor
 public:
-    session(fb::socket<fb::game::session>& socket, fb::game::context* context);
+    session(fb::socket<fb::game::session>& socket, fb::game::context& context);
     ~session();
 #pragma endregion
 

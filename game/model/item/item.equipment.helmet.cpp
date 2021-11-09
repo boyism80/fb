@@ -67,14 +67,14 @@ fb::game::item::attrs fb::game::helmet::master::attr() const
     return item::attrs::HELMET;
 }
 
-fb::game::item* fb::game::helmet::master::make(fb::game::context* context) const
+fb::game::item* fb::game::helmet::master::make(fb::game::context& context) const
 {
     return new fb::game::helmet(context, this);
 }
 
 
 
-fb::game::helmet::helmet(fb::game::context* context, const master* master) : 
+fb::game::helmet::helmet(fb::game::context& context, const master* master) : 
     equipment(context, master)
 { }
 

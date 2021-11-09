@@ -30,7 +30,7 @@ int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
     return ::builtin_item_dialog<fb::game::npc::master>(lua);
 }
 
-fb::game::npc::npc(fb::game::context* context, const fb::game::npc::master* master) : 
+fb::game::npc::npc(fb::game::context& context, const fb::game::npc::master* master) : 
     fb::game::object(context, master)
 { }
 

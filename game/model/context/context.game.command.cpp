@@ -145,7 +145,7 @@ bool fb::game::context::handle_command_mob(fb::game::session& session, Json::Val
     if(core == nullptr)
         return true;
 
-    auto mob = new fb::game::mob(this, core, true);
+    auto mob = new fb::game::mob(*this, core, true);
     auto map = session.map();
     mob->map(map, session.position());
     return true;
@@ -221,7 +221,7 @@ bool fb::game::context::handle_command_item(fb::game::session& session, Json::Va
     auto count = parameters.size() > 1 && parameters[1].isInt() ? 
         parameters[1].asInt() : 1;
 
-    auto item = core->make<fb::game::item>(this, count);
+    auto item = core->make<fb::game::item>(*this, count);
     item->map(session.map(), session.position());
     return true;
 }

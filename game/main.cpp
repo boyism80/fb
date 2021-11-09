@@ -10,7 +10,7 @@
 #include "module/console/console.h"
 #include "model/table/table.game.h"
 
-bool load_db(fb::console& c, fb::game::context* context)
+bool load_db(fb::console& c, fb::game::context& context)
 {
     auto& config = fb::config::get();
 
@@ -413,7 +413,7 @@ int main(int argc, const char** argv)
             connection
         );
 
-        load_db(c, context.get());
+        load_db(c, *context);
 
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait

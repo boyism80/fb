@@ -461,7 +461,7 @@ void fb::game::context::bind_command(const std::string& cmd, const fb::game::con
 
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
-    auto session = new fb::game::session(socket, this);
+    auto session = new fb::game::session(socket, *this);
     return session;
 }
 
@@ -885,7 +885,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
                     return true;
 
                 auto& items = fb::game::table::items;
-                auto  item = items[master.value()]->make<fb::game::item>(this);
+                auto  item = items[master.value()]->make<fb::game::item>(*this);
                 if(item == nullptr)
                     return true;
 

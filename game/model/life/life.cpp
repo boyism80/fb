@@ -49,7 +49,7 @@ int fb::game::life::master::builtin_mp(lua_State* lua)
 }
 
 
-fb::game::life::life(fb::game::context* context, const master* master) : 
+fb::game::life::life(fb::game::context& context, const master* master) : 
     object(context, master),
     _hp(0),
     _mp(0),
@@ -57,7 +57,7 @@ fb::game::life::life(fb::game::context* context, const master* master) :
     spells(*this)
 { }
 
-fb::game::life::life(fb::game::context* context, master* master, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
+fb::game::life::life(fb::game::context& context, master* master, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
     object(context, master, id),
     _hp(hp),
     _mp(mp),

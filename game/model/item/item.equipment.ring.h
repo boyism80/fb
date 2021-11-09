@@ -14,7 +14,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    ring(fb::game::context* context, const master* master);
+    ring(fb::game::context& context, const master* master);
     ring(const ring& right);
     ~ring();
 #pragma endregion
@@ -58,7 +58,7 @@ public:
     
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::context* context) const;
+    virtual fb::game::item*             make(fb::game::context& context) const;
 };
 #pragma endregion
 

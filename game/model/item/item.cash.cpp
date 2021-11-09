@@ -19,7 +19,7 @@ fb::game::item::attrs fb::game::cash::master::attr() const
     return item::attrs::CASH;
 }
 
-fb::game::item* fb::game::cash::master::make(fb::game::context* context) const
+fb::game::item* fb::game::cash::master::make(fb::game::context& context) const
 {
     return new cash(context, 0);
 }
@@ -29,7 +29,7 @@ fb::game::item* fb::game::cash::master::make(fb::game::context* context) const
 //
 // class cash
 //
-fb::game::cash::cash(fb::game::context* context, uint32_t chunk) : 
+fb::game::cash::cash(fb::game::context& context, uint32_t chunk) : 
     fb::game::item(context, nullptr)
 {
     this->chunk(chunk);

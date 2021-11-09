@@ -86,10 +86,10 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 
 
 // fb::game::object
-fb::game::object::object(fb::game::context* context, const fb::game::object::master* master, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
+fb::game::object::object(fb::game::context& context, const fb::game::object::master* master, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
     luable(id),
     _context(context),
-    _listener(context),
+    _listener(&context),
     _sequence(0xFFFFFFFF),
     _master(master),
     _position(position),
@@ -1233,7 +1233,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = master->make(context);
+        auto item = master->make(*context);
         item->map(object->_map, object->_position);
         item->to_lua(lua);
         
