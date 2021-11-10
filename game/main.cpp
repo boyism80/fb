@@ -357,7 +357,7 @@ int main(int argc, const char** argv)
 
     try
     {
-        //_CrtSetBreakAlloc(157);
+        //_CrtSetBreakAlloc(12722647);
 
 #ifdef _WIN32
         ::SetConsoleIcon(IDI_BARAM);

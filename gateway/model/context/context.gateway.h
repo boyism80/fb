@@ -7,6 +7,7 @@
 #include "model/gateway/gateway.h"
 #include <service/gateway/service.gateway.h>
 #include <zlib.h>
+#include <memory>
 #include "protocol/gateway.h"
 #include "protocol/internal.h"
 #include "module/encoding/encoding.h"
@@ -16,11 +17,15 @@ namespace fb { namespace gateway {
 
 class context : public fb::acceptor<fb::gateway::session>
 {
+public:
+    using unique_session = std::unique_ptr<fb::gateway::session>;
+
 private:
     std::vector<entry>          _entrypoints;
     fb::ostream                 _entry_stream_cache;
     uint32_t                    _entry_crc32_cache = 0;
     fb::ostream                 _connection_cache;
+    std::vector<unique_session> _sessions;
 
 private:
     service::gateway            _gateway_service;

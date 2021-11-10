@@ -339,7 +339,9 @@ context::context(boost::asio::io_context& context, uint16_t port, std::chrono::s
 }
 
 context::~context()
-{ }
+{ 
+    this->exit();
+}
 
 bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
 {
@@ -362,8 +364,8 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
         this->save(*session);
     }
 
-    session->map(nullptr);
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
+    this->destroy(*session);
     return true;
 }
 
@@ -371,6 +373,17 @@ void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
     for(auto& pair : fb::game::table::maps)
         pair.second->handle_timer(elapsed_milliseconds);
+}
+
+bool fb::game::context::destroy(fb::game::object& obj)
+{
+    auto gd = std::lock_guard(this->_hash_mutex);
+    if(this->_objects.contains(&obj) == false)
+        return false;
+    
+    obj.map(nullptr);
+    this->_objects.erase(&obj);
+    return true;
 }
 
 uint32_t fb::game::context::elapsed_seconds(const datetime& datetime)
@@ -461,8 +474,7 @@ void fb::game::context::bind_command(const std::string& cmd, const fb::game::con
 
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
-    auto session = new fb::game::session(socket, *this);
-    return session;
+    return new fb::game::session(socket, *this);
 }
 
 void fb::game::context::send(object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self, bool encrypt)
@@ -635,10 +647,7 @@ uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& so
 }
 
 void fb::game::context::handle_exit()
-{
-    fb::game::table::maps.clear();
-    
-}
+{ }
 
 fb::thread* fb::game::context::thread(const fb::game::map& map) const
 {
@@ -1152,7 +1161,7 @@ bool fb::game::context::handle_item_info(fb::socket<fb::game::session>& socket, 
 bool fb::game::context::handle_itemmix(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::item::mix& request)
 {
     auto session = socket.data();
-    if(request.indices.size() > item::MAX_SLOT - 1)
+    if(request.indices.size() > CONTAINER_CAPACITY - 1)
         return false;
 
     itemmix::builder            builder(*session);
@@ -1488,7 +1497,7 @@ bool fb::game::context::handle_throw_item(fb::socket<fb::game::session>& socket,
 bool fb::game::context::handle_spell(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::spell::use& request)
 {
     auto session = socket.data();
-    if(request.slot > spell::MAX_SLOT - 1)
+    if(request.slot > CONTAINER_CAPACITY - 1)
         return false;
 
     auto                    spell = session->spells[request.slot];
@@ -1555,7 +1564,7 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
 {
     for(auto& pair : fb::game::table::maps)
     {
-        auto                map = pair.second;
+        auto&               map = pair.second;
         if(map->activated() == false)
             continue;
 
@@ -1589,7 +1598,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
     std::vector<object*>    spawned_mobs;
     for(auto& pair : fb::game::table::maps)
     {
-        auto                map = pair.second;
+        auto&               map = pair.second;
         if(map->activated() == false)
             continue;
 
@@ -1647,7 +1656,7 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
 {
     for(auto& pair : fb::game::table::maps)
     {
-        auto                map = pair.second;
+        auto&               map = pair.second;
         if(map->activated() == false)
             continue;
 
@@ -1683,7 +1692,7 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 
     for(auto& pair : fb::game::table::maps)
     {
-        auto                map = pair.second;
+        auto&               map = pair.second;
         if(map->activated() == false)
             continue;
 

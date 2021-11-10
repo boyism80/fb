@@ -21,7 +21,6 @@ template <template<class> class S, class T>
 class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
-    S<T>*                                       _buffer;
     fb::threads                                 _threads;
     bool                                        _exit = false;
 

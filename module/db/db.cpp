@@ -156,21 +156,16 @@ void fb::db::_exec(const char* name, const std::string& sql)
 void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
 {
     auto connection = &db::get(name);
-    auto name_c = new std::string(name);
-
+    
     try
     {
-        auto result = new daotk::mysql::result(connection->query(sql));
-
         boost::asio::dispatch
         (
             *_context, 
-            [this, connection, name_c, &fn, result] () 
+            [this, connection, name = std::string(name), &fn, result = std::make_unique<daotk::mysql::result>(connection->query(sql))] () 
             { 
                 fn(*connection, *result); 
-                delete result;
-                this->release(name_c->c_str(), *connection);
-                delete name_c;
+                this->release(name.c_str(), *connection);
             }
         );
     }
@@ -178,29 +173,22 @@ void fb::db::_query(const char* name, const std::string& sql, const std::functio
     {
         this->release(name, *connection);
         console::get().puts(e.what());
-
-        delete name_c;
     }
 }
 
 void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
 {
     auto connection = &db::get(name);
-    auto name_c = new std::string(name);
 
     try
     {
-        auto results = new std::vector<daotk::mysql::result>(connection->mquery(sql));
-
         boost::asio::dispatch
         (
             *_context, 
-            [this, connection, name_c, fn, results] () 
+            [this, connection, name = std::string(name), fn, results = std::make_unique<std::vector<daotk::mysql::result>>(connection->mquery(sql))] () 
             { 
                 fn(*connection, *results); 
-                delete results;
-                this->release(name_c->c_str(), *connection);
-                delete name_c;
+                this->release(name.c_str(), *connection);
             }
         );
     }
@@ -208,8 +196,6 @@ void fb::db::_mquery(const char* name, const std::string& sql, const std::functi
     {
         this->release(name, *connection);
         console::get().puts(e.what());
-
-        delete name_c;
     }
 }
 
@@ -236,16 +222,11 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries)
         sstream << queries[i];
     }
 
-    auto _name = new std::string(name);
-    auto _qry = new std::string(sstream.str());
-
     fb::async::launch
     (
-        [&ist, _name, _qry]()
+        [&ist, name = std::string(name), query = std::string(sstream.str())]()
         {
-            ist._exec(_name->c_str(), _qry->c_str());
-            delete _name;
-            delete _qry;
+            ist._exec(name.c_str(), query.c_str());
         }
     );
 
@@ -267,17 +248,12 @@ bool fb::db::query(const char* name, const std::function<void()>& fn, const std:
         sstream << queries[i];
     }
 
-    auto _name = new std::string(name);
-    auto _qry = new std::string(sstream.str());
-
     fb::async::launch
     (
-        [&ist, _name, _qry, fn]()
+        [&ist, name = std::string(name), query = std::string(sstream.str()), fn]()
         {
-            ist._exec(_name->c_str(), _qry->c_str());
+            ist._exec(name.c_str(), query.c_str());
             fn();
-            delete _name;
-            delete _qry;
         }
     );
 

@@ -288,7 +288,7 @@ bool fb::game::trade::flushable() const
         return false;
 
     auto free_size = this->_you->items.free_size();
-    for(int i = 0; i < item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto                item = this->_you->items[i];
         if(item == nullptr)

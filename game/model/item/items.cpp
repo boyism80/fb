@@ -3,36 +3,12 @@
 #include "model/map/map.h"
 
 fb::game::items::items(session& owner) :
-    base_container(owner, item::MAX_SLOT),
+    base_container(owner),
     _owner(static_cast<fb::game::session&>(owner))
 { }
 
 fb::game::items::~items()
-{
-    if(this->_weapon)
-        delete this->_weapon;
-
-    if(this->_armor)
-        delete this->_armor;
-
-    if(this->_helmet)
-        delete this->_helmet;
-
-    if(this->_shield)
-        delete this->_shield;
-
-    if(this->_rings[0])
-        delete this->_rings[0];
-
-    if(this->_rings[1])
-        delete this->_rings[1];
-
-    if(this->_auxiliaries[0])
-        delete this->_auxiliaries[0];
-
-    if(this->_auxiliaries[1])
-        delete this->_auxiliaries[1];
-}
+{ }
 
 uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
 {
@@ -150,7 +126,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
 
             exists->merge(*item);
             if(item->empty())
-                delete item;
+                item->destroy();
 
             auto index = this->index(*exists);
             
@@ -216,7 +192,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
         item->active();
         if(item->empty())
         {
-            delete item;
+            item->destroy();
             return nullptr;
         }
         else
@@ -238,7 +214,7 @@ uint8_t fb::game::items::inactive(equipment::slot slot)
 
 uint8_t fb::game::items::index(const fb::game::item::master* item) const
 {
-    for(int i = 0; i < item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto now = this->at(i);
 
@@ -254,7 +230,7 @@ uint8_t fb::game::items::index(const fb::game::item::master* item) const
 
 uint8_t fb::game::items::index(const fb::game::item& item) const
 {
-    for(int i = 0; i < item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto now = this->at(i);
         if(now == &item)
@@ -444,7 +420,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
 
 fb::game::item* fb::game::items::find(const std::string& name) const
 {
-    for(int i = 0; i < item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = this->at(i);
         if(item == nullptr)
@@ -459,7 +435,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
 
 fb::game::item* fb::game::items::find(const fb::game::item::master& base) const
 {
-    for(int i = 0; i < fb::game::item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = this->at(i);
         if(item == nullptr)

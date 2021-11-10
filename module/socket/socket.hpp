@@ -71,13 +71,13 @@ fb::istream& fb::base::socket<T>::in_stream()
 template <typename T>
 void fb::base::socket<T>::data(T* value)
 {
-    this->_data.reset(value);
+    this->_data = value;
 }
 
 template <typename T>
 T* fb::base::socket<T>::data()
 {
-    return this->_data.get();
+    return _data;
 }
 
 template<typename T>
@@ -178,9 +178,17 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 // socket_container
 
 template <template<class> class S, class T>
-void fb::base::socket_container<S, T>::push(S<T>& session)
+void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 {
-    std::map<uint32_t, std::unique_ptr<S<T>>>::insert(std::pair<uint32_t, std::unique_ptr<S<T>>>(session.fd(), std::unique_ptr<S<T>>(&session)));
+    auto fd = session->fd();
+    std::map<uint32_t, std::unique_ptr<S<T>>>::insert
+    (
+        std::pair<uint32_t, std::unique_ptr<S<T>>>
+        (
+            fd, 
+            std::move(session)
+        )
+    );
 }
 
 template <template<class> class S, class T>

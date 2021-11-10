@@ -18,8 +18,7 @@ public:
     const uint16_t                  group = 0;
 
 public:
-    user(uint16_t group) : 
-        group(group)
+    user(uint16_t group) : group(group)
     { }
 };
 
@@ -29,13 +28,16 @@ public:
     using service                   = fb::internal::socket<fb::internal::session>;
     using handler                   = std::function<bool(service&)>;
     using subscriber_container      = std::map<uint8_t, service*>;
+    using unique_session            = std::unique_ptr<fb::internal::session>;
+    using unique_users              = std::map<std::string, std::unique_ptr<user>>;
 
 private:
     std::map<uint8_t, handler>      _handler_dict;
     service*                        _gateway = nullptr;
     service*                        _login   = nullptr;
     subscriber_container            _games;
-    std::map<std::string, user*>    _users;
+    unique_users                    _users;
+    std::vector<unique_session>     _sessions;
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);

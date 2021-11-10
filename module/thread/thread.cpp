@@ -271,13 +271,12 @@ void fb::threads::dispatch(const std::function<void()>& fn, const std::chrono::s
     if(main || current == nullptr)
     {
         auto& context = this->_context;
-        auto  timer = new boost::asio::steady_timer(this->_context, duration);
+        auto  timer = std::make_unique<boost::asio::steady_timer>(this->_context, duration);
         timer->async_wait
         (
-            [&context, fn, timer] (const boost::system::error_code& e)
+            [&context, fn, timer = std::move(timer)] (const boost::system::error_code& e)
             {
                 boost::asio::dispatch(context, fn);
-                delete timer;
             }
         );
     }

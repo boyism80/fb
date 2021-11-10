@@ -93,16 +93,11 @@ public:
         if(ist._context == nullptr)
             return;
 
-        auto _name = new std::string(name);
-        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
-
         fb::async::launch
         (
-            [&ist, _name, _fmt]()
+            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...))]()
             {
-                ist._exec(_name->c_str(), _fmt->c_str());
-                delete _name;
-                delete _fmt;
+                ist._exec(name.c_str(), fmt.c_str());
             }
         );
     }
@@ -114,15 +109,11 @@ public:
         if(ist._context == nullptr)
             return false;
 
-        auto _name = new std::string(name);
-        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
         fb::async::launch
         (
-            [&ist, _name, _fmt, callback]()
+            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
             {
-                ist._query(_name->c_str(), _fmt->c_str(), callback);
-                delete _name;
-                delete _fmt;
+                ist._query(name.c_str(), fmt.c_str(), callback);
             }
         );
 
@@ -136,15 +127,11 @@ public:
         if(ist._context == nullptr)
             return false;
 
-        auto _name = new std::string(name);
-        auto _fmt = new std::string(format_string(format.c_str(), std::forward<Values>(values)...));
         fb::async::launch
         (
-            [&ist, _name, _fmt, callback]()
+            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
             {
-                ist._mquery(_name->c_str(), _fmt->c_str(), callback);
-                delete _name;
-                delete _fmt;
+                ist._mquery(name.c_str(), fmt.c_str(), callback);
             }
         );
         return true;

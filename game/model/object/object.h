@@ -114,7 +114,7 @@ public:
     inline context&                     context() const { return this->_context; }
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
-
+    virtual void                        destroy();
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
 

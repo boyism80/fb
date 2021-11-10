@@ -186,7 +186,6 @@ private:
 public:
     std::vector<object*>            filter(fb::game::object::types type) const;
     fb::game::object*               exists(point16_t position) const;
-    void                            clear();
 #pragma endregion
 
 #pragma region operator
@@ -240,6 +239,7 @@ public:
 public:
     using unique_tiles              = std::unique_ptr<tile[]>;
     using unique_warps              = std::vector<std::unique_ptr<warp>>;
+    using unique_sector             = std::unique_ptr<fb::game::sectors>;
 #pragma endregion
 
 #pragma region private field
@@ -253,7 +253,7 @@ private:
     effects                         _effect   = effects::NONE;
     uint8_t                         _bgm      = 0;
     unique_warps                    _warps;
-    fb::game::sectors*              _sectors  = nullptr;
+    unique_sector                   _sectors;
 #pragma endregion
 
 #pragma region public field

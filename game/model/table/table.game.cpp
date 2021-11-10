@@ -21,7 +21,6 @@ void assert_script(const std::string& script, const std::string& regex, const st
     auto buffer = std::stringstream();
     buffer << in.rdbuf();
 
-
     auto re = std::regex(regex);
     auto matches = std::smatch();
     auto source = buffer.str();
@@ -61,34 +60,10 @@ fb::game::map* fb::game::container::map::name2map(const std::string& name)
     for(auto& pair : *this)
     {
         if(pair.second->name() == name)
-            return pair.second;
+            return pair.second.get();
     }
 
     return nullptr;
-}
-
-void fb::game::container::map::clear()
-{
-    for(auto& x : *this)
-        delete x.second;
-
-    std::map<uint16_t, fb::game::map*>::clear();
-}
-
-void fb::game::container::map::clear(const std::function<bool(const fb::game::map&)>& fn)
-{
-    for(auto i = this->begin(); i != this->end();)
-    {
-        if(fn(*i->second))
-        {
-            delete i->second;
-            this->erase(i++);
-        }
-        else
-        {
-            ++i;
-        }
-    }
 }
 
 fb::game::map* fb::game::container::map::operator[](uint16_t id) const
@@ -97,51 +72,72 @@ fb::game::map* fb::game::container::map::operator[](uint16_t id) const
     if(found == this->end())
         return nullptr;
 
-    return found->second;
+    return found->second.get();
 }
 
 fb::game::npc::master* fb::game::container::npc::name2npc(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<uint16_t, fb::game::npc::master*> pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::npc::master>>& pair)
         {
             return pair.second->name == name;
         });
 
-    return i != this->end() ? (*i).second : nullptr;
+    return i != this->end() ? i->second.get() : nullptr;
+}
+
+fb::game::npc::master* fb::game::container::npc::operator[](uint16_t id)
+{
+    return std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::operator[](id).get();
 }
 
 fb::game::mob::master* fb::game::container::mob::name2mob(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<uint16_t, fb::game::mob::master*> pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::mob::master>>& pair)
         {
             return pair.second->name == name;
         });
 
-    return i != this->end() ? (*i).second : nullptr;
+    return i != this->end() ? i->second.get() : nullptr;
+}
+
+fb::game::mob::master* fb::game::container::mob::operator[](uint16_t id)
+{
+    auto& ptr = std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::operator[](id);
+    return ptr.get();
 }
 
 fb::game::item::master* fb::game::container::item::name2item(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<uint16_t, fb::game::item::master*> pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::item::master>>& pair)
         {
             return pair.second->name == name;
         });
 
-    return i != this->end() ? (*i).second : nullptr;
+    return i != this->end() ? i->second.get() : nullptr;
+}
+
+fb::game::item::master* fb::game::container::item::operator[](uint16_t id)
+{
+    return std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::operator[](id).get();
 }
 
 fb::game::spell* fb::game::container::spell::name2spell(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<uint16_t, fb::game::spell*> pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::spell>>& pair)
         {
             return pair.second->name() == name;
         });
 
-    return i != this->end() ? (*i).second : nullptr;
+    return i != this->end() ? i->second.get() : nullptr;
+}
+
+fb::game::spell* fb::game::container::spell::operator[](uint16_t id)
+{
+    return std::map<uint16_t, std::unique_ptr<fb::game::spell>>::operator[](id).get();
 }
 
 const std::string* fb::game::container::cls::class2name(uint8_t cls, uint8_t promotion)
@@ -190,6 +186,12 @@ uint32_t fb::game::container::cls::exp(uint8_t class_id, uint8_t level)
     {
         return 0;
     }
+}
+
+fb::game::class_data* fb::game::container::cls::operator[](int index)
+{
+    // TODO: range assert
+    return  std::vector<std::unique_ptr<fb::game::class_data>>::operator[](index).get();
 }
 
 fb::game::map::effects fb::game::container::map::to_effect(const std::string& effect)
@@ -269,10 +271,7 @@ fb::game::container::item::item()
 { }
 
 fb::game::container::item::~item()
-{
-    for(auto x : *this)
-        delete x.second;
-}
+{ }
 
 fb::game::item::master* fb::game::container::item::create(uint32_t id, const Json::Value& data)
 {
@@ -439,10 +438,7 @@ fb::game::container::map::map()
 { }
 
 fb::game::container::map::~map()
-{
-    for(auto& x : *this)
-        delete x.second;
-}
+{ }
 
 bool fb::game::container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -483,7 +479,7 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
 
             {   auto _ = std::lock_guard<std::mutex>(*mutex);
 
-                std::map<uint16_t, fb::game::map*>::insert(std::make_pair(id, map));
+                std::map<uint16_t, std::unique_ptr<fb::game::map>>::insert(std::make_pair(id, std::unique_ptr<fb::game::map>(map)));
                 callback((map->name()), percentage);
             }
         },
@@ -572,7 +568,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             uint16_t            id = std::stoi(key.asString());
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, fb::game::item::master*>::insert(std::make_pair(id, item));
+                std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::item::master>(item)));
                 callback(name, percentage);
             }
         },
@@ -592,10 +588,7 @@ fb::game::container::npc::npc()
 { }
 
 fb::game::container::npc::~npc()
-{
-    for(auto& x : *this)
-        delete x.second;
-}
+{ }
 
 bool fb::game::container::npc::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -622,7 +615,8 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
 
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, fb::game::npc::master*>::insert(std::make_pair(id, new fb::game::npc::master(name, look, color, script)));
+                auto npc = new fb::game::npc::master(name, look, color, script);
+                std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::npc::master>(npc)));
                 callback(name, percentage);
             }
         },
@@ -701,10 +695,7 @@ fb::game::container::mob::mob()
 { }
 
 fb::game::container::mob::~mob()
-{
-    for(auto& x : *this)
-        delete x.second;
-}
+{ }
 
 fb::game::mob::sizes fb::game::container::mob::to_size(const std::string& size)
 {
@@ -778,7 +769,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
             auto                mob = new fb::game::mob::master(name, look, color, fb::game::defensive(data["defensive"]["physical"].asInt(), data["defensive"]["magical"].asInt()), base_hp, base_mp, data["experience"].asInt(), fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()), this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)), this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)), std::chrono::milliseconds(data["speed"].asInt()), script_attack, script_die);
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, fb::game::mob::master*>::insert(std::make_pair(id, mob));
+                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::mob::master>(mob)));
                 callback(name, percentage);
             }
         },
@@ -908,10 +899,7 @@ fb::game::container::spell::spell()
 { }
 
 fb::game::container::spell::~spell()
-{
-    for(auto& x : *this)
-        delete x.second;
-}
+{ }
 
 bool fb::game::container::spell::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -982,7 +970,8 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
 
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, fb::game::spell*>::insert(std::make_pair(id, new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message)));
+                auto spell = new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message);
+                std::map<uint16_t, std::unique_ptr<fb::game::spell>>::insert(std::make_pair(id, std::unique_ptr<fb::game::spell>(spell)));
                 callback(name, percentage);
             }
         },
@@ -1002,10 +991,7 @@ fb::game::container::cls::cls()
 { }
 
 fb::game::container::cls::~cls()
-{
-    for(auto x : *this)
-        delete x;
-}
+{ }
 
 bool fb::game::container::cls::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -1036,7 +1022,7 @@ bool fb::game::container::cls::load(const std::string& path, fb::table::handle_c
             }
 
 
-            std::vector<fb::game::class_data*>::push_back(classes);
+            std::vector<std::unique_ptr<fb::game::class_data>>::push_back(std::unique_ptr<fb::game::class_data>(classes));
             callback(std::to_string(id), percentage);
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -1055,10 +1041,7 @@ fb::game::container::mix::mix()
 { }
 
 fb::game::container::mix::~mix()
-{
-    for(auto x : *this)
-        delete x;
-}
+{ }
 
 bool fb::game::container::mix::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -1091,7 +1074,7 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
                 itemmix->failed_add(item, count);
             }
 
-            std::vector<fb::game::itemmix*>::push_back(itemmix);
+            std::vector<std::unique_ptr<fb::game::itemmix>>::push_back(std::unique_ptr<fb::game::itemmix>(itemmix));
             //callback(std::to_string(key), percentage);
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -1109,7 +1092,7 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
 fb::game::itemmix* fb::game::container::mix::find(const std::vector<fb::game::item*>& items)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&items](itemmix* mx)
+        [&items](std::unique_ptr<itemmix>& mx)
         {
             if(mx->require.size() != items.size())
                 return false;
@@ -1117,17 +1100,20 @@ fb::game::itemmix* fb::game::container::mix::find(const std::vector<fb::game::it
             return mx->matched(items);
         });
 
-    return i != this->end() ? *i : nullptr;
+    return i != this->end() ? i->get() : nullptr;
+}
+
+fb::game::itemmix* fb::game::container::mix::operator[](int index)
+{
+    // TODO: range assert
+    return std::vector<std::unique_ptr<fb::game::itemmix>>::operator[](index).get();
 }
 
 fb::game::container::door::door()
 { }
 
 fb::game::container::door::~door()
-{
-    for(auto x : *this)
-        delete x;
-}
+{ }
 
 bool fb::game::container::door::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -1145,7 +1131,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
                 created->push_back(fb::game::door::element(open, close));
             }
 
-            std::vector<fb::game::door::master*>::push_back(created);
+            std::vector<std::unique_ptr<fb::game::door::master>>::push_back(std::unique_ptr<fb::game::door::master>(created));
             callback(std::to_string(id), percentage);
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -1160,14 +1146,17 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
     return true;
 }
 
+fb::game::door::master* fb::game::container::door::operator[](int index)
+{
+    // TODO: range assert
+    return std::vector<std::unique_ptr<fb::game::door::master>>::operator[](index).get();
+}
+
 fb::game::container::worlds::worlds()
 { }
 
 fb::game::container::worlds::~worlds()
-{
-    for(auto x : *this)
-        delete x;
-}
+{ }
 
 bool fb::game::container::worlds::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
 {
@@ -1209,7 +1198,7 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
                 world->push(group);
             }
 
-            std::vector<fb::game::wm::world*>::push_back(world);
+            std::vector<std::unique_ptr<fb::game::wm::world>>::push_back(std::unique_ptr<fb::game::wm::world>(world));
             callback(name, percentage);
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -1227,7 +1216,7 @@ int fb::game::container::worlds::find(const std::string& id) const
 {
     for(int i = 0; i < this->size(); i++)
     {
-        auto world = this->at(i);
+        auto& world = this->at(i);
 
         const auto found = std::find_if
         (
@@ -1250,4 +1239,10 @@ int fb::game::container::worlds::find(const std::string& id) const
     }
 
     return -1;
+}
+
+fb::game::wm::world* fb::game::container::worlds::operator[](int index)
+{
+    // TODO: range assert
+    return std::vector<std::unique_ptr<fb::game::wm::world>>::operator[](index).get();
 }

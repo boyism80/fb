@@ -22,17 +22,17 @@ class table;
 
 namespace container {
 
-class map : private std::map<uint16_t, fb::game::map*>
+class map : private std::map<uint16_t, std::unique_ptr<fb::game::map>>
 {
 public:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, fb::game::map*>::begin;
-    using std::map<uint16_t, fb::game::map*>::end;
-    using std::map<uint16_t, fb::game::map*>::cbegin;
-    using std::map<uint16_t, fb::game::map*>::cend;
-    using std::map<uint16_t, fb::game::map*>::size;
+    using std::map<uint16_t, std::unique_ptr<fb::game::map>>::begin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::map>>::end;
+    using std::map<uint16_t, std::unique_ptr<fb::game::map>>::cbegin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::map>>::cend;
+    using std::map<uint16_t, std::unique_ptr<fb::game::map>>::size;
 
 public:
     map();
@@ -50,25 +50,23 @@ public:
 
 public:
     fb::game::map*                          name2map(const std::string& name);
-    void                                    clear();
-    void                                    clear(const std::function<bool(const fb::game::map&)>& fn);
+    //void                                    clear(const std::function<bool(const fb::game::map&)>& fn);
 
 public:
     fb::game::map*                          operator [] (uint16_t id) const;
 };
 
-class item : private std::map<uint16_t, fb::game::item::master*>
+class item : private std::map<uint16_t, std::unique_ptr<fb::game::item::master>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, fb::game::item::master*>::begin;
-    using std::map<uint16_t, fb::game::item::master*>::end;
-    using std::map<uint16_t, fb::game::item::master*>::cbegin;
-    using std::map<uint16_t, fb::game::item::master*>::cend;
-    using std::map<uint16_t, fb::game::item::master*>::size;
-    using std::map<uint16_t, fb::game::item::master*>::operator[];
+    using std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::begin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::end;
+    using std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::cbegin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::cend;
+    using std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::size;
 
 public:
     item();
@@ -84,20 +82,22 @@ public:
 
 public:
     fb::game::item::master*                 name2item(const std::string& name);
+
+public:
+    fb::game::item::master*                 operator [] (uint16_t id);
 };
 
-class npc : private std::map<uint16_t, fb::game::npc::master*>
+class npc : private std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, fb::game::npc::master*>::begin;
-    using std::map<uint16_t, fb::game::npc::master*>::end;
-    using std::map<uint16_t, fb::game::npc::master*>::cbegin;
-    using std::map<uint16_t, fb::game::npc::master*>::cend;
-    using std::map<uint16_t, fb::game::npc::master*>::size;
-    using std::map<uint16_t, fb::game::npc::master*>::operator[];
+    using std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::begin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::end;
+    using std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::cbegin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::cend;
+    using std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::size;
 
 public:
     npc();
@@ -109,20 +109,22 @@ public:
 
 public:
     fb::game::npc::master*                  name2npc(const std::string& name);
+
+public:
+    fb::game::npc::master*                  operator [] (uint16_t id);
 };
 
-class mob : private std::map<uint16_t, fb::game::mob::master*>
+class mob : private std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, fb::game::mob::master*>::begin;
-    using std::map<uint16_t, fb::game::mob::master*>::end;
-    using std::map<uint16_t, fb::game::mob::master*>::cbegin;
-    using std::map<uint16_t, fb::game::mob::master*>::cend;
-    using std::map<uint16_t, fb::game::mob::master*>::size;
-    using std::map<uint16_t, fb::game::mob::master*>::operator[];
+    using std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::begin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::end;
+    using std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::cbegin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::cend;
+    using std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::size;
 
 public:
     mob();
@@ -139,20 +141,22 @@ public:
 
 public:
     fb::game::mob::master*                  name2mob(const std::string& name);
+
+public:
+    fb::game::mob::master*                  operator [] (uint16_t id);
 };
 
-class spell : private std::map<uint16_t, fb::game::spell*>
+class spell : private std::map<uint16_t, std::unique_ptr<fb::game::spell>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, fb::game::spell*>::begin;
-    using std::map<uint16_t, fb::game::spell*>::end;
-    using std::map<uint16_t, fb::game::spell*>::cbegin;
-    using std::map<uint16_t, fb::game::spell*>::cend;
-    using std::map<uint16_t, fb::game::spell*>::size;
-    using std::map<uint16_t, fb::game::spell*>::operator[];
+    using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::begin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::end;
+    using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::cbegin;
+    using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::cend;
+    using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::size;
 
 public:
     spell();
@@ -163,20 +167,22 @@ public:
 
 public:
     fb::game::spell*                        name2spell(const std::string& name);
+
+public:
+    fb::game::spell*                        operator [] (uint16_t id);
 };
 
-class cls : private std::vector<fb::game::class_data*>
+class cls : private std::vector<std::unique_ptr<fb::game::class_data>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::vector<fb::game::class_data*>::begin;
-    using std::vector<fb::game::class_data*>::end;
-    using std::vector<fb::game::class_data*>::cbegin;
-    using std::vector<fb::game::class_data*>::cend;
-    using std::vector<fb::game::class_data*>::size;
-    using std::vector<fb::game::class_data*>::operator[];
+    using std::vector<std::unique_ptr<fb::game::class_data>>::begin;
+    using std::vector<std::unique_ptr<fb::game::class_data>>::end;
+    using std::vector<std::unique_ptr<fb::game::class_data>>::cbegin;
+    using std::vector<std::unique_ptr<fb::game::class_data>>::cend;
+    using std::vector<std::unique_ptr<fb::game::class_data>>::size;
 
 public:
     cls();
@@ -189,20 +195,22 @@ public:
     const std::string*                      class2name(uint8_t cls, uint8_t promotion);
     bool                                    name2class(const std::string& name, uint8_t* class_id, uint8_t* promotion_id);
     uint32_t                                exp(uint8_t class_id, uint8_t level);
+
+public:
+    fb::game::class_data*                   operator [] (int index);
 };
 
-class mix : private std::vector<fb::game::itemmix*>
+class mix : private std::vector<std::unique_ptr<fb::game::itemmix>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::vector<fb::game::itemmix*>::begin;
-    using std::vector<fb::game::itemmix*>::end;
-    using std::vector<fb::game::itemmix*>::cbegin;
-    using std::vector<fb::game::itemmix*>::cend;
-    using std::vector<fb::game::itemmix*>::size;
-    using std::vector<fb::game::itemmix*>::operator[];
+    using std::vector<std::unique_ptr<fb::game::itemmix>>::begin;
+    using std::vector<std::unique_ptr<fb::game::itemmix>>::end;
+    using std::vector<std::unique_ptr<fb::game::itemmix>>::cbegin;
+    using std::vector<std::unique_ptr<fb::game::itemmix>>::cend;
+    using std::vector<std::unique_ptr<fb::game::itemmix>>::size;
 
 public:
     mix();
@@ -213,20 +221,22 @@ public:
 
 public:
     fb::game::itemmix*                      find(const std::vector<fb::game::item*>& items);
+
+public:
+    fb::game::itemmix*                      operator [] (int index);
 };
 
-class door : private std::vector<fb::game::door::master*>
+class door : private std::vector<std::unique_ptr<fb::game::door::master>>
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::vector<fb::game::door::master*>::begin;
-    using std::vector<fb::game::door::master*>::end;
-    using std::vector<fb::game::door::master*>::cbegin;
-    using std::vector<fb::game::door::master*>::cend;
-    using std::vector<fb::game::door::master*>::size;
-    using std::vector<fb::game::door::master*>::operator[];
+    using std::vector<std::unique_ptr<fb::game::door::master>>::begin;
+    using std::vector<std::unique_ptr<fb::game::door::master>>::end;
+    using std::vector<std::unique_ptr<fb::game::door::master>>::cbegin;
+    using std::vector<std::unique_ptr<fb::game::door::master>>::cend;
+    using std::vector<std::unique_ptr<fb::game::door::master>>::size;
 
 public:
     door();
@@ -234,26 +244,31 @@ public:
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+
+public:
+    fb::game::door::master*                 operator [] (int index);
 };
 
 
-class worlds : private std::vector<fb::game::wm::world*>
+class worlds : private std::vector<std::unique_ptr<fb::game::wm::world>>
 {
 public:
     worlds();
     ~worlds();
 
 public:
-    using std::vector<fb::game::wm::world*>::begin;
-    using std::vector<fb::game::wm::world*>::end;
-    using std::vector<fb::game::wm::world*>::cbegin;
-    using std::vector<fb::game::wm::world*>::cend;
-    using std::vector<fb::game::wm::world*>::size;
-    using std::vector<fb::game::wm::world*>::operator[];
+    using std::vector<std::unique_ptr<fb::game::wm::world>>::begin;
+    using std::vector<std::unique_ptr<fb::game::wm::world>>::end;
+    using std::vector<std::unique_ptr<fb::game::wm::world>>::cbegin;
+    using std::vector<std::unique_ptr<fb::game::wm::world>>::cend;
+    using std::vector<std::unique_ptr<fb::game::wm::world>>::size;
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
     int                                     find(const std::string& id) const;
+
+public:
+    fb::game::wm::world*                    operator [] (int index);
 };
 
 }

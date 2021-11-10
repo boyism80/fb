@@ -94,7 +94,6 @@ public:
 #pragma region static const field
     
     static const conditions                 DEFAULT_CONDITION;
-    static constexpr uint32_t               MAX_SLOT = 52;
 
 #pragma endregion
 

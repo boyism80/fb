@@ -66,7 +66,7 @@ std::string fb::game::service::sql::session::update(fb::game::session& session)
 std::string fb::game::service::sql::item::update(fb::game::session& session)
 {
     std::vector<std::string> itemSet;
-    for(auto i = 0; i < fb::game::item::MAX_SLOT; i++)
+    for(auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = session.items[i];
         auto master = item != nullptr ? item->based<fb::game::item>() : nullptr;
@@ -115,7 +115,7 @@ std::string fb::game::service::sql::item::update(fb::game::session& session)
 std::string fb::game::service::sql::spell::update(fb::game::session& me)
 {
     std::vector<std::string> spellSet;
-    for(int i = 0; i < fb::game::spell::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto spell = me.spells[i];
         spellSet.push_back(fb::service::sql::vec_to_insert(std::vector<std::string>

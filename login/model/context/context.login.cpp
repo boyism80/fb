@@ -19,7 +19,9 @@ fb::login::context::~context()
 
 fb::login::session* fb::login::context::handle_accepted(fb::socket<fb::login::session>& socket)
 {
-    return new fb::login::session();
+    auto session = new fb::login::session();
+    this->_sessions.push_back(unique_session(session));
+    return session;
 }
 
 bool fb::login::context::handle_connected(fb::socket<fb::login::session>& socket)

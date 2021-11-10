@@ -146,6 +146,11 @@ fb::game::object::types fb::game::object::type() const
         return this->_master->type();
 }
 
+void fb::game::object::destroy()
+{
+    this->_context.destroy(*this);
+}
+
 const fb::game::object::cache& fb::game::object::before() const
 {
     return this->_before;

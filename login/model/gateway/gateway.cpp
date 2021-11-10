@@ -35,7 +35,4 @@ fb::login::gateways::gateways()
 { }
 
 fb::login::gateways::~gateways()
-{
-    for(auto x : *this)
-        delete x;
-}
+{ }

@@ -5,7 +5,6 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _delay(delay),
-    _buffer(nullptr),
     _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
     _exit(false)
 {
@@ -14,10 +13,7 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
 
 template <template<class> class S, class T>
 fb::base::acceptor<S, T>::~acceptor()
-{
-    if(this->_buffer != nullptr)
-        delete _buffer;
-}
+{ }
 
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
@@ -70,32 +66,29 @@ void fb::base::acceptor<S, T>::shutdown()
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::accept()
 {
-    this->_buffer = new S<T>(this->_context, std::bind(&fb::base::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::base::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
+    auto socket = std::make_unique<S<T>>(this->_context, std::bind(&fb::base::acceptor<S, T>::handle_receive, this, std::placeholders::_1), std::bind(&fb::base::acceptor<S, T>::handle_closed, this, std::placeholders::_1));
+    auto ptr = socket.get();
     this->async_accept
     (
-        *this->_buffer,
-        [this](boost::system::error_code error)
+        *ptr,
+        [this, socket = std::move(socket), ptr] (boost::system::error_code error) mutable
         {
             try
             {
-                auto socket = this->_buffer;
                 if(error)
                     throw std::runtime_error(error.message());
 
                 if(this->_exit)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
-                socket->data(this->handle_accepted(*socket));
-                this->sockets.push(*this->_buffer);
+                ptr->data(this->handle_accepted(*ptr));
 
-                this->handle_connected(*socket);
+                this->sockets.push(std::move(socket));
+                this->handle_connected(*ptr);
 
                 this->_threads.dispatch
                 (
-                    [socket] ()
-                    {
-                        socket->recv();
-                    },
+                    [ptr] () { ptr->recv(); },
                     this->_delay,
                     true
                 );
@@ -268,15 +261,10 @@ void fb::base::acceptor<S, T>::exit()
 {
     this->_exit = true;
 
-    if(this->sockets.empty())
-    {
-        this->shutdown();
-    }
-    else
-    {
-        for(auto& pair : this->sockets)
-            pair.second.get()->close();
-    }
+    for(auto& pair : this->sockets)
+        pair.second.get()->close();
+
+    this->shutdown();
 }
 
 template <template<class> class S, class T>

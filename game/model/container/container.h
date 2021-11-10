@@ -2,22 +2,26 @@
 #define __CONTAINER_H__
 
 #include <stdlib.h>
+#include <memory>
 
 namespace fb { namespace game {
+
+static constexpr uint8_t CONTAINER_CAPACITY = 52;
 
 class life;
 
 template <typename T>
 class base_container
 {
+public:
+    using unique_set = std::array<T*, CONTAINER_CAPACITY>;
+
 private:
     life&                   _owner;
-    T**                     _elements       = nullptr;
-    uint8_t                 _size           = 0;
-    bool                    _auto_release   = false;
+    unique_set              _elements = { nullptr, };
 
 protected:
-    base_container(life& owner, uint8_t size, bool auto_release = true);
+    base_container(life& owner);
     ~base_container();
 
 protected:

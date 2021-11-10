@@ -1,25 +1,11 @@
 #include "model/container/container.h"
 
 template<typename T>
-inline fb::game::base_container<T>::base_container(life& owner, uint8_t size, bool auto_release) : 
-    _owner(owner),
-    _size(size),
-    _auto_release(auto_release)
-{
-    this->_elements = new T*[size];
-    std::memset(this->_elements, 0, sizeof(T*) * size);
-}
+inline fb::game::base_container<T>::base_container(life& owner) : _owner(owner)
+{ }
 template<typename T>
 inline fb::game::base_container<T>::~base_container()
-{
-    if(this->_auto_release)
-    {
-        for(int i = 0; i < this->_size; i++)
-            delete this->_elements[i];
-    }
-
-    delete[] this->_elements;
-}
+{ }
 template<typename T>
 inline T* fb::game::base_container<T>::set(T* element, int position)
 {
@@ -30,7 +16,7 @@ inline T* fb::game::base_container<T>::set(T* element, int position)
 template<typename T>
 inline uint8_t fb::game::base_container<T>::next() const
 {
-    for(int i = 0; i < this->_size; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(this->at(i) == nullptr)
             return i;
@@ -51,7 +37,7 @@ inline const fb::game::life& fb::game::base_container<T>::owner() const
 template<typename T>
 inline T* fb::game::base_container<T>::at(uint8_t index) const
 {
-    if(index > this->_size - 1)
+    if(index > CONTAINER_CAPACITY - 1)
         return nullptr;
 
     return this->_elements[index];
@@ -102,7 +88,7 @@ inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
     if(src == dst)
         return false;
 
-    if(src > this->_size - 1 || dst > this->_size - 1)
+    if(src > CONTAINER_CAPACITY - 1 || dst > CONTAINER_CAPACITY - 1)
         return false;
 
     std::swap(this->_elements[src], this->_elements[dst]);
@@ -111,7 +97,7 @@ inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
 template<typename T>
 inline bool fb::game::base_container<T>::free() const
 {
-    for(int i = 0; i < this->_size; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(this->_elements[i] == nullptr)
             return true;
@@ -123,7 +109,7 @@ template<typename T>
 inline uint8_t fb::game::base_container<T>::free_size() const
 {
     uint8_t                 count = 0;
-    for(int i = 0; i < this->_size; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(this->_elements[i] == nullptr)
             count++;

@@ -14,10 +14,7 @@ session::session(fb::socket<fb::game::session>& socket, fb::game::context& conte
 { }
 
 session::~session()
-{
-    if(this->_master != nullptr)
-        delete this->_master;
-}
+{ }
 
 void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
@@ -1177,7 +1174,7 @@ int fb::game::session::builtin_items(lua_State* lua)
         return 0;
 
     lua_newtable(lua);
-    for(int i = 0; i < item::MAX_SLOT; i++)
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(session->items[i] == nullptr)
             continue;
@@ -1294,10 +1291,9 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
 
 
-        auto context = thread->env<fb::game::context>("context");
         auto dropped = session->items.remove(index, 1, item::delete_attr::REMOVED);
         if(dropped != nullptr)
-            delete dropped;
+            dropped->destroy();
     }
     catch(...)
     { }

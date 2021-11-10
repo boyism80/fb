@@ -1,3 +1,4 @@
+
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
@@ -53,7 +54,7 @@ public:
 public:
     using command_fn        = std::function<bool(fb::game::session&, Json::Value&)>;
     using commands          = std::map<std::string, command>;
-    using object_set        = std::unordered_set<const fb::game::object*>;
+    using object_set        = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
 #pragma endregion
 
 #pragma region private field
@@ -82,6 +83,7 @@ private:
 #pragma region public method
 public:
     bool                    exists(const fb::game::object& object) const;
+    bool                    destroy(fb::game::object& obj);
 
 public:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);

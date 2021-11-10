@@ -27,11 +27,6 @@ public:
     interface listener;
 #pragma endregion
 
-#pragma region static const field
-public:
-    static constexpr uint32_t   MAX_SLOT = 52;
-#pragma endregion
-
 #pragma region enum
 public:
     enum class types : uint8_t

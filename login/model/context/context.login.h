@@ -14,9 +14,13 @@ namespace fb { namespace login {
 
 class context : public fb::acceptor<fb::login::session>
 {
+public:
+    using unique_session = std::unique_ptr<fb::login::session>;
+
 private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
+    std::vector<unique_session>                 _sessions;
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);

@@ -91,8 +91,7 @@ int fb::game::spell::builtin_message(lua_State* lua)
     return 1;
 }
 
-fb::game::spells::spells(life& owner) : 
-    base_container(owner, spell::MAX_SLOT, false)
+fb::game::spells::spells(life& owner) : base_container(owner)
 { }
 
 fb::game::spells::~spells()
@@ -211,6 +210,7 @@ fb::game::buffs::buffs(fb::game::object& owner) :
 
 fb::game::buffs::~buffs()
 {
+    // TODO: unique_ptr로 관리
     for(auto buff : *this)
         delete buff;
 }

@@ -6,9 +6,7 @@ fb::game::objects::objects(fb::game::map* owner) :
 { }
 
 fb::game::objects::~objects()
-{
-    this->clear();
-}
+{ }
 
 uint16_t fb::game::objects::empty_seq()
 {
@@ -54,10 +52,7 @@ uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& posit
 {
     auto                    seq = this->empty_seq();
     if(this->contains(seq))
-    {
-        delete this->operator[](seq);
         this->erase(seq);
-    }
 
     object.sequence(seq);
     this->insert(std::make_pair(seq, &object));
@@ -88,18 +83,6 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
         return nullptr;
     else
         return found->second;
-}
-
-void fb::game::objects::clear()
-{
-    auto i = this->begin();
-    while(i != this->end())
-    {
-        delete i->second;
-        i = this->begin();
-    }
-
-    std::map<uint32_t, fb::game::object*>::clear();
 }
 
 fb::game::object* fb::game::objects::operator[](uint32_t seq) const
@@ -151,7 +134,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
     // compare linear doors
     point16_t position;
-    for(const auto door : fb::game::table::doors)
+    for(const auto& door : fb::game::table::doors)
     {
         position.x = position.y = 0;
         while(door->find(*this, position, true))
@@ -169,16 +152,11 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     }
 
     // sectors
-    this->_sectors = new fb::game::sectors(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->_sectors = std::make_unique<fb::game::sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
 }
 
 fb::game::map::~map()
-{
-    this->objects.clear();
-
-    if(this->_sectors != nullptr)
-        delete this->_sectors;
-}
+{ }
 
 uint16_t fb::game::map::id() const
 {

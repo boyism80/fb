@@ -71,10 +71,7 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
 
     if(this->_chunk == 0)
     {
-        if(this->_map != nullptr)
-            this->map(nullptr);
-
-        delete this;
+        this->destroy();
         return nullptr;
     }
     else

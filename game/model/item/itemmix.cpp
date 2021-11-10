@@ -41,7 +41,7 @@ bool fb::game::itemmix::builder::mix()
 
             auto item = this->_owner.items.remove(index, require.count);
             if(item != nullptr)
-                delete item;
+                item->destroy();
         }
 
         auto                success = (std::rand() % 100) < itemmix->percentage;

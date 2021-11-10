@@ -12,10 +12,7 @@ fb::internal::context::context(boost::asio::io_context& context, uint16_t port, 
 }
 
 fb::internal::context::~context()
-{
-    for(auto& pair : this->_users)
-        delete pair.second;
-}
+{ }
 
 fb::internal::context::service* fb::internal::context::get(fb::protocol::internal::services type, uint8_t group)
 {
@@ -42,7 +39,9 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
 
 fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
 {
-    return new fb::internal::session();
+    auto session = new fb::internal::session();
+    this->_sessions.push_back(unique_session(session));
+    return session;
 }
 
 bool fb::internal::context::handle_connected(fb::internal::socket<fb::internal::session>& socket)
@@ -156,7 +155,6 @@ bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::s
     {
         if(e.code == fb::protocol::internal::response::transfer_code::CONNECTED)
         {
-            delete this->_users[request.name];
             this->_users.erase(request.name);
 
             // send disconnection message
@@ -190,11 +188,11 @@ bool fb::internal::context::handle_login(fb::internal::socket<fb::internal::sess
         auto found = this->_users.find(request.name);
         if(found != this->_users.end())
         {
-            delete found->second;
             this->_users.erase(found);
         }
 
-        this->_users[request.name] = new fb::internal::user(*group);
+        // TODO: unique_ptr로 관리
+        this->_users.insert(std::make_pair(request.name, std::make_unique<fb::internal::user>(*group)));
     }
     catch(std::exception& e)
     {
@@ -208,10 +206,7 @@ bool fb::internal::context::handle_logout(fb::internal::socket<fb::internal::ses
 {
     auto found = this->_users.find(request.name);
     if(found != this->_users.end())
-    {
-        delete found->second;
         this->_users.erase(found);
-    }
     
     return true;
 }

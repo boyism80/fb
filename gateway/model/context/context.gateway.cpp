@@ -63,7 +63,9 @@ fb::ostream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
 
 fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gateway::session>& socket)
 {
-    return new fb::gateway::session();
+    auto session = new fb::gateway::session();
+    this->_sessions.push_back(unique_session(session));
+    return session;
 }
 
 bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)

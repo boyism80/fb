@@ -27,7 +27,7 @@ public:
     uint16_t                port() const;
 };
 
-class gateways : public std::vector<fb::login::gateway*>
+class gateways : public std::vector<std::unique_ptr<fb::login::gateway>>
 {
 public:
     gateways();

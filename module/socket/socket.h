@@ -23,7 +23,7 @@ private:
 protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
-    std::unique_ptr<T>      _data;
+    T*                      _data;
     uint32_t                _fd;
 
 public:
@@ -65,7 +65,7 @@ public:
     using std::map<uint32_t, std::unique_ptr<S<T>>>::empty;
 
 private:
-    void                    push(S<T>& session);
+    void                    push(std::unique_ptr<S<T>>&& session);
     void                    erase(S<T>& session);
     void                    erase(uint32_t fd);
 
