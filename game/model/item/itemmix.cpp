@@ -49,7 +49,7 @@ bool fb::game::itemmix::builder::mix()
         {
             for(auto& success : itemmix->success)
             {
-                auto        item = success.item->make(this->_owner.context());
+                auto        item = success.item->make(this->_owner.ctx());
                 item->count(success.count);
                 this->_owner.items.add(item);
             }
@@ -60,7 +60,7 @@ bool fb::game::itemmix::builder::mix()
         {
             for(auto& failed : itemmix->failed)
             {
-                auto        item = static_cast<fb::game::item*>(failed.item->make(this->_owner.context()));
+                auto        item = static_cast<fb::game::item*>(failed.item->make(this->_owner.ctx()));
                 item->count(failed.count);
                 this->_owner.items.add(item);
             }

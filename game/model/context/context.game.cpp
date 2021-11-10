@@ -365,7 +365,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     }
 
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
-    this->destroy(*session);
+    session->destroy();
     return true;
 }
 
