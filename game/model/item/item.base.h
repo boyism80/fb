@@ -261,15 +261,16 @@ public:
 public:
     virtual fb::game::item::attrs            attr() const;
     bool                                     attr(fb::game::item::attrs flag) const;
-    virtual fb::game::item*                  make(fb::game::context& context) const;
 #pragma endregion
 
 #pragma region template method
 public:
-    template <typename T = fb::game::item>
-    T* make(fb::game::context& context, int count = 1) const 
+    template <typename T = fb::game::item, typename... Args>
+    T* make(fb::game::context& context, int count = 1, Args... args) const 
     {
-        auto created = static_cast<T*>(this->make(context)); 
+        static_assert(std::is_base_of<fb::game::item, T>::value);
+
+        auto created = new T(context, this, args...);
         created->count(count);
         return created;
     }

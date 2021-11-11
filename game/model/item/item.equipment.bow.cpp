@@ -67,12 +67,6 @@ fb::game::item::attrs fb::game::bow::master::attr() const
     return item::attrs::ARROW;
 }
 
-fb::game::item* fb::game::bow::master::make(fb::game::context& context) const
-{
-    return new fb::game::bow(context, this);
-}
-
-
 
 fb::game::bow::bow(fb::game::context& context, const master* master) : 
     equipment(context, master)

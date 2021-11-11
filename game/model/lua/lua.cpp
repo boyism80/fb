@@ -4,7 +4,6 @@
 #include "model/mob/mob.h"
 using namespace fb::game::lua;
 
-std::unique_ptr<main>           main::_instance;
 std::mutex                      lua::_mutex;
 
 lua& fb::game::lua::get()
@@ -565,10 +564,11 @@ void fb::game::lua::main::update_inheritances()
 
 main& main::get()
 {
-    if(main::_instance.get() == nullptr)
-        main::_instance.reset(new main());
+    static std::once_flag flag;
+    static std::unique_ptr<main> _ist;
 
-    return *_instance;
+    std::call_once(flag, [] () { _ist = std::unique_ptr<main>(new main()); });
+    return *_ist;
 }
 
 void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)

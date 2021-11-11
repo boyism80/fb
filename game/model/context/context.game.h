@@ -83,6 +83,12 @@ private:
 #pragma region public method
 public:
     bool                    exists(const fb::game::object& object) const;
+
+    template <typename T, typename... Args>
+    T*                      make(typename const T::master* core, Args... args)
+    {
+        return new T(*this, core, args...);
+    }
     bool                    destroy(fb::game::object& obj);
 
 public:

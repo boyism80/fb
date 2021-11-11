@@ -53,7 +53,6 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::context& context) const;
 };
 #pragma endregion
 

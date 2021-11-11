@@ -435,6 +435,9 @@
     <ClInclude Include="model\context\context.game.h">
       <Filter>model\context</Filter>
     </ClInclude>
+    <ClInclude Include="model\item\item.base.hpp">
+      <Filter>model\item</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Desktop\baram.ico">

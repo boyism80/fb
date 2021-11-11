@@ -145,7 +145,7 @@ bool fb::game::context::handle_command_mob(fb::game::session& session, Json::Val
     if(core == nullptr)
         return true;
 
-    auto mob = new fb::game::mob(*this, core, true);
+    auto mob = this->make<fb::game::mob>(core, true);
     auto map = session.map();
     mob->map(map, session.position());
     return true;

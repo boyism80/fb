@@ -271,10 +271,10 @@ public:
 
 #pragma region template
 public:
-    template <typename T>
-    T* make(fb::game::context& context) const
+    template <typename T, typename... Args>
+    T* make(fb::game::context& context, Args... args) const
     {
-        return new T(context, static_cast<const typename T::master*>(this));
+        return new T(context, static_cast<const typename T::master*>(this), args...);
     }
 #pragma endregion
 

@@ -39,9 +39,10 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
 
 fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
 {
-    auto session = new fb::internal::session();
-    this->_sessions.push_back(unique_session(session));
-    return session;
+    auto session = std::make_unique<fb::internal::session>();
+    auto ptr = session.get();
+    this->_sessions.push_back(std::move(session));
+    return ptr;
 }
 
 bool fb::internal::context::handle_connected(fb::internal::socket<fb::internal::session>& socket)

@@ -106,12 +106,6 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
-fb::game::item* fb::game::item::master::make(fb::game::context& context) const
-{
-    return new fb::game::item(context, this);
-}
-
-
 
 
 

@@ -67,12 +67,6 @@ fb::game::item::attrs fb::game::shield::master::attr() const
     return item::attrs::SHIELD;
 }
 
-fb::game::item* fb::game::shield::master::make(fb::game::context& context) const
-{
-    return new fb::game::shield(context, this);
-}
-
-
 
 fb::game::shield::shield(fb::game::context& context, const master* master) : 
     equipment(context, master)

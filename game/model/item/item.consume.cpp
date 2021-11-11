@@ -38,12 +38,6 @@ fb::game::item::attrs fb::game::consume::master::attr() const
     return attr;
 }
 
-fb::game::item* fb::game::consume::master::make(fb::game::context& context) const
-{
-    return new fb::game::consume(context, this);
-}
-
-
 
 fb::game::consume::consume(fb::game::context& context, const fb::game::consume::master* master, uint16_t count) : 
     fb::game::item(context, master, count)

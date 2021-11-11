@@ -19,12 +19,6 @@ fb::game::item::attrs fb::game::cash::master::attr() const
     return item::attrs::CASH;
 }
 
-fb::game::item* fb::game::cash::master::make(fb::game::context& context) const
-{
-    return new cash(context, 0);
-}
-
-
 
 //
 // class cash

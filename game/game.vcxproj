@@ -243,6 +243,7 @@
     <ClInclude Include="model\door\door.h" />
     <ClInclude Include="model\group\group.h" />
     <ClInclude Include="model\item\item.base.h" />
+    <ClInclude Include="model\item\item.base.hpp" />
     <ClInclude Include="model\item\item.cash.h" />
     <ClInclude Include="model\item\item.consume.h" />
     <ClInclude Include="model\item\item.equipment.armor.h" />

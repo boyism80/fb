@@ -92,7 +92,6 @@ public:
 
 public:
     virtual fb::game::item::attrs       attr() const;
-    virtual fb::game::item*             make(fb::game::context& context) const;
     fb::game::weapon::types             weapon_type() const;
 
 };
