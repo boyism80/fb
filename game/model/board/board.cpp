@@ -85,9 +85,10 @@ fb::game::board::article* fb::game::board::section::add(const std::string& title
     auto time = std::time(0);
     auto now = std::localtime(&time);
 
-    auto article = new fb::game::board::article(uint16_t(this->size()+1), title, content, writer, now->tm_mon + 1, now->tm_mday, color);
-    this->push_back(std::unique_ptr<fb::game::board::article>(article));
-    return article;
+    auto article = std::make_unique<fb::game::board::article>(uint16_t(this->size()+1), title, content, writer, now->tm_mon + 1, now->tm_mday, color);
+    auto ptr = article.get();
+    this->push_back(std::move(article));
+    return ptr;
 }
 
 bool fb::game::board::section::remove(uint16_t id)
