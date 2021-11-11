@@ -90,7 +90,7 @@ protected:
 
 #pragma region public field
 public:
-    fb::game::context const&            context;
+    fb::game::context&                  context;
     fb::game::buffs                     buffs;
 #pragma endregion
 
