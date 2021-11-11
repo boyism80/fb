@@ -22,8 +22,9 @@ private:
     static constexpr uint32_t                       SIZE = 10;
 
 public:
-    using pool  = std::deque<daotk::mysql::connection*>;
-    using pools = std::vector<pool*>;
+    using connection = std::unique_ptr<daotk::mysql::connection>;
+    using pool       = std::deque<std::unique_ptr<daotk::mysql::connection>>;
+    using pools      = std::vector<std::unique_ptr<pool>>;
 
 private:
     pools                                           _pools;
@@ -72,8 +73,8 @@ private:
     uint64_t                            hash(const char* name);
     uint8_t                             index(const char* name);
     fb::db::pool*                       connections(const char* name);
-    daotk::mysql::connection&           get(const char* name);
-    bool                                release(const char* name, daotk::mysql::connection& connection);
+    fb::db::connection&&                get(const char* name);
+    bool                                release(const char* name, fb::db::connection& connection);
 
 private:
     void                                _exec(const char* name, const std::string& sql);

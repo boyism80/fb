@@ -10,26 +10,12 @@ fb::db::db() :
 
     for(int i = 0; i < databases.size(); i++)
     {
-        auto connections = new fb::db::pool(SIZE, nullptr);
-        this->_pools.push_back(connections);
+        this->_pools.push_back(std::make_unique<fb::db::pool>(SIZE));
     };
 }
 
 fb::db::~db()
-{
-    std::lock_guard<std::mutex> mg(this->_mutex);
-
-    auto size = this->_pools.size();
-    for(int i = 0; i < size; i++)
-    {
-        auto connections = this->_pools[i];
-        for(auto connection : *connections)
-            delete connection;
-
-        delete connections;
-    }
-    this->_pools.clear();
-}
+{ }
 
 void fb::db::bind(boost::asio::io_context& context)
 {
@@ -66,10 +52,10 @@ uint8_t fb::db::index(const char* name)
 fb::db::pool* fb::db::connections(const char* name)
 {
     auto index = fb::db::index(name);
-    return this->_pools[index];
+    return this->_pools[index].get();
 }
 
-daotk::mysql::connection& fb::db::get(const char* name)
+fb::db::connection&& fb::db::get(const char* name)
 {
     std::lock_guard<std::mutex> mg(this->_mutex);
 
@@ -82,42 +68,40 @@ daotk::mysql::connection& fb::db::get(const char* name)
     }
 
     auto index = fb::db::index(name);
-    auto connection = connections->front();
+    auto&& connection = std::move(connections->front());
     connections->pop_front();
 
     if(connection == nullptr)
     {
         auto& config = fb::config::get();
-        connection = new daotk::mysql::connection
+        connection.reset(new daotk::mysql::connection
         (
             config["database"][index]["ip"].asString(), 
             config["database"][index]["uid"].asString(), 
             config["database"][index]["pwd"].asString(), 
             config["database"][index]["name"].asString()
-        );
+        ));
     }
 
     if(connection->is_open() == false)
     {
-        delete connection;
-        
         auto& config = fb::config::get();
-        connection = new daotk::mysql::connection
+        connection.reset(new daotk::mysql::connection
         (
             config["database"][index]["ip"].asString(), 
             config["database"][index]["uid"].asString(), 
             config["database"][index]["pwd"].asString(), 
             config["database"][index]["name"].asString()
-        );
+        ));
     }
 
     if(connection->is_open())
         connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
 
-    return *connection;
+    return std::move(connection);
 }
 
-bool fb::db::release(const char* name, daotk::mysql::connection& connection)
+bool fb::db::release(const char* name, fb::db::connection& connection)
 {
     std::lock_guard<std::mutex> mg(this->_mutex);
 
@@ -128,7 +112,7 @@ bool fb::db::release(const char* name, daotk::mysql::connection& connection)
 
     try
     {
-        connections->push_back(&connection);
+        connections->push_back(std::move(connection));
         return true;
     }
     catch(std::exception&)
@@ -139,10 +123,10 @@ bool fb::db::release(const char* name, daotk::mysql::connection& connection)
 
 void fb::db::_exec(const char* name, const std::string& sql)
 {
-    auto& connection = db::get(name);
+    auto&& connection = db::get(name);
     try
     {
-        connection.exec(sql);
+        connection->exec(sql);
     }
     catch(std::exception& e)
     {
@@ -155,46 +139,46 @@ void fb::db::_exec(const char* name, const std::string& sql)
 
 void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
 {
-    auto connection = &db::get(name);
-    
+    auto&& connection = db::get(name);
+    auto   result = connection->query(sql);
+
     try
     {
         boost::asio::dispatch
         (
             *_context, 
-            [this, connection, name = std::string(name), &fn, result = std::make_unique<daotk::mysql::result>(connection->query(sql))] () 
+            [this, connection = std::move(connection), name = std::string(name), &fn, result = std::move(result)] () mutable
             { 
-                fn(*connection, *result); 
-                this->release(name.c_str(), *connection);
+                fn(*connection, result); 
+                this->release(name.c_str(), connection);
             }
         );
     }
     catch(std::exception& e)
     {
-        this->release(name, *connection);
         console::get().puts(e.what());
     }
 }
 
 void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
 {
-    auto connection = &db::get(name);
+    auto&& connection = db::get(name);
+    auto   result = connection->mquery(sql);
 
     try
     {
         boost::asio::dispatch
         (
             *_context, 
-            [this, connection, name = std::string(name), fn, results = std::make_unique<std::vector<daotk::mysql::result>>(connection->mquery(sql))] () 
+            [this, connection = std::move(connection), name = std::string(name), fn, result = std::move(result)] () mutable
             { 
-                fn(*connection, *results); 
-                this->release(name.c_str(), *connection);
+                fn(*connection, result); 
+                this->release(name.c_str(), connection);
             }
         );
     }
     catch(std::exception& e)
     {
-        this->release(name, *connection);
         console::get().puts(e.what());
     }
 }
