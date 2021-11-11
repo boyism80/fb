@@ -146,6 +146,11 @@ fb::game::object::types fb::game::object::type() const
         return this->_master->type();
 }
 
+context& fb::game::object::context() const
+{
+    return this->_context;
+}
+
 void fb::game::object::destroy()
 {
     this->_context.destroy(*this);

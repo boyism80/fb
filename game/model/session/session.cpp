@@ -689,7 +689,7 @@ uint32_t fb::game::session::money_drop(uint32_t value)
 
         auto lack = this->money_reduce(value);
 
-        auto cash = new fb::game::cash(this->ctx(), value);
+        auto cash = new fb::game::cash(this->context(), value);
         cash->map(this->_map, this->_position);
 
         this->action(action::PICKUP, duration::DURATION_PICKUP);
@@ -890,7 +890,7 @@ void fb::game::session::unride()
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto master = fb::game::table::mobs.name2mob("말");
-        auto horse = new fb::game::mob(this->ctx(), master, true);
+        auto horse = new fb::game::mob(this->context(), master, true);
         horse->map(this->_map, this->position_forward());
         
         this->state(state::NORMAL);
