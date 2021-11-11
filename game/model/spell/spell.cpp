@@ -209,11 +209,7 @@ fb::game::buffs::buffs(fb::game::object& owner) :
 { }
 
 fb::game::buffs::~buffs()
-{
-    // TODO: unique_ptr로 관리
-    for(auto buff : *this)
-        delete buff;
-}
+{ }
 
 bool fb::game::buffs::contains(const buff* buff) const
 {
@@ -225,17 +221,23 @@ bool fb::game::buffs::contains(const spell* spell) const
     return this->contains(spell->name());
 }
 
+fb::game::buff* fb::game::buffs::operator[](int index) const
+{
+    // TODO: range assert
+    return std::vector<std::unique_ptr<buff>>::operator[](index).get();
+}
+
 bool fb::game::buffs::contains(const std::string& name) const
 {
     return this->operator[](name) != nullptr;
 }
 
-bool fb::game::buffs::push_back(buff* buff)
+bool fb::game::buffs::push_back(std::unique_ptr<buff>&&  buff)
 {
-    if(this->contains(buff))
+    if(this->contains(*buff))
         return false;
 
-    std::vector<game::buff*>::push_back(buff);
+    std::vector<std::unique_ptr<fb::game::buff>>::push_back(std::move(buff));
     return true;
 }
 
@@ -244,22 +246,23 @@ fb::game::buff* fb::game::buffs::push_back(const fb::game::spell* spell, uint32_
     if(this->contains(spell))
         return nullptr;
 
-    auto created = new buff(spell, time);
-    this->push_back(created);
-    return created;
+    auto created = std::make_unique<buff>(spell, time);
+    auto ptr = created.get();
+    this->push_back(std::move(created));
+    return ptr;
 }
 
 bool fb::game::buffs::remove(const std::string& name)
 {
     auto buff = this->operator[](name);
-    auto found = std::find(this->begin(), this->end(), buff);
+    auto found = std::find_if(this->begin(), this->end(), [buff] (const std::unique_ptr<fb::game::buff>& ptr) { return ptr.get() == buff; });
     if(found == this->end())
         return false;
-
-    this->erase(found);
     
     auto listener = this->_owner.get_listener<fb::game::object>();
     listener->on_unbuff(this->_owner, *buff);
+
+    this->erase(found);
     return true;
 }
 
@@ -275,10 +278,10 @@ void fb::game::buffs::remove(buff* buff)
 
 fb::game::buff* fb::game::buffs::operator[](const std::string& name) const
 {
-    for(auto buff : *this)
+    for(auto& buff : *this)
     {
         if(buff->spell().name() == name)
-            return buff;
+            return buff.get();
     }
 
     return nullptr;

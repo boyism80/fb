@@ -422,7 +422,7 @@ void fb::game::mob::handle_die(fb::game::object* from)
         if(std::rand() % 100 > candidate.percentage)
             continue;
 
-        auto item = candidate.item->make(this->context());
+        auto item = candidate.item->make(this->context);
         item->map(this->map(), this->position());
     }
 

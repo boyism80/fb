@@ -121,7 +121,7 @@ fb::game::item::item(fb::game::context& context, const fb::game::item::master* m
 { }
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right.context(), right._master),
+    fb::game::object(right.context, right._master),
     _owner(nullptr),
     _count(right._count)
 { }
@@ -243,7 +243,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
     if(this->attr(item::attrs::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        return this->based<fb::game::item>()->make(this->context(), count);
+        return this->based<fb::game::item>()->make(this->context, count);
     }
     else
     {

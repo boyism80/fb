@@ -1086,7 +1086,7 @@ bool fb::game::context::handle_self_info(fb::socket<fb::game::session>& socket, 
     auto session = socket.data();
     this->send(*session, fb::protocol::game::response::session::internal_info(*session), scope::SELF);
     
-    for(auto buff : session->buffs)
+    for(auto& buff : session->buffs)
         this->send(*session, fb::protocol::game::response::spell::buff(*buff), scope::SELF);
     return true;
 }
@@ -1672,16 +1672,16 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             if(pair.second->buffs.size() == 0)
                 continue;
 
-            std::vector<buff*> finishes;
-            for(auto buff : pair.second->buffs)
+            std::vector<std::unique_ptr<buff>*> finishes;
+            for(auto& buff : pair.second->buffs)
             {
                 buff->time_dec(1);
                 if(buff->time() <= 0ms)
-                    finishes.push_back(buff);
+                    finishes.push_back(&buff);
             }
 
             for(auto finish : finishes)
-                pair.second->buffs.remove(finish->spell().name());
+                pair.second->buffs.remove((*finish)->spell().name());
         }
     }
 }

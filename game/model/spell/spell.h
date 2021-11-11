@@ -113,38 +113,40 @@ public:
 };
 
 
-class buffs : private std::vector<buff*>
+class buffs : private std::vector<std::unique_ptr<buff>>
 {
 private:
     fb::game::object&           _owner;
 
 public:
-    using std::vector<buff*>::size;
-    using std::vector<buff*>::begin;
-    using std::vector<buff*>::end;
-    using std::vector<buff*>::rbegin;
-    using std::vector<buff*>::rend;
-    using std::vector<buff*>::cbegin;
-    using std::vector<buff*>::cend;
-    using std::vector<buff*>::crbegin;
-    using std::vector<buff*>::crend;
-    using std::vector<buff*>::operator[];
+    using std::vector<std::unique_ptr<buff>>::size;
+    using std::vector<std::unique_ptr<buff>>::begin;
+    using std::vector<std::unique_ptr<buff>>::end;
+    using std::vector<std::unique_ptr<buff>>::rbegin;
+    using std::vector<std::unique_ptr<buff>>::rend;
+    using std::vector<std::unique_ptr<buff>>::cbegin;
+    using std::vector<std::unique_ptr<buff>>::cend;
+    using std::vector<std::unique_ptr<buff>>::crbegin;
+    using std::vector<std::unique_ptr<buff>>::crend;
 
 public:
     buffs(fb::game::object& owner);
     ~buffs();
 
+private:
+    bool                        push_back(std::unique_ptr<buff>&& buff);
+
 public:
     bool                        contains(const buff* buff) const;
     bool                        contains(const spell* spell) const;
     bool                        contains(const std::string& name) const;
-    bool                        push_back(buff* buff);
     buff*                       push_back(const fb::game::spell* spell, uint32_t time);
     bool                        remove(const std::string& name);
     bool                        remove(const fb::game::spell* spell);
     void                        remove(buff* buff);
 
 public:
+    buff*                       operator [] (int index) const;
     buff*                       operator [] (const std::string& name) const;
 };
 

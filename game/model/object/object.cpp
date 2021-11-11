@@ -88,7 +88,7 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 // fb::game::object
 fb::game::object::object(fb::game::context& context, const fb::game::object::master* master, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
     luable(id),
-    _context(context),
+    context(context),
     _listener(&context),
     _sequence(0xFFFFFFFF),
     _master(master),
@@ -103,7 +103,7 @@ fb::game::object::object(fb::game::context& context, const fb::game::object::mas
 }
 
 fb::game::object::object(const object& right) :
-    object(right._context, right._master, right.sequence(), right._position, right._direction, right._map)
+    object(right.context, right._master, right.sequence(), right._position, right._direction, right._map)
 { }
 
 fb::game::object::~object()
@@ -146,14 +146,9 @@ fb::game::object::types fb::game::object::type() const
         return this->_master->type();
 }
 
-context& fb::game::object::context() const
-{
-    return this->_context;
-}
-
 void fb::game::object::destroy()
 {
-    this->_context.destroy(*this);
+    this->context.destroy(*this);
 }
 
 const fb::game::object::cache& fb::game::object::before() const
