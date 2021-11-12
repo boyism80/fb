@@ -12138,7 +12138,7 @@
             "max": 500000
         },
         "script": {
-            "attack": "scripts/mob/청룡마령참.lua"
+            "attack": "scripts/mob/청의태자.lua"
         },
         "speed": 500
     },
