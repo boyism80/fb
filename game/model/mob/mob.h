@@ -32,6 +32,14 @@ public:
     struct drop;
 #pragma endregion
 
+#pragma region structure
+    struct config : fb::game::life::config
+    {
+    public:
+        const bool alive = false;
+    };
+#pragma endregion
+
 #pragma region enum
 public:
     enum class offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
@@ -41,21 +49,21 @@ public:
 
 #pragma region private field
 private:
-    listener*                               _listener     = nullptr;
-    point16_t                               _spawn_point  = point16_t(0, 0);
-    size16_t                                _spawn_size   = size16_t(0, 0);
-
-    std::chrono::milliseconds               _action_time  = 0ms; // ms
-    std::chrono::milliseconds               _dead_time    = 0ms; // ms
-    std::chrono::milliseconds               _respawn_time = 0s; // seconds
-
-    fb::game::life*                         _target;
-    lua::lua*                               _attack_thread;
+    listener*                               _listener      = nullptr;
+    point16_t                               _spawn_point   = point16_t(0, 0);
+    size16_t                                _spawn_size    = size16_t(0, 0);
+                                                           
+    std::chrono::milliseconds               _action_time   = 0ms; // ms
+    std::chrono::milliseconds               _dead_time     = 0ms; // ms
+    std::chrono::milliseconds               _respawn_time  = 0s; // seconds
+                                                           
+    fb::game::life*                         _target        = nullptr;
+    lua::lua*                               _attack_thread = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor
 public:
-    mob(fb::game::context& context, const mob::master* master, bool alive = false);
+    mob(fb::game::context& context, const mob::master* master, const fb::game::mob::config& config);
     mob(const mob& right);
     ~mob();
 #pragma endregion
@@ -154,6 +162,20 @@ public:
 #pragma region nested class
 class mob::master : public fb::game::life::master
 {
+#pragma region structure
+public:
+struct config : fb::game::life::master::config
+{
+public:
+    const mob::damage                         damage;
+    const offensive_type                      offensive;
+    const sizes                               size;
+    const std::chrono::milliseconds           speed;
+    const std::string                         script_attack;
+    const std::string                         script_die;
+};
+#pragma endregion
+
 #pragma region friend
 public:
     friend class mob;
@@ -181,19 +203,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, 
-        uint16_t look, 
-        uint8_t color,
-        const fb::game::defensive& defensive, 
-        uint32_t hp, 
-        uint32_t mp, 
-        uint32_t experience,
-        const mob::damage& damage,
-        mob::offensive_type offensive_type,
-        sizes size,
-        std::chrono::milliseconds speed,
-        const std::string& script_attack,
-        const std::string& script_die);
+    master(const fb::game::mob::master::config& config);
     ~master();
 #pragma endregion
 

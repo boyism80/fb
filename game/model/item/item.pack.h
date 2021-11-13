@@ -45,22 +45,10 @@ public:
     friend class pack;
 
 public:
-    uint16_t                            durability;
+    uint16_t                                durability = 0;
 
 public:
-    master(const std::string&                name, 
-           uint16_t                          look, 
-           uint8_t                           color,
-           uint32_t                          id,
-           uint32_t                          price,
-           const fb::game::item::conditions& condition,
-           penalties                         penalty,
-           uint16_t                          capacity,
-           const fb::game::item::trade&      trade,
-           const fb::game::item::storage&    storage,
-           std::string                       desc,
-           std::string                       active_script,
-           uint16_t                          durability);
+    master(const fb::game::item::master::config& config);
     ~master();
 
 public:

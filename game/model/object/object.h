@@ -31,6 +31,15 @@ public:
 
 #pragma region structure
 public:
+    struct config
+    {
+    public:
+        uint32_t            id          = 0xFFFFFFFF;
+        const point16_t     position    = fb::game::point16_t();
+        fb::game::direction direction   = fb::game::direction::BOTTOM;
+        fb::game::map*      map         = nullptr;
+    };
+
     struct cache
     {
         fb::game::map*                      map      = nullptr;
@@ -96,7 +105,7 @@ public:
 
 #pragma region constructor / destructor
 protected:
-    object(fb::game::context& context, const master* master, uint32_t id = 0xFFFFFFFF, const point16_t position = fb::game::point16_t(), fb::game::direction direction = fb::game::direction::BOTTOM, fb::game::map* map = nullptr);
+    object(fb::game::context& context, const master* master, const fb::game::object::config& config);
     object(const object& right);
 public:
     virtual ~object();
@@ -251,6 +260,17 @@ interface object::listener
 #pragma region master
 class object::master : public lua::luable
 {
+#pragma region structure
+public:
+    struct config
+    {
+    public:
+        std::string     name;
+        uint16_t        look  = 0;
+        uint8_t         color = 0;
+    };
+#pragma endregion
+
 #pragma region friend
 public:
     friend class fb::game::object;
@@ -279,7 +299,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color);
+    master(const fb::game::object::master::config& config);
     virtual ~master();
 #pragma endregion
 

@@ -5,10 +5,10 @@
 #include "model/context/context.game.h"
 #include "builtin/builtin_function.h"
 
-fb::game::object::master::master(const std::string& name, uint16_t look, uint8_t color) : 
-    name(name),
-    look(look),
-    color(color)
+fb::game::object::master::master(const fb::game::object::master::config& config) : 
+    name(config.name),
+    look(config.look),
+    color(config.color)
 { }
 
 fb::game::object::master::~master()
@@ -86,24 +86,29 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 
 
 // fb::game::object
-fb::game::object::object(fb::game::context& context, const fb::game::object::master* master, uint32_t id, const point16_t position, fb::game::direction direction, fb::game::map* map) : 
-    luable(id),
+fb::game::object::object(fb::game::context& context, const master* master, const fb::game::object::config& config) : 
+    luable(config.id),
     context(context),
     _listener(&context),
-    _sequence(0xFFFFFFFF),
+    _sequence(config.id),
     _master(master),
-    _position(position),
-    _direction(direction),
-    _map(map),
-    buffs(*this),
-    _visible(true),
-    _sector(nullptr)
+    _position(config.position),
+    _direction(config.direction),
+    _map(config.map),
+    buffs(*this)
 {
     this->_listener->on_create(*this);
 }
 
 fb::game::object::object(const object& right) :
-    object(right.context, right._master, right.sequence(), right._position, right._direction, right._map)
+    object(right.context, right._master, 
+        fb::game::object::config 
+        {
+            .id = right._sequence,
+            .position = right._position,
+            .direction = right._direction,
+            .map = right._map
+        })
 { }
 
 fb::game::object::~object()

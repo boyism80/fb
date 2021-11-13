@@ -46,6 +46,18 @@ public:
 
 class weapon::master : public equipment::master
 {
+#pragma region structure
+public:
+    struct config : public fb::game::equipment::master::config
+    {
+    public:
+        range32_t                       small; 
+        range32_t                       large;
+        uint16_t                        sound;
+        std::string                     spell;
+    };
+#pragma endregion
+
 public:
     friend class weapon;
 
@@ -55,39 +67,7 @@ public:
     const std::string                   spell;
 
 public:
-    master(const std::string&                  name, 
-           uint16_t                            look, 
-           uint8_t                             color,
-           uint32_t                            id,
-           uint32_t                            price,
-           const fb::game::item::conditions&   condition,
-           penalties                           penalty,
-           uint16_t                            capacity,
-           const fb::game::item::trade&        trade,
-           const fb::game::item::storage&      storage,
-           std::string                         desc,
-           std::string                         active_script,
-           uint16_t                            dress,
-           uint16_t                            durability,
-           const fb::game::equipment::repair&  repair,
-           const fb::game::equipment::rename&  rename,
-           const std::string&                  dress_script,
-           const std::string&                  undress_script,
-           uint8_t                             hit,
-           uint8_t                             damage,
-           uint8_t                             strength,
-           uint8_t                             intelligence,
-           uint8_t                             dexteritry,
-           uint32_t                            base_hp,
-           uint32_t                            base_mp,
-           float                               hp_percentage,
-           float                               mp_percentage,
-           uint8_t                             healing_cycle,
-           const fb::game::defensive&          defensive,
-           const range32_t&                    small, 
-           const range32_t&                    large,
-           uint16_t                            sound,
-           const std::string&                  spell);
+    master(const fb::game::weapon::master::config& config);
     ~master();
 
 public:

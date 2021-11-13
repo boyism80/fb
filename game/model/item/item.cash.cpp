@@ -1,14 +1,56 @@
 #include "model/item/item.cash.h"
 
-const fb::game::cash::master fb::game::cash::BRONZE(0xFFFFFFFF, "엽전", 23 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE(0xFFFFFFFF, "엽전뭉치", 74 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::SILVER(0xFFFFFFFF, "은전", 70 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::SILVER_BUNDLE(0xFFFFFFFF, "은전뭉치", 73 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::GOLD(0xFFFFFFFF, "금전", 71 + 0xBFFF);
-const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(0xFFFFFFFF, "금덩어리", 72 + 0xBFFF);
+const fb::game::cash::master fb::game::cash::BRONZE(fb::game::item::master::config
+    {
+        {
+            .name = "엽전", 
+            .look = 23 + 0xBFFF,
+            .color = 0
+        },
+        /* id */ 0xFFFFFFFF
+    });
+const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE(fb::game::item::master::config
+    {
+        {
+            .name = "엽전뭉치", 
+            .look = 74 + 0xBFFF
+        },
+        /* id */ 0xFFFFFFFF
+    });
+const fb::game::cash::master fb::game::cash::SILVER(fb::game::item::master::config
+    {
+        {
+            .name = "은전", 
+            .look = 70 + 0xBFFF
+        },
+        /* id */ 0xFFFFFFFF
+    });
+const fb::game::cash::master fb::game::cash::SILVER_BUNDLE(fb::game::item::master::config
+    {
+        {
+            .name = "은전뭉치", 
+            .look = 73 + 0xBFFF
+        },
+        /* id */ 0xFFFFFFFF
+    });
+const fb::game::cash::master fb::game::cash::GOLD(fb::game::item::master::config
+    {
+        {
+            .name = "금전", 
+            .look = 71 + 0xBFFF
+        },
+        /* id */ 0xFFFFFFFF
+    });
+const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(fb::game::item::master::config
+    {
+        {
+            .name = "금덩어리", 
+            .look = 72 + 0xBFFF
+        },
+        /* id */ 0xFFFFFFFF
+    });
 
-fb::game::cash::master::master(uint32_t id, const std::string& name, uint16_t look, uint8_t color) : 
-    fb::game::item::master(name, look, color, id, 0, fb::game::item::conditions(), fb::game::item::penalties::NONE, 0, fb::game::item::trade(false), fb::game::item::storage(false, 0), "", "")
+fb::game::cash::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config)
 { }
 
 fb::game::cash::master::~master()

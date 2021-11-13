@@ -3,57 +3,17 @@
 
 const fb::game::item::conditions fb::game::item::DEFAULT_CONDITION;
 
-fb::game::item::conditions::conditions()
-{ }
-
-fb::game::item::conditions::conditions(uint8_t level,
-    uint8_t strength,
-    uint8_t dexteritry,
-    uint8_t intelligence,
-    uint8_t cls,
-    uint8_t promotion,
-    fb::game::sex sex) : 
-    level(level),
-    strength(strength),
-    dexteritry(dexteritry),
-    intelligence(intelligence),
-    cls(cls),
-    promotion(promotion),
-    sex(sex)
-{ }
-
-fb::game::item::master::master(const std::string&                name, 
-                               uint16_t                          look, 
-                               uint8_t                           color,
-                               uint32_t                          id,
-                               uint32_t                          price,
-                               const fb::game::item::conditions& condition,
-                               penalties                         penalty,
-                               uint16_t                          capacity,
-                               const fb::game::item::trade&      trade,
-                               const fb::game::item::storage&    storage,
-                               std::string                       desc,
-                               std::string                       active_script) : 
-    fb::game::object::master(name, look, color),
-    id(id),
-    price(price),
-    condition(condition),
-    penalty(penalty),
-    capacity(capacity),
-    trade(trade),
-    storage(storage),
-    desc(desc),
-    active_script(active_script)
-{ }
-
-fb::game::item::conditions::conditions(const conditions& right) : 
-    level(right.level),
-    strength(right.strength),
-    dexteritry(right.dexteritry),
-    intelligence(right.intelligence),
-    cls(right.cls),
-    promotion(right.promotion),
-    sex(right.sex)
+fb::game::item::master::master(const fb::game::item::master::config& config) : 
+    fb::game::object::master(config),
+    id(config.id),
+    price(config.price),
+    condition(config.condition),
+    penalty(config.penalty),
+    capacity(config.capacity),
+    trade(config.trade),
+    storage(config.storage),
+    desc(config.desc),
+    active_script(config.active_script)
 { }
 
 fb::game::item::master::~master()
@@ -114,16 +74,13 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
 // class item
 //
 
-fb::game::item::item(fb::game::context& context, const fb::game::item::master* master, uint16_t count) : 
-    fb::game::object(context, master),
-    _owner(nullptr),
-    _count(count)
+fb::game::item::item(fb::game::context& context, const fb::game::item::master* master, const fb::game::item::config& config) : 
+    fb::game::object(context, master, config),
+    _count(config.count)
 { }
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right.context, right._master),
-    _owner(nullptr),
-    _count(right._count)
+    fb::game::object(right.context, right._master, fb::game::item::config { .count = right._count })
 { }
 
 fb::game::item::~item()

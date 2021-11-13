@@ -48,7 +48,7 @@ public:
 class cash::master : public fb::game::item::master
 {
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint8_t color = 0);
+    master(const fb::game::item::master::config& config);
     ~master();
 
 public:

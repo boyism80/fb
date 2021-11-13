@@ -49,6 +49,14 @@ public:
     interface listener;
 #pragma endregion
 
+#pragma region structure
+    struct config : public fb::game::object::master::config
+    {
+    public:
+        std::string     script;
+    };
+#pragma endregion
+
 #pragma region public field
 public:
     std::string                 script;
@@ -61,7 +69,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, uint16_t look, uint8_t color, const std::string& script);
+    master(const fb::game::npc::master::config& config);
     ~master();
 #pragma endregion
 

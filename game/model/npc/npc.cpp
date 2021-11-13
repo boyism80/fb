@@ -4,9 +4,9 @@
 
 using namespace fb::game;
 
-fb::game::npc::master::master(const std::string& name, uint16_t look, uint8_t color, const std::string& script) : 
-    fb::game::object::master(name, look, color),
-    script(script)
+fb::game::npc::master::master(const fb::game::npc::master::config& config) : 
+    fb::game::object::master(config),
+    script(config.script)
 { }
 
 fb::game::npc::master::~master()
@@ -31,7 +31,7 @@ int fb::game::npc::master::builtin_item_dialog(lua_State* lua)
 }
 
 fb::game::npc::npc(fb::game::context& context, const fb::game::npc::master* master) : 
-    fb::game::object(context, master)
+    fb::game::object(context, master, fb::game::object::config())
 { }
 
 fb::game::npc::npc(const npc& right) :

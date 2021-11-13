@@ -3,27 +3,15 @@
 #include "mob.h"
 #include "module/thread/thread.h"
 
-fb::game::mob::master::master(const std::string& name,
-                              uint16_t look,
-                              uint8_t color,
-                              const fb::game::defensive& defensive,
-                              uint32_t hp,
-                              uint32_t mp,
-                              uint32_t experience,
-                              const mob::damage& damage,
-                              mob::offensive_type offensive_type,
-                              sizes size,
-                              std::chrono::milliseconds speed,
-                              const std::string& script_attack,
-                              const std::string& script_die) : fb::game::life::master(name, look, color, defensive, hp, mp, experience),
-                                                               damage(damage),
-                                                               offensive(offensive_type),
-                                                               size(size),
-                                                               speed(speed),
-                                                               script_attack(script_attack),
-                                                               script_die(script_die),
-                                                               items(_items)
-
+fb::game::mob::master::master(const fb::game::mob::master::config& config) : 
+    fb::game::life::master(config),
+    damage(config.damage),
+    offensive(config.offensive),
+    size(config.size),
+    speed(config.speed),
+    script_attack(config.script_attack),
+    script_die(config.script_die),
+    items(_items)
 { }
 
 fb::game::mob::master::~master()
@@ -50,23 +38,18 @@ int fb::game::mob::master::builtin_speed(lua_State* lua)
 
 
 
-fb::game::mob::mob(fb::game::context& context, const mob::master* master, bool alive) : 
-    life(context, master),
-    _action_time(0),
-    _dead_time(0),
-    _respawn_time(0),
-    _target(nullptr),
-    _attack_thread(nullptr)
+fb::game::mob::mob(fb::game::context& context, const mob::master* master, const fb::game::mob::config& config) : 
+    life(context, master, config)
 {
-    this->visible(alive);
-    if(alive)
+    this->visible(config.alive);
+    if(config.alive)
     {
         this->hp_up(this->base_hp());
         this->mp_up(this->base_mp());
     }
 }
 
-fb::game::mob::mob(const mob& right) :
+fb::game::mob::mob(const fb::game::mob& right) :
     life(right),
     _spawn_point(right._spawn_point),
     _spawn_size(right._spawn_size),

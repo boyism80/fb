@@ -275,20 +275,25 @@ fb::game::container::item::~item()
 
 fb::game::item::master* fb::game::container::item::create(uint32_t id, const Json::Value& data)
 {
-    std::string         types         = CP949(data["type"].asString(), PLATFORM::Windows);
-    std::string         name          = CP949(data["name"].asString(), PLATFORM::Windows);
-    uint16_t            icon          = data["icon"].asInt() + 0xBFFF;
-    uint8_t             color         = data["color"].asInt();
-
-    auto                price         = data["price"].asInt();
-    auto                condition     = to_condition(data);
-    auto                penalty       = to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows));
-    auto                capacity      = std::max(1, data["capacity"].asInt());
-    auto                trade         = fb::game::item::trade(data["trade"]["enabled"].asBool());
-    auto                storage       = fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt());
-    auto                desc          = CP949(data["desc"].asString(), PLATFORM::Windows);
-    auto                script_active = CP949(data["script"]["active"].asString(), PLATFORM::Windows);
-    assert_script(script_active, "function\\s+(on_active)\\(\\w+,\\s*\\w+\\)", "on_active", [](const std::string& script) 
+    std::string         types   = CP949(data["type"].asString(), PLATFORM::Windows);
+    auto                config  = fb::game::item::master::config
+    {
+        { 
+            .name  = CP949(data["name"].asString(), PLATFORM::Windows),
+            .look  = (uint16_t)(data["icon"].asInt() + 0xBFFF),
+            .color = (uint8_t)data["color"].asInt()
+        },
+        /* id            */ id,
+        /* price         */ (uint32_t)data["price"].asInt(),
+        /* condition     */ to_condition(data),
+        /* penalty       */ to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)),
+        /* capacity      */ std::max(uint16_t(1), (uint16_t)data["capacity"].asInt()),
+        /* trade         */ fb::game::item::trade(data["trade"]["enabled"].asBool()),
+        /* storage       */ fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt()),
+        /* desc          */ CP949(data["desc"].asString(), PLATFORM::Windows),
+        /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
+    };
+    assert_script(config.active_script, "function\\s+(on_active)\\(\\w+,\\s*\\w+\\)", "on_active", [](const std::string& script) 
     {
 #if defined DEBUG | defined _DEBUG
         auto out = std::ofstream(script, std::ios_base::app);
@@ -300,18 +305,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
     
     if(types == "stuff")
     {
-        return new fb::game::item::master(name, 
-            icon, 
-            color, 
-            id, 
-            price, 
-            condition,
-            penalty,
-            capacity,
-            trade,
-            storage,
-            desc,
-            script_active);
+        return new fb::game::item::master(config);
     }
 
     if(types == "consume")
@@ -319,29 +313,39 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
         std::string     bundle_type = CP949(data["bundle type"].asString(), PLATFORM::Windows);   // package Ex) 동동주
                                                                                                   // bundle  Ex) 도토리
         if (bundle_type == "package")
-            return new fb::game::pack::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, capacity);
+        {
+            return new fb::game::pack::master(config);
+        }
         else
-            return new fb::game::consume::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active);
+        {
+            return new fb::game::consume::master(config);
+        }
     }
 
-    auto&               option         = data["equipment option"];
-    auto                look           = option["look"].asInt();
-    auto                durability     = option["durability"].asInt();
-    auto                repair         = fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble());
-    auto                rename         = fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt());
-    auto                hit            = option["hit"].asInt();
-    auto                damage         = option["damage"].asInt();
-    auto                strength       = option["strength"].asInt();
-    auto                intelligence   = option["intelligence"].asInt();
-    auto                dexteritry     = option["dexteritry"].asInt();
-    auto                base_hp        = option["base_hp"].asInt();
-    auto                base_mp        = option["base_mp"].asInt();
-    auto                hp_percent     = option["hp percent"].asInt();
-    auto                mp_percent     = option["mp percent"].asInt();
-    auto                healing_cycle  = option["healing_cycle"].asInt();
-    auto                defensive      = fb::game::defensive(option["defensive"]["physical"].asInt(), option["defensive"]["magical"].asInt());
-    auto                script_dress   = CP949(data["script"]["dress"].asString(), PLATFORM::Windows);
-    assert_script(script_dress, "function\\s+(on_dress)\\(\\w+,\\s*\\w+\\)", "on_dress", [](const std::string& script) 
+    auto&               option           = data["equipment option"];
+    auto                equipment_config = fb::game::equipment::master::config
+    {
+        config,
+        /* dress          */ (uint16_t)option["look"].asInt(),
+        /* durability     */ (uint16_t)option["durability"].asInt(),
+        /* repair         */ fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble()),
+        /* rename         */ fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt()),
+        /* dress_script   */ CP949(data["script"]["dress"].asString(), PLATFORM::Windows),
+        /* undress_script */ CP949(data["script"]["undress"].asString(), PLATFORM::Windows),
+        /* hit            */ (uint8_t)option["hit"].asInt(),
+        /* damage         */ (uint8_t)option["damage"].asInt(),
+        /* strength       */ (uint8_t)option["strength"].asInt(),
+        /* intelligence   */ (uint8_t)option["intelligence"].asInt(),
+        /* dexteritry     */ (uint8_t)option["dexteritry"].asInt(),
+        /* base_hp        */ (uint32_t)option["base_hp"].asInt(),
+        /* base_mp        */ (uint32_t)option["base_mp"].asInt(),
+        /* hp_percentage  */ (float)option["hp percent"].asInt(),
+        /* mp_percentage  */ (float)option["mp percent"].asInt(),
+        /* healing_cycle  */ (uint8_t)option["healing_cycle"].asInt(),
+        /* defensive      */ fb::game::defensive(option["defensive"]["physical"].asInt(), option["defensive"]["magical"].asInt()),
+    };
+
+    assert_script(equipment_config.dress_script, "function\\s+(on_dress)\\(\\w+,\\s*\\w+\\)", "on_dress", [](const std::string& script) 
     {
 #if defined DEBUG | defined _DEBUG
         auto out = std::ofstream(script, std::ios_base::app);
@@ -351,8 +355,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
 #endif
     });
 
-    auto                script_undress = CP949(data["script"]["undress"].asString(), PLATFORM::Windows);
-    assert_script(script_undress, "function\\s+(on_undress)\\(\\w+,\\s*\\w+\\)", "on_undress", [](const std::string& script) 
+    assert_script(equipment_config.undress_script, "function\\s+(on_undress)\\(\\w+,\\s*\\w+\\)", "on_undress", [](const std::string& script) 
     {
 #if defined DEBUG | defined _DEBUG
         auto out = std::ofstream(script, std::ios_base::app);
@@ -365,30 +368,34 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
     
     if(types == "weapon")
     {
-        auto damage_range_min = fb::game::range32_t(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt());
-        auto damage_range_max = fb::game::range32_t(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt());
-        auto sound = option["sound"].asInt();
-        auto spell = CP949(option["spell"].asString(), PLATFORM::Windows);
-        return new fb::game::weapon::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive, damage_range_min, damage_range_max, sound, spell);
+        auto weapon_config = fb::game::weapon::master::config
+        {
+            equipment_config,
+            /* small */ fb::game::range32_t(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt()),
+            /* large */ fb::game::range32_t(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt()),
+            /* sound */ (uint16_t)option["sound"].asInt(),
+            /* spell */ CP949(option["spell"].asString(), PLATFORM::Windows)
+        };
+        return new fb::game::weapon::master(weapon_config);
     }
 
     if(types == "armor")
-        return new fb::game::armor::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::armor::master(equipment_config);
 
     if(types == "helmet")
-        return new fb::game::helmet::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::helmet::master(equipment_config);
 
     if(types == "shield")
-        return new fb::game::shield::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::shield::master(equipment_config);
 
     if(types == "ring")
-        return new fb::game::ring::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::ring::master(equipment_config);
 
     if(types == "auxiliary")
-        return new fb::game::auxiliary::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::auxiliary::master(equipment_config);
 
     if(types == "bow")
-        return new fb::game::bow::master(name, icon, color, id, price, condition, penalty, capacity, trade, storage, desc, script_active, look, durability, repair, rename, script_dress, script_undress, hit, damage, strength, intelligence, dexteritry, base_hp, base_mp, hp_percent, mp_percent, healing_cycle, defensive);
+        return new fb::game::bow::master(equipment_config);
 
     return nullptr;
 }
@@ -409,15 +416,15 @@ fb::game::item::conditions fb::game::container::item::to_condition(const Json::V
     }
 
     return fb::game::item::conditions
-    (
-        data["condition"].isMember("level")        ? data["condition"]["level"].asInt()        : 0,
-        data["condition"].isMember("strength")     ? data["condition"]["strength"].asInt()     : 0,
-        data["condition"].isMember("dexteritry")   ? data["condition"]["dexteritry"].asInt()   : 0,
-        data["condition"].isMember("intelligence") ? data["condition"]["intelligence"].asInt() : 0,
-        data["condition"].isMember("class")        ? data["condition"]["class"].asInt()        : 0,
-        data["condition"].isMember("promotion")    ? data["condition"]["promotion"].asInt()    : 0,
-        sex
-    );
+    {
+        .level        = data["condition"].isMember("level")        ? (uint8_t)data["condition"]["level"].asInt()        : uint8_t(0),
+        .strength     = data["condition"].isMember("strength")     ? (uint8_t)data["condition"]["strength"].asInt()     : uint8_t(0),
+        .dexteritry   = data["condition"].isMember("dexteritry")   ? (uint8_t)data["condition"]["dexteritry"].asInt()   : uint8_t(0),
+        .intelligence = data["condition"].isMember("intelligence") ? (uint8_t)data["condition"]["intelligence"].asInt() : uint8_t(0),
+        .cls          = data["condition"].isMember("class")        ? (uint8_t)data["condition"]["class"].asInt()        : uint8_t(0),
+        .promotion    = data["condition"].isMember("promotion")    ? (uint8_t)data["condition"]["promotion"].asInt()    : uint8_t(0),
+        .sex          = sex
+    };
 }
 
 fb::game::item::penalties fb::game::container::item::to_penalty(const std::string& penalty)
@@ -614,8 +621,17 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
             });
 
             {
+                //name, look, color, script
                 auto _ = std::lock_guard(*mutex);
-                auto npc = new fb::game::npc::master(name, look, color, script);
+                auto npc = new fb::game::npc::master(fb::game::npc::master::config 
+                    {
+                        {
+                            .name = name,
+                            .look = look,
+                            .color = color,
+                        },
+                        script
+                    });
                 std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::npc::master>(npc)));
                 callback(name, percentage);
             }
@@ -737,15 +753,34 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             uint16_t            id = std::stoi(key.asString());
-            auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
+            auto                object_config = fb::game::object::master::config
+            {
+                .name  = CP949(data["name"].asString(), PLATFORM::Windows),
+                .look  = (uint16_t)(data["look"].asInt() + 0x7FFF),
+                .color = (uint8_t)data["color"].asInt()
+            };
 
-            uint16_t            look    = data["look"].asInt() + 0x7FFF;
-            uint8_t             color   = data["color"].asInt();
-            uint32_t            base_hp = data["hp"].asInt();
-            uint32_t            base_mp = data["mp"].asInt();
+            auto                life_config = fb::game::life::master::config
+            {
+                object_config,
+                /* defensive */ fb::game::defensive(data["defensive"]["physical"].asInt(), data["defensive"]["magical"].asInt()),
+                /* hp        */ (uint32_t)data["hp"].asInt(),
+                /* mp        */ (uint32_t)data["mp"].asInt(),
+                /* exp       */ (uint32_t)data["experience"].asInt()
+            };
 
-            auto                script_attack = CP949(data["script"]["attack"].asString(), PLATFORM::Windows);
-            assert_script(script_attack, "function\\s+(on_attack)\\(\\w+,\\s*\\w+\\)", "on_attack", [](const std::string& script) 
+            auto                config = fb::game::mob::master::config
+            {
+                life_config,
+                /* damage        */ fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()),
+                /* offensive     */ this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)),
+                /* size          */ this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)),
+                /* speed         */ std::chrono::milliseconds(data["speed"].asInt()),
+                /* script_attack */ CP949(data["script"]["attack"].asString(), PLATFORM::Windows),
+                /* script_die    */ CP949(data["script"]["die"].asString(), PLATFORM::Windows)
+            };
+
+            assert_script(config.script_attack, "function\\s+(on_attack)\\(\\w+,\\s*\\w+\\)", "on_attack", [](const std::string& script) 
             {
 #if defined DEBUG | defined _DEBUG
                 auto out = std::ofstream(script, std::ios_base::app);
@@ -755,8 +790,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
 #endif
             });
 
-            auto                script_die = CP949(data["script"]["die"].asString(), PLATFORM::Windows);
-            assert_script(script_die, "function\\s+(on_die)\\(\\w+,\\s*\\w+\\)", "on_die", [](const std::string& script) 
+            assert_script(config.script_die, "function\\s+(on_die)\\(\\w+,\\s*\\w+\\)", "on_die", [](const std::string& script) 
             {
 #if defined DEBUG | defined _DEBUG
                 auto out = std::ofstream(script, std::ios_base::app);
@@ -766,11 +800,11 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
 #endif
             });
 
-            auto                mob = new fb::game::mob::master(name, look, color, fb::game::defensive(data["defensive"]["physical"].asInt(), data["defensive"]["magical"].asInt()), base_hp, base_mp, data["experience"].asInt(), fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()), this->to_offensive(CP949(data["offensive"].asString(), PLATFORM::Windows)), this->to_size(CP949(data["size"].asString(), PLATFORM::Windows)), std::chrono::milliseconds(data["speed"].asInt()), script_attack, script_die);
+            auto                mob = std::make_unique<fb::game::mob::master>(config);
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::mob::master>(mob)));
-                callback(name, percentage);
+                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert(std::make_pair(id, std::move(mob)));
+                callback(config.name, percentage);
             }
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -868,7 +902,7 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::con
                     auto _ = std::lock_guard(*mutex);
                     for (int i = 0; i < count; i++)
                     {
-                        auto        mob = core->make<fb::game::mob>(context);
+                        auto        mob = core->make<fb::game::mob>(context, fb::game::mob::config { .alive = false });
                         mob->spawn_point(x0, y0);
                         mob->spawn_size(x1, y1);
                         mob->respawn_time(std::chrono::seconds(rezen));

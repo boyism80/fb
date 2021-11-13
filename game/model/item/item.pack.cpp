@@ -1,31 +1,8 @@
 #include "model/item/item.pack.h"
 #include "model/context/context.game.h"
 
-fb::game::pack::master::master(const std::string& name,
-                               uint16_t look,
-                               uint8_t color,
-                               uint32_t id,
-                               uint32_t price,
-                               const fb::game::item::conditions& condition,
-                               penalties penalty,
-                               uint16_t capacity,
-                               const fb::game::item::trade& trade,
-                               const fb::game::item::storage& storage,
-                               std::string desc,
-                               std::string active_script,
-                               uint16_t durability) : fb::game::item::master(name,
-                                                                             look, 
-                                                                             color,
-                                                                             id,
-                                                                             price,
-                                                                             condition,
-                                                                             penalty,
-                                                                             capacity,
-                                                                             trade,
-                                                                             storage,
-                                                                             desc,
-                                                                             active_script),
-    durability(durability)
+fb::game::pack::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config),
+    durability(config.capacity)
 { }
 
 fb::game::pack::master::~master()

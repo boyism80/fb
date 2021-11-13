@@ -1,29 +1,7 @@
 #include "model/item/item.consume.h"
 #include "model/session/session.h"
 
-fb::game::consume::master::master(const std::string& name,
-                               uint16_t look,
-                               uint8_t color,
-                               uint32_t id,
-                               uint32_t price,
-                               const fb::game::item::conditions& condition,
-                               penalties penalty,
-                               uint16_t capacity,
-                               const fb::game::item::trade& trade,
-                               const fb::game::item::storage& storage,
-                               std::string desc,
-                               std::string active_script) : fb::game::item::master(name,
-                                                                                   look, 
-                                                                                   color,
-                                                                                   id,
-                                                                                   price,
-                                                                                   condition,
-                                                                                   penalty,
-                                                                                   capacity,
-                                                                                   trade,
-                                                                                   storage,
-                                                                                   desc,
-                                                                                   active_script)
+fb::game::consume::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config)
 { }
 
 fb::game::consume::master::~master()
@@ -40,7 +18,7 @@ fb::game::item::attrs fb::game::consume::master::attr() const
 
 
 fb::game::consume::consume(fb::game::context& context, const fb::game::consume::master* master, uint16_t count) : 
-    fb::game::item(context, master, count)
+    fb::game::item(context, master, fb::game::item::config { .count = count })
 { }
 
 fb::game::consume::consume(const consume& right) : 

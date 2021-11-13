@@ -9,7 +9,7 @@
 using namespace fb::game;
 
 session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
-    life(context, nullptr, (uint32_t)socket.native_handle(), 0, 0, 0),
+    life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.native_handle()} }),
     _socket(socket)
 { }
 
@@ -890,7 +890,7 @@ void fb::game::session::unride()
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto master = fb::game::table::mobs.name2mob("말");
-        auto horse = new fb::game::mob(this->context, master, true);
+        auto horse = this->context.make<fb::game::mob>(master, fb::game::mob::config { .alive = true });
         horse->map(this->_map, this->position_forward());
         
         this->state(state::NORMAL);

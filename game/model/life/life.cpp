@@ -2,17 +2,12 @@
 #include "model/map/map.h"
 #include "life.h"
 
-fb::game::life::master::master(const std::string& name, 
-        uint16_t look,
-        uint8_t color,
-        const fb::game::defensive& defensive,
-        uint32_t hp,
-        uint32_t mp,
-        uint32_t experience) : object::master(name, look, color),
-                               defensive(defensive),
-                               hp(hp),
-                               mp(mp),
-                               experience(experience)
+fb::game::life::master::master(const fb::game::life::master::config& config) : 
+    object::master(config),
+    defensive(config.defensive),
+    hp(config.hp),
+    mp(config.mp),
+    experience(config.exp)
 { }
 
 fb::game::life::master::~master()
@@ -48,31 +43,12 @@ int fb::game::life::master::builtin_mp(lua_State* lua)
     return 1;
 }
 
-
-fb::game::life::life(fb::game::context& context, const master* master) : 
-    object(context, master),
-    _hp(0),
-    _mp(0),
-    _condition(fb::game::condition::NONE),
+fb::game::life::life(fb::game::context& context, const master* master, const fb::game::life::config& config) : 
+    object(context, master, config),
+    _hp(config.hp),
+    _mp(config.mp),
     spells(*this)
 { }
-
-fb::game::life::life(fb::game::context& context, master* master, uint32_t id, uint32_t hp, uint32_t mp, uint32_t exp) : 
-    object(context, master, id),
-    _hp(hp),
-    _mp(mp),
-    _condition(fb::game::condition::NONE),
-    spells(*this)
-{ }
-
-fb::game::life::life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp) : 
-    fb::game::object(object),
-    _hp(hp),
-    _mp(mp),
-    _condition(fb::game::condition::NONE),
-    spells(*this)
-{ }
-
 
 fb::game::life::~life()
 { }

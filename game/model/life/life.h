@@ -20,6 +20,16 @@ public:
     class master;
 #pragma endregion
 
+#pragma region structure
+struct config : public fb::game::object::config
+{
+public:
+    uint32_t                    hp  = 0;
+    uint32_t                    mp  = 0;
+    uint32_t                    exp = 0;
+};
+#pragma endregion
+
 #pragma region protected field
 protected:
     uint32_t                    _hp = 0, _mp = 0;
@@ -33,9 +43,7 @@ public:
 
 #pragma region constructor / destructor
 protected:
-    life(fb::game::context& context, const master* master);
-    life(fb::game::context& context, master* master, uint32_t id, uint32_t hp = 0, uint32_t mp = 0, uint32_t exp = 0);
-    life(const fb::game::object& object, uint32_t hp, uint32_t mp, uint32_t exp);
+    life(fb::game::context& context, const master* master, const fb::game::life::config& config);
     virtual ~life();
 #pragma endregion
 
@@ -135,6 +143,18 @@ interface life::listener : public virtual fb::game::object::listener,
 #pragma region master
 class life::master : public fb::game::object::master
 {
+#pragma region structure
+public:
+    struct config : public fb::game::object::master::config
+    {
+    public:
+        fb::game::defensive     defensive;
+        uint32_t                hp  = 0;
+        uint32_t                mp  = 0;
+        uint32_t                exp = 0;
+    };
+#pragma endregion
+
 #pragma region friend
 public:
     friend class life;
@@ -155,13 +175,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string& name, 
-        uint16_t look, 
-        uint8_t color,
-        const fb::game::defensive& defensive, 
-        uint32_t hp, 
-        uint32_t mp, 
-        uint32_t experience);
+    master(const fb::game::life::master::config& config);
     virtual ~master();
 #pragma endregion
 

@@ -31,6 +31,11 @@ public:
 
 public:
     class master;
+
+public:
+    struct trade;
+    struct storage;
+    struct conditions;
 #pragma endregion
 
 #pragma region enum
@@ -80,10 +85,11 @@ public:
 
 #pragma region structure
 public:
-    struct trade;
-    struct storage;
-    struct conditions;
-
+    struct config : fb::game::object::config
+    {
+    public:
+        uint16_t            count       = 1;
+    };
 #pragma endregion
 
 #pragma region exception
@@ -105,7 +111,7 @@ protected:
 
 #pragma region constructor / destructor
 public:
-    item(fb::game::context& context, const fb::game::item::master* master, uint16_t count = 1);
+    item(fb::game::context& context, const fb::game::item::master* master, const fb::game::item::config& config = fb::game::item::config { .count = 1 });
     item(const item& right);
     virtual ~item();
 #pragma endregion
@@ -172,6 +178,7 @@ public:
     const bool                              enabled = false;
 
 public:
+    trade() = default;
     explicit trade(bool enabled) : enabled(enabled) { }
 };
 
@@ -185,6 +192,7 @@ public:
     const uint32_t                          price   = 0;
 
 public:
+    storage() = default;
     storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
 };
 
@@ -198,21 +206,27 @@ public:
     const uint8_t                           cls             = 0;
     const uint8_t                           promotion       = 0;
     const fb::game::sex                     sex             = fb::game::sex::BOTH;
-
-public:
-    conditions();
-    conditions(uint8_t level,
-               uint8_t strength,
-               uint8_t dexteritry,
-               uint8_t intelligence,
-               uint8_t cls,
-               uint8_t promotion,
-               fb::game::sex sex);
-    conditions(const fb::game::item::conditions& right);
 };
 
 class item::master : public fb::game::object::master
 {
+#pragma region structure
+public:
+    struct config : public fb::game::object::master::config
+    {
+    public:
+        uint32_t                            id          = 0;
+        uint32_t                            price       = 0;
+        fb::game::item::conditions          condition;
+        fb::game::item::penalties           penalty     = fb::game::item::penalties::NONE;
+        uint16_t                            capacity    = 0;
+        fb::game::item::trade               trade;
+        fb::game::item::storage             storage;
+        std::string                         desc;
+        std::string                         active_script;
+    };
+#pragma endregion
+
 #pragma region friend
     friend class fb::game::item;
 #pragma endregion
@@ -237,18 +251,7 @@ public:
 
 #pragma region constructor / destructor
 public:
-    master(const std::string&                name, 
-           uint16_t                          look, 
-           uint8_t                           color,
-           uint32_t                          id,
-           uint32_t                          price,
-           const fb::game::item::conditions& condition,
-           penalties                         penalty,
-           uint16_t                          capacity,
-           const fb::game::item::trade&      trade,
-           const fb::game::item::storage&    storage,
-           std::string                       desc,
-           std::string                       active_script);
+    master(const fb::game::item::master::config& config);
     virtual ~master();
 #pragma endregion
 
@@ -266,12 +269,11 @@ public:
 #pragma region template method
 public:
     template <typename T = fb::game::item, typename... Args>
-    T* make(fb::game::context& context, int count = 1, Args... args) const 
+    T* make(fb::game::context& context, uint16_t count = 1, Args... args) const 
     {
         static_assert(std::is_base_of<fb::game::item, T>::value);
 
-        auto created = new T(context, this, args...);
-        created->count(count);
+        auto created = new T(context, this, fb::game::item::config { .count = count }, args...);
         return created;
     }
 #pragma endregion
