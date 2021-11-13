@@ -52,6 +52,10 @@ public:
     ~master();
 
 public:
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
+    {
+        return new fb::game::pack(context, this);
+    }
     virtual fb::game::item::attrs       attr() const;
 };
 #pragma endregion

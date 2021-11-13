@@ -268,13 +268,9 @@ public:
 
 #pragma region template method
 public:
-    template <typename T = fb::game::item, typename... Args>
-    T* make(fb::game::context& context, uint16_t count = 1, Args... args) const 
+    virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const
     {
-        static_assert(std::is_base_of<fb::game::item, T>::value);
-
-        auto created = new T(context, this, fb::game::item::config { .count = count }, args...);
-        return created;
+        return new fb::game::item(context, this, fb::game::item::config { .count = count });
     }
 #pragma endregion
 

@@ -48,9 +48,10 @@ protected:
 #pragma endregion
 
 #pragma region constructor / destructor
-public:
+protected:
     equipment(fb::game::context& context, const fb::game::equipment::master* master);
     equipment(const fb::game::equipment& right);
+public:
     virtual ~equipment();
 #pragma endregion
 

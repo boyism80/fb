@@ -894,7 +894,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
                     return true;
 
                 auto& items = fb::game::table::items;
-                auto  item = items[master.value()]->make<fb::game::item>(*this);
+                auto  item = items[master.value()]->make(*this);
                 if(item == nullptr)
                     return true;
 
