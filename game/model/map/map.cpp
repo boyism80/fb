@@ -73,7 +73,7 @@ fb::game::object* fb::game::objects::exists(point16_t position) const
     auto found = std::find_if
     (
         this->cbegin(), this->cend(),
-        [&position] (const std::pair<const uint32_t, fb::game::object*>& pair)
+        [&position] (const auto& pair)
         {
             return pair.second->position() == position;
         }
@@ -359,7 +359,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
         std::copy_if
         (
             sector->begin(), sector->end(), std::back_inserter(objects),
-            [type, &pivot] (fb::game::object* x)
+            [type, &pivot] (auto x)
             {
                 return 
                     (type == fb::game::object::types::UNKNOWN || x->is(type)) && 
@@ -579,7 +579,7 @@ bool fb::game::wm::group::contains(const offset& offset) const
     return std::find_if
     (
         this->cbegin(), this->cend(),
-        [&] (const std::unique_ptr<fb::game::wm::offset>& x)
+        [&] (const auto& x)
         {
             return x.get() == &offset;
         }
@@ -607,12 +607,12 @@ const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) cons
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const std::unique_ptr<fb::game::wm::group>& group)
+        [&] (const auto& group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::unique_ptr<fb::game::wm::offset>& offset)
+                [&] (const auto& offset)
                 {
                     return offset->id == id;
                 }
@@ -633,12 +633,12 @@ const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) c
     auto found = std::find_if
     (
         this->cbegin(), this->cend(), 
-        [&] (const std::unique_ptr<fb::game::wm::group>& group)
+        [&] (const auto& group)
         {
             auto x = std::find_if
             (
                 group->cbegin(), group->cend(),
-                [&] (const std::unique_ptr<fb::game::wm::offset>& offset)
+                [&] (const auto& offset)
                 {
                     return offset->dst.map == &map;
                 }

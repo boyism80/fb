@@ -328,7 +328,7 @@ void fb::acceptor<T>::connect_internal()
     this->_internal->async_connect
     (
         endpoint,
-        [&] (const boost::system::error_code& error)
+        [&] (const auto& error)
         {
             if(error)
             {

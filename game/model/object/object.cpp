@@ -585,7 +585,7 @@ fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game
     auto found = std::find_if
     (
         nears.begin(), nears.end(), 
-        [&front] (fb::game::object* x)
+        [&front] (auto x)
         {
             return x->position() == front;
         }
@@ -631,7 +631,7 @@ std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direc
         std::copy_if
         (
             nears.begin(), nears.end(), std::back_inserter(result),
-            [&front] (fb::game::object* x)
+            [&front] (auto x)
             {
                 return x->position() == front;
             }
@@ -667,7 +667,7 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&](fb::game::object* x)
+        [&](auto x)
         {
             return
                 *x != pivot &&
@@ -694,7 +694,7 @@ std::vector<object*> fb::game::object::showings(const std::vector<object*>& sour
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
-        [&](fb::game::object* x)
+        [&](auto x)
         {
             return
                 *x != pivot &&
@@ -935,7 +935,7 @@ int fb::game::object::builtin_position(lua_State* lua)
         context->send
         (
             *object, 
-            [object](const fb::game::object& to)
+            [object](const auto& to)
             {
                 return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object), to));
             }, 

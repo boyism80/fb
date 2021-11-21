@@ -25,7 +25,7 @@ void fb::game::context::on_show(fb::game::object& me, bool light)
         this->send
         (
             me, 
-            [&me, light](const fb::game::object& to)
+            [&me, light](const auto& to)
             {
                 return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::session&>(me), to, light));
             }, 

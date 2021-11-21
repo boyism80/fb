@@ -41,12 +41,12 @@ int main(int argc, const char** argv)
         fb::internal::table::hosts.load
         (
             config["table"]["host"].asString(), 
-            [&] (const std::string& name, double percentage)
+            [&] (const auto& name, auto percentage)
             {
                 c.cursor(0, pivot)
                  .puts(" * [%0.2lf%%] 호스트 정보를 읽었습니다. (%s)", percentage, name.c_str());
             },
-            [&] (const std::string& name, const std::string& error)
+            [&] (const auto& name, const auto& error)
             {
                 c.cursor(0, pivot + (++stack))
                  .puts("    - %s (%s)", error.c_str(), name.c_str());

@@ -1530,7 +1530,7 @@ fb::game::session* fb::game::session::container::find(const std::string& name)
     auto i = std::find_if
     (
         this->begin(), this->end(), 
-        [&name] (fb::game::session* x) 
+        [&name] (auto x) 
         { 
             return x->name() == name; 
         }

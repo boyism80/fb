@@ -123,7 +123,7 @@ const fb::game::board::article* fb::game::board::section::find(uint16_t id) cons
     (
         this->cbegin(),
         this->cend(),
-        [id] (const std::unique_ptr<article>& x)
+        [id] (const auto& x)
         {
             return x->id() == id;
         }

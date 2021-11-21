@@ -439,7 +439,7 @@ std::string fb::game::context::elapsed_message(const datetime& datetime)
 fb::game::session* fb::game::context::find(const std::string& name) const
 {
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (const std::pair<const uint32_t, std::unique_ptr<fb::socket<fb::game::session>>>& pair) 
+        [&name] (const auto& pair) 
         {
             return pair.second->data()->name() == name;
         });

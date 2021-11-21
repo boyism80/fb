@@ -551,7 +551,7 @@ void fb::game::lua::main::update_inheritances()
     (
         sorted.begin(), 
         sorted.end(), 
-        [] (const std::pair<std::string, int>& pair1, const std::pair<std::string, int>& pair2)
+        [] (const auto& pair1, const auto& pair2)
         {
             return pair1.second > pair2.second;
         }

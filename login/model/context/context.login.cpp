@@ -96,7 +96,7 @@ bool fb::login::context::handle_create_account(fb::socket<fb::login::session>& s
     this->_auth_service.create_account
     (
         request.id, request.pw,
-        [this, &socket, id] (const std::string& name)
+        [this, &socket, id] (const auto& name)
         {
             this->send(socket, fb::protocol::login::response::message("", 0x00));
 
@@ -104,7 +104,7 @@ bool fb::login::context::handle_create_account(fb::socket<fb::login::session>& s
             auto session = socket.data();
             session->created_id = id;
         },
-        [&socket] (const std::string& name, const login_exception& e)
+        [&socket] (const auto& name, const auto& e)
         {
             socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         }
@@ -149,11 +149,11 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
             this->_auth_service.login
             (
                 id, pw,
-                [this, id, &socket] (uint32_t map)
+                [this, id, &socket] (auto map)
                 {
                     this->_internal->send(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, socket.native_handle()));
                 },
-                [this, &socket] (const login_exception& e)
+                [this, &socket] (const auto& e)
                 {
                     socket.send(fb::protocol::login::response::message(e.what(), e.type()));
                 }
@@ -183,7 +183,7 @@ bool fb::login::context::handle_change_password(fb::socket<fb::login::session>& 
                 {
                     socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
                 },
-                [this, &socket] (const login_exception& e)
+                [this, &socket] (const auto& e)
                 {
                     socket.send(fb::protocol::login::response::message(e.what(), e.type()));
                 }

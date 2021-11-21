@@ -31,12 +31,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::doors.load
     (
         config["table"]["door"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -55,12 +55,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::maps.load
     (
         config["table"]["map"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -79,12 +79,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::worlds.load
     (
         config["table"]["world"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -103,12 +103,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::spells.load
     (
         config["table"]["spell"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -128,12 +128,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::maps.load_warps
     (
         config["table"]["warp"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -152,12 +152,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::items.load
     (
         config["table"]["item"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -176,12 +176,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::mixes.load
     (
         config["table"]["item mix"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -200,12 +200,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::npcs.load
     (
         config["table"]["npc"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -224,12 +224,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::mobs.load
     (
         config["table"]["mob"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -248,12 +248,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::mobs.load_drops
     (
         config["table"]["item drop"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack));
 
@@ -278,12 +278,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     (
         config["table"]["npc spawn"].asString(),
         context, 
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -303,12 +303,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     (
         config["table"]["mob spawn"].asString(),
         context, 
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());
@@ -327,12 +327,12 @@ bool load_db(fb::console& c, fb::game::context& context)
     if(fb::game::table::classes.load
     (
         config["table"]["class"].asString(),
-        [&] (const std::string& name, double percentage)
+        [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
              .puts(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
         }, 
-        [&] (const std::string& name, const std::string& error)
+        [&] (const auto& name, const auto& error)
         {
             c.cursor(0, pivot + (++stack))
              .puts("    - %s (%s)", error.c_str(), name.c_str());

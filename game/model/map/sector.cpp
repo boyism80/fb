@@ -39,7 +39,7 @@ void fb::game::sector::erase(fb::game::object& object)
         this->_activated = std::find_if
         (
             this->begin(), this->end(),
-            [] (fb::game::object* x) 
+            [] (auto x) 
             {
                 return x->is(fb::game::object::types::SESSION);
             }
@@ -219,7 +219,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
         std::copy_if
         (
             objects.begin(), objects.end(), std::back_inserter(filtered), 
-            [type](fb::game::object* x)
+            [type](auto x)
             {
                 return x->is(type);
             }
@@ -236,7 +236,7 @@ std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::ob
         std::copy_if
         (
             sector->begin(), sector->end(), std::back_inserter(result),
-            [type] (fb::game::object* x)
+            [type] (auto x)
             {
                 return type == fb::game::object::types::UNKNOWN ||  x->is(type);
             }

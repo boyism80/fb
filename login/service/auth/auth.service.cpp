@@ -46,7 +46,7 @@ bool fb::login::service::auth::is_forbidden(const std::string& str) const
     (
         this->_forbiddens.cbegin(), 
         this->_forbiddens.cend(), 
-        [str](const std::string& x)
+        [str](const auto& x)
         {
             return x == str;
         }

@@ -255,7 +255,7 @@ fb::game::buff* fb::game::buffs::push_back(const fb::game::spell* spell, uint32_
 bool fb::game::buffs::remove(const std::string& name)
 {
     auto buff = this->operator[](name);
-    auto found = std::find_if(this->begin(), this->end(), [buff] (const std::unique_ptr<fb::game::buff>& ptr) { return ptr.get() == buff; });
+    auto found = std::find_if(this->begin(), this->end(), [buff] (const auto& ptr) { return ptr.get() == buff; });
     if(found == this->end())
         return false;
     

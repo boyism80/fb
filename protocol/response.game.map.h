@@ -169,7 +169,7 @@ public:
             auto  found = std::find_if
             (
                 offsets.cbegin(), offsets.cend(),
-                [&] (fb::game::wm::offset* offset)
+                [&] (auto offset)
                 {
                     return offset->id == id;
                 }
