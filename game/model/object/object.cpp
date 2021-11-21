@@ -443,7 +443,7 @@ fb::game::sector* fb::game::object::sector()
 
 void fb::game::object::enter()
 {
-    auto nears = this->_map->nears(this->_position);
+    auto&& nears = this->_map->nears(this->_position);
     for(auto x : nears)
     {
         if(x == this)

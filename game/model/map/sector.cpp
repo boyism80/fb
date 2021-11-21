@@ -92,7 +92,7 @@ std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
     auto sectors = std::set<fb::game::sector*>();
     for(auto& x : this->_activated_cache)
     {
-        auto nears = this->nears(x.first);
+        auto&& nears = this->nears(x.first);
         sectors.insert(nears.begin(), nears.end());
     }
 
@@ -198,8 +198,8 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(const point16_t& pivot) 
 
 std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot, fb::game::object::types type) const
 {
-    auto sectors = this->nears(pivot);
-    auto objects = std::vector<fb::game::object*>();
+    auto&& sectors = this->nears(pivot);
+    auto   objects = std::vector<fb::game::object*>();
     for(auto sector : sectors)
     {
         for(auto obj : *sector)
@@ -231,7 +231,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
 std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::object::types type) const
 {
     auto result = std::vector<fb::game::object*>();
-    for(auto sector : this->activated_sectors())
+    for(auto& sector : this->activated_sectors())
     {
         std::copy_if
         (
