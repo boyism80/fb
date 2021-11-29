@@ -92,9 +92,6 @@ public:
     bool                    destroy(fb::game::object& obj);
 
 public:
-    fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket);
-
-public:
     void                    send(fb::game::object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, context::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
@@ -113,8 +110,11 @@ public:
 
 #pragma region handler method
 protected:
-    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const;
-    void                    handle_exit();
+    bool                    handle_connected(fb::socket<fb::game::session>& session) override;
+    bool                    handle_disconnected(fb::socket<fb::game::session>& session) override;
+    fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) override;
+    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const override;
+    void                    handle_exit() override;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
@@ -129,8 +129,6 @@ public:
 
     // game event method
 public:
-    bool                    handle_connected(fb::socket<fb::game::session>& session);
-    bool                    handle_disconnected(fb::socket<fb::game::session>& session);
     void                    handle_timer(uint64_t elapsed_milliseconds);
 
     // game event method

@@ -27,12 +27,10 @@ public:
     ~context();
 
     // override
-public:
-    fb::login::session*         handle_accepted(fb::socket<fb::login::session>&);
-
-public:
-    bool                        handle_connected(fb::socket<fb::login::session>&);
-    bool                        handle_disconnected(fb::socket<fb::login::session>&);
+protected:
+    fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) override;
+    bool                        handle_connected(fb::socket<fb::login::session>&) override;
+    bool                        handle_disconnected(fb::socket<fb::login::session>&) override;
 
 public:
     bool                        handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
