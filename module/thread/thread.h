@@ -8,6 +8,7 @@
 #include <mutex>
 #include <map>
 #include <future>
+#include <atomic>
 
 #define MUTEX_GUARD(x) auto __gd = std::lock_guard(x);
 
@@ -15,7 +16,7 @@ using namespace std::chrono_literals;
 
 namespace fb {
 
-using thread_callback = std::function<void(std::chrono::steady_clock::duration, std::thread::id)> ;
+using thread_callback = std::function<void(std::chrono::steady_clock::duration, std::thread::id)>;
 using queue_callback  = std::function<void(uint8_t)>;
 
 class thread;
@@ -31,7 +32,7 @@ public:
     const std::chrono::steady_clock::duration       duration;
 
 private:
-    timer(fb::thread_callback fn, std::chrono::steady_clock::duration duration);
+    timer(const fb::thread_callback& fn, std::chrono::steady_clock::duration duration);
     timer(const timer&) = delete;
     timer(timer&&) = delete;
 
@@ -70,7 +71,7 @@ class thread
 {
 private:
     uint8_t                                         _index = 0;
-    bool                                            _exit  = false;
+    std::atomic<bool>                               _exit  = false;
     std::thread                                     _thread;
 
 private:

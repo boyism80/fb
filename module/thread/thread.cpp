@@ -2,7 +2,7 @@
 
 std::unique_ptr<fb::async>                   fb::async::_ist;
 
-fb::timer::timer(fb::thread_callback fn, std::chrono::steady_clock::duration duration) : 
+fb::timer::timer(const fb::thread_callback& fn, std::chrono::steady_clock::duration duration) : 
     fn(fn),
     duration(duration),
     begin(std::chrono::steady_clock::now())
@@ -30,7 +30,7 @@ void fb::queue::enqueue(fb::queue_callback fn)
 fb::queue_callback fb::queue::dequeue()
 {   MUTEX_GUARD(this->_mutex)
 
-    auto fn = this->front();
+    auto& fn = this->front();
     this->pop();
     return std::move(fn);
 }
