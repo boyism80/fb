@@ -28,7 +28,7 @@ public:
 
 public:
     const fb::thread_callback                       fn;
-    const std::chrono::steady_clock::time_point     begin;
+    const std::chrono::steady_clock::time_point     begin = std::chrono::steady_clock::now();
     const std::chrono::steady_clock::duration       duration;
 
 private:

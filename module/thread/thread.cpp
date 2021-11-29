@@ -4,8 +4,7 @@ std::unique_ptr<fb::async>                   fb::async::_ist;
 
 fb::timer::timer(const fb::thread_callback& fn, std::chrono::steady_clock::duration duration) : 
     fn(fn),
-    duration(duration),
-    begin(std::chrono::steady_clock::now())
+    duration(duration)
 { }
 
 fb::timer::~timer()
