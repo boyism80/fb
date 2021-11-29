@@ -73,7 +73,7 @@ fb::thread::~thread()
 
 void fb::thread::handle_thread(uint8_t index)
 {
-    const auto term = std::chrono::milliseconds(100);
+    constexpr auto term = 100ms;
 
     while(!this->_exit)
     {
