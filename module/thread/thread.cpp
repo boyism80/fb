@@ -133,20 +133,10 @@ this->_mutex_timer.unlock();
 void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration)
 {   MUTEX_GUARD(this->_mutex_timer)
 
-    this->_timers.push_back
-    (
-        std::shared_ptr<fb::timer>
-        (
-            new fb::timer
-            (
-                [fn] (std::chrono::steady_clock::duration, std::thread::id) 
-                {
-                    fn(); 
-                }, 
-                duration
-            )
-        )
-    );
+    // private 생성자때문에 make_shared 사용 X
+    auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) { fn(); }, duration);
+    auto ptr = std::shared_ptr<fb::timer>();
+    this->_timers.push_back(std::move(ptr));
 }
 
 void fb::thread::settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration)
@@ -185,7 +175,7 @@ fb::threads::threads(boost::asio::io_context& context, uint8_t count) :
 
     for(int i = 0; i < count; i++)
     {
-        auto ptr = std::unique_ptr<fb::thread>(new fb::thread(i));
+        auto ptr = std::make_unique<fb::thread>(i);
         auto id = ptr->id();
         this->_keys[i] = id;
         this->_threads.insert(std::make_pair(id, std::move(ptr)));
