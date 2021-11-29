@@ -96,7 +96,7 @@ private:
     std::chrono::milliseconds   _time;
 
 public:
-    buff(const spell* spell, uint32_t time);
+    buff(const spell* spell, uint32_t seconds);
     ~buff();
 
 public:
@@ -140,7 +140,7 @@ public:
     bool                        contains(const buff* buff) const;
     bool                        contains(const spell* spell) const;
     bool                        contains(const std::string& name) const;
-    buff*                       push_back(const fb::game::spell* spell, uint32_t time);
+    buff*                       push_back(const fb::game::spell* spell, uint32_t seconds);
     bool                        remove(const std::string& name);
     bool                        remove(const fb::game::spell* spell);
     void                        remove(buff* buff);

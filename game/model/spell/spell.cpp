@@ -166,9 +166,9 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-fb::game::buff::buff(const fb::game::spell* spell, uint32_t time) : 
+fb::game::buff::buff(const fb::game::spell* spell, uint32_t seconds) : 
     _spell(spell),
-    _time(time)
+    _time(seconds * 1000)
 { }
 
 fb::game::buff::~buff()
@@ -241,12 +241,12 @@ bool fb::game::buffs::push_back(std::unique_ptr<buff>&&  buff)
     return true;
 }
 
-fb::game::buff* fb::game::buffs::push_back(const fb::game::spell* spell, uint32_t time)
+fb::game::buff* fb::game::buffs::push_back(const fb::game::spell* spell, uint32_t seconds)
 {
     if(this->contains(spell))
         return nullptr;
 
-    auto created = std::make_unique<buff>(spell, time);
+    auto created = std::make_unique<buff>(spell, seconds);
     auto ptr = created.get();
     this->push_back(std::move(created));
     return ptr;

@@ -134,7 +134,7 @@ void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::st
 
     // private 생성자때문에 make_shared 사용 X
     auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) { fn(); }, duration);
-    auto ptr = std::shared_ptr<fb::timer>();
+    auto ptr = std::shared_ptr<fb::timer>(timer);
     this->_timers.push_back(std::move(ptr));
 }
 

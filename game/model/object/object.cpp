@@ -1051,12 +1051,11 @@ int fb::game::object::builtin_buff(lua_State* lua)
         return 0;
     
     auto spell = thread->touserdata<fb::game::spell>(2);
-if(spell == nullptr)
-    return 0;
+    if(spell == nullptr)
+        return 0;
 
-    auto time = (uint32_t)thread->tointeger(3);
-
-    auto buff = object->buffs.push_back(spell, time);
+    auto seconds = (uint32_t)thread->tointeger(3);
+    auto buff = object->buffs.push_back(spell, seconds);
     if(buff == nullptr)
         thread->pushnil();
     else
@@ -1318,7 +1317,6 @@ int fb::game::object::builtin_front(lua_State* lua)
         return 0;
     
     auto filter = argc < 2 ? object::types::UNKNOWN : object::types(thread->tointeger(2));
-
     auto front = object->forward(filter);
     if(front == nullptr)
         thread->pushnil();
@@ -1331,17 +1329,16 @@ int fb::game::object::builtin_front(lua_State* lua)
 int fb::game::object::builtin_is(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-
-    auto context = thread->env<fb::game::context>("context");
+    if(thread == nullptr)
         return 0;
-
+    
+    auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
     auto type = thread->tointeger(2);
-
     thread->pushboolean(object->is(object::types(type)));
     return 1;
 }

@@ -82,7 +82,7 @@ public:
 #pragma region private field
 private:
     fb::game::object::listener*         _listener;
-    bool                                _visible    = false;
+    bool                                _visible    = true;
     fb::game::sector*                   _sector     = nullptr;
 #pragma endregion
 

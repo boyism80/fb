@@ -7,7 +7,7 @@ function on_cast(me, spell)
     me:action(ACTION_CAST_SPELL, 0x00, 0x1c)
     me:state(0x05)
     me:effect(0x14)
-    me:buff(spell, 2)
+    me:buff(spell, 180)
     me:message('투명을 외웠습니다.')
 end
 
