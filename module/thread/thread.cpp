@@ -355,9 +355,8 @@ void fb::async::async_handler()
 
 fb::async* fb::async::get()
 {
-    if (_ist == nullptr)
-        _ist = std::make_unique<fb::async>();
-
+    static std::once_flag flag;
+    std::call_once(flag, [] () { _ist.reset(new fb::async()); });
     return _ist.get();
 }
 

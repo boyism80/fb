@@ -119,8 +119,9 @@ private:
     bool                                            _exit;
     std::mutex                                      _async_mutex;
 
-public:
+private:
     async();
+public:
     ~async();
 
 private:
