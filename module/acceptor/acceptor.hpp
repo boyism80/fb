@@ -157,7 +157,7 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
     }
     else
     {
-        this->_threads[id]->precedence.enqueue(fn);
+        this->_threads[id]->dispatch(fn, true);
     }
 }
 
@@ -229,7 +229,7 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback fn)
+bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback&& fn)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -237,12 +237,12 @@ bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback fn)
     if(thread == nullptr)
         fn(id);
     else
-        this->_threads[id]->precedence.enqueue(fn);
+        this->_threads[id]->dispatch(std::move(fn), true);
     return true;
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -250,7 +250,7 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback fn)
     if(thread == nullptr)
         fn(id);
     else
-        this->_threads[id]->queue.enqueue(fn);
+        this->_threads[id]->dispatch(std::move(fn));
     return true;
 }
 

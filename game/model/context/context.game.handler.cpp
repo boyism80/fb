@@ -88,14 +88,14 @@ void fb::game::context::on_enter(fb::game::object& me, fb::game::map& map, const
     }
     else
     {
-        thread->precedence.enqueue
+        thread->dispatch
         (
             [this, &me, &map, position] (uint8_t) 
             {
                 me.handle_enter(map, position);
                 if(me.is(fb::game::object::types::SESSION))
                     this->save(static_cast<fb::game::session&>(me));
-            }
+            }, true
         );
     }
 }

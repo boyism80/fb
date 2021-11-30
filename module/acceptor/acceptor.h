@@ -68,8 +68,8 @@ public:
     void                                        send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
 
 public:
-    bool                                        precedence(S<T>*, fb::queue_callback fn);
-    bool                                        dispatch(S<T>*, fb::queue_callback fn);
+    bool                                        precedence(S<T>*, fb::queue_callback&& fn);
+    bool                                        dispatch(S<T>*, fb::queue_callback&& fn);
     void                                        exit();
 
 public:

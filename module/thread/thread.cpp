@@ -20,7 +20,7 @@ bool fb::queue::empty()
     return std::queue<fb::queue_callback>::empty();
 }
 
-void fb::queue::enqueue(fb::queue_callback fn)
+void fb::queue::enqueue(fb::queue_callback&& fn)
 {   MUTEX_GUARD(this->_mutex)
     
     this->push(fn);
@@ -76,10 +76,10 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        this->precedence.flush(index);
+        this->_precedence.flush(index);
 
         auto fn = fb::queue_callback();
-        if(this->queue.dequeue(fn))
+        if(this->_queue.dequeue(fn))
         {
             fn(index);
         }
@@ -134,7 +134,7 @@ void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::st
 
     // private 생성자때문에 make_shared 사용 X
     auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) { fn(); }, duration);
-    auto ptr = std::shared_ptr<fb::timer>(timer);
+    auto ptr   = std::shared_ptr<fb::timer>(timer);
     this->_timers.push_back(std::move(ptr));
 }
 
@@ -149,6 +149,14 @@ void fb::thread::settimer(fb::thread_callback fn, const std::chrono::steady_cloc
         }, 
         duration
     );
+}
+
+void fb::thread::dispatch(fb::queue_callback&& fn, bool precedence)
+{
+    if(precedence)
+        this->_precedence.enqueue(std::move(fn));
+    else
+        this->_queue.enqueue(std::move(fn));
 }
 
 std::chrono::steady_clock::duration fb::thread::now()

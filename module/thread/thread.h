@@ -60,7 +60,7 @@ public:
 
 public:
     bool                                            empty();
-    void                                            enqueue(fb::queue_callback fn);
+    void                                            enqueue(fb::queue_callback&& fn);
     fb::queue_callback                              dequeue();
     bool                                            dequeue(fb::queue_callback& fn);
     void                                            flush(uint8_t index);
@@ -78,8 +78,8 @@ private:
     std::vector<std::shared_ptr<timer>>             _timers;
     std::mutex                                      _mutex_timer;
 
-public:
-    fb::queue                                       queue, precedence;
+private:
+    fb::queue                                       _queue, _precedence;
 
 public:
     thread(uint8_t index);
@@ -103,6 +103,7 @@ public:
 public:
     void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
+    void                                            dispatch(fb::queue_callback&& fn, bool precedence = false);
 
 public:
     static std::chrono::steady_clock::duration      now();
