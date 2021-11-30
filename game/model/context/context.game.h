@@ -110,11 +110,11 @@ public:
 
 #pragma region handler method
 protected:
-    bool                    handle_connected(fb::socket<fb::game::session>& session) override;
-    bool                    handle_disconnected(fb::socket<fb::game::session>& session) override;
-    fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) override;
-    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const override;
-    void                    handle_exit() override;
+    bool                    handle_connected(fb::socket<fb::game::session>& session) final;
+    bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
+    fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
+    uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
+    void                    handle_exit() final;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);

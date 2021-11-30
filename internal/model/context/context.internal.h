@@ -47,10 +47,10 @@ private:
     service*                        get(fb::protocol::internal::services type, uint8_t group = 0xFF);
 
 protected:
-    bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback) override;
-    fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket) override;
-    bool                            handle_connected(fb::internal::socket<fb::internal::session>& session) override;
-    bool                            handle_disconnected(fb::internal::socket<fb::internal::session>& session) override;
+    bool                            handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback) final;
+    fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket) final;
+    bool                            handle_connected(fb::internal::socket<fb::internal::session>& session) final;
+    bool                            handle_disconnected(fb::internal::socket<fb::internal::session>& session) final;
 
 public:
     template <typename R>

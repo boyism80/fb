@@ -28,9 +28,9 @@ public:
 
     // override
 protected:
-    fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) override;
-    bool                        handle_connected(fb::socket<fb::login::session>&) override;
-    bool                        handle_disconnected(fb::socket<fb::login::session>&) override;
+    fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
+    bool                        handle_connected(fb::socket<fb::login::session>&) final;
+    bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
 
 public:
     bool                        handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);

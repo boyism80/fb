@@ -42,9 +42,9 @@ private:
 
     // override
 protected:
-    fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) override;
-    bool                        handle_connected(fb::socket<fb::gateway::session>& session) override;
-    bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) override;
+    fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
+    bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
+    bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
 
 public:
     bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

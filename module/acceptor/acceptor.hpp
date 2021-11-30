@@ -21,29 +21,27 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
     if(this->handle_thread_index(*socket) != id)
         return;
 
-    bool updated = false;
+    // 소켓 담당 스레드가 변경되는지를 감시하는 람다함수
+    //  id                      현재 스레드의 id
+    //  handle_thread_index     소켓이 처리되어야 할 스레드 id
+    auto fn = [this, id] (S<T>& socket) 
+    {
+        return this->handle_thread_index(socket) == id; 
+    };
+
+    auto switched = false;
+
     if(id != 0xFF)
     {
         auto gd = std::lock_guard<std::mutex>(socket->mutex);
-
-        updated = this->handle_parse
-        (
-            *socket, 
-            [this, id] (S<T>& receiver) 
-            { return this->handle_thread_index(receiver) == id; }
-        );
+        switched = this->handle_parse(*socket, fn);
     }
     else
     {
-        updated = this->handle_parse
-        (
-            *socket, 
-            [this, id] (S<T>& receiver) 
-            { return this->handle_thread_index(receiver) == id; }
-        );
+        switched = this->handle_parse(*socket, fn);
     }
 
-    if(updated == false)
+    if(switched == false)
         return;
 
     this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
@@ -346,7 +344,7 @@ void fb::acceptor<T>::connect_internal()
 }
 
 template <typename T>
-bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback)
+bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& fn)
 {
     static constexpr uint8_t    not_crt_cmd[] = {0x00, 0x10};
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
@@ -391,7 +389,8 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
             in_stream.shift(base_size + size);
             in_stream.flush();
 
-            if(callback(socket) == false)
+            // 콜백 조건이 만족하지 못하는 경우 즉시 종료
+            if(fn(socket) == false)
                 return true;
         }
         catch(std::exception&)
