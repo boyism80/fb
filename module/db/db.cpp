@@ -74,25 +74,15 @@ fb::db::connection&& fb::db::get(const char* name)
     if(connection == nullptr)
     {
         auto& config = fb::config::get();
-        connection.reset(new daotk::mysql::connection
-        (
-            config["database"][index]["ip"].asString(), 
-            config["database"][index]["uid"].asString(), 
-            config["database"][index]["pwd"].asString(), 
-            config["database"][index]["name"].asString()
-        ));
-    }
+        auto option = daotk::mysql::connect_options();
+        option.server = "192.168.0.100";
+        option.port = config["database"][index]["port"].asInt();
+        option.username = config["database"][index]["uid"].asString();
+        option.password = config["database"][index]["pwd"].asString();
+        option.dbname = config["database"][index]["name"].asString();
+        option.autoreconnect = true;
 
-    if(connection->is_open() == false)
-    {
-        auto& config = fb::config::get();
-        connection.reset(new daotk::mysql::connection
-        (
-            config["database"][index]["ip"].asString(), 
-            config["database"][index]["uid"].asString(), 
-            config["database"][index]["pwd"].asString(), 
-            config["database"][index]["name"].asString()
-        ));
+        connection.reset(new daotk::mysql::connection(option));
     }
 
     if(connection->is_open())
