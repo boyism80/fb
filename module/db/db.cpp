@@ -75,7 +75,7 @@ fb::db::connection&& fb::db::get(const char* name)
     {
         auto& config = fb::config::get();
         auto option = daotk::mysql::connect_options();
-        option.server = "192.168.0.100";
+        option.server = config["database"][index]["ip"].asString();
         option.port = config["database"][index]["port"].asInt();
         option.username = config["database"][index]["uid"].asString();
         option.password = config["database"][index]["pwd"].asString();
