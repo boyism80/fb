@@ -310,7 +310,42 @@ void fb::acceptor<T>::connect_internal()
             this->_context,
             [&] (fb::base::socket<>& socket)
             {
-                fb::internal::parse<void*, std::map<uint8_t, fb::acceptor<T>::private_handler>>(static_cast<fb::internal::socket<>&>(socket), this->_private_handler_dict);
+                static constexpr uint8_t base_size = sizeof(uint16_t);
+                auto& in_stream = socket.in_stream();
+
+                while(true)
+                {
+                    try
+                    {
+                        if(in_stream.readable_size() < base_size)
+                            throw std::exception();
+
+                        auto size = in_stream.read_u16();
+                        if(size > in_stream.capacity())
+                            throw std::exception();
+
+                        if(in_stream.readable_size() < size)
+                            throw std::exception();
+
+                        auto cmd = in_stream.read_8();
+                        auto found = this->_private_handler_dict.find(cmd);
+                        if(found == this->_private_handler_dict.end())
+                            throw std::exception();
+
+                        found->second(static_cast<fb::internal::socket<>&>(socket));
+
+                        in_stream.reset();
+                        in_stream.shift(base_size + size);
+                        in_stream.flush();
+                    }
+                    catch(...)
+                    {
+                        break;
+                    }
+                }
+
+                in_stream.reset();
+                return false;
             },
 
             [&] (fb::base::socket<>& socket)

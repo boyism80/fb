@@ -34,7 +34,42 @@ fb::internal::context::service* fb::internal::context::get(fb::protocol::interna
 
 bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
 {
-    return fb::internal::parse<fb::internal::session, std::map<uint8_t, fb::internal::context::handler>>(socket, this->_handler_dict);
+    static constexpr uint8_t base_size = sizeof(uint16_t);
+    auto& in_stream = socket.in_stream();
+
+    while(true)
+    {
+        try
+        {
+            if(in_stream.readable_size() < base_size)
+                throw std::exception();
+
+            auto size = in_stream.read_u16();
+            if(size > in_stream.capacity())
+                throw std::exception();
+
+            if(in_stream.readable_size() < size)
+                throw std::exception();
+
+            auto cmd = in_stream.read_8();
+            auto found = this->_handler_dict.find(cmd);
+            if(found == this->_handler_dict.end())
+                throw std::exception();
+
+            found->second(socket);
+
+            in_stream.reset();
+            in_stream.shift(base_size + size);
+            in_stream.flush();
+        }
+        catch(...)
+        {
+            break;
+        }
+    }
+
+    in_stream.reset();
+    return false;
 }
 
 fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)

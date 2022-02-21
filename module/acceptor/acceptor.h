@@ -87,51 +87,6 @@ struct INTERNAL_CONNECTION
 };
 
 
-namespace fb { namespace internal {
-
-template <typename T, typename D>
-bool parse(fb::internal::socket<T>& socket, D& dict)
-{
-    static constexpr uint8_t base_size = sizeof(uint16_t);
-    auto& in_stream = socket.in_stream();
-
-    while(true)
-    {
-        try
-        {
-            if(in_stream.readable_size() < base_size)
-                throw std::exception();
-
-            auto size = in_stream.read_u16();
-            if(size > in_stream.capacity())
-                throw std::exception();
-
-            if(in_stream.readable_size() < size)
-                throw std::exception();
-
-            auto cmd = in_stream.read_8();
-            auto found = dict.find(cmd);
-            if(found == dict.end())
-                throw std::exception();
-
-            found->second(socket);
-
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
-        }
-        catch(...)
-        {
-            break;
-        }
-    }
-
-    in_stream.reset();
-    return false;
-}
-
-} }
-
 namespace fb {
 
 template <typename T>
