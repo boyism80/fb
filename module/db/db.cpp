@@ -5,7 +5,7 @@ std::unique_ptr<fb::db>                 fb::db::_ist;
 fb::db::db() : 
     _context(nullptr)
 {
-    auto& config = fb::config::get();
+    auto& config    = fb::config::get();
     auto& databases = config["database"];
 
     for(int i = 0; i < databases.size(); i++)
@@ -27,7 +27,7 @@ uint64_t fb::db::hash(const char* name)
     if(name == nullptr)
         return 0;
 
-    auto hash = uint64_t(0);
+    auto hash   = uint64_t(0);
     auto length = strlen(name);
     for(int i = 0; i < length; i++)
     {
@@ -59,27 +59,27 @@ fb::db::connection&& fb::db::get(const char* name)
 {
     std::lock_guard<std::mutex> mg(this->_mutex);
 
-    auto& c = fb::console::get();
-    auto connections = fb::db::connections(name);
+    auto& c                  = fb::console::get();
+    auto  connections        = fb::db::connections(name);
     while(connections->empty())
     {
         c.puts("All connections are used.");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    auto index = fb::db::index(name);
-    auto&& connection = std::move(connections->front());
+    auto   index             = fb::db::index(name);
+    auto&& connection        = std::move(connections->front());
     connections->pop_front();
 
     if(connection == nullptr)
     {
-        auto& config = fb::config::get();
-        auto option = daotk::mysql::connect_options();
-        option.server = config["database"][index]["ip"].asString();
-        option.port = config["database"][index]["port"].asInt();
-        option.username = config["database"][index]["uid"].asString();
-        option.password = config["database"][index]["pwd"].asString();
-        option.dbname = config["database"][index]["name"].asString();
+        auto& config         = fb::config::get();
+        auto  option         = daotk::mysql::connect_options();
+        option.server        = config["database"][index]["ip"].asString();
+        option.port          = config["database"][index]["port"].asInt();
+        option.username      = config["database"][index]["uid"].asString();
+        option.password      = config["database"][index]["pwd"].asString();
+        option.dbname        = config["database"][index]["name"].asString();
         option.autoreconnect = true;
 
         connection.reset(new daotk::mysql::connection(option));

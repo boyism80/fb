@@ -54,15 +54,15 @@ void fb::cryptor::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const u
         current_dst += sizeof(uint32_t);
     }
 
-    uint32_t                matched = size & 3;
-    if(matched == 0)
+    uint32_t                unset_size = size & 3;
+    if(unset_size == 0)
         return;
 
-    uint32_t                result     = matched - 1;
+    uint32_t                result     = unset_size - 1;
     uint32_t*               cvtint_key = (unsigned int*)key + (num_loop % ksize);
     uint32_t                cvtint_val = *cvtint_key;
 
-    switch(matched)
+    switch(unset_size)
     {
     case 1:
         *current_dst = cvtint_val ^ *current_src;
@@ -97,17 +97,13 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 
         this->crypt(buffer_src + 1, buffer_dst + 2, size - 1, this->_key, KEY_SIZE);
 
-        auto                num_loop = uint32_t((size - 2) / KEY_SIZE + 1);
-        if(num_loop > 0)
+        for(int i = 0, loop = uint32_t((size - 2) / KEY_SIZE + 1); i < loop; i++)
         {
-            auto            offset = buffer_dst + 2;
-            for(uint32_t i = 0; i < num_loop; i++)
-            {
-                if(i != this->_sequence)
-                    this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+            auto            offset = buffer_dst + (KEY_SIZE * i) + 2;
+            if(i == this->_sequence)
+                continue;
 
-                offset += KEY_SIZE;
-            }
+            this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
         }
         this->crypt(buffer_dst + 2, buffer_dst + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
     }
@@ -151,17 +147,13 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
             throw;
 
         this->crypt(buffer_src + 2, buffer_dst + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
-        int num_subenc = (size - 3) / KEY_SIZE + 1;
-        if(num_subenc > 0)
+        for(int i = 0, loop = (size - 3) / KEY_SIZE + 1; i < loop; i++)
         {
-            uint8_t*        offset = buffer_dst + 1;
-            for(int i = 0; i < num_subenc; i++)
-            {
-                if(sequence != i)
-                    this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
+            uint8_t*        offset = buffer_dst + (KEY_SIZE * i) + 1;
+            if(sequence == i)
+                continue;
 
-                offset += KEY_SIZE;
-            }
+            this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
         }
 
         this->crypt(buffer_dst + 1, buffer_dst + 1, size - 2, this->_key, KEY_SIZE);
