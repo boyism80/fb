@@ -1,9 +1,9 @@
 {
-    "id": "game13",
-    "group": 13,
+    "id": "game1",
+    "group": 1,
     "delay": 5,
     "ip": "192.168.0.100",
-    "port": 2016,
+    "port": 2004,
     "thread": null,
     "save": 600,
     "internal": {
