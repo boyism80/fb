@@ -71,22 +71,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x86;$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -162,38 +162,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\module\config\config.cpp" />
-    <ClCompile Include="..\module\console\console.cpp" />
-    <ClCompile Include="..\module\cryptor\cryptor.cpp" />
-    <ClCompile Include="..\module\encoding\encoding.cpp" />
-    <ClCompile Include="..\module\service\service.cpp" />
-    <ClCompile Include="..\module\stream\stream.cpp" />
-    <ClCompile Include="..\module\thread\thread.cpp" />
+    <ClCompile Include="..\core\config.cpp" />
+    <ClCompile Include="..\core\console.cpp" />
+    <ClCompile Include="..\core\cryptor.cpp" />
+    <ClCompile Include="..\core\encoding.cpp" />
+    <ClCompile Include="..\core\query.cpp" />
+    <ClCompile Include="..\core\stream.cpp" />
+    <ClCompile Include="..\core\table.cpp" />
+    <ClCompile Include="..\core\thread.cpp" />
+    <ClCompile Include="..\core\time.cpp" />
+    <ClCompile Include="lib\context.cpp" />
+    <ClCompile Include="lib\gateway.cpp" />
+    <ClCompile Include="lib\util.cpp" />
+    <ClCompile Include="lib\session.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\context\context.gateway.cpp" />
-    <ClCompile Include="model\gateway\gateway.cpp" />
-    <ClCompile Include="model\session\session.gateway.cpp" />
-    <ClCompile Include="service\gateway\service.gateway.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\module\acceptor\acceptor.h" />
-    <ClInclude Include="..\module\acceptor\acceptor.hpp" />
-    <ClInclude Include="..\module\common\type.h" />
-    <ClInclude Include="..\module\config\config.h" />
-    <ClInclude Include="..\module\console\console.h" />
-    <ClInclude Include="..\module\cryptor\cryptor.h" />
-    <ClInclude Include="..\module\encoding\encoding.h" />
-    <ClInclude Include="..\module\leak.h" />
-    <ClInclude Include="..\module\service\service.h" />
-    <ClInclude Include="..\module\socket\socket.h" />
-    <ClInclude Include="..\module\socket\socket.hpp" />
-    <ClInclude Include="..\module\stream\stream.h" />
-    <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="model\context\context.gateway.h" />
-    <ClInclude Include="model\gateway\gateway.h" />
-    <ClInclude Include="model\session\session.gateway.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="service\gateway\service.gateway.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gateway.rc" />

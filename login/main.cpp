@@ -1,10 +1,10 @@
 #include "resource.h"
-#include "module/db/db.h"
-#include "model/context/context.login.h"
-#include "module/leak.h"
-#include "module/console/console.h"
-#include "module/config/config.h"
-#include "protocol/internal.h"
+#include <fb/core/db.h>
+#include <fb/login/context.h>
+#include <fb/core/leak.h>
+#include <fb/core/console.h>
+#include <fb/core/config.h>
+#include <fb/protocol/internal.h>
 
 int main(int argc, const char** argv)
 {

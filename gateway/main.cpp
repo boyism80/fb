@@ -2,12 +2,12 @@
 #include <iostream>
 #include <iomanip>
 #include "resource.h"
-#include "module/socket/socket.h"
-#include "model/context/context.gateway.h"
-#include "module/leak.h"
-#include "module/console/console.h"
-#include "module/config/config.h"
-#include "protocol/internal.h"
+#include <fb/core/socket.h>
+#include <fb/gateway/context.h>
+#include <fb/core/leak.h>
+#include <fb/core/console.h>
+#include <fb/core/config.h>
+#include <fb/protocol/internal.h>
 
 int main(int argc, const char** argv)
 {

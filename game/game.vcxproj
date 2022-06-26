@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -72,25 +72,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -167,111 +167,56 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\module\config\config.cpp" />
-    <ClCompile Include="..\module\console\console.cpp" />
-    <ClCompile Include="..\module\cryptor\cryptor.cpp" />
-    <ClCompile Include="..\module\db\db.cpp" />
-    <ClCompile Include="..\module\encoding\encoding.cpp" />
-    <ClCompile Include="..\module\service\service.cpp" />
-    <ClCompile Include="..\module\stream\stream.cpp" />
-    <ClCompile Include="..\module\table\table.cpp" />
-    <ClCompile Include="..\module\thread\thread.cpp" />
-    <ClCompile Include="..\module\time\time.cpp" />
-    <ClCompile Include="builtin\builtin_function.cpp" />
-    <ClCompile Include="model\board\board.cpp" />
-    <ClCompile Include="model\clan\clan.cpp" />
+    <ClCompile Include="..\core\config.cpp" />
+    <ClCompile Include="..\core\console.cpp" />
+    <ClCompile Include="..\core\cryptor.cpp" />
+    <ClCompile Include="..\core\db.cpp" />
+    <ClCompile Include="..\core\encoding.cpp" />
+    <ClCompile Include="..\core\query.cpp" />
+    <ClCompile Include="..\core\stream.cpp" />
+    <ClCompile Include="..\core\table.cpp" />
+    <ClCompile Include="..\core\thread.cpp" />
+    <ClCompile Include="..\core\time.cpp" />
+    <ClCompile Include="lib\board.cpp" />
+    <ClCompile Include="lib\clan.cpp" />
+    <ClCompile Include="lib\context\command.cpp" />
+    <ClCompile Include="lib\context\context.cpp" />
+    <ClCompile Include="lib\context\handler.cpp" />
+    <ClCompile Include="lib\door.cpp" />
+    <ClCompile Include="lib\group.cpp" />
+    <ClCompile Include="lib\item\armor.cpp" />
+    <ClCompile Include="lib\item\auxiliary.cpp" />
+    <ClCompile Include="lib\item\bow.cpp" />
+    <ClCompile Include="lib\item\cash.cpp" />
+    <ClCompile Include="lib\item\consume.cpp" />
+    <ClCompile Include="lib\item\equipment.cpp" />
+    <ClCompile Include="lib\item\helmet.cpp" />
+    <ClCompile Include="lib\item\item.cpp" />
+    <ClCompile Include="lib\item\itemmix.cpp" />
+    <ClCompile Include="lib\item\items.cpp" />
+    <ClCompile Include="lib\item\pack.cpp" />
+    <ClCompile Include="lib\item\ring.cpp" />
+    <ClCompile Include="lib\item\shield.cpp" />
+    <ClCompile Include="lib\item\weapon.cpp" />
+    <ClCompile Include="lib\listener.cpp" />
+    <ClCompile Include="lib\lua\built_in.cpp" />
+    <ClCompile Include="lib\lua\lua.cpp" />
+    <ClCompile Include="lib\map\map.cpp" />
+    <ClCompile Include="lib\map\sector.cpp" />
+    <ClCompile Include="lib\mmo.cpp" />
+    <ClCompile Include="lib\object\life.cpp" />
+    <ClCompile Include="lib\object\mob.cpp" />
+    <ClCompile Include="lib\object\npc.cpp" />
+    <ClCompile Include="lib\object\object.cpp" />
+    <ClCompile Include="lib\object\session.cpp" />
+    <ClCompile Include="lib\spell.cpp" />
+    <ClCompile Include="lib\query_game.cpp" />
+    <ClCompile Include="lib\data_set.cpp" />
+    <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\context\context.game.command.cpp" />
-    <ClCompile Include="model\context\context.game.cpp" />
-    <ClCompile Include="model\context\context.game.handler.cpp" />
-    <ClCompile Include="model\door\door.cpp" />
-    <ClCompile Include="model\group\group.cpp" />
-    <ClCompile Include="model\item\item.base.cpp" />
-    <ClCompile Include="model\item\item.cash.cpp" />
-    <ClCompile Include="model\item\item.consume.cpp" />
-    <ClCompile Include="model\item\item.equipment.armor.cpp" />
-    <ClCompile Include="model\item\item.equipment.auxiliary.cpp" />
-    <ClCompile Include="model\item\item.equipment.bow.cpp" />
-    <ClCompile Include="model\item\item.equipment.cpp" />
-    <ClCompile Include="model\item\item.equipment.helmet.cpp" />
-    <ClCompile Include="model\item\item.equipment.ring.cpp" />
-    <ClCompile Include="model\item\item.equipment.shield.cpp" />
-    <ClCompile Include="model\item\item.equipment.weapon.cpp" />
-    <ClCompile Include="model\item\item.pack.cpp" />
-    <ClCompile Include="model\item\itemmix.cpp" />
-    <ClCompile Include="model\item\items.cpp" />
-    <ClCompile Include="model\life\life.cpp" />
-    <ClCompile Include="model\listener\listener.cpp" />
-    <ClCompile Include="model\lua\lua.cpp" />
-    <ClCompile Include="model\map\map.cpp" />
-    <ClCompile Include="model\map\sector.cpp" />
-    <ClCompile Include="model\mmo\mmo.cpp" />
-    <ClCompile Include="model\mob\mob.cpp" />
-    <ClCompile Include="model\npc\npc.cpp" />
-    <ClCompile Include="model\object\object.cpp" />
-    <ClCompile Include="model\session\session.cpp" />
-    <ClCompile Include="model\spell\spell.cpp" />
-    <ClCompile Include="model\table\table.game.cpp" />
-    <ClCompile Include="model\trade\trade.cpp" />
-    <ClCompile Include="service\sql\sql.service.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\module\acceptor\acceptor.h" />
-    <ClInclude Include="..\module\acceptor\acceptor.hpp" />
-    <ClInclude Include="..\module\common\type.h" />
-    <ClInclude Include="..\module\config\config.h" />
-    <ClInclude Include="..\module\console\console.h" />
-    <ClInclude Include="..\module\cryptor\cryptor.h" />
-    <ClInclude Include="..\module\db\db.h" />
-    <ClInclude Include="..\module\encoding\encoding.h" />
-    <ClInclude Include="..\module\leak.h" />
-    <ClInclude Include="..\module\service\service.h" />
-    <ClInclude Include="..\module\socket\socket.h" />
-    <ClInclude Include="..\module\socket\socket.hpp" />
-    <ClInclude Include="..\module\stream\stream.h" />
-    <ClInclude Include="..\module\string\string.h" />
-    <ClInclude Include="..\module\table\table.h" />
-    <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="..\module\time\time.h" />
-    <ClInclude Include="builtin\builtin_function.h" />
-    <ClInclude Include="builtin\builtin_function.hpp" />
-    <ClInclude Include="model\board\board.h" />
-    <ClInclude Include="model\clan\clan.h" />
-    <ClInclude Include="model\container\container.h" />
-    <ClInclude Include="model\container\container.hpp" />
-    <ClInclude Include="model\context\context.game.h" />
-    <ClInclude Include="model\door\door.h" />
-    <ClInclude Include="model\group\group.h" />
-    <ClInclude Include="model\item\item.base.h" />
-    <ClInclude Include="model\item\item.cash.h" />
-    <ClInclude Include="model\item\item.consume.h" />
-    <ClInclude Include="model\item\item.equipment.armor.h" />
-    <ClInclude Include="model\item\item.equipment.auxiliary.h" />
-    <ClInclude Include="model\item\item.equipment.bow.h" />
-    <ClInclude Include="model\item\item.equipment.h" />
-    <ClInclude Include="model\item\item.equipment.helmet.h" />
-    <ClInclude Include="model\item\item.equipment.ring.h" />
-    <ClInclude Include="model\item\item.equipment.shield.h" />
-    <ClInclude Include="model\item\item.equipment.weapon.h" />
-    <ClInclude Include="model\item\item.h" />
-    <ClInclude Include="model\item\item.pack.h" />
-    <ClInclude Include="model\item\itemmix.h" />
-    <ClInclude Include="model\item\items.h" />
-    <ClInclude Include="model\life\life.h" />
-    <ClInclude Include="model\listener\listener.h" />
-    <ClInclude Include="model\lua\lua.h" />
-    <ClInclude Include="model\map\map.h" />
-    <ClInclude Include="model\map\sector.h" />
-    <ClInclude Include="model\mmo\mmo.h" />
-    <ClInclude Include="model\mob\mob.h" />
-    <ClInclude Include="model\npc\npc.h" />
-    <ClInclude Include="model\object\object.h" />
-    <ClInclude Include="model\session\session.h" />
-    <ClInclude Include="model\spell\spell.h" />
-    <ClInclude Include="model\table\table.game.h" />
-    <ClInclude Include="model\trade\trade.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="service\sql\sql.service.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc" />

@@ -3,52 +3,51 @@ BUILD           = ../dist/fb/internal
 STD             = -std=c++20
 TARGET          = $(BUILD)/internal
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw -lboost_program_options
-INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
+INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/context.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/data_set.o $(BUILD)/session.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/db.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/context.internal.o $(BUILD)/session.internal.o $(BUILD)/table.internal.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/data_set.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
-$(BUILD)/config.o: ../module/config/config.cpp
+$(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
-
-$(BUILD)/console.o: ../module/console/console.cpp
+	$(CXX) $(STD) -c ../core/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
+$(BUILD)/console.o: ../core/console.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/console/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
-
-$(BUILD)/db.o: ../module/db/db.cpp
+	$(CXX) $(STD) -c ../core/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
+$(BUILD)/cryptor.o: ../core/cryptor.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/db/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
-
-$(BUILD)/stream.o: ../module/stream/stream.cpp
+	$(CXX) $(STD) -c ../core/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
+$(BUILD)/db.o: ../core/db.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/stream/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
-
-$(BUILD)/encoding.o: ../module/encoding/encoding.cpp
+	$(CXX) $(STD) -c ../core/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
+$(BUILD)/encoding.o: ../core/encoding.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/encoding/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
-
-$(BUILD)/table.base.o: ../module/table/table.cpp
+	$(CXX) $(STD) -c ../core/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
+$(BUILD)/query.o: ../core/query.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/table/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.base.o
-
-$(BUILD)/thread.o: ../module/thread/thread.cpp
+	$(CXX) $(STD) -c ../core/query.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/query.o
+$(BUILD)/stream.o: ../core/stream.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/thread/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
-
-$(BUILD)/context.internal.o: ./model/context/context.internal.cpp
+	$(CXX) $(STD) -c ../core/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
+$(BUILD)/table.o: ../core/table.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/context/context.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.internal.o
-
-$(BUILD)/session.internal.o: ./model/session/session.internal.cpp
+	$(CXX) $(STD) -c ../core/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.o
+$(BUILD)/thread.o: ../core/thread.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/session/session.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.internal.o
-
-$(BUILD)/table.internal.o: ./model/table/table.internal.cpp
+	$(CXX) $(STD) -c ../core/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
+$(BUILD)/time.o: ../core/time.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/table/table.internal.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.internal.o
-
+	$(CXX) $(STD) -c ../core/time.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/time.o
+$(BUILD)/context.o: ./lib/context.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/context.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.o
+$(BUILD)/data_set.o: ./lib/data_set.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/data_set.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/data_set.o
+$(BUILD)/session.o: ./lib/session.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o
 $(BUILD)/main.o: ./main.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./main.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/main.o

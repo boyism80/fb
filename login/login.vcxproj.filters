@@ -1,175 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{de1c61f1-ec66-4b00-97cd-dd8ac3284651}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model">
-      <UniqueIdentifier>{eb4d2575-42ce-443c-a2a3-f8a1770da1c7}</UniqueIdentifier>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="module">
-      <UniqueIdentifier>{8f161fa2-5b43-42b4-9952-cfd7cf4c2d4f}</UniqueIdentifier>
+    <Filter Include="core">
+      <UniqueIdentifier>{fbd4dbe4-a82a-4314-b33c-9267eb3a5b11}</UniqueIdentifier>
     </Filter>
-    <Filter Include="module\acceptor">
-      <UniqueIdentifier>{99b45227-d89c-4a97-9592-9761a415cfe3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\cryptor">
-      <UniqueIdentifier>{276fb1eb-1d56-4edb-9060-5bf1329d376c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\socket">
-      <UniqueIdentifier>{3b8a7a11-1e7c-4275-a2a5-403824d886d7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\stream">
-      <UniqueIdentifier>{4648c1e5-819f-479b-9731-13363649d5a1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\console">
-      <UniqueIdentifier>{5aa22d3a-4784-4958-8578-f0b174f15f34}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\config">
-      <UniqueIdentifier>{62541fdc-1924-4e48-aacf-95a9700f4e8b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\db">
-      <UniqueIdentifier>{14b44bf6-7f41-471e-a5ca-4ea048deafcc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service">
-      <UniqueIdentifier>{f78085ba-6436-4cbc-a225-ec7729370822}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service\auth">
-      <UniqueIdentifier>{611ed06a-00fb-4938-b1f5-1b61bca5539e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\session">
-      <UniqueIdentifier>{51046f53-2311-43e7-8fb9-84333c1086f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\service">
-      <UniqueIdentifier>{b6330a0a-95a8-45a4-b7c5-65792ab2a442}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\gateway">
-      <UniqueIdentifier>{fbd87bb9-a1f7-4545-a783-3c0a73189332}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\common">
-      <UniqueIdentifier>{9afacddd-0b86-43c4-b782-e19aa1182dde}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\encoding">
-      <UniqueIdentifier>{e7ba9b8c-c651-4d44-938d-4472a5dca163}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service\sql">
-      <UniqueIdentifier>{7cf5b7d9-ebb4-468e-b0ad-924b6845a04f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\thread">
-      <UniqueIdentifier>{a51ceb5b-b239-41d1-b3b8-c4e615b914dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\context">
-      <UniqueIdentifier>{5d511dad-e82b-4912-8657-c05f5e52ae17}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\stream\stream.cpp">
-      <Filter>module\stream</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\console\console.cpp">
-      <Filter>module\console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\config\config.cpp">
-      <Filter>module\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\db\db.cpp">
-      <Filter>module\db</Filter>
-    </ClCompile>
-    <ClCompile Include="service\auth\auth.service.cpp">
-      <Filter>service\auth</Filter>
-    </ClCompile>
-    <ClCompile Include="model\session\session.login.cpp">
-      <Filter>model\session</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\service\service.cpp">
-      <Filter>module\service</Filter>
-    </ClCompile>
-    <ClCompile Include="model\gateway\gateway.cpp">
-      <Filter>model\gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\cryptor\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\encoding\encoding.cpp">
-      <Filter>module\encoding</Filter>
-    </ClCompile>
-    <ClCompile Include="service\sql\sql.service.cpp">
-      <Filter>service\sql</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\thread\thread.cpp">
-      <Filter>module\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="model\context\context.login.cpp">
-      <Filter>model\context</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\leak.h">
-      <Filter>module</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.h">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.hpp">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\stream\stream.h">
-      <Filter>module\stream</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\console\console.h">
-      <Filter>module\console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\config\config.h">
-      <Filter>module\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\db\db.h">
-      <Filter>module\db</Filter>
-    </ClInclude>
-    <ClInclude Include="service\auth\auth.service.h">
-      <Filter>service\auth</Filter>
-    </ClInclude>
-    <ClInclude Include="model\session\session.login.h">
-      <Filter>model\session</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\service\service.h">
-      <Filter>module\service</Filter>
-    </ClInclude>
-    <ClInclude Include="model\gateway\gateway.h">
-      <Filter>model\gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\common\type.h">
-      <Filter>module\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\cryptor\cryptor.h">
-      <Filter>module\cryptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\encoding\encoding.h">
-      <Filter>module\encoding</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.h">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.hpp">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="service\sql\sql.service.h">
-      <Filter>service\sql</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\thread\thread.h">
-      <Filter>module\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="model\context\context.login.h">
-      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -181,5 +26,53 @@
     <ResourceCompile Include="login.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\core\config.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\console.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\cryptor.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\db.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\encoding.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\stream.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\table.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\thread.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\time.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\auth.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gateway.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\session.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\query_auth.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\query.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

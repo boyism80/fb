@@ -1,9 +1,9 @@
 #include "resource.h"
-#include "model/context/context.internal.h"
-#include "model/table/table.internal.h"
-#include "module/leak.h"
-#include "module/console/console.h"
-#include "module/config/config.h"
+#include <fb/internal/context.h>
+#include <fb/internal/data_set.h>
+#include <fb/core/leak.h>
+#include <fb/core/console.h>
+#include <fb/core/config.h>
 
 int main(int argc, const char** argv)
 {

@@ -3,195 +3,150 @@ BUILD           = ../dist/fb/game
 STD             = -std=c++20
 TARGET          = $(BUILD)/game 
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw -lboost_program_options
-INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
+INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/builtin_fn.o $(BUILD)/context.game.o $(BUILD)/context.game.handler.o $(BUILD)/context.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/data_set.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/listener.o $(BUILD)/mmo.o $(BUILD)/query_game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/command.o $(BUILD)/context.o $(BUILD)/handler.o $(BUILD)/armor.o $(BUILD)/auxiliary.o $(BUILD)/bow.o $(BUILD)/cash.o $(BUILD)/consume.o $(BUILD)/equipment.o $(BUILD)/helmet.o $(BUILD)/item.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/pack.o $(BUILD)/ring.o $(BUILD)/shield.o $(BUILD)/weapon.o $(BUILD)/built_in.o $(BUILD)/lua.o $(BUILD)/map.o $(BUILD)/sector.o $(BUILD)/life.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/stream.o $(BUILD)/database.o $(BUILD)/service.o $(BUILD)/sql.service.o $(BUILD)/encoding.o $(BUILD)/table.base.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.game.o $(BUILD)/context.game.handler.o $(BUILD)/context.game.command.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/item.base.o $(BUILD)/item.cash.o $(BUILD)/item.consume.o $(BUILD)/item.pack.o $(BUILD)/item.equipment.o $(BUILD)/item.equipment.weapon.o $(BUILD)/item.equipment.armor.o $(BUILD)/item.equipment.cppelmet.o $(BUILD)/item.equipment.shield.o $(BUILD)/item.equipment.ring.o $(BUILD)/item.equipment.auxiliary.o $(BUILD)/item.equipment.bow.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/life.o $(BUILD)/listener.o $(BUILD)/lua.o $(BUILD)/sector.o $(BUILD)/map.o $(BUILD)/table.game.o $(BUILD)/mmo.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/builtin_fn.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/data_set.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/listener.o $(BUILD)/mmo.o $(BUILD)/query_game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/command.o $(BUILD)/context.o $(BUILD)/handler.o $(BUILD)/armor.o $(BUILD)/auxiliary.o $(BUILD)/bow.o $(BUILD)/cash.o $(BUILD)/consume.o $(BUILD)/equipment.o $(BUILD)/helmet.o $(BUILD)/item.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/pack.o $(BUILD)/ring.o $(BUILD)/shield.o $(BUILD)/weapon.o $(BUILD)/built_in.o $(BUILD)/lua.o $(BUILD)/map.o $(BUILD)/sector.o $(BUILD)/life.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
-$(BUILD)/config.o: ../module/config/config.cpp
+$(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
-
-$(BUILD)/console.o: ../module/console/console.cpp
+	$(CXX) $(STD) -c ../core/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
+$(BUILD)/console.o: ../core/console.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/console/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
-
-$(BUILD)/cryptor.o: ../module/cryptor/cryptor.cpp
+	$(CXX) $(STD) -c ../core/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
+$(BUILD)/cryptor.o: ../core/cryptor.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/cryptor/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
-
-$(BUILD)/database.o: ../module/db/db.cpp
+	$(CXX) $(STD) -c ../core/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
+$(BUILD)/db.o: ../core/db.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/db/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/database.o
-
-$(BUILD)/service.o: ../module/service/service.cpp
+	$(CXX) $(STD) -c ../core/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
+$(BUILD)/encoding.o: ../core/encoding.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/service/service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/service.o
-
-$(BUILD)/sql.service.o: ./service/sql/sql.service.cpp
+	$(CXX) $(STD) -c ../core/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
+$(BUILD)/query.o: ../core/query.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./service/sql/sql.service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/sql.service.o
-
-$(BUILD)/stream.o: ../module/stream/stream.cpp
+	$(CXX) $(STD) -c ../core/query.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/query.o
+$(BUILD)/stream.o: ../core/stream.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/stream/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
-
-$(BUILD)/encoding.o: ../module/encoding/encoding.cpp
+	$(CXX) $(STD) -c ../core/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
+$(BUILD)/table.o: ../core/table.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/encoding/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
-
-$(BUILD)/table.base.o: ../module/table/table.cpp
+	$(CXX) $(STD) -c ../core/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.o
+$(BUILD)/thread.o: ../core/thread.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/table/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.base.o
-
-$(BUILD)/thread.o: ../module/thread/thread.cpp
+	$(CXX) $(STD) -c ../core/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
+$(BUILD)/time.o: ../core/time.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/thread/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
-
-$(BUILD)/time.o: ../module/time/time.cpp
+	$(CXX) $(STD) -c ../core/time.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/time.o
+$(BUILD)/board.o: ./lib/board.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/time/time.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/time.o
-
-$(BUILD)/builtin_fn.o: ./builtin/builtin_function.cpp
+	$(CXX) $(STD) -c ./lib/board.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/board.o
+$(BUILD)/clan.o: ./lib/clan.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./builtin/builtin_function.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/builtin_fn.o
-
-$(BUILD)/context.game.o: ./model/context/context.game.cpp
+	$(CXX) $(STD) -c ./lib/clan.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/clan.o
+$(BUILD)/data_set.o: ./lib/data_set.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/context/context.game.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.o
-
-$(BUILD)/context.game.handler.o: ./model/context/context.game.handler.cpp
+	$(CXX) $(STD) -c ./lib/data_set.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/data_set.o
+$(BUILD)/door.o: ./lib/door.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/context/context.game.handler.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.handler.o
-
-$(BUILD)/context.game.command.o: ./model/context/context.game.command.cpp
+	$(CXX) $(STD) -c ./lib/door.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/door.o
+$(BUILD)/group.o: ./lib/group.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/context/context.game.command.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.game.command.o
-
-$(BUILD)/board.o: ./model/board/board.cpp
+	$(CXX) $(STD) -c ./lib/group.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/group.o
+$(BUILD)/listener.o: ./lib/listener.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/board/board.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/board.o
-
-$(BUILD)/clan.o: ./model/clan/clan.cpp
+	$(CXX) $(STD) -c ./lib/listener.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/listener.o
+$(BUILD)/mmo.o: ./lib/mmo.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/clan/clan.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/clan.o
-
-$(BUILD)/door.o: ./model/door/door.cpp
+	$(CXX) $(STD) -c ./lib/mmo.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mmo.o
+$(BUILD)/query_game.o: ./lib/query_game.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/door/door.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/door.o
-
-$(BUILD)/group.o: ./model/group/group.cpp
+	$(CXX) $(STD) -c ./lib/query_game.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/query_game.o
+$(BUILD)/spell.o: ./lib/spell.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/group/group.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/group.o
-
-$(BUILD)/item.base.o: ./model/item/item.base.cpp
+	$(CXX) $(STD) -c ./lib/spell.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/spell.o
+$(BUILD)/trade.o: ./lib/trade.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.base.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.base.o
-
-$(BUILD)/item.cash.o: ./model/item/item.cash.cpp
+	$(CXX) $(STD) -c ./lib/trade.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/trade.o
+$(BUILD)/command.o: ./lib/context/command.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.cash.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.cash.o
-
-$(BUILD)/item.consume.o: ./model/item/item.consume.cpp
+	$(CXX) $(STD) -c ./lib/context/command.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/command.o
+$(BUILD)/context.o: ./lib/context/context.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.consume.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.consume.o
-
-$(BUILD)/item.pack.o: ./model/item/item.pack.cpp
+	$(CXX) $(STD) -c ./lib/context/context.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.o
+$(BUILD)/handler.o: ./lib/context/handler.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.pack.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.pack.o
-
-$(BUILD)/item.equipment.o: ./model/item/item.equipment.cpp
+	$(CXX) $(STD) -c ./lib/context/handler.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/handler.o
+$(BUILD)/armor.o: ./lib/item/armor.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.o
-
-$(BUILD)/item.equipment.weapon.o: ./model/item/item.equipment.weapon.cpp
+	$(CXX) $(STD) -c ./lib/item/armor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/armor.o
+$(BUILD)/auxiliary.o: ./lib/item/auxiliary.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.weapon.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.weapon.o
-
-$(BUILD)/item.equipment.armor.o: ./model/item/item.equipment.armor.cpp
+	$(CXX) $(STD) -c ./lib/item/auxiliary.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/auxiliary.o
+$(BUILD)/bow.o: ./lib/item/bow.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.armor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.armor.o
-
-$(BUILD)/item.equipment.cppelmet.o: ./model/item/item.equipment.helmet.cpp
+	$(CXX) $(STD) -c ./lib/item/bow.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/bow.o
+$(BUILD)/cash.o: ./lib/item/cash.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.helmet.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.cppelmet.o
-
-$(BUILD)/item.equipment.shield.o: ./model/item/item.equipment.shield.cpp
+	$(CXX) $(STD) -c ./lib/item/cash.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cash.o
+$(BUILD)/consume.o: ./lib/item/consume.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.shield.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.shield.o
-
-$(BUILD)/item.equipment.ring.o: ./model/item/item.equipment.ring.cpp
+	$(CXX) $(STD) -c ./lib/item/consume.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/consume.o
+$(BUILD)/equipment.o: ./lib/item/equipment.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.ring.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.ring.o
-
-$(BUILD)/item.equipment.auxiliary.o: ./model/item/item.equipment.auxiliary.cpp
+	$(CXX) $(STD) -c ./lib/item/equipment.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/equipment.o
+$(BUILD)/helmet.o: ./lib/item/helmet.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.auxiliary.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.auxiliary.o
-
-$(BUILD)/item.equipment.bow.o: ./model/item/item.equipment.bow.cpp
+	$(CXX) $(STD) -c ./lib/item/helmet.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/helmet.o
+$(BUILD)/item.o: ./lib/item/item.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/item.equipment.bow.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.equipment.bow.o
-
-$(BUILD)/itemmix.o: ./model/item/itemmix.cpp
+	$(CXX) $(STD) -c ./lib/item/item.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/item.o
+$(BUILD)/itemmix.o: ./lib/item/itemmix.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/itemmix.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/itemmix.o
-
-$(BUILD)/items.o: ./model/item/items.cpp
+	$(CXX) $(STD) -c ./lib/item/itemmix.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/itemmix.o
+$(BUILD)/items.o: ./lib/item/items.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/item/items.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/items.o
-
-$(BUILD)/life.o: ./model/life/life.cpp
+	$(CXX) $(STD) -c ./lib/item/items.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/items.o
+$(BUILD)/pack.o: ./lib/item/pack.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/life/life.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/life.o
-
-$(BUILD)/listener.o: ./model/listener/listener.cpp
+	$(CXX) $(STD) -c ./lib/item/pack.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/pack.o
+$(BUILD)/ring.o: ./lib/item/ring.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/listener/listener.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/listener.o
-
-$(BUILD)/lua.o: ./model/lua/lua.cpp
+	$(CXX) $(STD) -c ./lib/item/ring.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/ring.o
+$(BUILD)/shield.o: ./lib/item/shield.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/lua/lua.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/lua.o
-
-$(BUILD)/sector.o: ./model/map/sector.cpp
+	$(CXX) $(STD) -c ./lib/item/shield.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/shield.o
+$(BUILD)/weapon.o: ./lib/item/weapon.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/map/sector.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/sector.o
-
-$(BUILD)/map.o: ./model/map/map.cpp
+	$(CXX) $(STD) -c ./lib/item/weapon.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/weapon.o
+$(BUILD)/built_in.o: ./lib/lua/built_in.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/map/map.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/map.o
-
-$(BUILD)/table.game.o: ./model/table/table.game.cpp
+	$(CXX) $(STD) -c ./lib/lua/built_in.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/built_in.o
+$(BUILD)/lua.o: ./lib/lua/lua.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/table/table.game.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.game.o
-
-$(BUILD)/mmo.o: ./model/mmo/mmo.cpp
+	$(CXX) $(STD) -c ./lib/lua/lua.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/lua.o
+$(BUILD)/map.o: ./lib/map/map.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/mmo/mmo.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mmo.o
-
-$(BUILD)/mob.o: ./model/mob/mob.cpp
+	$(CXX) $(STD) -c ./lib/map/map.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/map.o
+$(BUILD)/sector.o: ./lib/map/sector.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/mob/mob.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mob.o
-
-$(BUILD)/npc.o: ./model/npc/npc.cpp
+	$(CXX) $(STD) -c ./lib/map/sector.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/sector.o
+$(BUILD)/life.o: ./lib/object/life.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/npc/npc.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/npc.o
-
-$(BUILD)/object.o: ./model/object/object.cpp
+	$(CXX) $(STD) -c ./lib/object/life.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/life.o
+$(BUILD)/mob.o: ./lib/object/mob.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/object/object.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/object.o
-
-$(BUILD)/session.game.o: ./model/session/session.cpp
+	$(CXX) $(STD) -c ./lib/object/mob.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mob.o
+$(BUILD)/npc.o: ./lib/object/npc.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/session/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.game.o
-
-$(BUILD)/spell.o: ./model/spell/spell.cpp
+	$(CXX) $(STD) -c ./lib/object/npc.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/npc.o
+$(BUILD)/object.o: ./lib/object/object.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/spell/spell.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/spell.o
-
-$(BUILD)/trade.o: ./model/trade/trade.cpp
+	$(CXX) $(STD) -c ./lib/object/object.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/object.o
+$(BUILD)/session.o: ./lib/object/session.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/trade/trade.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/trade.o
+	$(CXX) $(STD) -c ./lib/object/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o
 
 $(BUILD)/main.o: ./main.cpp
 	mkdir -p $(BUILD)

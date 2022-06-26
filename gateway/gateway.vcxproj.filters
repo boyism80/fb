@@ -1,157 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="module">
-      <UniqueIdentifier>{da9480c5-63db-4112-a515-1bb8c83c17f8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\acceptor">
-      <UniqueIdentifier>{765df936-e736-417d-b339-51ecafc39849}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\config">
-      <UniqueIdentifier>{bdadd0e5-017b-4083-8fd8-1160b104a6f9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\console">
-      <UniqueIdentifier>{f25d8208-7701-47b5-b8cd-6892cf678804}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\cryptor">
-      <UniqueIdentifier>{5f5dc449-903f-4a12-82d9-5ed8c8aa12bf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\socket">
-      <UniqueIdentifier>{7c7a8b24-1e30-4258-b555-a9385c388b71}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\stream">
-      <UniqueIdentifier>{293db8f6-343f-4c71-b3ab-6264e9f40fdc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model">
-      <UniqueIdentifier>{bc41ca58-ba04-4b97-ae93-6517af8b1d7b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\session">
-      <UniqueIdentifier>{292bca3c-2aed-4149-8e78-43980d942e63}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{4c83f9bc-379d-47b5-af8b-b8739d918e2e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model\gateway">
-      <UniqueIdentifier>{fbdce8d7-36ef-4102-8910-aa01afd0c5c0}</UniqueIdentifier>
+    <Filter Include="core">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="service">
-      <UniqueIdentifier>{175c4d88-292e-4a28-a443-6b2cce3bdfea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service\gateway">
-      <UniqueIdentifier>{1e53ff07-9668-4c6e-a657-c5157469873c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\service">
-      <UniqueIdentifier>{37fb4326-25f1-4ad4-af2f-1421324bfd73}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\common">
-      <UniqueIdentifier>{bfc2e009-3581-4809-8871-595a40a93557}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\encoding">
-      <UniqueIdentifier>{76727eff-aa6b-4ad5-8f80-88ab2a203558}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\thread">
-      <UniqueIdentifier>{c7bd8159-293a-4588-8ac5-edc325c6b91f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\context">
-      <UniqueIdentifier>{88234285-22c2-40fd-9b31-0774aced2f62}</UniqueIdentifier>
+    <Filter Include="source">
+      <UniqueIdentifier>{91340c34-111c-4a18-948b-e3ef0fc2e741}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\config\config.cpp">
-      <Filter>module\config</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\console\console.cpp">
-      <Filter>module\console</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\stream\stream.cpp">
-      <Filter>module\stream</Filter>
-    </ClCompile>
-    <ClCompile Include="model\session\session.gateway.cpp">
-      <Filter>model\session</Filter>
-    </ClCompile>
-    <ClCompile Include="model\gateway\gateway.cpp">
-      <Filter>model\gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="service\gateway\service.gateway.cpp">
-      <Filter>service\gateway</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\service\service.cpp">
-      <Filter>module\service</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\cryptor\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\encoding\encoding.cpp">
-      <Filter>module\encoding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\module\thread\thread.cpp">
-      <Filter>module\thread</Filter>
-    </ClCompile>
-    <ClCompile Include="model\context\context.gateway.cpp">
-      <Filter>model\context</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\module\leak.h">
-      <Filter>module</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\config\config.h">
-      <Filter>module\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\console\console.h">
-      <Filter>module\console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.h">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.hpp">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\stream\stream.h">
-      <Filter>module\stream</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="model\session\session.gateway.h">
-      <Filter>model\session</Filter>
-    </ClInclude>
-    <ClInclude Include="model\gateway\gateway.h">
-      <Filter>model\gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="service\gateway\service.gateway.h">
-      <Filter>service\gateway</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\service\service.h">
-      <Filter>module\service</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\common\type.h">
-      <Filter>module\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\cryptor\cryptor.h">
-      <Filter>module\cryptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\encoding\encoding.h">
-      <Filter>module\encoding</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.h">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.hpp">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\thread\thread.h">
-      <Filter>module\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="model\context\context.gateway.h">
-      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -163,5 +26,47 @@
     <ResourceCompile Include="gateway.rc">
       <Filter>Resources</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="lib\context.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\gateway.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\util.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\session.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\config.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\console.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\cryptor.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\encoding.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\stream.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\table.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\thread.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\time.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\query.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

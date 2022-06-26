@@ -71,22 +71,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x86</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -174,33 +174,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\module\config\config.cpp" />
-    <ClCompile Include="..\module\console\console.cpp" />
-    <ClCompile Include="..\module\encoding\encoding.cpp" />
-    <ClCompile Include="..\module\stream\stream.cpp" />
-    <ClCompile Include="..\module\table\table.cpp" />
-    <ClCompile Include="..\module\thread\thread.cpp" />
+    <ClCompile Include="..\core\config.cpp" />
+    <ClCompile Include="..\core\console.cpp" />
+    <ClCompile Include="..\core\cryptor.cpp" />
+    <ClCompile Include="..\core\encoding.cpp" />
+    <ClCompile Include="..\core\query.cpp" />
+    <ClCompile Include="..\core\stream.cpp" />
+    <ClCompile Include="..\core\table.cpp" />
+    <ClCompile Include="..\core\thread.cpp" />
+    <ClCompile Include="..\core\time.cpp" />
+    <ClCompile Include="lib\context.cpp" />
+    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\data_set.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="model\context\context.internal.cpp" />
-    <ClCompile Include="model\session\session.internal.cpp" />
-    <ClCompile Include="model\table\table.internal.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\module\acceptor\acceptor.h" />
-    <ClInclude Include="..\module\acceptor\acceptor.hpp" />
-    <ClInclude Include="..\module\common\type.h" />
-    <ClInclude Include="..\module\config\config.h" />
-    <ClInclude Include="..\module\console\console.h" />
-    <ClInclude Include="..\module\encoding\encoding.h" />
-    <ClInclude Include="..\module\socket\socket.h" />
-    <ClInclude Include="..\module\socket\socket.hpp" />
-    <ClInclude Include="..\module\stream\stream.h" />
-    <ClInclude Include="..\module\table\table.h" />
-    <ClInclude Include="..\module\thread\thread.h" />
-    <ClInclude Include="model\context\context.internal.h" />
-    <ClInclude Include="model\exception\exception.h" />
-    <ClInclude Include="model\session\session.internal.h" />
-    <ClInclude Include="model\table\table.internal.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

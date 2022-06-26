@@ -1,439 +1,160 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{24d69f68-8c4c-45dc-8e35-155ff301e16c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="service">
-      <UniqueIdentifier>{7fbe5769-e4bd-4519-8c56-79beda757d85}</UniqueIdentifier>
+    <Filter Include="source">
+      <UniqueIdentifier>{04067f9a-f2bc-4c50-974c-9eb4957c018d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="model">
-      <UniqueIdentifier>{b885fdc2-ee87-4378-9730-74ddf987f418}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module">
-      <UniqueIdentifier>{f73c01c6-b686-4a85-9c81-650a95d444af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\acceptor">
-      <UniqueIdentifier>{e72ca7b8-9290-4b72-b6db-9dc7362a53f3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\cryptor">
-      <UniqueIdentifier>{872dedb8-b343-43e4-a575-c29af1b6008e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\socket">
-      <UniqueIdentifier>{e9db8ca4-686b-4b58-89f0-2592a69ec5f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\stream">
-      <UniqueIdentifier>{6326e8d3-87e8-4318-ac14-f0157189332a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\console">
-      <UniqueIdentifier>{9bb86d78-5cf7-44ce-b23b-6035ce0fac70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\config">
-      <UniqueIdentifier>{f025cf0c-8ce4-4631-b805-2d11b4deb3ec}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\db">
-      <UniqueIdentifier>{1d6bb45e-5144-40ea-b61f-a4b23550f22d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\trade">
-      <UniqueIdentifier>{9355b608-aa86-4908-8344-3d3aeaa005b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\npc">
-      <UniqueIdentifier>{62a9fc95-aa6a-45fd-a274-d759b027442d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\object">
-      <UniqueIdentifier>{5b47e544-6f95-4326-999b-2a03d7c4a472}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\session">
-      <UniqueIdentifier>{9c0348dc-dbd9-40c4-b063-b7ed5f44ba7c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\spell">
-      <UniqueIdentifier>{21895c61-0c3b-4b12-8534-449d883b0402}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\mob">
-      <UniqueIdentifier>{31ae9db0-97d4-4e1c-af7c-34ea7200e02d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\board">
-      <UniqueIdentifier>{46047bcc-bb53-4846-bec8-55613aea27b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\builtin_function">
-      <UniqueIdentifier>{65b1a007-14ad-4712-acb3-a49994731430}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\clan">
-      <UniqueIdentifier>{6017569c-b978-49e2-93eb-b86d040362ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\container">
-      <UniqueIdentifier>{8f427b70-88fc-4d2c-b7c0-488518268648}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\door">
-      <UniqueIdentifier>{8f7f7d25-e205-4f78-be1b-405a381816f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\group">
-      <UniqueIdentifier>{01b52b79-b945-4fde-b4fd-6c1455ced530}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\item">
-      <UniqueIdentifier>{1184158f-8c42-461b-95b8-d854e9b57817}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\lua">
-      <UniqueIdentifier>{b1ff05e7-2f9b-469b-ab05-df03f34617fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\map">
-      <UniqueIdentifier>{33a7a961-c741-4238-91c0-548909eab46d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\mmo">
-      <UniqueIdentifier>{c5f700bf-779d-4df8-aec0-0557a8bf0d3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\service">
-      <UniqueIdentifier>{2451ab40-0acb-4ac5-a6be-5940285ce021}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\life">
-      <UniqueIdentifier>{38343c9c-f870-4e74-bb00-18eb24ba5825}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\listener">
-      <UniqueIdentifier>{2f61b8fd-120c-4c3d-8358-5e32a70032c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\common">
-      <UniqueIdentifier>{7b435e63-5d89-4eb4-a66c-a9527ab82c11}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\encoding">
-      <UniqueIdentifier>{0c3ecd56-e82b-4110-8b8d-302ef1943d69}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\string">
-      <UniqueIdentifier>{6f6c874a-a48f-4ff3-9d38-27c6e00ecd16}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\table">
-      <UniqueIdentifier>{8d1f2c21-f89e-4a6f-8fb5-151844843ffd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\table">
-      <UniqueIdentifier>{18e5d454-c67b-4543-af94-76fcb696175e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="service\sql">
-      <UniqueIdentifier>{8e4e0d8f-0d1f-48f0-bd4d-685422cadd6f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\thread">
-      <UniqueIdentifier>{b62461a3-b9e9-4664-834e-1c279745c8ba}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="module\time">
-      <UniqueIdentifier>{cca60f19-d2c5-43bd-889c-fd83f19457b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="model\context">
-      <UniqueIdentifier>{2567a9ef-0a8b-49b6-8bdb-ec1cbad3cfba}</UniqueIdentifier>
+    <Filter Include="core">
+      <UniqueIdentifier>{7d958e1c-7e91-451b-b077-dcff5f6fcd30}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="lib\board.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="builtin\builtin_function.cpp">
-      <Filter>model\builtin_function</Filter>
+    <ClCompile Include="lib\clan.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\clan\clan.cpp">
-      <Filter>model\clan</Filter>
+    <ClCompile Include="lib\context\command.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\door\door.cpp">
-      <Filter>model\door</Filter>
+    <ClCompile Include="lib\context\context.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\group\group.cpp">
-      <Filter>model\group</Filter>
+    <ClCompile Include="lib\context\handler.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\lua\lua.cpp">
-      <Filter>model\lua</Filter>
+    <ClCompile Include="lib\door.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\map\map.cpp">
-      <Filter>model\map</Filter>
+    <ClCompile Include="lib\group.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\mmo\mmo.cpp">
-      <Filter>model\mmo</Filter>
+    <ClCompile Include="lib\item\armor.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\mob\mob.cpp">
-      <Filter>model\mob</Filter>
+    <ClCompile Include="lib\item\auxiliary.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\npc\npc.cpp">
-      <Filter>model\npc</Filter>
+    <ClCompile Include="lib\item\bow.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\object\object.cpp">
-      <Filter>model\object</Filter>
+    <ClCompile Include="lib\item\cash.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\session\session.cpp">
-      <Filter>model\session</Filter>
+    <ClCompile Include="lib\item\consume.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\spell\spell.cpp">
-      <Filter>model\spell</Filter>
+    <ClCompile Include="lib\item\equipment.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\trade\trade.cpp">
-      <Filter>model\trade</Filter>
+    <ClCompile Include="lib\item\helmet.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\board\board.cpp">
-      <Filter>model\board</Filter>
+    <ClCompile Include="lib\item\item.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\config\config.cpp">
-      <Filter>module\config</Filter>
+    <ClCompile Include="lib\item\itemmix.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\console\console.cpp">
-      <Filter>module\console</Filter>
+    <ClCompile Include="lib\item\items.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\db\db.cpp">
-      <Filter>module\db</Filter>
+    <ClCompile Include="lib\item\pack.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\stream\stream.cpp">
-      <Filter>module\stream</Filter>
+    <ClCompile Include="lib\item\ring.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\service\service.cpp">
-      <Filter>module\service</Filter>
+    <ClCompile Include="lib\item\shield.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\life\life.cpp">
-      <Filter>model\life</Filter>
+    <ClCompile Include="lib\item\weapon.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\listener\listener.cpp">
-      <Filter>model\listener</Filter>
+    <ClCompile Include="lib\listener.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\map\sector.cpp">
-      <Filter>model\map</Filter>
+    <ClCompile Include="lib\lua\built_in.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\cryptor\cryptor.cpp">
-      <Filter>module\cryptor</Filter>
+    <ClCompile Include="lib\lua\lua.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\encoding\encoding.cpp">
-      <Filter>module\encoding</Filter>
+    <ClCompile Include="lib\map\map.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\table\table.game.cpp">
-      <Filter>model\table</Filter>
+    <ClCompile Include="lib\map\sector.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\table\table.cpp">
-      <Filter>module\table</Filter>
+    <ClCompile Include="lib\mmo.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="service\sql\sql.service.cpp">
-      <Filter>service\sql</Filter>
+    <ClCompile Include="lib\object\life.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\thread\thread.cpp">
-      <Filter>module\thread</Filter>
+    <ClCompile Include="lib\object\mob.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\module\time\time.cpp">
-      <Filter>module\time</Filter>
+    <ClCompile Include="lib\object\npc.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\object\object.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.helmet.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\object\session.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.ring.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\spell.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.shield.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\query_game.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.weapon.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\data_set.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.pack.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="lib\trade.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\itemmix.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\core\config.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\items.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\console.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.base.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\cryptor.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.cash.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\db.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.consume.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\encoding.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.armor.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\stream.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.auxiliary.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\table.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\item\item.equipment.bow.cpp">
-      <Filter>model\item</Filter>
+    <ClCompile Include="..\core\thread.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\context\context.game.cpp">
-      <Filter>model\context</Filter>
+    <ClCompile Include="..\core\time.cpp">
+      <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="model\context\context.game.handler.cpp">
-      <Filter>model\context</Filter>
-    </ClCompile>
-    <ClCompile Include="model\context\context.game.command.cpp">
-      <Filter>model\context</Filter>
+    <ClCompile Include="..\core\query.cpp">
+      <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="builtin\builtin_function.h">
-      <Filter>model\builtin_function</Filter>
-    </ClInclude>
-    <ClInclude Include="builtin\builtin_function.hpp">
-      <Filter>model\builtin_function</Filter>
-    </ClInclude>
-    <ClInclude Include="model\clan\clan.h">
-      <Filter>model\clan</Filter>
-    </ClInclude>
-    <ClInclude Include="model\container\container.h">
-      <Filter>model\container</Filter>
-    </ClInclude>
-    <ClInclude Include="model\container\container.hpp">
-      <Filter>model\container</Filter>
-    </ClInclude>
-    <ClInclude Include="model\door\door.h">
-      <Filter>model\door</Filter>
-    </ClInclude>
-    <ClInclude Include="model\group\group.h">
-      <Filter>model\group</Filter>
-    </ClInclude>
-    <ClInclude Include="model\lua\lua.h">
-      <Filter>model\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="model\map\map.h">
-      <Filter>model\map</Filter>
-    </ClInclude>
-    <ClInclude Include="model\mmo\mmo.h">
-      <Filter>model\mmo</Filter>
-    </ClInclude>
-    <ClInclude Include="model\mob\mob.h">
-      <Filter>model\mob</Filter>
-    </ClInclude>
-    <ClInclude Include="model\npc\npc.h">
-      <Filter>model\npc</Filter>
-    </ClInclude>
-    <ClInclude Include="model\object\object.h">
-      <Filter>model\object</Filter>
-    </ClInclude>
-    <ClInclude Include="model\session\session.h">
-      <Filter>model\session</Filter>
-    </ClInclude>
-    <ClInclude Include="model\spell\spell.h">
-      <Filter>model\spell</Filter>
-    </ClInclude>
-    <ClInclude Include="model\trade\trade.h">
-      <Filter>model\trade</Filter>
-    </ClInclude>
-    <ClInclude Include="model\board\board.h">
-      <Filter>model\board</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\config\config.h">
-      <Filter>module\config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\console\console.h">
-      <Filter>module\console</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\db\db.h">
-      <Filter>module\db</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.h">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\socket\socket.hpp">
-      <Filter>module\socket</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\stream\stream.h">
-      <Filter>module\stream</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\leak.h">
-      <Filter>module</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\service\service.h">
-      <Filter>module\service</Filter>
-    </ClInclude>
-    <ClInclude Include="model\life\life.h">
-      <Filter>model\life</Filter>
-    </ClInclude>
-    <ClInclude Include="model\listener\listener.h">
-      <Filter>model\listener</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\common\type.h">
-      <Filter>module\common</Filter>
-    </ClInclude>
-    <ClInclude Include="model\map\sector.h">
-      <Filter>model\map</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\cryptor\cryptor.h">
-      <Filter>module\cryptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\encoding\encoding.h">
-      <Filter>module\encoding</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\string\string.h">
-      <Filter>module\string</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.h">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\acceptor\acceptor.hpp">
-      <Filter>module\acceptor</Filter>
-    </ClInclude>
-    <ClInclude Include="model\table\table.game.h">
-      <Filter>model\table</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\table\table.h">
-      <Filter>module\table</Filter>
-    </ClInclude>
-    <ClInclude Include="service\sql\sql.service.h">
-      <Filter>service\sql</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\thread\thread.h">
-      <Filter>module\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\module\time\time.h">
-      <Filter>module\time</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.bow.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.helmet.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.ring.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.shield.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.weapon.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.pack.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\itemmix.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\items.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.base.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.cash.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.consume.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.armor.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\item\item.equipment.auxiliary.h">
-      <Filter>model\item</Filter>
-    </ClInclude>
-    <ClInclude Include="model\context\context.game.h">
-      <Filter>model\context</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

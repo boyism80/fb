@@ -3,60 +3,54 @@ BUILD           = ../dist/fb/gateway
 STD             = -std=c++20
 TARGET          = $(BUILD)/gateway
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw -lboost_program_options
-INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql
+INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/context.gateway.o $(BUILD)/gateway.o $(BUILD)/session.gateway.o $(BUILD)/service.gateway.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/util.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/main.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/service.o $(BUILD)/stream.o $(BUILD)/encoding.o $(BUILD)/thread.o $(BUILD)/context.gateway.o $(BUILD)/gateway.o $(BUILD)/session.gateway.o $(BUILD)/service.gateway.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/util.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
-$(BUILD)/config.o: ../module/config/config.cpp
+$(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/config/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
-
-$(BUILD)/console.o: ../module/console/console.cpp
+	$(CXX) $(STD) -c ../core/config.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/config.o
+$(BUILD)/console.o: ../core/console.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/console/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
-
-$(BUILD)/cryptor.o: ../module/cryptor/cryptor.cpp
+	$(CXX) $(STD) -c ../core/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
+$(BUILD)/cryptor.o: ../core/cryptor.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/cryptor/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
-
-$(BUILD)/db.o: ../module/db/db.cpp
+	$(CXX) $(STD) -c ../core/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
+$(BUILD)/db.o: ../core/db.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/db/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
-
-$(BUILD)/service.o: ../module/service/service.cpp
+	$(CXX) $(STD) -c ../core/db.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/db.o
+$(BUILD)/encoding.o: ../core/encoding.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/service/service.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/service.o
-
-$(BUILD)/stream.o: ../module/stream/stream.cpp
+	$(CXX) $(STD) -c ../core/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
+$(BUILD)/query.o: ../core/query.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/stream/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
-
-$(BUILD)/encoding.o: ../module/encoding/encoding.cpp
+	$(CXX) $(STD) -c ../core/query.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/query.o
+$(BUILD)/stream.o: ../core/stream.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/encoding/encoding.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/encoding.o
-
-$(BUILD)/thread.o: ../module/thread/thread.cpp
+	$(CXX) $(STD) -c ../core/stream.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/stream.o
+$(BUILD)/table.o: ../core/table.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ../module/thread/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
-
-$(BUILD)/context.gateway.o: ./model/context/context.gateway.cpp
+	$(CXX) $(STD) -c ../core/table.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/table.o
+$(BUILD)/thread.o: ../core/thread.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/context/context.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.gateway.o
-
-$(BUILD)/gateway.o: ./model/gateway/gateway.cpp
+	$(CXX) $(STD) -c ../core/thread.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/thread.o
+$(BUILD)/time.o: ../core/time.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/gateway/gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/gateway.o
-
-$(BUILD)/session.gateway.o: ./model/session/session.gateway.cpp
+	$(CXX) $(STD) -c ../core/time.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/time.o
+$(BUILD)/context.o: ./lib/context.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./model/session/session.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.gateway.o
-
-$(BUILD)/service.gateway.o: ./service/gateway/service.gateway.cpp
+	$(CXX) $(STD) -c ./lib/context.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.o
+$(BUILD)/gateway.o: ./lib/gateway.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./service/gateway/service.gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/service.gateway.o
-
+	$(CXX) $(STD) -c ./lib/gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/gateway.o
+$(BUILD)/session.o: ./lib/session.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o
+$(BUILD)/util.o: ./lib/util.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/util.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/util.o
 $(BUILD)/main.o: ./main.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./main.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/main.o
