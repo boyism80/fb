@@ -3,8 +3,8 @@
 std::string fb::query::make_update(const std::map<std::string, std::string>& value)
 {
     std::vector<std::string> parameters;
-    for(auto pair : value)
-        parameters.push_back(pair.first + "=" + pair.second);
+    for(auto& [key, value] : value)
+        parameters.push_back(key + "=" + value);
 
     return boost::algorithm::join(parameters, ", ");
 }

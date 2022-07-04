@@ -84,10 +84,10 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
     }
 
     const auto& equipments = session.items.equipments();
-    for(auto& pair : equipments)
+    for(auto& [key, value] : equipments)
     {
-        auto slot = pair.first;
-        auto equipment = pair.second;
+        auto slot = key;
+        auto equipment = value;
         auto master = equipment != nullptr ? equipment->based<fb::game::equipment>() : nullptr;
 
         auto durability = (equipment != nullptr) ? equipment->durability() : std::nullopt;

@@ -63,9 +63,9 @@ public:
                   .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
-        for(auto& pair : this->sockets)
+        for(auto& [key, value] : this->sockets)
         {
-            auto user = pair.second->data();
+            auto user = value->data();
             auto& name = user->name();
 
             out_stream.write_u8(0x10 * static_cast<int>(user->nation()))

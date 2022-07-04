@@ -57,10 +57,10 @@ fb::game::data_set::~data_set()
 
 fb::game::map* fb::game::container::map::name2map(const std::string& name)
 {
-    for(auto& pair : *this)
+    for(auto& [key, value] : *this)
     {
-        if(pair.second->name() == name)
-            return pair.second.get();
+        if(value->name() == name)
+            return value.get();
     }
 
     return nullptr;
@@ -293,6 +293,9 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
         /* desc          */ CP949(data["desc"].asString(), PLATFORM::Windows),
         /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
     };
+
+    auto& lua = lua::main::get();
+
     assert_script(config.active_script, "function\\s+(on_active)\\(\\w+,\\s*\\w+\\)", "on_active", [](const auto& script) 
     {
 #if defined DEBUG | defined _DEBUG
@@ -302,6 +305,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
+    lua.load_file(config.active_script);
     
     if(types == "stuff")
     {
@@ -354,6 +358,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
+    lua.load_file(equipment_config.dress_script);
 
     assert_script(equipment_config.undress_script, "function\\s+(on_undress)\\(\\w+,\\s*\\w+\\)", "on_undress", [](const auto& script) 
     {
@@ -364,6 +369,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
+    lua.load_file(equipment_config.undress_script);
 
     
     if(types == "weapon")
@@ -610,6 +616,9 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
             uint16_t            look    = data["look"].asInt() + 0x7FFF;
             uint8_t             color   = data["color"].asInt();
             auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
+
+            auto&               lua     = lua::main::get();
+
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
             {
 #if defined DEBUG | defined _DEBUG
@@ -619,6 +628,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
+            lua.load_file(script);
 
             {
                 //name, look, color, script
@@ -752,6 +762,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
+            auto&               lua = lua::main::get();
             uint16_t            id = std::stoi(key.asString());
             auto                object_config = fb::game::object::master::config
             {
@@ -789,6 +800,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
+            lua.load_file(config.script_attack);
 
             assert_script(config.script_die, "function\\s+(on_die)\\(\\w+,\\s*\\w+\\)", "on_die", [](const auto& script) 
             {
@@ -799,6 +811,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
+            lua.load_file(config.script_die);
 
             auto                mob = std::make_unique<fb::game::mob::master>(config);
             {
@@ -943,6 +956,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
+            auto&               lua  = lua::main::get();
             uint16_t            id   = std::stoi(key.asString());
             const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
             uint8_t             type = data["type"].asInt();
@@ -962,6 +976,8 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                 });
                 if(std::filesystem::exists(cast) == false)
                     cast = "";
+                
+                lua.load_file(cast);
             }
 
             std::string         uncast;
@@ -979,6 +995,8 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                 });
                 if(std::filesystem::exists(uncast) == false)
                     uncast = "";
+                
+                lua.load_file(uncast);
             }
 
             std::string         concast;
@@ -994,6 +1012,8 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                         << "end";
 #endif
                 });
+
+                lua.load_file(concast);
             }
 
             std::string         message;

@@ -40,12 +40,12 @@ constexpr auto DEFAULT_POOL_SIZE = 100;
 class luable;
 class lua;
 class main;
+class thread;
 #pragma endregion
 
 #pragma region global function
-lua&                            get();
+lua*                            get();
 lua*                            get(lua_State* lua);
-void                            reserve(int capacity = DEFAULT_POOL_SIZE);
 void                            bind_function(const std::string& name, lua_CFunction fn);
 #pragma endregion
 
@@ -74,16 +74,6 @@ public:
 
 class lua
 {
-#pragma region friend
-private:
-    friend class main;
-#pragma endregion
-
-#pragma region static field
-private:
-    static std::mutex           _mutex;
-#pragma endregion
-
 #pragma region private field
 private:
     int                         _state  = 0;
@@ -98,20 +88,15 @@ protected:
 #pragma region constructor / destructor
 protected:
     lua(lua_State* lua);
-    lua(const lua&) = delete;
-    lua(lua&&) = delete;
+    lua(const lua&)              = delete;
+    lua(lua&&)                   = delete;
 
 public:
     virtual ~lua();
 
 public:
-    lua& operator = (lua&) = delete;
+    lua& operator = (lua&)       = delete;
     lua& operator = (const lua&) = delete;
-#pragma endregion
-
-#pragma region private method
-private:
-    void                        bind_builtin_functions();
 #pragma endregion
 
 #pragma region public method
@@ -193,9 +178,17 @@ public:
 #pragma endregion
 };
 
-
-class main
+class main : public lua
 {
+public:
+    using binary_map = std::map<std::string, std::vector<char>>;
+
+#pragma region static field
+private:
+    static std::mutex           _mutex;
+    binary_map                  binaries;
+#pragma endregion
+
 #pragma region friend
 public:
     friend class lua;
@@ -212,11 +205,7 @@ public:
 
 #pragma region private field
 private:
-    builtin_func_map            builtin_local_funcs;
-    builtin_funcs               builtin_global_funcs;
-    relation_map                relations;
     environment_map             environments;
-    std::list<std::string>      inheritances;
 #pragma endregion
 
 #pragma region public field
@@ -224,31 +213,26 @@ public:
     unique_lua_map              idle, busy;
 #pragma endregion
 
-#pragma region static field
-private:
-    static std::unique_ptr<main> _instance;
-#pragma endregion
-
 #pragma region constructor / destructor
 public:
-    main() = default;
-    main(const main&&) = delete;
-    ~main() = default;
+    main();
+    main(const main&&)          = delete;
+    ~main()                     = default;
 
 public:
-    main& operator = (main&) = delete;
-    main& operator = (main&&) = delete;
+    main& operator = (main&)    = delete;
+    main& operator = (main&&)   = delete;
 #pragma endregion
 
 #pragma region private method
 private:
-    void                        update_inheritances();
+    std::unique_ptr<lua>        new_thread();
 #pragma endregion
 
 #pragma region public method
 public:
-    void                        reserve(int capacity = DEFAULT_POOL_SIZE);
-    lua&                        alloc();
+    bool                        load_file(const std::string& path);
+    lua*                        pop();
     lua*                        get(lua_State& lua);
     lua&                        release(lua& lua);
 #pragma endregion
@@ -263,28 +247,31 @@ public:
     template <typename T>
     void bind_class()
     {
-        auto name = T::LUA_METATABLE_NAME.c_str();
-        auto methods = T::LUA_METHODS;
-
-        this->builtin_local_funcs.insert(std::make_pair(name, methods));
-        this->update_inheritances();
+        luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str());      // [mt]
+        lua_pushvalue(*this, -1);                                     // [mt, mt]
+                                                                            // mt.__index = mt
+        lua_setfield(*this, -2, "__index");                           // [mt]
+                                                                            // [mt.functions = ...]
+        luaL_setfuncs(*this, T::LUA_METHODS, 0);                      // []
     }
 
     template <typename T, typename B>
     void bind_class()
     {
-        auto derived = T::LUA_METATABLE_NAME.c_str();
-        auto base = B::LUA_METATABLE_NAME.c_str();
-        this->relations.insert(std::make_pair(derived, base));
-
-        auto methods = T::LUA_METHODS;
-        this->builtin_local_funcs.insert(std::make_pair(derived, methods));
-        this->update_inheritances();
+        luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str());      // [mt]
+        luaL_getmetatable(*this, B::LUA_METATABLE_NAME.c_str());      // [mt, bt]
+                                                                            // mt.__metatable = bt
+        lua_setmetatable(*this, -2);                                  // [mt]
+        lua_pushvalue(*this, -1);                                     // [mt, mt]
+                                                                            // mt.__index = mt
+        lua_setfield(*this, -2, "__index");                           // [mt]
+                                                                            // mt.functions = ...
+        luaL_setfuncs(*this, T::LUA_METHODS, 0);                      // []
     }
 
-    void bind_function(const std::string& name, lua_CFunction func)
+    void bind_function(const std::string& name, lua_CFunction fn)
     {
-        this->builtin_global_funcs.insert(std::make_pair(name, func));
+        lua_register(*this, name.c_str(), fn);
     }
 
     template <typename T>
@@ -293,6 +280,14 @@ public:
         this->environments.insert(std::make_pair(std::string(key), (void*)data));
     }
 #pragma endregion
+};
+
+
+class thread : public lua
+{
+public:
+    thread(lua_State* lua);
+    ~thread() = default;
 };
 
 #pragma region global template function

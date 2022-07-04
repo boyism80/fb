@@ -259,8 +259,8 @@ void fb::base::acceptor<S, T>::exit()
 {
     this->_exit = true;
 
-    for(auto& pair : this->sockets)
-        pair.second.get()->close();
+    for(auto& [key, value] : this->sockets)
+        value.get()->close();
 
     this->shutdown();
 }

@@ -518,8 +518,11 @@ void fb::game::items::pickup(bool boost)
                 break;
         }
 
-        lua::get()
-            .from("scripts/common/pickup.lua")
+        auto thread = lua::get();
+        if(thread == nullptr)
+            return;
+
+        thread->from("scripts/common/pickup.lua")
             .func("on_pickup")
             .pushobject(owner)
             .resume(1);

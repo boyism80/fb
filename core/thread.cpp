@@ -299,9 +299,9 @@ void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clo
     }
     else
     {
-        for(auto& pair : this->_threads)
+        for(auto& [key, value] : this->_threads)
         {
-            pair.second->settimer(fn, duration);
+            value->settimer(fn, duration);
         }
     }
 }

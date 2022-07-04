@@ -76,15 +76,18 @@ void fb::game::session::handle_attack(fb::game::object* you)
 {
     fb::game::life::handle_attack(you);
 
-    auto& thread = fb::game::lua::get();
-    thread.from("scripts/common/attack.lua")
+    auto thread = fb::game::lua::get();
+    if(thread == nullptr)
+        return;
+
+    thread->from("scripts/common/attack.lua")
           .func("on_attack")
           .pushobject(*this);
     if(you != nullptr)
-        thread.pushobject(*you);
+        thread->pushobject(*you);
     else
-        thread.pushnil();
-    thread.resume(2);
+        thread->pushnil();
+    thread->resume(2);
 
     auto listener = this->get_listener<fb::game::session>();
     listener->on_attack(*this, you);
@@ -1605,8 +1608,10 @@ fb::game::lua::dialog& fb::game::lua::dialog::from(const char* format, ...)
     if(this->_thread != nullptr)
         this->_thread->release();
 
-    this->_thread = &fb::game::lua::get();
-
+    this->_thread = fb::game::lua::get();
+    if(this->_thread == nullptr)
+        return *this;
+    
     va_list args;
     va_start(args, format);
 

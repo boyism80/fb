@@ -67,8 +67,10 @@ void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     if(uncast.empty())
         return;
 
-     lua::get()
-         .from(uncast.c_str())
+     auto thread = lua::get();
+     if(thread == nullptr)
+         return;
+     thread->from(uncast.c_str())
          .func("on_uncast")
          .pushobject(me)
          .pushobject(buff.spell())
@@ -243,8 +245,11 @@ void fb::game::context::on_equipment_off(session& me, equipment::slot slot, uint
 
 void fb::game::context::on_item_active(session& me, item& item)
 {
-    lua::get()
-        .from(item.based<fb::game::item>()->active_script.c_str())
+    auto thread = lua::get();
+    if(thread == nullptr)
+        return;
+
+    thread->from(item.based<fb::game::item>()->active_script.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)

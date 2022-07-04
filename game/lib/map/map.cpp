@@ -34,10 +34,10 @@ uint16_t fb::game::objects::empty_seq()
 std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
 {
     auto result = std::vector<fb::game::object*>();
-    for(auto& pair : *this)
+    for(auto& [key, value] : *this)
     {
-        if(pair.second->is(object::types::SESSION))
-            result.push_back(pair.second);
+        if(value->is(object::types::SESSION))
+            result.push_back(value);
     }
 
     return std::move(result);
@@ -247,15 +247,15 @@ bool fb::game::map::movable(const point16_t position) const
     if((*this)(position.x, position.y)->blocked)
         return false;
 
-    for(const auto& pair : this->objects)
+    for(const auto& [key, value] : this->objects)
     {
-        if(pair.second->visible() == false)
+        if(value->visible() == false)
             continue;
 
-        if(pair.second->type() == fb::game::object::types::ITEM)
+        if(value->type() == fb::game::object::types::ITEM)
             continue;
 
-        if(pair.second->position() == position)
+        if(value->position() == position)
             return false;
     }
 

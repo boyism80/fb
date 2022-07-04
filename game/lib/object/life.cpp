@@ -233,14 +233,17 @@ void fb::game::life::kill()
 
 bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
 {
-    auto& thread = fb::game::lua::get();
-    thread.from(spell.cast().c_str())
+    auto thread = fb::game::lua::get();
+    if(thread == nullptr)
+        return false;
+
+    thread->from(spell.cast().c_str())
         .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::INPUT)
         return false;
 
-    thread.pushobject(this)
+    thread->pushobject(this)
         .pushobject(spell)
         .pushstring(message)
         .resume(3);
@@ -261,8 +264,11 @@ bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
 
 bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
 {
-    auto& thread = fb::game::lua::get();
-    thread.from(spell.cast().c_str())
+    auto thread = fb::game::lua::get();
+    if(thread == nullptr)
+        return false;
+
+    thread->from(spell.cast().c_str())
         .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::TARGET)
@@ -278,7 +284,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     if(this->sight(to) == false)
         return true;
 
-    thread.pushobject(this)
+    thread->pushobject(this)
         .pushobject(&to)
         .pushobject(spell)
         .resume(3);
@@ -287,14 +293,17 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
 
 bool fb::game::life::active(fb::game::spell& spell)
 {
-    auto& thread = fb::game::lua::get();
-    thread.from(spell.cast().c_str())
+    auto thread = fb::game::lua::get();
+    if(thread == nullptr)
+        return false;
+
+    thread->from(spell.cast().c_str())
         .func("on_cast");
 
     if(spell.type() != fb::game::spell::types::NORMAL)
         return false;
 
-    thread.pushobject(this)
+    thread->pushobject(this)
         .pushobject(spell)
         .resume(2);
     return true;
@@ -589,17 +598,20 @@ int fb::game::life::builtin_cast(lua_State* lua)
     if(spell == nullptr)
         return 0;
 
-    auto& x = lua::get();
-    x.from(spell->cast().c_str())
+    auto x = lua::get();
+    if(x == nullptr)
+        return 0;
+
+    x->from(spell->cast().c_str())
      .func("on_cast")
      .pushobject(me);
 
     if(you != nullptr)
-        x.pushobject(you);
+        x->pushobject(you);
     else
-        x.pushnil();
+        x->pushnil();
 
-    x.pushobject(spell)
+    x->pushobject(spell)
      .resume(3);
 
     return 0;

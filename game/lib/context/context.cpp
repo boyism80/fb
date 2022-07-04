@@ -172,8 +172,6 @@ context::context(boost::asio::io_context& context, uint16_t port, std::chrono::s
     lua::bind_function("timer",     builtin_timer);
     lua::bind_function("weather",   builtin_weather);
 
-    lua::reserve();
-
     this->bind<fb::protocol::game::request::login>            (0x10, std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (0x11, std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
     this->bind<fb::protocol::game::request::exit>             (0x0B, std::bind(&context::handle_logout,          this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
@@ -371,8 +369,8 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto& pair : fb::game::data_set::maps)
-        pair.second->handle_timer(elapsed_milliseconds);
+    for(auto& [key, value] : fb::game::data_set::maps)
+        value->handle_timer(elapsed_milliseconds);
 }
 
 bool fb::game::context::destroy(fb::game::object& obj)
@@ -439,7 +437,7 @@ std::string fb::game::context::elapsed_message(const datetime& datetime)
 fb::game::session* fb::game::context::find(const std::string& name) const
 {
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (const auto& pair) 
+        [&name] (const auto& pair)
         {
             return pair.second->data()->name() == name;
         });
@@ -511,12 +509,12 @@ void fb::game::context::send(object& object, const fb::protocol::base::header& h
 
     case context::scope::MAP:
     {
-        for(const auto& pair : object.map()->objects)
+        for(const auto& [key, value] : object.map()->objects)
         {
-            if(exclude_self && pair.second == &object)
+            if(exclude_self && value == &object)
                 continue;
 
-            pair.second->send(header, encrypt);
+            value->send(header, encrypt);
         }
     } break;
 
@@ -562,20 +560,20 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::MAP:
     {
-        for(const auto& pair : object.map()->objects)
+        for(const auto& [key, value] : object.map()->objects)
         {
-            if(exclude_self && pair.second == &object)
+            if(exclude_self && value == &object)
                 continue;
 
-            pair.second->send(*fn(*pair.second).get(), encrypt);
+            value->send(*fn(*value).get(), encrypt);
         }
     } break;
 
     case context::scope::WORLD:
     {
-        for(const auto& pair : this->sockets)
+        for(const auto& [key, value] : this->sockets)
         {
-            auto session = pair.second->data();
+            auto session = value->data();
             session->send(*fn(*session).get(), encrypt);
         }
     } break;
@@ -585,9 +583,9 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
 void fb::game::context::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
-    for(const auto& pair : this->sockets)
+    for(const auto& [key, value] : this->sockets)
     {
-        auto session = pair.second->data();
+        auto session = value->data();
         if(session->map() != &map)
             continue;
 
@@ -597,9 +595,9 @@ void fb::game::context::send(const fb::protocol::base::header& response, const f
 
 void fb::game::context::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    for(const auto& pair : this->sockets)
+    for(const auto& [key, value] : this->sockets)
     {
-        auto session = pair.second->data();
+        auto session = value->data();
         session->send(response, encrypt);
     }
 }
@@ -1526,8 +1524,11 @@ bool fb::game::context::handle_spell(fb::socket<fb::game::session>& socket, cons
 bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::door& request)
 {
     auto session = socket.data();
-    lua::get()
-        .from("scripts/common/door.lua")
+    auto thread = lua::get();
+    if(thread == nullptr)
+        return true;
+    
+    thread->from("scripts/common/door.lua")
         .func("on_door")
         .pushobject(session)
         .resume(1);
@@ -1562,9 +1563,9 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
 
 void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& pair : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::data_set::maps)
     {
-        auto&               map = pair.second;
+        auto&               map = value;
         if(map->activated() == false)
             continue;
 
@@ -1596,9 +1597,9 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*>    spawned_mobs;
-    for(auto& pair : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::data_set::maps)
     {
-        auto&               map = pair.second;
+        auto&               map = value;
         if(map->activated() == false)
             continue;
 
@@ -1606,12 +1607,12 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        for(auto& pair : map->objects)
+        for(auto& [key, value] : map->objects)
         {
-            if(pair.second->type() != object::types::MOB)
+            if(value->type() != object::types::MOB)
                 continue;
 
-            auto mob = static_cast<fb::game::mob*>(pair.second);
+            auto mob = static_cast<fb::game::mob*>(value);
             if(mob == nullptr)
                 continue;
 
@@ -1628,9 +1629,9 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
     // 화면에 보이는 몹만 갱신
     std::vector<object*> shown_mobs;
-    for(const auto& pair : this->sockets)
+    for(const auto& [key, value] : this->sockets)
     {
-        auto session = pair.second->data();
+        auto session = value->data();
         if(session == nullptr)
             continue;
 
@@ -1654,9 +1655,9 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
 void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& pair : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::data_set::maps)
     {
-        auto&               map = pair.second;
+        auto&               map = value;
         if(map->activated() == false)
             continue;
 
@@ -1667,13 +1668,13 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
         if(map->objects.size() == 0)
             continue;
 
-        for(auto& pair : map->objects)
+        for(auto& [key, value] : map->objects)
         {
-            if(pair.second->buffs.size() == 0)
+            if(value->buffs.size() == 0)
                 continue;
 
             std::vector<std::unique_ptr<buff>*> finishes;
-            for(auto& buff : pair.second->buffs)
+            for(auto& buff : value->buffs)
             {
                 buff->time_dec(1);
                 if(buff->time() <= 0ms)
@@ -1681,7 +1682,7 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             }
 
             for(auto finish : finishes)
-                pair.second->buffs.remove((*finish)->spell().name());
+                value->buffs.remove((*finish)->spell().name());
         }
     }
 }
@@ -1690,9 +1691,9 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 {
     auto& c = console::get();
 
-    for(auto& pair : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::data_set::maps)
     {
-        auto&               map = pair.second;
+        auto&               map = value;
         if(map->activated() == false)
             continue;
 
@@ -1703,12 +1704,12 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
         if(map->objects.size() == 0)
             continue;
 
-        for(auto& pair : map->objects)
+        for(auto& [key, value] : map->objects)
         {
-            if(pair.second->is(fb::game::object::types::SESSION) == false)
+            if(value->is(fb::game::object::types::SESSION) == false)
                 continue;
 
-            auto session = static_cast<fb::game::session*>(pair.second);
+            auto session = static_cast<fb::game::session*>(value);
             this->save(*session);
         }
     }
