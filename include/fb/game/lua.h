@@ -34,7 +34,7 @@ extern "C"
 
 namespace fb { namespace game { namespace lua {
 
-constexpr auto DEFAULT_POOL_SIZE = 100;
+constexpr auto DEFAULT_POOL_SIZE = 1000;
 
 #pragma region forward declaration
 class luable;
@@ -77,7 +77,6 @@ class context
 #pragma region private field
 private:
     int                         _state  = 0;
-    int                         _ref    = 0;
 #pragma endregion
 
 #pragma region protected field
@@ -110,6 +109,7 @@ public:
     context&                    pushboolean(bool value);
     context&                    pushobject(const luable* object);
     context&                    pushobject(const luable& object);
+    context&                    push(const void* value);
 
     template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
     context&                    pushinteger(T value)
@@ -147,7 +147,7 @@ public:
     int                         argc() const;
 
 public:
-    context&                    resume(int argc);
+    bool                        resume(int argc);
     int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();
@@ -187,7 +187,7 @@ class main : public context
 {
 #pragma region type definition
 public:
-    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<context>>;
+    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<thread>>;
     using bytecode_set          = std::map<std::string, std::vector<char>>;
 #pragma endregion
 
@@ -216,7 +216,7 @@ public:
 public:
     main();
     main(const main&&)          = delete;
-    ~main()                     = default;
+    ~main();
 
 public:
     main& operator = (main&)    = delete;
@@ -225,7 +225,7 @@ public:
 
 #pragma region private method
 private:
-    std::unique_ptr<context>    new_thread();
+    
 #pragma endregion
 
 #pragma region public method
@@ -234,6 +234,7 @@ public:
     context*                    pop();
     context*                    get(lua_State& ctx);
     context&                    release(context& ctx);
+    void                        revoke(context& ctx);
 #pragma endregion
 
 #pragma region static method
@@ -279,8 +280,18 @@ public:
 class thread : public context
 {
 public:
+    const int               ref;
+
+public:
     thread(lua_State* ctx);
-    ~thread() = default;
+    thread(const thread&) = delete;
+    thread(thread&& ctx);
+    ~thread();
+
+#pragma region built-in method
+public:
+    //static int                  builtin_gc(lua_State* ctx);
+#pragma endregion
 };
 
 #pragma region global template function

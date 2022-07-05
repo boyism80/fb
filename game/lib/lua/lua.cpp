@@ -56,9 +56,7 @@ context::context(lua_State* ctx) : _ctx(ctx)
 { }
 
 context::~context()
-{
-    lua_close(*this);
-}
+{ }
 
 context& context::from(const char* format, ...)
 {
@@ -69,11 +67,10 @@ context& context::from(const char* format, ...)
     va_end(args);
 
     auto& ist = main::get();
-    auto  i = ist.bytecodes.find(buffer);
-    if(i == ist.bytecodes.end())
+    if(ist.bytecodes.contains(buffer) == false)
         return *this;
 
-    auto& bytes = i->second;
+    auto& bytes = ist.bytecodes[buffer];
     if(luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 
@@ -131,6 +128,12 @@ context& context::pushobject(const luable& object)
     return *this;
 }
 
+context& context::push(const void* value)
+{
+    lua_pushlightuserdata(this->_ctx, const_cast<void*>(value));
+    return *this;
+}
+
 const std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
@@ -150,7 +153,7 @@ int context::argc() const
     return lua_gettop(this->_ctx);
 }
 
-context& context::resume(int argc)
+bool context::resume(int argc)
 {
     if(this->_state == LUA_PENDING)
         return *this;
@@ -164,12 +167,16 @@ context& context::resume(int argc)
     {
     case LUA_PENDING:
     case LUA_YIELD:
-        return *this;
-        break;
+        return true;
+
+    case LUA_ERRRUN:
+    case LUA_ERRERR:
+        main::get().revoke(*this);
+        return false;
 
     default:
-        return main::get().release(*this);
-        break;
+        main::get().release(*this);
+        return true;
     }
 }
 
@@ -198,9 +205,9 @@ main::main() : context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
-    this->load_file("scripts/common/door.context");
-    this->load_file("scripts/common/pickup.context");
-    this->load_file("scripts/common/attack.context");
+    this->load_file("scripts/common/door.lua");
+    this->load_file("scripts/common/pickup.lua");
+    this->load_file("scripts/common/attack.lua");
 
     lua_pushinteger(*this, fb::game::object::types::UNKNOWN);
     lua_setglobal(*this, "UNKNOWN");
@@ -434,8 +441,11 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "DIALOG_RESULT_QUIT");
     lua_pushinteger(*this, 2);
     lua_setglobal(*this, "DIALOG_RESULT_NEXT");
+}
 
-    ::lua_checkstack(*this, DEFAULT_POOL_SIZE);
+main::~main()
+{
+    lua_close(*this);
 }
 
 context* main::get(lua_State& ctx)
@@ -449,12 +459,6 @@ context* main::get(lua_State& ctx)
     return found->second.get();
 }
 
-std::unique_ptr<context> main::new_thread()
-{
-    auto ptr = (context*)new thread(*this);
-    return std::unique_ptr<context>(ptr);
-}
-
 bool main::load_file(const std::string& path)
 {
     if(path.empty())
@@ -462,8 +466,7 @@ bool main::load_file(const std::string& path)
 
     std::lock_guard gd(main::mutex);
 
-    auto i = bytecodes.find(path);
-    if(i != bytecodes.end())
+    if(bytecodes.contains(path))
         return true;
 
     luaL_loadfile(*this, path.c_str());
@@ -473,8 +476,7 @@ bool main::load_file(const std::string& path)
         auto casted = (void**)(params);
         auto ist = (main*)casted[0];
         auto path = (const char*)casted[1];
-        auto  i = ist->bytecodes.find(path);
-        if (i == ist->bytecodes.end())
+        if(ist->bytecodes.contains(path) == false)
             ist->bytecodes[path] = std::vector<char>();
 
         for (int i = 0; i < size; i++)
@@ -501,8 +503,14 @@ context* main::pop()
     }
     else if(this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = new_thread();
+        auto ptr = std::make_unique<thread>(this->_ctx);
         auto key = (lua_State*)*ptr.get();
+
+        // lua_newthread가 이미 존재하는 lua_State*를 다시
+        // 반환하는 경우가 있는데.. 확인해볼 필요가 있을듯
+        if(this->idle.contains(key) || this->busy.contains(key))
+            return nullptr;
+
         this->busy.insert(std::make_pair(key, std::move(ptr)));
         return this->busy[key].get();
     }
@@ -516,10 +524,10 @@ context& main::release(context& ctx)
 {
     std::lock_guard gd(main::mutex);
 
-    if(this->busy.find(ctx) == this->busy.end())
+    if(this->busy.contains(ctx) == false)
         return ctx;
 
-    if(this->idle.find((lua_State*)ctx) != this->idle.end())
+    if(this->idle.contains(ctx))
         return ctx;
 
     auto key = (lua_State*)ctx;
@@ -527,6 +535,17 @@ context& main::release(context& ctx)
     this->busy.erase(key);
 
     return *this->idle[key];
+}
+
+void main::revoke(context& ctx)
+{
+    std::lock_guard gd(main::mutex);
+
+    auto i = this->busy.find(ctx);
+    if(i == this->busy.end())
+        return;
+    
+    this->busy.erase(i);
 }
 
 main& main::get()
@@ -538,5 +557,23 @@ main& main::get()
     return *ist;
 }
 
-thread::thread(lua_State* ctx) : context(::lua_newthread(ctx))
+thread::thread(lua_State* ctx) : 
+    context(::lua_newthread(ctx)),
+    ref(luaL_ref(ctx, LUA_REGISTRYINDEX))
 { }
+
+thread::thread(thread&& ctx) : 
+    context(ctx._ctx),
+    ref(ctx.ref)
+{ }
+
+thread::~thread()
+{
+    luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
+}
+
+//int thread::builtin_gc(lua_State* ctx)
+//{
+//    puts("delete lua thread");
+//    return 0;
+//}

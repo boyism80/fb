@@ -85,7 +85,7 @@ bool fb::game::mob::action()
         else
             this->_attack_thread->pushnil();
         
-        this->_attack_thread = &this->_attack_thread->resume(2);
+        this->_attack_thread->resume(2);
     }
 
     auto stop = false;

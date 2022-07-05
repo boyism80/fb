@@ -1644,7 +1644,8 @@ bool fb::game::lua::dialog::resume(int argc)
     if(this->_thread == nullptr)
         return false;
 
-    auto result = this->_thread->resume(argc).state();
+    this->_thread->resume(argc);
+    auto result = this->_thread->state();
     if(result != LUA_YIELD)
         this->_thread = nullptr;
 
