@@ -38,14 +38,14 @@ constexpr auto DEFAULT_POOL_SIZE = 100;
 
 #pragma region forward declaration
 class luable;
-class lua;
+class context;
 class main;
 class thread;
 #pragma endregion
 
 #pragma region global function
-lua*                            get();
-lua*                            get(lua_State* lua);
+context*                        get();
+context*                        get(lua_State* ctx);
 void                            bind_function(const std::string& name, lua_CFunction fn);
 #pragma endregion
 
@@ -54,7 +54,7 @@ class luable
 #pragma region lua
 public:
     LUA_PROTOTYPE
-    void                        to_lua(lua_State* lua) const;
+    void                        to_lua(lua_State* ctx) const;
 #pragma endregion
 
 #pragma region public method
@@ -68,11 +68,11 @@ public:
 
 #pragma region built-in method
 public:
-    static int                  builtin_gc(lua_State* lua);
+    static int                  builtin_gc(lua_State* ctx);
 #pragma endregion
 };
 
-class lua
+class context
 {
 #pragma region private field
 private:
@@ -82,37 +82,37 @@ private:
 
 #pragma region protected field
 protected:
-    lua_State*                  _lua    = nullptr;
+    lua_State*                  _ctx    = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor
 protected:
-    lua(lua_State* lua);
-    lua(const lua&)              = delete;
-    lua(lua&&)                   = delete;
+    context(lua_State* ctx);
+    context(const context&)            = delete;
+    context(context&&)                 = delete;
 
 public:
-    virtual ~lua();
+    virtual ~context();
 
 public:
-    lua& operator = (lua&)       = delete;
-    lua& operator = (const lua&) = delete;
+    context operator = (context&)       = delete;
+    context operator = (const context&) = delete;
 #pragma endregion
 
 #pragma region public method
 public:
-    lua&                        from(const char* format, ...);
-    lua&                        func(const char* format, ...);
+    context&                    from(const char* format, ...);
+    context&                    func(const char* format, ...);
                                 
-    lua&                        pushstring(const std::string& value);
-    lua&                        pushinteger(lua_Integer value);
-    lua&                        pushnil();
-    lua&                        pushboolean(bool value);
-    lua&                        pushobject(const luable* object);
-    lua&                        pushobject(const luable& object);
+    context&                    pushstring(const std::string& value);
+    context&                    pushinteger(lua_Integer value);
+    context&                    pushnil();
+    context&                    pushboolean(bool value);
+    context&                    pushobject(const luable* object);
+    context&                    pushobject(const luable& object);
 
     template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-    lua&                        pushinteger(T value)
+    context&                    pushinteger(T value)
     {
         return this->pushinteger(static_cast<lua_Integer>(value));
     }
@@ -147,7 +147,7 @@ public:
     int                         argc() const;
 
 public:
-    lua&                        resume(int argc);
+    context&                    resume(int argc);
     int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();
@@ -183,11 +183,11 @@ public:
 #pragma endregion
 };
 
-class main : public lua
+class main : public context
 {
 #pragma region type definition
 public:
-    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<lua>>;
+    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<context>>;
     using bytecode_set          = std::map<std::string, std::vector<char>>;
 #pragma endregion
 
@@ -199,7 +199,7 @@ private:
 
 #pragma region friend
 public:
-    friend class lua;
+    friend class context;
 #pragma endregion
 
 #pragma region private field
@@ -225,15 +225,15 @@ public:
 
 #pragma region private method
 private:
-    std::unique_ptr<lua>        new_thread();
+    std::unique_ptr<context>    new_thread();
 #pragma endregion
 
 #pragma region public method
 public:
     bool                        load_file(const std::string& path);
-    lua*                        pop();
-    lua*                        get(lua_State& lua);
-    lua&                        release(lua& lua);
+    context*                    pop();
+    context*                    get(lua_State& ctx);
+    context&                    release(context& ctx);
 #pragma endregion
 
 #pragma region static method
@@ -276,10 +276,10 @@ public:
 };
 
 
-class thread : public lua
+class thread : public context
 {
 public:
-    thread(lua_State* lua);
+    thread(lua_State* ctx);
     ~thread() = default;
 };
 
@@ -315,14 +315,14 @@ void lua_pushinteger(lua_State *L, T value)
 }
 
 template<typename T>
-inline void to_lua(lua_State* lua, const T* self)
+inline void to_lua(lua_State* ctx, const T* self)
 {
-    auto allocated = (void**)lua_newuserdata(lua, sizeof(void**));
+    auto allocated = (void**)lua_newuserdata(ctx, sizeof(void**));
     *allocated = (const void*)self;
 
     auto metaname = self->metaname();
-    luaL_getmetatable(lua, metaname.c_str());
-    lua_setmetatable(lua, -2);
+    luaL_getmetatable(ctx, metaname.c_str());
+    lua_setmetatable(ctx, -2);
 }
 
 #endif // !__LUA_H__

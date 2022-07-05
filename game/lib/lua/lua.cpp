@@ -6,54 +6,61 @@ using namespace fb::game::lua;
 
 std::mutex                      main::mutex;
 
-lua* fb::game::lua::get()
+context* fb::game::lua::get()
 {
-    return fb::game::lua::main::get().pop();
+    return main::get().pop();
 }
 
-lua* fb::game::lua::get(lua_State* lua)
+context* fb::game::lua::get(lua_State* ctx)
 {
-    return fb::game::lua::main::get().get(*lua);
+    return main::get().get(*ctx);
 }
 
-void fb::game::lua::luable::to_lua(lua_State* lua) const
+void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
 {
-    auto allocated = static_cast<void**>(lua_newuserdata(lua, sizeof(void**)));     // [val]
+    auto& main = main::get();
+    main.bind_function(name, fn);
+    //lua_register(main::get(), name.c_str(), fn);
+}
+
+void luable::to_lua(lua_State* ctx) const
+{
+    auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**)));     // [val]
     *allocated = (void*)this;
 
     auto& metaname = this->metaname();
-    luaL_getmetatable(lua, metaname.c_str());                                       // [val, mt]
-    lua_pushcfunction(lua, luable::builtin_gc);                                     // [val, mt, gc]
-    lua_setfield(lua, -2, "__gc");                                                  // [val, mt]
-    lua_setmetatable(lua, -2);                                                      // [val]
+    luaL_getmetatable(ctx, metaname.c_str());                                       // [val, mt]
+    lua_pushcfunction(ctx, luable::builtin_gc);                                     // [val, mt, gc]
+    lua_setfield(ctx, -2, "__gc");                                                  // [val, mt]
+    lua_setmetatable(ctx, -2);                                                      // [val]
 }
 
-fb::game::lua::luable::luable()
+luable::luable()
 { }
 
-fb::game::lua::luable::luable(uint32_t id)
+luable::luable(uint32_t id)
 { }
 
-fb::game::lua::luable::~luable()
+luable::~luable()
 { }
 
-int fb::game::lua::luable::builtin_gc(lua_State* lua)
+int luable::builtin_gc(lua_State* ctx)
 {
-    auto allocated = (void**)lua_touserdata(lua, 1);
+    auto allocated = (void**)lua_touserdata(ctx, 1);
     if(allocated != nullptr)
         *allocated = nullptr;
     return 0;
 }
 
-lua::lua(lua_State* lua) : _lua(lua)
+context::context(lua_State* ctx) : _ctx(ctx)
 { }
 
-lua::~lua()
+context::~context()
 {
     lua_close(*this);
 }
 
-lua& fb::game::lua::lua::from(const char* format, ...)
+context& context::from(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -76,7 +83,7 @@ lua& fb::game::lua::lua::from(const char* format, ...)
     return *this;
 }
 
-lua& fb::game::lua::lua::func(const char* format, ...)
+context& context::func(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -88,43 +95,43 @@ lua& fb::game::lua::lua::func(const char* format, ...)
     return *this;
 }
 
-lua& fb::game::lua::lua::pushstring(const std::string& value)
+context& context::pushstring(const std::string& value)
 {
     lua_pushstring(*this, UTF8(value, PLATFORM::Windows).c_str());
     return *this;
 }
 
-lua& fb::game::lua::lua::pushinteger(lua_Integer value)
+context& context::pushinteger(lua_Integer value)
 {
-    lua_pushinteger(this->_lua, value);
+    lua_pushinteger(this->_ctx, value);
     return *this;
 }
 
-lua& fb::game::lua::lua::pushnil()
+context& context::pushnil()
 {
-    lua_pushnil(this->_lua);
+    lua_pushnil(this->_ctx);
     return *this;
 }
 
-lua& fb::game::lua::lua::pushboolean(bool value)
+context& context::pushboolean(bool value)
 {
-    lua_pushboolean(this->_lua, value);
+    lua_pushboolean(this->_ctx, value);
     return *this;
 }
 
-lua& fb::game::lua::lua::pushobject(const luable* object)
+context& context::pushobject(const luable* object)
 {
     object->to_lua(*this);
     return *this;
 }
 
-lua& fb::game::lua::lua::pushobject(const luable& object)
+context& context::pushobject(const luable& object)
 {
     object.to_lua(*this);
     return *this;
 }
 
-const std::string fb::game::lua::lua::tostring(int offset)
+const std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
     if(x == nullptr)
@@ -133,17 +140,17 @@ const std::string fb::game::lua::lua::tostring(int offset)
     return CP949(x, PLATFORM::Windows); 
 }
 
-lua::operator lua_State* () const
+context::operator lua_State* () const
 {
-    return this->_lua;
+    return this->_ctx;
 }
 
-int fb::game::lua::lua::argc() const
+int context::argc() const
 {
-    return lua_gettop(this->_lua);
+    return lua_gettop(this->_ctx);
 }
 
-lua& fb::game::lua::lua::resume(int argc)
+context& context::resume(int argc)
 {
     if(this->_state == LUA_PENDING)
         return *this;
@@ -166,34 +173,34 @@ lua& fb::game::lua::lua::resume(int argc)
     }
 }
 
-int fb::game::lua::lua::state() const
+int context::state() const
 {
     return this->_state;
 }
 
-void fb::game::lua::lua::release()
+void context::release()
 {
-    auto& main = fb::game::lua::main::get();
+    auto& main = main::get();
     main.release(*this);
 }
 
-bool fb::game::lua::lua::pending() const
+bool context::pending() const
 {
     return this->_state == LUA_PENDING;
 }
 
-void fb::game::lua::lua::pending(bool value)
+void context::pending(bool value)
 {
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-fb::game::lua::main::main() : lua(luaL_newstate())
+main::main() : context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
-    this->load_file("scripts/common/door.lua");
-    this->load_file("scripts/common/pickup.lua");
-    this->load_file("scripts/common/attack.lua");
+    this->load_file("scripts/common/door.context");
+    this->load_file("scripts/common/pickup.context");
+    this->load_file("scripts/common/attack.context");
 
     lua_pushinteger(*this, fb::game::object::types::UNKNOWN);
     lua_setglobal(*this, "UNKNOWN");
@@ -431,24 +438,24 @@ fb::game::lua::main::main() : lua(luaL_newstate())
     ::lua_checkstack(*this, DEFAULT_POOL_SIZE);
 }
 
-lua* fb::game::lua::main::get(lua_State& lua)
+context* main::get(lua_State& ctx)
 {
     std::lock_guard gd(main::mutex);
 
-    auto found = this->busy.find(&lua);
+    auto found = this->busy.find(&ctx);
     if(found == this->busy.end())
         return nullptr;
 
     return found->second.get();
 }
 
-std::unique_ptr<lua> fb::game::lua::main::new_thread()
+std::unique_ptr<context> main::new_thread()
 {
-    auto ptr = (fb::game::lua::lua*)new fb::game::lua::thread(*this);
-    return std::unique_ptr<fb::game::lua::lua>(ptr);
+    auto ptr = (context*)new thread(*this);
+    return std::unique_ptr<context>(ptr);
 }
 
-bool fb::game::lua::main::load_file(const std::string& path)
+bool main::load_file(const std::string& path)
 {
     if(path.empty())
         return true;
@@ -461,7 +468,7 @@ bool fb::game::lua::main::load_file(const std::string& path)
 
     luaL_loadfile(*this, path.c_str());
     void* params[] = {this, (void*)path.c_str()};
-    const auto callback = [](lua_State* lua, const void* bytes, size_t size, void* params)
+    const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params)
     {
         auto casted = (void**)(params);
         auto ist = (main*)casted[0];
@@ -480,15 +487,15 @@ bool fb::game::lua::main::load_file(const std::string& path)
     return true;
 }
 
-lua* fb::game::lua::main::pop()
+context* main::pop()
 {
     std::lock_guard gd(main::mutex);
 
     if(this->idle.empty() == false)
     {
-        auto& lua = this->idle.begin()->second;
-        auto  key = (lua_State*)*lua;
-        this->busy.insert(std::make_pair(key, std::move(lua)));
+        auto& ctx = this->idle.begin()->second;
+        auto  key = (lua_State*)*ctx;
+        this->busy.insert(std::make_pair(key, std::move(ctx)));
         this->idle.erase(key);
         return this->busy[key].get();
     }
@@ -505,17 +512,17 @@ lua* fb::game::lua::main::pop()
     }
 }
 
-lua& fb::game::lua::main::release(lua& lua)
+context& main::release(context& ctx)
 {
     std::lock_guard gd(main::mutex);
 
-    if(this->busy.find(lua) == this->busy.end())
-        return lua;
+    if(this->busy.find(ctx) == this->busy.end())
+        return ctx;
 
-    if(this->idle.find((lua_State*)lua) != this->idle.end())
-        return lua;
+    if(this->idle.find((lua_State*)ctx) != this->idle.end())
+        return ctx;
 
-    auto key = (lua_State*)lua;
+    auto key = (lua_State*)ctx;
     this->idle.insert(std::make_pair(key, std::move(this->busy[key])));
     this->busy.erase(key);
 
@@ -531,12 +538,5 @@ main& main::get()
     return *ist;
 }
 
-void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
-{
-    auto& main = fb::game::lua::main::get();
-    main.bind_function(name, fn);
-    //lua_register(main::get(), name.c_str(), fn);
-}
-
-fb::game::lua::thread::thread(lua_State* lua) : lua(lua_newthread(lua))
+thread::thread(lua_State* ctx) : context(::lua_newthread(ctx))
 { }

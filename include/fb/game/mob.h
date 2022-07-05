@@ -58,7 +58,7 @@ private:
     std::chrono::milliseconds               _respawn_time  = 0s; // seconds
                                                            
     fb::game::life*                         _target        = nullptr;
-    lua::lua*                               _attack_thread = nullptr;
+    lua::context*                           _attack_thread = nullptr;
 #pragma endregion
 
 #pragma region constructor / destructor

@@ -35,7 +35,7 @@ public:
 
 private:
     session&                _owner;
-    lua*                    _thread = nullptr;
+    context*                _thread = nullptr;
 
 public:
     dialog(fb::game::session& owner);
