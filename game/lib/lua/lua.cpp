@@ -4,7 +4,7 @@
 #include <fb/game/mob.h>
 using namespace fb::game::lua;
 
-std::mutex                      main::_mutex;
+std::mutex                      main::mutex;
 
 lua* fb::game::lua::get()
 {
@@ -62,8 +62,8 @@ lua& fb::game::lua::lua::from(const char* format, ...)
     va_end(args);
 
     auto& ist = main::get();
-    auto  i = ist.binaries.find(buffer);
-    if(i == ist.binaries.end())
+    auto  i = ist.bytecodes.find(buffer);
+    if(i == ist.bytecodes.end())
         return *this;
 
     auto& bytes = i->second;
@@ -433,7 +433,7 @@ fb::game::lua::main::main() : lua(luaL_newstate())
 
 lua* fb::game::lua::main::get(lua_State& lua)
 {
-    std::lock_guard gd(main::_mutex);
+    std::lock_guard gd(main::mutex);
 
     auto found = this->busy.find(&lua);
     if(found == this->busy.end())
@@ -453,10 +453,10 @@ bool fb::game::lua::main::load_file(const std::string& path)
     if(path.empty())
         return true;
 
-    std::lock_guard gd(main::_mutex);
+    std::lock_guard gd(main::mutex);
 
-    auto i = binaries.find(path);
-    if(i != binaries.end())
+    auto i = bytecodes.find(path);
+    if(i != bytecodes.end())
         return true;
 
     luaL_loadfile(*this, path.c_str());
@@ -466,12 +466,12 @@ bool fb::game::lua::main::load_file(const std::string& path)
         auto casted = (void**)(params);
         auto ist = (main*)casted[0];
         auto path = (const char*)casted[1];
-        auto  i = ist->binaries.find(path);
-        if (i == ist->binaries.end())
-            ist->binaries[path] = std::vector<char>();
+        auto  i = ist->bytecodes.find(path);
+        if (i == ist->bytecodes.end())
+            ist->bytecodes[path] = std::vector<char>();
 
         for (int i = 0; i < size; i++)
-            ist->binaries[path].push_back(static_cast<const char*>(bytes)[i]);
+            ist->bytecodes[path].push_back(static_cast<const char*>(bytes)[i]);
 
         return 0;
     };
@@ -482,7 +482,7 @@ bool fb::game::lua::main::load_file(const std::string& path)
 
 lua* fb::game::lua::main::pop()
 {
-    std::lock_guard gd(main::_mutex);
+    std::lock_guard gd(main::mutex);
 
     if(this->idle.empty() == false)
     {
@@ -507,7 +507,7 @@ lua* fb::game::lua::main::pop()
 
 lua& fb::game::lua::main::release(lua& lua)
 {
-    std::lock_guard gd(main::_mutex);
+    std::lock_guard gd(main::mutex);
 
     if(this->busy.find(lua) == this->busy.end())
         return lua;

@@ -167,26 +167,34 @@ public:
     template <typename T>
     T* env(const char* key)
     {
-        lua_pushstring(*this, key);
-        lua_gettable(*this, LUA_REGISTRYINDEX);
+        ::lua_getfield(*this, LUA_REGISTRYINDEX, key);
+        auto data = static_cast<T*>(::lua_touserdata(*this, -1));
+        lua_pop(*this, 1);
 
-        auto ret = static_cast<T*>(lua_touserdata(*this, -1));
-        lua_remove(*this, -1);
+        return data;
+    }
 
-        return ret;
+    template <typename T>
+    void env(const char* key, T* data)
+    {
+        ::lua_pushlightuserdata(*this, (void*)data);
+        ::lua_setfield(*this, LUA_REGISTRYINDEX, key);
     }
 #pragma endregion
 };
 
 class main : public lua
 {
+#pragma region type definition
 public:
-    using binary_map = std::map<std::string, std::vector<char>>;
+    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<lua>>;
+    using bytecode_set          = std::map<std::string, std::vector<char>>;
+#pragma endregion
 
 #pragma region static field
 private:
-    static std::mutex           _mutex;
-    binary_map                  binaries;
+    static std::mutex           mutex;
+    bytecode_set                bytecodes;
 #pragma endregion
 
 #pragma region friend
@@ -194,18 +202,9 @@ public:
     friend class lua;
 #pragma endregion
 
-#pragma region type definition
-public:
-    using builtin_func_map      = std::map<std::string, const luaL_Reg*>;
-    using builtin_funcs         = std::map<std::string, lua_CFunction>;
-    using relation_map          = std::map<std::string, std::string>;
-    using environment_map       = std::map<std::string, void*>;
-    using unique_lua_map        = std::map<lua_State*, std::unique_ptr<lua>>;
-#pragma endregion
-
 #pragma region private field
 private:
-    environment_map             environments;
+    
 #pragma endregion
 
 #pragma region public field
@@ -249,9 +248,9 @@ public:
     {
         luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str());      // [mt]
         lua_pushvalue(*this, -1);                                     // [mt, mt]
-                                                                            // mt.__index = mt
+                                                                      // mt.__index = mt
         lua_setfield(*this, -2, "__index");                           // [mt]
-                                                                            // [mt.functions = ...]
+                                                                      // [mt.functions = ...]
         luaL_setfuncs(*this, T::LUA_METHODS, 0);                      // []
     }
 
@@ -260,24 +259,18 @@ public:
     {
         luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str());      // [mt]
         luaL_getmetatable(*this, B::LUA_METATABLE_NAME.c_str());      // [mt, bt]
-                                                                            // mt.__metatable = bt
+                                                                      // mt.__metatable = bt
         lua_setmetatable(*this, -2);                                  // [mt]
         lua_pushvalue(*this, -1);                                     // [mt, mt]
-                                                                            // mt.__index = mt
+                                                                      // mt.__index = mt
         lua_setfield(*this, -2, "__index");                           // [mt]
-                                                                            // mt.functions = ...
+                                                                      // mt.functions = ...
         luaL_setfuncs(*this, T::LUA_METHODS, 0);                      // []
     }
 
     void bind_function(const std::string& name, lua_CFunction fn)
     {
         lua_register(*this, name.c_str(), fn);
-    }
-
-    template <typename T>
-    void env(const char* key, T* data)
-    {
-        this->environments.insert(std::make_pair(std::string(key), (void*)data));
     }
 #pragma endregion
 };
