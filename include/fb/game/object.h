@@ -180,7 +180,6 @@ public:
 public:
     virtual void                        handle_timer(uint64_t elapsed_milliseconds) { }
     void                                handle_enter(fb::game::map& map, const point16_t& position);
-    virtual void                        handle_transfer(fb::game::map& map, const point16_t& position);
     virtual void                        handle_kill(fb::game::life& you) { }
 
 protected:
