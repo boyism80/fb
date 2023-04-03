@@ -6,10 +6,6 @@ std::string nowstr()
 {
     std::stringstream sstream;
     sstream << '\'' << std::put_time(fb::now(), "%Y-%m-%d %H:%M:%S") << '\'';
-
-    auto now_s = sstream.str();
-    std::cout << now_s;
-
     return sstream.str();
 }
 
