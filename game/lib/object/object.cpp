@@ -156,41 +156,6 @@ void fb::game::object::destroy()
     this->context.destroy(*this);
 }
 
-const fb::game::object::cache& fb::game::object::before() const
-{
-    return this->_before;
-}
-
-const fb::game::object::cache& fb::game::object::before(fb::game::map* map)
-{
-    this->_before.map = map;
-    return this->_before;
-}
-
-const fb::game::object::cache& fb::game::object::before(const point16_t& position)
-{
-    this->_before.position = position;
-    return this->_before;
-}
-
-const fb::game::object::cache& fb::game::object::before(fb::game::map* map, const point16_t& position)
-{
-    if(this->_before.map != map)
-    {
-        this->_before.map = map;
-        this->_before.position = position;
-    }
-    else if(this->_before.position != position)
-    {
-        this->_before.position = position;
-    }
-    else
-    {
-    }
-
-    return this->_before;
-}
-
 const fb::game::point16_t& fb::game::object::position() const
 {
     return this->_position;
@@ -204,26 +169,25 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     if(this->_position.x == x && this->_position.y == y)
         return true;
 
-    this->before(this->_position);
+    auto before = this->_position;
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
-    auto forced = refresh || abs(this->_before.position.x - this->_position.x) + abs(this->_before.position.y - this->_position.y) > 1;
-    if(forced)
+    if(refresh)
         this->handle_hold();
 
     this->_map->update(*this);
     
-    auto nears_before = this->_map->nears(this->_before.position);
+    auto nears_before = this->_map->nears(before);
     auto nears_after = this->_map->nears(this->_position);
 
     {
         // 내 이전 위치에서 내 시야에 보이는 오브젝트들
-        auto befores = fb::game::object::showings(nears_before, *this, fb::game::object::types::UNKNOWN, true, false);
+        auto befores = this->showings(nears_before, before);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내 시야에 보이는 오브젝트들
-        auto afters = fb::game::object::showings(nears_after, *this, fb::game::object::types::UNKNOWN, false, false);
+        auto afters = this->showings(nears_after, this->_position);
         std::sort(afters.begin(), afters.end());
 
         // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
@@ -238,7 +202,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         for(auto x : shows)
             this->_listener->on_show(*x, *this, false);
 
-        if(forced)
+        if(refresh)
         {
             // 내가 이동한 뒤 내 시야에 여전히 남은 오브젝트들
             auto stay = std::vector<fb::game::object*>();
@@ -250,11 +214,13 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
     {
         // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::types::UNKNOWN, true, false);
+        //auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::types::UNKNOWN/* , true, false */);
+        auto befores = this->showns(nears_before, before);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::types::UNKNOWN, false, false);
+        //auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::types::UNKNOWN/* , false, false */);
+        auto afters = this->showns(nears_after, this->_position);
         std::sort(afters.begin(), afters.end());
 
         // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
@@ -269,7 +235,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         for(auto x : shows)
             this->_listener->on_show(*this, *x, false);
 
-        if(forced)
+        if(refresh)
         {
             // 내가 이동한 뒤 자기 시야에 여전히 내가 포함된 시야를 가진 오브젝트들
             auto stay = std::vector<fb::game::object*>();
@@ -323,8 +289,9 @@ bool fb::game::object::move(fb::game::direction direction)
     if(this->direction(direction) == false)
         return false;
 
+    auto before = this->_position;
     this->position(after);
-    this->_listener->on_move(*this);
+    this->_listener->on_move(*this, before);
 
     return true;
 }
@@ -403,12 +370,12 @@ fb::game::map* fb::game::object::map() const
     return this->_map;
 }
 
-bool fb::game::object::sight(const point16_t& position, bool before) const
+bool fb::game::object::sight(const point16_t& position) const
 {
-    return fb::game::object::sight(before ? this->_before.position : this->_position, position, this->_map);
+    return fb::game::object::sight(this->_position, position, this->_map);
 }
 
-bool fb::game::object::sight(const fb::game::object& object, bool before_me, bool before_you) const
+bool fb::game::object::sight(const fb::game::object& object) const
 {
     if(this->_map == nullptr)
         return false;
@@ -419,7 +386,7 @@ bool fb::game::object::sight(const fb::game::object& object, bool before_me, boo
     if(object.visible() == false)
         return false;
 
-    return this->sight(before_you ? object._before.position : object._position, before_me);
+    return this->sight(object._position);
 }
 
 bool fb::game::object::sector(fb::game::sector* sector)
@@ -519,7 +486,6 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
         if(this->_map != nullptr)
             this->_map->objects.remove(*this);
 
-        this->before(this->_map, this->_position);
         this->leave(true);
         this->_map = nullptr;
         this->_position = point16_t(1, 1); // 가상계 위치
@@ -657,11 +623,11 @@ std::vector<fb::game::object*> fb::game::object::showns(object::types type) cons
 {
     if(this->_map == nullptr)
         return std::vector<fb::game::object*> { };
-    else
-        return fb::game::object::showns(this->_map->nears(this->_position), *this, type);
+
+    return this->showns(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before_me, bool before_you)
+std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, object::types type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     std::copy_if
@@ -670,9 +636,9 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
         [&](auto x)
         {
             return
-                *x != pivot &&
+                x != this &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                pivot.sight(*x, before_me, before_you);
+                this->sight(*x);
         }
     );
 
@@ -684,22 +650,22 @@ std::vector<object*> fb::game::object::showings(object::types type) const
     if(this->_map == nullptr)
         return std::vector<object*> { };
     else
-        return fb::game::object::showings(this->_map->nears(this->_position), *this, type);
+        return this->showings(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type, bool before_me, bool before_you)
+std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, object::types type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
-    
+
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
         [&](auto x)
         {
             return
-                *x != pivot &&
+                x != this &&
                 (type == object::types::UNKNOWN || x->is(type)) &&
-                x->sight(pivot, before_you, before_me);
+                x->sight(*this);
         }
     );
 
@@ -737,17 +703,14 @@ bool fb::game::object::switch_process(const fb::game::map& map) const
 
     auto session = static_cast<const fb::game::session*>(this);
     
-    auto current = this->_map != nullptr ? this->_map : session->before().map;
-    if(current == nullptr)
+    if(this->_map == nullptr)
         return false;
 
-    return current->group != map.group;
+    return this->_map->group != map.group;
 }
 
 void fb::game::object::handle_enter(fb::game::map& map, const point16_t& position)
 {
-    this->before(this->_map, this->_position);
-
     this->_map = &map;
     this->_position = position;
     this->_map->update(*this);
@@ -755,17 +718,6 @@ void fb::game::object::handle_enter(fb::game::map& map, const point16_t& positio
 
     this->handle_warp();
     this->enter();
-}
-
-void fb::game::object::handle_transfer(fb::game::map& map, const point16_t& position)
-{
-    this->before(this->_map, this->_position);
-    if(this->_map != nullptr)
-        this->_map->objects.remove(*this);
-    this->_map = &map;
-    this->_position = position;
-
-    this->leave(false);
 }
 
 bool fb::game::object::operator==(const object& right) const

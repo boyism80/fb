@@ -140,13 +140,6 @@ void fb::game::session::handle_die(fb::game::object* from)
     listener->on_die(*this, from);
 }
 
-void fb::game::session::handle_transfer(fb::game::map& map, const point16_t& position)
-{
-    this->_transferring = true;
-    fb::game::object::handle_transfer(map, position);
-}
-
-
 fb::game::session::operator fb::socket<fb::game::session>& ()
 {
     return this->_socket;
@@ -169,11 +162,6 @@ bool fb::game::session::admin() const
 void fb::game::session::admin(bool value)
 {
     this->_admin = value;
-}
-
-bool fb::game::session::transferring() const
-{
-    return this->_transferring;
 }
 
 void fb::game::session::attack()

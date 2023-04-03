@@ -354,13 +354,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     c.puts("%s님이 접속을 종료했습니다.", session->name().c_str());
 
     if(session->transferring() == false)
-    {
-        // 월드맵 선택 중 종료
-        if(session->map() == nullptr)
-            session->before(nullptr);
-
         this->save(*session);
-    }
 
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     session->destroy();
@@ -713,7 +707,7 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
         auto session = client->data();
         this->dispatch(client, [this, client, session, response](uint8_t)
         {
-            session->handle_transfer(*fb::game::data_set::maps[response.map], fb::game::point16_t(response.x, response.y));
+            session->map(nullptr);
 
             this->save
             (
@@ -722,6 +716,9 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
                 {
                     fb::ostream         parameter;
                     parameter.write(response.name);
+                    parameter.write_u16(response.map);
+                    parameter.write_u16(response.x);
+                    parameter.write_u16(response.y);
                     this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
                 }
             );
@@ -731,13 +728,6 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
     {
         auto session = client->data();
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
-
-        auto before = session->before().map;
-        if(before != nullptr)
-        {
-            session->map(before, session->before().position);
-            session->before(nullptr);
-        }
     }
 
     return true;
@@ -1553,9 +1543,6 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
     const auto after = offsets[request.after]->dst;
 
     auto session = socket.data();
-    if(before.map->loaded())
-        session->before(before.map);
-    
     session->map(after.map, after.position);
     this->save(*session);
     return true;

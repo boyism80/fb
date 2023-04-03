@@ -140,16 +140,15 @@ class move : public fb::protocol::base::header
 {
 public:
     const uint32_t              id;
-    const point16_t             before, current;
+    const point16_t             position;
     const fb::game::direction   direction;
-    const bool                  from_before;
 
 public:
-    move(const fb::game::object& object, bool from_before = true) : 
-        move(object.sequence(), object.direction(), object.before().position, object.position(), from_before)
+    move(const fb::game::object& object, const point16_t& position) : 
+        move(object.sequence(), object.direction(), position)
     { }
-    move(const uint32_t id, fb::game::direction direction, const point16_t& before, const point16_t& current, bool from_before) : 
-        id(id), direction(direction), before(before), current(current), from_before(from_before)
+    move(const uint32_t id, fb::game::direction direction, const point16_t& position) : 
+        id(id), direction(direction), position(position)
     { }
 
 public:
@@ -157,8 +156,8 @@ public:
     {
         out_stream.write_u8(0x0C)
                   .write_u32(this->id)
-                  .write_u16(this->from_before ? this->before.x : this->current.x)
-                  .write_u16(this->from_before ? this->before.y : this->current.y)
+                  .write_u16(this->position.x)
+                  .write_u16(this->position.y)
                   .write_u8(this->direction)
                   .write_u8(0x00);
     }

@@ -132,7 +132,6 @@ public:
 private:
     uint32_t                    _id              = 0xFFFFFFFF;
     fb::socket<session>&        _socket;
-    bool                        _transferring    = false;
     bool                        _admin           = false;
     std::string                 _name;
     uint16_t                    _look            = 0;
@@ -200,9 +199,6 @@ protected:
     void                        handle_kill(fb::game::life& you) final;
     void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
     void                        handle_die(fb::game::object* from) final;
-
-public:
-    void                        handle_transfer(fb::game::map& map, const point16_t& position) final;
 
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;

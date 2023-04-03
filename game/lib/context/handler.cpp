@@ -56,9 +56,9 @@ void fb::game::context::on_hide(fb::game::object& me, fb::game::object& you)
     this->send(me, fb::protocol::game::response::object::hide(you), scope::SELF);
 }
 
-void fb::game::context::on_move(fb::game::object& me)
+void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
 {
-    this->send(me, fb::protocol::game::response::object::move(me), scope::PIVOT, true);
+    this->send(me, fb::protocol::game::response::object::move(me, before), scope::PIVOT, true);
 }
 
 void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)

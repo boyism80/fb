@@ -39,20 +39,6 @@ public:
         fb::game::direction direction   = fb::game::direction::BOTTOM;
         fb::game::map*      map         = nullptr;
     };
-
-    struct cache
-    {
-        fb::game::map*                      map      = nullptr;
-        point16_t                           position = point16_t(0, 0);
-
-    public:
-        cache() : map(nullptr)
-        { }
-        cache(fb::game::map* map, const point16_t& position) : map(map), position(position)
-        { }
-        ~cache() 
-        { }
-    };
 #pragma endregion
 
 #pragma region enum
@@ -90,7 +76,6 @@ private:
 protected:
     uint32_t                            _sequence   = 0;
     const fb::game::object::master*     _master;
-    cache                               _before;
 
     point16_t                           _position   = point16_t(0, 0);
     fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
@@ -140,10 +125,6 @@ public:
     virtual object::types               type() const;
 
 
-    const cache&                        before() const;
-    const cache&                        before(fb::game::map* map);
-    const cache&                        before(const point16_t& position);
-    const cache&                        before(fb::game::map* map, const point16_t& position);
     const point16_t&                    position() const;
     const point16_t                     position_forward() const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
@@ -167,8 +148,8 @@ public:
     bool                                sector(fb::game::sector* sector);
     fb::game::sector*                   sector();
 
-    bool                                sight(const point16_t& position, bool before = false) const;
-    bool                                sight(const fb::game::object& object, bool before_me = false, bool before_you = false) const;
+    bool                                sight(const point16_t& position) const;
+    bool                                sight(const fb::game::object& object) const;
 
     object*                             side(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>                sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
@@ -177,11 +158,11 @@ public:
 
     // 내 시야에서 보여지는 오브젝트들
     std::vector<object*>                showings(object::types type = fb::game::object::types::UNKNOWN) const;
-    static std::vector<object*>         showings(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = fb::game::object::types::UNKNOWN, bool before_me = false, bool before_you = false);
+    std::vector<object*>                showings(const std::vector<object*>& source, const point16_t& position, object::types type = fb::game::object::types::UNKNOWN) const;
 
     // 자기 시야에 내가 있는 오브젝트들
     std::vector<object*>                showns(object::types type = fb::game::object::types::UNKNOWN) const;
-    static std::vector<object*>         showns(const std::vector<object*>& source, const fb::game::object& pivot, object::types type = fb::game::object::types::UNKNOWN, bool before_me = false, bool before_you = false);
+    std::vector<object*>                showns(const std::vector<object*>& source, const point16_t& position, object::types type = fb::game::object::types::UNKNOWN) const;
 
     bool                                visible() const;
     void                                visible(bool value);
@@ -249,7 +230,7 @@ interface object::listener
     virtual void                        on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
     virtual void                        on_hide(fb::game::object& me) = 0;
     virtual void                        on_hide(fb::game::object& me, fb::game::object& you) = 0;
-    virtual void                        on_move(fb::game::object& me) = 0;
+    virtual void                        on_move(fb::game::object& me, const point16_t& before) = 0;
     virtual void                        on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
     virtual void                        on_create(fb::game::object& me) = 0;
     virtual void                        on_destroy(fb::game::object& me) = 0;

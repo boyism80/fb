@@ -17,11 +17,7 @@ std::string nowstr()
 std::string fb::game::query::make_update_session(fb::game::session& session)
 {
     auto map = session.map();
-    if(map == nullptr)
-        map = session.before().map;
-
     auto clan = session.clan();
-
     auto dict = std::map<std::string, std::string>
     {
         { "last_login",    nowstr() },
