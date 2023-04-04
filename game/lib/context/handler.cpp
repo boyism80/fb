@@ -461,6 +461,11 @@ void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, c
 
     auto  request = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
     this->_internal->send(request);
+    // TODO: 내부서버에서 응답 받고 결과를 리턴
+    // return this->_internal->send(request, [] (fb::protocol::internal::response::transfer& response) 
+    // {
+    //     return response.success;
+    // })
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

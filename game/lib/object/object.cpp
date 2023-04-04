@@ -501,6 +501,8 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 
         if(this->switch_process(*map))
         {
+            // TODO: 서버이동 실패하면 false 리턴
+            // return this->handle_switch_process(*map, position);
             this->handle_switch_process(*map, position);
             return;
         }

@@ -945,6 +945,9 @@ bool fb::game::context::handle_move(fb::socket<fb::game::session>& socket, const
     if(map == nullptr)
         return true;
 
+    // TODO: 실제로 이동하지 않고 이동했을때의 위치를 구해서
+    // 해당 위치에서 워프가 가능한지 확인하고
+    // 워프가능하면 워프처리, 그렇지 않다면 해당 위치로 이동한다.
     point16_t               before(request.position);
     session->move(request.direction, before);
 
@@ -1550,6 +1553,9 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
     else
     {
         session->map(after.map, after.position);
+        // TODO: 맵이동 실패한 경우 before로 위치이동
+        // if(session->map(after.map, after.position) == false)
+        //     session->map(before.map, before.position)
         this->save(*session);
     }
     return true;
