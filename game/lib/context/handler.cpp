@@ -458,7 +458,9 @@ void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, c
 
     auto& socket = static_cast<fb::socket<fb::game::session>&>(me);
     auto  fd     = socket.native_handle();
-    this->_internal->send(fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd));
+
+    auto  request = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
+    this->_internal->send(request);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

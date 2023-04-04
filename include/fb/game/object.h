@@ -144,6 +144,7 @@ public:
     void                                map(fb::game::map* map, const point16_t& position);
     void                                map(fb::game::map* map);
     fb::game::map*                      map() const;
+    void                                close_world_map();
 
     bool                                sector(fb::game::sector* sector);
     fb::game::sector*                   sector();

@@ -727,6 +727,7 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
     catch(std::exception& e)
     {
         auto session = client->data();
+        session->close_world_map();
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
     }
 
@@ -953,7 +954,6 @@ bool fb::game::context::handle_move(fb::socket<fb::game::session>& socket, const
     {
         if(warp->offset != nullptr)
         {
-            session->map(nullptr);
             session->send(fb::protocol::game::response::map::worlds(*warp->offset));
         }
         else
@@ -1543,8 +1543,15 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
     const auto after = offsets[request.after]->dst;
 
     auto session = socket.data();
-    session->map(after.map, after.position);
-    this->save(*session);
+    if(session->map() == after.map)
+    {
+        session->close_world_map();
+    }
+    else
+    {
+        session->map(after.map, after.position);
+        this->save(*session);
+    }
     return true;
 }
 
