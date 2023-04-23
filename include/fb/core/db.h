@@ -19,7 +19,7 @@ class db
 {
 private:
     static std::unique_ptr<db>                      _ist;
-    static constexpr uint32_t                       SIZE = 10;
+    static constexpr uint32_t                       SIZE = 2;
 
 public:
     using connection = std::unique_ptr<daotk::mysql::connection>;
@@ -73,7 +73,7 @@ private:
     uint64_t                            hash(const char* name);
     uint8_t                             index(const char* name);
     fb::db::pool*                       connections(const char* name);
-    fb::db::connection&&                get(const char* name);
+    fb::db::connection                  get(const char* name);
     bool                                release(const char* name, fb::db::connection& connection);
 
 private:

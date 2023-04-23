@@ -298,29 +298,35 @@ bool fb::game::object::move(fb::game::direction direction)
 
 const fb::game::point16_t fb::game::object::position_forward() const
 {
-    auto forward = point16_t(this->_position);
-    forward.forward(this->_direction);
+    return this->position_forward(this->_direction);
+}
+
+const fb::game::point16_t fb::game::object::position_forward(fb::game::direction direction) const
+{
+    auto current = point16_t(this->_position);
+    auto forward = point16_t(current);
+    forward.forward(direction);
     if(this->_map->movable(forward))
         return forward;
 
 
-    auto left = point16_t(this->_position);
+    auto left = point16_t(current);
     left.left(this->_direction);
     if(this->_map->movable(left))
         return left;
 
 
-    auto right = point16_t(this->_position);
+    auto right = point16_t(current);
     right.right(this->_direction);
     if(this->_map->movable(right))
         return right;
 
-    auto backward = point16_t(this->_position);
+    auto backward = point16_t(current);
     backward.backward(this->_direction);
     if(this->_map->movable(backward))
         return backward;
 
-    return this->_position;
+    return current;
 }
 
 uint16_t fb::game::object::x() const
