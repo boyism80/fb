@@ -520,14 +520,6 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
     }
 }
 
-void fb::game::object::close_world_map()
-{
-    if(this->_map == nullptr)
-        return;
-
-    this->_listener->on_enter(*this, *this->_map, this->_position);
-}
-
 void fb::game::object::map(fb::game::map* map)
 {
     this->map(map, point16_t(0, 0));

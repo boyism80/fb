@@ -333,6 +333,7 @@ public:
     void                        ride();
     void                        unride();
     bool                        alive() const;
+    void                        refresh_map();
 #pragma endregion
 
 #pragma region built-in method

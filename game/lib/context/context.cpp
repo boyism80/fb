@@ -727,7 +727,7 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
     catch(std::exception& e)
     {
         auto session = client->data();
-        session->close_world_map();
+        session->refresh_map();
         this->on_notify(*session, e.what(), fb::game::message::type::STATE);
     }
 
@@ -1551,7 +1551,7 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
     auto session = socket.data();
     if(session->map() == after.map)
     {
-        session->close_world_map();
+        session->refresh_map();
     }
     else
     {

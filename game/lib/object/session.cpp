@@ -894,6 +894,15 @@ bool fb::game::session::alive() const
     return this->_state != state::GHOST;
 }
 
+void fb::game::session::refresh_map()
+{
+    if(this->_map == nullptr)
+        return;
+
+    auto listener = this->get_listener<fb::game::session>();
+    listener->on_enter(*this, *this->_map, this->_position);
+}
+
 int fb::game::session::builtin_look(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
