@@ -116,7 +116,7 @@ void fb::db::_exec(const char* name, const std::string& sql)
     auto connection = db::get(name);
     try
     {
-        connection->exec(sql);
+        connection->mquery(sql);
     }
     catch(std::exception& e)
     {
@@ -187,14 +187,20 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries)
     if(ist._context == nullptr)
         return false;
 
+    std::stringstream sstream;
+    for(int i = 0; i < queries.size(); i++)
+    {
+        if(i > 0)
+            sstream << "; ";
+
+        sstream << queries[i];
+    }
+
     fb::async::launch
     (
-        [&ist, name = std::string(name), queries = std::vector<std::string>(queries)]()
+        [&ist, name = std::string(name), query = std::string(sstream.str())]()
         {
-            for(auto& query : queries)
-            {
-                ist._exec(name.c_str(), query.c_str());
-            }
+            ist._exec(name.c_str(), query.c_str());
         }
     );
 
@@ -207,15 +213,20 @@ bool fb::db::query(const char* name, const std::function<void()>& fn, const std:
     if(ist._context == nullptr)
         return false;
 
+    std::stringstream sstream;
+    for(int i = 0; i < queries.size(); i++)
+    {
+        if(i > 0)
+            sstream << "; ";
+
+        sstream << queries[i];
+    }
+
     fb::async::launch
     (
-        [&ist, name = std::string(name), queries = std::vector<std::string>(queries), fn]()
+        [&ist, name = std::string(name), query = std::string(sstream.str()), fn]()
         {
-            for(auto& query : queries)
-            {
-                ist._exec(name.c_str(), query.c_str());
-            }
-
+            ist._exec(name.c_str(), query.c_str());
             fn();
         }
     );

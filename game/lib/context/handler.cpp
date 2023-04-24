@@ -81,21 +81,22 @@ void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 void fb::game::context::on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position)
 {
     auto thread = this->thread(map);
+    auto map_changed = me.map() != &map;
     if(thread == nullptr || thread == this->threads().current())
     {
         me.handle_enter(map, position);
 
-        if(me.is(fb::game::object::types::SESSION))
+        if(me.is(fb::game::object::types::SESSION) && map_changed)
             this->save(static_cast<fb::game::session&>(me));
     }
     else
     {
         thread->dispatch
         (
-            [this, &me, &map, position] (uint8_t) 
+            [this, &me, &map, position, map_changed] (uint8_t) 
             {
                 me.handle_enter(map, position);
-                if(me.is(fb::game::object::types::SESSION))
+                if(me.is(fb::game::object::types::SESSION) && map_changed)
                     this->save(static_cast<fb::game::session&>(me));
             }, true
         );
