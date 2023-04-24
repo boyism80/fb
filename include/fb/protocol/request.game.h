@@ -3,6 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/trade.h>
+#include <optional>
 
 using namespace fb::game;
 
@@ -11,11 +12,20 @@ namespace fb { namespace protocol { namespace game { namespace request {
 class login : public fb::protocol::base::header
 {
 public:
-    uint8_t                 enc_type;
-    uint8_t                 key_size;
-    uint8_t                 enc_key[0x09];
-    internal::services      from;
-    std::string             name;
+    struct transfer_param
+    {
+    public:
+        uint16_t            map;
+        point16_t           position;
+    };
+
+public:
+    uint8_t                         enc_type;
+    uint8_t                         key_size;
+    uint8_t                         enc_key[0x09];
+    internal::services              from;
+    std::string                     name;
+    std::optional<transfer_param>   transfer;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -28,6 +38,19 @@ public:
         
         // additional parameters
         this->name = in_stream.readstr_u8();
+
+        if(in_stream.readable_size() >= sizeof(uint16_t) * 3)
+        {
+            auto map = in_stream.read_u16();
+            auto x = in_stream.read_u16();
+            auto y = in_stream.read_u16();
+
+            this->transfer = transfer_param
+            {
+                .map = map,
+                .position = point16_t(x, y)
+            };
+        }
     }
 };
 

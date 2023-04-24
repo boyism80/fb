@@ -791,10 +791,10 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     fb::db::query
     (
         request.name.c_str(),
-        [this, session, from](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
+        [this, session, from, request](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
         {
-            auto&                       baseResult = results[0];
-            if(baseResult.count() == 0)
+            auto&                       base_result = results[0];
+            if(base_result.count() == 0)
                 return;
 
             uint32_t                    id;
@@ -834,7 +834,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
             std::optional<uint32_t>     aux_top_color;
             std::optional<uint32_t>     aux_bot_color;
             std::optional<uint32_t>     clan;
-            baseResult.fetch(id, name, pw, birth, date, last_login, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
+            base_result.fetch(id, name, pw, birth, date, last_login, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
             this->_internal->send(fb::protocol::internal::request::login(name, map));
 
             session->id(id);
@@ -860,6 +860,12 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
             if(fb::game::data_set::maps[map] == nullptr)
                 return;
 
+            if(request.transfer != std::nullopt)
+            {
+                map = request.transfer.value().map;
+                position_x = uint32_t(request.transfer.value().position.x);
+                position_y = uint32_t(request.transfer.value().position.y);
+            }
             session->map(fb::game::data_set::maps[map], point16_t(position_x, position_y));
 
             this->send(*session, fb::protocol::game::response::init(), scope::SELF);
