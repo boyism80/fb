@@ -427,10 +427,12 @@ void fb::game::object::enter()
     }
 }
 
-void fb::game::object::leave(bool erase_nears)
+void fb::game::object::leave()
 {
     if(this->_map == nullptr)
         return;
+
+    this->_map->objects.remove(*this);
 
     auto nears = this->_map->nears(this->_position);
     for (auto x : nears)
@@ -439,8 +441,7 @@ void fb::game::object::leave(bool erase_nears)
             continue;
 
         this->_listener->on_hide(*x, *this);
-        if(erase_nears)
-            this->_listener->on_hide(*this, *x);
+        this->_listener->on_hide(*this, *x);
     }
 }
 
@@ -489,10 +490,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     if(map == nullptr)
     {
-        if(this->_map != nullptr)
-            this->_map->objects.remove(*this);
-
-        this->leave(true);
+        this->leave();
         this->_map = nullptr;
         this->_position = point16_t(1, 1); // 가상계 위치
         this->sector(nullptr);
@@ -514,9 +512,13 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
         }
 
         if(this->_map != nullptr)
-            this->map(nullptr);
+            this->map(nullptr); // 이 과정에서 이미 제거, 생성
 
-        this->_listener->on_enter(*this, *map, position);
+        this->_listener->on_map_changing(*this, *map, position); // 여기 통과하면 맵 변환
+
+        // TODO
+        // 1. 패킷 전달 순서 수정 (맵변경, 오브젝트표시, 오브젝트제거 순)
+        // 2. 뎁스 줄이기 (handle_enter lambda로, handle_warp, on_warp 이름 변경)
     }
 }
 

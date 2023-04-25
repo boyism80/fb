@@ -354,7 +354,6 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     c.puts("%s님이 접속을 종료했습니다.", session->name().c_str());
 
     this->save(*session);
-
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     session->destroy();
     return true;

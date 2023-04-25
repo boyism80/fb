@@ -900,7 +900,7 @@ void fb::game::session::refresh_map()
         return;
 
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_enter(*this, *this->_map, this->_position);
+    listener->on_map_changing(*this, *this->_map, this->_position);
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

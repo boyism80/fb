@@ -99,7 +99,7 @@ public:
 #pragma region private method
 private:
     void                                enter();
-    void                                leave(bool erase_nears);
+    void                                leave();
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 #pragma endregion
 
@@ -234,7 +234,7 @@ interface object::listener
     virtual void                        on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
     virtual void                        on_create(fb::game::object& me) = 0;
     virtual void                        on_destroy(fb::game::object& me) = 0;
-    virtual void                        on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position) = 0;
+    virtual void                        on_map_changing(fb::game::object& me, fb::game::map& map, const point16_t& position) = 0;
 };
 #pragma endregion
 

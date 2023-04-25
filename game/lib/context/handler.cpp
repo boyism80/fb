@@ -78,28 +78,25 @@ void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
 
-void fb::game::context::on_enter(fb::game::object& me, fb::game::map& map, const point16_t& position)
+void fb::game::context::on_map_changing(fb::game::object& me, fb::game::map& map, const point16_t& position)
 {
-    auto thread = this->thread(map);
-    auto map_changed = me.map() != &map;
-    if(thread == nullptr || thread == this->threads().current())
+    auto callback = [this, &me, &map, position] (uint8_t) 
     {
-        me.handle_enter(map, position);
+        auto map_changed = me.map() != &map;
 
+        me.handle_enter(map, position);
         if(me.is(fb::game::object::types::SESSION) && map_changed)
             this->save(static_cast<fb::game::session&>(me));
+    };
+
+    auto thread = this->thread(map);
+    if(thread == nullptr || thread == this->threads().current())
+    {
+        callback(0);
     }
     else
     {
-        thread->dispatch
-        (
-            [this, &me, &map, position, map_changed] (uint8_t) 
-            {
-                me.handle_enter(map, position);
-                if(me.is(fb::game::object::types::SESSION) && map_changed)
-                    this->save(static_cast<fb::game::session&>(me));
-            }, true
-        );
+        thread->dispatch(callback, true);
     }
 }
 
