@@ -57,6 +57,7 @@ bool fb::login::context::handle_in_transfer(fb::internal::socket<>& socket, cons
         client->send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
         parameter.write(response.name);
+        parameter.write_u8(0);
         this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
     }
     catch(login_exception& e)
