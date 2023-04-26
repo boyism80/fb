@@ -191,7 +191,6 @@ public:
 protected:
     void                        handle_hold() final;
     void                        handle_switch_process(fb::game::map& map, const point16_t& position) final;
-    void                        handle_warp() final;
     void                        handle_update() final;
     uint32_t                    handle_calculate_damage(bool critical) const final;
     void                        handle_attack(fb::game::object* target) final;
@@ -393,7 +392,7 @@ public:
     virtual void                on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
     virtual void                on_option(session& me, fb::game::options option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
-    virtual void                on_warp(fb::game::session& me) = 0;
+    virtual void                on_map_changed(fb::game::session& me) = 0;
     virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;

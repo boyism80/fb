@@ -39,12 +39,6 @@ void fb::game::session::handle_switch_process(fb::game::map& map, const point16_
     listener->on_transfer(*this, map, position);
 }
 
-void fb::game::session::handle_warp()
-{
-    auto listener = this->get_listener<fb::game::session>();
-    listener->on_warp(*this);
-}
-
 void fb::game::session::handle_update()
 {
     auto listener = this->get_listener<fb::game::session>();
@@ -900,7 +894,7 @@ void fb::game::session::refresh_map()
         return;
 
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_map_changing(*this, *this->_map, this->_position);
+    listener->on_map_changed(*this);
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

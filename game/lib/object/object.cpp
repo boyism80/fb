@@ -414,37 +414,6 @@ fb::game::sector* fb::game::object::sector()
     return this->_sector;
 }
 
-void fb::game::object::enter()
-{
-    auto&& nears = this->_map->nears(this->_position);
-    for(auto x : nears)
-    {
-        if(x == this)
-            continue;
-
-        this->_listener->on_show(*this, *x, false);
-        this->_listener->on_show(*x, *this, false);
-    }
-}
-
-void fb::game::object::leave()
-{
-    if(this->_map == nullptr)
-        return;
-
-    this->_map->objects.remove(*this);
-
-    auto nears = this->_map->nears(this->_position);
-    for (auto x : nears)
-    {
-        if (x == this)
-            continue;
-
-        this->_listener->on_hide(*x, *this);
-        this->_listener->on_hide(*this, *x);
-    }
-}
-
 bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
 {
     point16_t begin, end;
@@ -490,35 +459,70 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     if(map == nullptr)
     {
-        this->leave();
-        this->_map = nullptr;
+        if(this->_map != nullptr)
+        {
+            this->_map->objects.remove(*this);
+            for (auto x : this->_map->nears(this->_position))
+            {
+                if (x == this)
+                    continue;
+
+                this->_listener->on_hide(*x, *this);
+            }
+
+            this->_map = nullptr;
+        }
         this->_position = point16_t(1, 1); // 가상계 위치
         this->sector(nullptr);
     }
+    else if(this->_map == map)
+    {
+        this->position(position, true);
+    }
+    else if(this->switch_process(*map))
+    {
+        this->handle_switch_process(*map, position);
+    }
     else
     {
-        if(this->_map == map)
-        {
-            this->position(position, true);
-            return;
-        }
-
-        if(this->switch_process(*map))
-        {
-            // TODO: 서버이동 실패하면 false 리턴
-            // return this->handle_switch_process(*map, position);
-            this->handle_switch_process(*map, position);
-            return;
-        }
-
         if(this->_map != nullptr)
-            this->map(nullptr); // 이 과정에서 이미 제거, 생성
+            this->map(nullptr);
 
-        this->_listener->on_map_changing(*this, *map, position); // 여기 통과하면 맵 변환
+        auto callback = [=] (uint8_t) 
+        {
+            this->_map = map;
+            this->_position = position;
+            this->_map->update(*this);
+            this->_map->objects.add(*this);
 
-        // TODO
-        // 1. 패킷 전달 순서 수정 (맵변경, 오브젝트표시, 오브젝트제거 순)
-        // 2. 뎁스 줄이기 (handle_enter lambda로, handle_warp, on_warp 이름 변경)
+            if(this->is(fb::game::object::types::SESSION))
+            {
+                auto listener = this->get_listener<fb::game::session>();
+                listener->on_map_changed(static_cast<fb::game::session&>(*this));
+            }
+
+            for(auto x : map->nears(this->_position))
+            {
+                if(x == this)
+                    continue;
+
+                this->_listener->on_show(*this, *x, false);
+                this->_listener->on_show(*x, *this, false);
+            }
+
+            if(this->is(fb::game::object::types::SESSION))
+                this->context.save(static_cast<fb::game::session&>(*this));
+        };
+
+        auto thread = this->context.thread(*map);
+        if(thread == nullptr || thread == this->context.current_thread())
+        {
+            callback(0);
+        }
+        else
+        {
+            thread->dispatch(callback, true);
+        }
     }
 }
 
@@ -717,17 +721,6 @@ bool fb::game::object::switch_process(const fb::game::map& map) const
         return false;
 
     return this->_map->group != map.group;
-}
-
-void fb::game::object::handle_enter(fb::game::map& map, const point16_t& position)
-{
-    this->_map = &map;
-    this->_position = position;
-    this->_map->update(*this);
-    this->_map->objects.add(*this);
-
-    this->handle_warp();
-    this->enter();
 }
 
 bool fb::game::object::operator==(const object& right) const

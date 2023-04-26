@@ -39,7 +39,8 @@ public:
         // additional parameters
         this->name = in_stream.readstr_u8();
 
-        if(in_stream.readable_size() >= sizeof(uint16_t) * 3)
+        auto transfer = in_stream.read_8();
+        if(transfer == 1)
         {
             auto map = in_stream.read_u16();
             auto x = in_stream.read_u16();

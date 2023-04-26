@@ -670,6 +670,11 @@ uint8_t fb::game::context::thread_index(const fb::game::object& obj) const
     return this->thread_index(*map);
 }
 
+const fb::thread* fb::game::context::current_thread() const
+{
+    return this->threads().current();
+}
+
 // TODO : 클릭도 인터페이스로
 void fb::game::context::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
 {
@@ -714,6 +719,7 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
                 {
                     fb::ostream         parameter;
                     parameter.write(response.name);
+                    parameter.write_u8(1);
                     parameter.write_u16(response.map);
                     parameter.write_u16(response.x);
                     parameter.write_u16(response.y);

@@ -78,28 +78,6 @@ void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
 
-void fb::game::context::on_map_changing(fb::game::object& me, fb::game::map& map, const point16_t& position)
-{
-    auto callback = [this, &me, &map, position] (uint8_t) 
-    {
-        auto map_changed = me.map() != &map;
-
-        me.handle_enter(map, position);
-        if(me.is(fb::game::object::types::SESSION) && map_changed)
-            this->save(static_cast<fb::game::session&>(me));
-    };
-
-    auto thread = this->thread(map);
-    if(thread == nullptr || thread == this->threads().current())
-    {
-        callback(0);
-    }
-    else
-    {
-        thread->dispatch(callback, true);
-    }
-}
-
 void fb::game::context::on_attack(life& me, object* you)
 { }
 
@@ -435,7 +413,7 @@ void fb::game::context::on_level_up(session& me)
     this->send(me, fb::protocol::game::response::object::effect(me, 0x02), scope::PIVOT);
 }
 
-void fb::game::context::on_warp(fb::game::session& me)
+void fb::game::context::on_map_changed(fb::game::session& me)
 {
     auto map = me.map();
     if(map == nullptr)
