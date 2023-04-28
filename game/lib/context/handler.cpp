@@ -413,18 +413,24 @@ void fb::game::context::on_level_up(session& me)
     this->send(me, fb::protocol::game::response::object::effect(me, 0x02), scope::PIVOT);
 }
 
-void fb::game::context::on_map_changed(fb::game::session& me)
+void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after)
 {
-    auto map = me.map();
-    if(map == nullptr)
+    if(after == nullptr)
         return;
 
-    this->send(me, fb::protocol::game::response::session::id(me), scope::SELF);
-    this->send(me, fb::protocol::game::response::map::config(*map), scope::SELF);
-    this->send(me, fb::protocol::game::response::map::bgm(*map), scope::SELF);
-    this->send(me, fb::protocol::game::response::session::position(me), scope::SELF);
-    this->send(me, fb::protocol::game::response::session::show(me, me, false), scope::SELF);
-    this->send(me, fb::protocol::game::response::object::direction(me), scope::SELF);
+    if(me.is(fb::game::object::types::SESSION) == false)
+        return;
+
+    auto& session = static_cast<fb::game::session&>(me);
+    this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
+    this->send(session, fb::protocol::game::response::map::config(*after), scope::SELF);
+    this->send(session, fb::protocol::game::response::map::bgm(*after), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::position(session), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::show(session, session, false), scope::SELF);
+    this->send(session, fb::protocol::game::response::object::direction(session), scope::SELF);
+
+    if(before == nullptr)
+        this->save(session);
 }
 
 void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)

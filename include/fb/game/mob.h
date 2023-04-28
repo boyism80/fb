@@ -110,15 +110,15 @@ public:
 
 #pragma region override method
 protected:
-    uint32_t                                handle_calculate_damage(bool critical) const final;
-    void                                    handle_attack(fb::game::object* target) final;
-    void                                    handle_hit(fb::game::life& you, uint32_t damage, bool critical) final;
-    void                                    handle_kill(fb::game::life& you) final;
-    void                                    handle_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
-    void                                    handle_die(fb::game::object* from) final;
+    uint32_t                                on_calculate_damage(bool critical) const final;
+    void                                    on_attack(fb::game::object* target) final;
+    void                                    on_hit(fb::game::life& you, uint32_t damage, bool critical) final;
+    void                                    on_kill(fb::game::life& you) final;
+    void                                    on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
+    void                                    on_die(fb::game::object* from) final;
 
 public:
-    uint32_t                                handle_exp() const final;
+    uint32_t                                on_exp() const final;
 #pragma endregion
 };
 

@@ -207,6 +207,7 @@ public:
     void                    on_hide(fb::game::object& me, fb::game::object& you) final;
     void                    on_move(fb::game::object& me, const point16_t& before) final;
     void                    on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
+    void                    on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) final;
 
     // listener : life
     void                    on_attack(life& me, object* you) final;
@@ -233,7 +234,6 @@ public:
     void                    on_notify(session& me, const std::string& message, message::type type) final;
     void                    on_option(session& me, fb::game::options option, bool enabled) final;
     void                    on_level_up(session& me) final;
-    void                    on_map_changed(fb::game::session& me) final;
     void                    on_transfer(session& me, fb::game::map& map, const point16_t& position) final;
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;

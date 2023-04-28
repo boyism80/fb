@@ -362,7 +362,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
     for(auto& [key, value] : fb::game::data_set::maps)
-        value->handle_timer(elapsed_milliseconds);
+        value->on_timer(elapsed_milliseconds);
 }
 
 bool fb::game::context::destroy(fb::game::object& obj)

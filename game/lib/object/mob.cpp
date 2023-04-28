@@ -345,40 +345,40 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
     this->_action_time = std::chrono::duration_cast<std::chrono::milliseconds>(now);
 }
 
-uint32_t fb::game::mob::handle_calculate_damage(bool critical) const
+uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
     auto master = this->based<fb::game::mob>();
     auto difference = std::abs(master->damage.max - master->damage.min);
     return master->damage.min + (std::rand() % difference);
 }
 
-void fb::game::mob::handle_attack(fb::game::object* target)
+void fb::game::mob::on_attack(fb::game::object* target)
 {
-    fb::game::life::handle_attack(target);
+    fb::game::life::on_attack(target);
 
     auto listener = this->get_listener<fb::game::mob>();
     listener->on_attack(*this, target);
 }
 
-void fb::game::mob::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
+void fb::game::mob::on_hit(fb::game::life& you, uint32_t damage, bool critical)
 {
-    fb::game::life::handle_hit(you, damage, critical);
+    fb::game::life::on_hit(you, damage, critical);
 
     auto listener = this->get_listener<fb::game::mob>();
     listener->on_hit(*this, you, damage, critical);
 }
 
-void fb::game::mob::handle_kill(fb::game::life& you)
+void fb::game::mob::on_kill(fb::game::life& you)
 {
-    fb::game::life::handle_kill(you);
+    fb::game::life::on_kill(you);
 
     auto listener = this->get_listener<fb::game::mob>();
     listener->on_kill(*this, you);
 }
 
-void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
+void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
-    fb::game::life::handle_damaged(from, damage, critical);
+    fb::game::life::on_damaged(from, damage, critical);
 
     auto master = this->based<fb::game::mob>();
     if(master->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(fb::game::object::types::LIFE))
@@ -390,15 +390,15 @@ void fb::game::mob::handle_damaged(fb::game::object* from, uint32_t damage, bool
     listener->on_damaged(*this, from, damage, critical);
 }
 
-uint32_t fb::game::mob::handle_exp() const
+uint32_t fb::game::mob::on_exp() const
 {
     auto master = this->based<fb::game::mob>();
     return master->experience;
 }
 
-void fb::game::mob::handle_die(fb::game::object* from)
+void fb::game::mob::on_die(fb::game::object* from)
 {
-    fb::game::life::handle_die(from);
+    fb::game::life::on_die(from);
 
     this->dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
 

@@ -27,25 +27,29 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
-void fb::game::session::handle_hold()
+bool fb::game::session::map(fb::game::map* map, const point16_t& position)
+{
+    if(fb::game::object::map(map, position))
+        return true;
+
+    auto listener = this->get_listener<fb::game::session>();
+    listener->on_transfer(*this, *map, position);
+    return true;
+}
+
+void fb::game::session::on_hold()
 {
     auto listener = this->get_listener<fb::game::session>();
     listener->on_hold(*this);
 }
 
-void fb::game::session::handle_switch_process(fb::game::map& map, const point16_t& position)
-{
-    auto listener = this->get_listener<fb::game::session>();
-    listener->on_transfer(*this, map, position);
-}
-
-void fb::game::session::handle_update()
+void fb::game::session::on_update()
 {
     auto listener = this->get_listener<fb::game::session>();
     listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
 }
 
-uint32_t fb::game::session::handle_calculate_damage(bool critical) const
+uint32_t fb::game::session::on_calculate_damage(bool critical) const
 {
     auto                    weapon = this->items.weapon();
     auto                    master = weapon != nullptr ? weapon->based<fb::game::weapon>() : nullptr;
@@ -66,9 +70,9 @@ uint32_t fb::game::session::handle_calculate_damage(bool critical) const
     }
 }
 
-void fb::game::session::handle_attack(fb::game::object* you)
+void fb::game::session::on_attack(fb::game::object* you)
 {
-    fb::game::life::handle_attack(you);
+    fb::game::life::on_attack(you);
 
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -87,19 +91,19 @@ void fb::game::session::handle_attack(fb::game::object* you)
     listener->on_attack(*this, you);
 }
 
-void fb::game::session::handle_hit(fb::game::life& you, uint32_t damage, bool critical)
+void fb::game::session::on_hit(fb::game::life& you, uint32_t damage, bool critical)
 {
-    fb::game::life::handle_hit(you, damage, critical);
+    fb::game::life::on_hit(you, damage, critical);
 
     auto listener = this->get_listener<fb::game::session>();
     listener->on_hit(*this, you, damage, critical);
 }
 
-void fb::game::session::handle_kill(fb::game::life& you)
+void fb::game::session::on_kill(fb::game::life& you)
 {
-    fb::game::life::handle_kill(you);
+    fb::game::life::on_kill(you);
 
-    auto exp = you.handle_exp();
+    auto exp = you.on_exp();
     if(exp > 0)
     {
         auto                    range = fb::game::data_set::classes.exp(this->cls(), this->level());
@@ -116,17 +120,17 @@ void fb::game::session::handle_kill(fb::game::life& you)
     listener->on_kill(*this, you);
 }
 
-void fb::game::session::handle_damaged(fb::game::object* from, uint32_t damage, bool critical)
+void fb::game::session::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
-    fb::game::life::handle_damaged(from, damage, critical);
+    fb::game::life::on_damaged(from, damage, critical);
 
     auto listener = this->get_listener<fb::game::session>();
     listener->on_damaged(*this, from, damage, critical);
 }
 
-void fb::game::session::handle_die(fb::game::object* from)
+void fb::game::session::on_die(fb::game::object* from)
 {
-    fb::game::life::handle_die(from);
+    fb::game::life::on_die(from);
 
     this->state(state::GHOST);
 
@@ -894,7 +898,7 @@ void fb::game::session::refresh_map()
         return;
 
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_map_changed(*this);
+    listener->on_map_changed(*this, this->_map, this->_map);
 }
 
 int fb::game::session::builtin_look(lua_State* lua)

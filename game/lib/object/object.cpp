@@ -174,7 +174,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if(refresh)
-        this->handle_hold();
+        this->on_hold();
 
     this->_map->update(*this);
     
@@ -455,7 +455,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-void fb::game::object::map(fb::game::map* map, const point16_t& position)
+bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     if(map == nullptr)
     {
@@ -464,27 +464,28 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
             this->_map->objects.remove(*this);
             for (auto x : this->_map->nears(this->_position))
             {
-                if (x == this)
-                    continue;
-
-                this->_listener->on_hide(*x, *this);
+                if (x != this)
+                    this->_listener->on_hide(*x, *this);
             }
 
             this->_map = nullptr;
         }
         this->_position = point16_t(1, 1); // 가상계 위치
         this->sector(nullptr);
+        return true;
     }
-    else if(this->_map == map)
+
+    if(this->_map == map)
     {
         this->position(position, true);
+        return true;
     }
-    else if(this->switch_process(*map))
+
+    auto switch_process = (this->_map != nullptr && this->_map->group != map->group);
+    if(switch_process == false)
     {
-        this->handle_switch_process(*map, position);
-    }
-    else
-    {
+        auto before = this->_map;
+
         if(this->_map != nullptr)
             this->map(nullptr);
 
@@ -495,12 +496,6 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
             this->_map->update(*this);
             this->_map->objects.add(*this);
 
-            if(this->is(fb::game::object::types::SESSION))
-            {
-                auto listener = this->get_listener<fb::game::session>();
-                listener->on_map_changed(static_cast<fb::game::session&>(*this));
-            }
-
             for(auto x : map->nears(this->_position))
             {
                 if(x == this)
@@ -510,8 +505,7 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
                 this->_listener->on_show(*x, *this, false);
             }
 
-            if(this->is(fb::game::object::types::SESSION))
-                this->context.save(static_cast<fb::game::session&>(*this));
+            this->_listener->on_map_changed(*this, before, map);
         };
 
         auto thread = this->context.thread(*map);
@@ -523,12 +517,16 @@ void fb::game::object::map(fb::game::map* map, const point16_t& position)
         {
             thread->dispatch(callback, true);
         }
+
+        return true;
     }
+
+    return false;
 }
 
-void fb::game::object::map(fb::game::map* map)
+bool fb::game::object::map(fb::game::map* map)
 {
-    this->map(map, point16_t(0, 0));
+    return this->map(map, point16_t(0, 0));
 }
 
 fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game::object::types type) const
@@ -708,19 +706,6 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
 {
     return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + 
         (uint32_t)std::pow(this->_position.y - right._position.y, 2);
-}
-
-bool fb::game::object::switch_process(const fb::game::map& map) const
-{
-    if(this->is(fb::game::object::types::SESSION) == false)
-        return false;
-
-    auto session = static_cast<const fb::game::session*>(this);
-    
-    if(this->_map == nullptr)
-        return false;
-
-    return this->_map->group != map.group;
 }
 
 bool fb::game::object::operator==(const object& right) const

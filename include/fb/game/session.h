@@ -189,20 +189,20 @@ public:
 
 #pragma region override method
 protected:
-    void                        handle_hold() final;
-    void                        handle_switch_process(fb::game::map& map, const point16_t& position) final;
-    void                        handle_update() final;
-    uint32_t                    handle_calculate_damage(bool critical) const final;
-    void                        handle_attack(fb::game::object* target) final;
-    void                        handle_hit(fb::game::life& target, uint32_t damage, bool critical) final;
-    void                        handle_kill(fb::game::life& you) final;
-    void                        handle_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
-    void                        handle_die(fb::game::object* from) final;
+    void                        on_hold() final;
+    void                        on_update() final;
+    uint32_t                    on_calculate_damage(bool critical) const final;
+    void                        on_attack(fb::game::object* target) final;
+    void                        on_hit(fb::game::life& target, uint32_t damage, bool critical) final;
+    void                        on_kill(fb::game::life& you) final;
+    void                        on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
+    void                        on_die(fb::game::object* from) final;
 
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     object::types               type() const final;
+    bool                        map(fb::game::map* map, const point16_t& position) final;
 #pragma endregion
 
 #pragma region operator
@@ -392,7 +392,6 @@ public:
     virtual void                on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
     virtual void                on_option(session& me, fb::game::options option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
-    virtual void                on_map_changed(fb::game::session& me) = 0;
     virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;

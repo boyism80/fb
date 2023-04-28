@@ -381,7 +381,7 @@ std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types
         return this->_sectors->activated_objects(type);
 }
 
-void fb::game::map::handle_timer(uint64_t elapsed_milliseconds)
+void fb::game::map::on_timer(uint64_t elapsed_milliseconds)
 {
     
 }

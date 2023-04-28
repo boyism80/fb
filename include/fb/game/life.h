@@ -91,18 +91,18 @@ public:
 
 #pragma region virtual method
 protected:
-    virtual void                handle_update() { }
-    virtual uint32_t            handle_calculate_damage(bool critical) const = 0;
-    virtual bool                handle_calculate_critical(fb::game::life& you) const;
-    virtual bool                handle_calculate_miss(fb::game::life& you) const;
-    virtual void                handle_attack(fb::game::object* you);
-    virtual void                handle_hit(fb::game::life& you, uint32_t damage, bool critical);
-    virtual void                handle_damaged(fb::game::object* from, uint32_t damage, bool critical);
-    virtual void                handle_die(fb::game::object* from);
+    virtual void                on_update() { }
+    virtual uint32_t            on_calculate_damage(bool critical) const = 0;
+    virtual bool                on_calculate_critical(fb::game::life& you) const;
+    virtual bool                on_calculate_miss(fb::game::life& you) const;
+    virtual void                on_attack(fb::game::object* you);
+    virtual void                on_hit(fb::game::life& you, uint32_t damage, bool critical);
+    virtual void                on_damaged(fb::game::object* from, uint32_t damage, bool critical);
+    virtual void                on_die(fb::game::object* from);
 
 public:
-    virtual uint32_t            handle_exp() const { return 0; }
-    virtual void                handle_kill(fb::game::life& you);
+    virtual uint32_t            on_exp() const { return 0; }
+    virtual void                on_kill(fb::game::life& you);
 
 #pragma endregion
 

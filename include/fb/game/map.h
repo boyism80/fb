@@ -303,7 +303,7 @@ public:
 
 #pragma region event method
 public:
-    void                            handle_timer(uint64_t elapsed_milliseconds);
+    void                            on_timer(uint64_t elapsed_milliseconds);
 #pragma endregion
 
 #pragma region operator

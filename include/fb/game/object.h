@@ -141,8 +141,8 @@ public:
     fb::game::direction                 direction() const;
     bool                                direction(fb::game::direction value);
 
-    void                                map(fb::game::map* map, const point16_t& position);
-    void                                map(fb::game::map* map);
+    virtual bool                        map(fb::game::map* map, const point16_t& position);
+    bool                                map(fb::game::map* map);
     fb::game::map*                      map() const;
 
     bool                                sector(fb::game::sector* sector);
@@ -172,19 +172,15 @@ public:
 
     // 유효한 오브젝트인지
     virtual bool                        available() const { return true; }
-
-    bool                                switch_process(const fb::game::map& map) const;
 #pragma endregion
 
 #pragma region handler method
 public:
-    virtual void                        handle_timer(uint64_t elapsed_milliseconds) { }
-    virtual void                        handle_kill(fb::game::life& you) { }
+    virtual void                        on_timer(uint64_t elapsed_milliseconds) { }
+    virtual void                        on_kill(fb::game::life& you) { }
 
 protected:
-    virtual void                        handle_hold() { }
-    virtual void                        handle_switch_process(fb::game::map& map, const point16_t& position) { }
-    virtual void                        handle_warp() { }
+    virtual void                        on_hold() { }
 #pragma endregion
 
 #pragma region operator
@@ -230,6 +226,7 @@ interface object::listener
     virtual void                        on_hide(fb::game::object& me, fb::game::object& you) = 0;
     virtual void                        on_move(fb::game::object& me, const point16_t& before) = 0;
     virtual void                        on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    virtual void                        on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
     virtual void                        on_create(fb::game::object& me) = 0;
     virtual void                        on_destroy(fb::game::object& me) = 0;
 };
