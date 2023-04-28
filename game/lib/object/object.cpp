@@ -426,7 +426,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
         if(this->_map != nullptr)
             this->map(nullptr);
 
-        auto callback = [=] (uint8_t) 
+        auto callback = [=, this] (uint8_t) 
         {
             this->_map = map;
             this->_position = position;
