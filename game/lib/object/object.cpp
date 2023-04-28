@@ -433,6 +433,8 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
             this->_map->update(*this);
             this->_map->objects.add(*this);
 
+            this->_listener->on_map_changed(*this, before, map);
+
             for(auto x : map->nears(this->_position))
             {
                 if(x == this)
@@ -441,8 +443,6 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
                 this->_listener->on_show(*this, *x, false);
                 this->_listener->on_show(*x, *this, false);
             }
-
-            this->_listener->on_map_changed(*this, before, map);
         };
 
         auto thread = this->context.thread(*map);
