@@ -29,12 +29,17 @@ object::types fb::game::session::type() const
 
 bool fb::game::session::map(fb::game::map* map, const point16_t& position)
 {
-    if(fb::game::object::map(map, position))
+    auto switch_process = (map != nullptr && this->_map != nullptr && this->_map->group != map->group);
+    if(switch_process)
+    {
+        auto listener = this->get_listener<fb::game::session>();
+        listener->on_transfer(*this, *map, position);
         return true;
-
-    auto listener = this->get_listener<fb::game::session>();
-    listener->on_transfer(*this, *map, position);
-    return true;
+    }
+    else
+    {
+        return fb::game::object::map(map, position);
+    }
 }
 
 void fb::game::session::on_hold()
