@@ -51,8 +51,8 @@ template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::shutdown()
 {
     // exiting
-    fb::async::exit();
     this->threads().exit();
+    fb::async::exit();
 
     // do
     this->handle_exit();
@@ -137,14 +137,13 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
     auto                        fn     = [this, casted] (uint8_t id)
     {
         this->handle_disconnected(*casted);
+        this->sockets.erase(*casted);
 
         boost::asio::dispatch
         (
             this->get_executor(),
-            [this, casted] () 
+            [this] () 
             {
-                this->sockets.erase(*casted);
-
                 if(this->_exit && this->sockets.empty())
                     this->shutdown();
             }
@@ -257,12 +256,16 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
-    this->_exit = true;
-
-    for(auto& [key, value] : this->sockets)
-        value.get()->close();
-
-    this->shutdown();
+    if(this->sockets.empty())
+    {
+        this->shutdown();
+    }
+    else
+    {
+        this->_exit = true;
+        for(auto& [key, value] : this->sockets)
+            value.get()->close();
+    }
 }
 
 template <template<class> class S, class T>

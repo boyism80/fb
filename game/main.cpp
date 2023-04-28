@@ -1,5 +1,6 @@
 #include "resource.h"
 #include <fb/game/context.h>
+#include <fb/core/leak.h>
 
 bool load_db(fb::console& c, fb::game::context& context)
 {
