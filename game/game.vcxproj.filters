@@ -151,6 +151,21 @@
     <ClCompile Include="..\core\query.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="lib\object\object.builtin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\object\life.builtin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\object\mob.builtin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\object\npc.builtin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\object\session.builtin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

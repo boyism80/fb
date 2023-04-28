@@ -135,18 +135,33 @@ $(BUILD)/sector.o: ./lib/map/sector.cpp
 $(BUILD)/life.o: ./lib/object/life.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/life.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/life.o
+$(BUILD)/life_builtin.o: ./lib/object/life.builtin.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/object/life.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/life_builtin.o
 $(BUILD)/mob.o: ./lib/object/mob.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/mob.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mob.o
+$(BUILD)/mob_builtin.o: ./lib/object/mob.builtin.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/object/mob.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/mob_builtin.o
 $(BUILD)/npc.o: ./lib/object/npc.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/npc.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/npc.o
+$(BUILD)/npc_builtin.o: ./lib/object/npc.builtin.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/object/npc.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/npc_builtin.o
 $(BUILD)/object.o: ./lib/object/object.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/object.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/object.o
+$(BUILD)/object_builtin.o: ./lib/object/object.builtin.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/object/object.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/object_builtin.o
 $(BUILD)/session.o: ./lib/object/session.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o
+$(BUILD)/session_builtin.o: ./lib/object/session.builtin.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ./lib/object/session.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session_builtin.o
 
 $(BUILD)/main.o: ./main.cpp
 	mkdir -p $(BUILD)

@@ -204,10 +204,15 @@
     <ClCompile Include="lib\map\map.cpp" />
     <ClCompile Include="lib\map\sector.cpp" />
     <ClCompile Include="lib\mmo.cpp" />
+    <ClCompile Include="lib\object\life.builtin.cpp" />
     <ClCompile Include="lib\object\life.cpp" />
+    <ClCompile Include="lib\object\mob.builtin.cpp" />
     <ClCompile Include="lib\object\mob.cpp" />
+    <ClCompile Include="lib\object\npc.builtin.cpp" />
     <ClCompile Include="lib\object\npc.cpp" />
+    <ClCompile Include="lib\object\object.builtin.cpp" />
     <ClCompile Include="lib\object\object.cpp" />
+    <ClCompile Include="lib\object\session.builtin.cpp" />
     <ClCompile Include="lib\object\session.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\query_game.cpp" />
