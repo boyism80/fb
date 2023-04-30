@@ -579,15 +579,24 @@ std::vector<fb::game::object*> fb::game::object::showns(object::types type) cons
 std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, object::types type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
+    if(this->_map == nullptr)
+        return objects;
+
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
         [&](auto x)
         {
-            return
-                x != this &&
-                (type == object::types::UNKNOWN || x->is(type)) &&
-                this->sight(*x);
+            if(this == x)
+                return false;
+
+            if(x->visible() == false)
+                return false;
+
+            if(type != object::types::UNKNOWN && x->is(type) == false)
+                return false;
+
+            return sight(position, x->_position, this->_map);
         }
     );
 
@@ -605,16 +614,24 @@ std::vector<object*> fb::game::object::showings(object::types type) const
 std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, object::types type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
+    if(this->_map == nullptr)
+        return objects;
 
     std::copy_if
     (
         source.begin(), source.end(), std::back_inserter(objects), 
         [&](auto x)
         {
-            return
-                x != this &&
-                (type == object::types::UNKNOWN || x->is(type)) &&
-                x->sight(*this);
+            if(x == this)
+                return false;
+
+            if(x->visible() == false)
+                return false;
+
+            if(type != object::types::UNKNOWN && x->is(type) == false)
+                return false;
+
+            return x->sight(position);
         }
     );
 
