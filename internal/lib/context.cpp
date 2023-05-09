@@ -62,6 +62,10 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
             in_stream.shift(base_size + size);
             in_stream.flush();
         }
+        catch(std::exception& e)
+        {
+            break;
+        }
         catch(...)
         {
             break;
