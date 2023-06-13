@@ -1532,10 +1532,9 @@ bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const
 
 bool fb::game::context::handle_whisper(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::whisper& request)
 {
-    auto fn = [&] () -> task
+    static auto fn = [this] (fb::game::session* session, const std::string& name, const std::string& message) -> task
     {
-        auto session = socket.data();
-        auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(session->name(), request.name, request.message));
+        auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(session->name(), name, message));
         auto client = this->find(response.from);
         if(client == nullptr)
             co_return;
@@ -1548,7 +1547,8 @@ bool fb::game::context::handle_whisper(fb::socket<fb::game::session>& socket, co
 
         client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
     };
-    fn();
+
+    fn(socket.data(), request.name, request.message);
     return true;
 }
 

@@ -115,14 +115,15 @@ public:
     class awaitable
     {
     public:
-        R*                            _result;
-        std::optional<std::exception> e;
-        socket<T>&                    _owner;
-        uint8_t                       _cmd;
-        std::coroutine_handle<>       handler;
+        R*                              _result;
+        std::optional<std::exception>   e;
+        socket<T>&                      _owner;
+        uint8_t                         _cmd;
+        std::coroutine_handle<>         handler;
+        const std::function<void()>     on_suspend;
 
     public:
-        awaitable(socket<T>& owner, uint8_t cmd);
+        awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);
         ~awaitable();
 
         bool                        await_ready();

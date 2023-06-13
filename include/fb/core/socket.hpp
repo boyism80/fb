@@ -157,7 +157,7 @@ fb::socket<T>::operator fb::cryptor& ()
 // fb::internal::socket
 template <typename T>
 template <typename R>
-fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd) : _owner(owner), _cmd(cmd)
+fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _cmd(cmd), on_suspend(on_suspend)
 { }
 
 template <typename T>
@@ -178,6 +178,7 @@ void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<
 {
     handler = h;
     _owner.register_awaiter(R::id, this);
+    on_suspend();
 }
 
 template <typename T>
@@ -236,8 +237,7 @@ template <typename T>
 template <typename R>
 auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
-    this->send(header, encrypt, wrap);
-    return socket<T>::awaitable<R>(*this, R::id);
+    return socket<T>::awaitable<R>(*this, R::id, [&, this] { this->send(header, encrypt, wrap); });
 }
 
 
