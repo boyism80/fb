@@ -740,17 +740,6 @@ bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const
 
 bool fb::game::context::handle_in_whisper(fb::internal::socket<>& socket, const fb::protocol::internal::response::whisper& response)
 {
-    auto client = this->find(response.from);
-    if(client == nullptr)
-        return true;
-
-    std::stringstream sstream;
-    if(response.success)
-        sstream << response.to << "> " << response.message;
-    else
-        sstream << response.to << "님은 바람의나라에 없습니다.";
-
-    client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
     return true;
 }
 
@@ -1543,8 +1532,23 @@ bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const
 
 bool fb::game::context::handle_whisper(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::whisper& request)
 {
-    auto session = socket.data();
-    this->_internal->send(fb::protocol::internal::request::whisper(session->name(), request.name, request.message));
+    static auto fn = [this] (fb::game::session* session, const std::string& name, const std::string& message) -> task
+    {
+        auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(session->name(), name, message));
+        auto client = this->find(response.from);
+        if(client == nullptr)
+            co_return;
+
+        std::stringstream sstream;
+        if(response.success)
+            sstream << response.to << "> " << response.message;
+        else
+            sstream << response.to << "님은 바람의나라에 없습니다.";
+
+        client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+    };
+
+    fn(socket.data(), request.name, request.message);
     return true;
 }
 

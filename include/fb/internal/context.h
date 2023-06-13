@@ -61,6 +61,7 @@ public:
             auto&   in_stream = socket.in_stream();
             R       header;
             header.deserialize(in_stream);
+            
             return fn(socket, header);
         };
     }

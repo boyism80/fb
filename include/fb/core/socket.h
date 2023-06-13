@@ -5,6 +5,8 @@
 #include <map>
 #include <deque>
 #include <mutex>
+#include <optional>
+#include <coroutine>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <fb/protocol/protocol.h>
@@ -109,11 +111,47 @@ template <typename T = void*>
 class socket : public fb::base::socket<T>
 {
 public:
+    template <typename R>
+    class awaitable
+    {
+    public:
+        R*                              _result;
+        std::optional<std::exception>   e;
+        socket<T>&                      _owner;
+        uint8_t                         _cmd;
+        std::coroutine_handle<>         handler;
+        const std::function<void()>     on_suspend;
+
+    public:
+        awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);
+        ~awaitable();
+
+        bool                        await_ready();
+        void                        await_suspend(std::coroutine_handle<> h);
+        R                           await_resume();
+    };
+
+private:
+    std::mutex                      _awaiter_mutex;
+    std::map<uint8_t, void*>        _coroutines;
+
+
+public:
     socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
     ~socket();
 
 protected:
     bool                    on_wrap(fb::ostream& out);
+
+public:
+    void                    register_awaiter(uint8_t cmd, void* awaiter);
+
+    template <typename R>
+    void                    invoke_awaiter(uint8_t cmd, R& response);
+
+public:
+    template <typename R>
+    auto                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 };
 
 } }

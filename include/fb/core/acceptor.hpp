@@ -341,6 +341,10 @@ void fb::acceptor<T>::connect_internal()
                         in_stream.shift(base_size + size);
                         in_stream.flush();
                     }
+                    catch(std::exception& e)
+                    {
+                        break;
+                    }
                     catch(...)
                     {
                         break;
@@ -469,6 +473,7 @@ void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)
         auto& in_stream = socket.in_stream();
         R     header;
         header.deserialize(in_stream);
+        socket.invoke_awaiter(R::id, header);
         return fn(socket, header);
     };
 }
