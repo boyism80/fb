@@ -114,13 +114,14 @@ public:
     template <typename R>
     class awaitable
     {
-    public:
-        R*                              _result;
-        std::optional<std::exception>   e;
+    private:
         socket<T>&                      _owner;
-        uint8_t                         _cmd;
+        const std::function<void()>     _on_suspend;
+
+    public:
+        R*                              result;
+        std::optional<std::exception>   e;
         std::coroutine_handle<>         handler;
-        const std::function<void()>     on_suspend;
 
     public:
         awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);

@@ -157,7 +157,7 @@ fb::socket<T>::operator fb::cryptor& ()
 // fb::internal::socket
 template <typename T>
 template <typename R>
-fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _cmd(cmd), on_suspend(on_suspend)
+fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _on_suspend(on_suspend)
 { }
 
 template <typename T>
@@ -176,9 +176,9 @@ template <typename T>
 template <typename R>
 void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
 {
-    handler = h;
-    _owner.register_awaiter(R::id, this);
-    on_suspend();
+    this->handler = h;
+    this->_owner.register_awaiter(R::id, this);
+    this->_on_suspend();
 }
 
 template <typename T>
@@ -188,7 +188,7 @@ R fb::internal::socket<T>::awaitable<R>::await_resume()
     if (this->e.has_value())
         throw this->e.value();
 
-    return *_result;
+    return *this->result;
 }
 
 template <typename T>
@@ -226,9 +226,8 @@ void fb::internal::socket<T>::invoke_awaiter(uint8_t cmd, R& response)
     if(this->_coroutines.contains(cmd) == false)
         return;
 
-    auto x = this->_coroutines[cmd];
-    auto awaiter = static_cast<socket<T>::awaitable<R>*>(x);
-    awaiter->_result = &response;
+    auto awaiter = static_cast<socket<T>::awaitable<R>*>(this->_coroutines[cmd]);
+    awaiter->result = &response;
     awaiter->handler.resume();
     this->_coroutines.erase(cmd);
 }
