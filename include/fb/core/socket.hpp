@@ -210,10 +210,17 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 }
 
 template <typename T>
-void fb::internal::socket<T>::register_awaiter(uint8_t cmd, void* awaiter)
+template <typename R>
+void fb::internal::socket<T>::register_awaiter(uint8_t cmd, awaitable<R>* awaiter)
 {
     auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
-    this->_coroutines[cmd] = awaiter;
+    auto i = this->_coroutines.find(cmd);
+    if(i != this->_coroutines.end())
+    {
+        auto awaiter = static_cast<socket<T>::awaitable<R>*>(i->second);
+        awaiter->e = std::exception();
+    }
+    this->_coroutines[cmd] = static_cast<void*>(awaiter);
 }
 
 
@@ -236,7 +243,11 @@ template <typename T>
 template <typename R>
 auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
-    return socket<T>::awaitable<R>(*this, R::id, [=, &header] { this->send(header, encrypt, wrap); });
+    return socket<T>::awaitable<R>(*this, R::id, 
+        [=, &header]
+        { 
+            this->send(header, encrypt, wrap); 
+        });
 }
 
 

@@ -145,7 +145,8 @@ protected:
     bool                    on_wrap(fb::ostream& out);
 
 public:
-    void                    register_awaiter(uint8_t cmd, void* awaiter);
+    template <typename R>
+    void                    register_awaiter(uint8_t cmd, awaitable<R>* awaiter);
 
     template <typename R>
     void                    invoke_awaiter(uint8_t cmd, R& response);

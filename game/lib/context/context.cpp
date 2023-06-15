@@ -1532,20 +1532,32 @@ bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const
 
 bool fb::game::context::handle_whisper(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::whisper& request)
 {
-    static auto fn = [this] (fb::game::session* session, const std::string& name, const std::string& message) -> task
+    static auto fn = [this] (fb::game::session* session, const std::string& to, const std::string& message) -> task
     {
-        auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(session->name(), name, message));
-        auto client = this->find(response.from);
-        if(client == nullptr)
-            co_return;
+        auto& from = session->name();
+        try
+        {
+            auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, to, message));
+            auto client = this->find(response.from);
+            if(client == nullptr)
+                co_return;
 
-        std::stringstream sstream;
-        if(response.success)
-            sstream << response.to << "> " << response.message;
-        else
-            sstream << response.to << "님은 바람의나라에 없습니다.";
+            std::stringstream sstream;
+            if(response.success)
+                sstream << response.to << "> " << response.message;
+            else
+                sstream << response.to << "님은 바람의나라에 없습니다.";
 
-        client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+            client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+        }
+        catch(std::exception& e)
+        {
+            auto client = this->find(from);
+            if(client == nullptr)
+                co_return;
+
+            client->send(fb::protocol::game::response::message("서버 오류", fb::game::message::type::NOTIFY));
+        }
     };
 
     fn(socket.data(), request.name, request.message);
