@@ -236,7 +236,7 @@ template <typename T>
 template <typename R>
 auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
-    return socket<T>::awaitable<R>(*this, R::id, [&header, encrypt, wrap, this] { this->send(header, encrypt, wrap); });
+    return socket<T>::awaitable<R>(*this, R::id, [=, &header] { this->send(header, encrypt, wrap); });
 }
 
 
