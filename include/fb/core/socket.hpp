@@ -244,7 +244,7 @@ template <typename R>
 auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
     return socket<T>::awaitable<R>(*this, R::id, 
-        [=, &header]
+        [=, &header, this]
         { 
             this->send(header, encrypt, wrap); 
         });
