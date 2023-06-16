@@ -435,19 +435,69 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
 
 void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
-    fb::ostream         parameter;
-    parameter.write(me.name());
+    static auto fn = [&, this] () -> task
+    {
+        fb::ostream         parameter;
+        parameter.write(me.name());
 
-    auto& socket = static_cast<fb::socket<fb::game::session>&>(me);
-    auto  fd     = socket.native_handle();
+        auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
+        auto  fd       = socket.native_handle();
+        auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
+        
+        try
+        {
+            auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(request, true, true);
+            auto client = this->sockets[response.fd];
+            if(client == nullptr)
+                co_return;
 
-    auto  request = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
-    this->_internal->send(request);
-    // TODO: 내부서버에서 응답 받고 결과를 리턴
-    // return this->_internal->send(request, [] (fb::protocol::internal::response::transfer& response) 
-    // {
-    //     return response.success;
-    // })
+            if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
+                throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
+
+            auto session = client->data();
+            this->dispatch(client, [this, client, session, response](uint8_t)
+                {
+                    session->map(nullptr);
+
+                    this->save
+                    (
+                        *session,
+                        [this, client, response](fb::game::session&)
+                        {
+                            fb::ostream         parameter;
+                            parameter.write(response.name);
+                            parameter.write_u8(1);
+                            parameter.write_u16(response.map);
+                            parameter.write_u16(response.x);
+                            parameter.write_u16(response.y);
+                            this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
+                        }
+                    );
+                });
+        }
+        catch(std::runtime_error& e)
+        {
+            auto client = this->sockets[fd];
+            if(client == nullptr)
+                co_return;
+
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, e.what(), fb::game::message::type::STATE);
+        }
+        catch(std::exception& e)
+        {
+            auto client = this->sockets[fd];
+            if(client == nullptr)
+                co_return;
+
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, "서버 에러", fb::game::message::type::STATE);
+        }
+    };
+
+    fn();
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

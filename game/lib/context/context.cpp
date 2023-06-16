@@ -206,8 +206,8 @@ context::context(boost::asio::io_context& context, uint16_t port, std::chrono::s
     this->bind<fb::protocol::game::request::whisper>          (0x19, std::bind(&context::handle_whisper,         this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
     this->bind<fb::protocol::game::request::map::world>       (0x3F, std::bind(&context::handle_world,           this, std::placeholders::_1, std::placeholders::_2));   // 월드맵 핸들러
 
-    this->bind<fb::protocol::internal::response::transfer>    (std::bind(&context::handle_in_transfer,           this, std::placeholders::_1, std::placeholders::_2));   // 서버 이동
-    this->bind<fb::protocol::internal::response::whisper>     (std::bind(&context::handle_in_whisper,            this, std::placeholders::_1, std::placeholders::_2));   // 귓속말
+    this->bind<fb::protocol::internal::response::transfer>();
+    this->bind<fb::protocol::internal::response::whisper>();
     this->bind<fb::protocol::internal::response::message>     (std::bind(&context::handle_in_message,            this, std::placeholders::_1, std::placeholders::_2));   // 월드 메시지
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&context::handle_in_logout,             this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
     this->bind<fb::protocol::internal::response::shutdown>    (std::bind(&context::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));   // 서버종료
@@ -693,54 +693,6 @@ void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::n
         .pushobject(session)
         .pushobject(npc)
         .resume(2);
-}
-
-bool fb::game::context::handle_in_transfer(fb::internal::socket<>& socket, const fb::protocol::internal::response::transfer& response)
-{
-    auto client = this->sockets[response.fd];
-
-    try
-    {
-        if(client == nullptr)
-            return true;
-
-        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
-            throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
-
-        auto session = client->data();
-        this->dispatch(client, [this, client, session, response](uint8_t)
-        {
-            session->map(nullptr);
-
-            this->save
-            (
-                *session,
-                [this, client, response](fb::game::session&)
-                {
-                    fb::ostream         parameter;
-                    parameter.write(response.name);
-                    parameter.write_u8(1);
-                    parameter.write_u16(response.map);
-                    parameter.write_u16(response.x);
-                    parameter.write_u16(response.y);
-                    this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
-                }
-            );
-        });
-    }
-    catch(std::exception& e)
-    {
-        auto session = client->data();
-        session->refresh_map();
-        this->on_notify(*session, e.what(), fb::game::message::type::STATE);
-    }
-
-    return true;
-}
-
-bool fb::game::context::handle_in_whisper(fb::internal::socket<>& socket, const fb::protocol::internal::response::whisper& response)
-{
-    return true;
 }
 
 bool fb::game::context::handle_in_message(fb::internal::socket<>& socket, const fb::protocol::internal::response::message& response)

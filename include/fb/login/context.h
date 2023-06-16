@@ -33,7 +33,6 @@ protected:
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
 
 public:
-    bool                        handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
     bool                        handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
 public:

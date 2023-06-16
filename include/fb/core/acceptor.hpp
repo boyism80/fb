@@ -308,61 +308,57 @@ bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 template <typename T>
 void fb::acceptor<T>::connect_internal()
 {
-    this->_internal.reset(new fb::internal::socket<>
-        (
-            this->_context,
-            [&] (fb::base::socket<>& socket)
+    static auto handle_receive = [this] (fb::base::socket<>& socket)
+    {
+        static constexpr uint8_t base_size = sizeof(uint16_t);
+        auto& in_stream = socket.in_stream();
+
+        while(true)
+        {
+            try
             {
-                static constexpr uint8_t base_size = sizeof(uint16_t);
-                auto& in_stream = socket.in_stream();
+                if(in_stream.readable_size() < base_size)
+                    throw std::exception();
 
-                while(true)
-                {
-                    try
-                    {
-                        if(in_stream.readable_size() < base_size)
-                            throw std::exception();
+                auto size = in_stream.read_u16();
+                if(size > in_stream.capacity())
+                    throw std::exception();
 
-                        auto size = in_stream.read_u16();
-                        if(size > in_stream.capacity())
-                            throw std::exception();
+                if(in_stream.readable_size() < size)
+                    throw std::exception();
 
-                        if(in_stream.readable_size() < size)
-                            throw std::exception();
-
-                        auto cmd = in_stream.read_8();
-                        auto found = this->_private_handler_dict.find(cmd);
-                        if(found == this->_private_handler_dict.end())
-                            throw std::exception();
-
-                        found->second(static_cast<fb::internal::socket<>&>(socket));
-
-                        in_stream.reset();
-                        in_stream.shift(base_size + size);
-                        in_stream.flush();
-                    }
-                    catch(std::exception& e)
-                    {
-                        break;
-                    }
-                    catch(...)
-                    {
-                        break;
-                    }
-                }
+                auto cmd = in_stream.read_8();
+                auto found = this->_private_handler_dict.find(cmd);
+                if(found != this->_private_handler_dict.end())
+                    found->second(static_cast<fb::internal::socket<>&>(socket));
 
                 in_stream.reset();
-                return false;
-            },
-
-            [&] (fb::base::socket<>& socket)
-            {
-                this->_internal_connection.handle_disconnected();
-                std::this_thread::sleep_for(1000ms);
-                this->connect_internal();
+                in_stream.shift(base_size + size);
+                in_stream.flush();
             }
-        )
-    );
+            catch(std::exception& e)
+            {
+                break;
+            }
+            catch(...)
+            {
+                break;
+            }
+        }
+
+        in_stream.reset();
+        return false;
+    };
+
+    static auto handle_error = [this] (fb::base::socket<>& socket)
+    {
+        this->_internal_connection.handle_disconnected();
+        std::this_thread::sleep_for(1000ms);
+        this->connect_internal();
+    };
+
+    auto socket = new fb::internal::socket<>(this->_context, handle_receive, handle_error);
+    this->_internal.reset(socket);
     
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(this->_internal_connection.ip), this->_internal_connection.port);
     this->_internal->async_connect
@@ -476,4 +472,11 @@ void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)
         socket.invoke_awaiter(R::id, header);
         return fn(socket, header);
     };
+}
+
+template <typename T>
+template <typename R>
+void fb::acceptor<T>::bind()
+{
+    this->bind<R>([this] (auto&, auto&) {return true;});
 }

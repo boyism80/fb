@@ -116,8 +116,6 @@ public:
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
 
 public:
-    bool                    handle_in_transfer(fb::internal::socket<>&, const fb::protocol::internal::response::transfer&);
-    bool                    handle_in_whisper(fb::internal::socket<>&, const fb::protocol::internal::response::whisper&);
     bool                    handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
     bool                    handle_in_logout(fb::internal::socket<>&, const fb::protocol::internal::response::logout&);
     bool                    handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);

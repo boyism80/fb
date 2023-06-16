@@ -130,6 +130,8 @@ public:
 
     template <typename R>
     void                        bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn);
+    template <typename R>
+    void                        bind();
 };
 
 }
