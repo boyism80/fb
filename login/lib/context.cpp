@@ -116,9 +116,9 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
 
     auto fn = [this, id, pw, &socket]
     {
-        auto handle_success = [this, id, &socket] (auto map)
+        auto handle_success = [this, id, &socket] (uint32_t map)
         {
-            static auto async_fn = [this] (fb::socket<fb::login::session>& socket, const std::string& id, uint32_t map) -> task
+            static auto async_fn = [this] (auto& socket, const std::string& id, uint32_t map) -> task
             {
                 auto fd = (uint32_t)socket.native_handle();
                 try

@@ -435,7 +435,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
 
 void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
-    static auto fn = [&, this] () -> task
+    static auto fn = [this] (auto& me, const auto& map, const auto& position) -> task
     {
         fb::ostream         parameter;
         parameter.write(me.name());
@@ -497,7 +497,7 @@ void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, c
         }
     };
 
-    fn();
+    fn(me, map, position);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)
