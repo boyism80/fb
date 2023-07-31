@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30002.166
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "login", "login\login.vcxproj", "{5C57BA6C-26FA-4CAF-9E57-02A2BD95B353}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gateway", "gateway\gateway.vcxproj", "{634FA640-6BDF-4809-AC98-98C1785CDFD2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "internal", "internal\internal.vcxproj", "{7C042B3A-B6B4-4C8C-BE24-C5B7C650361B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bot", "bot\bot.vcxproj", "{EE605206-3017-45A3-9BCC-0168BC1B5CEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,14 @@ Global
 		{7C042B3A-B6B4-4C8C-BE24-C5B7C650361B}.Release|x64.Build.0 = Release|x64
 		{7C042B3A-B6B4-4C8C-BE24-C5B7C650361B}.Release|x86.ActiveCfg = Release|Win32
 		{7C042B3A-B6B4-4C8C-BE24-C5B7C650361B}.Release|x86.Build.0 = Release|Win32
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Debug|x64.ActiveCfg = Debug|x64
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Debug|x64.Build.0 = Debug|x64
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Debug|x86.ActiveCfg = Debug|Win32
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Debug|x86.Build.0 = Debug|Win32
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Release|x64.ActiveCfg = Release|x64
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Release|x64.Build.0 = Release|x64
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Release|x86.ActiveCfg = Release|Win32
+		{EE605206-3017-45A3-9BCC-0168BC1B5CEA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

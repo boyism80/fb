@@ -1,7 +1,7 @@
 #include "socket.h"
 
 template<typename T>
-fb::base::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::base::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) : 
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
@@ -43,6 +43,8 @@ void fb::base::socket<T>::recv()
         boost::asio::buffer(this->_buffer),
         [this](const boost::system::error_code& error, size_t bytes_transferred)
         {
+            // TODO: 이 콜백함수가 호출되는게 메인스레드인지 확인
+            // io_context를 여러 스레드에서 run했을 때는 어떻게 되는지도 확인
             try
             {
                 if(error)
@@ -105,12 +107,12 @@ uint32_t fb::base::socket<T>::fd()
 // fb::socket
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
 { }
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
     fb::socket<T>(context, handle_received, handle_closed)
 {
     this->_crt = crt;
@@ -192,7 +194,7 @@ R fb::internal::socket<T>::awaitable<R>::await_resume()
 }
 
 template <typename T>
-fb::internal::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::internal::socket<T>::socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
 { }
 

@@ -18,9 +18,12 @@ namespace fb { namespace base {
 template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket
 {
+public:
+    using handler_event = std::function<void(fb::base::socket<T>&)>;
+
 private:
-    std::function<void(fb::base::socket<T>&)> _handle_received;
-    std::function<void(fb::base::socket<T>&)> _handle_closed;
+    handler_event           _handle_received;
+    handler_event           _handle_closed;
 
 protected:
     std::array<char, 256>   _buffer;
@@ -32,7 +35,7 @@ public:
     std::mutex              mutex;
 
 protected:
-    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
+    socket(boost::asio::io_context& context, const handler_event& handle_receive, const handler_event& handle_closed);
     ~socket() = default;
 
 protected:
@@ -86,8 +89,8 @@ private:
     fb::cryptor             _crt;
 
 public:
-    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
-    socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
+    socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
+    socket(boost::asio::io_context& context, const fb::cryptor& crt, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
     ~socket() = default;
     
 protected:
@@ -138,22 +141,22 @@ private:
 
 
 public:
-    socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_receive, const std::function<void(fb::base::socket<T>&)>& handle_closed);
+    socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
     ~socket();
 
 protected:
-    bool                    on_wrap(fb::ostream& out);
+    bool                            on_wrap(fb::ostream& out);
 
 public:
     template <typename R>
-    void                    register_awaiter(uint8_t cmd, awaitable<R>* awaiter);
+    void                            register_awaiter(uint8_t cmd, awaitable<R>* awaiter);
 
     template <typename R>
-    void                    invoke_awaiter(uint8_t cmd, R& response);
+    void                            invoke_awaiter(uint8_t cmd, R& response);
 
 public:
     template <typename R>
-    auto                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    auto                            request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 };
 
 } }

@@ -161,11 +161,7 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
         this->_auth_service.login(id, pw, handle_success, handle_error);
     };
 
-    this->threads().dispatch
-    (
-        fn,
-        std::chrono::seconds(delay)
-    );
+    this->threads().dispatch(fn, std::chrono::seconds(delay));
     return true;
 }
 

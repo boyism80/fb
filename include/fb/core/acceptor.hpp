@@ -86,7 +86,7 @@ void fb::base::acceptor<S, T>::accept()
 
                 this->_threads.dispatch
                 (
-                    [ptr] () { ptr->recv(); },
+                    [ptr] { ptr->recv(); },
                     this->_delay,
                     true
                 );
@@ -328,9 +328,8 @@ void fb::acceptor<T>::connect_internal()
                     throw std::exception();
 
                 auto cmd = in_stream.read_8();
-                auto found = this->_private_handler_dict.find(cmd);
-                if(found != this->_private_handler_dict.end())
-                    found->second(static_cast<fb::internal::socket<>&>(socket));
+                if(this->_private_handler_dict.contains(cmd))
+                    this->_private_handler_dict[cmd](static_cast<fb::internal::socket<>&>(socket));
 
                 in_stream.reset();
                 in_stream.shift(base_size + size);

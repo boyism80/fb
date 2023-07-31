@@ -7,6 +7,19 @@
 
 namespace fb { namespace protocol { namespace gateway { namespace response {
 
+class welcome : public fb::protocol::base::header
+{
+public:
+    welcome()
+    {}
+
+public:
+    void deserialize(fb::istream& in_stream)
+    {
+        
+    }
+};
+
 class crt : public fb::protocol::base::header
 {
 public:
