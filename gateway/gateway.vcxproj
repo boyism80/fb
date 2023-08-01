@@ -176,7 +176,6 @@
     <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="..\core\time.cpp" />
     <ClCompile Include="lib\context.cpp" />
-    <ClCompile Include="lib\gateway.cpp" />
     <ClCompile Include="lib\util.cpp" />
     <ClCompile Include="lib\session.cpp" />
     <ClCompile Include="main.cpp" />

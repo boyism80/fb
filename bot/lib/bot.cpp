@@ -67,6 +67,9 @@ void base_bot::on_closed(fb::base::socket<>& socket)
 gateway_bot::gateway_bot(bot_container& owner) : base_bot(owner)
 {
     this->bind<fb::protocol::gateway::response::welcome>(0x7E, std::bind(&gateway_bot::handle_welcome, this, std::placeholders::_1));
+    this->bind<fb::protocol::gateway::response::crt>(0x00, std::bind(&gateway_bot::handle_crt, this, std::placeholders::_1));
+    this->bind<fb::protocol::gateway::response::hosts>(0x56, std::bind(&gateway_bot::handle_hosts, this, std::placeholders::_1));
+    this->bind<fb::protocol::response::transfer>(0x03, std::bind(&gateway_bot::handle_transfer, this, std::placeholders::_1));
 }
 
 gateway_bot::~gateway_bot()
@@ -74,7 +77,38 @@ gateway_bot::~gateway_bot()
 
 void gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
 {
-    std::cout << "dd" << std::endl;
+    this->send(fb::protocol::gateway::request::assert_version { 0x0226, 0xD7 }, false, true);
+}
+
+void gateway_bot::handle_crt(const fb::protocol::gateway::response::crt& response)
+{
+    this->_cryptor = response.cryptor;
+    this->send(fb::protocol::gateway::request::entry_list { 0x01, 0 });
+}
+
+void gateway_bot::handle_hosts(const fb::protocol::gateway::response::hosts& response)
+{
+    this->send(fb::protocol::gateway::request::entry_list { 0x00, 1 });
+}
+
+void gateway_bot::handle_transfer(const fb::protocol::response::transfer& response)
+{
+    /*
+        .write_u8(crt.type())
+        .write_u8(cryptor::KEY_SIZE)
+        .write(crt.key(), cryptor::KEY_SIZE)
+        .write_u8(from);
+    */
+}
+
+bool gateway_bot::on_encrypt(fb::ostream& out)
+{
+    return this->_cryptor.encrypt(out);
+}
+
+bool gateway_bot::on_wrap(fb::ostream& out)
+{
+    return this->_cryptor.wrap(out);
 }
 
 login_bot::login_bot(bot_container& owner) : base_bot(owner)

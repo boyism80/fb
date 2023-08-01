@@ -4,7 +4,6 @@
 #include <fb/core/acceptor.h>
 #include <fb/core/config.h>
 #include <fb/gateway/session.h>
-#include <fb/gateway/gateway.h>
 #include <fb/gateway/util.h>
 #include <zlib.h>
 #include <memory>
@@ -14,6 +13,8 @@
 #include <fb/core/console.h>
 
 namespace fb { namespace gateway {
+
+using namespace fb::protocol::gateway;
 
 class context : public fb::acceptor<fb::gateway::session>
 {

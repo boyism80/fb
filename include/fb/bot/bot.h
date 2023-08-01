@@ -44,12 +44,22 @@ public:
 
 class gateway_bot : public base_bot
 {
+private:
+    fb::cryptor         _cryptor;
+
 public:
     gateway_bot(bot_container& owner);
     ~gateway_bot();
 
 private:
     void handle_welcome(const fb::protocol::gateway::response::welcome& response);
+    void handle_crt(const fb::protocol::gateway::response::crt& response);
+    void handle_hosts(const fb::protocol::gateway::response::hosts& response);
+    void handle_transfer(const fb::protocol::response::transfer& response);
+
+protected:
+    virtual bool on_encrypt(fb::ostream& out);
+    virtual bool on_wrap(fb::ostream& out);
 };
 
 
