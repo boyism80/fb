@@ -9,14 +9,14 @@ namespace fb { namespace protocol { namespace game { namespace response {
 class init : public fb::protocol::base::header
 {
 public:
-    init()
+    init() : fb::protocol::base::header(0x1E)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x1E)
-                  .write_u8(0x06)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x06)
                   .write_u8(0x00);
     }
 };
@@ -28,21 +28,22 @@ public:
     const fb::game::message::type           type;
 
 public:
-    message(const std::string& text, fb::game::message::type type) : 
+    message(const std::string& text, fb::game::message::type type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x0A)
-                  .write_u8(this->type)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->type)
                   .write(this->text, true);
     }
 };
 
 class user_list : public fb::protocol::base::header
 {
+    
 private:
     using container = fb::base::socket_container<fb::socket, fb::game::session>;
 
@@ -51,15 +52,15 @@ public:
     const container&                        sockets;
 
 public:
-    user_list(const fb::game::session& me, const container& sockets) : 
+    user_list(const fb::game::session& me, const container& sockets) : fb::protocol::base::header(0x36),
         me(me), sockets(sockets)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x36)
-                  .write_u16((uint16_t)sockets.size())
+        base::header::serialize(out_stream);
+        out_stream.write_u16((uint16_t)sockets.size())
                   .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
@@ -84,15 +85,15 @@ public:
     const fb::game::chat::type  type;
 
 public:
-    chat(const fb::game::object& me, const std::string& text, fb::game::chat::type type) : 
+    chat(const fb::game::object& me, const std::string& text, fb::game::chat::type type) : fb::protocol::base::header(0x0D),
         me(me), text(text), type(type)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x0D)
-                  .write_u8(this->type)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->type)
                   .write_u32(this->me.sequence())
                   .write(this->text);
     }
@@ -104,15 +105,15 @@ public:
     const uint8_t               hours;
 
 public:
-    time(uint8_t hours) : 
+    time(uint8_t hours) : fb::protocol::base::header(0x20),
         hours(hours)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x20)      // cmd : 0x20
-                  .write_u8(this->hours%24)  // hours
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->hours%24)  // hours
                   .write_u8(0x00)      // Unknown
                   .write_u8(0x00);     // Unknown
     }
@@ -124,15 +125,15 @@ public:
     const fb::game::weather::type   value;
 
 public:
-    weather(fb::game::weather::type value) : 
+    weather(fb::game::weather::type value) : fb::protocol::base::header(0x1F),
         value(value)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x1F)
-                  .write_u8(this->value)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->value)
                   .write_u8(0x00);
     }
 };
@@ -143,15 +144,15 @@ public:
     const uint8_t                   value;
 
 public:
-    bright(uint8_t value) : 
+    bright(uint8_t value) : fb::protocol::base::header(0x20),
         value(value)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x20)
-                  .write_u8(0x00)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x00)
                   .write_u8(std::max(0, 20 - this->value));
     }
 };
@@ -163,15 +164,15 @@ public:
     const fb::game::timer::type     type;
 
 public:
-    timer(uint32_t time, fb::game::timer::type type = fb::game::timer::type::DECREASE) : 
+    timer(uint32_t time, fb::game::timer::type type = fb::game::timer::type::DECREASE) : fb::protocol::base::header(0x67),
         time(time), type(type)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x67)
-                  .write_u8(this->type)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->type)
                   .write_u32(this->time)
                   .write_u8(0x00);
     }

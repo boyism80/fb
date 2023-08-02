@@ -15,13 +15,16 @@ public:
     uint16_t                port = 0;
 
 public:
-    entry(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) : name(name), desc(desc), ip(ip), port(port)
+    entry(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) : 
+        name(name), desc(desc), ip(ip), port(port)
     { }
 
-    entry(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port) : entry(name, desc, inet_addr(ip.c_str()), port)
+    entry(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port) : 
+        entry(name, desc, inet_addr(ip.c_str()), port)
     { }
 
-    entry(const entry& right) : entry(right.name, right.desc, right.ip, right.port)
+    entry(const entry& right) : 
+        entry(right.name, right.desc, right.ip, right.port)
     { }
 
     ~entry()
@@ -35,7 +38,7 @@ namespace fb { namespace protocol { namespace gateway { namespace response {
 class welcome : public fb::protocol::base::header
 {
 public:
-    welcome()
+    welcome() : fb::protocol::base::header(0x7E)
     {}
 
 public:
@@ -58,18 +61,19 @@ public:
 
 public:
 #ifdef BOT
-    crt()
+    crt() : fb::protocol::base::header(0x00)
     { }
 #endif
 
-    crt(const fb::cryptor& cryptor, uint32_t entry_crc) : cryptor(cryptor), entry_crc(entry_crc)
+    crt(const fb::cryptor& cryptor, uint32_t entry_crc) : fb::protocol::base::header(0x00),
+        cryptor(cryptor), entry_crc(entry_crc)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x00)      // cmd : 0x00
-                  .write_u8(0x00)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x00)
                   .write_u32(this->entry_crc)
                   .write_u8(this->cryptor.type())
                   .write_u8(0x09)
@@ -104,10 +108,11 @@ public:
 
 public:
 #ifdef BOT
-    hosts()
+    hosts() : fb::protocol::base::header(0x56)
     { }
 #endif
-    hosts(const std::vector<entry>& entries) : entries(entries)
+    hosts(const std::vector<entry>& entries) : fb::protocol::base::header(0x56),
+        entries(entries)
     { }
 
     void serialize(fb::ostream& out_stream) const
@@ -131,8 +136,8 @@ public:
         auto                        compressed = formats.compress();
 
         // 패킷 형식으로 저장
-        out_stream.write_u8(0x56)
-                  .write_u16(compressed.size())
+        base::header::serialize(out_stream);
+        out_stream.write_u16(compressed.size())
                   .write(compressed.data(), compressed.size() + 1);
     }
 

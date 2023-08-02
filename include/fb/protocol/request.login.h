@@ -12,6 +12,10 @@ public:
     std::string             pw;
 
 public:
+    login() : fb::protocol::base::header(0x03)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->id = in_stream.readstr_u8();
@@ -26,6 +30,10 @@ public:
     uint8_t                 enc_type;
     uint8_t                 enc_key_size;
     uint8_t                 enc_key[0x09];
+
+public:
+    agreement() : fb::protocol::base::header(0x10)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)

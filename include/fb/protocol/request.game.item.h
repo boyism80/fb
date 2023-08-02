@@ -14,6 +14,10 @@ public:
     uint8_t                 index;
 
 public:
+    active() : fb::protocol::base::header(0x1C)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->index = in_stream.read_u8() - 1;
@@ -25,6 +29,10 @@ class inactive : public fb::protocol::base::header
 {
 public:
     equipment::slot         slot;
+
+public:
+    inactive() : fb::protocol::base::header(0x1F)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -41,6 +49,10 @@ public:
     bool                    all;
 
 public:
+    drop() : fb::protocol::base::header(0x08)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->index = in_stream.read_u8() - 1;
@@ -55,6 +67,10 @@ public:
     uint32_t                chunk;
 
 public:
+    drop_cash() : fb::protocol::base::header(0x24)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->chunk = in_stream.read_u32();
@@ -65,6 +81,10 @@ class mix : public fb::protocol::base::header
 {
 public:
     std::vector<uint8_t>    indices;
+
+public:
+    mix() : fb::protocol::base::header(0x6B)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -83,6 +103,10 @@ public:
     uint8_t                 index;
 
 public:
+    throws() : fb::protocol::base::header(0x17)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->all = in_stream.read_u8();
@@ -96,6 +120,10 @@ class info : public fb::protocol::base::header
 public:
     uint16_t                position;
     uint8_t                 slot;
+
+public:
+    info() : fb::protocol::base::header(0x66)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)

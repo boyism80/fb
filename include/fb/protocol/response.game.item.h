@@ -13,15 +13,15 @@ public:
     const std::string       message;
 
 public:
-    tip(uint16_t position, const std::string& message) : 
+    tip(uint16_t position, const std::string& message) : fb::protocol::base::header(0x59),
         position(position), message(message)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x59)
-                  .write_u16(this->position)
+        base::header::serialize(out_stream);
+        out_stream.write_u16(this->position)
                   .write(this->message, true)
                   .write_u8(0x00);
     }
@@ -34,7 +34,7 @@ public:
     const uint8_t               index;
 
 public:
-    update(const fb::game::session& me, uint8_t index) : 
+    update(const fb::game::session& me, uint8_t index) : fb::protocol::base::header(0x0F),
         me(me), index(index)
     { }
 
@@ -45,8 +45,8 @@ public:
         if(item == nullptr)
             return;
 
-        out_stream.write_u8(0x0F)
-                  .write_u8(this->index + 1)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->index + 1)
                   .write_u16(item->look())
                   .write_u8(item->color())
                   .write(item->name_styled(), false)
@@ -63,7 +63,7 @@ public:
     const fb::game::equipment::slot     slot;
 
 public:
-    update_slot(const fb::game::session& me, fb::game::equipment::slot slot) : 
+    update_slot(const fb::game::session& me, fb::game::equipment::slot slot) : fb::protocol::base::header(0x37),
         me(me), slot(slot)
     { }
 
@@ -113,8 +113,8 @@ public:
         if(item == nullptr)
             return;
 
-        out_stream.write_u8(0x37)
-                  .write_u16(item->look())
+        base::header::serialize(out_stream);
+        out_stream.write_u16(item->look())
                   .write_u8(item->color())
                   .write(item->name(), false);
     }
@@ -127,14 +127,14 @@ public:
     const uint32_t          index;
     const uint16_t          count;
 public:
-    remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count = 0) : 
+    remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count = 0) : fb::protocol::base::header(0x10),
         types(types), index(index), count(count)
     { }
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x10)
-                  .write_u8(this->index + 1)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->index + 1)
                   .write_u8(this->types)
                   .write_u16(this->count);
     }
@@ -147,15 +147,15 @@ public:
     const equipment::slot   slot;
 
 public:
-    unequip(equipment::slot slot) : 
+    unequip(equipment::slot slot) : fb::protocol::base::header(0x38),
         slot(slot)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x38)
-                  .write_u8(this->slot)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->slot)
                   .write_u8(0x00);
     }
 };

@@ -56,7 +56,8 @@ public:
     template <typename R>
     void                            bind(const std::function<bool(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
-        _handler_dict[R::id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        auto id = R().__id;
+        _handler_dict[id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
         {
             auto&   in_stream = socket.in_stream();
             R       header;

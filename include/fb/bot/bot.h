@@ -29,7 +29,7 @@ private:
 
 public:
     template <typename T>
-    void bind(uint8_t cmd, const std::function<void(T&)> fn)
+    void bind(int cmd, const std::function<void(T&)> fn)
     {
         this->_handler_dict[cmd] = [this, fn]
         {
@@ -38,6 +38,13 @@ public:
             header.deserialize(in_stream);
             fn(header);
         };
+    }
+
+    template <typename T>
+    void bind(const std::function<void(T&)> fn)
+    {
+        auto id = T().__id;
+        bind(id, fn);
     }
 };
 

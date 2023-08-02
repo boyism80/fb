@@ -28,6 +28,10 @@ public:
     std::optional<transfer_param>   transfer;
 
 public:
+    login() : fb::protocol::base::header(0x10)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         // base
@@ -59,17 +63,25 @@ public:
 class direction : public fb::protocol::base::header
 {
 public:
-    fb::game::direction     direction;
+    fb::game::direction     value;
+
+public:
+    direction() : fb::protocol::base::header(0x11)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->direction = fb::game::direction(in_stream.read_u8());
+        this->value = fb::game::direction(in_stream.read_u8());
     }
 };
 
 class exit : public fb::protocol::base::header
 {
+public:
+    exit() : fb::protocol::base::header(0x0B)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream) { }
 };
@@ -82,6 +94,14 @@ public:
     uint8_t                 sequence;
     point16_t               position;
 
+protected:
+    move(int id) : fb::protocol::base::header(id)
+    { }
+
+public:
+    move() : fb::protocol::base::header(0x32)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream)
     {
@@ -93,7 +113,7 @@ public:
 };
 
 
-class update_move : public fb::protocol::game::request::move
+class update_move : public move
 {
 public:
     point16_t               begin;
@@ -101,9 +121,13 @@ public:
     uint16_t                crc;
 
 public:
+    update_move() : move(0x06)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
-        fb::protocol::game::request::move::deserialize(in_stream);
+        move::deserialize(in_stream);
 
         this->begin.x = in_stream.read_u16();
         this->begin.y = in_stream.read_u16();
@@ -116,6 +140,10 @@ public:
 class attack : public fb::protocol::base::header
 {
 public:
+    attack() : fb::protocol::base::header(0x13)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream) { }
 };
 
@@ -124,6 +152,10 @@ class pick_up : public fb::protocol::base::header
 {
 public:
     bool                    boost;
+
+public:
+    pick_up() : fb::protocol::base::header(0x07)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -136,12 +168,16 @@ public:
 class emotion : public fb::protocol::base::header
 {
 public:
-    uint8_t                 emotion;
+    uint8_t                 value;
+
+public:
+    emotion() : fb::protocol::base::header(0x1D)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->emotion = in_stream.read_u8();
+        this->value = in_stream.read_u8();
     }
 };
 
@@ -149,17 +185,29 @@ public:
 class refresh : public fb::protocol::base::header
 {
 public:
+    refresh() : fb::protocol::base::header(0x38)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream) { }
 };
 
 class front_info : public fb::protocol::base::header
 {
 public:
+    front_info() : fb::protocol::base::header(0x09)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream) { }
 };
 
 class self_info : public fb::protocol::base::header
 {
+public:
+    self_info() : fb::protocol::base::header(0x2D)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream) { }
 };
@@ -169,6 +217,10 @@ class change_option : public fb::protocol::base::header
 {
 public:
     fb::game::options       option;
+
+public:
+    change_option() : fb::protocol::base::header(0x1B)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -182,6 +234,10 @@ class click : public fb::protocol::base::header
 {
 public:
     uint32_t                fd;
+
+public:
+    click() : fb::protocol::base::header(0x43)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -207,6 +263,10 @@ public:
     uint8_t                 action;
     uint32_t                fd;
     params                  parameter;
+
+public:
+    trade() : fb::protocol::base::header(0x4A)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -237,6 +297,10 @@ public:
     std::string             name;
 
 public:
+    group() : fb::protocol::base::header(0x2E)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->name = in_stream.readstr_u8();
@@ -246,6 +310,10 @@ public:
 
 class user_list : public fb::protocol::base::header
 {
+public:
+    user_list() : fb::protocol::base::header(0x18)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream)
     {
@@ -259,6 +327,10 @@ class chat : public fb::protocol::base::header
 public:
     bool                    shout;
     std::string             message;
+
+public:
+    chat() : fb::protocol::base::header(0x0E)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -275,6 +347,10 @@ public:
     fb::game::swap::type    type;
     uint8_t                 src;
     uint8_t                 dst;
+
+public:
+    swap() : fb::protocol::base::header(0x30)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -295,6 +371,10 @@ public:
     uint16_t                        index;      // MENU
     uint16_t                        pursuit;    // SELL
     std::string                     name;       // SELL
+
+protected:
+    dialog(int id) : fb::protocol::base::header(id)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -347,9 +427,27 @@ public:
     }
 };
 
+class dialog1 : public dialog
+{
+public:
+    dialog1() : dialog(0x3A)
+    { }
+};
+
+class dialog2 : public dialog
+{
+public:
+    dialog2() : dialog(0x39)
+    { }
+};
+
 
 class door : public fb::protocol::base::header
 {
+public:
+    door() : fb::protocol::base::header(0x20)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream)
     { }
@@ -361,6 +459,10 @@ class whisper : public fb::protocol::base::header
 public:
     std::string             name;
     std::string             message;
+
+public:
+    whisper() : fb::protocol::base::header(0x19)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)

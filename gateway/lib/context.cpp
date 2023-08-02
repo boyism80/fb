@@ -11,10 +11,10 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port, s
     this->load_entries();
 
     // Register event handler
-    this->bind<fb::protocol::gateway::request::assert_version>  (0x00, std::bind(&context::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::gateway::request::entry_list>      (0x57, std::bind(&context::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::assert_version>  (std::bind(&context::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::gateway::request::entry_list>      (std::bind(&context::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
 
-    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&context::handle_in_shutdown,           this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&context::handle_in_shutdown,     this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::gateway::context::~context()

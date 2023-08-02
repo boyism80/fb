@@ -4,14 +4,14 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port, std
     fb::acceptor<fb::login::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
     // Register event handler
-    this->bind<fb::protocol::login::request::login>                   (0x03, std::bind(&context::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::login::request::agreement>               (0x10, std::bind(&context::handle_agreement,           this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::login::request::account::create>         (0x02, std::bind(&context::handle_create_account,      this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::login::request::account::complete>       (0x04, std::bind(&context::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::login::request::account::change_pw>      (0x26, std::bind(&context::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::login>                   (std::bind(&context::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::agreement>               (std::bind(&context::handle_agreement,           this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::create>         (std::bind(&context::handle_create_account,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::complete>       (std::bind(&context::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::login::request::account::change_pw>      (std::bind(&context::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
 
     this->bind<fb::protocol::internal::response::transfer>();
-    this->bind<fb::protocol::internal::response::shutdown>            (std::bind(&context::handle_in_shutdown,               this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::response::shutdown>            (std::bind(&context::handle_in_shutdown,         this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::login::context::~context()

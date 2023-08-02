@@ -179,7 +179,8 @@ template <typename R>
 void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
 {
     this->handler = h;
-    this->_owner.register_awaiter(R::id, this);
+    auto id = R().__id;
+    this->_owner.register_awaiter(id, this);
     this->_on_suspend();
 }
 
@@ -245,7 +246,7 @@ template <typename T>
 template <typename R>
 auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
-    return socket<T>::awaitable<R>(*this, R::id, 
+    return socket<T>::awaitable<R>(*this, header.__id, 
         [=, &header, this]
         { 
             this->send(header, encrypt, wrap); 

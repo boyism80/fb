@@ -13,6 +13,10 @@ public:
     uint16_t                crc;
 
 public:
+    update() : fb::protocol::base::header(0x05)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->position.x = in_stream.read_u16();
@@ -26,14 +30,18 @@ public:
 class world : public fb::protocol::base::header
 {
 public:
-    uint16_t                world;
+    uint16_t                value;
     uint16_t                before;
     uint16_t                after;
 
 public:
+    world() : fb::protocol::base::header(0x3F)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
-        this->world = in_stream.read_u16();
+        this->value = in_stream.read_u16();
         this->before = in_stream.read_u16();
         this->after = in_stream.read_u16();
     }

@@ -126,8 +126,9 @@ protected:
 
 public:
     template <typename R>
-    void                        bind(uint8_t cmd, const std::function<bool(fb::socket<T>&, R&)>& fn);
-
+    void                        bind(int cmd, const std::function<bool(fb::socket<T>&, R&)>& fn);
+    template <typename R>
+    void                        bind(const std::function<bool(fb::socket<T>&, R&)>& fn);
     template <typename R>
     void                        bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn);
     template <typename R>

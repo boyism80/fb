@@ -448,7 +448,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(uint8_t cmd, const std::function<bool(fb::socket<T>&, R&)>& fn)
+void fb::acceptor<T>::bind(int cmd, const std::function<bool(fb::socket<T>&, R&)>& fn)
 {
     this->_public_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
     {
@@ -461,14 +461,23 @@ void fb::acceptor<T>::bind(uint8_t cmd, const std::function<bool(fb::socket<T>&,
 
 template <typename T>
 template <typename R>
+void fb::acceptor<T>::bind(const std::function<bool(fb::socket<T>&, R&)>& fn)
+{
+    auto id = R().__id;
+    this->bind(id, fn);
+}
+
+template <typename T>
+template <typename R>
 void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn)
 {
-    this->_private_handler_dict[R::id] = [this, fn](fb::internal::socket<>& socket)
+    auto id = R().__id;
+    this->_private_handler_dict[id] = [this, fn](fb::internal::socket<>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;
         header.deserialize(in_stream);
-        socket.invoke_awaiter(R::id, header);
+        socket.invoke_awaiter(header.__id, header);
         return fn(socket, header);
     };
 }
@@ -477,5 +486,5 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind()
 {
-    this->bind<R>([this] (auto&, auto&) {return true;});
+    this->bind<R>([this] (fb::internal::socket<>&, R&) {return true;});
 }

@@ -66,10 +66,10 @@ void base_bot::on_closed(fb::base::socket<>& socket)
 
 gateway_bot::gateway_bot(bot_container& owner) : base_bot(owner)
 {
-    this->bind<fb::protocol::gateway::response::welcome>(0x7E, std::bind(&gateway_bot::handle_welcome, this, std::placeholders::_1));
-    this->bind<fb::protocol::gateway::response::crt>(0x00, std::bind(&gateway_bot::handle_crt, this, std::placeholders::_1));
-    this->bind<fb::protocol::gateway::response::hosts>(0x56, std::bind(&gateway_bot::handle_hosts, this, std::placeholders::_1));
-    this->bind<fb::protocol::response::transfer>(0x03, std::bind(&gateway_bot::handle_transfer, this, std::placeholders::_1));
+    this->bind<fb::protocol::gateway::response::welcome>(std::bind(&gateway_bot::handle_welcome, this, std::placeholders::_1));
+    this->bind<fb::protocol::gateway::response::crt>(std::bind(&gateway_bot::handle_crt, this, std::placeholders::_1));
+    this->bind<fb::protocol::gateway::response::hosts>(std::bind(&gateway_bot::handle_hosts, this, std::placeholders::_1));
+    this->bind<fb::protocol::response::transfer>(std::bind(&gateway_bot::handle_transfer, this, std::placeholders::_1));
 }
 
 gateway_bot::~gateway_bot()

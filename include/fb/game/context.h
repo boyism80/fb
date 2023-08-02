@@ -153,6 +153,8 @@ public:
     bool                    handle_board(fb::socket<fb::game::session>&, const fb::protocol::game::request::board::board&);
     bool                    handle_swap(fb::socket<fb::game::session>&, const fb::protocol::game::request::swap&);
     bool                    handle_dialog(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog&);
+    //bool                    handle_dialog_1(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog1&);
+    //bool                    handle_dialog_2(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog2&);
     bool                    handle_throw_item(fb::socket<fb::game::session>&, const fb::protocol::game::request::item::throws&);
     bool                    handle_spell(fb::socket<fb::game::session>&, const fb::protocol::game::request::spell::use&);
     bool                    handle_door(fb::socket<fb::game::session>&, const fb::protocol::game::request::door&);

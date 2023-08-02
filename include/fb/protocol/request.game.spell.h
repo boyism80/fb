@@ -18,6 +18,10 @@ public:
     mutable point16_t               position;
 
 public:
+    use() : fb::protocol::base::header(0x0F)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->_in_stream = in_stream;

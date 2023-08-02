@@ -12,6 +12,10 @@ public:
     std::string             pw;
 
 public:
+    create() : fb::protocol::base::header(0x02)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->id = in_stream.readstr_u8();
@@ -27,6 +31,10 @@ public:
     uint8_t                 sex;
     uint8_t                 nation;
     uint8_t                 creature;
+
+public:
+    complete() : fb::protocol::base::header(0x04)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -46,6 +54,10 @@ public:
     std::string             pw;
     std::string             new_pw;
     uint32_t                birthday;
+
+public:
+    change_pw() : fb::protocol::base::header(0x26)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)

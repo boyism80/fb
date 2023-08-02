@@ -32,13 +32,21 @@ namespace fb { namespace protocol { namespace base {
 
 class header
 {
+public:
+    const int __id;
+
 protected:
-    header() = default;
+    header(int id) : __id(id)
+    { }
+
 public:
     ~header() = default;
 
 public:
-    virtual void            serialize(fb::ostream& out_stream) const { }
+    virtual void            serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(this->__id);
+    }
     virtual void            deserialize(fb::istream& in_stream) { }
 };
 

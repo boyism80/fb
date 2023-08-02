@@ -20,18 +20,18 @@ public:
 
 public:
 #ifdef BOT
-    transfer()
+    transfer() : fb::protocol::base::header(0x03)
     { }
 #endif
-    transfer(uint32_t ip, uint16_t port, const fb::buffer& parameter) : 
+    transfer(uint32_t ip, uint16_t port, const fb::buffer& parameter) : fb::protocol::base::header(0x03),
         ip(ip), port(port), parameter(parameter)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x03)
-                  .write_u32(this->ip)
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->ip)
                   .write_u16(this->port)
                   .write_u8(this->parameter.size())
                   .write(this->parameter);

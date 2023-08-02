@@ -8,29 +8,29 @@ using namespace fb::game;
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace life {
 
- class action : public fb::protocol::base::header
- {
- public:
-     const fb::game::life&      me;
-     const fb::game::action     value;
-     const fb::game::duration   duration;
-     const uint8_t              sound;
+class action : public fb::protocol::base::header
+{
+public:
+    const fb::game::life&      me;
+    const fb::game::action     value;
+    const fb::game::duration   duration;
+    const uint8_t              sound;
 
- public:
-     action(const fb::game::life& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
-         me(me), value(value), duration(duration), sound(sound)
-     { }
+public:
+    action(const fb::game::life& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+        me(me), value(value), duration(duration), sound(sound)
+    { }
 
- public:
-     void serialize(fb::ostream& out_stream) const
-     {
-         out_stream.write_u8(0x1A)
-                   .write_u32(this->me.sequence())
-                   .write_u8(this->value) // type
-                   .write_u16(this->duration) // duration
-                   .write_u8(this->sound); // sound
-     }
- };
+public:
+    void serialize(fb::ostream& out_stream) const
+    {
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->me.sequence())
+                  .write_u8(this->value) // type
+                  .write_u16(this->duration) // duration
+                  .write_u8(this->sound); // sound
+    }
+};
 
 class show_hp : public fb::protocol::base::header
 {
@@ -41,7 +41,7 @@ public:
     const uint8_t               percentage;
 
 public:
-    show_hp(const fb::game::life& me, uint32_t damage, bool critical) : 
+    show_hp(const fb::game::life& me, uint32_t damage, bool critical) : fb::protocol::base::header(0x13),
         me(me), damage(damage), critical(critical),
         percentage(this->me.hp() / float(this->me.base_hp()) * 100)
     { }
@@ -49,8 +49,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x13)
-                  .write_u32(this->me.sequence())
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->me.sequence())
                   .write_u8(this->critical)
                   .write_u8(this->percentage)
                   .write_u32(this->damage)
@@ -64,17 +64,17 @@ public:
     const uint32_t              id;
 
 public:
-    die(const fb::game::life& life) : 
-        die(life.sequence())
+    die(const fb::game::life& life) : die(life.sequence())
     { }
-    die(uint32_t id) : id(id)
+    die(uint32_t id) : fb::protocol::base::header(0x5F), 
+        id(id)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x5F)
-                  .write_u32(this->id)
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->id)
                   .write_u8(0x00);
     }
 };

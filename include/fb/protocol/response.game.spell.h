@@ -14,18 +14,18 @@ public:
     const std::chrono::milliseconds time;
 
 public:
-    buff(const std::string& name, uint32_t time) : 
+    buff(const std::string& name, uint32_t time) : fb::protocol::base::header(0x3A),
         name(name), time(time)
     { }
-    buff(const fb::game::buff& buff) : 
+    buff(const fb::game::buff& buff) : fb::protocol::base::header(0x3A),
         name(buff.spell().name()), time(buff.time())
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x3A)
-                  .write(this->name)
+        base::header::serialize(out_stream);
+        out_stream.write(this->name)
                   .write_u32(this->time.count() / 1000);
     }
 };
@@ -36,15 +36,15 @@ public:
     const fb::game::buff&       buff;
 
 public:
-    unbuff(const fb::game::buff& buff) : 
+    unbuff(const fb::game::buff& buff) : fb::protocol::base::header(0x3A),
         buff(buff)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x3A)
-                  .write(this->buff.spell().name())
+        base::header::serialize(out_stream);
+        out_stream.write(this->buff.spell().name())
                   .write_u32(0x00);
     }
 };
@@ -56,7 +56,7 @@ public:
     const uint8_t                   index;
 
 public:
-    update(const fb::game::life& me, uint8_t index) : 
+    update(const fb::game::life& me, uint8_t index) : fb::protocol::base::header(0x17),
         me(me), index(index)
     { }
 
@@ -67,8 +67,8 @@ public:
         if(spell == nullptr)
             return;
 
-        out_stream.write_u8(0x17)
-            .write_u8(this->index + 1)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->index + 1)
             .write_u8(spell->type())
             .write(spell->name());
 
@@ -84,7 +84,7 @@ public:
     const uint8_t                   index;
 
 public:
-    remove(const fb::game::life& me, uint8_t index) : 
+    remove(const fb::game::life& me, uint8_t index) : fb::protocol::base::header(0x18),
         me(me), index(index)
     { }
 
@@ -95,8 +95,8 @@ public:
         if(spell != nullptr)
             return;
 
-        out_stream.write_u8(0x18)
-                  .write_u8(this->index + 1)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->index + 1)
                   .write_u8(0x00);
     }
 };

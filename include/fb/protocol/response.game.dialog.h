@@ -16,7 +16,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    common(const fb::game::object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : 
+    common(const fb::game::object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : fb::protocol::base::header(0x30),
         object(object), message(message), button_prev(button_prev), button_next(button_next), interaction(interaction)
     { }
 
@@ -27,8 +27,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x30)
-                  .write_u8(0x00)     // unknown
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x00)     // unknown
                   .write_u8(this->interaction)     // interaction
                   .write_u32(0x01)
                   .write_u8(this->object.look > 0xBFFF ? 0x02 : 0x01)
@@ -54,7 +54,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    menu(const fb::game::npc::master& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : 
+    menu(const fb::game::npc::master& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : fb::protocol::base::header(0x2F),
         npc(npc), menus(menus), message(message), interaction(interaction)
     { }
 
@@ -65,8 +65,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x2F)
-            .write_u8(0x01)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x01)
             .write_u8(interaction)
             .write_u32(0x01)
             .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
@@ -106,7 +106,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    slot(const fb::game::npc::master& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : 
+    slot(const fb::game::npc::master& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : fb::protocol::base::header(0x2F),
         npc(npc), slots(slots), message(message), interaction(interaction)
     { }
 
@@ -117,8 +117,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x2F)
-                  .write_u8(0x05)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x05)
                   .write_u8(this->interaction)
                   .write_u32(0x01)
                   .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
@@ -148,7 +148,7 @@ public:
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::master& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
+    item(const fb::game::npc::master& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
     { }
 
@@ -159,8 +159,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x2F)
-            .write_u8(0x04)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x04)
             .write_u8(interaction)
             .write_u32(0x01)
             .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
@@ -199,7 +199,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    input(const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : 
+    input(const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : fb::protocol::base::header(0x2F),
         npc(npc), message(message), interaction(interaction)
     { }
 
@@ -210,8 +210,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x2F)
-                  .write_u8(0x03)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x03)
                   .write_u8(this->interaction)
                   .write_u32(0x01)
                   .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
@@ -238,7 +238,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    input_ext(const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : 
+    input_ext(const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : fb::protocol::base::header(0x30),
         npc(npc), message(message), top(top), bottom(bottom), maxlen(maxlen), button_prev(button_prev), interaction(interaction)
     { }
 
@@ -249,8 +249,8 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x30)
-                  .write_u8(0x04)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x04)
                   .write_u8(this->interaction)
                   .write_u32(0x01)
                   .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
