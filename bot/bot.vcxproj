@@ -163,7 +163,11 @@
     <ClCompile Include="..\core\table.cpp" />
     <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="..\core\time.cpp" />
+    <ClCompile Include="lib\bot.container.cpp" />
     <ClCompile Include="lib\bot.cpp" />
+    <ClCompile Include="lib\bot.game.cpp" />
+    <ClCompile Include="lib\bot.gateway.cpp" />
+    <ClCompile Include="lib\bot.login.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

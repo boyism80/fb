@@ -6,6 +6,7 @@
 #include <fb/core/stream.h>
 #include <fb/core/socket.h>
 #include <fb/protocol/gateway.h>
+#include <fb/protocol/login.h>
 
 namespace fb { namespace bot {
 
@@ -15,6 +16,7 @@ class base_bot : public fb::base::socket<void*>
 {
 protected:
     bot_container& _owner;
+    fb::cryptor _cryptor;
     std::map<uint8_t, std::function<void()>> _handler_dict;
 
 protected:
@@ -27,7 +29,16 @@ private:
     void on_receive(fb::base::socket<>& socket);
     void on_closed(fb::base::socket<>& socket);
 
+protected:
+    virtual void on_connected();
+    virtual void on_disconnected();
+    virtual bool on_encrypt(fb::ostream& out);
+    virtual bool on_wrap(fb::ostream& out);
+    virtual bool is_decrypt(int cmd) const;
+
 public:
+    void connect(const boost::asio::ip::tcp::endpoint& endpoint);
+
     template <typename T>
     void bind(int cmd, const std::function<void(T&)> fn)
     {
@@ -51,9 +62,6 @@ public:
 
 class gateway_bot : public base_bot
 {
-private:
-    fb::cryptor         _cryptor;
-
 public:
     gateway_bot(bot_container& owner);
     ~gateway_bot();
@@ -65,8 +73,7 @@ private:
     void handle_transfer(const fb::protocol::response::transfer& response);
 
 protected:
-    virtual bool on_encrypt(fb::ostream& out);
-    virtual bool on_wrap(fb::ostream& out);
+    bool is_decrypt(int cmd) const;
 };
 
 
@@ -74,7 +81,15 @@ class login_bot : public base_bot
 {
 public:
     login_bot(bot_container& owner);
+    login_bot(bot_container& owner, const fb::buffer& params);
     ~login_bot();
+
+protected:
+    void on_connected();
+    bool is_decrypt(int cmd) const;
+
+public:
+    void handle_agreement(const fb::protocol::login::response::agreement& response);
 };
 
 
@@ -82,6 +97,7 @@ class game_bot : public base_bot
 {
 public:
     game_bot(bot_container& owner);
+    game_bot(bot_container& owner, const fb::buffer& params);
     ~game_bot();
 };
 
@@ -102,6 +118,15 @@ public:
     T* create()
     {
         auto bot = new T(*this);
+        
+        this->_bots.insert({bot->fd(), bot});
+        return bot;
+    }
+
+    template <typename T>
+    T* create(const fb::buffer& params)
+    {
+        auto bot = new T(*this, params);
         
         this->_bots.insert({bot->fd(), bot});
         return bot;

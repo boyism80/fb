@@ -34,8 +34,25 @@ public:
 public:
     agreement() : fb::protocol::base::header(0x10)
     { }
+#ifdef BOT
+    agreement(uint8_t type, uint8_t ksize, const uint8_t* key) : agreement()
+    {
+        this->enc_type = type;
+        this->enc_key_size = ksize;
+        memcpy(this->enc_key, key, ksize);
+    }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->enc_type)
+                  .write_u8(this->enc_key_size)
+                  .write((const void*)this->enc_key, this->enc_key_size);
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         this->enc_type = in_stream.read_u8();

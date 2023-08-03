@@ -37,5 +37,17 @@
     <ClCompile Include="lib\bot.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="lib\bot.container.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\bot.game.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\bot.gateway.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\bot.login.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
