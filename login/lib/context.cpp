@@ -118,6 +118,7 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
     {
         auto handle_success = [this, id, &socket] (uint32_t map)
         {
+
             static auto async_fn = [this] (auto& socket, const std::string& id, uint32_t map) -> task
             {
                 auto fd = (uint32_t)socket.native_handle();
@@ -144,10 +145,18 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
                 catch(login_exception& e)
                 {
                     auto client = this->sockets[fd];
-                    if(client == nullptr)
+                    if (client == nullptr)
                         co_return;
 
                     client->send(fb::protocol::login::response::message(e.what(), e.type()));
+                }
+                catch (std::exception& e)
+                {
+                    auto client = this->sockets[fd];
+                    if (client == nullptr)
+                        co_return;
+                    
+                    client->send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
                 }
             };
             async_fn(socket, id, map);

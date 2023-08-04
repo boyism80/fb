@@ -44,7 +44,9 @@ protected:
 
 public:
     void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    void                    send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    void                    send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback);
 
     void                    recv();
     fb::istream&            in_stream();
@@ -107,15 +109,17 @@ public:
 };
 
 template <typename T>
-class awaitable_socket : public socket<T>
+class awaitable_socket : public fb::base::socket<T>
 {
 public:
     template <typename R>
     class awaitable
     {
+        using suspend_handler = std::function<void(awaitable&)>;
+
     private:
         awaitable_socket<T>&            _owner;
-        const std::function<void()>     _on_suspend;
+        const suspend_handler           _on_suspend;
 
     public:
         R*                              result;
@@ -123,7 +127,7 @@ public:
         std::coroutine_handle<>         handler;
 
     public:
-        awaitable(awaitable_socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);
+        awaitable(awaitable_socket<T>& owner, uint8_t cmd, const suspend_handler& on_suspend);
         ~awaitable();
 
         bool                        await_ready();

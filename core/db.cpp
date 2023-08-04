@@ -57,19 +57,26 @@ fb::db::pool* fb::db::connections(const char* name)
 
 fb::db::connection fb::db::get(const char* name)
 {
-    std::lock_guard<std::mutex> mg(this->_mutex);
-
+this->_mutex.lock();
     auto& c                  = fb::console::get();
     auto  connections        = fb::db::connections(name);
-    while(connections->empty())
+
+    auto  connection         = fb::db::connection(nullptr);
+    while(true)
     {
+        if (connections->empty() == false)
+            break;
+        
+this->_mutex.unlock();
         c.puts("All connections are used.");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+this->_mutex.lock();
     }
 
     auto index             = fb::db::index(name);
-    auto connection        = std::move(connections->front());
+    connection             = std::move(connections->front());
     connections->pop_front();
+    this->_mutex.unlock();
 
     if(connection == nullptr)
     {
@@ -181,7 +188,7 @@ fb::db& fb::db::get()
     return *_ist;
 }
 
-bool fb::db::query(const char* name, const std::vector<std::string>& queries)
+bool fb::db::query(const char* name, const std::vector<std::string>& queries, bool async)
 {
     auto& ist = get();
     if(ist._context == nullptr)
@@ -196,18 +203,20 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries)
         sstream << queries[i];
     }
 
-    fb::async::launch
-    (
-        [&ist, name = std::string(name), query = std::string(sstream.str())]()
-        {
-            ist._exec(name.c_str(), query.c_str());
-        }
-    );
+    auto fn = [&ist, name = std::string(name), query = std::string(sstream.str())]()
+    {
+        ist._exec(name.c_str(), query.c_str());
+    };
+
+    if (async)
+        fb::async::launch(fn);
+    else
+        fn();
 
     return true;
 }
 
-bool fb::db::query(const char* name, const std::function<void()>& fn, const std::vector<std::string>& queries)
+bool fb::db::query(const char* name, const std::function<void()>& callback, const std::vector<std::string>& queries, bool async)
 {
     auto& ist = get();
     if(ist._context == nullptr)
@@ -222,14 +231,16 @@ bool fb::db::query(const char* name, const std::function<void()>& fn, const std:
         sstream << queries[i];
     }
 
-    fb::async::launch
-    (
-        [&ist, name = std::string(name), query = std::string(sstream.str()), fn]()
-        {
-            ist._exec(name.c_str(), query.c_str());
-            fn();
-        }
-    );
+    auto fn = [&ist, name = std::string(name), query = std::string(sstream.str()), callback]()
+    {
+        ist._exec(name.c_str(), query.c_str());
+        callback();
+    };
+    
+    if (async)
+        fb::async::launch(fn);
+    else
+        fn();
 
     return true;
 }

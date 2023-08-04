@@ -97,6 +97,7 @@ protected:
 public:
     void handle_agreement(const fb::protocol::login::response::agreement& response);
     void handle_message(const fb::protocol::login::response::message& response);
+    void handle_transfer(const fb::protocol::response::transfer& response);
 };
 
 

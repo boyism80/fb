@@ -14,8 +14,21 @@ public:
 public:
     login() : fb::protocol::base::header(0x03)
     { }
+#ifdef BOT
+    login(const std::string& id, const std::string& pw) : fb::protocol::base::header(0x03),
+        id(id), pw(pw)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.writestr_u8(this->id)
+                  .writestr_u8(this->pw);
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         this->id = in_stream.readstr_u8();

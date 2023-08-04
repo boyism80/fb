@@ -8,31 +8,39 @@ fb::base::socket<T>::socket(boost::asio::io_context& context, const handler_even
 { }
 
 template<typename T>
-inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
+inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback)
 {
     auto clone = stream;
-    if(encrypt && this->on_encrypt(clone) == false)
+    if (encrypt && this->on_encrypt(clone) == false)
         return;
 
-    if(wrap && this->on_wrap(clone) == false)
+    if (wrap && this->on_wrap(clone) == false)
         return;
 
     auto buffer = boost::asio::buffer(clone.data(), clone.size());
-    boost::asio::async_write
-    (
-        *this, 
-        buffer, 
-        [this] (const boost::system::error_code error, size_t bytes_transferred)
-        { }
-    );
+    boost::asio::async_write(*this, buffer, callback);
+}
+
+template<typename T>
+inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{
+    static auto empty_fn = [](const boost::system::error_code, size_t) {};
+    this->send(stream, encrypt, wrap, empty_fn);
 }
 
 template<typename T>
 inline void fb::base::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
+    static auto empty_fn = [](const boost::system::error_code, size_t) {};
+    this->send(response, encrypt, wrap, empty_fn);
+}
+
+template<typename T>
+inline void fb::base::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback)
+{
     fb::ostream             out_stream;
     response.serialize(out_stream);
-    this->send(out_stream, encrypt, wrap);
+    this->send(out_stream, encrypt, wrap, callback);
 }
 
 template <typename T>
@@ -156,7 +164,7 @@ fb::socket<T>::operator fb::cryptor& ()
 
 template <typename T>
 template <typename R>
-fb::awaitable_socket<T>::awaitable<R>::awaitable(awaitable_socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _on_suspend(on_suspend)
+fb::awaitable_socket<T>::awaitable<R>::awaitable(awaitable_socket<T>& owner, uint8_t cmd, const suspend_handler& on_suspend) : _owner(owner), _on_suspend(on_suspend)
 { }
 
 template <typename T>
@@ -178,7 +186,7 @@ void fb::awaitable_socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<
     this->handler = h;
     auto id = R().__id;
     this->_owner.register_awaiter(id, this);
-    this->_on_suspend();
+    this->_on_suspend(*this);
 }
 
 template <typename T>
@@ -193,7 +201,7 @@ R fb::awaitable_socket<T>::awaitable<R>::await_resume()
 
 template <typename T>
 fb::awaitable_socket<T>::awaitable_socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
-    fb::socket<T>(context, handle_received, handle_closed)
+    fb::base::socket<T>(context, handle_received, handle_closed)
 { }
 
 template <typename T>
@@ -233,7 +241,6 @@ void fb::awaitable_socket<T>::invoke_awaiter(uint8_t cmd, R& response)
 
     awaiter->result = &response;
     awaiter->handler.resume();
-    
 }
 
 template <typename T>
@@ -241,9 +248,17 @@ template <typename R>
 auto fb::awaitable_socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
     return awaitable_socket<T>::awaitable<R>(*this, header.__id, 
-        [=, &header, this]
+        [=, &header, this] (auto& awaiter)
         { 
-            this->send(header, encrypt, wrap); 
+            auto callback = [this, &awaiter](const auto& error_code, auto transfer_size)
+            {
+                if (!error_code)
+                    return;
+
+                awaiter.e = std::exception();
+                awaiter.handler.resume();
+            };
+            this->send(header, encrypt, wrap, callback);
         });
 }
 

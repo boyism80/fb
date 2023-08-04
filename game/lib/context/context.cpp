@@ -601,7 +601,7 @@ void fb::game::context::save(fb::game::session& session)
 
 void fb::game::context::save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn)
 {
-    db::query
+    db::async_query
     (
         session.name().c_str(), 
         [this, fn, &session]()
@@ -733,7 +733,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    fb::db::query
+    fb::db::async_query
     (
         request.name.c_str(),
         [this, session, from, request](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
