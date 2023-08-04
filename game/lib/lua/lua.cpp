@@ -445,6 +445,8 @@ main::main() : context(::luaL_newstate())
 
 main::~main()
 {
+    this->idle.clear();
+    this->busy.clear();
     lua_close(*this);
 }
 
