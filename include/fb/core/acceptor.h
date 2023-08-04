@@ -50,7 +50,7 @@ protected:
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
-    virtual uint8_t                             handle_thread_index(S<T>& socket) const { return 0xFF; }
+    virtual uint8_t                             handle_thread_index(S<T>& socket) const;
     virtual void                                handle_exit() { }
 
 public:

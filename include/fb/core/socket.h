@@ -6,12 +6,12 @@
 #include <deque>
 #include <mutex>
 #include <optional>
-#include <coroutine>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <fb/protocol/protocol.h>
 #include <fb/core/cryptor.h>
 #include <fb/core/stream.h>
+#include <fb/core/coroutine.h>
 
 namespace fb { namespace base {
 
@@ -113,26 +113,16 @@ class awaitable_socket : public fb::base::socket<T>
 {
 public:
     template <typename R>
-    class awaitable
+    class awaitable : public fb::awaitable<R>
     {
-        using suspend_handler = std::function<void(awaitable&)>;
-
     private:
         awaitable_socket<T>&            _owner;
-        const suspend_handler           _on_suspend;
 
     public:
-        R*                              result;
-        std::optional<std::exception>   e;
-        std::coroutine_handle<>         handler;
-
-    public:
-        awaitable(awaitable_socket<T>& owner, uint8_t cmd, const suspend_handler& on_suspend);
+        awaitable(awaitable_socket<T>& owner, uint8_t cmd, const awaitable_suspend_handler<R>& on_suspend);
         ~awaitable();
 
-        bool                        await_ready();
         void                        await_suspend(std::coroutine_handle<> h);
-        R                           await_resume();
     };
 
 private:
@@ -146,7 +136,7 @@ public:
 
 private:
     template <typename R>
-    void                            register_awaiter(uint8_t cmd, awaitable<R>* awaiter);
+    void                            register_awaiter(uint8_t cmd, awaitable<R>* awaitable);
 
 public:
     template <typename R>

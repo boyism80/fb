@@ -3,7 +3,7 @@
     "delay": 0,
     "ip":  "{{ deploy.login[name].ip }}",
     "port": {{ deploy.login[name].port }},
-    "thread": 0,
+    "thread": null,
     "internal": {
         "ip": "{{ deploy.internal[deploy.login[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.login[name].internal].port }}

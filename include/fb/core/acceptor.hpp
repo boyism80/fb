@@ -114,6 +114,16 @@ const fb::threads& fb::base::acceptor<S, T>::threads() const
 }
 
 template <template<class> class S, class T>
+uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
+{
+    auto size = this->_threads.count();
+    if (size == 0)
+        return 0xFF;
+
+    return socket.fd() % size;
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
     auto                        casted = static_cast<S<T>*>(&socket);

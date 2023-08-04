@@ -141,15 +141,8 @@ void fb::db::_query(const char* name, const std::string& sql, const std::functio
 
     try
     {
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection = std::move(connection), name = std::string(name), &fn, result = std::move(result)] () mutable
-            { 
-                fn(*connection, result); 
-                this->release(name.c_str(), connection);
-            }
-        );
+        fn(*connection, result); 
+        this->release(name, connection);
     }
     catch(std::exception& e)
     {
@@ -164,15 +157,8 @@ void fb::db::_mquery(const char* name, const std::string& sql, const std::functi
 
     try
     {
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection = std::move(connection), name = std::string(name), fn, result = std::move(result)] () mutable
-            { 
-                fn(*connection, result); 
-                this->release(name.c_str(), connection);
-            }
-        );
+        fn(*connection, result); 
+        this->release(name, connection);
     }
     catch(std::exception& e)
     {

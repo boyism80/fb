@@ -462,6 +462,122 @@ void fb::game::context::bind_command(const std::string& cmd, const fb::game::con
     this->_commands.insert(std::make_pair(cmd, param));
 }
 
+bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer)
+{
+    if(db_result.count() == 0)
+        return false;
+
+    auto id = db_result.get_value<uint32_t>(0);
+    auto name = db_result.get_value<std::string>(1);
+    auto pw = db_result.get_value<std::string>(2);
+    auto birth = db_result.get_value<uint32_t>(3);
+    auto date = db_result.get_value<datetime>(4);
+    auto last_login = db_result.get_value<datetime>(5);
+    auto admin = db_result.get_value<bool>(6);
+    auto look = db_result.get_value<uint32_t>(7);
+    auto color = db_result.get_value<uint32_t>(8);
+    auto sex = db_result.get_value<uint32_t>(9);
+    auto nation = db_result.get_value<uint32_t>(10);
+    auto creature = db_result.get_value<uint32_t>(11);
+    auto map = db_result.get_value<uint32_t>(12);
+    auto position_x = db_result.get_value<uint32_t>(13);
+    auto position_y = db_result.get_value<uint32_t>(14);
+    auto direction = db_result.get_value<uint32_t>(15);
+    auto state = db_result.get_value<uint32_t>(16);
+    auto cls = db_result.get_value<uint32_t>(17);
+    auto promotion = db_result.get_value<uint32_t>(18);
+    auto exp = db_result.get_value<uint32_t>(19);
+    auto money = db_result.get_value<uint32_t>(20);
+    auto disguise = db_result.get_value<std::optional<uint32_t>>(21);
+    auto hp = db_result.get_value<uint32_t>(22);
+    auto base_hp = db_result.get_value<uint32_t>(23);
+    auto additional_hp = db_result.get_value<uint32_t>(24);
+    auto mp = db_result.get_value<uint32_t>(25);
+    auto base_mp = db_result.get_value<uint32_t>(26);
+    auto additional_mp = db_result.get_value<uint32_t>(27);
+    auto weapon_color = db_result.get_value<std::optional<uint32_t>>(28);
+    auto helmet_color = db_result.get_value<std::optional<uint32_t>>(29);
+    auto armor_color = db_result.get_value<std::optional<uint32_t>>(30);
+    auto shield_color = db_result.get_value<std::optional<uint32_t>>(31);
+    auto ring_left_color = db_result.get_value<std::optional<uint32_t>>(32);
+    auto ring_right_color = db_result.get_value<std::optional<uint32_t>>(33);
+    auto aux_top_color = db_result.get_value<std::optional<uint32_t>>(34);
+    auto aux_bot_color = db_result.get_value<std::optional<uint32_t>>(35);
+    auto clan = db_result.get_value<std::optional<uint32_t>>(36);
+
+    session.id(id);
+    session.admin(admin);
+    session.color(color);
+    session.direction(fb::game::direction(direction));
+    session.look(look);
+    session.money(money);
+    session.sex(fb::game::sex(sex));
+    session.base_hp(base_hp);
+    session.hp(hp);
+    session.base_mp(base_mp);
+    session.mp(mp);
+    session.experience(exp);
+    session.state(fb::game::state(state));
+    session.armor_color(armor_color);
+
+    if(disguise.has_value())
+        session.disguise(disguise.value());
+    else
+        session.undisguise();
+
+    if(fb::game::data_set::maps[map] == nullptr)
+        return false;
+
+    if(transfer != std::nullopt)
+    {
+        map = transfer.value().map;
+        position_x = uint32_t(transfer.value().position.x);
+        position_y = uint32_t(transfer.value().position.y);
+    }
+    session.map(fb::game::data_set::maps[map], point16_t(position_x, position_y));    
+    return true;
+}
+
+void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::session& session)
+{
+    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> master, std::optional<uint32_t> count, std::optional<uint32_t> durability)
+    {
+        if(master.has_value() == false)
+            return true;
+
+        auto& items = fb::game::data_set::items;
+        auto  item = items[master.value()]->make(*this);
+        if(item == nullptr)
+            return true;
+
+        item->count(count.value());
+        item->durability(durability);
+
+        if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
+            session.items.add(*item, index);
+        else
+            session.items.wear((fb::game::equipment::slot)slot, static_cast<fb::game::equipment*>(item));
+
+        return true;
+    });
+}
+
+void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::session& session)
+{
+    db_result.each([this, &session] (std::optional<uint32_t> id, uint32_t slot)
+    {
+        if(id.has_value() == false)
+            return true;
+
+        auto spell = fb::game::data_set::spells[id.value()];
+        if(spell == nullptr)
+            return true;
+
+        session.spells.add(spell, slot);
+        return true;
+    });
+}
+
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
     return new fb::game::session(socket, *this);
@@ -733,141 +849,40 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    fb::db::async_query
-    (
-        request.name.c_str(),
-        [this, session, from, request](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results) 
+    auto fn = [this] (const std::string& _name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
+    {
+        auto name = _name;
+        auto from = request.from;
+        auto transfer = request.transfer;
+
+        auto sql = "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');";
+        auto results = co_await fb::db::co_query(name.c_str(), sql, name.c_str(), name.c_str(), name.c_str());
+
+        auto map = results[0].get_value<uint32_t>(12);
+        auto last_login = results[0].get_value<datetime>(5);
+        if(this->fetch_user(results[0], *session, request.transfer) == false)
+            co_return;
+
+        this->_internal->send(fb::protocol::internal::request::login(name, map));
+        this->send(*session, fb::protocol::game::response::init(), scope::SELF);
+        this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
+        this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
+        
+        if(from == fb::protocol::internal::services::LOGIN)
         {
-            auto&                       base_result = results[0];
-            if(base_result.count() == 0)
-                return;
+            auto msg = this->elapsed_message(last_login);
+            if(msg.empty() == false)
+                this->send(*session, fb::protocol::game::response::message(msg, message::type::STATE), scope::SELF);
+        }
 
-            uint32_t                    id;
-            std::string                 name;
-            std::string                 pw;
-            uint32_t                    birth;
-            bool                        admin;
-            datetime                    date;
-            datetime                    last_login;
-            uint32_t                    look;
-            uint32_t                    color;
-            uint32_t                    sex;
-            uint32_t                    nation;
-            uint32_t                    creature;
-            uint32_t                    map;
-            uint32_t                    position_x;
-            uint32_t                    position_y;
-            uint32_t                    direction;
-            uint32_t                    state;
-            uint32_t                    cls;
-            uint32_t                    promotion;
-            uint32_t                    exp;
-            uint32_t                    money;
-            std::optional<uint32_t>     disguise;
-            uint32_t                    hp;
-            uint32_t                    base_hp;
-            uint32_t                    additional_hp;
-            uint32_t                    mp;
-            uint32_t                    base_mp;
-            uint32_t                    additional_mp;
-            std::optional<uint32_t>     weapon_color;
-            std::optional<uint32_t>     helmet_color;
-            std::optional<uint32_t>     armor_color;
-            std::optional<uint32_t>     shield_color;
-            std::optional<uint32_t>     ring_left_color;
-            std::optional<uint32_t>     ring_right_color;
-            std::optional<uint32_t>     aux_top_color;
-            std::optional<uint32_t>     aux_bot_color;
-            std::optional<uint32_t>     clan;
-            base_result.fetch(id, name, pw, birth, date, last_login, admin, look, color, sex, nation, creature, map, position_x, position_y, direction, state, cls, promotion, exp, money, disguise, hp, base_hp, additional_hp, mp, base_mp, additional_mp, weapon_color, helmet_color, armor_color, shield_color, ring_left_color, ring_right_color, aux_top_color, aux_bot_color, clan);
-            this->_internal->send(fb::protocol::internal::request::login(name, map));
+        this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
+        this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
-            session->id(id);
-            session->admin(admin);
-            session->color(color);
-            session->direction(fb::game::direction(direction));
-            session->look(look);
-            session->money(money);
-            session->sex(fb::game::sex(sex));
-            session->base_hp(base_hp);
-            session->hp(hp);
-            session->base_mp(base_mp);
-            session->mp(mp);
-            session->experience(exp);
-            session->state(fb::game::state(state));
-            session->armor_color(armor_color);
+        this->fetch_gear(results[1], *session);
+        this->fetch_spell(results[2], *session);
+    };
 
-            if(disguise.has_value())
-                session->disguise(disguise.value());
-            else
-                session->undisguise();
-
-            if(fb::game::data_set::maps[map] == nullptr)
-                return;
-
-            if(request.transfer != std::nullopt)
-            {
-                map = request.transfer.value().map;
-                position_x = uint32_t(request.transfer.value().position.x);
-                position_y = uint32_t(request.transfer.value().position.y);
-            }
-            session->map(fb::game::data_set::maps[map], point16_t(position_x, position_y));
-
-            this->send(*session, fb::protocol::game::response::init(), scope::SELF);
-            this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
-            this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
-            
-            if(from == fb::protocol::internal::services::LOGIN)
-            {
-                auto msg = this->elapsed_message(last_login);
-                if(msg.empty() == false)
-                    this->send(*session, fb::protocol::game::response::message(msg, message::type::STATE), scope::SELF);
-            }
-
-            this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
-            this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
-
-            auto&                           equipResult = results[1];
-            equipResult.each([this, session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> master, std::optional<uint32_t> count, std::optional<uint32_t> durability)
-            {
-                if(master.has_value() == false)
-                    return true;
-
-                auto& items = fb::game::data_set::items;
-                auto  item = items[master.value()]->make(*this);
-                if(item == nullptr)
-                    return true;
-
-                item->count(count.value());
-                item->durability(durability);
-
-                if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
-                    session->items.add(*item, index);
-                else
-                    session->items.wear((fb::game::equipment::slot)slot, static_cast<fb::game::equipment*>(item));
-
-                return true;
-            });
-
-            auto&                           spellResult = results[2];
-            spellResult.each([this, session] (std::optional<uint32_t> id, uint32_t slot)
-            {
-                if(id.has_value() == false)
-                    return true;
-
-                auto spell = fb::game::data_set::spells[id.value()];
-                if(spell == nullptr)
-                    return true;
-
-                session->spells.add(spell, slot);
-                return true;
-            });
-        }, 
-        "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');",
-        session->name().c_str(),
-        session->name().c_str(),
-        session->name().c_str()
-    );
+    fn(request.name, session, request);
 
     return true;
 }

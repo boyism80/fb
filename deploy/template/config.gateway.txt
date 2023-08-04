@@ -3,7 +3,7 @@
     "delay": 0,
     "ip":  "{{ deploy.gateway[name].ip }}",
     "port": {{ deploy.gateway[name].port }},
-    "thread": 0,
+    "thread": null,
     "internal": {
         "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}

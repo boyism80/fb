@@ -10,6 +10,7 @@
 #include <functional>
 #include <deque>
 #include <fb/core/console.h>
+#include <fb/core/coroutine.h>
 
 using namespace daotk::mysql;
 
@@ -175,6 +176,24 @@ public:
     }
 
     template <typename... Values>
+    static auto co_query_once(const char* name, const std::string& format, Values... values)
+    {
+        auto await_callback = [_name = name, format, &values...](fb::awaitable<daotk::mysql::result>& awaitable)
+        {
+            auto name = std::string(_name);
+            auto db_callback = [&awaitable](daotk::mysql::connection& connection, daotk::mysql::result& result)
+            {
+                awaitable.result = &result;
+                awaitable.handler.resume();
+            };
+
+            f_query(name.c_str(), true, db_callback, format, std::forward<Values>(values)...);
+        };
+
+        return fb::awaitable<daotk::mysql::result>(await_callback);
+    }
+
+    template <typename... Values>
     static bool query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
     {
         return f_query(name, false, callback, format, std::forward<Values>(values)...);
@@ -184,6 +203,25 @@ public:
     static bool async_query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
     {
         return f_query(name, true, callback, format, std::forward<Values>(values)...);
+    }
+
+    template <typename... Values>
+    static auto co_query(const char* name, const std::string& format, Values... values)
+    {
+        auto await_callback = [_name = name, format, &values...](fb::awaitable<std::vector<daotk::mysql::result>>& awaitable)
+        {
+            auto name = std::string(_name);
+            auto db_callback = [&awaitable](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results)
+            {
+                awaitable.result = &results;
+                awaitable.handler.resume();
+            };
+
+            return f_query(name.c_str(), true, db_callback, format, std::forward<Values>(values)...);
+        };
+
+        auto awaiter = fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
+        return awaiter;
     }
 
     static bool query(const char* name, const std::vector<std::string>& queries)
