@@ -2,22 +2,19 @@
 
 using namespace fb::bot;
 
-base_bot::base_bot(bot_container& owner)
-	 : fb::base::socket<void*>(owner.context(), 
-	 	std::bind(&base_bot::on_receive, this, std::placeholders::_1),
-	 	std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner)
+base_bot::base_bot(bot_container& owner): fb::awaitable_socket<void*>(owner.context(), 
+    std::bind(&base_bot::on_receive, this, std::placeholders::_1),
+    std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner)
 {}
 
 base_bot::~base_bot()
-{
-    
-}
+{ }
 
 void base_bot::on_receive(fb::base::socket<>& socket)
 {
-	static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
+    static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
     auto&                       in_stream     = socket.in_stream();
-	
+    
     while (true)
     {
         try

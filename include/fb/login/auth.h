@@ -19,10 +19,6 @@
 #include <fb/core/string.h>
 #include <fb/game/query.h>
 
-#define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
-#define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
-#define MIN_PASSWORD_SIZE   4
-#define MAX_PASSWORD_SIZE   8
 #define MAX_NXCLUB_SIZE     14
 
 #pragma region exceptions

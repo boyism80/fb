@@ -106,19 +106,15 @@ public:
     operator                fb::cryptor& ();
 };
 
-}
-
-namespace fb { namespace internal {
-
-template <typename T = void*>
-class socket : public fb::base::socket<T>
+template <typename T>
+class awaitable_socket : public socket<T>
 {
 public:
     template <typename R>
     class awaitable
     {
     private:
-        socket<T>&                      _owner;
+        awaitable_socket<T>&            _owner;
         const std::function<void()>     _on_suspend;
 
     public:
@@ -127,7 +123,7 @@ public:
         std::coroutine_handle<>         handler;
 
     public:
-        awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);
+        awaitable(awaitable_socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend);
         ~awaitable();
 
         bool                        await_ready();
@@ -139,24 +135,49 @@ private:
     std::mutex                      _awaiter_mutex;
     std::map<uint8_t, void*>        _coroutines;
 
-
-public:
-    socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
-    ~socket();
-
 protected:
-    bool                            on_wrap(fb::ostream& out);
-
+    awaitable_socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
 public:
+    ~awaitable_socket();
+
+private:
     template <typename R>
     void                            register_awaiter(uint8_t cmd, awaitable<R>* awaiter);
 
+public:
     template <typename R>
     void                            invoke_awaiter(uint8_t cmd, R& response);
 
 public:
     template <typename R>
     auto                            request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+};
+
+struct task
+{
+    struct promise_type
+    {
+        auto get_return_object() { return task{}; }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_never{}; }
+        void return_void() {}
+        void unhandled_exception() {}
+    };
+};
+
+}
+
+namespace fb { namespace internal {
+
+template <typename T = void*>
+class socket : public awaitable_socket<T>
+{
+public:
+    socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
+    ~socket();
+
+protected:
+    bool                            on_wrap(fb::ostream& out);
 };
 
 } }

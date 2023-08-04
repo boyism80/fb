@@ -40,5 +40,13 @@
             "base": 30,
             "range": 10
         }
+    },
+    "name_size": {
+        "min": {{ name_size.min }},
+        "max": {{ name_size.max }}
+    },
+    "pw_size": {
+        "min": {{ pw_size.min }},
+        "max": {{ pw_size.max }}
     }
 }

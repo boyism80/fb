@@ -14,8 +14,23 @@ public:
 public:
     create() : fb::protocol::base::header(0x02)
     { }
+#ifdef BOT
+    create(const std::string& id, const std::string& pw) : create()
+    { 
+        this->id = id;
+        this->pw = pw;
+    }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.writestr_u8(this->id)
+                  .writestr_u8(this->pw);
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         this->id = in_stream.readstr_u8();
@@ -35,8 +50,23 @@ public:
 public:
     complete() : fb::protocol::base::header(0x04)
     { }
+#ifdef BOT
+    complete(uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature) : fb::protocol::base::header(0x04),
+        hair(hair), sex(sex), nation(nation), creature(creature)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->hair)
+                  .write_u8(this->sex)
+                  .write_u8(this->nation)
+                  .write_u8(this->creature);
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         this->hair = in_stream.read_u8();

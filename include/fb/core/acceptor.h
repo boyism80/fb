@@ -89,18 +89,6 @@ struct INTERNAL_CONNECTION
 
 namespace fb {
 
-struct task
-{
-    struct promise_type
-    {
-        auto get_return_object() { return task{}; }
-        auto initial_suspend() { return std::suspend_never{}; }
-        auto final_suspend() noexcept { return std::suspend_never{}; }
-        void return_void() {}
-        void unhandled_exception() {}
-    };
-};
-
 template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {

@@ -154,29 +154,26 @@ fb::socket<T>::operator fb::cryptor& ()
     return this->_crt;
 }
 
-
-
-// fb::internal::socket
 template <typename T>
 template <typename R>
-fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _on_suspend(on_suspend)
+fb::awaitable_socket<T>::awaitable<R>::awaitable(awaitable_socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _on_suspend(on_suspend)
 { }
 
 template <typename T>
 template <typename R>
-fb::internal::socket<T>::awaitable<R>::~awaitable()
+fb::awaitable_socket<T>::awaitable<R>::~awaitable()
 { }
 
 template <typename T>
 template <typename R>
-bool fb::internal::socket<T>::awaitable<R>::await_ready()
+bool fb::awaitable_socket<T>::awaitable<R>::await_ready()
 {
     return false;
 }
 
 template <typename T>
 template <typename R>
-void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
+void fb::awaitable_socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
 {
     this->handler = h;
     auto id = R().__id;
@@ -186,7 +183,7 @@ void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<
 
 template <typename T>
 template <typename R>
-R fb::internal::socket<T>::awaitable<R>::await_resume()
+R fb::awaitable_socket<T>::awaitable<R>::await_resume()
 {
     if (this->e.has_value())
         throw this->e.value();
@@ -195,8 +192,67 @@ R fb::internal::socket<T>::awaitable<R>::await_resume()
 }
 
 template <typename T>
+fb::awaitable_socket<T>::awaitable_socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
+    fb::socket<T>(context, handle_received, handle_closed)
+{ }
+
+template <typename T>
+fb::awaitable_socket<T>::~awaitable_socket()
+{ }
+
+
+template <typename T>
+template <typename R>
+void fb::awaitable_socket<T>::register_awaiter(uint8_t cmd, awaitable<R>* awaiter)
+{
+    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
+    auto i = this->_coroutines.find(cmd);
+    if(i != this->_coroutines.end())
+    {
+        auto awaiter = static_cast<awaitable_socket<T>::awaitable<R>*>(i->second);
+        awaiter->e = std::exception();
+    }
+    this->_coroutines[cmd] = static_cast<void*>(awaiter);
+}
+
+
+template <typename T>
+template <typename R>
+void fb::awaitable_socket<T>::invoke_awaiter(uint8_t cmd, R& response)
+{
+    awaitable_socket<T>::awaitable<R>* awaiter = nullptr;
+    
+    {
+        auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
+        if (this->_coroutines.contains(cmd) == false)
+            return;
+
+        awaiter = static_cast<awaitable_socket<T>::awaitable<R>*>(this->_coroutines[cmd]);
+        this->_coroutines.erase(cmd);
+    }
+
+    awaiter->result = &response;
+    awaiter->handler.resume();
+    
+}
+
+template <typename T>
+template <typename R>
+auto fb::awaitable_socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
+{
+    return awaitable_socket<T>::awaitable<R>(*this, header.__id, 
+        [=, &header, this]
+        { 
+            this->send(header, encrypt, wrap); 
+        });
+}
+
+
+
+// fb::internal::socket
+template <typename T>
 fb::internal::socket<T>::socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
-    fb::base::socket<T>(context, handle_received, handle_closed)
+    fb::awaitable_socket<T>(context, handle_received, handle_closed)
 { }
 
 template <typename T>
@@ -210,47 +266,6 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
     const uint8_t       header[] = {uint8_t(size >> 8 & 0xFF), uint8_t(size & 0xFF)};
     out.insert(out.begin(), header, header + sizeof(header));
     return true;
-}
-
-template <typename T>
-template <typename R>
-void fb::internal::socket<T>::register_awaiter(uint8_t cmd, awaitable<R>* awaiter)
-{
-    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
-    auto i = this->_coroutines.find(cmd);
-    if(i != this->_coroutines.end())
-    {
-        auto awaiter = static_cast<socket<T>::awaitable<R>*>(i->second);
-        awaiter->e = std::exception();
-    }
-    this->_coroutines[cmd] = static_cast<void*>(awaiter);
-}
-
-
-template <typename T>
-template <typename R>
-void fb::internal::socket<T>::invoke_awaiter(uint8_t cmd, R& response)
-{
-    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
-
-    if(this->_coroutines.contains(cmd) == false)
-        return;
-
-    auto awaiter = static_cast<socket<T>::awaitable<R>*>(this->_coroutines[cmd]);
-    awaiter->result = &response;
-    awaiter->handler.resume();
-    this->_coroutines.erase(cmd);
-}
-
-template <typename T>
-template <typename R>
-auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
-{
-    return socket<T>::awaitable<R>(*this, header.__id, 
-        [=, &header, this]
-        { 
-            this->send(header, encrypt, wrap); 
-        });
 }
 
 

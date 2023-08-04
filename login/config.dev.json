@@ -9,7 +9,7 @@
         "port": 3000
     },
     "transfer delay": 0,
-    "allow other language": false,
+    "allow other language": true,
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
     "database": 
@@ -36,5 +36,13 @@
             "base": 30,
             "range": 10
         }
+    },
+    "name_size": {
+        "min": 2,
+        "max": 256
+    },
+    "pw_size": {
+        "min": 4,
+        "max": 16
     }
 }

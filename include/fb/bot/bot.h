@@ -3,6 +3,8 @@
 
 #include <map>
 #include <boost/asio.hpp>
+#include <random>
+#include <sstream>
 #include <fb/core/stream.h>
 #include <fb/core/socket.h>
 #include <fb/protocol/gateway.h>
@@ -12,7 +14,7 @@ namespace fb { namespace bot {
 
 class bot_container;
 
-class base_bot : public fb::base::socket<void*>
+class base_bot : public fb::awaitable_socket<void*>
 {
 protected:
     bot_container& _owner;
@@ -47,6 +49,7 @@ public:
             auto& in_stream = this->in_stream();
             T     header;
             header.deserialize(in_stream);
+            this->invoke_awaiter(header.__id, header);
             fn(header);
         };
     }
@@ -84,12 +87,16 @@ public:
     login_bot(bot_container& owner, const fb::buffer& params);
     ~login_bot();
 
+private:
+    static std::string new_name();
+
 protected:
     void on_connected();
     bool is_decrypt(int cmd) const;
 
 public:
     void handle_agreement(const fb::protocol::login::response::agreement& response);
+    void handle_message(const fb::protocol::login::response::message& response);
 };
 
 

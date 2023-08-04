@@ -2,7 +2,7 @@
 --
 -- Host: localhost    Database: fb
 -- ------------------------------------------------------
--- Server version 8.0.16
+-- Server version	8.0.16
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -52,8 +52,8 @@ DROP TABLE IF EXISTS `item`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `item` (
   `owner` int(10) unsigned NOT NULL,
-  `index` smallint(5) NOT NULL,
-  `slot` smallint(5) NOT NULL,
+  `index` smallint(6) NOT NULL,
+  `slot` smallint(6) NOT NULL,
   `master` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
@@ -71,7 +71,7 @@ DROP TABLE IF EXISTS `legend`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `legend` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `owner` int(10) unsigned NOT NULL,
   `look` tinyint(4) NOT NULL DEFAULT '0',
   `color` tinyint(4) NOT NULL DEFAULT '0',
@@ -90,7 +90,7 @@ DROP TABLE IF EXISTS `spell`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `spell` (
-  `owner` int(11) unsigned NOT NULL,
+  `owner` int(10) unsigned NOT NULL,
   `slot` tinyint(4) NOT NULL,
   `id` int(11) DEFAULT NULL,
   PRIMARY KEY (`owner`,`slot`),
@@ -108,9 +108,9 @@ DROP TABLE IF EXISTS `user`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `birth` int(11) unsigned DEFAULT NULL,
+  `birth` int(10) unsigned DEFAULT NULL,
   `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `admin` tinyint(4) NOT NULL DEFAULT '0',
@@ -160,4 +160,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-01-21 22:10:33
+-- Dump completed on 2023-08-04 13:37:34

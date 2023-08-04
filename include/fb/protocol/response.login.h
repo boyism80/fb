@@ -52,10 +52,19 @@ public:
 class message : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    std::string             text;
+    uint8_t                 type;
+#else
     const std::string       text;
     const uint8_t           type;
+#endif
 
 public:
+#ifdef BOT
+    message() : fb::protocol::base::header(0x02)
+    { }
+#endif
     message(const std::string& text, uint8_t type) : fb::protocol::base::header(0x02),
         text(text), type(type)
     { }
@@ -64,9 +73,16 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u8(type)
-                  .write(this->text);
+        out_stream.write_u8(this->type)
+                  .writestr_u8(this->text);
     }
+#ifdef BOT
+    void deserialize(fb::istream& in_stream)
+    {
+        this->type = in_stream.read_8();
+        this->text = in_stream.readstr_u8();
+    }
+#endif
 };
 
 } } } }
