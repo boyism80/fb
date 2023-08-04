@@ -8,7 +8,6 @@
 
 namespace fb { namespace game {
 
-#pragma region forward declaration
 class context;
 class map;
 class session;
@@ -17,19 +16,15 @@ class objects;
 class items;
 class sector;
 class sectors;
-#pragma endregion
 
 class object : public lua::luable
 {
-#pragma region forward nested declaration
 public:
     interface listener;
 
 public:
     class master;
-#pragma endregion
 
-#pragma region structure
 public:
     struct config
     {
@@ -39,9 +34,7 @@ public:
         fb::game::direction direction   = fb::game::direction::BOTTOM;
         fb::game::map*      map         = nullptr;
     };
-#pragma endregion
 
-#pragma region enum
 public:
     enum class types : uint32_t
     { 
@@ -53,26 +46,18 @@ public:
         LIFE    = (MOB | SESSION),
         OBJECT  = (ITEM | NPC | MOB) 
     };
-#pragma endregion
 
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region friend
     friend fb::game::buffs;
     friend fb::game::items;
-#pragma endregion
 
-#pragma region private field
 private:
     fb::game::object::listener*         _listener;
     bool                                _visible    = true;
     fb::game::sector*                   _sector     = nullptr;
-#pragma endregion
 
-#pragma region protected field
 protected:
     uint32_t                            _sequence   = 0;
     const fb::game::object::master*     _master;
@@ -80,29 +65,21 @@ protected:
     point16_t                           _position   = point16_t(0, 0);
     fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
     fb::game::map*                      _map        = nullptr;
-#pragma endregion
 
-#pragma region public field
 public:
     fb::game::context&                  context;
     fb::game::buffs                     buffs;
-#pragma endregion
 
-#pragma region constructor / destructor
 protected:
     object(fb::game::context& context, const master* master, const fb::game::object::config& config);
     object(const object& right);
 public:
     virtual ~object();
-#pragma endregion
 
-#pragma region private method
 private:
     void                                leave();
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
-#pragma endregion
 
-#pragma region public method
 public:
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
@@ -172,24 +149,18 @@ public:
 
     // 유효한 오브젝트인지
     virtual bool                        available() const { return true; }
-#pragma endregion
 
-#pragma region handler method
 public:
     virtual void                        on_timer(uint64_t elapsed_milliseconds) { }
     virtual void                        on_kill(fb::game::life& you) { }
 
 protected:
     virtual void                        on_hold() { }
-#pragma endregion
 
-#pragma region operator
 public:
     bool                                operator == (const object& right) const;
     bool                                operator != (const object& right) const;
-#pragma endregion
 
-#pragma region build-in method
 public:
     static int                          builtin_core(lua_State* lua);
     static int                          builtin_id(lua_State* lua);
@@ -212,11 +183,9 @@ public:
     static int                          builtin_showns(lua_State* lua);
     static int                          builtin_front(lua_State* lua);
     static int                          builtin_is(lua_State* lua);
-#pragma endregion
 };
 
 
-#pragma region interface
 interface object::listener
 {
     virtual void                        on_direction(fb::game::object& me) = 0;
@@ -230,12 +199,9 @@ interface object::listener
     virtual void                        on_create(fb::game::object& me) = 0;
     virtual void                        on_destroy(fb::game::object& me) = 0;
 };
-#pragma endregion
 
-#pragma region master
 class object::master : public lua::luable
 {
-#pragma region structure
 public:
     struct config
     {
@@ -244,59 +210,41 @@ public:
         uint16_t        look  = 0;
         uint8_t         color = 0;
     };
-#pragma endregion
 
-#pragma region friend
 public:
     friend class fb::game::object;
-#pragma endregion
 
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region public field
 public:
     const std::string                   name;
     const uint16_t                      look  = 0;
     const uint8_t                       color = 0;
-#pragma endregion
 
-#pragma region template
 public:
     template <typename T, typename... Args>
     T* make(fb::game::context& context, Args... args) const
     {
         return new T(context, static_cast<const typename T::master*>(this), args...);
     }
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     master(const fb::game::object::master::config& config);
     virtual ~master();
-#pragma endregion
 
-#pragma region protected method
 protected:
     uint8_t                             dialog_look_type() const;
-#pragma endregion
 
-#pragma region public method
 public:
     virtual object::types               type() const;
-#pragma endregion
 
-#pragma region build-in method
 public:
     static int                          builtin_name(lua_State* lua);
     static int                          builtin_look(lua_State* lua);
     static int                          builtin_color(lua_State* lua);
     static int                          builtin_dialog(lua_State* lua);
-#pragma endregion
 };
-#pragma endregion
 
 } }
 

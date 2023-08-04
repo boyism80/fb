@@ -10,10 +10,8 @@ class session;
 
 class group : public lua::luable
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
 private:
     session*                        _leader;
@@ -36,11 +34,9 @@ public:
     static fb::game::group*         create(session& leader);
     static void                     destroy(fb::game::group& group);
 
-#pragma region built-in methods
 public:
     static int                      builtin_members(lua_State* lua);
     static int                      builtin_leader(lua_State* lua);
-#pragma endregion
 };
 
 } }

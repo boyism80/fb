@@ -17,7 +17,6 @@ extern "C"
 #include <fb/core/encoding.h>
 #include <fb/game/mmo.h>
 
-#pragma region definition
 #define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\
                                             static const std::string        LUA_METATABLE_NAME;\
                                             virtual const std::string& metaname() const { return this->LUA_METATABLE_NAME; }
@@ -30,61 +29,45 @@ extern "C"
                                             };
 
 #define LUA_PENDING (LUA_ERRERR+1)
-#pragma endregion
 
 namespace fb { namespace game { namespace lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 1000;
 
-#pragma region forward declaration
 class luable;
 class context;
 class main;
 class thread;
-#pragma endregion
 
-#pragma region global function
 context*                        get();
 context*                        get(lua_State* ctx);
 void                            bind_function(const std::string& name, lua_CFunction fn);
-#pragma endregion
 
 class luable
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
     void                        to_lua(lua_State* ctx) const;
-#pragma endregion
 
-#pragma region public method
 protected:
     luable();
     luable(uint32_t id);
 
 public:
     virtual ~luable();
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_gc(lua_State* ctx);
-#pragma endregion
 };
 
 class context
 {
-#pragma region private field
 private:
     int                         _state  = 0;
-#pragma endregion
 
-#pragma region protected field
 protected:
     lua_State*                  _ctx    = nullptr;
-#pragma endregion
 
-#pragma region constructor / destructor
 protected:
     context(lua_State* ctx);
     context(const context&)            = delete;
@@ -96,9 +79,7 @@ public:
 public:
     context operator = (context&)       = delete;
     context operator = (const context&) = delete;
-#pragma endregion
 
-#pragma region public method
 public:
     context&                    from(const char* format, ...);
     context&                    func(const char* format, ...);
@@ -155,14 +136,10 @@ public:
 public:
     bool                        pending() const;
     void                        pending(bool value);
-#pragma endregion
 
-#pragma region operator
 public:
     operator                    lua_State* () const;
-#pragma endregion
 
-#pragma region template method
 public:
     template <typename T>
     T* env(const char* key)
@@ -180,39 +157,27 @@ public:
         ::lua_pushlightuserdata(*this, (void*)data);
         ::lua_setfield(*this, LUA_REGISTRYINDEX, key);
     }
-#pragma endregion
 };
 
 class main : public context
 {
-#pragma region type definition
 public:
     using unique_lua_map        = std::map<lua_State*, std::unique_ptr<thread>>;
     using bytecode_set          = std::map<std::string, std::vector<char>>;
-#pragma endregion
 
-#pragma region static field
 private:
     static std::mutex           mutex;
     bytecode_set                bytecodes;
-#pragma endregion
 
-#pragma region friend
 public:
     friend class context;
-#pragma endregion
 
-#pragma region private field
 private:
     
-#pragma endregion
 
-#pragma region public field
 public:
     unique_lua_map              idle, busy;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     main();
     main(const main&&)          = delete;
@@ -221,28 +186,20 @@ public:
 public:
     main& operator = (main&)    = delete;
     main& operator = (main&&)   = delete;
-#pragma endregion
 
-#pragma region private method
 private:
     
-#pragma endregion
 
-#pragma region public method
 public:
     bool                        load_file(const std::string& path);
     context*                    pop();
     context*                    get(lua_State& ctx);
     context&                    release(context& ctx);
     void                        revoke(context& ctx);
-#pragma endregion
 
-#pragma region static method
 public:
     static main&                get();
-#pragma endregion
 
-#pragma region template method
 public:
     template <typename T>
     void bind_class()
@@ -273,7 +230,6 @@ public:
     {
         lua_register(*this, name.c_str(), fn);
     }
-#pragma endregion
 };
 
 
@@ -288,13 +244,10 @@ public:
     thread(thread&& ctx);
     ~thread();
 
-#pragma region built-in method
 public:
     //static int                  builtin_gc(lua_State* ctx);
-#pragma endregion
 };
 
-#pragma region global template function
 template <typename T>
 void bind_class()
 {
@@ -315,7 +268,6 @@ void env(const char* key, T* data)
     auto& main = fb::game::lua::main::get();
     main.env(key, data);
 }
-#pragma endregion
 
 } } }
 

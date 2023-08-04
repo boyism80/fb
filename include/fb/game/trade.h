@@ -6,10 +6,8 @@
 
 namespace fb { namespace game {
 
-#pragma region forward declaration
 class session;
 class item;
-#pragma endregion
 
 class trade
 {

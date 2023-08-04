@@ -21,7 +21,6 @@
 
 #define MAX_NXCLUB_SIZE     14
 
-#pragma region exceptions
 
 class login_exception : public std::runtime_error
 {
@@ -59,7 +58,6 @@ public:
     btd_exception() : login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY) { }
 };
 
-#pragma endregion
 
 namespace fb { namespace login { namespace service { 
 

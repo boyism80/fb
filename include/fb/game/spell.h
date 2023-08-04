@@ -9,24 +9,17 @@
 
 namespace fb { namespace game {
 
-#pragma region forward declaration
 class object;
 class life;
-#pragma endregion
 
 class spell : public lua::luable
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     interface listener;
-#pragma endregion
 
-#pragma region enum
 public:
     enum class types : uint8_t
     {
@@ -34,24 +27,18 @@ public:
         TARGET  = 0x02,
         NORMAL  = 0x05, 
     };
-#pragma endregion
 
-#pragma region private field
 private:
     uint16_t                    _id     = 0;
     fb::game::spell::types      _type   = fb::game::spell::types::NORMAL;
     std::string                 _name;
     std::string                 _cast, _uncast, _concast;
     std::string                 _message;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     spell(uint16_t id, fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
-#pragma endregion
 
-#pragma region public method
 public:
     uint16_t                    id() const;
     fb::game::spell::types      type() const;
@@ -60,14 +47,11 @@ public:
     const std::string&          uncast() const;
     const std::string&          concast() const;
     const std::string&          message() const;
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_type(lua_State* lua);
     static int                  builtin_name(lua_State* lua);
     static int                  builtin_message(lua_State* lua);
-#pragma endregion
 };
 
 

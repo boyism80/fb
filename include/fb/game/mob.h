@@ -9,18 +9,13 @@ using namespace std::chrono_literals;
 
 namespace fb { namespace game {
 
-#pragma region forward declaration
 class session;
-#pragma endregion
 
 class mob : public life
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     interface listener;
 
@@ -30,24 +25,18 @@ public:
 public:
     struct damage;
     struct drop;
-#pragma endregion
 
-#pragma region structure
     struct config : fb::game::life::config
     {
     public:
         const bool alive = false;
     };
-#pragma endregion
 
-#pragma region enum
 public:
     enum class offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
 
     enum class sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
-#pragma endregion
 
-#pragma region private field
 private:
     listener*                               _listener      = nullptr;
     point16_t                               _spawn_point   = point16_t(0, 0);
@@ -59,22 +48,16 @@ private:
                                                            
     fb::game::life*                         _target        = nullptr;
     lua::context*                           _attack_thread = nullptr;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     mob(fb::game::context& context, const mob::master* master, const fb::game::mob::config& config);
     mob(const mob& right);
     ~mob();
-#pragma endregion
 
-#pragma region private method
 private:
     fb::game::life*                         find_target();
     bool                                    near_target(fb::game::direction& out) const;
-#pragma endregion
 
-#pragma region public method
 public:
     bool                                    action();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
@@ -106,9 +89,7 @@ public:
     void                                    AI(std::chrono::steady_clock::duration now);
 
     virtual bool                            available() const { return this->alive(); }
-#pragma endregion
 
-#pragma region override method
 protected:
     uint32_t                                on_calculate_damage(bool critical) const final;
     void                                    on_attack(fb::game::object* target) final;
@@ -119,10 +100,8 @@ protected:
 
 public:
     uint32_t                                on_exp() const final;
-#pragma endregion
 };
 
-#pragma region interface
 interface mob::listener : public virtual fb::game::life::listener
 {
     virtual void                            on_attack(mob& me, object* you) = 0;
@@ -131,9 +110,7 @@ interface mob::listener : public virtual fb::game::life::listener
     virtual void                            on_damaged(mob& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                            on_die(mob& me, object* you) = 0;
 };
-#pragma endregion
 
-#pragma region damage
 struct mob::damage
 {
 public:
@@ -143,9 +120,7 @@ public:
     damage() : damage(0, 0) { }
     damage(uint16_t min, uint16_t max) : min(min), max(max) { }
 };
-#pragma endregion
 
-#pragma region drop
 struct mob::drop
 {
 public:
@@ -157,12 +132,9 @@ public:
     drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) { }
     drop(const drop& right) : percentage(right.percentage), item(right.item) { }
 };
-#pragma endregion
 
-#pragma region nested class
 class mob::master : public fb::game::life::master
 {
-#pragma region structure
 public:
 struct config : fb::game::life::master::config
 {
@@ -174,24 +146,16 @@ public:
     const std::string                         script_attack;
     const std::string                         script_die;
 };
-#pragma endregion
 
-#pragma region friend
 public:
     friend class mob;
-#pragma endregion
 
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region private field
 private:
     std::vector<drop>                       _items;
-#pragma endregion
 
-#pragma region public field
 public:
     const mob::damage                       damage;
     const offensive_type                    offensive;
@@ -199,28 +163,20 @@ public:
     const std::chrono::milliseconds         speed;
     const std::string                       script_attack, script_die;
     const std::vector<drop>&                items;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     master(const fb::game::mob::master::config& config);
     ~master();
-#pragma endregion
 
-#pragma region public method
 public:
     object::types                           type() const { return fb::game::object::types::MOB; }
 
 public:
     void                                    push_drop(const drop& drop);
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                              builtin_speed(lua_State* lua);
-#pragma endregion
 };
-#pragma endregion
 
 } }
 
