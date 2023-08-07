@@ -5,6 +5,7 @@
 #include <fb/game/session.h>
 #include <fb/game/data_set.h>
 #include <fb/game/clan.h>
+#include <fb/game/group.h>
 
 using namespace fb::game;
 
@@ -179,15 +180,40 @@ public:
 class state : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    fb::game::state_level       state_level;
+    uint8_t                     nation       = 0;
+    uint8_t                     creature     = 0;
+    uint8_t                     level        = 0;
+    uint32_t                    base_hp      = 0;
+    uint32_t                    base_mp      = 0;
+    uint8_t                     strength     = 0;
+    uint8_t                     intelligence = 0;
+    uint8_t                     dexteritry   = 0;
+    uint32_t                    hp           = 0;
+    uint32_t                    mp           = 0;
+    uint32_t                    experience   = 0;
+    uint32_t                    money        = 0;
+    uint32_t                    condition    = 0;
+    uint8_t                     mail         = 0;
+    uint8_t                     fast_move    = 0;
+#else
     const fb::game::session&    session;
     const fb::game::state_level level;
+#endif
 
 public:
+#ifdef BOT
+    state() : fb::protocol::base::header(0x08)
+    { }
+#else
     state(const fb::game::session& session, fb::game::state_level level) : fb::protocol::base::header(0x08),
         session(session), level(level)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -236,6 +262,59 @@ public:
                   .write_u8(true)  // fast move
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->state_level = (fb::game::state_level)in_stream.read_u8();
+        if(enum_in(this->state_level, state_level::BASED))
+        {
+            this->nation = in_stream.read_u8();
+            this->creature = in_stream.read_u8();
+            in_stream.read_u8();
+            this->level = in_stream.read_u8();
+            this->base_hp = in_stream.read_u32();
+            this->base_mp = in_stream.read_u32();
+            this->strength = in_stream.read_u8();
+            this->intelligence = in_stream.read_u8();
+            in_stream.read_u8();
+            in_stream.read_u8();
+            this->dexteritry = in_stream.read_u8();
+            in_stream.read_u8();
+            in_stream.read_u32();
+            in_stream.read_u8();
+        }
+
+        if(enum_in(this->state_level, state_level::HP_MP))
+        {
+            this->hp = in_stream.read_u32();
+            this->mp = in_stream.read_u32();
+        }
+
+        if(enum_in(this->state_level, state_level::EXP_MONEY))
+        {
+            this->experience = in_stream.read_u32();
+            this->money = in_stream.read_u32();
+        }
+
+        if(enum_in(this->state_level, state_level::CONDITION))
+        {
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::MOVE;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::SIGHT;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::HEAR;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::ORAL;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::MAP;
+        }
+
+        this->mail = in_stream.read_u8();
+        this->fast_move = in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class position : public fb::protocol::base::header
@@ -477,14 +556,28 @@ public:
 class option : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    bool                        weather_effect = false;
+    bool                        magic_effect = false;
+    bool                        roar_worlds = false;
+    bool                        fast_move = false;
+    bool                        effect_sound = false;
+#else
     const fb::game::session&    session;
+#endif
 
 public:
+#ifdef BOT
+    option() : fb::protocol::base::header(0x23)
+    { }
+#else
     option(const fb::game::session& session) : fb::protocol::base::header(0x23),
         session(session)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -495,6 +588,17 @@ public:
                   .write_u8(this->session.option(options::EFFECT_SOUND)) // effect sound
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->weather_effect = in_stream.read_u8();
+        this->magic_effect = in_stream.read_u8();
+        this->roar_worlds = in_stream.read_u8();
+        this->fast_move = in_stream.read_u8();
+        this->effect_sound = in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class throws : public fb::protocol::base::header

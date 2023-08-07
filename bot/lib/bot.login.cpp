@@ -72,14 +72,11 @@ bool login_bot::is_decrypt(int cmd) const
 
 void login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
-    static auto fn = [this] (const std::string& id, const std::string& pw) -> task
+    static auto fn = [this] (std::string id, std::string pw) -> task
     {
         try
         {
-            auto __id = id;
-            auto __pw = pw;
-
-            auto response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(__id, __pw));
+            auto response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
             if (response1.text.empty() == false)
                 throw std::exception("request error");
 
@@ -91,7 +88,11 @@ void login_bot::handle_agreement(const fb::protocol::login::response::agreement&
             uint8_t nation = std::uniform_int_distribution<>(0, 1)(gen);
             uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
             co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::complete{ hair, sex, nation, creature});
-            this->send(fb::protocol::login::request::login{ __id, __pw });
+
+            this->_try_login = true;
+            this->_id = id;
+            this->_pw = pw;
+            this->send(fb::protocol::login::request::login{ id, pw });
         }
         catch (std::exception& e)
         {
@@ -106,6 +107,14 @@ void login_bot::handle_agreement(const fb::protocol::login::response::agreement&
 
 void login_bot::handle_message(const fb::protocol::login::response::message& response)
 { 
+    if (this->_try_login)
+    {
+        if (response.text.empty() == false)
+        {
+            std::this_thread::sleep_for(1000ms);
+            this->send(fb::protocol::login::request::login{ this->_id, this->_pw });
+        }
+    }
     std::cout << response.text << std::endl;
 }
 
@@ -113,7 +122,7 @@ void login_bot::handle_transfer(const fb::protocol::response::transfer& response
 {
     this->close();
 
-    auto bot = this->_owner.create<login_bot>(response.parameter);
+    auto bot = this->_owner.create<game_bot>(response.parameter);
     auto ip = boost::asio::ip::address_v4(_byteswap_ulong(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);

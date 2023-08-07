@@ -2,6 +2,7 @@
 #define __PROTOCOL_REQUEST_GAME_H__
 
 #include <fb/protocol/protocol.h>
+#include <fb/game/mmo.h>
 #include <fb/game/trade.h>
 #include <optional>
 
@@ -30,8 +31,34 @@ public:
 public:
     login() : fb::protocol::base::header(0x10)
     { }
+#ifdef BOT
+    login(const fb::buffer& params) : fb::protocol::base::header(0x10)
+    {
+        auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
+        this->deserialize(in_stream);
+    }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->enc_type)
+                  .write_u8(this->key_size)
+                  .write((void*)this->enc_key, this->key_size)
+                  .write_u8(this->from)
+                  .writestr_u8(this->name)
+                  .write_u8(this->transfer.has_value());
+
+        if(transfer.has_value())
+        {
+            out_stream.write_u16(this->transfer.value().map)
+                      .write_u16(this->transfer.value().position.x)
+                      .write_u16(this->transfer.value().position.y);
+        }
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         // base
@@ -39,7 +66,7 @@ public:
         this->key_size = in_stream.read_u8();
         in_stream.read((void*)this->enc_key, this->key_size);
         this->from = (fb::protocol::internal::services)in_stream.read_u8();
-        
+
         // additional parameters
         this->name = in_stream.readstr_u8();
 

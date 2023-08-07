@@ -9,6 +9,9 @@
 #include <fb/core/socket.h>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
+#include <fb/protocol/game.h>
+
+using namespace std::chrono_literals;
 
 namespace fb { namespace bot {
 
@@ -82,6 +85,10 @@ protected:
 
 class login_bot : public base_bot
 {
+private:
+    std::string _id, _pw;
+    bool _try_login = false;
+
 public:
     login_bot(bot_container& owner);
     login_bot(bot_container& owner, const fb::buffer& params);
@@ -103,10 +110,24 @@ public:
 
 class game_bot : public base_bot
 {
+private:
+    fb::buffer _transfer_buffer;
+
 public:
     game_bot(bot_container& owner);
     game_bot(bot_container& owner, const fb::buffer& params);
     ~game_bot();
+
+protected:
+    void on_connected();
+
+public:
+    void handle_init(const fb::protocol::game::response::init& response);
+    void handle_time(const fb::protocol::game::response::time& response);
+    void handle_state(const fb::protocol::game::response::session::state& response);
+    void handle_option(const fb::protocol::game::response::session::option& response);
+    void handle_message(const fb::protocol::game::response::message& response);
+    void handle_spell_update(const fb::protocol::game::response::spell::update& response);
 };
 
 class bot_container

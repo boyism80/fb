@@ -194,7 +194,7 @@ void fb::db::query(const std::string& name, const std::vector<std::string>& quer
 
 void fb::db::async_query(const std::string& name, const std::vector<std::string>& queries)
 {
-    fb::async::launch([name, &queries]
+    fb::async::launch([name, queries]
     {
         query(name, queries);
     });
@@ -221,7 +221,7 @@ void fb::db::query(const std::string& name, const std::function<void()>& callbac
 
 void fb::db::async_query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries)
 {
-    fb::async::launch([name, callback, &queries]
+    fb::async::launch([name, callback, queries]
     {
         query(name, callback, queries);
     });
@@ -229,7 +229,7 @@ void fb::db::async_query(const std::string& name, const std::function<void()>& c
 
 auto fb::db::co_query(const std::string& name, const std::vector<std::string>& queries)
 {
-    auto await_callback = [name, &queries](fb::awaitable<void>& awaitable)
+    auto await_callback = [name, queries](fb::awaitable<void>& awaitable)
     {
         auto db_callback = [&awaitable]
         {

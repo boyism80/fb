@@ -19,18 +19,35 @@ public:
         out_stream.write_u8(0x06)
                   .write_u8(0x00);
     }
+#ifdef BOT
+    void deserialize(fb::istream& in_stream)
+    {
+        in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class message : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    std::string                             text;
+    fb::game::message::type                 type;
+#else
     const std::string                       text;
     const fb::game::message::type           type;
+#endif
 
 public:
+#ifdef BOT
+    message() : fb::protocol::base::header(0x0A)
+    { }
+#else
     message(const std::string& text, fb::game::message::type type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
+#endif
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -39,6 +56,13 @@ public:
         out_stream.write_u8(this->type)
                   .write(this->text, true);
     }
+#ifdef BOT
+    void deserialize(fb::istream& in_stream)
+    {
+        this->type = (fb::game::message::type)in_stream.read_u8();
+        this->text = in_stream.readstr_u16();
+    }
+#endif
 };
 
 class user_list : public fb::protocol::base::header
@@ -102,12 +126,21 @@ public:
 class time : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    uint8_t                     hours;
+#else
     const uint8_t               hours;
+#endif
 
 public:
+#ifdef BOT
+    time() : fb::protocol::base::header(0x20)
+    { }
+#else
     time(uint8_t hours) : fb::protocol::base::header(0x20),
         hours(hours)
     { }
+#endif
 
 public:
     void serialize(fb::ostream& out_stream) const
@@ -117,6 +150,14 @@ public:
                   .write_u8(0x00)      // Unknown
                   .write_u8(0x00);     // Unknown
     }
+#ifdef BOT
+    void deserialize(fb::istream& in_stream)
+    {
+        this->hours = in_stream.read_u8();
+        in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class weather : public fb::protocol::base::header
