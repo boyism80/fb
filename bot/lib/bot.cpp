@@ -72,6 +72,11 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
     });
 }
 
+void base_bot::close()
+{
+    this->_owner.close(*this);
+}
+
 void base_bot::on_connected()
 { }
 

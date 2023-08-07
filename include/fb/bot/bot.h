@@ -35,6 +35,9 @@ private:
     void on_closed(fb::base::socket<>& socket);
 
 protected:
+    void close();
+
+protected:
     virtual void on_connected();
     virtual void on_disconnected();
     virtual bool on_encrypt(fb::ostream& out);
@@ -43,6 +46,7 @@ protected:
 
 public:
     void connect(const boost::asio::ip::tcp::endpoint& endpoint);
+    virtual void on_timer(std::chrono::steady_clock::duration now) {}
 
     template <typename T>
     void bind(int cmd, const std::function<void(T&)> fn)
@@ -122,19 +126,25 @@ protected:
     void on_connected();
 
 public:
+    void on_timer(std::chrono::steady_clock::duration now);
+
+public:
     void handle_init(const fb::protocol::game::response::init& response);
     void handle_time(const fb::protocol::game::response::time& response);
     void handle_state(const fb::protocol::game::response::session::state& response);
     void handle_option(const fb::protocol::game::response::session::option& response);
     void handle_message(const fb::protocol::game::response::message& response);
     void handle_spell_update(const fb::protocol::game::response::spell::update& response);
+    void handle_chat(const fb::protocol::game::response::chat& response);
 };
 
 class bot_container
 {
 private:
+    uint32_t _sequence = 0;
     boost::asio::io_context& _context;
     std::map<uint16_t, base_bot*> _bots;
+    bool _running = false;
 
 public:
     bot_container(boost::asio::io_context& context);
@@ -148,7 +158,7 @@ public:
     {
         auto bot = new T(*this);
         
-        this->_bots.insert({bot->fd(), bot});
+        this->_bots.insert({this->_sequence++, bot});
         return bot;
     }
 
@@ -157,7 +167,7 @@ public:
     {
         auto bot = new T(*this, params);
         
-        this->_bots.insert({bot->fd(), bot});
+        this->_bots.insert({this->_sequence++, bot});
         return bot;
     }
 

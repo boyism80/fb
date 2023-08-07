@@ -31,12 +31,12 @@ void gateway_bot::handle_hosts(const fb::protocol::gateway::response::hosts& res
 
 void gateway_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
-    this->close();
-
     auto bot = this->_owner.create<login_bot>(response.parameter);
     auto ip = boost::asio::ip::address_v4(_byteswap_ulong(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
+
+    this->close();
 }
 
 bool gateway_bot::is_decrypt(int cmd) const

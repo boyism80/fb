@@ -10,6 +10,7 @@ game_bot::game_bot(bot_container& owner) : base_bot(owner)
     this->bind<fb::protocol::game::response::session::state>(std::bind(&game_bot::handle_state, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::session::option>(std::bind(&game_bot::handle_option, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::message>(std::bind(&game_bot::handle_message, this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::chat>(std::bind(&game_bot::handle_chat, this, std::placeholders::_1));
 }
 
 game_bot::game_bot(bot_container& owner, const fb::buffer& params) : game_bot(owner)
@@ -31,6 +32,11 @@ game_bot::~game_bot()
 void game_bot::on_connected()
 {
     this->send(fb::protocol::game::request::login(this->_transfer_buffer), false, true);
+}
+
+void game_bot::on_timer(std::chrono::steady_clock::duration now)
+{
+    std::cout << now << std::endl;
 }
 
 void game_bot::handle_spell_update(const fb::protocol::game::response::spell::update& response)
@@ -59,6 +65,11 @@ void game_bot::handle_option(const fb::protocol::game::response::session::option
 }
 
 void game_bot::handle_message(const fb::protocol::game::response::message& response)
+{
+    
+}
+
+void game_bot::handle_chat(const fb::protocol::game::response::chat& response)
 {
     
 }

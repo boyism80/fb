@@ -356,15 +356,29 @@ public:
     std::string             message;
 
 public:
+#ifndef BOT
     chat() : fb::protocol::base::header(0x0E)
     { }
+#else
+    chat(bool shout, const std::string& message) : fb::protocol::base::header(0x0E),
+        shout(shout), message(message)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        out_stream.write_u8(this->shout)
+                  .writestr_u8(this->message);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->shout = in_stream.read_u8();
         this->message = in_stream.readstr_u8();
     }
+#endif
 };
 
 

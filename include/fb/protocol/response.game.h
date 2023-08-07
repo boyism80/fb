@@ -104,16 +104,28 @@ public:
 class chat : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::object&     me;
     const std::string           text;
     const fb::game::chat::type  type;
+#else
+    uint32_t                    sequence;
+    std::string                 text;
+    fb::game::chat::type        type;
+#endif
 
 public:
+#ifndef BOT
     chat(const fb::game::object& me, const std::string& text, fb::game::chat::type type) : fb::protocol::base::header(0x0D),
         me(me), text(text), type(type)
     { }
+#else
+    chat() : fb::protocol::base::header(0x0D)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -121,6 +133,14 @@ public:
                   .write_u32(this->me.sequence())
                   .write(this->text);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->type = (fb::game::chat::type)in_stream.read_u8();
+        this->sequence = in_stream.read_u32();
+        this->text = in_stream.readstr_u8();
+    }
+#endif
 };
 
 class time : public fb::protocol::base::header
