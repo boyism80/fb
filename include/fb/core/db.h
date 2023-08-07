@@ -45,42 +45,39 @@ public:
     db& operator = (const db&) = delete;
 
 private:
-    static std::string format_string_vargs(const char* fmt_str, va_list args) 
+    static std::string fstring(const char* fmt, ...) 
     {
         std::size_t size = 256;
         std::vector<char> buf(size);
 
-        while (true) {
-            int needed = std::vsnprintf(&buf[0], size, fmt_str, args);
+        va_list vargs;
+        va_start(vargs, fmt);
+        while (true)
+        {
+            int needed = std::vsnprintf(&buf[0], size, fmt, vargs);
 
             if (needed <= (int)size & needed >= 0)
-                return &buf[0];
+                break;
 
             size = (needed > 0) ? (needed + 1) : (size * 2);
             buf.resize(size);
         }
-    }
 
-    static std::string format_string(const char* fmt_str, ...) 
-    {
-        va_list vargs;
-        va_start(vargs, fmt_str);
-        std::string res = format_string_vargs(fmt_str, vargs);
         va_end(vargs);
-        return std::move(res);
+        return std::string(&buf[0]);
     }
 
 private:
-    uint64_t                            hash(const char* name);
-    uint8_t                             index(const char* name);
-    fb::db::pool*                       connections(const char* name);
-    fb::db::connection                  get(const char* name);
-    bool                                release(const char* name, fb::db::connection& connection);
+    uint64_t                            hash(const std::string& name);
+    uint8_t                             index(const std::string& name);
+    fb::db::pool*                       connections(const std::string& name);
+    fb::db::connection                  get(const std::string& name);
+    bool                                release(const std::string& name, fb::db::connection& connection);
 
 private:
-    void                                _exec(const char* name, const std::string& sql);
-    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
-    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
+    void                                _exec(const std::string& name, const std::string& sql);
+    void                                _query(const std::string& name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
+    void                                _mquery(const std::string& name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
 
 private:
     static db&                          get();
@@ -88,163 +85,32 @@ private:
 public:
     static void                         bind(boost::asio::io_context& context);
 
-private:
-    template <typename... Values>
-    static void f_query(const char* name, bool async, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return;
-
-        auto fn = [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...))]()
-        {
-            ist._exec(name.c_str(), fmt.c_str());
-        };
-
-        if (async)
-            fb::async::launch(fn);
-        else
-            fn();
-    }
-
-    template <typename... Values>
-    static bool f_query(const char* name, bool async, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return false;
-
-        auto fn = [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
-        {
-            ist._query(name.c_str(), fmt.c_str(), callback);
-        };
-        
-        if (async)
-            fb::async::launch(fn);
-        else
-            fn();
-
-        return true;
-    }
-
-    template <typename... Values>
-    static bool f_query(const char* name, bool async, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return false;
-
-        auto fn = [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
-        {
-            ist._mquery(name.c_str(), fmt.c_str(), callback);
-        };
-
-        if (async)
-            fb::async::launch(fn);
-        else
-            fn();
-
-        return true;
-    }
-
-    static bool query(const char* name, const std::vector<std::string>& queries, bool async);
-    static bool query(const char* name, const std::function<void()>& callback, const std::vector<std::string>& queries, bool async);
-
 public:
     template <typename... Values>
-    static void query(const char* name, const std::string& format, Values... values)
-    {
-        f_query(name, false, format, std::forward<Values>(values)...);
-    }
-
+    static void                         query(const std::string& name, const std::string& format, Values... values);
     template <typename... Values>
-    static void async_query(const char* name, const std::string& format, Values... values)
-    {
-        f_query(name, true, format, std::forward<Values>(values)...);
-    }
-
+    static void                         async_query(const std::string& name, const std::string& format, Values... values);
     template <typename... Values>
-    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
-    {
-        return f_query(name, false, callback, format, std::forward<Values>(values)...);
-    }
-
+    static void                         query(const std::string& name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values);
     template <typename... Values>
-    static bool async_query(const char* name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
-    {
-        return f_query(name, true, callback, format, std::forward<Values>(values)...);
-    }
-
+    static void                         async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values);
     template <typename... Values>
-    static auto co_query_once(const char* name, const std::string& format, Values... values)
-    {
-        auto await_callback = [_name = name, format, &values...](fb::awaitable<daotk::mysql::result>& awaitable)
-        {
-            auto name = std::string(_name);
-            auto db_callback = [&awaitable](daotk::mysql::connection& connection, daotk::mysql::result& result)
-            {
-                awaitable.result = &result;
-                awaitable.handler.resume();
-            };
-
-            f_query(name.c_str(), true, db_callback, format, std::forward<Values>(values)...);
-        };
-
-        return fb::awaitable<daotk::mysql::result>(await_callback);
-    }
-
+    static auto                         co_query_once(const std::string& name, const std::string& format, Values... values);
     template <typename... Values>
-    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
-    {
-        return f_query(name, false, callback, format, std::forward<Values>(values)...);
-    }
-
+    static void                         query(const std::string& name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values);
     template <typename... Values>
-    static bool async_query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
-    {
-        return f_query(name, true, callback, format, std::forward<Values>(values)...);
-    }
-
+    static void                         async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values);
     template <typename... Values>
-    static auto co_query(const char* name, const std::string& format, Values... values)
-    {
-        auto await_callback = [_name = name, format, &values...](fb::awaitable<std::vector<daotk::mysql::result>>& awaitable)
-        {
-            auto name = std::string(_name);
-            auto db_callback = [&awaitable](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results)
-            {
-                awaitable.result = &results;
-                awaitable.handler.resume();
-            };
-
-            return f_query(name.c_str(), true, db_callback, format, std::forward<Values>(values)...);
-        };
-
-        auto awaiter = fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
-        return awaiter;
-    }
-
-    static bool query(const char* name, const std::vector<std::string>& queries)
-    {
-        return query(name, queries, false);
-    }
-
-    static bool async_query(const char* name, const std::vector<std::string>& queries)
-    {
-        return query(name, queries, true);
-    }
-
-    static bool query(const char* name, const std::function<void()>& callback, const std::vector<std::string>& queries)
-    {
-        return query(name, callback, queries, false);
-    }
-
-    static bool async_query(const char* name, const std::function<void()>& callback, const std::vector<std::string>& queries)
-    {
-        return query(name, callback, queries, true);
-    }
+    static auto                         co_query(const std::string& name, const std::string& format, Values... values);
+    static void                         query(const std::string& name, const std::vector<std::string>& queries);
+    static void                         async_query(const std::string& name, const std::vector<std::string>& queries);
+    static void                         query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries);
+    static void                         async_query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries);
+    static auto                         co_query(const std::string& name, const std::vector<std::string>& queries);
 };
 
 }
+
+#include "db.hpp"
 
 #endif // !__DB_H__

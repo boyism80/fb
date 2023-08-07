@@ -147,18 +147,6 @@ public:
     auto                            request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 };
 
-struct task
-{
-    struct promise_type
-    {
-        auto get_return_object() { return task{}; }
-        auto initial_suspend() { return std::suspend_never{}; }
-        auto final_suspend() noexcept { return std::suspend_never{}; }
-        void return_void() {}
-        void unhandled_exception() {}
-    };
-};
-
 }
 
 namespace fb { namespace internal {

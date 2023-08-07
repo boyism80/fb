@@ -7,6 +7,18 @@
 
 namespace fb {
 
+struct task
+{
+    struct promise_type
+    {
+        auto get_return_object() { return task{}; }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_never{}; }
+        void return_void() {}
+        void unhandled_exception() {}
+    };
+};
+
 template <typename R>
 class awaitable;
 
@@ -45,6 +57,38 @@ public:
             throw this->e.value();
 
         return std::move(*this->result);
+    }
+};
+
+template <>
+class awaitable<void>
+{
+private:
+    const awaitable_suspend_handler<void> _on_suspend;
+
+public:
+    std::optional<std::exception>   e;
+    std::coroutine_handle<>         handler;
+
+public:
+    awaitable(const awaitable_suspend_handler<void>& on_suspend) : _on_suspend(on_suspend)
+    { }
+    virtual ~awaitable()
+    { }
+
+    virtual bool                    await_ready()
+    {
+        return false;
+    }
+    virtual void                    await_suspend(std::coroutine_handle<> h)
+    {
+        this->handler = h;
+        this->_on_suspend(*this);
+    }
+    virtual void                    await_resume()
+    {
+        if (this->e.has_value())
+            throw this->e.value();
     }
 };
 

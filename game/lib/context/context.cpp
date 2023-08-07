@@ -719,8 +719,8 @@ void fb::game::context::save(fb::game::session& session, const std::function<voi
 {
     db::async_query
     (
-        session.name().c_str(), 
-        [this, fn, &session]()
+        session.name(),
+        [this, fn, &session]
         {
             fn(session);
         },
@@ -849,14 +849,13 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    auto fn = [this] (const std::string& _name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
+    auto fn = [this] (std::string name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
     {
-        auto name = _name;
         auto from = request.from;
         auto transfer = request.transfer;
 
         auto sql = "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');";
-        auto results = co_await fb::db::co_query(name.c_str(), sql, name.c_str(), name.c_str(), name.c_str());
+        auto results = co_await fb::db::co_query(name, sql, name.c_str(), name.c_str(), name.c_str());
 
         auto map = results[0].get_value<uint32_t>(12);
         auto last_login = results[0].get_value<datetime>(5);

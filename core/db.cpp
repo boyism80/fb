@@ -22,13 +22,13 @@ void fb::db::bind(boost::asio::io_context& context)
     get()._context = &context;
 }
 
-uint64_t fb::db::hash(const char* name)
+uint64_t fb::db::hash(const std::string& name)
 {
-    if(name == nullptr)
+    if(name.empty())
         return 0;
 
     auto hash   = uint64_t(0);
-    auto length = strlen(name);
+    auto length = name.length();
     for(int i = 0; i < length; i++)
     {
         hash = 31 * hash + name[i];
@@ -37,9 +37,9 @@ uint64_t fb::db::hash(const char* name)
     return hash;
 }
 
-uint8_t fb::db::index(const char* name)
+uint8_t fb::db::index(const std::string& name)
 {
-    if(name == nullptr)
+    if(name.empty())
         return 0;
 
     auto size = this->_pools.size();
@@ -49,13 +49,13 @@ uint8_t fb::db::index(const char* name)
     return (uint8_t)(hash(name) % size - 1) + 1;
 }
 
-fb::db::pool* fb::db::connections(const char* name)
+fb::db::pool* fb::db::connections(const std::string& name)
 {
     auto index = fb::db::index(name);
     return this->_pools[index].get();
 }
 
-fb::db::connection fb::db::get(const char* name)
+fb::db::connection fb::db::get(const std::string& name)
 {
 this->_mutex.lock();
     auto& c                  = fb::console::get();
@@ -98,7 +98,7 @@ this->_mutex.lock();
     return connection;
 }
 
-bool fb::db::release(const char* name, fb::db::connection& connection)
+bool fb::db::release(const std::string& name, fb::db::connection& connection)
 {
     std::lock_guard<std::mutex> mg(this->_mutex);
 
@@ -118,7 +118,7 @@ bool fb::db::release(const char* name, fb::db::connection& connection)
     }
 }
 
-void fb::db::_exec(const char* name, const std::string& sql)
+void fb::db::_exec(const std::string& name, const std::string& sql)
 {
     auto connection = db::get(name);
     try
@@ -134,7 +134,7 @@ void fb::db::_exec(const char* name, const std::string& sql)
     this->release(name, connection);
 }
 
-void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
+void fb::db::_query(const std::string& name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
 {
     auto connection = db::get(name);
     auto result = connection->query(sql);
@@ -150,7 +150,7 @@ void fb::db::_query(const char* name, const std::string& sql, const std::functio
     }
 }
 
-void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
+void fb::db::_mquery(const std::string& name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
 {
     auto connection = db::get(name);
     auto result = connection->mquery(sql);
@@ -174,11 +174,11 @@ fb::db& fb::db::get()
     return *_ist;
 }
 
-bool fb::db::query(const char* name, const std::vector<std::string>& queries, bool async)
+void fb::db::query(const std::string& name, const std::vector<std::string>& queries)
 {
     auto& ist = get();
     if(ist._context == nullptr)
-        return false;
+        return;
 
     std::stringstream sstream;
     for(int i = 0; i < queries.size(); i++)
@@ -189,24 +189,22 @@ bool fb::db::query(const char* name, const std::vector<std::string>& queries, bo
         sstream << queries[i];
     }
 
-    auto fn = [&ist, name = std::string(name), query = std::string(sstream.str())]()
-    {
-        ist._exec(name.c_str(), query.c_str());
-    };
-
-    if (async)
-        fb::async::launch(fn);
-    else
-        fn();
-
-    return true;
+    ist._exec(name, sstream.str());
 }
 
-bool fb::db::query(const char* name, const std::function<void()>& callback, const std::vector<std::string>& queries, bool async)
+void fb::db::async_query(const std::string& name, const std::vector<std::string>& queries)
+{
+    fb::async::launch([name, &queries]
+    {
+        query(name, queries);
+    });
+}
+
+void fb::db::query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries)
 {
     auto& ist = get();
     if(ist._context == nullptr)
-        return false;
+        return;
 
     std::stringstream sstream;
     for(int i = 0; i < queries.size(); i++)
@@ -217,16 +215,29 @@ bool fb::db::query(const char* name, const std::function<void()>& callback, cons
         sstream << queries[i];
     }
 
-    auto fn = [&ist, name = std::string(name), query = std::string(sstream.str()), callback]()
-    {
-        ist._exec(name.c_str(), query.c_str());
-        callback();
-    };
-    
-    if (async)
-        fb::async::launch(fn);
-    else
-        fn();
+    ist._exec(name, sstream.str());
+    callback();
+}
 
-    return true;
+void fb::db::async_query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries)
+{
+    fb::async::launch([name, callback, &queries]
+    {
+        query(name, callback, queries);
+    });
+}
+
+auto fb::db::co_query(const std::string& name, const std::vector<std::string>& queries)
+{
+    auto await_callback = [name, &queries](fb::awaitable<void>& awaitable)
+    {
+        auto db_callback = [&awaitable]
+        {
+            awaitable.handler.resume();
+        };
+
+        async_query(name, db_callback, queries);
+    };
+
+    return fb::awaitable<void>(await_callback);
 }
