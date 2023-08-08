@@ -6,17 +6,20 @@ game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
 {
     this->_next_action_time = fb::thread::now();
 
-    this->bind<fb::protocol::game::response::spell::update>   (std::bind(&game_bot::handle_spell_update, this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::init>            (std::bind(&game_bot::handle_init,         this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::time>            (std::bind(&game_bot::handle_time,         this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::session::state>  (std::bind(&game_bot::handle_state,        this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::session::option> (std::bind(&game_bot::handle_option,       this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::message>         (std::bind(&game_bot::handle_message,      this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::chat>            (std::bind(&game_bot::handle_chat,         this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::life::action>    (std::bind(&game_bot::handle_action,       this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::spell::update>     (std::bind(&game_bot::handle_spell_update,  this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::init>              (std::bind(&game_bot::handle_init,          this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::time>              (std::bind(&game_bot::handle_time,          this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::session::state>    (std::bind(&game_bot::handle_state,         this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::session::option>   (std::bind(&game_bot::handle_option,        this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::message>           (std::bind(&game_bot::handle_message,       this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::chat>              (std::bind(&game_bot::handle_chat,          this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::life::action>      (std::bind(&game_bot::handle_action,        this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::object::direction> (std::bind(&game_bot::handle_direction,     this, std::placeholders::_1));
 
-    this->pattern(std::bind(&game_bot::pattern_chat,   this), 500ms, 1000ms);
-    this->pattern(std::bind(&game_bot::pattern_attack, this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_chat,        this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_attack,      this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_direction,   this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_move,        this), 500ms, 1000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
@@ -98,7 +101,44 @@ void game_bot::handle_chat(const fb::protocol::game::response::chat& response)
 
 void game_bot::handle_action(const fb::protocol::game::response::life::action& response)
 {
-    std::cout << "action : " << (uint8_t)response.value << std::endl;
+    std::string action_name;
+    switch (response.value)
+    {
+    case fb::game::action::ATTACK:
+        action_name = "attack";
+        break;
+
+    default:
+        action_name = "not implement yet";
+        break;
+    }
+
+    std::cout << "action : " << action_name << std::endl;
+}
+
+void game_bot::handle_direction(const fb::protocol::game::response::object::direction& response)
+{
+    std::string direction_name;
+    switch (response.value)
+    {
+    case fb::game::direction::LEFT:
+        direction_name = "left";
+        break;
+
+    case fb::game::direction::TOP:
+        direction_name = "top";
+        break;
+
+    case fb::game::direction::RIGHT:
+        direction_name = "right";
+        break;
+
+    case fb::game::direction::BOTTOM:
+        direction_name = "bottom";
+        break;
+    }
+
+    std::cout << "direction : " << direction_name << std::endl;
 }
 
 void game_bot::pattern_chat()
@@ -115,4 +155,28 @@ void game_bot::pattern_chat()
 void game_bot::pattern_attack()
 {
     this->send(fb::protocol::game::request::attack());
+}
+
+void game_bot::pattern_direction()
+{
+    static std::vector<fb::game::direction> directions{ fb::game::direction::LEFT, fb::game::direction::TOP, fb::game::direction::RIGHT, fb::game::direction::BOTTOM };
+    static std::random_device device;
+    static std::mt19937 gen(device());
+    static std::uniform_int_distribution<> dist(0, directions.size() - 1);
+
+    auto direction = directions.at(dist(gen));
+    this->send(fb::protocol::game::request::direction{direction});
+}
+
+void game_bot::pattern_move()
+{
+    //static std::vector<fb::game::direction> directions{ fb::game::direction::LEFT, fb::game::direction::TOP, fb::game::direction::RIGHT, fb::game::direction::BOTTOM };
+    //static std::random_device device;
+    //static std::mt19937 gen(device());
+    //static std::uniform_int_distribution<> dist(0, directions.size() - 1);
+
+    //auto direction = directions.at(dist(gen));
+
+    // 내 위치를 알고 있어야함
+    // this->send(fb::protocol::game::request::move{});
 }

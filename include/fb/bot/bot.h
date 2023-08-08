@@ -151,10 +151,13 @@ public:
     void                                        handle_spell_update(const fb::protocol::game::response::spell::update& response);
     void                                        handle_chat(const fb::protocol::game::response::chat& response);
     void                                        handle_action(const fb::protocol::game::response::life::action& response);
+    void                                        handle_direction(const fb::protocol::game::response::object::direction& response);
 
 public:
     void                                        pattern_chat();
     void                                        pattern_attack();
+    void                                        pattern_direction();
+    void                                        pattern_move();
 };
 
 class bot_container

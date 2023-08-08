@@ -93,14 +93,27 @@ public:
     fb::game::direction     value;
 
 public:
+#ifndef BOT
     direction() : fb::protocol::base::header(0x11)
     { }
+#else
+    direction(fb::game::direction value) : fb::protocol::base::header(0x11), value(value)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8((uint8_t)this->value);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->value = fb::game::direction(in_stream.read_u8());
     }
+#endif
 };
 
 class exit : public fb::protocol::base::header
@@ -126,10 +139,26 @@ protected:
     { }
 
 public:
+#ifndef BOT
     move() : fb::protocol::base::header(0x32)
     { }
+#else
+    move(fb::game::direction direction, point16_t position) : fb::protocol::base::header(0x32),
+        direction(direction), sequence(0), position(position)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->direction);
+        out_stream.write_u8(this->sequence);
+        out_stream.write_u16(this->position.x);
+        out_stream.write_u16(this->position.y);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->direction = fb::game::direction(in_stream.read_u8());
@@ -137,6 +166,7 @@ public:
         this->position.x = in_stream.read_u16();
         this->position.y = in_stream.read_u16();
     }
+#endif
 };
 
 

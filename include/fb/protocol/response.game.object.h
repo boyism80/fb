@@ -11,17 +11,28 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class direction : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const uint32_t              sequence;
     const fb::game::direction   value;
+#else
+    uint32_t                    sequence;
+    fb::game::direction         value;
+#endif
 
 public:
+#ifndef BOT
     direction(const fb::game::object& object) : direction(object.sequence(), object.direction())
     { }
     direction(uint32_t sequence, fb::game::direction value) : fb::protocol::base::header(0x11),
         sequence(sequence), value(value)
     { }
+#else
+    direction() : fb::protocol::base::header(0x11)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -29,6 +40,13 @@ public:
                   .write_u8(this->value)
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->sequence  = in_stream.read_u32();
+        this->value     = (fb::game::direction)in_stream.read_u8();
+    }
+#endif
 };
 
 class show : public fb::protocol::base::header
@@ -137,18 +155,30 @@ public:
 class move : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const uint32_t              id;
     const point16_t             position;
     const fb::game::direction   direction;
+#else
+    uint32_t                    id;
+    point16_t                   position;
+    fb::game::direction         direction;
+#endif
 
 public:
+#ifndef BOT
     move(const fb::game::object& object, const point16_t& position) : move(object.sequence(), object.direction(), position)
     { }
     move(const uint32_t id, fb::game::direction direction, const point16_t& position) : fb::protocol::base::header(0x0C),
         id(id), direction(direction), position(position)
     { }
+#else
+    move() : fb::protocol::base::header(0x0C)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -158,6 +188,15 @@ public:
                   .write_u8(this->direction)
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->id         = in_stream.read_u32();
+        this->position.x = in_stream.read_u16();
+        this->position.y = in_stream.read_u16();
+        this->direction  = (fb::game::direction)in_stream.read_u8();
+    }
+#endif
 };
 
 class sound : public fb::protocol::base::header
