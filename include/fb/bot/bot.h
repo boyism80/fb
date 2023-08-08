@@ -124,6 +124,8 @@ private:
 
 
 private:
+    uint32_t                                    _sequence = 0;
+    point16_t                                   _position;
     fb::buffer                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
     std::chrono::steady_clock::duration         _next_action_time;
@@ -148,10 +150,15 @@ public:
     void                                        handle_state(const fb::protocol::game::response::session::state& response);
     void                                        handle_option(const fb::protocol::game::response::session::option& response);
     void                                        handle_message(const fb::protocol::game::response::message& response);
+    void                                        handle_sequence(const fb::protocol::game::response::session::id& response);
     void                                        handle_spell_update(const fb::protocol::game::response::spell::update& response);
     void                                        handle_chat(const fb::protocol::game::response::chat& response);
     void                                        handle_action(const fb::protocol::game::response::life::action& response);
     void                                        handle_direction(const fb::protocol::game::response::object::direction& response);
+    void                                        handle_position(const fb::protocol::game::response::session::position& response);
+    void                                        handle_move(const fb::protocol::game::response::object::move& response);
+    void                                        handle_map(const fb::protocol::game::response::map::config& response);
+    void                                        handle_transfer(const fb::protocol::response::transfer& response);
 
 public:
     void                                        pattern_chat();

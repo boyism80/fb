@@ -120,10 +120,10 @@ void login_bot::handle_message(const fb::protocol::login::response::message& res
 
 void login_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
+    this->close();
+    
     auto bot = this->_owner.create<game_bot>(response.parameter);
     auto ip = boost::asio::ip::address_v4(_byteswap_ulong(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
-
-    this->close();
 }

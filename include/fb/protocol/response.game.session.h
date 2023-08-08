@@ -158,14 +158,26 @@ public:
 class id : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::session&    session;
+#else
+    uint32_t                    sequence = 0;
+    uint32_t                    direction = 0;
+    uint8_t                     cls = 0;
+#endif
 
 public:
+#ifndef BOT
     id(const fb::game::session& session) : fb::protocol::base::header(0x05),
         session(session)
     { }
+#else
+    id() : fb::protocol::base::header(0x05)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -175,6 +187,14 @@ public:
                   .write_u16(0x00)
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->sequence = in_stream.read_u32();
+        this->direction = in_stream.read_u32();
+        this->cls = in_stream.read_u8();
+    }
+#endif
 };
 
 class state : public fb::protocol::base::header
@@ -320,14 +340,25 @@ public:
 class position : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::session&    session;
+#else
+    point16_t                   abs;
+    point16_t                   rel;
+#endif
 
 public:
+#ifndef BOT
     position(const fb::game::session& session) : fb::protocol::base::header(0x04),
         session(session)
     { }
+#else
+    position() : fb::protocol::base::header(0x04)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -356,6 +387,15 @@ public:
 
         out_stream.write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->abs.x = in_stream.read_u16();
+        this->abs.y = in_stream.read_u16();
+        this->rel.x = in_stream.read_u16();
+        this->rel.y = in_stream.read_u16();
+    }
+#endif
 };
 
 class internal_info : public fb::protocol::base::header

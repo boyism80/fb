@@ -128,14 +128,27 @@ public:
 class config : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::map&            map;
+#else
+    uint16_t                        id;
+    size16_t                        size;
+    bool                            building;
+    std::string                     name;
+#endif
 
 public:
+#ifndef BOT
     config(const fb::game::map& map) : fb::protocol::base::header(0x15),
         map(map)
     { }
+#else
+    config() : fb::protocol::base::header(0x15)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -146,6 +159,16 @@ public:
                   .write_u8(enum_in(this->map.option(), fb::game::map::options::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
                   .write(this->map.name(), true);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->id = in_stream.read_u16();
+        this->size.width = in_stream.read_u16();
+        this->size.height = in_stream.read_u16();
+        this->building = in_stream.read_u8();
+        this->name = in_stream.readstr_u16();
+    }
+#endif
 };
 
 

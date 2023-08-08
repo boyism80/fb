@@ -143,8 +143,8 @@ public:
     move() : fb::protocol::base::header(0x32)
     { }
 #else
-    move(fb::game::direction direction, point16_t position) : fb::protocol::base::header(0x32),
-        direction(direction), sequence(0), position(position)
+    move(fb::game::direction direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
+        direction(direction), sequence(sequence), position(position)
     { }
 #endif
 
