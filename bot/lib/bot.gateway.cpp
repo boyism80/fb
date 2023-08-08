@@ -2,7 +2,7 @@
 
 using namespace fb::bot;
 
-gateway_bot::gateway_bot(bot_container& owner) : base_bot(owner)
+gateway_bot::gateway_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
 {
     this->bind<fb::protocol::gateway::response::welcome>(std::bind(&gateway_bot::handle_welcome, this, std::placeholders::_1));
     this->bind<fb::protocol::gateway::response::crt>(std::bind(&gateway_bot::handle_crt, this, std::placeholders::_1));

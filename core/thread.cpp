@@ -142,7 +142,7 @@ void fb::thread::settimer(fb::thread_callback fn, const std::chrono::steady_cloc
 {
     this->dispatch
     (
-        [this, fn, duration] ()
+        [this, fn, duration]
         {
             fn(fb::thread::now(), this->_thread.get_id());
             this->settimer(fn, duration);
@@ -289,7 +289,7 @@ void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clo
     {
         this->dispatch
         (
-            [this, fn, duration] ()
+            [this, fn, duration]
             {
                 fn(fb::thread::now(), std::this_thread::get_id());
                 this->settimer(fn, duration);
@@ -363,7 +363,7 @@ void fb::async::async_handler()
 fb::async* fb::async::get()
 {
     static std::once_flag flag;
-    std::call_once(flag, [] () { _ist.reset(new fb::async()); });
+    std::call_once(flag, [] { _ist.reset(new fb::async()); });
     return _ist.get();
 }
 

@@ -2,9 +2,9 @@
 
 using namespace fb::bot;
 
-base_bot::base_bot(bot_container& owner): fb::awaitable_socket<void*>(owner.context(), 
+base_bot::base_bot(bot_container& owner, uint32_t id): fb::awaitable_socket<void*>(owner.context(), 
     std::bind(&base_bot::on_receive, this, std::placeholders::_1),
-    std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner)
+    std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner), id(id)
 {}
 
 base_bot::~base_bot()
@@ -72,11 +72,6 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
     });
 }
 
-void base_bot::close()
-{
-    this->_owner.close(*this);
-}
-
 void base_bot::on_connected()
 { }
 
@@ -86,6 +81,7 @@ void base_bot::on_disconnected()
 void base_bot::on_closed(fb::base::socket<>& socket)
 {
     this->on_disconnected();
+    this->_owner.remove(*this);
 }
 
 bool base_bot::on_encrypt(fb::ostream& out)

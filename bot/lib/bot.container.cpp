@@ -1,48 +1,48 @@
 #include <fb/bot/bot.h>
-#include <fb/core/thread.h>
 
 using namespace fb::bot;
 
-bot_container::bot_container(boost::asio::io_context& context) : _context(context)
+bot_container::bot_container(boost::asio::io_context& context) : _context(context), _threads(context, std::thread::hardware_concurrency())
 {
-	auto fn = [this]
-	{
-		constexpr auto term = 1000ms;
-
-		while(this->_running)
-		{
-			auto now = fb::thread::now();
-			for (auto& [k, v] : this->_bots)
-			{
-				v->on_timer(now);
-			}
-			auto elapsed = fb::thread::now() - now;
-			if(elapsed < term)
-				std::this_thread::sleep_for(term - elapsed);
-		}
-	};
-
-	this->_running = true;
-	fb::async::launch(fn);
+    this->_threads.settimer(std::bind(&bot_container::handle_timer, this, std::placeholders::_1, std::placeholders::_2), 100ms);
 }
 
 bot_container::~bot_container()
 {
-	
+    
 }
 
 boost::asio::io_context& bot_container::context() const
 {
-	return this->_context;
-} 
+    return this->_context;
+}
 
-void bot_container::close(base_bot& bot)
+void bot_container::remove(base_bot& bot)
 {
-	auto fd = bot.fd();
-	auto i = this->_bots.find(fd);
-	if(i == this->_bots.end())
-		return;
+    auto id = bot.id % this->_threads.size();
+    auto thread = this->_threads[id];
+    auto fn = [this, &bot] (auto _)
+    {
+        auto i = this->_bots.find(bot.id);
+        if (i == this->_bots.end())
+            return;
 
-	delete i->second;
-	this->_bots.erase(i);
+        delete i->second;
+        this->_bots.erase(i);
+    };
+
+    thread->dispatch(fn);
+}
+
+void bot_container::handle_timer(std::chrono::steady_clock::duration now, std::thread::id id)
+{
+    for (auto& [k, v] : this->_bots)
+    {
+        auto index = v->id % this->_threads.size();
+        auto thread = this->_threads[index];
+        if (thread->id() != id)
+            continue;
+
+        v->on_timer(now);
+    }
 }

@@ -2,14 +2,14 @@
 
 using namespace fb::bot;
 
-login_bot::login_bot(bot_container& owner) : base_bot(owner)
+login_bot::login_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
 {
     this->bind<fb::protocol::login::response::agreement>(std::bind(&login_bot::handle_agreement, this, std::placeholders::_1));
     this->bind<fb::protocol::login::response::message>(std::bind(&login_bot::handle_message, this, std::placeholders::_1));
     this->bind<fb::protocol::response::transfer>(std::bind(&login_bot::handle_transfer, this, std::placeholders::_1));
 }
 
-login_bot::login_bot(bot_container& owner, const fb::buffer& params) : login_bot(owner)
+login_bot::login_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : login_bot(owner, id)
 {
     auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
     auto enc_type = in_stream.read_8();

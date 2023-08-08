@@ -2,7 +2,7 @@
 
 using namespace fb::bot;
 
-game_bot::game_bot(bot_container& owner) : base_bot(owner)
+game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
 {
     this->bind<fb::protocol::game::response::spell::update>(std::bind(&game_bot::handle_spell_update, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::init>(std::bind(&game_bot::handle_init, this, std::placeholders::_1));
@@ -13,7 +13,7 @@ game_bot::game_bot(bot_container& owner) : base_bot(owner)
     this->bind<fb::protocol::game::response::chat>(std::bind(&game_bot::handle_chat, this, std::placeholders::_1));
 }
 
-game_bot::game_bot(bot_container& owner, const fb::buffer& params) : game_bot(owner)
+game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
 {
 	auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
     auto enc_type = in_stream.read_8();
