@@ -171,7 +171,14 @@ public:
     { }
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+    }
+#else
     void deserialize(fb::istream& in_stream) { }
+#endif
 };
 
 
@@ -369,6 +376,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
+        fb::protocol::base::header::serialize(out_stream);
         out_stream.write_u8(this->shout)
                   .writestr_u8(this->message);
     }

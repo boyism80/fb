@@ -116,12 +116,25 @@ public:
 class game_bot : public base_bot
 {
 private:
+    typedef struct _pattern_params_tag
+    {
+        std::function<void()>                   fn;
+        std::chrono::steady_clock::duration     min, max;
+    } pattern_params;
+
+
+private:
     fb::buffer                                  _transfer_buffer;
+    std::vector<pattern_params>                 _pattern_params;
+    std::chrono::steady_clock::duration         _next_action_time;
 
 public:
     game_bot(bot_container& owner, uint32_t id);
     game_bot(bot_container& owner, uint32_t id, const fb::buffer& params);
     ~game_bot();
+
+private:
+    void                                        pattern(std::function<void()> fn, const std::chrono::steady_clock::duration& min, const std::chrono::steady_clock::duration& max);
 
 protected:
     void                                        on_connected();
@@ -137,6 +150,11 @@ public:
     void                                        handle_message(const fb::protocol::game::response::message& response);
     void                                        handle_spell_update(const fb::protocol::game::response::spell::update& response);
     void                                        handle_chat(const fb::protocol::game::response::chat& response);
+    void                                        handle_action(const fb::protocol::game::response::life::action& response);
+
+public:
+    void                                        pattern_chat();
+    void                                        pattern_attack();
 };
 
 class bot_container
@@ -146,6 +164,7 @@ private:
     boost::asio::io_context&                    _context;
     std::map<uint16_t, base_bot*>               _bots;
     fb::threads                                 _threads;
+    std::mutex                                  _bots_lock;
     bool                                        _exit = false;
 
 public:
@@ -157,21 +176,21 @@ public:
 
     template <typename T>
     T* create()
-    {
+    {   MUTEX_GUARD(this->_bots_lock)
+        
         auto id = this->_sequence++;
         auto bot = new T(*this, id);
-        auto thread = this->_threads[id];
-        thread->dispatch([this, bot](auto _) { this->_bots.insert({ bot->id, bot }); });
+        this->_bots.insert({ bot->id, bot });
         return bot;
     }
 
     template <typename T>
     T* create(const fb::buffer& params)
-    {
+    {   MUTEX_GUARD(this->_bots_lock)
+        
         auto id = this->_sequence++;
         auto bot = new T(*this, id, params);
-        auto thread = this->_threads[id];
-        thread->dispatch([this, bot](auto _) { this->_bots.insert({ bot->id, bot }); });
+        this->_bots.insert({ bot->id, bot });
         return bot;
     }
     void remove(base_bot& bot);

@@ -11,17 +11,30 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class action : public fb::protocol::base::header
 {
 public:
-    const fb::game::life&      me;
-    const fb::game::action     value;
-    const fb::game::duration   duration;
-    const uint8_t              sound;
+#ifndef BOT
+    const fb::game::life&       me;
+    const fb::game::action      value;
+    const fb::game::duration    duration;
+    const uint8_t               sound;
+#else
+    uint32_t                    sequence;
+    fb::game::action            value;
+    fb::game::duration          duration;
+    uint8_t                     sound;
+#endif
 
 public:
+#ifndef BOT
     action(const fb::game::life& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
+#else
+    action() : fb::protocol::base::header(0x1A)
+    {}
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -30,6 +43,15 @@ public:
                   .write_u16(this->duration) // duration
                   .write_u8(this->sound); // sound
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->sequence = in_stream.read_u32();
+        this->value    = (fb::game::action)in_stream.read_u8();
+        this->duration = (fb::game::duration)in_stream.read_u16();
+        this->sound    = in_stream.read_u8();
+    }
+#endif
 };
 
 class show_hp : public fb::protocol::base::header

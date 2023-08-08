@@ -90,8 +90,8 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         buffer_dst[0] = buffer_src[0];
         buffer_dst[1] = this->_sequence;
 
-        if(size - 1 <= 0)
-            throw;
+        if(size <= 1)
+            throw nullptr;
 
         this->crypt(buffer_src + 1, buffer_dst + 2, size - 1, this->_key, KEY_SIZE);
 
@@ -141,8 +141,8 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         buffer_dst[0] = buffer_src[0];
         uint8_t             sequence = buffer_src[1];
 
-        if(size < 1)
-            throw;
+        if(size <= 2)
+            throw nullptr;
 
         this->crypt(buffer_src + 2, buffer_dst + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
         for(int i = 0, loop = (size - 3) / KEY_SIZE + 1; i < loop; i++)

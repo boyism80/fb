@@ -849,7 +849,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     session->name(request.name);
     c.puts("%s님이 접속했습니다.", request.name.c_str());
 
-    auto fn = [this] (std::string name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
+    static auto fn = [this] (std::string name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
     {
         auto from = request.from;
         auto transfer = request.transfer;

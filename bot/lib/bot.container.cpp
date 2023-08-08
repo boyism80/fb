@@ -18,7 +18,8 @@ boost::asio::io_context& bot_container::context() const
 }
 
 void bot_container::remove(base_bot& bot)
-{
+{   MUTEX_GUARD(this->_bots_lock)
+
     auto id = bot.id % this->_threads.size();
     auto thread = this->_threads[id];
     auto fn = [this, &bot] (auto _)
@@ -35,11 +36,15 @@ void bot_container::remove(base_bot& bot)
 }
 
 void bot_container::handle_timer(std::chrono::steady_clock::duration now, std::thread::id id)
-{
+{   MUTEX_GUARD(this->_bots_lock)
+
     for (auto& [k, v] : this->_bots)
     {
         auto index = v->id % this->_threads.size();
         auto thread = this->_threads[index];
+        if (thread == nullptr)
+            continue;
+
         if (thread->id() != id)
             continue;
 
