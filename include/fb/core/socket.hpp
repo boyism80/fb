@@ -201,8 +201,9 @@ void fb::awaitable_socket<T>::register_awaiter(uint8_t cmd, awaitable<R>* awaita
     if(i != this->_coroutines.end())
     {
         auto awaitable = static_cast<awaitable_socket<T>::awaitable<R>*>(i->second);
-        awaitable->e = std::exception();
+        awaitable->error = "";
     }
+    
     this->_coroutines[cmd] = static_cast<void*>(awaitable);
 }
 
@@ -238,7 +239,7 @@ auto fb::awaitable_socket<T>::request(const fb::protocol::base::header& header, 
                 if (!error_code)
                     return;
 
-                awaitable.e = std::exception();
+                awaitable.error = "";
                 awaitable.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);

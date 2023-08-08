@@ -487,7 +487,7 @@ void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)
         auto& in_stream = socket.in_stream();
         R     header;
         header.deserialize(in_stream);
-        socket.invoke_awaiter(header.__id, header);
+        socket.invoke_awaiter((uint8_t)header.__id, header);
         return fn(socket, header);
     };
 }

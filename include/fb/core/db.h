@@ -20,7 +20,7 @@ class db
 {
 private:
     static std::unique_ptr<db>                      _ist;
-    static constexpr uint32_t                       SIZE = 2;
+    static constexpr uint32_t                       SIZE = 10;
 
 public:
     using connection = std::unique_ptr<daotk::mysql::connection>;

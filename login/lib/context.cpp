@@ -110,20 +110,21 @@ bool fb::login::context::handle_account_complete(fb::socket<fb::login::session>&
 
 bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
-    const auto& id = request.id;
-    const auto& pw = request.pw;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
-    auto fn = [this, id, pw, &socket]
+    auto fn = [this, id = request.id, pw = request.pw, &socket]
     {
+        auto& c = fb::console::get();
+        c.puts("%s의 접속요청", id.c_str());
         auto handle_success = [this, id, &socket] (uint32_t map)
         {
-
-            static auto async_fn = [this] (auto& socket, const std::string& id, uint32_t map) -> task
+            static auto async_fn = [this] (auto& socket, std::string id, uint32_t map) -> task
             {
                 auto fd = (uint32_t)socket.native_handle();
                 try
                 {
+                    // 하나의 _internal 소켓에서 응답이 오기전에 request를 계속 호출하면서 발생하는 문제
+                    // 코루틴으로 하면 안될거같다..
                     auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
 
                     auto client = this->sockets[fd];

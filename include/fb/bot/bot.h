@@ -101,6 +101,7 @@ public:
 
 private:
     static std::string                          new_name();
+    task                                        co_login(std::string id, std::string pw);
 
 protected:
     void                                        on_connected();
