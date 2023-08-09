@@ -62,19 +62,23 @@ this->_mutex.lock();
     auto  connections        = fb::db::connections(name);
 
     auto  connection         = fb::db::connection(nullptr);
+    auto  busy               = false;
     while(true)
     {
         if (connections->empty() == false)
             break;
         
 this->_mutex.unlock();
-        c.puts("All connections are used.");
+        busy = true;
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
 this->_mutex.lock();
     }
 
     auto index             = fb::db::index(name);
     connection             = std::move(connections->front());
+    if(busy)
+        c.puts("db reconnect success");
+
     connections->pop_front();
     this->_mutex.unlock();
 
