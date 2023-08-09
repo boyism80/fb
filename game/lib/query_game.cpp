@@ -57,71 +57,140 @@ std::string fb::game::query::make_update_session(fb::game::session& session)
 
 std::string fb::game::query::make_update_item(fb::game::session& session)
 {
-    std::vector<std::string> itemSet;
+    std::vector<std::string> item_set;
     for(auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = session.items[i];
-        auto master = item != nullptr ? item->based<fb::game::item>() : nullptr;
-        auto durability = (item != nullptr) ? item->durability() : std::nullopt;
+        if (item == nullptr)
+            continue;
+
+        auto master = item->based<fb::game::item>();
+        auto durability = item->durability();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
             std::to_string(i),
             std::to_string(static_cast<int>(fb::game::equipment::slot::UNKNOWN_SLOT)),
-            (item == nullptr) ? "NULL" : std::to_string(master->id),
-            (item == nullptr) ? "NULL" : std::to_string(item->count()),
+            std::to_string(master->id),
+            std::to_string(item->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
-        itemSet.push_back(fb::query::make_insert(parameter));
+        item_set.push_back(fb::query::make_insert(parameter));
     }
 
     const auto& equipments = session.items.equipments();
-    for(auto& [key, value] : equipments)
+    for(auto& [slot, equipment] : equipments)
     {
-        auto slot = key;
-        auto equipment = value;
-        auto master = equipment != nullptr ? equipment->based<fb::game::equipment>() : nullptr;
+        if (equipment == nullptr)
+            continue;
 
-        auto durability = (equipment != nullptr) ? equipment->durability() : std::nullopt;
+        auto master = equipment->based<fb::game::equipment>();
+        auto durability = equipment->durability();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
             std::to_string(-1),
             std::to_string(static_cast<int>(slot)),
-            (equipment == nullptr) ? "NULL" : std::to_string(master->id),
-            (equipment == nullptr) ? "NULL" : std::to_string(equipment->count()),
+            std::to_string(master->id),
+            std::to_string(equipment->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
 
-        itemSet.push_back(fb::query::make_insert(parameter));
+        item_set.push_back(fb::query::make_insert(parameter));
     }
+
+    if (item_set.empty())
+        return std::string();
 
     std::stringstream sstream;
     sstream << "INSERT INTO item (`owner`, `index`, `slot`, `master`, `count`, `durability`) VALUES "
-        << boost::algorithm::join(itemSet, ", ")
+        << boost::algorithm::join(item_set, ", ")
         << " ON DUPLICATE KEY UPDATE master=VALUES(master), count=VALUES(count), durability=VALUES(durability)";
 
     return sstream.str();
 }
 
-std::string fb::game::query::make_update_spell(fb::game::session& me)
+std::string fb::game::query::make_delete_item(fb::game::session& session)
 {
-    std::vector<std::string> spellSet;
+    std::vector<std::string> item_slots;
+    for(auto i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = session.items[i];
+        if (item != nullptr)
+            continue;
+
+        item_slots.push_back(std::to_string(i));
+    }
+
+    std::vector<std::string> gear_slots;
+    const auto& equipments = session.items.equipments();
+    for (auto& [slot, equipment] : equipments)
+    {
+        if (equipment != nullptr)
+            continue;
+
+        gear_slots.push_back(std::to_string((uint8_t)slot));
+    }
+
+    if (item_slots.empty() && gear_slots.empty())
+        return std::string();
+
+    std::stringstream sstream;
+    sstream << "DELETE FROM item WHERE `owner` = " << session.id() << " AND " 
+            << "("
+            << "`index` IN (" << boost::algorithm::join(item_slots, ", ") << ")" << " OR "
+            << "`slot` IN (" << boost::algorithm::join(gear_slots, ", ") << ")"
+            << ")";
+
+    return sstream.str();
+}
+
+std::string fb::game::query::make_update_spell(fb::game::session& session)
+{
+    std::vector<std::string> spell_set;
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto spell = me.spells[i];
-        spellSet.push_back(fb::query::make_insert(std::vector<std::string>
+        auto spell = session.spells[i];
+        if (spell == nullptr)
+            continue;
+
+        spell_set.push_back(fb::query::make_insert(std::vector<std::string>
         {
-            std::to_string(me.id()),
+            std::to_string(session.id()),
             std::to_string(i),
-            (spell == nullptr) ? "NULL" : std::to_string(spell->id()),
+            std::to_string(spell->id()),
         }));
     }
 
+    if (spell_set.empty())
+        return std::string();
+
     std::stringstream sstream;
     sstream << "INSERT INTO spell (owner, slot, id) VALUES "
-        << boost::algorithm::join(spellSet, ", ")
-        << " ON DUPLICATE KEY UPDATE id=VALUES(id)";
+            << boost::algorithm::join(spell_set, ", ")
+            << " ON DUPLICATE KEY UPDATE id=VALUES(id)";
     
+    return sstream.str();
+}
+
+std::string fb::game::query::make_delete_spell(fb::game::session& session)
+{
+    std::vector<std::string> spell_slots;
+    for(auto i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = session.spells[i];
+        if (spell != nullptr)
+            continue;
+
+        spell_slots.push_back(std::to_string(i));
+    }
+
+    if (spell_slots.empty())
+        return std::string();
+
+    std::stringstream sstream;
+    sstream << "DELETE FROM spell WHERE `owner` = " << session.id() << " AND " 
+            << "`slot` IN (" << boost::algorithm::join(spell_slots, ", ") << ")";
+
     return sstream.str();
 }

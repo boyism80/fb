@@ -115,7 +115,6 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
     auto fn = [this, id = request.id, pw = request.pw, &socket]
     {
         auto& c = fb::console::get();
-        c.puts("%s의 접속요청", id.c_str());
         auto handle_success = [this, id, &socket] (uint32_t map)
         {
             static auto async_fn = [this] (auto& socket, std::string id, uint32_t map) -> task

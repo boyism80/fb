@@ -181,12 +181,12 @@ void fb::db::query(const std::string& name, const std::vector<std::string>& quer
         return;
 
     std::stringstream sstream;
-    for(int i = 0; i < queries.size(); i++)
+    for (auto& query : queries)
     {
-        if(i > 0)
-            sstream << "; ";
+        if (query.empty())
+            continue;
 
-        sstream << queries[i];
+        sstream << query << ";";
     }
 
     ist._exec(name, sstream.str());
@@ -207,12 +207,12 @@ void fb::db::query(const std::string& name, const std::function<void()>& callbac
         return;
 
     std::stringstream sstream;
-    for(int i = 0; i < queries.size(); i++)
+    for (auto& query : queries)
     {
-        if(i > 0)
-            sstream << "; ";
+        if (query.empty())
+            continue;
 
-        sstream << queries[i];
+        sstream << query << ";";
     }
 
     ist._exec(name, sstream.str());

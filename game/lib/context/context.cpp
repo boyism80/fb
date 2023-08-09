@@ -728,7 +728,9 @@ void fb::game::context::save(fb::game::session& session, const std::function<voi
         {
             query::make_update_session(session),
             query::make_update_item(session),
+            query::make_delete_item(session),
             query::make_update_spell(session),
+            query::make_delete_spell(session),
         }
     );
 }
