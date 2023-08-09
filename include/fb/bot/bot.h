@@ -3,6 +3,9 @@
 
 #include <map>
 #include <boost/asio.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <random>
 #include <sstream>
 #include <fb/core/stream.h>
@@ -100,7 +103,6 @@ public:
     ~login_bot();
 
 private:
-    static std::string                          new_name();
     task                                        co_login(std::string id, std::string pw);
 
 protected:

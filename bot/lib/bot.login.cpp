@@ -23,39 +23,6 @@ login_bot::login_bot(bot_container& owner, uint32_t id, const fb::buffer& params
 login_bot::~login_bot()
 {}
 
-std::string login_bot::new_name()
-{
-    std::random_device              rd;
-    std::mt19937                    gen(rd());
-    std::uniform_int_distribution<> dis(0, 15);
-    std::uniform_int_distribution<> dis2(8, 11);
-
-    std::stringstream ss;
-    int i;
-    ss << std::hex;
-    for (i = 0; i < 8; i++) {
-        ss << dis(gen);
-    }
-    ss << "-";
-    for (i = 0; i < 4; i++) {
-        ss << dis(gen);
-    }
-    ss << "-4";
-    for (i = 0; i < 3; i++) {
-        ss << dis(gen);
-    }
-    ss << "-";
-    ss << dis2(gen);
-    for (i = 0; i < 3; i++) {
-        ss << dis(gen);
-    }
-    ss << "-";
-    for (i = 0; i < 12; i++) {
-        ss << dis(gen);
-    };
-    return ss.str();
-}
-
 void login_bot::on_connected()
 {
     this->send(fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()), false, true);
@@ -100,7 +67,7 @@ fb::task login_bot::co_login(std::string id, std::string pw)
 
 void login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
-    auto id = login_bot::new_name();
+    auto id = boost::uuids::to_string(boost::uuids::random_generator()());
     auto pw = "admin123";
     this->co_login(id, pw);
 }

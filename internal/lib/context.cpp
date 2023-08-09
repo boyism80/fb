@@ -3,12 +3,12 @@
 fb::internal::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
     fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
 {
-    this->bind<fb::protocol::internal::request::subscribe>(std::bind(&context::handle_subscribe, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::transfer>(std::bind(&context::handle_transfer, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::login>(std::bind(&context::handle_login, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::logout>(std::bind(&context::handle_logout, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::whisper>(std::bind(&context::handle_whisper, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::internal::request::shutdown>(std::bind(&context::handle_shutdown, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::subscribe>  (std::bind(&context::handle_subscribe,  this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::transfer>   (std::bind(&context::handle_transfer,   this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::login>      (std::bind(&context::handle_login,      this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::logout>     (std::bind(&context::handle_logout,     this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::whisper>    (std::bind(&context::handle_whisper,    this, std::placeholders::_1, std::placeholders::_2));
+    this->bind<fb::protocol::internal::request::shutdown>   (std::bind(&context::handle_shutdown,   this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::internal::context::~context()
@@ -189,7 +189,7 @@ bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::s
 
         auto& config = fb::config::get();
         auto session = this->get(request.to, group.value())->data();
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd, request.from));
+        this->send(socket, fb::protocol::internal::response::transfer(request.trans, request.name, fb::protocol::internal::response::transfer_code::SUCCESS, request.map, request.x, request.y, config["hosts"][session->name]["ip"].asString(), config["hosts"][session->name]["port"].asInt(), request.fd, request.from));
     }
     catch(fb::internal::transfer_error& e)
     {
@@ -200,14 +200,14 @@ bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::s
             // send disconnection message
             auto game_id = fb::internal::table::hosts[request.map];
             auto subscriber = this->get(request.to, group.value());
-            subscriber->send(fb::protocol::internal::response::logout(request.name));
+            subscriber->send(fb::protocol::internal::response::logout(request.trans, request.name));
         }
 
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd, request.from));
+        this->send(socket, fb::protocol::internal::response::transfer(request.trans, request.name, e.code,  request.map, request.x, request.y, "", 0, request.fd, request.from));
     }
     catch(std::exception& e)
     {
-        this->send(socket, fb::protocol::internal::response::transfer(request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd, request.from));
+        this->send(socket, fb::protocol::internal::response::transfer(request.trans, request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd, request.from));
     }
     
     return true;
@@ -263,15 +263,15 @@ bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::se
         if(subscriber == nullptr)
             throw std::exception();
 
-        this->send(socket, fb::protocol::internal::response::whisper(true, request.from, request.to, request.message));
+        this->send(socket, fb::protocol::internal::response::whisper(request.trans, true, request.from, request.to, request.message));
 
         std::stringstream sstream;
         sstream << request.from << "\" " << request.message;
-        subscriber->send(fb::protocol::internal::response::message(request.to, sstream.str(), 0x00));
+        subscriber->send(fb::protocol::internal::response::message(request.trans, request.to, sstream.str(), 0x00));
     }
     catch(std::exception& e)
     {
-        this->send(socket, fb::protocol::internal::response::whisper(false, request.from, request.to, request.message));
+        this->send(socket, fb::protocol::internal::response::whisper(request.trans, false, request.from, request.to, request.message));
     }
     return true;
 }
@@ -279,13 +279,13 @@ bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::se
 bool fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
 {
     if(this->_gateway != nullptr)
-        this->send(*this->_gateway, fb::protocol::internal::response::shutdown());
+        this->send(*this->_gateway, fb::protocol::internal::response::shutdown(request.trans));
 
     if(this->_login != nullptr)
-        this->send(*this->_login, fb::protocol::internal::response::shutdown());
+        this->send(*this->_login, fb::protocol::internal::response::shutdown(request.trans));
 
     for(auto& x : this->_games)
-        this->send(*x.second, fb::protocol::internal::response::shutdown());
+        this->send(*x.second, fb::protocol::internal::response::shutdown(request.trans));
 
     this->exit();
     return true;
