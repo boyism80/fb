@@ -86,6 +86,8 @@ public:
     static void                         bind(boost::asio::io_context& context);
 
 public:
+    static void                         exec(const std::string& name, const std::string& sql);
+    static void                         async_exec(const std::string& name, const std::string& sql);
     template <typename... Values>
     static void                         query(const std::string& name, const std::string& format, Values... values);
     template <typename... Values>

@@ -14,9 +14,9 @@ void fb::db::query(const std::string& name, const std::string& format, Values...
 template <typename... Values>
 void fb::db::async_query(const std::string& name, const std::string& format, Values... values)
 {
-    fb::async::launch([name, format, &values...] 
+    fb::async::launch([name, sql = fstring(format.c_str(), std::forward<Values>(values)...)] 
     {
-        query(name, format, std::forward<Values>(values)...);
+        exec(name, sql);
     });
 }
 
@@ -34,16 +34,16 @@ void fb::db::query(const std::string& name, const std::function<void(daotk::mysq
 template <typename... Values>
 void fb::db::async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
 {
-    fb::async::launch([name, callback, format, &values...] 
+    fb::async::launch([name, callback, sql = fstring(format.c_str(), std::forward<Values>(values)...)] 
     {
-        query(name, callback, format, std::forward<Values>(values)...);
+        query(name, callback, sql);
     });
 }
 
 template <typename... Values>
 auto fb::db::co_query_once(const std::string& name, const std::string& format, Values... values)
 {
-    auto await_callback = [name, format, &values...](fb::awaitable<daotk::mysql::result>& awaitable)
+    auto await_callback = [name, sql = fstring(format.c_str(), std::forward<Values>(values)...)](fb::awaitable<daotk::mysql::result>& awaitable)
     {
         auto db_callback = [&awaitable](daotk::mysql::connection& connection, daotk::mysql::result& result)
         {
@@ -51,7 +51,7 @@ auto fb::db::co_query_once(const std::string& name, const std::string& format, V
             awaitable.handler.resume();
         };
 
-        async_query(name, db_callback, format, std::forward<Values>(values)...);
+        async_query(name, db_callback, sql);
     };
 
     return fb::awaitable<daotk::mysql::result>(await_callback);
@@ -71,16 +71,16 @@ void fb::db::query(const std::string& name, const std::function<void(daotk::mysq
 template <typename... Values>
 void fb::db::async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
 {
-    fb::async::launch([name, callback, format, &values...]
+    fb::async::launch([name, callback, sql = fstring(format.c_str(), std::forward<Values>(values)...)]
     {
-        query(name, callback, format, std::forward<Values>(values)...);
+        query(name, callback, sql);
     });
 }
 
 template <typename... Values>
 auto fb::db::co_query(const std::string& name, const std::string& format, Values... values)
 {
-    auto await_callback = [name, format, &values...](fb::awaitable<std::vector<daotk::mysql::result>>& awaitable)
+    auto await_callback = [name, sql = fstring(format.c_str(), std::forward<Values>(values)...)](fb::awaitable<std::vector<daotk::mysql::result>>& awaitable)
     {
         auto db_callback = [&awaitable](daotk::mysql::connection& connection, std::vector<daotk::mysql::result>& results)
         {
@@ -88,7 +88,7 @@ auto fb::db::co_query(const std::string& name, const std::string& format, Values
             awaitable.handler.resume();
         };
 
-        return async_query(name, db_callback, format, std::forward<Values>(values)...);
+        return async_query(name, db_callback, sql);
     };
 
     return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
