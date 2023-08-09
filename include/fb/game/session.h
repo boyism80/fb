@@ -115,6 +115,7 @@ public:
     interface                   listener;
 
 private:
+    bool                        _init            = false;
     uint32_t                    _id              = 0xFFFFFFFF;
     fb::socket<session>&        _socket;
     bool                        _admin           = false;
@@ -185,6 +186,8 @@ public:
     operator                    fb::socket<fb::game::session>& ();
 
 public:
+    bool                        inited() const;
+    void                        init(bool value);
     uint32_t                    id() const;
     void                        id(uint32_t id);
 

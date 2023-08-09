@@ -55,6 +55,9 @@ void game_bot::on_connected()
 
 void game_bot::on_timer(std::chrono::steady_clock::duration now)
 {
+    if (this->_inited == false)
+        return;
+
     if (now < this->_next_action_time)
         return;
 
@@ -79,7 +82,9 @@ void game_bot::handle_spell_update(const fb::protocol::game::response::spell::up
 { }
 
 void game_bot::handle_init(const fb::protocol::game::response::init& response)
-{ }
+{
+    this->_inited = true;
+}
 
 void game_bot::handle_time(const fb::protocol::game::response::time& response)
 { }

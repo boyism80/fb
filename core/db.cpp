@@ -241,3 +241,20 @@ auto fb::db::co_query(const std::string& name, const std::vector<std::string>& q
 
     return fb::awaitable<void>(await_callback);
 }
+
+void fb::db::exec(const std::string& name, const std::string& sql)
+{
+    auto& ist = get();
+    if (ist._context == nullptr)
+        return;
+
+    ist._exec(name, sql);
+}
+
+void fb::db::async_exec(const std::string& name, const std::string& sql)
+{
+    fb::async::launch([name, sql]
+        {
+            exec(name, sql);
+        });
+}

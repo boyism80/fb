@@ -14,11 +14,17 @@ session::~session()
 
 void fb::game::session::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
+    if (this->inited() == false)
+        return;
+
     this->_socket.send(stream, encrypt, wrap);
 }
 
 void fb::game::session::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
+    if (this->inited() == false)
+        return;
+    
     this->_socket.send(response, encrypt, wrap);
 }
 
@@ -147,6 +153,17 @@ fb::game::session::operator fb::socket<fb::game::session>& ()
 {
     return this->_socket;
 }
+
+bool fb::game::session::inited() const
+{
+    return this->_init;
+}
+
+void fb::game::session::init(bool value)
+{
+    this->_init = value;
+}
+
 uint32_t fb::game::session::id() const
 {
     return this->_id;

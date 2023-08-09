@@ -132,6 +132,7 @@ private:
     fb::buffer                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
     std::chrono::steady_clock::duration         _next_action_time;
+    bool                                        _inited = false;
 
 public:
     game_bot(bot_container& owner, uint32_t id);
