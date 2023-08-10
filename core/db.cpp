@@ -70,14 +70,17 @@ this->_mutex.lock();
         
 this->_mutex.unlock();
         busy = true;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(100ms);
 this->_mutex.lock();
     }
 
     auto index             = fb::db::index(name);
     connection             = std::move(connections->front());
-    if(busy)
+    if (busy)
+    {
         c.puts("db reconnect success");
+        busy = false;
+    }
 
     connections->pop_front();
     this->_mutex.unlock();
@@ -94,11 +97,21 @@ this->_mutex.lock();
         option.autoreconnect = true;
 
         connection.reset(new daotk::mysql::connection(option));
+        while (connection->is_open() == false)
+        {
+            busy = true;
+            std::this_thread::sleep_for(100ms);
+            connection->open(option);
+        }
+
+        if (busy)
+        {
+            c.puts("db re-open success");
+            busy = false;
+        }
     }
 
-    if(connection->is_open())
-        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
-
+    connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
     return connection;
 }
 
