@@ -58,7 +58,7 @@ void fb::base::socket<T>::recv()
                 if(error)
                     throw std::exception();
                 
-                auto gd = std::lock_guard<std::mutex>(mutex);
+                auto gd = std::lock_guard<std::mutex>(this->mutex);
 
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->_handle_received(*this);

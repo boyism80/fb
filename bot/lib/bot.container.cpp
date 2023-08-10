@@ -51,3 +51,10 @@ void bot_container::handle_timer(std::chrono::steady_clock::duration now, std::t
         v->on_timer(now);
     }
 }
+
+void bot_container::dispatch(uint32_t id, std::function<void(uint32_t)>&& fn)
+{
+    auto index = id % this->_threads.size();
+    auto thread = this->_threads[index];
+    thread->dispatch(fn);
+}

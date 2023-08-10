@@ -12,55 +12,60 @@ base_bot::~base_bot()
 
 void base_bot::on_receive(fb::base::socket<>& socket)
 {
-    static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
-    auto&                       in_stream     = socket.in_stream();
-    
-    while (true)
-    {
-        try
+    this->_owner.dispatch(this->id, [this, &socket](uint32_t)
         {
-            if (in_stream.readable_size() < base_size)
-                break;
+            auto gd = std::lock_guard<std::mutex>(socket.mutex);
 
-            auto                head = in_stream.read_u8();
-            if (head != 0xAA)
-                throw std::exception();
+            static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
+            auto& in_stream = socket.in_stream();
 
-            auto                size = in_stream.read_u16(buffer::endian::BIG);
-            if (size > in_stream.capacity())
-                throw std::exception();
-
-            if (in_stream.readable_size() < size)
-                break;
-
-            auto cmd = in_stream.read_8();
-            if (this->is_decrypt(cmd))
+            while (true)
             {
-                size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
-            }
+                try
+                {
+                    if (in_stream.readable_size() < base_size)
+                        break;
 
-            if (this->_handler_dict.contains(cmd))
-            {
-                this->_handler_dict[cmd]();
+                    auto                head = in_stream.read_u8();
+                    if (head != 0xAA)
+                        throw std::exception();
+
+                    auto                size = in_stream.read_u16(buffer::endian::BIG);
+                    if (size > in_stream.capacity())
+                        throw std::exception();
+
+                    if (in_stream.readable_size() < size)
+                        break;
+
+                    auto cmd = in_stream.read_8();
+                    if (this->is_decrypt(cmd))
+                    {
+                        size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
+                    }
+
+                    if (this->_handler_dict.contains(cmd))
+                    {
+                        this->_handler_dict[cmd]();
+                    }
+
+                    in_stream.reset();
+                    in_stream.shift(base_size + size);
+                    in_stream.flush();
+                }
+                catch (std::exception&)
+                {
+                    in_stream.clear();
+                    break;
+                }
+                catch (...)
+                {
+                    in_stream.clear();
+                    break;
+                }
             }
 
             in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
-        }
-        catch (std::exception&)
-        {
-            in_stream.clear();
-            break;
-        }
-        catch (...)
-        {
-            in_stream.clear();
-            break;
-        }
-    }
-
-    in_stream.reset();
+        });
 }
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
