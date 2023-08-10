@@ -137,7 +137,6 @@ public:
     void                        release();
     bool                        pending() const;
     void                        pending(bool value);
-    virtual std::mutex&         mutex() = 0;
 
 public:
     operator                    lua_State* () const;
@@ -168,7 +167,6 @@ public:
     using bytecode_set          = std::map<std::string, std::vector<char>>;
 
 private:
-    std::mutex                  _mutex, _busy_mutex;
     bytecode_set                _bytecodes;
 
 public:
@@ -198,7 +196,6 @@ public:
     context*                    get(lua_State& ctx);
     context&                    release(context& ctx);
     void                        revoke(context& ctx);
-    std::mutex&                 mutex();
 
 public:
     template <typename T>
@@ -243,9 +240,6 @@ public:
     thread(const thread&) = delete;
     thread(thread&& ctx);
     ~thread();
-
-public:
-    std::mutex&                 mutex();
 };
 
 

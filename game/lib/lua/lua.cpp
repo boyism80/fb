@@ -42,8 +42,6 @@ void luable::to_lua(lua_State* ctx) const
     *allocated = (void*)this;
 
     {
-        std::lock_guard gd(context->mutex());
-
         auto& metaname = this->metaname();
         luaL_getmetatable(ctx, metaname.c_str());                                   // [val, mt]
         lua_pushcfunction(ctx, luable::builtin_gc);                                 // [val, mt, gc]
@@ -80,8 +78,6 @@ context::~context()
 
 context& context::from(const char* format, ...)
 {
-    std::lock_guard gd(this->mutex());
-
     va_list args;
     va_start(args, format);
     char buffer[256];
@@ -104,8 +100,6 @@ context& context::from(const char* format, ...)
 
 context& context::func(const char* format, ...)
 {
-    std::lock_guard gd(this->mutex());
-
     va_list args;
     va_start(args, format);
     char buffer[256];
@@ -118,32 +112,24 @@ context& context::func(const char* format, ...)
 
 context& context::pushstring(const std::string& value)
 {
-    std::lock_guard gd(this->mutex());
-
     lua_pushstring(*this, UTF8(value, PLATFORM::Windows).c_str());
     return *this;
 }
 
 context& context::pushinteger(lua_Integer value)
 {
-    std::lock_guard gd(this->mutex());
-
     lua_pushinteger(this->_ctx, value);
     return *this;
 }
 
 context& context::pushnil()
 {
-    std::lock_guard gd(this->mutex());
-
     lua_pushnil(this->_ctx);
     return *this;
 }
 
 context& context::pushboolean(bool value)
 {
-    std::lock_guard gd(this->mutex());
-
     lua_pushboolean(this->_ctx, value);
     return *this;
 }
@@ -162,16 +148,12 @@ context& context::pushobject(const luable& object)
 
 context& context::push(const void* value)
 {
-    std::lock_guard gd(this->mutex());
-
     lua_pushlightuserdata(this->_ctx, const_cast<void*>(value));
     return *this;
 }
 
 const std::string context::tostring(int offset)
 {
-    std::lock_guard gd(this->mutex());
-
     auto x = lua_tostring(*this, offset);
     if(x == nullptr)
         return std::string();
@@ -186,14 +168,21 @@ context::operator lua_State* () const
 
 int context::argc()
 {
-    std::lock_guard gd(this->mutex());
-
     return lua_gettop(this->_ctx);
 }
 
 bool context::resume(int argc)
 {
-    std::lock_guard gd(this->mutex());
+    if (this->owner == nullptr)
+        throw std::runtime_error("this context is not lua thread");
+
+    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    if (*main != lua::container::ist().get())
+    {
+        // thread mismatch
+        main->revoke(*this);
+        return false;
+    }
 
     if(this->_state == LUA_PENDING)
         return *this;
@@ -203,7 +192,7 @@ bool context::resume(int argc)
     if(this->_state != LUA_PENDING)
         this->_state = state;
 
-    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    
     switch(this->_state)
     {
     case LUA_PENDING:
@@ -486,8 +475,6 @@ main::main() : context(::luaL_newstate())
 
 main::~main()
 {
-    std::lock_guard gd(this->_busy_mutex);
-
     this->idle.clear();
     this->busy.clear();
     lua_close(*this);
@@ -495,8 +482,6 @@ main::~main()
 
 context* main::get(lua_State& ctx)
 {
-    std::lock_guard gd(this->_busy_mutex);
-
     auto found = this->busy.find(&ctx);
     if(found == this->busy.end())
         return nullptr;
@@ -508,8 +493,6 @@ bool main::load_file(const std::string& path)
 {
     if(path.empty())
         return true;
-
-    std::lock_guard gd(this->mutex());
 
     if(_bytecodes.contains(path))
         return true;
@@ -536,8 +519,6 @@ bool main::load_file(const std::string& path)
 
 context* main::pop()
 {
-    std::lock_guard gd(this->_busy_mutex);
-
     if(this->idle.empty() == false)
     {
         auto& ctx = this->idle.begin()->second;
@@ -567,8 +548,6 @@ context* main::pop()
 
 context& main::release(context& ctx)
 {
-    std::lock_guard gd(this->_busy_mutex);
-
     if (this->busy.contains(ctx) == false)
         return ctx;
 
@@ -584,18 +563,11 @@ context& main::release(context& ctx)
 
 void main::revoke(context& ctx)
 {
-    std::lock_guard gd(this->_busy_mutex);
-
     auto i = this->busy.find(ctx);
     if(i == this->busy.end())
         return;
     
     this->busy.erase(i);
-}
-
-std::mutex& main::mutex()
-{
-    return this->_mutex;
 }
 
 thread::thread(context& owner) : 
@@ -613,12 +585,6 @@ thread::~thread()
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
 }
 
-std::mutex& thread::mutex()
-{
-    return this->owner->mutex();
-}
-
-
 container::container()
 {
     this->init_fn([this] (main& m)
@@ -632,7 +598,8 @@ container::~container()
 { }
 
 main& container::get()
-{   std::lock_guard gd(this->_mutex);
+{
+    std::lock_guard gd(this->_mutex);
 
     auto id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
     if(this->_mains.contains(id) == false)
@@ -654,7 +621,8 @@ void container::init_fn(init_func&& fn)
 }
 
 void container::load(const std::string& path)
-{   std::lock_guard gd(this->_mutex);
+{
+    std::lock_guard gd(this->_mutex);
     
     if(path.empty())
         return;
