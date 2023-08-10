@@ -18,12 +18,12 @@ boost::asio::io_context& bot_container::context() const
 }
 
 void bot_container::remove(base_bot& bot)
-{   MUTEX_GUARD(this->_bots_lock)
-
+{
     auto id = bot.id % this->_threads.size();
     auto thread = this->_threads[id];
     auto fn = [this, &bot] (auto _)
-    {
+    {   MUTEX_GUARD(this->_bots_lock)
+
         auto i = this->_bots.find(bot.id);
         if (i == this->_bots.end())
             return;
