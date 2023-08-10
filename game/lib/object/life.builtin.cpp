@@ -276,7 +276,7 @@ int fb::game::life::builtin_cast(lua_State* lua)
     if(x == nullptr)
         return 0;
 
-    x->from(spell->cast().c_str())
+    x->from(spell->cast.c_str())
      .func("on_cast")
      .pushobject(me);
 

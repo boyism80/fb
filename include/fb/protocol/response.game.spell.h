@@ -18,7 +18,7 @@ public:
         name(name), time(time)
     { }
     buff(const fb::game::buff& buff) : fb::protocol::base::header(0x3A),
-        name(buff.spell().name()), time(buff.time())
+        name(buff.spell.name), time(buff.time())
     { }
 
 public:
@@ -44,7 +44,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write(this->buff.spell().name())
+        out_stream.write(this->buff.spell.name)
                   .write_u32(0x00);
     }
 };
@@ -82,11 +82,11 @@ public:
 
         base::header::serialize(out_stream);
         out_stream.write_u8(this->index + 1)
-                  .write_u8(spell->type())
-                  .write(spell->name());
+                  .write_u8(spell->type)
+                  .write(spell->name);
 
-        if(static_cast<int>(spell->type()) < 3)
-            out_stream.write(spell->message());
+        if(static_cast<int>(spell->type) < 3)
+            out_stream.write(spell->message);
     }
 #else
     void deserialize(fb::istream& in_stream)

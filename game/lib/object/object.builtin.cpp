@@ -372,7 +372,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
         if(buff == nullptr)
             return 0;
         
-        thread->pushboolean(object->buffs.remove(buff->name()));
+        thread->pushboolean(object->buffs.remove(buff->name));
     }
     else
     {

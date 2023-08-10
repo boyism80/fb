@@ -28,25 +28,16 @@ public:
         NORMAL  = 0x05, 
     };
 
-private:
-    uint16_t                    _id     = 0;
-    fb::game::spell::types      _type   = fb::game::spell::types::NORMAL;
-    std::string                 _name;
-    std::string                 _cast, _uncast, _concast;
-    std::string                 _message;
+public:
+    const uint16_t               id     = 0;
+    const fb::game::spell::types type   = fb::game::spell::types::NORMAL;
+    const std::string            name;
+    const std::string            cast, uncast, concast;
+    const std::string            message;
 
 public:
     spell(uint16_t id, fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
     ~spell();
-
-public:
-    uint16_t                    id() const;
-    fb::game::spell::types      type() const;
-    const std::string&          name() const;
-    const std::string&          cast() const;
-    const std::string&          uncast() const;
-    const std::string&          concast() const;
-    const std::string&          message() const;
 
 public:
     static int                  builtin_type(lua_State* lua);
@@ -75,15 +66,16 @@ public:
 class buff
 {
 private:
-    const fb::game::spell*      _spell  = nullptr;
     std::chrono::milliseconds   _time;
 
 public:
-    buff(const spell* spell, uint32_t seconds);
+    const fb::game::spell&      spell;
+
+public:
+    buff(const fb::game::spell& spell, uint32_t seconds);
     ~buff();
 
 public:
-    const fb::game::spell&      spell() const;
     std::chrono::milliseconds   time() const;
     template <class _Rep, class _Period>
     void                        time(const std::chrono::duration<_Rep, _Period>& value) { this->_time = std::chrono::duration_cast<std::chrono::milliseconds>(value); }

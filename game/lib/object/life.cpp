@@ -207,10 +207,10 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
     if(thread == nullptr)
         return false;
 
-    thread->from(spell.cast().c_str())
+    thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type() != fb::game::spell::types::INPUT)
+    if(spell.type != fb::game::spell::types::INPUT)
         return false;
 
     thread->pushobject(this)
@@ -238,10 +238,10 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     if(thread == nullptr)
         return false;
 
-    thread->from(spell.cast().c_str())
+    thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type() != fb::game::spell::types::TARGET)
+    if(spell.type != fb::game::spell::types::TARGET)
         return false;
 
     auto                map = this->map();
@@ -267,10 +267,10 @@ bool fb::game::life::active(fb::game::spell& spell)
     if(thread == nullptr)
         return false;
 
-    thread->from(spell.cast().c_str())
+    thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type() != fb::game::spell::types::NORMAL)
+    if(spell.type != fb::game::spell::types::NORMAL)
         return false;
 
     thread->pushobject(this)

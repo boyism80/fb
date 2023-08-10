@@ -2,7 +2,7 @@
 #include <fb/game/data_set.h>
 #include <regex>
 
-void assert_script(const std::string& script, const std::string& regex, const std::string& fnName, const std::function<void(const std::string&)>& callback)
+void assert_script(const std::string& script, const std::string& regex, const std::string& func_name, const std::function<void(const std::string&)>& callback)
 {
     if(script.empty())
         return;
@@ -29,7 +29,7 @@ void assert_script(const std::string& script, const std::string& regex, const st
         std::stringstream sstream;
         sstream << script
                 << " 파일에 "
-                << fnName
+                << func_name
                 << " 함수가 존재하지 않습니다.";
 
         callback(script);
@@ -129,7 +129,7 @@ fb::game::spell* fb::game::container::spell::name2spell(const std::string& name)
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::spell>>& pair)
         {
-            return pair.second->name() == name;
+            return pair.second->name == name;
         });
 
     return i != this->end() ? i->second.get() : nullptr;
@@ -491,7 +491,7 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
 
             {   auto _ = std::lock_guard<std::mutex>(*mutex);
 
-                std::map<uint16_t, std::unique_ptr<fb::game::map>>::insert(std::make_pair(id, std::unique_ptr<fb::game::map>(map)));
+                std::map<uint16_t, std::unique_ptr<fb::game::map>>::insert({id, std::unique_ptr<fb::game::map>(map)});
                 callback((map->name()), percentage);
             }
         },
@@ -580,7 +580,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             uint16_t            id = std::stoi(key.asString());
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::item::master>(item)));
+                std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::insert({id, std::unique_ptr<fb::game::item::master>(item)});
                 callback(name, percentage);
             }
         },
@@ -639,7 +639,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                         },
                         script
                     });
-                std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::npc::master>(npc)));
+                std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::insert({id, std::unique_ptr<fb::game::npc::master>(npc)});
                 callback(name, percentage);
             }
         },
@@ -812,7 +812,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
             auto                mob = std::make_unique<fb::game::mob::master>(config);
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert(std::make_pair(id, std::move(mob)));
+                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert({id, std::move(mob)});
                 callback(config.name, percentage);
             }
         },
@@ -1020,7 +1020,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             {
                 auto _ = std::lock_guard(*mutex);
                 auto spell = new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message);
-                std::map<uint16_t, std::unique_ptr<fb::game::spell>>::insert(std::make_pair(id, std::unique_ptr<fb::game::spell>(spell)));
+                std::map<uint16_t, std::unique_ptr<fb::game::spell>>::insert({id, std::unique_ptr<fb::game::spell>(spell)});
                 callback(name, percentage);
             }
         },

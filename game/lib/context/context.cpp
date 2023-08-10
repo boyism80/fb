@@ -1568,8 +1568,8 @@ bool fb::game::context::handle_spell(fb::socket<fb::game::session>& socket, cons
     if(spell == nullptr)
         return false;
 
-    request.parse(spell->type());
-    switch(spell->type())
+    request.parse(spell->type);
+    switch(spell->type)
     {
     case spell::types::INPUT:
         session->active(*spell, request.message);
@@ -1792,7 +1792,7 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             }
 
             for(auto finish : finishes)
-                value->buffs.remove((*finish)->spell().name());
+                value->buffs.remove((*finish)->spell.name);
         }
     }
 }
