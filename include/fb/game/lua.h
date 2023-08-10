@@ -42,6 +42,7 @@ class thread;
 context*                        get();
 context*                        get(lua_State* ctx);
 void                            bind_function(const std::string& name, lua_CFunction fn);
+void                            load(const std::string& path);
 
 class luable
 {
@@ -69,7 +70,11 @@ protected:
     lua_State*                  _ctx    = nullptr;
 
 protected:
+    context*                    owner   = nullptr;
+
+protected:
     context(lua_State* ctx);
+    context(lua_State* ctx, context& owner);
     context(const context&)            = delete;
     context(context&&)                 = delete;
 
@@ -125,17 +130,14 @@ public:
     void                        new_table() { lua_newtable(*this); }
 
 public:
-    int                         argc() const;
-
-public:
+    int                         argc();
     bool                        resume(int argc);
     int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();
-
-public:
     bool                        pending() const;
     void                        pending(bool value);
+    virtual std::mutex&         mutex() = 0;
 
 public:
     operator                    lua_State* () const;
@@ -166,8 +168,8 @@ public:
     using bytecode_set          = std::map<std::string, std::vector<char>>;
 
 private:
-    static std::mutex           mutex;
-    bytecode_set                bytecodes;
+    std::mutex                  _mutex, _busy_mutex;
+    bytecode_set                _bytecodes;
 
 public:
     friend class context;
@@ -196,9 +198,7 @@ public:
     context*                    get(lua_State& ctx);
     context&                    release(context& ctx);
     void                        revoke(context& ctx);
-
-public:
-    static main&                get();
+    std::mutex&                 mutex();
 
 public:
     template <typename T>
@@ -239,34 +239,71 @@ public:
     const int               ref;
 
 public:
-    thread(lua_State* ctx);
+    thread(context& owner);
     thread(const thread&) = delete;
     thread(thread&& ctx);
     ~thread();
 
 public:
-    //static int                  builtin_gc(lua_State* ctx);
+    std::mutex&                 mutex();
+};
+
+
+class container
+{
+    using main_set = std::map<uint32_t, std::unique_ptr<main>>;
+    using init_func = std::function<void(main&)>;
+    using init_funcs = std::vector<init_func>;
+
+private:
+    std::mutex                  _mutex;
+    main_set                    _mains;
+    std::vector<std::string>    _scripts;
+    init_funcs                  _init_funcs;
+
+private:
+    container();
+
+public:
+    ~container();
+
+public:
+    main&                       get();
+    void                        init_fn(init_func&& fn);
+    void                        load(const std::string& path);
+
+public:
+    static container&           ist();
 };
 
 template <typename T>
 void bind_class()
 {
-    auto& main = fb::game::lua::main::get();
-    main.bind_class<T>();
+    auto& ist = container::ist();
+    ist.init_fn([] (main& m)
+    {
+        m.bind_class<T>();
+    });
 }
 
 template <typename T, typename B>
 void bind_class()
 {
-    auto& main = fb::game::lua::main::get();
-    main.bind_class<T, B>();
+    auto& ist = container::ist();
+    ist.init_fn([] (main& m)
+    {
+        m.bind_class<T, B>();
+    });
 }
 
 template <typename T>
 void env(const char* key, T* data)
 {
-    auto& main = fb::game::lua::main::get();
-    main.env(key, data);
+    auto& ist = container::ist();
+    ist.init_fn([key, data] (main& m)
+    {
+        m.env(key, data);
+    });
 }
 
 } } }
