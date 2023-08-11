@@ -50,13 +50,14 @@ public:
 #endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(this->type)
                   .write(this->text, true);
     }
-#ifdef BOT
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->type = (fb::game::message::type)in_stream.read_u8();
@@ -163,6 +164,7 @@ public:
 #endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -170,7 +172,7 @@ public:
                   .write_u8(0x00)      // Unknown
                   .write_u8(0x00);     // Unknown
     }
-#ifdef BOT
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->hours = in_stream.read_u8();

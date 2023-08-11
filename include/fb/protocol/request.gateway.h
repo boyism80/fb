@@ -28,13 +28,13 @@ public:
         out_stream.write_u16(this->version)
                   .write_u8(this->national_key);
     }
-#endif
-
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->version = in_stream.read_u16();
         this->national_key = in_stream.read_u8();
     }
+#endif
 };
 
 
@@ -45,9 +45,10 @@ public:
     uint8_t                 index;
 
 public:
+#ifndef BOT
     entry_list() : fb::protocol::base::header(0x57)
     { }
-#ifdef BOT
+#else
     entry_list(uint8_t action, uint8_t index) : fb::protocol::base::header(0x57),
         action(action), index(index)
     { }
@@ -63,14 +64,14 @@ public:
         if(this->action == 0x00)
             out_stream.write_u8(this->index);
     }
-#endif
-
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->action = in_stream.read_u8();
         if(action == 0x00)
             this->index = in_stream.read_u8();
     }
+#endif
 };
 
 } } } }

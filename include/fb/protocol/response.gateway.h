@@ -63,13 +63,14 @@ public:
 #ifdef BOT
     crt() : fb::protocol::base::header(0x00)
     { }
-#endif
-
+#else
     crt(const fb::cryptor& cryptor, uint32_t entry_crc) : fb::protocol::base::header(0x00),
         cryptor(cryptor), entry_crc(entry_crc)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -80,8 +81,7 @@ public:
                   .write(this->cryptor.key(), 0x09)
                   .write_u8(0x00);
     }
-
-#ifdef BOT
+#else
     void deserialize(fb::istream& in_stream)
     {
         in_stream.read_u8();
@@ -110,11 +110,14 @@ public:
 #ifdef BOT
     hosts() : fb::protocol::base::header(0x56)
     { }
-#endif
+#else
     hosts(const std::vector<entry>& entries) : fb::protocol::base::header(0x56),
         entries(entries)
     { }
+#endif
 
+public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         // 서버정보를 바이너리 형식으로 변환
@@ -140,8 +143,7 @@ public:
         out_stream.write_u16(compressed.size())
                   .write(compressed.data(), compressed.size() + 1);
     }
-
-#ifdef BOT
+#else
     void deserialize(fb::istream& in_stream)
     {
         // TODO: 파싱해서 데이터 적재

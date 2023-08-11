@@ -22,12 +22,14 @@ public:
 #ifdef BOT
     transfer() : fb::protocol::base::header(0x03)
     { }
-#endif
+#else
     transfer(uint32_t ip, uint16_t port, const fb::buffer& parameter) : fb::protocol::base::header(0x03),
         ip(ip), port(port), parameter(parameter)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -36,8 +38,7 @@ public:
                   .write_u8(this->parameter.size())
                   .write(this->parameter);
     }
-
-#ifdef BOT
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->ip = in_stream.read_u32();

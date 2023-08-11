@@ -29,9 +29,10 @@ public:
     std::optional<transfer_param>   transfer;
 
 public:
+#ifndef BOT
     login() : fb::protocol::base::header(0x10)
     { }
-#ifdef BOT
+#else
     login(const fb::buffer& params) : fb::protocol::base::header(0x10)
     {
         auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
@@ -58,7 +59,7 @@ public:
                       .write_u16(this->transfer.value().position.y);
         }
     }
-#endif
+#else
     void deserialize(fb::istream& in_stream)
     {
         // base
@@ -84,13 +85,18 @@ public:
             };
         }
     }
+#endif
 };
 
 
 class direction : public fb::protocol::base::header
 {
 public:
-    fb::game::direction     value;
+#ifndef BOT
+    fb::game::direction         value;
+#else
+    const fb::game::direction   value;
+#endif
 
 public:
 #ifndef BOT
@@ -215,34 +221,70 @@ public:
 class pick_up : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     bool                    boost;
+#else
+    const bool              boost;
+#endif
 
 public:
+#ifndef BOT
     pick_up() : fb::protocol::base::header(0x07)
     { }
+#else
+    pick_up(bool boost) : fb::protocol::base::header(0x07),
+        boost(boost)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->boost);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->boost = bool(in_stream.read_u8());
     }
+#endif
 };
 
 
 class emotion : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     uint8_t                 value;
+#else
+    const uint8_t           value;
+#endif
 
 public:
+#ifndef BOT
     emotion() : fb::protocol::base::header(0x1D)
     { }
+#else
+    emotion(uint8_t value) : fb::protocol::base::header(0x1D),
+        value(value)
+    { }
+#endif
 
 public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->value);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->value = in_stream.read_u8();
     }
+#endif
 };
 
 
@@ -389,8 +431,13 @@ public:
 class chat : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     bool                    shout;
     std::string             message;
+#else
+    const bool              shout;
+    const std::string       message;
+#endif
 
 public:
 #ifndef BOT
