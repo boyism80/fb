@@ -362,6 +362,7 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get(env);
 
         boost::asio::io_context io_context;
+        boost::asio::executor_work_guard<boost::asio::io_context::executor_type> guard(io_context.get_executor());
         fb::db::bind(io_context);
 
         const auto connection = INTERNAL_CONNECTION
@@ -416,7 +417,12 @@ int main(int argc, const char** argv)
             }
         );
 
-        io_context.run();
+        boost::asio::thread_pool boost_thread_pool(10);
+        for(int i = 0; i < 10; i++)
+        {
+            post(boost_thread_pool, [&io_context] { io_context.run(); });
+        }
+        boost_thread_pool.join();
     }
     catch(std::exception& e)
     {
