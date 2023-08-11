@@ -59,7 +59,7 @@ public:
                       .write_u16(this->transfer.value().position.y);
         }
     }
-#else
+#endif
     void deserialize(fb::istream& in_stream)
     {
         // base
@@ -85,7 +85,6 @@ public:
             };
         }
     }
-#endif
 };
 
 

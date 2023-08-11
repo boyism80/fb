@@ -62,8 +62,8 @@ public:
     { }
 #else
     agreement(uint8_t type, uint8_t ksize, const uint8_t* key) : fb::protocol::base::header(0x10),
-        enc_type(enc_type),
-        enc_key_size(enc_key_size)
+        enc_type(type),
+        enc_key_size(ksize)
     {
         memcpy(this->enc_key, key, ksize);
     }
