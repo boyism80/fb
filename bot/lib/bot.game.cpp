@@ -21,12 +21,12 @@ game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
     this->bind<fb::protocol::game::response::map::config>       (std::bind(&game_bot::handle_map,           this, std::placeholders::_1));
     this->bind<fb::protocol::response::transfer>                (std::bind(&game_bot::handle_transfer,      this, std::placeholders::_1));
 
-    this->pattern(std::bind(&game_bot::pattern_chat,        this), 500ms, 1000ms);
-    this->pattern(std::bind(&game_bot::pattern_attack,      this), 500ms, 1000ms);
-    this->pattern(std::bind(&game_bot::pattern_direction,   this), 500ms, 1000ms);
-    this->pattern(std::bind(&game_bot::pattern_move,        this), 200ms,  500ms);
-    this->pattern(std::bind(&game_bot::pattern_pickup,      this), 500ms, 1000ms);
-    this->pattern(std::bind(&game_bot::pattern_emotion,     this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_chat,        this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_attack,      this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_direction,   this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_move,        this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_pickup,      this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_emotion,     this), 1000ms, 2000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
