@@ -25,6 +25,8 @@ game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
     this->pattern(std::bind(&game_bot::pattern_attack,      this), 500ms, 1000ms);
     this->pattern(std::bind(&game_bot::pattern_direction,   this), 500ms, 1000ms);
     this->pattern(std::bind(&game_bot::pattern_move,        this), 200ms,  500ms);
+    this->pattern(std::bind(&game_bot::pattern_pickup,      this), 500ms, 1000ms);
+    this->pattern(std::bind(&game_bot::pattern_emotion,     this), 500ms, 1000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
@@ -188,4 +190,18 @@ void game_bot::pattern_move()
         this->_position.y++;
         break;
     }
+}
+
+void game_bot::pattern_pickup()
+{
+    this->send(fb::protocol::game::request::pick_up{ false });
+}
+
+void game_bot::pattern_emotion()
+{
+    static std::random_device device;
+    static std::mt19937 gen(device());
+    static std::uniform_int_distribution<> dist(0, 0xFF - 0x0B);
+
+    this->send(fb::protocol::game::request::emotion{ (uint8_t)dist(gen) });
 }

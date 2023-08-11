@@ -169,6 +169,8 @@ public:
     void                                        pattern_attack();
     void                                        pattern_direction();
     void                                        pattern_move();
+    void                                        pattern_pickup();
+    void                                        pattern_emotion();
 };
 
 class bot_container

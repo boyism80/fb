@@ -177,7 +177,7 @@ bool context::resume(int argc)
         throw std::runtime_error("this context is not lua thread");
 
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    if (*main != lua::container::ist().get())
+    if (main != &lua::container::ist().get())
     {
         // thread mismatch
         main->revoke(*this);
