@@ -186,7 +186,7 @@ void fb::db::_mquery(const std::string& name, const std::string& sql, const std:
 fb::db& fb::db::get()
 {
     static std::once_flag flag;
-    std::call_once(flag, [] () { _ist.reset(new fb::db()); });
+    std::call_once(flag, [] { _ist.reset(new fb::db()); });
 
     return *_ist;
 }

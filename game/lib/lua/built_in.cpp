@@ -30,7 +30,7 @@ int fb::game::context::builtin_sleep(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     context->threads().dispatch
     (
-        [lua] ()
+        [lua]
         {
             auto thread = fb::game::lua::get(lua);
             if(thread == nullptr)

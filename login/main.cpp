@@ -65,7 +65,7 @@ int main(int argc, const char** argv)
                     c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
                 }
             },
-            [&] ()
+            [&]
             {
                 // on disconnected
                 auto& c = fb::console::get();
@@ -94,7 +94,13 @@ int main(int argc, const char** argv)
             }
         );
 
-        io_context.run();
+        int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
+        boost::asio::thread_pool boost_thread_pool(count);
+        for(int i = 0; i < count; i++)
+        {
+            post(boost_thread_pool, [&io_context] { io_context.run(); });
+        }
+        boost_thread_pool.join();
     }
     catch(std::exception& e)
     {

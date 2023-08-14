@@ -1,7 +1,7 @@
 #include <fb/internal/context.h>
 
 fb::internal::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
-    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, delay, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+    fb::base::acceptor<fb::internal::socket, fb::internal::session>(context, port, delay)
 {
     this->bind<fb::protocol::internal::request::subscribe>  (std::bind(&context::handle_subscribe,  this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::internal::request::transfer>   (std::bind(&context::handle_transfer,   this, std::placeholders::_1, std::placeholders::_2));

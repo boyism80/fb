@@ -11,7 +11,7 @@ int main(int, char**)
 	using guard_type = executor_work_guard<io_context::executor_type>;
 
 	constexpr auto io_size = 10;
-	constexpr auto count = 200;
+	constexpr auto count = 10;
 
 	io_context ios[io_size];
 	auto guards = vector<unique_ptr<guard_type>>();

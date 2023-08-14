@@ -294,6 +294,8 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 {
+    auto __gd = std::lock_guard(this->_mutex);
+
     auto fd = session->fd();
     std::map<uint32_t, std::unique_ptr<S<T>>>::insert
     (
@@ -308,18 +310,24 @@ void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
+    auto __gd = std::lock_guard(this->_mutex);
+
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.fd());
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(uint32_t fd)
 {
+    auto __gd = std::lock_guard(this->_mutex);
+
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(fd);
 }
 
 template <template<class> class S, class T>
-inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd) const
+inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
 {
+    auto __gd = std::lock_guard(this->_mutex);
+
     const auto& found = std::map<uint32_t, std::unique_ptr<S<T>>>::find(fd);
     if(found == this->cend())
         return nullptr;

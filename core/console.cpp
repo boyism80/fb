@@ -245,6 +245,6 @@ void fb::console::cursor(uint16_t* x, uint16_t* y) const
 fb::console& fb::console::get()
 {
     static std::once_flag flag;
-    std::call_once(flag, [] () { _ist.reset(new console()); });
+    std::call_once(flag, [] { _ist.reset(new console()); });
     return *_ist;
 }

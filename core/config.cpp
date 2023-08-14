@@ -43,6 +43,6 @@ const Json::Value& fb::config::get(const char* env)
     static std::once_flag flag;
     static std::unique_ptr<fb::config> _ist;
 
-    std::call_once(flag, [env] () { _ist = std::unique_ptr<fb::config>(new fb::config(env)); });
+    std::call_once(flag, [env] { _ist = std::unique_ptr<fb::config>(new fb::config(env)); });
     return _ist->_json;
 }

@@ -1,7 +1,7 @@
 #include <fb/login/context.h>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::login::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+    fb::acceptor<fb::login::session>(context, port, delay, internal_connection)
 {
     // Register event handler
     this->bind<fb::protocol::login::request::login>                   (std::bind(&context::handle_login,               this, std::placeholders::_1, std::placeholders::_2));
@@ -184,12 +184,12 @@ bool fb::login::context::handle_change_password(fb::socket<fb::login::session>& 
 
     this->threads().dispatch
     (
-        [this, &socket, id, pw, new_pw, birthday] ()
+        [this, &socket, id, pw, new_pw, birthday]
         {
             this->_auth_service.change_pw
             (
                 id, pw, new_pw, birthday,
-                [this, &socket] ()
+                [this, &socket]
                 {
                     socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
                 },

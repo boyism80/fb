@@ -1,7 +1,7 @@
 #include <fb/gateway/context.h>
 
 fb::gateway::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::gateway::session>(context, port, delay, internal_connection, fb::config::get()["thread"].isNull() ? 0xFF : fb::config::get()["thread"].asInt())
+    fb::acceptor<fb::gateway::session>(context, port, delay, internal_connection)
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
     this->_connection_cache.write_u8(0x7E)

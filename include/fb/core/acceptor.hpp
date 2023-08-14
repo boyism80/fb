@@ -5,7 +5,7 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _delay(delay),
-    _threads(context, num_threads == 0xFF ? std::thread::hardware_concurrency() : num_threads),
+    _threads(context, num_threads),
     _exit(false)
 {
     this->accept();
@@ -116,11 +116,7 @@ const fb::threads& fb::base::acceptor<S, T>::threads() const
 template <template<class> class S, class T>
 uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 {
-    auto size = this->_threads.count();
-    if (size == 0)
-        return 0xFF;
-
-    return socket.fd() % size;
+    return 0xFF;
 }
 
 template <template<class> class S, class T>
@@ -152,7 +148,7 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
         boost::asio::dispatch
         (
             this->get_executor(),
-            [this] () 
+            [this] 
             {
                 if(this->_exit && this->sockets.empty())
                     this->shutdown();
