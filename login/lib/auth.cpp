@@ -73,19 +73,22 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
-void fb::login::service::auth::exists(const std::string& name, const std::function<void(const std::string&, bool)>& callback)
+auto fb::login::service::auth::exists(const std::string& name)
 {
-    db::query
-    (
-        name.c_str(),
-        [name, callback] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+    auto await_callback = [name] (auto& awaitable)
+    {
+        auto fn = [name, &awaitable] () -> task 
         {
-            auto exists = result.get_value<int>() > 0;
-            callback(name, exists);
-        },
-        "SELECT COUNT(*) FROM user WHERE name='%s'",
-        name.c_str()
-    );
+            auto results = co_await fb::db::co_exec_f(name, "SELECT COUNT(*) FROM user WHERE name='%s'", name.c_str());
+            auto exists = results[0].get_value<int>() > 0;
+            awaitable.result = &exists;
+            awaitable.handler.resume();
+        };
+
+        fn();
+    };
+
+    return fb::awaitable<bool>(await_callback);
 }
 
 void fb::login::service::auth::assert_account(const std::string& id, const std::string& pw) const
@@ -110,150 +113,132 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-void fb::login::service::auth::create_account(const std::string& id, const std::string& pw, const std::function<void(const std::string&)>& success, const std::function<void(const std::string&, const login_exception&)>& failed)
+auto fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
 {
-    try
+    auto await_callback = [this, id, pw] (auto& awaitable)
     {
-        this->assert_account(id, pw);
-    }
-    catch (login_exception& e)
-    {
-        failed(e.what(), e);
-        return;
-    }
-
-    this->exists
-    (
-        id,
-        [this, id, pw, success, failed] (const std::string& name, bool exists)
+        try
         {
-            try
+            this->assert_account(id, pw);
+
+            auto fn = [this, id, pw, &awaitable] () -> task
             {
+                auto exists = co_await this->exists(id);
                 if(exists)
                     throw std::exception();
 
-                db::query(id.c_str(), fb::login::query::make_insert(name, this->sha256(pw)));
-                success(id);
-            }
-            catch(std::exception& e)
-            {
-                failed(name, id_exception(fb::login::message::account::ALREADY_EXISTS));
-            }
+                co_await fb::db::co_exec(id, fb::login::query::make_insert(id, this->sha256(pw)));
+            };
+            fn();
         }
-    );
+        catch(login_exception& e)
+        {
+            awaitable.error = e.what(); // TODO: exception 자체를 전달
+            awaitable.handler.resume();
+        }
+    };
+
+    return fb::awaitable<void>(await_callback);
 }
 
 void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    db::query(id.c_str(), fb::login::query::make_update(id, hair, sex, nation, creature));
+    // TODO: 이 메소드 없애고 context에서 직접 DB 실행 후 대기
+    db::exec(id, fb::login::query::make_update(id, hair, sex, nation, creature));
 }
 
-uint32_t fb::login::service::auth::login(const std::string& id, const std::string& pw, const std::function<void(uint32_t)>& success, const std::function<void(const login_exception&)>& failed)
+auto fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
-    try
+    auto await_callback = [this, id, pw] (auto& awaitable)
     {
-        this->assert_account(id, pw);
-
-        db::query
-        (
-            id.c_str(),
-            [this, pw, success, failed] (daotk::mysql::connection& connection, daotk::mysql::result& result)
+        try
+        {
+            this->assert_account(id, pw);
+            auto fn = [this, id, pw, &awaitable] () -> task
             {
-                try
-                {
-                    if(result.count() == 0)
-                        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
+                auto  results = co_await fb::db::co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", id.c_str(), this->sha256(pw).c_str());
+                auto& result = results[0];
+                if(result.count() == 0)
+                    throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-                    if(result.get_value<std::string>(0) != this->sha256(pw))
-                        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+                if(result.get_value<std::string>(0) != this->sha256(pw))
+                    throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-                    success(result.get_value<uint32_t>(1));
-                }
-                catch(login_exception& e)
-                {
-                    failed(e);
-                }
-            },
-            "SELECT pw, map FROM user WHERE name='%s' LIMIT 1",
-            id.c_str(), this->sha256(pw).c_str()
-        );
-    }
-    catch(login_exception& e)
-    {
-        failed(e);
-    }
+                auto value = result.get_value<uint32_t>(1);
+                awaitable.result = &value;
+                awaitable.handler.resume();
+            };
 
-    return true;
+            fn();
+        }
+        catch(login_exception& e)
+        {
+            awaitable.error = e.what(); // TODO: exception 자체를 전달
+            awaitable.handler.resume();
+        }
+    };
+
+    return fb::awaitable<uint32_t>(await_callback);
 }
 
-void fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, const std::function<void()>& success, const std::function<void(const login_exception&)>& failed)
+auto fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
-    const auto& config = fb::config::get();
-    try
-    { 
-        if(id.length() < config["name_size"]["min"].asInt() || id.length() > config["name_size"]["max"].asInt())
-            throw id_exception(fb::login::message::account::INVALID_NAME);
-
-        // Name must be full-hangul characters
-        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
-            throw id_exception(fb::login::message::account::INVALID_NAME);
-
-        // Name cannot contains subcharacters in forbidden list
-        if(this->is_forbidden(id.c_str()))
-            throw id_exception(fb::login::message::account::INVALID_NAME);
-
-        if(pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
-            throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
-
-        db::query
-        (
-            id.c_str(),
-            [&, this] (daotk::mysql::connection& connection, daotk::mysql::result& result)
-            {
-                try
-                {
-                    if(result.count() == 0)
-                        throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
-
-                    auto found_pw = result.get_value<std::string>(0);
-                    auto found_birth = result.get_value<uint32_t>(1);
-
-                    // TODO : 올바른 비밀번호인지 체크
-                    if(this->sha256(pw) != found_pw)
-                        throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
-
-                    if(new_pw.length() < config["name_size"]["min"].asInt() || new_pw.length() > config["name_size"]["max"].asInt())
-                        throw newpw_exception(fb::login::message::account::PASSWORD_SIZE);
-
-                    // TODO : 너무 쉬운 비밀번호인지 체크
-                    if(pw == new_pw)
-                        throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
-
-                    if(birthday != found_birth)
-                        throw btd_exception();
-
-                    db::query
-                    (
-                        id.c_str(),
-                        [success] (daotk::mysql::connection& connection, daotk::mysql::result& result)
-                        {
-                            success();
-                        },
-                        "UPDATE user SET pw='%s' WHERE name='%s'",
-                        this->sha256(new_pw).c_str(), id.c_str()
-                    );
-                }
-                catch(login_exception& e)
-                {
-                    failed(e);
-                }
-            },
-            "SELECT pw, birth FROM user WHERE name='%s'",
-            id.c_str()
-        );
-    }
-    catch(login_exception& e)
+    // TODO: 프로시저 호출 방식으로 수정
+    auto await_callback = [this, id, pw, new_pw, birthday] (auto& awaitable)
     {
-        failed(e);
-    }
+        auto fn = [this, id, pw, new_pw, birthday, &awaitable] () -> task
+        {
+            try
+            {
+                const auto& config = fb::config::get();
+                if(id.length() < config["name_size"]["min"].asInt() || id.length() > config["name_size"]["max"].asInt())
+                    throw id_exception(fb::login::message::account::INVALID_NAME);
+
+                // Name must be full-hangul characters
+                if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(id.c_str()) == false)
+                    throw id_exception(fb::login::message::account::INVALID_NAME);
+
+                // Name cannot contains subcharacters in forbidden list
+                if(this->is_forbidden(id.c_str()))
+                    throw id_exception(fb::login::message::account::INVALID_NAME);
+
+                if(pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
+                    throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
+
+                auto results = co_await fb::db::co_exec_f(id, "SELECT pw, birth FROM user WHERE name='%s'", id.c_str());
+                auto& result = results[0];
+
+                if(result.count() == 0)
+                    throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
+
+                auto found_pw = result.get_value<std::string>(0);
+                auto found_birth = result.get_value<uint32_t>(1);
+
+                // TODO : 올바른 비밀번호인지 체크
+                if(this->sha256(pw) != found_pw)
+                    throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+
+                if(new_pw.length() < config["name_size"]["min"].asInt() || new_pw.length() > config["name_size"]["max"].asInt())
+                    throw newpw_exception(fb::login::message::account::PASSWORD_SIZE);
+
+                // TODO : 너무 쉬운 비밀번호인지 체크
+                if(pw == new_pw)
+                    throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
+
+                if(birthday != found_birth)
+                    throw btd_exception();
+
+                co_await db::co_exec_f(id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
+                awaitable.handler.resume();
+            }
+            catch(login_exception& e)
+            {
+                awaitable.error = e.what(); // TODO: exception 자체를 전달
+                awaitable.handler.resume();
+            }
+        };
+        fn();
+    };
+
+    return fb::awaitable<void>(await_callback);
 }

@@ -61,7 +61,7 @@ tasks::tasks()
 tasks::~tasks()
 { }
 
-void tasks::enqueue(const task&& t)
+void tasks::enqueue(const task& t)
 {
     MUTEX_GUARD(this->_mutex);
     this->_queue.push(std::make_unique<task>(t));
@@ -84,6 +84,11 @@ worker::worker(const Json::Value& config, int pool_size) : _connections(config, 
 
 worker::~worker()
 { }
+
+void worker::enqueue(const task& t)
+{
+    this->_tasks.enqueue(t);
+}
 
 void worker::on_work()
 {
@@ -110,8 +115,8 @@ void worker::on_work()
             auto results = connection->mquery(task->sql);
             task->callback(results);
 
-            auto&& xxx = std::move(connection);
-            this->_connections.enqueue(xxx);
+            auto&& x = std::move(connection);
+            this->_connections.enqueue(x);
         });
     }
 }
@@ -126,7 +131,7 @@ context::context(int pool_size)
     auto  boost_thread_pool = boost::asio::thread_pool(count);
     for (int i = 0; i < count; i++)
     {
-        _workers.push_back(std::make_unique<worker>(pool_size));
+        _workers.push_back(std::make_unique<worker>(databases[i], pool_size));
         post(boost_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
     }
 }
@@ -134,10 +139,92 @@ context::context(int pool_size)
 context::~context()
 { }
 
+uint64_t context::hash(const std::string& name) const
+{
+    if(name.empty())
+        return 0;
+
+    auto hash   = uint64_t(0);
+    auto length = name.length();
+    for(int i = 0; i < length; i++)
+    {
+        hash = 31 * hash + name[i];
+    }
+
+    return hash;
+}
+
+uint8_t context::index(const std::string& name) const
+{
+    if(name.empty())
+        return 0;
+
+    auto size = this->_workers.size();
+    if(size == 1)
+        return 0;
+
+    return (uint8_t)(this->hash(name) % size - 1) + 1;
+}
+
+void context::enqueue(const std::string& name, const task& t)
+{
+    auto index = this->index(name);
+    this->_workers[index]->enqueue(t);
+}
+
 context& context::get()
 {
     static std::once_flag flag;
     std::call_once(flag, [] { _ist.reset(new context(10)); });
 
     return *_ist;
+}
+
+void fb::db::exec(const std::string& name, const std::string& sql)
+{
+    auto& ist = context::get();
+    ist.enqueue(name, task {sql, [] (auto& results) {}});
+}
+
+result_type fb::db::co_exec(const std::string& name, const std::string& sql)
+{
+    auto await_callback = [name, sql](auto& awaitable)
+    {
+        auto& ist = context::get();
+        ist.enqueue(name, task {sql, [&awaitable] (auto& results) 
+        {
+            awaitable.result = &results;
+            awaitable.handler.resume();
+        }});
+    };
+
+    return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
+}
+
+void fb::db::exec(const std::string& name, const std::vector<std::string>& queries)
+{
+    auto sstream = std::stringstream();
+    for (auto& query : queries)
+    {
+        if (query.empty())
+            continue;
+
+        sstream << query << ";";
+    }
+
+    exec(name, sstream.str());
+}
+
+result_type fb::db::co_exec(const std::string& name, const std::vector<std::string>& queries)
+{
+    auto sstream = std::stringstream();
+    for (auto& query : queries)
+    {
+        if (query.empty())
+            continue;
+
+        sstream << query << ";";
+    }
+
+    return co_exec(name, sstream.str());
 }
