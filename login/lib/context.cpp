@@ -64,23 +64,20 @@ bool fb::login::context::handle_agreement(fb::socket<fb::login::session>& socket
 
 bool fb::login::context::handle_create_account(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::create& request)
 {
-    auto& id = request.id;
-    this->_auth_service.create_account
-    (
-        request.id, request.pw,
-        [this, &socket, id] (const auto& name)
+    auto fn = [this, &socket, id = request.id, pw = request.pw] () -> task
+    {
+        try
         {
+            co_await this->_auth_service.create_account(id, pw);
             this->send(socket, fb::protocol::login::response::message("", 0x00));
-
-            // 일단 아이디 선점해야함
             auto session = socket.data();
             session->created_id = id;
-        },
-        [&socket] (const auto& name, const auto& e)
+        }
+        catch(login_exception& e)
         {
             socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         }
-    );
+    };
     return true;
 }
 
@@ -114,60 +111,52 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
 
     auto fn = [this, id = request.id, pw = request.pw, &socket]
     {
-        auto& c = fb::console::get();
-        auto handle_success = [this, id, &socket] (uint32_t map)
+        auto await_fn = [this, id, pw, &socket] () -> task
         {
-            static auto async_fn = [this] (auto& socket, std::string id, uint32_t map) -> task
+            auto fd = socket.fd();
+            try
             {
-                auto fd = (uint32_t)socket.native_handle();
-                try
-                {
-                    // 하나의 _internal 소켓에서 응답이 오기전에 request를 계속 호출하면서 발생하는 문제
-                    // 코루틴으로 하면 안될거같다..
-                    auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
+                auto map = co_await this->_auth_service.login(id, pw);
 
-                    auto client = this->sockets[fd];
-                    if(client == nullptr)
-                        co_return;
+                // 하나의 _internal 소켓에서 응답이 오기전에 request를 계속 호출하면서 발생하는 문제
+                // 코루틴으로 하면 안될거같다..
+                auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
 
-                    if(response.code == fb::protocol::internal::response::transfer_code::CONNECTED)
-                        throw id_exception("이미 접속중입니다.");
+                auto client = this->sockets[fd];
+                if(client == nullptr)
+                    co_return;
 
-                    if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
-                        throw id_exception("비바람이 휘몰아치고 있습니다.");
+                if(response.code == fb::protocol::internal::response::transfer_code::CONNECTED)
+                    throw id_exception("이미 접속중입니다.");
 
-                    client->send(fb::protocol::login::response::message("", 0x00));
-                    fb::ostream         parameter;
-                    parameter.write(response.name);
-                    parameter.write_u8(0);
-                    this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
-                }
-                catch(login_exception& e)
-                {
-                    auto client = this->sockets[fd];
-                    if (client == nullptr)
-                        co_return;
+                if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
+                    throw id_exception("비바람이 휘몰아치고 있습니다.");
 
-                    client->send(fb::protocol::login::response::message(e.what(), e.type()));
-                }
-                catch (std::exception& e)
-                {
-                    auto client = this->sockets[fd];
-                    if (client == nullptr)
-                        co_return;
-                    
-                    client->send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
-                }
-            };
-            async_fn(socket, id, map);
+                client->send(fb::protocol::login::response::message("", 0x00));
+                fb::ostream         parameter;
+                parameter.write(response.name);
+                parameter.write_u8(0);
+                this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
+            }
+            catch(login_exception& e)
+            {
+                auto client = this->sockets[fd];
+                if (client == nullptr)
+                    co_return;
+
+                client->send(fb::protocol::login::response::message(e.what(), e.type()));
+            }
+            catch (std::exception& e)
+            {
+                auto client = this->sockets[fd];
+                if (client == nullptr)
+                    co_return;
+
+                client->send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
+            }
         };
 
-        auto handle_error = [this, &socket] (const auto& e)
-        {
-            socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-        };
-
-        this->_auth_service.login(id, pw, handle_success, handle_error);
+        await_fn();
     };
 
     this->threads().dispatch(fn, std::chrono::seconds(delay));
@@ -176,31 +165,27 @@ bool fb::login::context::handle_login(fb::socket<fb::login::session>& socket, co
 
 bool fb::login::context::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
-    const auto& id = request.name;
-    const auto& pw = request.pw;
-    const auto& new_pw = request.new_pw;
-    const auto birthday = request.birthday;
     auto delay = fb::config::get()["transfer delay"].asInt();
 
-    this->threads().dispatch
-    (
-        [this, &socket, id, pw, new_pw, birthday]
+    auto fn = [this, &socket, id = request.name, pw = request.pw, new_pw = request.new_pw, birthday = request.birthday]
+    {
+        auto fn2 = [this, &socket, id, pw, new_pw, birthday] () -> task
         {
-            this->_auth_service.change_pw
-            (
-                id, pw, new_pw, birthday,
-                [this, &socket]
-                {
-                    socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
-                },
-                [this, &socket] (const auto& e)
-                {
-                    socket.send(fb::protocol::login::response::message(e.what(), e.type()));
-                }
-            );
-        },
-        std::chrono::seconds(delay)
-    );
+            try
+            {
+                co_await this->_auth_service.change_pw(id, pw, new_pw, birthday);
+                socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+            }
+            catch(login_exception& e)
+            {
+                socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+            }
+        };
+
+        fn2();
+    };
+
+    this->threads().dispatch(fn, std::chrono::seconds(delay));
 
     return true;
 }

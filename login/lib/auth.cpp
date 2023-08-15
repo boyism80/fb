@@ -113,7 +113,7 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-auto fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
+fb::awaitable<void> fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
 {
     auto await_callback = [this, id, pw] (auto& awaitable)
     {
@@ -128,12 +128,13 @@ auto fb::login::service::auth::create_account(const std::string& id, const std::
                     throw std::exception();
 
                 co_await fb::db::co_exec(id, fb::login::query::make_insert(id, this->sha256(pw)));
+                awaitable.handler.resume();
             };
             fn();
         }
         catch(login_exception& e)
         {
-            awaitable.error = e.what(); // TODO: exception 자체를 전달
+            awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
             awaitable.handler.resume();
         }
     };
@@ -147,7 +148,7 @@ void fb::login::service::auth::init_account(const std::string& id, uint8_t hair,
     db::exec(id, fb::login::query::make_update(id, hair, sex, nation, creature));
 }
 
-auto fb::login::service::auth::login(const std::string& id, const std::string& pw)
+fb::awaitable<uint32_t> fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
     auto await_callback = [this, id, pw] (auto& awaitable)
     {
@@ -173,7 +174,7 @@ auto fb::login::service::auth::login(const std::string& id, const std::string& p
         }
         catch(login_exception& e)
         {
-            awaitable.error = e.what(); // TODO: exception 자체를 전달
+            awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
             awaitable.handler.resume();
         }
     };
@@ -181,7 +182,7 @@ auto fb::login::service::auth::login(const std::string& id, const std::string& p
     return fb::awaitable<uint32_t>(await_callback);
 }
 
-auto fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
+fb::awaitable<void> fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
     // TODO: 프로시저 호출 방식으로 수정
     auto await_callback = [this, id, pw, new_pw, birthday] (auto& awaitable)
@@ -233,7 +234,7 @@ auto fb::login::service::auth::change_pw(const std::string& id, const std::strin
             }
             catch(login_exception& e)
             {
-                awaitable.error = e.what(); // TODO: exception 자체를 전달
+                awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
                 awaitable.handler.resume();
             }
         };

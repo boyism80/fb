@@ -33,7 +33,7 @@ private:
 
 public:
     R*                              result;
-    std::optional<std::string>      error;
+    std::unique_ptr<std::exception> error;
     std::coroutine_handle<>         handler;
 
 public:
@@ -53,8 +53,8 @@ public:
     }
     virtual R                       await_resume()
     {
-        if (this->error.has_value())
-            throw std::runtime_error(this->error.value());
+        if (this->error != nullptr)
+            throw *this->error;
 
         return std::move(*this->result);
     }
@@ -67,7 +67,7 @@ private:
     const awaitable_suspend_handler<void> _on_suspend;
 
 public:
-    std::optional<std::string>      error;
+    std::unique_ptr<std::exception> error;
     std::coroutine_handle<>         handler;
 
 public:
@@ -87,8 +87,8 @@ public:
     }
     virtual void                    await_resume()
     {
-        if (this->error.has_value())
-            throw std::runtime_error(this->error.value());
+        if (this->error != nullptr)
+            throw *this->error;
     }
 };
 

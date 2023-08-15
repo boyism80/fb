@@ -79,10 +79,10 @@ public:
     auto                        exists(const std::string& name);
 
     void                        assert_account(const std::string& id, const std::string& pw) const;
-    auto                        create_account(const std::string& id, const std::string& pw);
+    fb::awaitable<void>         create_account(const std::string& id, const std::string& pw);
     void                        init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    auto                        login(const std::string& id, const std::string& pw);
-    auto                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
+    fb::awaitable<uint32_t>     login(const std::string& id, const std::string& pw);
+    fb::awaitable<void>         change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
 };
 
 } } }

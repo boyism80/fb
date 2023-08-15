@@ -42,8 +42,6 @@ int main(int argc, const char** argv)
 
         // Execute acceptor
         boost::asio::io_context io_context;
-        fb::db::bind(io_context);
-
         const auto connection = INTERNAL_CONNECTION
         {
             config["internal"]["ip"].asString(),

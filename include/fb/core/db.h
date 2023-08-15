@@ -86,9 +86,6 @@ public:
 class context
 {
 private:
-    static std::unique_ptr<context> _ist;
-
-private:
     workers                     _workers;
 
 public:
@@ -106,6 +103,7 @@ public:
     static context&             get();
 };
 
+std::string                     fstring(const char* fmt, ...);
 void                            exec(const std::string& name, const std::string& sql);
 result_type                     co_exec(const std::string& name, const std::string& sql);
 

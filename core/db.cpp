@@ -2,6 +2,14 @@
 
 using namespace fb::db;
 
+connections::connections(const Json::Value& config, int pool_size) : _config(config)
+{
+    for(int i = 0; i < pool_size; i++)
+    {
+        this->_queue.push(connection_ptr(nullptr));
+    }
+}
+
 connections::~connections()
 {}
 
@@ -174,10 +182,33 @@ void context::enqueue(const std::string& name, const task& t)
 
 context& context::get()
 {
-    static std::once_flag flag;
-    std::call_once(flag, [] { _ist.reset(new context(10)); });
+    static std::once_flag           flag;
+    static std::unique_ptr<context> ist;
+    std::call_once(flag, [] { ist.reset(new context(10)); });
 
-    return *_ist;
+    return *ist;
+}
+
+std::string fb::db::fstring(const char* fmt, ...) 
+{
+    std::size_t size = 256;
+    std::vector<char> buf(size);
+
+    va_list vargs;
+    va_start(vargs, fmt);
+    while (true)
+    {
+        int needed = std::vsnprintf(&buf[0], size, fmt, vargs);
+
+        if (needed <= (int)size & needed >= 0)
+            break;
+
+        size = (needed > 0) ? (needed + 1) : (size * 2);
+        buf.resize(size);
+    }
+
+    va_end(vargs);
+    return std::string(&buf[0]);
 }
 
 void fb::db::exec(const std::string& name, const std::string& sql)

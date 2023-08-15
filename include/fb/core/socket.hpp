@@ -200,7 +200,7 @@ void fb::awaitable_socket<T,C>::register_awaiter(C cmd, awaitable<R>* awaitable)
     if(i != this->_coroutines.end())
     {
         auto awaitable = static_cast<awaitable_socket<T,C>::awaitable<R>*>(i->second);
-        awaitable->error = "";
+        awaitable->error = std::make_unique<std::runtime_error>("new awaitable object registered");
     }
     
     this->_coroutines[cmd] = static_cast<void*>(awaitable);
@@ -258,7 +258,7 @@ fb::awaitable_socket<T, C>::awaitable<R> fb::awaitable_socket<T, C>::request(con
                 if (!error_code)
                     return;
 
-                awaitable.error = "";
+                awaitable.error = std::make_unique<std::runtime_error>(error_code.message());
                 awaitable.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);
