@@ -20,7 +20,7 @@ void connections::enqueue(std::unique_ptr<daotk::mysql::connection>& conn)
     this->_queue.push(std::move(conn));
 }
 
-connection_ptr&& connections::dequeue()
+connection_ptr connections::dequeue()
 {
     MUTEX_GUARD(this->_mutex);
 
@@ -28,7 +28,7 @@ connection_ptr&& connections::dequeue()
         return nullptr;
 
     auto& c = fb::console::get();
-    auto& ptr = this->_queue.front();
+    auto ptr = std::move(this->_queue.front());
     this->_queue.pop();
 
     if (ptr == nullptr)
@@ -75,13 +75,13 @@ void tasks::enqueue(const task& t)
     this->_queue.push(std::make_unique<task>(t));
 }
 
-std::unique_ptr<task>&& tasks::dequeue()
+std::unique_ptr<task> tasks::dequeue()
 {
     MUTEX_GUARD(this->_mutex);
     if(this->_queue.empty())
         return nullptr;
 
-    auto& ptr = this->_queue.front();
+    auto ptr = std::move(this->_queue.front());
     this->_queue.pop();
 
     return std::move(ptr);
@@ -103,14 +103,14 @@ void worker::on_work()
     constexpr auto term = 100ms;
     while(true)
     {
-        auto&& connection = this->_connections.dequeue();
+        auto connection = this->_connections.dequeue();
         if(connection == nullptr)
         {
             std::this_thread::sleep_for(term);
             continue;
         }
 
-        auto&& task = this->_tasks.dequeue();
+        auto task = this->_tasks.dequeue();
         if(task == nullptr)
         {
             std::this_thread::sleep_for(term);
@@ -129,18 +129,17 @@ void worker::on_work()
     }
 }
 
-
-
 context::context(int pool_size)
 {
     auto& config = fb::config::get();
     auto& databases = config["database"];
     auto  count = databases.size();
-    auto  boost_thread_pool = boost::asio::thread_pool(count);
+
+    this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count);
     for (int i = 0; i < count; i++)
     {
         _workers.push_back(std::make_unique<worker>(databases[i], pool_size));
-        post(boost_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
+        post(*_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
     }
 }
 

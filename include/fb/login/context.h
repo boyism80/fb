@@ -26,6 +26,11 @@ public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
     ~context();
 
+private:
+    task                        create_account(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
+    task                        login(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
+    task                        change_pw(fb::socket<fb::login::session>& socket, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
+
     // override
 protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;

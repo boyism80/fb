@@ -38,7 +38,7 @@ public:
 
 public:
     void                        enqueue(std::unique_ptr<daotk::mysql::connection>& conn);
-    connection_ptr&&            dequeue();
+    connection_ptr              dequeue();
 };
 
 
@@ -61,7 +61,7 @@ public:
 
 public:
     void                        enqueue(const task& t);
-    std::unique_ptr<task>&&     dequeue();
+    std::unique_ptr<task>       dequeue();
 };
 
 
@@ -86,7 +86,11 @@ public:
 class context
 {
 private:
+    using thread_pool = std::unique_ptr<boost::asio::thread_pool>;
+
+private:
     workers                     _workers;
+    thread_pool                 _thread_pool;
 
 public:
     context(int pool_size);
