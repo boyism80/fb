@@ -51,6 +51,7 @@ connection_ptr connections::dequeue()
             std::this_thread::sleep_for(100ms);
             ptr->open(option);
         }
+        ptr->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
 
         if (busy)
         {
@@ -132,6 +133,7 @@ void worker::on_work()
             }
             catch(...)
             {
+                fb::console::get().puts("query failed : ", task->sql.c_str());
             }
 
             auto&& x = std::move(connection);

@@ -73,19 +73,19 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
+fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
+{
+    auto results = co_await fb::db::co_exec_f(name, "SELECT COUNT(*) FROM user WHERE name='%s'", name.c_str());
+    auto exists = results[0].get_value<int>() > 0;
+    awaitable.result = &exists;
+    awaitable.handler.resume();
+}
+
 auto fb::login::service::auth::exists(const std::string& name)
 {
-    auto await_callback = [name] (auto& awaitable)
+    auto await_callback = [this, name] (auto& awaitable)
     {
-        auto fn = [name, &awaitable] () -> task 
-        {
-            auto results = co_await fb::db::co_exec_f(name, "SELECT COUNT(*) FROM user WHERE name='%s'", name.c_str());
-            auto exists = results[0].get_value<int>() > 0;
-            awaitable.result = &exists;
-            awaitable.handler.resume();
-        };
-
-        fn();
+        this->__exists(awaitable, name);
     };
 
     return fb::awaitable<bool>(await_callback);

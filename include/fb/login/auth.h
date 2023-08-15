@@ -75,6 +75,7 @@ private:
     bool                        is_forbidden(const std::string& str) const;
     std::string                 sha256(const std::string& data) const;
 
+    fb::task                    __exists(fb::awaitable<bool>& awaitable, std::string name);
     fb::task                    __create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw);
     fb::task                    __login(fb::awaitable<uint32_t>& awaitable, std::string id, std::string pw);
     fb::task                    __change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
