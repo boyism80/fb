@@ -145,7 +145,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 {"leader",              fb::game::group::builtin_leader},
 END_LUA_EXTENSION
 
-context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
+fb::game::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
     fb::acceptor<fb::game::session>(context, port, delay, internal_connection, std::thread::hardware_concurrency())
 {
     const auto& config = fb::config::get();
@@ -336,7 +336,7 @@ context::context(boost::asio::io_context& context, uint16_t port, std::chrono::s
         });
 }
 
-context::~context()
+fb::game::context::~context()
 { 
     this->exit();
 }
@@ -377,7 +377,7 @@ bool fb::game::context::destroy(fb::game::object& obj)
     return true;
 }
 
-uint32_t fb::game::context::elapsed_seconds(const datetime& datetime)
+uint32_t fb::game::context::elapsed_seconds(const daotk::mysql::datetime& datetime)
 {
     auto sstream = std::stringstream();
     sstream << 
@@ -398,7 +398,7 @@ uint32_t fb::game::context::elapsed_seconds(const datetime& datetime)
     return std::difftime(std::time(nullptr), std::mktime(&tm));
 }
 
-std::string fb::game::context::elapsed_message(const datetime& datetime)
+std::string fb::game::context::elapsed_message(const daotk::mysql::datetime& datetime)
 {
     auto elapsed = this->elapsed_seconds(datetime);
 
@@ -472,8 +472,8 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     auto name             = db_result.get_value<std::string>(1);
     auto pw               = db_result.get_value<std::string>(2);
     auto birth            = db_result.get_value<uint32_t>(3);
-    auto date             = db_result.get_value<datetime>(4);
-    auto last_login       = db_result.get_value<datetime>(5);
+    auto date             = db_result.get_value<daotk::mysql::datetime>(4);
+    auto last_login       = db_result.get_value<daotk::mysql::datetime>(5);
     auto admin            = db_result.get_value<bool>(6);
     auto look             = db_result.get_value<uint32_t>(7);
     auto color            = db_result.get_value<uint32_t>(8);
@@ -722,22 +722,20 @@ void fb::game::context::save(fb::game::session& session)
 
 void fb::game::context::save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn)
 {
-    db::async_query
-    (
-        session.name(),
-        [this, fn, &session]
-        {
-            fn(session);
-        },
-        std::vector<std::string>
+    static auto await_fn = [] (fb::game::session& session, std::function<void(fb::game::session&)> fn) -> task
+    {
+        co_await fb::db::co_exec(session.name(), std::vector<std::string>
         {
             query::make_update_session(session),
             query::make_update_item(session),
             query::make_delete_item(session),
             query::make_update_spell(session),
             query::make_delete_spell(session),
-        }
-    );
+        });
+
+        fn(session);
+    };
+    await_fn(session, fn);
 }
 
 void fb::game::context::save()
@@ -866,10 +864,10 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
         auto transfer = request.transfer;
 
         auto sql = "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');";
-        auto results = co_await fb::db::co_query(name, sql, name.c_str(), name.c_str(), name.c_str());
+        auto results = co_await fb::db::co_exec_f(name, sql, name.c_str(), name.c_str(), name.c_str());
 
         auto map = results[0].get_value<uint32_t>(12);
-        auto last_login = results[0].get_value<datetime>(5);
+        auto last_login = results[0].get_value<daotk::mysql::datetime>(5);
         if(this->fetch_user(results[0], *session, request.transfer) == false)
             co_return;
 

@@ -98,10 +98,15 @@ void worker::enqueue(const task& t)
     this->_tasks.enqueue(t);
 }
 
+void worker::exit()
+{
+    this->_exit = true;
+}
+
 void worker::on_work()
 {
     constexpr auto term = 100ms;
-    while(true)
+    while(!this->_exit)
     {
         auto connection = this->_connections.dequeue();
         if(connection == nullptr)
@@ -120,8 +125,14 @@ void worker::on_work()
 
         std::async([this, connection = std::move(connection), task = std::move(task)] () mutable
         {
-            auto results = connection->mquery(task->sql);
-            task->callback(results);
+            try
+            {
+                auto results = connection->mquery(task->sql);
+                task->callback(results);
+            }
+            catch(...)
+            {
+            }
 
             auto&& x = std::move(connection);
             this->_connections.enqueue(x);
@@ -179,6 +190,15 @@ void context::enqueue(const std::string& name, const task& t)
     this->_workers[index]->enqueue(t);
 }
 
+void context::exit()
+{
+    for(auto& worker : this->_workers)
+    {
+        worker->exit();
+    }
+    this->_thread_pool->join();
+}
+
 context& context::get()
 {
     static std::once_flag           flag;
@@ -186,6 +206,11 @@ context& context::get()
     std::call_once(flag, [] { ist.reset(new context(10)); });
 
     return *ist;
+}
+
+void fb::db::init()
+{
+    context::get();
 }
 
 std::string fb::db::fstring(const char* fmt, ...) 

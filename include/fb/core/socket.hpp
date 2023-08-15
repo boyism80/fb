@@ -49,13 +49,13 @@ void fb::base::socket<T>::recv()
     this->async_read_some
     (
         boost::asio::buffer(this->_buffer),
-        [this](const boost::system::error_code& error, size_t bytes_transferred)
+        [this](const boost::system::error_code& ec, size_t bytes_transferred)
         {
             // TODO: 이 콜백함수가 호출되는게 메인스레드인지 확인
             // io_context를 여러 스레드에서 run했을 때는 어떻게 되는지도 확인
             try
             {
-                if(error)
+                if(ec)
                     throw std::exception();
                 
                 auto gd = std::lock_guard<std::mutex>(this->mutex);
@@ -234,12 +234,12 @@ fb::awaitable_socket<T, C>::awaitable<R> fb::awaitable_socket<T, C>::request(con
     return awaitable_socket<T, C>::awaitable<R>(*this, cmd,
         [=, &header, this](auto& awaitable)
         {
-            auto callback = [this, &awaitable](const auto& error_code, auto transfer_size)
+            auto callback = [this, &awaitable](const auto& ec, auto transfer_size)
             {
-                if (!error_code)
+                if (!ec)
                     return;
 
-                awaitable.error = "";
+                awaitable.error = std::make_unique<std::runtime_error>(ec.message());
                 awaitable.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);
@@ -253,12 +253,12 @@ fb::awaitable_socket<T, C>::awaitable<R> fb::awaitable_socket<T, C>::request(con
     return awaitable_socket<T, C>::awaitable<R>(*this, header.trans,
         [=, &header, this](auto& awaitable)
         {
-            auto callback = [this, &awaitable](const auto& error_code, auto transfer_size)
+            auto callback = [this, &awaitable](const auto& ec, auto transfer_size)
             {
-                if (!error_code)
+                if (!ec)
                     return;
 
-                awaitable.error = std::make_unique<std::runtime_error>(error_code.message());
+                awaitable.error = std::make_unique<std::runtime_error>(ec.message());
                 awaitable.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);

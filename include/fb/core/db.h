@@ -70,6 +70,7 @@ class worker
 private:
     connections                 _connections;
     tasks                       _tasks;
+    bool                        _exit = false;
 
 public:
     worker(const Json::Value& config, int pool_size);
@@ -77,6 +78,7 @@ public:
 
 public:
     void                        enqueue(const task& t);
+    void                        exit();
 
 public:
     void                        on_work();
@@ -102,11 +104,13 @@ private:
 
 public:
     void                        enqueue(const std::string& name,  const task& t);
+    void                        exit();
 
 public:
     static context&             get();
 };
 
+void                            init();
 std::string                     fstring(const char* fmt, ...);
 void                            exec(const std::string& name, const std::string& sql);
 result_type                     co_exec(const std::string& name, const std::string& sql);
@@ -119,28 +123,6 @@ void                            exec_f(const std::string& name, const std::strin
 
 template <typename... Values>
 result_type                     co_exec_f(const std::string& name, const std::string& format, Values... values);
-
-// template <typename... Values>
-// void                            query(const std::string& name, const std::string& format, Values... values);
-// template <typename... Values>
-// void                            async_query(const std::string& name, const std::string& format, Values... values);
-// template <typename... Values>
-// void                            query(const std::string& name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values);
-// template <typename... Values>
-// void                            async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values);
-// template <typename... Values>
-// auto                            co_query_once(const std::string& name, const std::string& format, Values... values);
-// template <typename... Values>
-// void                            query(const std::string& name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values);
-// template <typename... Values>
-// void                            async_query(const std::string& name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values);
-// template <typename... Values>
-// auto                            co_query(const std::string& name, const std::string& format, Values... values);
-// void                            query(const std::string& name, const std::vector<std::string>& queries);
-// void                            async_query(const std::string& name, const std::vector<std::string>& queries);
-// void                            query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries);
-// void                            async_query(const std::string& name, const std::function<void()>& callback, const std::vector<std::string>& queries);
-// auto                            co_query(const std::string& name, const std::vector<std::string>& queries);
 
 } }
 

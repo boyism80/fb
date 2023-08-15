@@ -363,7 +363,7 @@ int main(int argc, const char** argv)
 
         boost::asio::io_context io_context;
         boost::asio::executor_work_guard<boost::asio::io_context::executor_type> guard(io_context.get_executor());
-        fb::db::bind(io_context);
+        fb::db::init();
 
         const auto connection = INTERNAL_CONNECTION
         {
@@ -411,7 +411,7 @@ int main(int argc, const char** argv)
         boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
         signal.async_wait
         (
-            [&context](const boost::system::error_code& error, int signal)
+            [&context](const boost::system::error_code& ec, int signal)
             {
                 context.get()->exit();
             }
