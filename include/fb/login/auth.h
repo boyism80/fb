@@ -62,10 +62,11 @@ namespace fb { namespace login { namespace service {
 class auth
 {
 private:
+    fb::db::context&            _db;
     std::vector<std::string>    _forbiddens;
 
 public:
-    auth();
+    auth(fb::db::context& db);
     ~auth();
 
 private:

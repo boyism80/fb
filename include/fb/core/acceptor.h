@@ -22,9 +22,10 @@ class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
     fb::threads                                 _threads;
-    bool                                        _exit = false;
+    bool                                        _running = false;
 
 protected:
+    std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::chrono::seconds                        _delay;
     std::unique_ptr<fb::internal::socket<>>     _internal;
@@ -70,6 +71,8 @@ public:
 public:
     bool                                        precedence(S<T>*, fb::queue_callback&& fn);
     bool                                        dispatch(S<T>*, fb::queue_callback&& fn);
+    void                                        run(int thread_size);
+    bool                                        running() const;
     void                                        exit();
 
 public:

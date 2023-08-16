@@ -77,12 +77,12 @@ int main(int argc, const char** argv)
         );
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
-        boost::asio::thread_pool boost_thread_pool(count);
-        for(int i = 0; i < count; i++)
+        context->run(count);
+        while (context->running())
         {
-            post(boost_thread_pool, [&io_context] { io_context.run(); });
+            std::this_thread::sleep_for(100ms);
         }
-        boost_thread_pool.join();
+        context->exit();
     }
     catch(std::exception& e)
     {

@@ -146,7 +146,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 END_LUA_EXTENSION
 
 fb::game::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, delay, internal_connection, std::thread::hardware_concurrency())
+    fb::acceptor<fb::game::session>(context, port, delay, internal_connection, std::thread::hardware_concurrency()),
+    _db(4)
 {
     const auto& config = fb::config::get();
 
@@ -722,9 +723,9 @@ void fb::game::context::save(fb::game::session& session)
 
 void fb::game::context::save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn)
 {
-    static auto await_fn = [] (fb::game::session& session, std::function<void(fb::game::session&)> fn) -> task
+    static auto await_fn = [this] (fb::game::session& session, std::function<void(fb::game::session&)> fn) -> task
     {
-        co_await fb::db::co_exec(session.name(), std::vector<std::string>
+        co_await this->_db.co_exec(session.name(), std::vector<std::string>
         {
             query::make_update_session(session),
             query::make_update_item(session),
@@ -758,7 +759,9 @@ uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& so
 }
 
 void fb::game::context::handle_exit()
-{ }
+{
+    this->_db.exit();
+}
 
 fb::thread* fb::game::context::thread(const fb::game::map& map) const
 {
@@ -864,7 +867,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
         auto transfer = request.transfer;
 
         auto sql = "CALL USP_CHARACTER_GET('%s');";
-        auto results = co_await fb::db::co_exec_f(name, sql, name.c_str());
+        auto results = co_await this->_db.co_exec_f(name, sql, name.c_str());
 
         auto map = results[0].get_value<uint32_t>(12);
         auto last_login = results[0].get_value<daotk::mysql::datetime>(5);

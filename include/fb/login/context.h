@@ -21,6 +21,7 @@ private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
     std::vector<unique_session>                 _sessions;
+    fb::db::context                             _db;
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
@@ -36,6 +37,7 @@ protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
+    void                        handle_exit() final;
 
 public:
     bool                        handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);

@@ -42,6 +42,7 @@ private:
     commands                _commands;
     std::mutex              _hash_mutex;
     object_set              _objects;
+    fb::db::context         _db;
     tm*                     _time = fb::now();
 
 public:

@@ -201,20 +201,6 @@ void context::exit()
     this->_thread_pool->join();
 }
 
-context& context::get()
-{
-    static std::once_flag           flag;
-    static std::unique_ptr<context> ist;
-    std::call_once(flag, [] { ist.reset(new context(10)); });
-
-    return *ist;
-}
-
-void fb::db::init()
-{
-    context::get();
-}
-
 std::string fb::db::fstring(const char* fmt, ...) 
 {
     std::size_t size = 256;
@@ -237,18 +223,16 @@ std::string fb::db::fstring(const char* fmt, ...)
     return std::string(&buf[0]);
 }
 
-void fb::db::exec(const std::string& name, const std::string& sql)
+void fb::db::context::exec(const std::string& name, const std::string& sql)
 {
-    auto& ist = context::get();
-    ist.enqueue(name, task {sql, [] (auto& results) {}});
+    this->enqueue(name, task {sql, [] (auto& results) {}});
 }
 
-result_type fb::db::co_exec(const std::string& name, const std::string& sql)
+result_type fb::db::context::co_exec(const std::string& name, const std::string& sql)
 {
-    auto await_callback = [name, sql](auto& awaitable)
+    auto await_callback = [this, name, sql](auto& awaitable)
     {
-        auto& ist = context::get();
-        ist.enqueue(name, task {sql, [&awaitable] (auto& results) 
+        this->enqueue(name, task {sql, [&awaitable] (auto& results) 
         {
             awaitable.result = &results;
             awaitable.handler.resume();
@@ -258,7 +242,7 @@ result_type fb::db::co_exec(const std::string& name, const std::string& sql)
     return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
 }
 
-void fb::db::exec(const std::string& name, const std::vector<std::string>& queries)
+void fb::db::context::exec(const std::string& name, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -269,10 +253,10 @@ void fb::db::exec(const std::string& name, const std::vector<std::string>& queri
         sstream << query << ";";
     }
 
-    exec(name, sstream.str());
+    this->exec(name, sstream.str());
 }
 
-result_type fb::db::co_exec(const std::string& name, const std::vector<std::string>& queries)
+result_type fb::db::context::co_exec(const std::string& name, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -283,5 +267,5 @@ result_type fb::db::co_exec(const std::string& name, const std::vector<std::stri
         sstream << query << ";";
     }
 
-    return co_exec(name, sstream.str());
+    return this->co_exec(name, sstream.str());
 }

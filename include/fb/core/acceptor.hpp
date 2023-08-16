@@ -5,8 +5,7 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
     _delay(delay),
-    _threads(context, num_threads),
-    _exit(false)
+    _threads(context, num_threads)
 {
     this->accept();
 }
@@ -50,15 +49,19 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::shutdown()
 {
+    this->_context.stop();
+    if(this->_boost_threads != nullptr)
+    {
+        this->_boost_threads->join();
+        this->_boost_threads.reset();
+    }
+
     // exiting
     this->threads().exit();
     fb::async::exit();
 
     // do
     this->handle_exit();
-
-    // exited
-    this->_context.stop();
 }
 
 template <template<class> class S, class T>
@@ -76,7 +79,7 @@ void fb::base::acceptor<S, T>::accept()
                 if(error)
                     throw std::runtime_error(error.message());
 
-                if(this->_exit)
+                if(this->_running == false)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
                 ptr->data(this->handle_accepted(*ptr));
@@ -150,7 +153,7 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
             this->get_executor(),
             [this] 
             {
-                if(this->_exit && this->sockets.empty())
+                if(this->_running == false && this->sockets.empty())
                     this->shutdown();
             }
         );
@@ -260,6 +263,25 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
 }
 
 template <template<class> class S, class T>
+void fb::base::acceptor<S, T>::run(int thread_size)
+{
+    if(this->_boost_threads != nullptr)
+        return;
+
+    this->_running = true;
+    this->_boost_threads = std::make_unique<boost::asio::thread_pool>(thread_size);
+    for(int i = 0; i < thread_size; i++)
+    {
+        post(*this->_boost_threads, [this] { this->_context.run(); });
+    }
+}
+template <template<class> class S, class T>
+bool fb::base::acceptor<S, T>::running() const
+{
+    return this->_running;
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
     if(this->sockets.empty())
@@ -268,7 +290,7 @@ void fb::base::acceptor<S, T>::exit()
     }
     else
     {
-        this->_exit = true;
+        this->_running = false;
         for(auto& [key, value] : this->sockets)
             value.get()->close();
     }

@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/login
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw -lboost_program_options -fcoroutines
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/query_auth.o $(BUILD)/session.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/query_auth.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
@@ -48,9 +48,6 @@ $(BUILD)/context.o: ./lib/context.cpp
 $(BUILD)/gateway.o: ./lib/gateway.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/gateway.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/gateway.o
-$(BUILD)/query_auth.o: ./lib/query_auth.cpp
-	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./lib/query_auth.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/query_auth.o
 $(BUILD)/session.o: ./lib/session.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o

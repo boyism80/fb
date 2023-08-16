@@ -1,6 +1,6 @@
 #include <fb/login/auth.h>
 
-fb::login::service::auth::auth()
+fb::login::service::auth::auth(fb::db::context& db) : _db(db)
 {
     const auto& config = fb::config::get();
 
@@ -75,7 +75,7 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
 
 fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
 {
-    auto results = co_await fb::db::co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
+    auto results = co_await this->_db.co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
     auto exists = results[0].get_value<int>() > 0;
     awaitable.result = &exists;
     awaitable.handler.resume();
@@ -127,7 +127,7 @@ fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitab
         auto position_x = config["init"]["position"]["x"].asInt();
         auto position_y = config["init"]["position"]["y"].asInt();
 
-        auto results = co_await fb::db::co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y);
+        auto results = co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y);
         auto& result = results[0];
 
         auto success = result.get_value<bool>(0);
@@ -154,7 +154,7 @@ fb::awaitable<void> fb::login::service::auth::create_account(const std::string& 
 
 fb::task fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    co_await fb::db::co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
+    co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
     awaitable.handler.resume();
 }
 
@@ -173,7 +173,7 @@ fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t>& awaitable, s
     try
     {
         this->assert_account(id, pw);
-        auto  results = co_await fb::db::co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", id.c_str(), this->sha256(pw).c_str());
+        auto  results = co_await this->_db.co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", id.c_str(), this->sha256(pw).c_str());
         auto& result = results[0];
         if(result.count() == 0)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
@@ -221,7 +221,7 @@ fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, s
         if(pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
             throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-        auto results = co_await fb::db::co_exec_f(id, "SELECT pw, birth FROM user WHERE name='%s'", id.c_str());
+        auto results = co_await this->_db.co_exec_f(id, "SELECT pw, birth FROM user WHERE name='%s'", id.c_str());
         auto& result = results[0];
 
         if(result.count() == 0)
@@ -244,7 +244,7 @@ fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, s
         if(birthday != found_birth)
             throw btd_exception();
 
-        co_await db::co_exec_f(id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
+        co_await this->_db.co_exec_f(id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
         awaitable.handler.resume();
     }
     catch(login_exception& e)
