@@ -193,7 +193,6 @@
     <ClCompile Include="lib\context.cpp" />
     <ClCompile Include="lib\gateway.cpp" />
     <ClCompile Include="lib\session.cpp" />
-    <ClCompile Include="lib\query_auth.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

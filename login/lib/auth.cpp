@@ -75,7 +75,7 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
 
 fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
 {
-    auto results = co_await fb::db::co_exec_f(name, "SELECT COUNT(*) FROM user WHERE name='%s'", name.c_str());
+    auto results = co_await fb::db::co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
     auto exists = results[0].get_value<int>() > 0;
     awaitable.result = &exists;
     awaitable.handler.resume();
@@ -119,18 +119,27 @@ fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitab
     {
         this->assert_account(id, pw);
 
-        auto exists = co_await this->exists(id);
-        if(exists)
-            throw std::exception();
+        auto& config = fb::config::get();
+        std::srand(std::time(nullptr));
+        auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
+        auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
+        auto map = config["init"]["map"].asInt();
+        auto position_x = config["init"]["position"]["x"].asInt();
+        auto position_y = config["init"]["position"]["y"].asInt();
 
-        co_await fb::db::co_exec(id, fb::login::query::make_insert(id, this->sha256(pw)));
-        awaitable.handler.resume();
+        auto results = co_await fb::db::co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y);
+        auto& result = results[0];
+
+        auto success = result.get_value<bool>(0);
+        if(success == false)
+            throw std::exception();
     }
     catch(login_exception& e)
     {
         awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
-        awaitable.handler.resume();
     }
+
+    awaitable.handler.resume();
 }
 
 fb::awaitable<void> fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
@@ -143,10 +152,20 @@ fb::awaitable<void> fb::login::service::auth::create_account(const std::string& 
     return fb::awaitable<void>(await_callback);
 }
 
-void fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
+fb::task fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    // TODO: 이 메소드 없애고 context에서 직접 DB 실행 후 대기
-    db::exec(id, fb::login::query::make_update(id, hair, sex, nation, creature));
+    co_await fb::db::co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
+    awaitable.handler.resume();
+}
+
+fb::awaitable<void> fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
+{
+    auto await_callback = [this, id, hair, sex, nation, creature] (auto& awaitable)
+    {
+        this->__init_account(awaitable, id, hair, sex, nation, creature);
+    };
+
+    return fb::awaitable<void>(await_callback);
 }
 
 fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t>& awaitable, std::string id, std::string pw)

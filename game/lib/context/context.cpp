@@ -863,8 +863,8 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
         auto from = request.from;
         auto transfer = request.transfer;
 
-        auto sql = "SELECT * FROM user WHERE name='%s' LIMIT 1; SELECT * FROM item WHERE owner=(SELECT id FROM user WHERE name='%s'); SELECT id, slot FROM fb.spell WHERE owner=(SELECT id FROM user WHERE name='%s');";
-        auto results = co_await fb::db::co_exec_f(name, sql, name.c_str(), name.c_str(), name.c_str());
+        auto sql = "CALL USP_CHARACTER_GET('%s');";
+        auto results = co_await fb::db::co_exec_f(name, sql, name.c_str());
 
         auto map = results[0].get_value<uint32_t>(12);
         auto last_login = results[0].get_value<daotk::mysql::datetime>(5);

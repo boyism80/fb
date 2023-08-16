@@ -68,9 +68,6 @@
     <ClCompile Include="lib\session.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="lib\query_auth.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\query.cpp">
       <Filter>core</Filter>
     </ClCompile>

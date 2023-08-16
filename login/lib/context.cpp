@@ -150,9 +150,14 @@ bool fb::login::context::handle_account_complete(fb::socket<fb::login::session>&
         if(session->created_id.empty())
             throw std::exception();
 
-        this->_auth_service.init_account(session->created_id, request.hair, request.sex, request.nation, request.creature);
-        socket.send(fb::protocol::login::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
-        session->created_id.clear();
+        static auto fn = [this] (fb::socket<fb::login::session>& socket, uint8_t look, uint8_t sex, uint8_t nation, uint8_t creature) -> task
+        {
+            auto session = socket.data();
+            co_await this->_auth_service.init_account(session->created_id, look, sex, nation, creature);
+            socket.send(fb::protocol::login::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
+            session->created_id.clear();
+        };
+        fn(socket, request.hair, request.sex, request.nation, request.creature);
         return true;
     }
     catch(login_exception&)
