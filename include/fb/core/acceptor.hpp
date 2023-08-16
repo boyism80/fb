@@ -58,7 +58,6 @@ void fb::base::acceptor<S, T>::shutdown()
 
     // exiting
     this->threads().exit();
-    fb::async::exit();
 
     // do
     this->handle_exit();

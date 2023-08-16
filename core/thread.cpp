@@ -1,7 +1,5 @@
 #include <fb/core/thread.h>
 
-std::unique_ptr<fb::async>                   fb::async::_ist;
-
 fb::timer::timer(const fb::thread_callback& fn, std::chrono::steady_clock::duration duration) : 
     fn(fn),
     duration(duration)
@@ -319,60 +317,4 @@ fb::thread* fb::threads::operator[](uint8_t index) const
 fb::thread* fb::threads::operator[](std::thread::id id) const
 {
     return this->at(id);
-}
-
-
-fb::async::async() : 
-    _exit(false)
-{
-    this->_async_thread = std::thread(std::bind(&fb::async::async_handler, this));
-}
-
-// async
-fb::async::~async()
-{
-    this->_exit = true;
-    this->_async_thread.join();
-}
-
-void fb::async::_launch(const std::function<void()>& fn)
-{
-    auto gd = std::lock_guard(this->_async_mutex);
-    this->_futures.push_back(std::async(std::launch::async, fn));
-}
-
-void fb::async::async_handler()
-{
-    while(!this->_futures.empty() || !this->_exit)
-    {
-        this->_async_mutex.lock();
-        for(auto i = std::begin(this->_futures); i != std::end(this->_futures) /* !!! */;)
-        {
-            auto status = i->wait_for(0s);
-            if (status == std::future_status::ready)
-                i = this->_futures.erase(i);
-            else
-                ++i;
-        }
-        this->_async_mutex.unlock();
-
-        std::this_thread::sleep_for(100ms);
-    }
-}
-
-fb::async* fb::async::get()
-{
-    static std::once_flag flag;
-    std::call_once(flag, [] { _ist.reset(new fb::async()); });
-    return _ist.get();
-}
-
-void fb::async::launch(const std::function<void()>& fn)
-{
-    get()->_launch(fn);
-}
-
-void fb::async::exit()
-{
-    _ist.reset();
 }

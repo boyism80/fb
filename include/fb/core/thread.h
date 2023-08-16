@@ -109,33 +109,6 @@ public:
     static std::chrono::steady_clock::duration      now();
 };
 
-class async
-{
-private:
-    static std::unique_ptr<async>                   _ist;
-
-private:
-    std::thread                                     _async_thread;
-    std::vector<std::future<void>>                  _futures;
-    bool                                            _exit;
-    std::mutex                                      _async_mutex;
-
-private:
-    async();
-public:
-    ~async();
-
-private:
-    void                                            _launch(const std::function<void()>& fn);
-    void                                            async_handler();
-    static async*                                   get();
-
-public:
-    static void                                     launch(const std::function<void()>& fn);
-    static void                                     exit();
-};
-
-
 class threads
 {
 public:
