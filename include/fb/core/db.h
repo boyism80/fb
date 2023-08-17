@@ -93,6 +93,7 @@ private:
 private:
     workers                     _workers;
     thread_pool                 _thread_pool;
+    std::mutex                  _mutex_exit;
 
 public:
     context(int pool_size);

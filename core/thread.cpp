@@ -119,8 +119,12 @@ this->_mutex_timer.unlock();
 
 void fb::thread::exit()
 {
+    if (this->_exit)
+        return;
+
     this->_exit = true;
-    this->_thread.join();
+    if (this->_thread.joinable())
+        this->_thread.join();
 
 this->_mutex_timer.lock();
     this->_timers.clear();
@@ -306,6 +310,12 @@ void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clo
 
 void fb::threads::exit()
 {
+
+    for (auto& thread : this->_threads)
+    {
+        thread.second->exit();
+    }
+
     this->_threads.clear();
 }
 

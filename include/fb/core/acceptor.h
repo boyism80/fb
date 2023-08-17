@@ -21,14 +21,20 @@ template <template<class> class S, class T>
 class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
+    using boost_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+
+private:
     fb::threads                                 _threads;
     bool                                        _running = false;
+    std::mutex                                  _mutex_exit;
 
 protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
+    std::unique_ptr<boost_guard_type>           _boost_guard;
     std::chrono::seconds                        _delay;
     std::unique_ptr<fb::internal::socket<>>     _internal;
+
 
 public:
     fb::base::socket_container<S, T>            sockets;
@@ -38,7 +44,6 @@ public:
     ~acceptor();
 
 private:
-    void                                        shutdown();
     virtual void                                handle_work(S<T>* socket, uint8_t id);
 
 protected:

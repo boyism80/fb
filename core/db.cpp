@@ -151,13 +151,15 @@ context::context(int pool_size)
     this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count);
     for (int i = 0; i < count; i++)
     {
-        _workers.push_back(std::make_unique<worker>(databases[i], pool_size));
+        this->_workers.push_back(std::make_unique<worker>(databases[i], pool_size));
         post(*_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
     }
 }
 
 context::~context()
-{ }
+{
+    this->exit();
+}
 
 uint64_t context::hash(const std::string& name) const
 {
@@ -194,11 +196,19 @@ void context::enqueue(const std::string& name, const task& t)
 
 void context::exit()
 {
+    std::lock_guard<std::mutex>(this->_mutex_exit);
+
     for(auto& worker : this->_workers)
     {
         worker->exit();
     }
-    this->_thread_pool->join();
+
+    if (_thread_pool != nullptr)
+    {
+        this->_thread_pool->join();
+        this->_workers.clear();
+        this->_thread_pool.reset();
+    }
 }
 
 std::string fb::db::fstring(const char* fmt, ...) 

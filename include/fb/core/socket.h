@@ -72,12 +72,12 @@ public:
     using std::map<uint32_t, std::unique_ptr<S<T>>>::begin;
     using std::map<uint32_t, std::unique_ptr<S<T>>>::end;
     using std::map<uint32_t, std::unique_ptr<S<T>>>::size;
-    using std::map<uint32_t, std::unique_ptr<S<T>>>::empty;
 
 private:
     void                    push(std::unique_ptr<S<T>>&& session);
     void                    erase(S<T>& session);
     void                    erase(uint32_t fd);
+    bool                    empty();
 
 public:
     S<T>*                   operator [] (uint32_t fd);

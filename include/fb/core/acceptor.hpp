@@ -4,6 +4,7 @@ template <template<class> class S, class T>
 fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
+    _boost_guard(std::make_unique<boost_guard_type>(context.get_executor())),
     _delay(delay),
     _threads(context, num_threads)
 {
@@ -44,23 +45,6 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
         return;
 
     this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
-}
-
-template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::shutdown()
-{
-    this->_context.stop();
-    if(this->_boost_threads != nullptr)
-    {
-        this->_boost_threads->join();
-        this->_boost_threads.reset();
-    }
-
-    // exiting
-    this->threads().exit();
-
-    // do
-    this->handle_exit();
 }
 
 template <template<class> class S, class T>
@@ -146,16 +130,6 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
     {
         this->handle_disconnected(*casted);
         this->sockets.erase(*casted);
-
-        boost::asio::dispatch
-        (
-            this->get_executor(),
-            [this] 
-            {
-                if(this->_running == false && this->sockets.empty())
-                    this->shutdown();
-            }
-        );
     };
 
     if(id == 0xFF)
@@ -271,9 +245,15 @@ void fb::base::acceptor<S, T>::run(int thread_size)
     this->_boost_threads = std::make_unique<boost::asio::thread_pool>(thread_size);
     for(int i = 0; i < thread_size; i++)
     {
-        post(*this->_boost_threads, [this] { this->_context.run(); });
+        post(*this->_boost_threads, [this]
+        {
+            this->_context.run();
+            auto finished = true;
+            std::cout << finished << std::endl;
+        });
     }
 }
+
 template <template<class> class S, class T>
 bool fb::base::acceptor<S, T>::running() const
 {
@@ -283,16 +263,27 @@ bool fb::base::acceptor<S, T>::running() const
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
-    if(this->sockets.empty())
+    std::lock_guard __gd(this->_mutex_exit);
+
+    if (this->_running == false)
+        return;
+
+    this->_running = false;
+    this->handle_exit();
+    this->threads().exit();
+
+    for(auto& [key, value] : this->sockets)
+        value->close();
+
+    while(this->sockets.empty())
     {
-        this->shutdown();
+        std::this_thread::sleep_for(100ms);
     }
-    else
-    {
-        this->_running = false;
-        for(auto& [key, value] : this->sockets)
-            value.get()->close();
-    }
+
+    this->_boost_guard.reset();
+    this->cancel();
+    this->_context.stop();
+    this->_boost_threads.reset();
 }
 
 template <template<class> class S, class T>

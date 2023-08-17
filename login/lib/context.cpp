@@ -114,11 +114,6 @@ bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& soc
     return false;
 }
 
-void fb::login::context::handle_exit()
-{
-    this->_db.exit();
-}
-
 bool fb::login::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
 {
     this->exit();

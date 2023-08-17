@@ -324,6 +324,14 @@ void fb::base::socket_container<S, T>::erase(uint32_t fd)
 }
 
 template <template<class> class S, class T>
+bool fb::base::socket_container<S, T>::empty()
+{
+    auto __gd = std::lock_guard(this->_mutex);
+
+    return std::map<uint32_t, std::unique_ptr<S<T>>>::empty();
+}
+
+template <template<class> class S, class T>
 inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
 {
     auto __gd = std::lock_guard(this->_mutex);

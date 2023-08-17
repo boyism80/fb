@@ -362,7 +362,6 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get(env);
 
         boost::asio::io_context io_context;
-        boost::asio::executor_work_guard<boost::asio::io_context::executor_type> guard(io_context.get_executor());
 
         const auto connection = INTERNAL_CONNECTION
         {
@@ -422,7 +421,6 @@ int main(int argc, const char** argv)
         {
             std::this_thread::sleep_for(100ms);
         }
-        context->exit();
     }
     catch(std::exception& e)
     {

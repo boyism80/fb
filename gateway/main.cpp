@@ -100,7 +100,6 @@ int main(int argc, const char** argv)
         {
             std::this_thread::sleep_for(100ms);
         }
-        context->exit();
     }
     catch(std::exception& e)
     {

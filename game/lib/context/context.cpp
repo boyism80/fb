@@ -758,11 +758,6 @@ uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& so
     return this->thread_index(*socket.data());
 }
 
-void fb::game::context::handle_exit()
-{
-    this->_db.exit();
-}
-
 fb::thread* fb::game::context::thread(const fb::game::map& map) const
 {
     auto index = this->thread_index(map);
