@@ -18,6 +18,9 @@ fb::base::acceptor<S, T>::~acceptor()
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 {
+    if (this->_running == false)
+        return;
+
     if(this->handle_thread_index(*socket) != id)
         return;
 
@@ -270,19 +273,16 @@ void fb::base::acceptor<S, T>::exit()
 
     this->_running = false;
     this->handle_exit();
+    this->_boost_guard.reset();
+    this->cancel();
     this->threads().exit();
 
     for(auto& [key, value] : this->sockets)
         value->close();
 
-    while(this->sockets.empty())
-    {
-        std::this_thread::sleep_for(100ms);
-    }
-
-    this->_boost_guard.reset();
-    this->cancel();
     this->_context.stop();
+    this->_internal->close();
+    this->_internal.reset();
     this->_boost_threads.reset();
 }
 
