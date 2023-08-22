@@ -193,6 +193,9 @@ fb::threads::threads(boost::asio::io_context& context, uint8_t count) :
 
 fb::thread* fb::threads::at(uint8_t index) const
 {
+    if (this->_threads.size() == 0)
+        return nullptr;
+
     if(index > this->_threads.size() - 1)
         return nullptr;
 

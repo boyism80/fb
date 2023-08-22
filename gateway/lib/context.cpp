@@ -1,7 +1,7 @@
 #include <fb/gateway/context.h>
 
-fb::gateway::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::gateway::session>(context, port, delay, internal_connection)
+fb::gateway::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
+    fb::acceptor<fb::gateway::session>(context, port, delay)
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
     this->_connection_cache.write_u8(0x7E)
@@ -83,6 +83,14 @@ bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>&
     auto& c = fb::console::get();
     c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
+}
+
+void fb::gateway::context::handle_internal_connected()
+{
+    fb::acceptor<fb::gateway::session>::handle_internal_connected();
+
+    auto& config = fb::config::get();
+    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GATEWAY, 0xFF));
 }
 
 bool fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)

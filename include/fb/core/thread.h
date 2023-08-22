@@ -10,7 +10,7 @@
 #include <future>
 #include <atomic>
 
-#define MUTEX_GUARD(x) auto __gd = std::lock_guard(x);
+#define MUTEX_GUARD(x) auto __gd = std::lock_guard<std::mutex>(x);
 
 using namespace std::chrono_literals;
 

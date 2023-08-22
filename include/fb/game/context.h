@@ -46,13 +46,13 @@ private:
     tm*                     _time = fb::now();
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~context();
 
 private:
     uint32_t                elapsed_seconds(const daotk::mysql::datetime& datetime);
     std::string             elapsed_message(const daotk::mysql::datetime& datetime);
-    fb::game::session*      find(const std::string& name) const;
+    fb::game::session*      find(const std::string& name);
     void                    bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
     bool                    fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer);
@@ -90,6 +90,7 @@ protected:
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
     bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
+    void                    handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
 
 public:

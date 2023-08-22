@@ -51,20 +51,27 @@ void fb::base::socket<T>::recv()
         boost::asio::buffer(this->_buffer),
         [this](const boost::system::error_code& ec, size_t bytes_transferred)
         {
-            // TODO: 이 콜백함수가 호출되는게 메인스레드인지 확인
-            // io_context를 여러 스레드에서 run했을 때는 어떻게 되는지도 확인
             try
             {
                 if(ec)
-                    throw std::exception();
+                    throw ec;
                 
                 auto gd = std::lock_guard<std::mutex>(this->mutex);
 
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->_handle_received(*this);
+
+                if (this->is_open() == false)
+                    throw std::runtime_error("disconnected");
+
                 this->recv();
             }
-            catch(std::exception&)
+            catch(const boost::system::error_code& ec)
+            {
+                if(ec.value() == 10054)
+                    this->_handle_closed(*this);
+            }
+            catch (std::exception& e)
             {
                 this->_handle_closed(*this);
             }
@@ -292,9 +299,15 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
 // socket_container
 
 template <template<class> class S, class T>
+fb::base::socket_container<S, T>::~socket_container()
+{
+    this->close();
+}
+
+template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 {
-    auto __gd = std::lock_guard(this->_mutex);
+    auto __gd = std::lock_guard(this->mutex);
 
     auto fd = session->fd();
     std::map<uint32_t, std::unique_ptr<S<T>>>::insert
@@ -310,7 +323,7 @@ void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
-    auto __gd = std::lock_guard(this->_mutex);
+    auto __gd = std::lock_guard(this->mutex);
 
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.fd());
 }
@@ -318,7 +331,7 @@ void fb::base::socket_container<S, T>::erase(S<T>& session)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(uint32_t fd)
 {
-    auto __gd = std::lock_guard(this->_mutex);
+    auto __gd = std::lock_guard(this->mutex);
 
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(fd);
 }
@@ -326,15 +339,37 @@ void fb::base::socket_container<S, T>::erase(uint32_t fd)
 template <template<class> class S, class T>
 bool fb::base::socket_container<S, T>::empty()
 {
-    auto __gd = std::lock_guard(this->_mutex);
+    auto __gd = std::lock_guard(this->mutex);
 
     return std::map<uint32_t, std::unique_ptr<S<T>>>::empty();
 }
 
 template <template<class> class S, class T>
+void fb::base::socket_container<S, T>::close()
+{
+    auto __gd = std::lock_guard(this->mutex);
+
+    auto empty = std::map<uint32_t, std::unique_ptr<S<T>>>::empty();
+    if(empty)
+        return;
+
+    for (auto& [k, v] : *this)
+    {
+        try
+        {
+            v->close();
+        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+    }
+}
+
+template <template<class> class S, class T>
 inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
 {
-    auto __gd = std::lock_guard(this->_mutex);
+    auto __gd = std::lock_guard(this->mutex);
 
     const auto& found = std::map<uint32_t, std::unique_ptr<S<T>>>::find(fd);
     if(found == this->cend())

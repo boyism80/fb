@@ -29,7 +29,7 @@ private:
     std::vector<unique_session> _sessions;
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~context();
 
 private:
@@ -43,6 +43,7 @@ protected:
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    void                        handle_internal_connected() final;
 
 public:
     bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

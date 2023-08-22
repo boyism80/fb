@@ -362,66 +362,24 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get(env);
 
         boost::asio::io_context io_context;
-
-        const auto connection = INTERNAL_CONNECTION
-        {
-            config["internal"]["ip"].asString(),
-            (uint16_t)config["internal"]["port"].asInt(),
-            [&] (fb::base::socket<>& socket, bool success)
-            {
-                if(success)
-                {
-                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GAME, (uint8_t)config["group"].asUInt()));
-                }
-                else
-                {
-                    auto& c = fb::console::get();
-                    auto t = std::time(nullptr);
-                    auto tm = *std::localtime(&t);
-
-                    std::ostringstream sstream;
-                    sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                    c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
-                }
-            },
-            [&]
-            {
-                auto& c = fb::console::get();
-                auto t = std::time(nullptr);
-                auto tm = *std::localtime(&t);
-
-                std::ostringstream sstream;
-                sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
-            }
-        };
-
         auto context = std::make_unique<fb::game::context>
         (
             io_context, 
             config["port"].asInt(), 
-            std::chrono::seconds(config["delay"].asInt()),
-            connection
+            std::chrono::seconds(config["delay"].asInt())
         );
+        auto internal_ip = config["internal"]["ip"].asString();
+        auto internal_port = (uint16_t)config["internal"]["port"].asInt();
+        context->connect_internal(internal_ip, internal_port);
 
         load_db(c, *context);
-
-        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
-        signal.async_wait
-        (
-            [&context](const boost::system::error_code& ec, int signal)
-            {
-                context.get()->exit();
-            }
-        );
-
+        
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
-        //while (context->running())
-        //{
-        //    std::this_thread::sleep_for(100ms);
-        //}
-        getc(stdin);
+        while (context->running())
+        {
+            std::this_thread::sleep_for(100ms);
+        }
     }
     catch(std::exception& e)
     {

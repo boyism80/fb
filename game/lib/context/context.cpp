@@ -145,8 +145,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
 {"leader",              fb::game::group::builtin_leader},
 END_LUA_EXTENSION
 
-fb::game::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::game::session>(context, port, delay, internal_connection, std::thread::hardware_concurrency()),
+fb::game::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
+    fb::acceptor<fb::game::session>(context, port, delay, std::thread::hardware_concurrency()),
     _db(4)
 {
     const auto& config = fb::config::get();
@@ -338,9 +338,7 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port, std:
 }
 
 fb::game::context::~context()
-{ 
-    this->exit();
-}
+{ }
 
 bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
 {
@@ -359,6 +357,14 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     session->destroy();
     return true;
+}
+
+void fb::game::context::handle_internal_connected()
+{
+    fb::acceptor<fb::game::session>::handle_internal_connected();
+
+    auto& config = fb::config::get();
+    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GAME, (uint8_t)config["group"].asUInt()));
 }
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
@@ -428,8 +434,9 @@ std::string fb::game::context::elapsed_message(const daotk::mysql::datetime& dat
     }
 }
 
-fb::game::session* fb::game::context::find(const std::string& name) const
+fb::game::session* fb::game::context::find(const std::string& name)
 {
+    MUTEX_GUARD(this->sockets.mutex);
     auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
         [&name] (const auto& pair)
         {
@@ -685,6 +692,7 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::WORLD:
     {
+        MUTEX_GUARD(this->sockets.mutex);
         for(const auto& [key, value] : this->sockets)
         {
             auto session = value->data();
@@ -697,6 +705,7 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
 void fb::game::context::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
+    MUTEX_GUARD(this->sockets.mutex);
     for(const auto& [key, value] : this->sockets)
     {
         auto session = value->data();
@@ -709,6 +718,7 @@ void fb::game::context::send(const fb::protocol::base::header& response, const f
 
 void fb::game::context::send(const fb::protocol::base::header& response, bool encrypt)
 {
+    MUTEX_GUARD(this->sockets.mutex);
     for(const auto& [key, value] : this->sockets)
     {
         auto session = value->data();
@@ -746,6 +756,7 @@ void fb::game::context::save()
 
 void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
 {
+    MUTEX_GUARD(this->sockets.mutex);
     for(auto& socket : this->sockets)
     {
         auto session = socket.second.get()->data();
@@ -1350,6 +1361,7 @@ bool fb::game::context::handle_group(fb::socket<fb::game::session>& socket, cons
 
 bool fb::game::context::handle_user_list(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::user_list& request)
 {
+    MUTEX_GUARD(this->sockets.mutex);
     auto session = socket.data();
     if (session->inited() == false)
         return true;
@@ -1735,27 +1747,30 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
     // 화면에 보이는 몹만 갱신
     std::vector<object*> shown_mobs;
-    for(const auto& [key, value] : this->sockets)
     {
-        auto session = value->data();
-        if(session == nullptr)
-            continue;
-
-        auto thread = this->thread(*session);
-        if(thread != nullptr && thread->id() != id)
-            continue;
-
-        shown_mobs.clear();
-        for(auto spawned : spawned_mobs)
+        MUTEX_GUARD(this->sockets.mutex);
+        for(const auto& [key, value] : this->sockets)
         {
-            if(session->sight(*spawned) == false)
+            auto session = value->data();
+            if(session == nullptr)
                 continue;
 
-            shown_mobs.push_back(spawned);
-        }
+            auto thread = this->thread(*session);
+            if(thread != nullptr && thread->id() != id)
+                continue;
 
-        if(shown_mobs.size() > 0)
-            this->send(*session, fb::protocol::game::response::object::show(shown_mobs), scope::SELF);
+            shown_mobs.clear();
+            for(auto spawned : spawned_mobs)
+            {
+                if(session->sight(*spawned) == false)
+                    continue;
+
+                shown_mobs.push_back(spawned);
+            }
+
+            if(shown_mobs.size() > 0)
+                this->send(*session, fb::protocol::game::response::object::show(shown_mobs), scope::SELF);
+        }
     }
 }
 

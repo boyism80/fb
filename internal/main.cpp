@@ -67,15 +67,6 @@ int main(int argc, const char** argv)
             std::chrono::seconds(config["delay"].asInt())
         );
 
-        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
-        signal.async_wait
-        (
-            [&context](const boost::system::error_code& ec, int signal)
-            {
-                context.get()->exit();
-            }
-        );
-
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
         while (context->running())

@@ -1,7 +1,7 @@
 #include <fb/login/context.h>
 
-fb::login::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection) : 
-    fb::acceptor<fb::login::session>(context, port, delay, internal_connection),
+fb::login::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
+    fb::acceptor<fb::login::session>(context, port, delay),
     _db(4),
     _auth_service(_db)
 {
@@ -112,6 +112,14 @@ bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& soc
     auto& c = fb::console::get();
     c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
+}
+
+void fb::login::context::handle_internal_connected()
+{
+    fb::acceptor<fb::login::session>::handle_internal_connected();
+
+    auto& config = fb::config::get();
+    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::LOGIN, 0xFF));
 }
 
 bool fb::login::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)

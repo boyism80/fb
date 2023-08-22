@@ -21,17 +21,13 @@ template <template<class> class S, class T>
 class acceptor : public boost::asio::ip::tcp::acceptor
 {
 private:
-    using boost_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-
-private:
     fb::threads                                 _threads;
     bool                                        _running = false;
     std::mutex                                  _mutex_exit;
 
-protected:
+public:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
-    std::unique_ptr<boost_guard_type>           _boost_guard;
     std::chrono::seconds                        _delay;
     std::unique_ptr<fb::internal::socket<>>     _internal;
 
@@ -41,7 +37,7 @@ public:
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads = 0);
-    ~acceptor();
+    virtual ~acceptor();
 
 private:
     virtual void                                handle_work(S<T>* socket, uint8_t id);
@@ -86,15 +82,6 @@ public:
 
 } }
 
-struct INTERNAL_CONNECTION
-{
-    std::string                                     ip;
-    uint16_t                                        port;
-    std::function<void(fb::base::socket<>&, bool)>  handle_connected;
-    std::function<void()>                           handle_disconnected;
-};
-
-
 namespace fb {
 
 template <typename T>
@@ -107,15 +94,16 @@ private:
 private:
     std::map<uint8_t, public_handler>   _public_handler_dict;
     std::map<uint8_t, private_handler>  _private_handler_dict;
-    const INTERNAL_CONNECTION           _internal_connection;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads = 0);
     ~acceptor();
 
 private:
-    void                        connect_internal();
+    //void                        connect_internal();
     bool                        call(fb::socket<T>& socket, uint8_t cmd);
+    fb::awaitable<void>         co_connect_internal(const std::string& ip, uint16_t port);
+    bool                        handle_internal_receive(fb::base::socket<>& socket);
 
 protected:
     bool                        handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback);
@@ -129,6 +117,14 @@ public:
     void                        bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn);
     template <typename R>
     void                        bind();
+
+protected:
+    virtual void                handle_internal_disconnected(fb::base::socket<>& socket);
+    virtual void                handle_internal_connected();
+    virtual void                handle_internal_denied(std::exception& e);
+
+public:
+    fb::task                    connect_internal(std::string ip, uint16_t port);
 };
 
 }

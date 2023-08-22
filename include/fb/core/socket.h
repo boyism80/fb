@@ -62,11 +62,15 @@ class acceptor;
 template <template<class> class S, class T>
 class socket_container : private std::map<uint32_t, std::unique_ptr<S<T>>>
 {
-private:
-    std::mutex              _mutex;
+public:
+    std::mutex              mutex;
 
 public:
     friend class acceptor<S, T>;
+
+public:
+    socket_container() = default;
+    ~socket_container();
 
 public:
     using std::map<uint32_t, std::unique_ptr<S<T>>>::begin;
@@ -78,6 +82,7 @@ private:
     void                    erase(S<T>& session);
     void                    erase(uint32_t fd);
     bool                    empty();
+    void                    close();
 
 public:
     S<T>*                   operator [] (uint32_t fd);

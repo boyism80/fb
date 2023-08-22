@@ -78,10 +78,7 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
 
 fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)
 {
-    auto session = std::make_unique<fb::internal::session>();
-    auto ptr = session.get();
-    this->_sessions.push_back(std::move(session));
-    return ptr;
+    return new fb::internal::session();
 }
 
 bool fb::internal::context::handle_connected(fb::internal::socket<fb::internal::session>& socket)
@@ -278,13 +275,13 @@ bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::se
 
 bool fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
 {
-    if(this->_gateway != nullptr)
+    if (this->_gateway != nullptr)
         this->send(*this->_gateway, fb::protocol::internal::response::shutdown(request.trans));
 
-    if(this->_login != nullptr)
+    if (this->_login != nullptr)
         this->send(*this->_login, fb::protocol::internal::response::shutdown(request.trans));
 
-    for(auto& x : this->_games)
+    for (auto& x : this->_games)
         this->send(*x.second, fb::protocol::internal::response::shutdown(request.trans));
 
     this->exit();

@@ -43,56 +43,16 @@ int main(int argc, const char** argv)
         // Execute acceptor
         boost::asio::io_context io_context;
         auto& config = fb::config::get(env);
-
-        const auto connection = INTERNAL_CONNECTION
-        {
-            config["internal"]["ip"].asString(),
-            (uint16_t)config["internal"]["port"].asInt(),
-            [&] (fb::base::socket<>& socket, bool success)
-            {
-                if(success)
-                {
-                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GATEWAY, 0xFF));
-                }
-                else
-                {
-                    auto& c = fb::console::get();
-                    auto t = std::time(nullptr);
-                    auto tm = *std::localtime(&t);
-
-                    std::ostringstream sstream;
-                    sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                    c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
-                }
-            },
-            [&]
-            {
-                // on disconnected
-                auto& c = fb::console::get();
-                auto t = std::time(nullptr);
-                auto tm = *std::localtime(&t);
-
-                std::ostringstream sstream;
-                sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
-            }
-        };
         auto context = std::make_unique<fb::gateway::context>
         (
             io_context, 
             config["port"].asInt(), 
-            std::chrono::seconds(config["delay"].asInt()),
-            connection
+            std::chrono::seconds(config["delay"].asInt())
         );
 
-        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
-        signal.async_wait
-        (
-            [&context](const boost::system::error_code& ec, int signal)
-            {
-                context.get()->exit();
-            }
-        );
+        auto internal_ip = config["internal"]["ip"].asString();
+        auto internal_port = (uint16_t)config["internal"]["port"].asInt();
+        context->connect_internal(internal_ip, internal_port);
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);

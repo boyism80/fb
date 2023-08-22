@@ -89,6 +89,7 @@ public:
                   .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
+        // TODO: 스레드 문제 있음
         for(auto& [key, value] : this->sockets)
         {
             auto user = value->data();
