@@ -22,9 +22,6 @@ namespace fb {
 class console
 {
 private:
-    static std::unique_ptr<console>         _ist;
-
-private:
 #ifdef _WIN32
     HANDLE                  _stdout;
     int                     _x       = 0;
@@ -32,6 +29,7 @@ private:
 #endif
     uint16_t                _width   = 0;
     uint16_t                _height  = 0;
+    std::mutex              _mutex;
 
 private:
     console();

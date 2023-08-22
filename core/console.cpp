@@ -1,7 +1,5 @@
 #include <fb/core/console.h>
 
-std::unique_ptr<fb::console> fb::console::_ist;
-
 #ifdef _WIN32
 bool SetConsoleIcon(int id)
 {
@@ -90,6 +88,8 @@ bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, cha
 
 fb::console& fb::console::put(const char* format, ...)
 {
+    std::lock_guard<std::mutex> __gd(this->_mutex);
+    
     va_list                 args;
 
     va_start(args, format);
@@ -113,6 +113,8 @@ fb::console& fb::console::put(const char* format, ...)
 
 fb::console& fb::console::puts(const char* format, ...)
 {
+    std::lock_guard<std::mutex> __gd(this->_mutex);
+
     va_list                 args;
 
     va_start(args, format);
@@ -244,7 +246,8 @@ void fb::console::cursor(uint16_t* x, uint16_t* y) const
 
 fb::console& fb::console::get()
 {
-    static std::once_flag flag;
-    std::call_once(flag, [] { _ist.reset(new console()); });
-    return *_ist;
+    static std::unique_ptr<console> ist;
+    static std::once_flag           flag;
+    std::call_once(flag, [] { ist.reset(new console()); });
+    return *ist;
 }
