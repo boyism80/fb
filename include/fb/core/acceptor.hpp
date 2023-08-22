@@ -112,6 +112,9 @@ uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
+    if (this->_running == false)
+        throw std::exception("acceptor closed");
+
     auto                        casted = static_cast<S<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
 

@@ -56,6 +56,8 @@ int main(int argc, const char** argv)
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
+        getc(stdin);
+        context->_internal->send(fb::protocol::internal::request::shutdown());
         while (context->running())
         {
             std::this_thread::sleep_for(100ms);

@@ -68,8 +68,14 @@ void fb::base::socket<T>::recv()
             }
             catch(const boost::system::error_code& ec)
             {
-                if(ec.value() == 10054)
+                auto code = ec.value();
+                switch (code)
+                {
+                case 10054:
+                case boost::system::errc::errc_t::no_such_file_or_directory:
                     this->_handle_closed(*this);
+                    break;
+                }
             }
             catch (std::exception& e)
             {
