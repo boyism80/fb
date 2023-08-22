@@ -88,9 +88,8 @@ bool fb::internal::context::handle_connected(fb::internal::socket<fb::internal::
 
 bool fb::internal::context::handle_disconnected(fb::internal::socket<fb::internal::session>& socket)
 {
-    auto& c = fb::console::get();
     auto subscriber = socket.data();
-    c.puts("%s 서버와 연결이 끊어졌습니다.", subscriber->name.c_str());
+    fb::logger::warn("%s 서버와 연결이 끊어졌습니다.", subscriber->name.c_str());
 
     switch(subscriber->service)
     {
@@ -150,8 +149,7 @@ bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::
         return false;
     }
 
-    auto& c = fb::console::get();
-    c.puts("%s 서버가 연결되었습니다.", request.name.c_str());
+    fb::logger::info("%s 서버가 연결되었습니다.", request.name.c_str());
     return true;
 }
 

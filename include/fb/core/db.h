@@ -9,7 +9,7 @@
 #include <future>
 #include <functional>
 #include <deque>
-#include <fb/core/console.h>
+#include <fb/core/logger.h>
 #include <fb/core/coroutine.h>
 
 namespace fb { namespace db {

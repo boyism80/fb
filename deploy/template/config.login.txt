@@ -26,6 +26,7 @@
         {% endif %}
         {%- endfor %}
     ],
+    "log": ["fatal"],
     "init": {
         "map": 14,
         "position": {

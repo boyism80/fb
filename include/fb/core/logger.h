@@ -2,6 +2,8 @@
 #define __LOGGER_H__
 
 #include <fb/core/console.h>
+#include <fb/core/config.h>
+#include <boost/algorithm/string.hpp>
 
 namespace fb {
 
@@ -10,36 +12,37 @@ class logger
 public:
     enum level
     {
-        info, debug, warn, fatal
+        NONE = 0x0000, 
+        DEBUG = 0x0001,
+        INFO = 0x0002, 
+        WARN = 0x0004, 
+        FATAL = 0x0008
     };
 
 private:
-#ifdef _WIN32
-    HANDLE                  _stdout;
-    int                     _x       = 0;
-    int                     _y       = 0;
-#endif
-    uint16_t                _width   = 0;
-    uint16_t                _height  = 0;
-    std::mutex              _mutex;
+    level               _level;
 
 private:
-    logger();
+    logger(fb::logger::level level);
 
 public:
     logger(const logger&) = delete;
     logger(logger&&) = delete;
-    ~logger();
+    ~logger() = default;
 
 public:
     logger& operator = (logger&) = delete;
     logger& operator = (const logger&) = delete;
 
-public:
-    fb::logger&            put(const char* format, ...);
+private:
+    bool                    has_flag(fb::logger::level level) const;
+    static logger&          get();
 
 public:
-    static logger&         get();
+    static fb::logger&      debug(const char* format, ...);
+    static fb::logger&      info(const char* format, ...);
+    static fb::logger&      warn(const char* format, ...);
+    static fb::logger&      fatal(const char* format, ...);
 };
 
 }

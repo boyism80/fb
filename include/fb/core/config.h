@@ -20,7 +20,7 @@ private:
     config(const char* env = nullptr);
 
 public:
-    static const Json::Value& get(const char* env = nullptr);
+    static const Json::Value& get();
 };
 
 }

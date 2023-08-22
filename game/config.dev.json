@@ -23,6 +23,7 @@
             "pwd": "admin"
         }
     ],
+    "log": ["debug", "info", "warn", "fatal"],
     "table": {
         "class": "table.dev/class.json",
         "door": "table.dev/door.json",

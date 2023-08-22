@@ -166,6 +166,9 @@
     <ClCompile Include="lib\object\session.builtin.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

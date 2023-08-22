@@ -66,5 +66,8 @@
     <ClCompile Include="lib\data_set.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\logger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -38,11 +38,18 @@ fb::config::config(const char* env)
     }
 }
 
-const Json::Value& fb::config::get(const char* env)
+const Json::Value& fb::config::get()
 {
-    static std::once_flag flag;
-    static std::unique_ptr<fb::config> _ist;
+    static std::once_flag               flag;
+    static std::unique_ptr<fb::config>  ist;
 
-    std::call_once(flag, [env] { _ist = std::unique_ptr<fb::config>(new fb::config(env)); });
-    return _ist->_json;
+    std::call_once(flag, [] 
+    {
+        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
+        if(env == nullptr)
+            env = "dev";
+
+        ist = std::unique_ptr<fb::config>(new fb::config(env));
+    });
+    return ist->_json;
 }

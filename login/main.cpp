@@ -19,10 +19,6 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-        if(env == nullptr)
-            env = "dev";
-
         auto height = 8;
         c.box(0, 0, c.width()-1, height);
 
@@ -38,7 +34,7 @@ int main(int argc, const char** argv)
         c.cursor(0, height + 1);
     
         // Execute acceptor
-        auto& config = fb::config::get(env);
+        auto& config = fb::config::get();
 
         // Execute acceptor
         boost::asio::io_context io_context;
@@ -62,7 +58,7 @@ int main(int argc, const char** argv)
     }
     catch(std::exception& e)
     {
-        c.puts(e.what());
+        fb::logger::fatal(e.what());
     }
 
     // Clean up

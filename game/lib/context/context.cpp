@@ -350,12 +350,12 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     auto session = socket.data();
     session->init(false);
 
-    auto& c = fb::console::get();
-    c.puts("%s님이 접속을 종료했습니다.", session->name().c_str());
+    fb::logger::info("%s님이 접속을 종료했습니다.", session->name().c_str());
 
     this->save(*session);
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     session->destroy();
+    socket.data(nullptr);
     return true;
 }
 
@@ -855,8 +855,6 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     if(session->inited())
         return false;
 
-    auto& c = fb::console::get();
-
     // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
     session->init(true);
@@ -865,7 +863,7 @@ bool fb::game::context::handle_login(fb::socket<fb::game::session>& socket, cons
     auto from = request.from;
 
     session->name(request.name);
-    c.puts("%s님이 접속했습니다.", request.name.c_str());
+    fb::logger::info("%s님이 접속했습니다.", request.name.c_str());
 
     static auto fn = [this] (std::string name, fb::game::session* session, const fb::protocol::game::request::login& request) -> task
     {

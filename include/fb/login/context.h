@@ -7,7 +7,6 @@
 #include <zlib.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/console.h>
 #include <fb/core/acceptor.h>
 
 namespace fb { namespace login {

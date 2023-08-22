@@ -356,12 +356,8 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-        if(env == nullptr)
-            env = "dev";
-        auto& config = fb::config::get(env);
-
         boost::asio::io_context io_context;
+        auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>
         (
             io_context, 
@@ -383,7 +379,7 @@ int main(int argc, const char** argv)
     }
     catch(std::exception& e)
     {
-        c.puts(e.what());
+        fb::logger::fatal(e.what());
     }
 
     // Release

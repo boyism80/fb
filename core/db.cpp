@@ -27,7 +27,6 @@ connection_ptr connections::dequeue()
     if (this->_queue.empty())
         return nullptr;
 
-    auto& c = fb::console::get();
     auto ptr = std::move(this->_queue.front());
     this->_queue.pop();
 
@@ -55,7 +54,7 @@ connection_ptr connections::dequeue()
 
         if (busy)
         {
-            c.puts("db re-open success");
+            fb::logger::debug("db re-open success");
             busy = false;
         }
     }
@@ -107,7 +106,7 @@ void worker::exit()
 void worker::on_work()
 {
     constexpr auto term = 100ms;
-    while(!this->_exit)
+    while(true)
     {
         auto connection = this->_connections.dequeue();
         if(connection == nullptr)
@@ -119,6 +118,9 @@ void worker::on_work()
         auto task = this->_tasks.dequeue();
         if(task == nullptr)
         {
+            if(this->_exit)
+                break;
+            
             std::this_thread::sleep_for(term);
             this->_connections.enqueue(connection);
             continue;
@@ -133,7 +135,7 @@ void worker::on_work()
             }
             catch(...)
             {
-                fb::console::get().puts("query failed : ", task->sql.c_str());
+                fb::logger::fatal("query failed : ", task->sql.c_str());
             }
 
             auto&& x = std::move(connection);

@@ -102,15 +102,13 @@ fb::login::session* fb::login::context::handle_accepted(fb::socket<fb::login::se
 
 bool fb::login::context::handle_connected(fb::socket<fb::login::session>& socket)
 {
-    auto& c = fb::console::get();
-    c.puts("%s님이 접속했습니다.", socket.IP().c_str());
+    fb::logger::info("%s님이 접속했습니다.", socket.IP().c_str());
     return true;
 }
 
 bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& socket)
 {
-    auto& c = fb::console::get();
-    c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
+    fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 

@@ -22,6 +22,7 @@
             "pwd": "admin"
         }
     ],
+    "log": ["debug", "info", "warn", "fatal"],
     "init": {
         "map": 14,
         "position": {

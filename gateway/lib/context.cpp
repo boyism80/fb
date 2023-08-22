@@ -73,15 +73,13 @@ bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& so
 {
     socket.send(this->_connection_cache, false);
 
-    auto& c = fb::console::get();
-    c.puts("%s님이 접속했습니다.", socket.IP().c_str());
+    fb::logger::info("%s님이 접속했습니다.", socket.IP().c_str());
     return true;
 }
 
 bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
-    auto& c = fb::console::get();
-    c.puts("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
+    fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
 }
 

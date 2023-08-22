@@ -28,6 +28,7 @@
         {% endif %}
         {%- endfor %}
     ],
+    "log": ["fatal"],
     "table": {
         "class": "table/class.json",
         "door": "table/door.json",

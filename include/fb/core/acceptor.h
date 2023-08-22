@@ -7,10 +7,11 @@
 #include <boost/asio.hpp>
 #include <zlib.h>
 #include <functional>
+#include <iomanip>
 #include <fb/core/stream.h>
 #include <fb/core/socket.h>
 #include <fb/protocol/protocol.h>
-#include <fb/core/console.h>
+#include <fb/core/logger.h>
 #include <fb/core/thread.h>
 
 using namespace std::chrono_literals;
@@ -25,7 +26,7 @@ private:
     bool                                        _running = false;
     std::mutex                                  _mutex_exit;
 
-public:
+protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::chrono::seconds                        _delay;

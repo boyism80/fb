@@ -9,6 +9,7 @@
         "uid": "fb",
         "pwd": "admin"
     },
+    "log": ["debug", "info", "warn", "fatal"],
     "table": {
         "host": "table/host.json"
     },

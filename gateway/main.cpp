@@ -22,10 +22,6 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-        if(env == nullptr)
-            env = "dev";
-
         auto height = 8;
         c.box(0, 0, c.width()-1, height);
 
@@ -42,7 +38,7 @@ int main(int argc, const char** argv)
 
         // Execute acceptor
         boost::asio::io_context io_context;
-        auto& config = fb::config::get(env);
+        auto& config = fb::config::get();
         auto context = std::make_unique<fb::gateway::context>
         (
             io_context, 
@@ -56,8 +52,6 @@ int main(int argc, const char** argv)
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
-        getc(stdin);
-        context->_internal->send(fb::protocol::internal::request::shutdown());
         while (context->running())
         {
             std::this_thread::sleep_for(100ms);
@@ -65,7 +59,7 @@ int main(int argc, const char** argv)
     }
     catch(std::exception& e)
     {
-        c.puts(e.what());
+        fb::logger::fatal(e.what());
     }
 
     // Clean up

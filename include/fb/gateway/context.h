@@ -10,7 +10,6 @@
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/internal.h>
 #include <fb/core/encoding.h>
-#include <fb/core/console.h>
 
 namespace fb { namespace gateway {
 

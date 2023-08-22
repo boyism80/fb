@@ -184,6 +184,7 @@
     <ClCompile Include="..\core\cryptor.cpp" />
     <ClCompile Include="..\core\db.cpp" />
     <ClCompile Include="..\core\encoding.cpp" />
+    <ClCompile Include="..\core\logger.cpp" />
     <ClCompile Include="..\core\query.cpp" />
     <ClCompile Include="..\core\stream.cpp" />
     <ClCompile Include="..\core\table.cpp" />

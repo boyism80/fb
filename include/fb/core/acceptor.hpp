@@ -131,6 +131,9 @@ void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 {
+    if(socket.data() == nullptr)
+        return;
+
     auto                        casted = static_cast<S<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
     auto                        fn     = [this, casted] (uint8_t id)
@@ -318,7 +321,7 @@ bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
     if(i == this->_public_handler_dict.end())
     {
         auto& c = fb::console::get();
-        c.puts("정의되지 않은 요청입니다. [0x%2X]", cmd);
+        fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
         return true; 
     }
 
@@ -371,37 +374,34 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
 template <typename T>
 void fb::acceptor<T>::handle_internal_connected()
 {
-    auto& c = fb::console::get();
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
 
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    c.puts(" * [INFO] Success connect to internal server. (%s)", sstream.str().c_str());
+    fb::logger::info("Success connect to internal server. (%s)", sstream.str().c_str());
 }
 
 template <typename T>
 void fb::acceptor<T>::handle_internal_denied(std::exception& e)
 {
-    auto& c = fb::console::get();
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
 
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
+    fb::logger::warn("Failed connect to internal server. (%s)", sstream.str().c_str());
 }
 
 template <typename T>
 void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
 {
-    auto& c = fb::console::get();
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
 
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    c.puts(" * [ERROR] Disconnected from internal server. (%s)", sstream.str().c_str());
+    fb::logger::warn("Disconnected from internal server. (%s)", sstream.str().c_str());
 }
 
 template <typename T>
@@ -423,20 +423,9 @@ fb::awaitable<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, 
                 if(error)
                 {
                     awaitable.error = std::make_unique<std::runtime_error>(error.message());
-                    // if(error.value() == 10061)
-                    // {
-                    //     this->_internal_connection.handle_connected(*this->_internal, false);
-                    //     std::this_thread::sleep_for(1000ms);
-                    //     this->connect_internal();
-                    // }
-                    // else
-                    // {
-                    //     std::cout << error.message() << std::endl;
-                    // }
                 }
                 else
                 {
-                    // this->_internal_connection.handle_connected(*this->_internal, true);
                     this->_internal->recv();
                 }
 

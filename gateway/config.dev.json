@@ -8,6 +8,7 @@
         "ip": "192.168.0.100",
         "port": 3000
     },
+    "log": ["debug", "info", "warn", "fatal"],
     "entrypoints": [
         {
             "name": "채승현",
