@@ -211,28 +211,6 @@ void context::exit()
     }
 }
 
-std::string fb::db::fstring(const char* fmt, ...) 
-{
-    std::size_t size = 256;
-    std::vector<char> buf(size);
-
-    va_list vargs;
-    va_start(vargs, fmt);
-    while (true)
-    {
-        int needed = std::vsnprintf(&buf[0], size, fmt, vargs);
-
-        if (needed <= (int)size & needed >= 0)
-            break;
-
-        size = (needed > 0) ? (needed + 1) : (size * 2);
-        buf.resize(size);
-    }
-
-    va_end(vargs);
-    return std::string(&buf[0]);
-}
-
 void fb::db::context::exec(const std::string& name, const std::string& sql)
 {
     this->enqueue(name, task {sql, [] (auto& results) {}});
@@ -278,4 +256,24 @@ result_type fb::db::context::co_exec(const std::string& name, const std::vector<
     }
 
     return this->co_exec(name, sstream.str());
+}
+
+void fb::db::context::exec_f(const std::string& name, const std::string& format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    auto sql = fstring_c(format, &args);
+    va_end(args);
+
+    this->exec(name, sql);
+}
+
+result_type fb::db::context::co_exec_f(const std::string& name, const std::string& format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    auto sql = fstring_c(format, &args);
+    va_end(args);
+    
+    return this->co_exec(name, sql);
 }

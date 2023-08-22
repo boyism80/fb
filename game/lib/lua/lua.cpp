@@ -76,12 +76,11 @@ context::context(lua_State* ctx, context& owner) : _ctx(ctx), owner(&owner)
 context::~context()
 { }
 
-context& context::from(const char* format, ...)
+context& context::from(const char* fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    va_start(args, fmt);
+    auto buffer = fstring_c(fmt, &args);
     va_end(args);
 
     auto main = static_cast<fb::game::lua::main*>(this->owner);
@@ -98,15 +97,14 @@ context& context::from(const char* format, ...)
     return *this;
 }
 
-context& context::func(const char* format, ...)
+context& context::func(const char* fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    va_start(args, fmt);
+    auto buffer = fstring_c(fmt, &args);
     va_end(args);
 
-    lua_getglobal(*this, buffer);
+    lua_getglobal(*this, buffer.c_str());
     return *this;
 }
 
@@ -532,8 +530,8 @@ context* main::pop()
         auto ptr = std::make_unique<thread>(*this);
         auto key = (lua_State*)*ptr.get();
 
-        // lua_newthread°¡ ÀÌ¹Ì Á¸ÀçÇÏ´Â lua_State*¸¦ ´Ù½Ã
-        // ¹ÝÈ¯ÇÏ´Â °æ¿ì°¡ ÀÖ´Âµ¥.. È®ÀÎÇØº¼ ÇÊ¿ä°¡ ÀÖÀ»µí
+        // lua_newthreadï¿½ï¿½ ï¿½Ì¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ lua_State*ï¿½ï¿½ ï¿½Ù½ï¿½
+        // ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½ï¿½ì°¡ ï¿½Ö´Âµï¿½.. È®ï¿½ï¿½ï¿½Øºï¿½ ï¿½Ê¿ä°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if(this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
 

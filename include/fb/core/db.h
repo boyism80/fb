@@ -106,25 +106,15 @@ private:
 public:
     void                        enqueue(const std::string& name,  const task& t);
     void                        exit();
-
     void                        init();
     void                        exec(const std::string& name, const std::string& sql);
     result_type                 co_exec(const std::string& name, const std::string& sql);
-
     void                        exec(const std::string& name, const std::vector<std::string>& queries);
     result_type                 co_exec(const std::string& name, const std::vector<std::string>& queries);
-
-    template <typename... Values>
-    void                        exec_f(const std::string& name, const std::string& format, Values... values);
-
-    template <typename... Values>
-    result_type                 co_exec_f(const std::string& name, const std::string& format, Values... values);
+    void                        exec_f(const std::string& name, const std::string& format, ...);
+    result_type                 co_exec_f(const std::string& name, const std::string& format, ...);
 };
 
-std::string                     fstring(const char* fmt, ...);
-
 } }
-
-#include "db.hpp"
 
 #endif // !__DB_H__

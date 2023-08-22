@@ -24,4 +24,6 @@ std::string                 utf8(const std::string& cp949);
 std::string                 CP949(const std::string& utf8, PLATFORM p = PLATFORM::Linux);
 std::string                 UTF8(const std::string& cp949, PLATFORM p = PLATFORM::Linux);
 
+std::string                 fstring_c(const std::string& fmt, va_list* args);
+
 #endif

@@ -1036,12 +1036,10 @@ fb::game::lua::dialog& fb::game::lua::dialog::from(const char* format, ...)
     
     va_list args;
     va_start(args, format);
-
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    auto buffer = fstring_c(format, &args);
     va_end(args);
 
-    luaL_dofile(*this->_thread, buffer);
+    luaL_dofile(*this->_thread, buffer.c_str());
     return *this;
 }
 
@@ -1052,12 +1050,10 @@ fb::game::lua::dialog& fb::game::lua::dialog::func(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    auto buffer = fstring_c(format, &args);
     va_end(args);
 
-    lua_getglobal(*this->_thread, buffer);
+    lua_getglobal(*this->_thread, buffer.c_str());
     return *this;
 }
 
