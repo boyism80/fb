@@ -107,6 +107,7 @@ private:
     bool                        handle_internal_receive(fb::base::socket<>& socket);
 
 protected:
+    virtual bool                is_decrypt(uint8_t cmd) const;
     bool                        handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback);
 
 public:

@@ -39,6 +39,7 @@ private:
 
     // override
 protected:
+    bool                        is_decrypt(uint8_t) const final;
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;

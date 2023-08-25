@@ -87,6 +87,7 @@ public:
     const fb::thread*       current_thread() const;
 
 protected:
+    bool                    is_decrypt(uint8_t cmd) const final;
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
     bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;

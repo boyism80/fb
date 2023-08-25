@@ -61,6 +61,18 @@ fb::ostream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
     return ostream;
 }
 
+bool fb::gateway::context::is_decrypt(uint8_t cmd) const
+{
+    switch(cmd)
+    {
+    case 0x00:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gateway::session>& socket)
 {
     auto session = std::make_unique<fb::gateway::session>();

@@ -340,6 +340,18 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port, std:
 fb::game::context::~context()
 { }
 
+bool fb::game::context::is_decrypt(uint8_t cmd) const
+{
+    switch(cmd)
+    {
+    case 0x10:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
 {
     return true;

@@ -92,6 +92,18 @@ fb::task fb::login::context::change_pw(fb::socket<fb::login::session>& socket, s
     }
 }
 
+bool fb::login::context::is_decrypt(uint8_t cmd) const
+{
+    switch(cmd)
+    {
+    case 0x10:
+        return false;
+
+    default:
+        return true;
+    }
+}
+
 fb::login::session* fb::login::context::handle_accepted(fb::socket<fb::login::session>& socket)
 {
     auto session = std::make_unique<fb::login::session>();

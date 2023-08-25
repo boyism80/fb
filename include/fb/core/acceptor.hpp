@@ -457,9 +457,14 @@ fb::task fb::acceptor<T>::connect_internal(std::string ip, uint16_t port)
 }
 
 template <typename T>
+bool fb::acceptor<T>::is_decrypt(uint8_t cmd) const
+{
+    return true;
+}
+
+template <typename T>
 bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& fn)
 {
-    static constexpr uint8_t    not_crt_cmd[] = {0x00, 0x10};
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
     auto&                       in_stream     = socket.in_stream();
     auto&                       crt           = socket.crt();
@@ -488,9 +493,8 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
                 break;
 
 
-            // If command byte is not 0x10, this data must be decrypted by socket's encrypt key
             auto                cmd = in_stream.read_u8();
-            if(std::all_of(not_crt_cmd, not_crt_cmd + sizeof(not_crt_cmd)/sizeof(uint8_t), [cmd] (uint8_t x) { return cmd != x; }))
+            if (this->is_decrypt(cmd))
                 size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
             // Call function that matched by command byte
