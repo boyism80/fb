@@ -3,8 +3,8 @@
 
 const fb::game::item::conditions fb::game::item::DEFAULT_CONDITION;
 
-fb::game::item::master::master(const fb::game::item::master::config& config) : 
-    fb::game::object::master(config),
+fb::game::item::model::model(const fb::game::item::model::config& config) : 
+    fb::game::object::model(config),
     id(config.id),
     price(config.price),
     condition(config.condition),
@@ -16,18 +16,18 @@ fb::game::item::master::master(const fb::game::item::master::config& config) :
     active_script(config.active_script)
 { }
 
-fb::game::item::master::~master()
+fb::game::item::model::~model()
 { }
 
-int fb::game::item::master::builtin_make(lua_State* lua)
+int fb::game::item::model::builtin_make(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
     
     auto context = thread->env<fb::game::context>("context");
-    auto master = thread->touserdata<fb::game::item::master>(1);
-    auto object = master->make(*context);
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    auto object = model->make(*context);
 
     auto map = thread->touserdata<fb::game::map>(2);
     object->map(map);
@@ -53,7 +53,7 @@ int fb::game::item::master::builtin_make(lua_State* lua)
     return 1;
 }
 
-fb::game::item::attrs fb::game::item::master::attr() const
+fb::game::item::attrs fb::game::item::model::attr() const
 {
     auto                    attr = attrs::NONE;
     if(this->capacity > 1)
@@ -61,7 +61,7 @@ fb::game::item::attrs fb::game::item::master::attr() const
     return attr;
 }
 
-bool fb::game::item::master::attr(fb::game::item::attrs flag) const
+bool fb::game::item::model::attr(fb::game::item::attrs flag) const
 {
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
@@ -74,13 +74,13 @@ bool fb::game::item::master::attr(fb::game::item::attrs flag) const
 // class item
 //
 
-fb::game::item::item(fb::game::context& context, const fb::game::item::master* master, const fb::game::item::config& config) : 
-    fb::game::object(context, master, config),
+fb::game::item::item(fb::game::context& context, const fb::game::item::model* model, const fb::game::item::config& config) : 
+    fb::game::object(context, model, config),
     _count(config.count)
 { }
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right.context, right._master, fb::game::item::config { .count = right._count })
+    fb::game::object(right.context, right._model, fb::game::item::config { .count = right._count })
 { }
 
 fb::game::item::~item()
@@ -115,10 +115,10 @@ void fb::game::item::durability(std::optional<uint16_t> value)
 std::string fb::game::item::tip_message() const
 {
     std::stringstream       sstream;
-    auto                    master = this->based<fb::game::item>();
+    auto                    model = this->based<fb::game::item>();
 
-    sstream << "가격: " << master->price;
-    const std::string& desc = master->desc;
+    sstream << "가격: " << model->price;
+    const std::string& desc = model->desc;
     if(desc.empty() == false)
         sstream << std::endl << std::endl << desc;
     return sstream.str();
@@ -143,8 +143,8 @@ uint16_t fb::game::item::reduce(uint16_t count)
 
 uint16_t fb::game::item::free_space() const
 {
-    auto master = this->based<fb::game::item>();
-    return master->capacity - this->_count;
+    auto model = this->based<fb::game::item>();
+    return model->capacity - this->_count;
 }
 
 uint16_t fb::game::item::count() const
@@ -154,8 +154,8 @@ uint16_t fb::game::item::count() const
 
 void fb::game::item::count(uint16_t value)
 {
-    auto master = this->based<fb::game::item>();
-    this->_count = std::min(value, master->capacity);
+    auto model = this->based<fb::game::item>();
+    this->_count = std::min(value, model->capacity);
 }
 
 bool fb::game::item::empty() const
@@ -165,12 +165,12 @@ bool fb::game::item::empty() const
 
 fb::game::item::attrs fb::game::item::attr() const
 {
-    return static_cast<const master*>(this->_master)->attr();
+    return static_cast<const model*>(this->_model)->attr();
 }
 
 bool fb::game::item::attr(fb::game::item::attrs flag) const
 {
-    return static_cast<const master*>(this->_master)->attr(flag);
+    return static_cast<const model*>(this->_model)->attr(flag);
 }
 
 fb::game::session* fb::game::item::owner() const
@@ -193,8 +193,8 @@ bool fb::game::item::active()
 
 fb::game::item* fb::game::item::split(uint16_t count)
 {
-    auto master = this->based<fb::game::item>();
-    if(master->trade.enabled == false)
+    auto model = this->based<fb::game::item>();
+    if(model->trade.enabled == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     if(this->attr(item::attrs::BUNDLE) && this->_count > count)
@@ -221,10 +221,10 @@ void fb::game::item::merge(fb::game::item& item)
     item.count(remain);
 
     auto listener = this->_owner->get_listener<fb::game::session>();
-    auto master = this->based<fb::game::item>();
+    auto model = this->based<fb::game::item>();
     if(before != this->_count)
         listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
 
-    if(remain > 0 && this->_count == master->capacity)
+    if(remain > 0 && this->_count == model->capacity)
         listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
 }

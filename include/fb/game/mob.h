@@ -20,7 +20,7 @@ public:
     interface listener;
 
 public:
-    class master;
+    class model;
 
 public:
     struct damage;
@@ -50,7 +50,7 @@ private:
     lua::context*                           _attack_thread = nullptr;
 
 public:
-    mob(fb::game::context& context, const mob::master* master, const fb::game::mob::config& config);
+    mob(fb::game::context& context, const mob::model* model, const fb::game::mob::config& config);
     mob(const mob& right);
     ~mob();
 
@@ -125,18 +125,18 @@ struct mob::drop
 {
 public:
     float percentage;
-    const fb::game::item::master* item;
+    const fb::game::item::model* item;
 
 public:
     drop() : percentage(0), item(NULL) { }
-    drop(const fb::game::item::master* item, float percentage) : item(item), percentage(percentage) { }
+    drop(const fb::game::item::model* item, float percentage) : item(item), percentage(percentage) { }
     drop(const drop& right) : percentage(right.percentage), item(right.item) { }
 };
 
-class mob::master : public fb::game::life::master
+class mob::model : public fb::game::life::model
 {
 public:
-struct config : fb::game::life::master::config
+struct config : fb::game::life::model::config
 {
 public:
     const mob::damage                         damage;
@@ -165,8 +165,8 @@ public:
     const std::vector<drop>&                items;
 
 public:
-    master(const fb::game::mob::master::config& config);
-    ~master();
+    model(const fb::game::mob::model::config& config);
+    ~model();
 
 public:
     object::types                           type() const { return fb::game::object::types::MOB; }

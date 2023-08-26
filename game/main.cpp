@@ -20,7 +20,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     auto pivot = height + 1;
     auto stack = 0;
-    if(fb::game::data_set::doors.load
+    if(fb::game::model::doors.load
     (
         config["table"]["door"].asString(),
         [&] (const auto& name, auto percentage)
@@ -44,7 +44,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::maps.load
+    if(fb::game::model::maps.load
     (
         config["table"]["map"].asString(),
         [&] (const auto& name, auto percentage)
@@ -68,7 +68,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::worlds.load
+    if(fb::game::model::worlds.load
     (
         config["table"]["world"].asString(),
         [&] (const auto& name, auto percentage)
@@ -92,7 +92,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::spells.load
+    if(fb::game::model::spells.load
     (
         config["table"]["spell"].asString(),
         [&] (const auto& name, auto percentage)
@@ -117,7 +117,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::maps.load_warps
+    if(fb::game::model::maps.load_warps
     (
         config["table"]["warp"].asString(),
         [&] (const auto& name, auto percentage)
@@ -141,7 +141,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::items.load
+    if(fb::game::model::items.load
     (
         config["table"]["item"].asString(),
         [&] (const auto& name, auto percentage)
@@ -165,7 +165,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mixes.load
+    if(fb::game::model::mixes.load
     (
         config["table"]["item mix"].asString(),
         [&] (const auto& name, auto percentage)
@@ -189,7 +189,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::npcs.load
+    if(fb::game::model::npcs.load
     (
         config["table"]["npc"].asString(),
         [&] (const auto& name, auto percentage)
@@ -213,7 +213,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load
+    if(fb::game::model::mobs.load
     (
         config["table"]["mob"].asString(),
         [&] (const auto& name, auto percentage)
@@ -237,7 +237,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load_drops
+    if(fb::game::model::mobs.load_drops
     (
         config["table"]["item drop"].asString(),
         [&] (const auto& name, auto percentage)
@@ -266,7 +266,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::npcs.load_spawn
+    if(fb::game::model::npcs.load_spawn
     (
         config["table"]["npc spawn"].asString(),
         context, 
@@ -291,7 +291,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load_spawn
+    if(fb::game::model::mobs.load_spawn
     (
         config["table"]["mob spawn"].asString(),
         context, 
@@ -316,7 +316,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::classes.load
+    if(fb::game::model::classes.load
     (
         config["table"]["class"].asString(),
         [&] (const auto& name, auto percentage)

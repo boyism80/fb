@@ -1,6 +1,6 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
@@ -320,15 +320,15 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(store == false)
         return object::builtin_mkitem(lua);
 
-    auto master = fb::game::data_set::items.name2item(name);
-    if(master == nullptr)
+    auto model = fb::game::model::items.name2item(name);
+    if(model == nullptr)
     {
         thread->pushnil();
     }
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = master->make(*context);
+        auto item = model->make(*context);
         auto slot = session->items.add(item);
         item->to_lua(lua);
 
@@ -374,11 +374,11 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(name.empty())
                 throw std::exception();
 
-            auto master = fb::game::data_set::items.name2item(name);
-            if(master == nullptr)
+            auto model = fb::game::model::items.name2item(name);
+            if(model == nullptr)
                 throw std::exception();
 
-            index = session->items.index(master);
+            index = session->items.index(model);
         }
         else
         {
@@ -466,7 +466,7 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls = session->_class;
         auto promotion = session->_promotion;
 
-        auto cls_name = fb::game::data_set::classes.class2name(cls, promotion);
+        auto cls_name = fb::game::model::classes.class2name(cls, promotion);
         if(cls_name == nullptr)
         {
             thread->pushnil();
@@ -480,7 +480,7 @@ int fb::game::session::builtin_class(lua_State* lua)
     {
         auto cls_name = thread->tostring(2);
         uint8_t cls, promotion;
-        if(fb::game::data_set::classes.name2class(cls_name, &cls, &promotion) == false)
+        if(fb::game::model::classes.name2class(cls_name, &cls, &promotion) == false)
         {
             thread->pushboolean(false);
         }

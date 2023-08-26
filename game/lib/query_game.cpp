@@ -64,14 +64,14 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         if (item == nullptr)
             continue;
 
-        auto master = item->based<fb::game::item>();
+        auto model = item->based<fb::game::item>();
         auto durability = item->durability();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
             std::to_string(i),
             std::to_string(static_cast<int>(fb::game::equipment::slot::UNKNOWN_SLOT)),
-            std::to_string(master->id),
+            std::to_string(model->id),
             std::to_string(item->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
@@ -84,14 +84,14 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         if (equipment == nullptr)
             continue;
 
-        auto master = equipment->based<fb::game::equipment>();
+        auto model = equipment->based<fb::game::equipment>();
         auto durability = equipment->durability();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
             std::to_string(-1),
             std::to_string(static_cast<int>(slot)),
-            std::to_string(master->id),
+            std::to_string(model->id),
             std::to_string(equipment->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
         };
@@ -103,9 +103,9 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         return std::string();
 
     std::stringstream sstream;
-    sstream << "INSERT INTO item (`owner`, `index`, `slot`, `master`, `count`, `durability`) VALUES "
+    sstream << "INSERT INTO item (`owner`, `index`, `slot`, `model`, `count`, `durability`) VALUES "
         << boost::algorithm::join(item_set, ", ")
-        << " ON DUPLICATE KEY UPDATE master=VALUES(master), count=VALUES(count), durability=VALUES(durability)";
+        << " ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability)";
 
     return sstream.str();
 }

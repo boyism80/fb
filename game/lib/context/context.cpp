@@ -26,25 +26,25 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"doors",               fb::game::map::builtin_doors},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::object::master, "fb.game.object.core")
-{"name",                fb::game::object::master::builtin_name},
-{"look",                fb::game::object::master::builtin_look},
-{"color",               fb::game::object::master::builtin_color},
-{"dialog",              fb::game::object::master::builtin_dialog},
+IMPLEMENT_LUA_EXTENSION(fb::game::object::model, "fb.game.object.core")
+{"name",                fb::game::object::model::builtin_name},
+{"look",                fb::game::object::model::builtin_look},
+{"color",               fb::game::object::model::builtin_color},
+{"dialog",              fb::game::object::model::builtin_dialog},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::mob::master, "fb.game.mob.core")
-{"speed",               fb::game::mob::master::builtin_speed},
+IMPLEMENT_LUA_EXTENSION(fb::game::mob::model, "fb.game.mob.core")
+{"speed",               fb::game::mob::model::builtin_speed},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
 {"__eq",                fb::game::object::builtin_eq},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::npc::master, "fb.game.npc.core")
-{"input_dialog",        fb::game::npc::master::builtin_input_dialog},
-{"menu_dialog",         fb::game::npc::master::builtin_menu_dialog},
-{"item_dialog",         fb::game::npc::master::builtin_item_dialog},
+IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
+{"input_dialog",        fb::game::npc::model::builtin_input_dialog},
+{"menu_dialog",         fb::game::npc::model::builtin_menu_dialog},
+{"item_dialog",         fb::game::npc::model::builtin_item_dialog},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -80,9 +80,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 END_LUA_EXTENSION
 
 
-IMPLEMENT_LUA_EXTENSION(fb::game::life::master, "fb.game.life.core")
-{"hp",                  fb::game::life::master::builtin_hp},
-{"mp",                  fb::game::life::master::builtin_mp},
+IMPLEMENT_LUA_EXTENSION(fb::game::life::model, "fb.game.life.core")
+{"hp",                  fb::game::life::model::builtin_hp},
+{"mp",                  fb::game::life::model::builtin_mp},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
@@ -101,8 +101,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"cast",                fb::game::life::builtin_cast},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::item::master, "fb.game.item.core")
-{"make",                fb::game::item::master::builtin_make},
+IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
+{"make",                fb::game::item::model::builtin_make},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
@@ -157,11 +157,11 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port, std:
     lua::bind_class<map, lua::luable>();
     lua::bind_class<door, lua::luable>();
     lua::bind_class<group, lua::luable>();
-    lua::bind_class<object::master, lua::luable>();     lua::bind_class<object, lua::luable>();
-    lua::bind_class<life::master, object::master>();    lua::bind_class<life, object>();
-    lua::bind_class<mob::master, life::master>();       lua::bind_class<mob, life>();
-    lua::bind_class<npc::master, object::master>();     lua::bind_class<npc, object>();
-    lua::bind_class<item::master, object::master>();    lua::bind_class<item, object>();
+    lua::bind_class<object::model, lua::luable>();     lua::bind_class<object, lua::luable>();
+    lua::bind_class<life::model, object::model>();    lua::bind_class<life, object>();
+    lua::bind_class<mob::model, life::model>();       lua::bind_class<mob, life>();
+    lua::bind_class<npc::model, object::model>();     lua::bind_class<npc, object>();
+    lua::bind_class<item::model, object::model>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
     lua::bind_function("seed",      builtin_seed);
@@ -381,7 +381,7 @@ void fb::game::context::handle_internal_connected()
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto& [key, value] : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::model::maps)
         value->on_timer(elapsed_milliseconds);
 }
 
@@ -546,7 +546,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     else
         session.undisguise();
 
-    if(fb::game::data_set::maps[map] == nullptr)
+    if(fb::game::model::maps[map] == nullptr)
         return false;
 
     if(transfer != std::nullopt)
@@ -555,19 +555,19 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
         position_x = uint32_t(transfer.value().position.x);
         position_y = uint32_t(transfer.value().position.y);
     }
-    session.map(fb::game::data_set::maps[map], point16_t(position_x, position_y));    
+    session.map(fb::game::model::maps[map], point16_t(position_x, position_y));    
     return true;
 }
 
 void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::session& session)
 {
-    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> master, std::optional<uint32_t> count, std::optional<uint32_t> durability)
+    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> model, std::optional<uint32_t> count, std::optional<uint32_t> durability)
     {
-        if(master.has_value() == false)
+        if(model.has_value() == false)
             return true;
 
-        auto& items = fb::game::data_set::items;
-        auto  item = items[master.value()]->make(*this);
+        auto& items = fb::game::model::items;
+        auto  item = items[model.value()]->make(*this);
         if(item == nullptr)
             return true;
 
@@ -590,7 +590,7 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
         if(id.has_value() == false)
             return true;
 
-        auto spell = fb::game::data_set::spells[id.value()];
+        auto spell = fb::game::model::spells[id.value()];
         if(spell == nullptr)
             return true;
 
@@ -825,12 +825,12 @@ void fb::game::context::handle_click_mob(fb::game::session& session, fb::game::m
 
 void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
 {
-    auto master = npc.based<fb::game::npc>();
-    if(master->script.empty())
+    auto model = npc.based<fb::game::npc>();
+    if(model->script.empty())
         return;
 
     session.dialog
-        .from(master->script.c_str())
+        .from(model->script.c_str())
         .func("on_interact")
         .pushobject(session)
         .pushobject(npc)
@@ -1427,7 +1427,7 @@ bool fb::game::context::handle_board(fb::socket<fb::game::session>& socket, cons
 
     case 0x04:
     {
-        auto section = fb::game::data_set::board.sections()[request.section].get();
+        auto section = fb::game::model::board.sections()[request.section].get();
         if(section->add(request.title, request.contents, session->name()) != nullptr)
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
         break;
@@ -1437,7 +1437,7 @@ bool fb::game::context::handle_board(fb::socket<fb::game::session>& socket, cons
     {
         try
         {
-            auto section = fb::game::data_set::board.at(request.section);
+            auto section = fb::game::model::board.at(request.section);
             if(section == nullptr)
                 throw board::section::not_found_exception();
 
@@ -1666,7 +1666,7 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
     if (session->inited() == false)
         return true;
 
-    auto world = fb::game::data_set::worlds[request.value];
+    auto world = fb::game::model::worlds[request.value];
     if(world == nullptr)
         return false;
 
@@ -1691,7 +1691,7 @@ bool fb::game::context::handle_world(fb::socket<fb::game::session>& socket, cons
 
 void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [key, value] : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::model::maps)
     {
         auto&               map = value;
         if(map->activated() == false)
@@ -1725,7 +1725,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*> spawned_mobs;
-    for(auto& [key, value] : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::model::maps)
     {
         auto& map = value;
         if(map->activated() == false)
@@ -1786,7 +1786,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
 void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [key, value] : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::model::maps)
     {
         auto& map = value;
         if(map->activated() == false)
@@ -1822,7 +1822,7 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 {
     auto& c = console::get();
 
-    for(auto& [key, value] : fb::game::data_set::maps)
+    for(auto& [key, value] : fb::game::model::maps)
     {
         auto& map = value;
         if(map->activated() == false)

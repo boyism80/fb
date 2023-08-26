@@ -188,28 +188,28 @@ public:
 struct mutable_uint16_t
 {
 public:
-    uint16_t master  = 0;
+    uint16_t model  = 0;
     uint16_t current = 0;
 
 public:
     mutable_uint16_t() = default;
-    mutable_uint16_t(uint16_t value) : master(value), current(value) 
+    mutable_uint16_t(uint16_t value) : model(value), current(value) 
     { }
-    mutable_uint16_t(uint16_t master, uint16_t current) : master(master), current(current)
+    mutable_uint16_t(uint16_t model, uint16_t current) : model(model), current(current)
     { }
 };
 
 struct mutable_uint32_t
 {
 public:
-    uint32_t master  = 0;
+    uint32_t model  = 0;
     uint32_t current = 0;
 
 public:
     mutable_uint32_t() = default;
-    mutable_uint32_t(uint32_t value) : master(value), current(value)
+    mutable_uint32_t(uint32_t value) : model(value), current(value)
     { }
-    mutable_uint32_t(uint32_t master, uint32_t current) : master(master), current(current)
+    mutable_uint32_t(uint32_t model, uint32_t current) : model(model), current(current)
     { }
 };
 

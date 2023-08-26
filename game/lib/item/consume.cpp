@@ -1,13 +1,13 @@
 #include <fb/game/item.h>
 #include <fb/game/session.h>
 
-fb::game::consume::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config)
+fb::game::consume::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config)
 { }
 
-fb::game::consume::master::~master()
+fb::game::consume::model::~model()
 { }
 
-fb::game::item::attrs fb::game::consume::master::attr() const
+fb::game::item::attrs fb::game::consume::model::attr() const
 {
     item::attrs attr = item::attrs::CONSUME;
     if(this->capacity > 1)
@@ -17,8 +17,8 @@ fb::game::item::attrs fb::game::consume::master::attr() const
 }
 
 
-fb::game::consume::consume(fb::game::context& context, const fb::game::consume::master* master, uint16_t count) : 
-    fb::game::item(context, master, fb::game::item::config { .count = count })
+fb::game::consume::consume(fb::game::context& context, const fb::game::consume::model* model, uint16_t count) : 
+    fb::game::item(context, model, fb::game::item::config { .count = count })
 { }
 
 fb::game::consume::consume(const consume& right) : 

@@ -23,7 +23,7 @@ public:
     interface listener;
 
 public:
-    class master;
+    class model;
 
 public:
     struct config
@@ -60,7 +60,7 @@ private:
 
 protected:
     uint32_t                            _sequence   = 0;
-    const fb::game::object::master*     _master;
+    const fb::game::object::model*     _model;
 
     point16_t                           _position   = point16_t(0, 0);
     fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
@@ -71,7 +71,7 @@ public:
     fb::game::buffs                     buffs;
 
 protected:
-    object(fb::game::context& context, const master* master, const fb::game::object::config& config);
+    object(fb::game::context& context, const model* model, const fb::game::object::config& config);
     object(const object& right);
 public:
     virtual ~object();
@@ -90,9 +90,9 @@ public:
     uint32_t                            sequence() const { return this->_sequence; }
     void                                sequence(uint32_t value) { this->_sequence = value; }
 
-    const master*                       based() const;
+    const model*                       based() const;
     template <typename T>
-    const typename T::master*           based() const { return static_cast<const typename T::master*>(this->_master); }
+    const typename T::model*           based() const { return static_cast<const typename T::model*>(this->_model); }
     bool                                is(object::types type) const;
 
     virtual const std::string&          name() const;
@@ -200,7 +200,7 @@ interface object::listener
     virtual void                        on_destroy(fb::game::object& me) = 0;
 };
 
-class object::master : public lua::luable
+class object::model : public lua::luable
 {
 public:
     struct config
@@ -226,12 +226,12 @@ public:
     template <typename T, typename... Args>
     T* make(fb::game::context& context, Args... args) const
     {
-        return new T(context, static_cast<const typename T::master*>(this), args...);
+        return new T(context, static_cast<const typename T::model*>(this), args...);
     }
 
 public:
-    master(const fb::game::object::master::config& config);
-    virtual ~master();
+    model(const fb::game::object::model::config& config);
+    virtual ~model();
 
 protected:
     uint8_t                             dialog_look_type() const;

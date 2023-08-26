@@ -221,7 +221,7 @@
     <ClCompile Include="lib\object\session.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\query_game.cpp" />
-    <ClCompile Include="lib\data_set.cpp" />
+    <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

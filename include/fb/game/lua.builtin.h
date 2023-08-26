@@ -91,11 +91,11 @@ int builtin_item_dialog(lua_State* lua)
 
     // Read menu list
     auto size = thread->rawlen(4);
-    std::vector<item::master*> items;
+    std::vector<item::model*> items;
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(4, i+1);
-        auto core = thread->touserdata<item::master>(-1);
+        auto core = thread->touserdata<item::model>(-1);
         if(core == nullptr)
             continue;
 

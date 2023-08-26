@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/session.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 #include <fb/game/clan.h>
 #include <fb/game/group.h>
 
@@ -451,7 +451,7 @@ public:
         uint32_t                remained_exp = this->session.experience_remained();
         out_stream.write_u32(remained_exp);
 
-        auto                    class_name = fb::game::data_set::classes.class2name(this->session.cls(), this->session.promotion());
+        auto                    class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 
@@ -506,7 +506,7 @@ public:
                   .write("클랜 타이틀");
 
         // 클래스 이름
-        const auto              class_name = fb::game::data_set::classes.class2name(this->session.cls(), this->session.promotion());
+        const auto              class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 

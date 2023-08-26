@@ -1,6 +1,6 @@
 #include "resource.h"
 #include <fb/internal/context.h>
-#include <fb/internal/data_set.h>
+#include <fb/internal/model.h>
 #include <fb/core/leak.h>
 #include <fb/core/console.h>
 #include <fb/core/config.h>

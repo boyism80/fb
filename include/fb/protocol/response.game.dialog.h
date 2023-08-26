@@ -9,14 +9,14 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class common : public fb::protocol::base::header
 {
 public:
-    const fb::game::object::master&     object;
+    const fb::game::object::model&     object;
     const std::string                   message;
     const bool                          button_prev;
     const bool                          button_next;
     const fb::game::dialog::interaction interaction;
 
 public:
-    common(const fb::game::object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : fb::protocol::base::header(0x30),
+    common(const fb::game::object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : fb::protocol::base::header(0x30),
         object(object), message(message), button_prev(button_prev), button_next(button_next), interaction(interaction)
     { }
 
@@ -48,13 +48,13 @@ public:
 class menu : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::master&        npc;
+    const fb::game::npc::model&        npc;
     const std::vector<std::string>      menus;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    menu(const fb::game::npc::master& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : fb::protocol::base::header(0x2F),
+    menu(const fb::game::npc::model& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : fb::protocol::base::header(0x2F),
         npc(npc), menus(menus), message(message), interaction(interaction)
     { }
 
@@ -100,13 +100,13 @@ public:
 class slot : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::master&        npc;
+    const fb::game::npc::model&        npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    slot(const fb::game::npc::master& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : fb::protocol::base::header(0x2F),
+    slot(const fb::game::npc::model& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : fb::protocol::base::header(0x2F),
         npc(npc), slots(slots), message(message), interaction(interaction)
     { }
 
@@ -141,18 +141,18 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::master&                npc;
-    const std::vector<fb::game::item::master*>& items;
+    const fb::game::npc::model&                npc;
+    const std::vector<fb::game::item::model*>& items;
     const std::string                           message;
     const uint16_t                              pursuit;
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::master& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : fb::protocol::base::header(0x2F),
+    item(const fb::game::npc::model& npc, const std::vector<fb::game::item::model*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
     { }
 
-    item(const fb::game::npc& npc, const std::vector<fb::game::item::master*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
+    item(const fb::game::npc& npc, const std::vector<fb::game::item::model*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
         item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     { }
 
@@ -193,13 +193,13 @@ public:
 class input : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::master&        npc;
+    const fb::game::npc::model&        npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    input(const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : fb::protocol::base::header(0x2F),
+    input(const fb::game::npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : fb::protocol::base::header(0x2F),
         npc(npc), message(message), interaction(interaction)
     { }
 
@@ -229,7 +229,7 @@ public:
 class input_ext : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::master&        npc;
+    const fb::game::npc::model&        npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const std::string                   top, bottom;
@@ -238,7 +238,7 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    input_ext(const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : fb::protocol::base::header(0x30),
+    input_ext(const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : fb::protocol::base::header(0x30),
         npc(npc), message(message), top(top), bottom(bottom), maxlen(maxlen), button_prev(button_prev), interaction(interaction)
     { }
 

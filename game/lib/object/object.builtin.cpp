@@ -5,14 +5,14 @@
 #include <fb/game/context.h>
 #include <fb/game/lua.builtin.h>
 
-int fb::game::object::master::builtin_name(lua_State* lua)
+int fb::game::object::model::builtin_name(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto object = thread->touserdata<fb::game::object::master>(1);
+    auto object = thread->touserdata<fb::game::object::model>(1);
     if(object == nullptr)
         return 0;
     
@@ -21,14 +21,14 @@ int fb::game::object::master::builtin_name(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::master::builtin_look(lua_State* lua)
+int fb::game::object::model::builtin_look(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto object = thread->touserdata<fb::game::object::master>(1);
+    auto object = thread->touserdata<fb::game::object::model>(1);
     if(object == nullptr)
         return 0;
     
@@ -37,14 +37,14 @@ int fb::game::object::master::builtin_look(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::master::builtin_color(lua_State* lua)
+int fb::game::object::model::builtin_color(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto object = thread->touserdata<fb::game::object::master>(1);
+    auto object = thread->touserdata<fb::game::object::model>(1);
     if(object == nullptr)
         return 0;
     
@@ -53,7 +53,7 @@ int fb::game::object::master::builtin_color(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::master::builtin_dialog(lua_State* lua)
+int fb::game::object::model::builtin_dialog(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -61,7 +61,7 @@ int fb::game::object::master::builtin_dialog(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     // Ex) npc:dialog(session, "hello", true, true);
-    return ::builtin_dialog<object::master>(lua);
+    return ::builtin_dialog<object::model>(lua);
 }
 
 int fb::game::object::builtin_core(lua_State* lua)
@@ -75,8 +75,8 @@ int fb::game::object::builtin_core(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    auto master = object->based();
-    master->to_lua(lua);
+    auto model = object->based();
+    model->to_lua(lua);
     return 1;
 }
 
@@ -468,7 +468,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(thread->is_str(2))
         {
-            fb::game::data_set::maps.name2map(thread->tostring(2));
+            fb::game::model::maps.name2map(thread->tostring(2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -519,15 +519,15 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     
     auto name = thread->tostring(2);
 
-    auto master = fb::game::data_set::items.name2item(name);
-    if(master == nullptr)
+    auto model = fb::game::model::items.name2item(name);
+    if(model == nullptr)
     {
         thread->pushnil();
     }
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = master->make(*context);
+        auto item = model->make(*context);
         item->map(object->_map, object->_position);
         item->to_lua(lua);
         

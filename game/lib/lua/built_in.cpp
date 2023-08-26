@@ -51,7 +51,7 @@ int fb::game::context::builtin_name2mob(lua_State* lua)
         return 0;
     
     auto name = thread->tostring(1);
-    auto mob = fb::game::data_set::mobs.name2mob(name);
+    auto mob = fb::game::model::mobs.name2mob(name);
 
     if(mob == nullptr)  { thread->pushnil(); }
     else                { mob->to_lua(lua); }
@@ -65,7 +65,7 @@ int fb::game::context::builtin_name2npc(lua_State* lua)
         return 0;
     
     auto name = thread->tostring(1);
-    auto npc = fb::game::data_set::npcs.name2npc(name);
+    auto npc = fb::game::model::npcs.name2npc(name);
     
     if(npc == nullptr)  { thread->pushnil(); }
     else                { npc->to_lua(lua); }
@@ -79,7 +79,7 @@ int fb::game::context::builtin_name2map(lua_State* lua)
         return 0;
     
     auto name = thread->tostring(1);
-    auto map = fb::game::data_set::maps.name2map(name);
+    auto map = fb::game::model::maps.name2map(name);
 
     if(map == nullptr)  { thread->pushnil(); }
     else                { map->to_lua(lua); }
@@ -93,7 +93,7 @@ int fb::game::context::builtin_name2item(lua_State* lua)
         return 0;
     
     auto name = thread->tostring(1);
-    auto item = fb::game::data_set::items.name2item(name);
+    auto item = fb::game::model::items.name2item(name);
 
     if(item == nullptr) { thread->pushnil(); }
     else                { item->to_lua(lua); }

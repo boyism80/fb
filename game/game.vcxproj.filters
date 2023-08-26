@@ -114,7 +114,7 @@
     <ClCompile Include="lib\query_game.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="lib\data_set.cpp">
+    <ClCompile Include="lib\model.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="lib\trade.cpp">

@@ -25,7 +25,7 @@ public:
     interface listener;
 
 public:
-    class master;
+    class model;
 
 public:
     struct trade;
@@ -92,7 +92,7 @@ protected:
     session*                                _owner = nullptr;
 
 public:
-    item(fb::game::context& context, const fb::game::item::master* master, const fb::game::item::config& config = fb::game::item::config { .count = 1 });
+    item(fb::game::context& context, const fb::game::item::model* model, const fb::game::item::config& config = fb::game::item::config { .count = 1 });
     item(const item& right);
     virtual ~item();
 
@@ -179,10 +179,10 @@ public:
     const fb::game::sex                     sex             = fb::game::sex::BOTH;
 };
 
-class item::master : public fb::game::object::master
+class item::model : public fb::game::object::model
 {
 public:
-    struct config : public fb::game::object::master::config
+    struct config : public fb::game::object::model::config
     {
     public:
         uint32_t                            id          = 0;
@@ -213,8 +213,8 @@ public:
     const std::string                        active_script;
 
 public:
-    master(const fb::game::item::master::config& config);
-    virtual ~master();
+    model(const fb::game::item::model::config& config);
+    virtual ~model();
 
 public:
     fb::game::object::types                  type() const override { return object::types::ITEM; }
@@ -238,10 +238,10 @@ public:
 class cash : public item
 {
 public:
-    class master;
+    class model;
 
 public:
-    static const master                 BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
+    static const model                 BRONZE, BRONZE_BUNDLE, SILVER, SILVER_BUNDLE, GOLD, GOLD_BUNDLE;
 
 private:
     uint32_t                            _chunk = 0;
@@ -262,11 +262,11 @@ public:
 };
 
 
-class cash::master : public fb::game::item::master
+class cash::model : public fb::game::item::model
 {
 public:
-    master(const fb::game::item::master::config& config);
-    ~master();
+    model(const fb::game::item::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -281,10 +281,10 @@ public:
 class consume : public item
 {
 public:
-    class master;
+    class model;
 
 public:
-    consume(fb::game::context& context, const master* master, uint16_t count = 1);
+    consume(fb::game::context& context, const model* model, uint16_t count = 1);
     consume(const consume& right);
     ~consume();
 
@@ -293,14 +293,14 @@ public:
 };
 
 
-class consume::master : public fb::game::item::master
+class consume::model : public fb::game::item::model
 {
 public:
     friend class consume;
 
 public:
-    master(const fb::game::item::master::config& config);
-    ~master();
+    model(const fb::game::item::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -314,13 +314,13 @@ public:
 class pack : public item
 {
 public:
-    class master;
+    class model;
 
 private:
     uint16_t                            _durability = 0;
 
 public:
-    pack(fb::game::context& context, const master* master);
+    pack(fb::game::context& context, const model* model);
     pack(const pack& right);
     ~pack();
 
@@ -334,7 +334,7 @@ public:
 };
 
 
-class pack::master : public fb::game::item::master
+class pack::model : public fb::game::item::model
 {
 public:
     friend class pack;
@@ -343,8 +343,8 @@ public:
     uint16_t                                durability = 0;
 
 public:
-    master(const fb::game::item::master::config& config);
-    ~master();
+    model(const fb::game::item::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -377,7 +377,7 @@ public:
     interface listener;
 
 public:
-    class master;
+    class model;
 
 public:
     struct repair;
@@ -390,7 +390,7 @@ protected:
     uint16_t                            _durability = 0;
 
 protected:
-    equipment(fb::game::context& context, const fb::game::equipment::master* master);
+    equipment(fb::game::context& context, const fb::game::equipment::model* model);
     equipment(const fb::game::equipment& right);
 public:
     virtual ~equipment();
@@ -461,10 +461,10 @@ public:
     void                                price(uint32_t value) { this->_price = value; }
 };
 
-class equipment::master : public fb::game::item::master
+class equipment::model : public fb::game::item::model
 {
 public:
-    struct config : public fb::game::item::master::config
+    struct config : public fb::game::item::model::config
     {
     public:
         uint16_t                            dress = 0;
@@ -505,9 +505,9 @@ public:
     const fb::game::defensive           defensive;
 
 public:
-    master(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(uint32_t id, const std::string& name, uint16_t look, uint16_t dress, uint8_t color = 0, uint16_t durability = 100);
+    model(const fb::game::equipment::model::config& config);
+    ~model();
 
 public:
     virtual fb::game::item::attrs       attr() const;
@@ -520,13 +520,13 @@ public:
     struct damage_range;
 
 public:
-    class master;
+    class model;
 
 public:
     enum class types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
 
 public:
-    weapon(fb::game::context& context, const fb::game::weapon::master* master);
+    weapon(fb::game::context& context, const fb::game::weapon::model* model);
     weapon(const fb::game::weapon& right);
     ~weapon();
 
@@ -544,10 +544,10 @@ public:
     damage_range(const range32_t& small, const range32_t& large) : small(small), large(large) { }
 };
 
-class weapon::master : public equipment::master
+class weapon::model : public equipment::model
 {
 public:
-    struct config : public fb::game::equipment::master::config
+    struct config : public fb::game::equipment::model::config
     {
     public:
         range32_t                       small; 
@@ -565,8 +565,8 @@ public:
     const std::string                   spell;
 
 public:
-    master(const fb::game::weapon::master::config& config);
-    ~master();
+    model(const fb::game::weapon::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -582,20 +582,20 @@ public:
 class armor : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    armor(fb::game::context& context, const fb::game::armor::master* master);
+    armor(fb::game::context& context, const fb::game::armor::model* model);
     armor(const fb::game::armor& right);
     ~armor();
 };
 
 
-class armor::master : public equipment::master
+class armor::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -609,20 +609,20 @@ public:
 class helmet : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    helmet(fb::game::context& context, const master* master);
+    helmet(fb::game::context& context, const model* model);
     helmet(const helmet& right);
     ~helmet();
 };
 
 
-class helmet::master : public equipment::master
+class helmet::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -636,20 +636,20 @@ public:
 class shield : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    shield(fb::game::context& context, const master* master);
+    shield(fb::game::context& context, const model* model);
     shield(const shield& right);
     ~shield();
 };
 
 
-class shield::master : public equipment::master
+class shield::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
     
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -663,20 +663,20 @@ public:
 class ring : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    ring(fb::game::context& context, const master* master);
+    ring(fb::game::context& context, const model* model);
     ring(const ring& right);
     ~ring();
 };
 
 
-class ring::master : public equipment::master
+class ring::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
     
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -690,20 +690,20 @@ public:
 class auxiliary : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    auxiliary(fb::game::context& context, const master* master);
+    auxiliary(fb::game::context& context, const model* model);
     auxiliary(const auxiliary& right);
     ~auxiliary();
 };
 
 
-class auxiliary::master : public equipment::master
+class auxiliary::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -717,20 +717,20 @@ public:
 class bow : public equipment
 {
 public:
-    class master;
+    class model;
 
 public:
-    bow(fb::game::context& context, const master* master);
+    bow(fb::game::context& context, const model* model);
     bow(const bow& right);
     ~bow();
 };
 
 
-class bow::master : public equipment::master
+class bow::model : public equipment::model
 {
 public:
-    master(const fb::game::equipment::master::config& config);
-    ~master();
+    model(const fb::game::equipment::model::config& config);
+    ~model();
 
 public:
     fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final
@@ -769,7 +769,7 @@ public:
     bool                                reduce(uint8_t index, uint16_t count);
     fb::game::item*                     active(uint8_t index);
     uint8_t                             inactive(equipment::slot slot);
-    uint8_t                             index(const fb::game::item::master* item) const;
+    uint8_t                             index(const fb::game::item::model* item) const;
     uint8_t                             index(const fb::game::item& item) const;
 
     fb::game::equipment*                wear(fb::game::equipment::slot slot, fb::game::equipment* item);
@@ -795,7 +795,7 @@ public:
     fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary, equipment::position position);
 
     fb::game::item*                     find(const std::string& name) const;
-    fb::game::item*                     find(const fb::game::item::master& base) const;
+    fb::game::item*                     find(const fb::game::item::model& base) const;
     fb::game::item*                     drop(uint8_t index, uint8_t count);
     void                                pickup(bool boost);
     bool                                throws(uint8_t index);
@@ -839,9 +839,9 @@ private:
     bool                                contains(const item* item) const;
 
 public:
-    void                                require_add(fb::game::item::master* item, uint32_t count);
-    void                                success_add(fb::game::item::master* item, uint32_t count);
-    void                                failed_add(fb::game::item::master* item, uint32_t count);
+    void                                require_add(fb::game::item::model* item, uint32_t count);
+    void                                success_add(fb::game::item::model* item, uint32_t count);
+    void                                failed_add(fb::game::item::model* item, uint32_t count);
     bool                                matched(const std::vector<item*>& items) const;
 };
 
@@ -863,11 +863,11 @@ public:
 struct itemmix::element
 {
 public:
-    fb::game::item::master*             item;       // 재료 아이템
+    fb::game::item::model*             item;       // 재료 아이템
     uint32_t                            count;      // 갯수
 
 public:
-    element(fb::game::item::master* item, uint32_t count) : item(item), count(count) { }
+    element(fb::game::item::model* item, uint32_t count) : item(item), count(count) { }
     element(const element& right) : item(right.item), count(right.count) { }
 };
 

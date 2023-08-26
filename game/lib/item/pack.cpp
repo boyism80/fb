@@ -1,22 +1,22 @@
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
-fb::game::pack::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config),
+fb::game::pack::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config),
     durability(config.capacity)
 { }
 
-fb::game::pack::master::~master()
+fb::game::pack::model::~model()
 { }
 
-fb::game::item::attrs fb::game::pack::master::attr() const
+fb::game::item::attrs fb::game::pack::model::attr() const
 {
     return item::attrs::PACK;
 }
 
-fb::game::pack::pack(fb::game::context& context, const fb::game::pack::master* master) : 
-    fb::game::item(context, master)
+fb::game::pack::pack(fb::game::context& context, const fb::game::pack::model* model) : 
+    fb::game::item(context, model)
 {
-    this->_durability = master->durability;
+    this->_durability = model->durability;
 }
 
 fb::game::pack::pack(const pack& right) : 

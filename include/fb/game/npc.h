@@ -11,10 +11,10 @@ public:
     LUA_PROTOTYPE
 
 public:
-    class master;
+    class model;
 
 public:
-    npc(fb::game::context& context, const master* master);
+    npc(fb::game::context& context, const model* model);
     npc(const npc& right);
     ~npc();
 
@@ -27,7 +27,7 @@ public:
     static int                  builtin_item_dialog(lua_State* lua);
 };
 
-class npc::master : public object::master
+class npc::model : public object::model
 {
 public:
     LUA_PROTOTYPE
@@ -35,7 +35,7 @@ public:
 public:
     interface listener;
 
-    struct config : public fb::game::object::master::config
+    struct config : public fb::game::object::model::config
     {
     public:
         std::string     script;
@@ -48,8 +48,8 @@ public:
     friend class npc;
 
 public:
-    master(const fb::game::npc::master::config& config);
-    ~master();
+    model(const fb::game::npc::model::config& config);
+    ~model();
 
 public:
     object::types               type() const { return object::types::NPC; }
@@ -61,7 +61,7 @@ public:
 };
 
 
-interface npc::master::listener : public virtual fb::game::object::listener
+interface npc::model::listener : public virtual fb::game::object::listener
 { };
 
 } }

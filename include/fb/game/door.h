@@ -19,10 +19,10 @@ public:
     struct element;
 
 public:
-    class master;
+    class model;
 
 private:
-    master&                     _master;
+    model&                     _model;
     fb::game::map*              _owner  = nullptr;
     bool                        _opened = false;
     bool                        _locked = false;
@@ -31,11 +31,11 @@ public:
     const point16_t             position;
 
 public:
-    door(fb::game::map* owner, door::master& master, const point16_t position, bool opened);
+    door(fb::game::map* owner, door::model& model, const point16_t position, bool opened);
     ~door();
 
 public:
-    const door::master&         based() const;
+    const door::model&         based() const;
     bool                        toggle();
     bool                        opened() const;
     bool                        locked() const;
@@ -66,7 +66,7 @@ public:
     ~doors();
 
 public:
-    void                        add(map* map, fb::game::door::master& master, const point16_t position, bool opened);
+    void                        add(map* map, fb::game::door::model& model, const point16_t position, bool opened);
     door*                       find(const point16_t position);
     door*                       find(const session& session);
 };
@@ -80,7 +80,7 @@ struct door::element
     ~element() { }
 };
 
-class door::master : private std::vector<door::element>
+class door::model : private std::vector<door::element>
 {
 public:
     using std::vector<door::element>::begin;

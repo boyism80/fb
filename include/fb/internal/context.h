@@ -5,7 +5,7 @@
 #include <zlib.h>
 #include <fb/protocol/internal.h>
 #include <fb/core/acceptor.h>
-#include <fb/internal/data_set.h>
+#include <fb/internal/model.h>
 #include <fb/internal/exception.h>
 #include <fb/core/config.h>
 

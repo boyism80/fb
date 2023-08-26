@@ -1,22 +1,22 @@
 #include <fb/game/item.h>
 
-fb::game::weapon::master::master(const fb::game::weapon::master::config& config) : 
-    fb::game::equipment::master(config),
+fb::game::weapon::model::model(const fb::game::weapon::model::config& config) : 
+    fb::game::equipment::model(config),
     damage_range(config.small, config.large),
     sound(config.sound),
     spell(config.spell)
 { }
 
 
-fb::game::weapon::master::~master()
+fb::game::weapon::model::~model()
 { }
 
-fb::game::item::attrs fb::game::weapon::master::attr() const
+fb::game::item::attrs fb::game::weapon::model::attr() const
 {
     return item::attrs::WEAPON;
 }
 
-fb::game::weapon::types fb::game::weapon::master::weapon_type() const
+fb::game::weapon::types fb::game::weapon::model::weapon_type() const
 {
     switch(this->look / 10000)
     {
@@ -38,8 +38,8 @@ fb::game::weapon::types fb::game::weapon::master::weapon_type() const
 }
 
 
-fb::game::weapon::weapon(fb::game::context& context, const master* master) : 
-    equipment(context, master)
+fb::game::weapon::weapon(fb::game::context& context, const model* model) : 
+    equipment(context, model)
 { }
 
 fb::game::weapon::weapon(const weapon& right) : 
@@ -52,9 +52,9 @@ fb::game::weapon::~weapon()
 std::string fb::game::weapon::mid_message() const
 {
     std::stringstream       sstream;
-    auto                    master = this->based<fb::game::weapon>();
+    auto                    model = this->based<fb::game::weapon>();
     
-    sstream << "파괴력: 　　 S:　" << std::to_string(master->damage_range.small.min) << 'm' << std::to_string(master->damage_range.small.max) << std::endl;
-    sstream << "　　　  　 　L:　" << std::to_string(master->damage_range.large.min) << 'm' << std::to_string(master->damage_range.large.max) << std::endl;
+    sstream << "파괴력: 　　 S:　" << std::to_string(model->damage_range.small.min) << 'm' << std::to_string(model->damage_range.small.max) << std::endl;
+    sstream << "　　　  　 　L:　" << std::to_string(model->damage_range.large.min) << 'm' << std::to_string(model->damage_range.large.max) << std::endl;
     return sstream.str();
 }

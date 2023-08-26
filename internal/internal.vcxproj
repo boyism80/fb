@@ -190,7 +190,7 @@
     <ClCompile Include="..\core\time.cpp" />
     <ClCompile Include="lib\context.cpp" />
     <ClCompile Include="lib\session.cpp" />
-    <ClCompile Include="lib\data_set.cpp" />
+    <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

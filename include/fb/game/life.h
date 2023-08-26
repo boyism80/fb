@@ -14,7 +14,7 @@ public:
     interface listener;
 
 public:
-    class master;
+    class model;
 
 struct config : public fb::game::object::config
 {
@@ -32,7 +32,7 @@ public:
     fb::game::spells            spells;
 
 protected:
-    life(fb::game::context& context, const master* master, const fb::game::life::config& config);
+    life(fb::game::context& context, const model* model, const fb::game::life::config& config);
     virtual ~life();
 
 protected:
@@ -118,10 +118,10 @@ interface life::listener : public virtual fb::game::object::listener,
     virtual void                on_mp(life& me, uint32_t before, uint32_t current) = 0;
 };
 
-class life::master : public fb::game::object::master
+class life::model : public fb::game::object::model
 {
 public:
-    struct config : public fb::game::object::master::config
+    struct config : public fb::game::object::model::config
     {
     public:
         fb::game::defensive     defensive;
@@ -143,8 +143,8 @@ public:
     const uint32_t              experience  = 0;
 
 public:
-    master(const fb::game::life::master::config& config);
-    virtual ~master();
+    model(const fb::game::life::model::config& config);
+    virtual ~model();
 
 public:
     static int                  builtin_hp(lua_State* lua);

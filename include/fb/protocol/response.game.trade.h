@@ -19,7 +19,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto              class_name = fb::game::data_set::classes.class2name(this->me.cls(), this->me.promotion());
+        const auto              class_name = fb::game::model::classes.class2name(this->me.cls(), this->me.promotion());
         if(class_name == nullptr)
             return;
 
