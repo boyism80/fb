@@ -335,6 +335,12 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port, std:
             .fn = std::bind(&context::handle_command_mapobj, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
+
+    this->bind_command("랜덤이동", command
+        {
+            .fn = std::bind(&context::handle_command_randmap, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 fb::game::context::~context()
@@ -1040,7 +1046,11 @@ bool fb::game::context::handle_update_map(fb::socket<fb::game::session>& socket,
     if (session->inited() == false)
         return true;
 
-    this->send(*session, fb::protocol::game::response::map::update(*session->map(), request.position, request.size), scope::SELF);
+    auto map = session->map();
+    if(map == nullptr)
+        return true;
+
+    this->send(*session, fb::protocol::game::response::map::update(*map, request.position, request.size), scope::SELF);
     return true;
 }
 

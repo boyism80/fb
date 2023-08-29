@@ -126,8 +126,9 @@ fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitab
         auto map = config["init"]["map"].asInt();
         auto position_x = config["init"]["position"]["x"].asInt();
         auto position_y = config["init"]["position"]["y"].asInt();
+        auto admin = config["admin mode"].asBool() ? 0 : 1;
 
-        auto results = co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y);
+        auto results = co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
         auto& result = results[0];
 
         auto success = result.get_value<bool>(0);

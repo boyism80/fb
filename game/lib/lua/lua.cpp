@@ -532,8 +532,6 @@ context* main::pop()
         auto ptr = std::make_unique<thread>(*this);
         auto key = (lua_State*)*ptr.get();
 
-        // lua_newthread�� �̹� �����ϴ� lua_State*�� �ٽ�
-        // ��ȯ�ϴ� ��찡 �ִµ�.. Ȯ���غ� �ʿ䰡 ������
         if(this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
 

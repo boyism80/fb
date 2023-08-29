@@ -188,7 +188,7 @@ bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
         if(this->_map->blocked(position.x, position.y))
             continue;
 
-        this->position(position);
+        this->position(position, true);
         break;
     }
 

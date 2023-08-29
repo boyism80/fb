@@ -351,3 +351,25 @@ bool fb::game::context::handle_command_mapobj(fb::game::session& session, Json::
     (*map)(session.x(), session.y())->object = value;
     return true;
 }
+
+bool fb::game::context::handle_command_randmap(fb::game::session& session, Json::Value& parameters)
+{
+    static std::vector<fb::game::map*>  maps;
+    static std::once_flag               flag;
+    std::call_once(flag, [] 
+        { 
+            std::srand(std::time(nullptr));
+            for(auto& [id, map] : fb::game::model::maps)
+            {
+                maps.push_back(map.get());
+            }
+        });
+
+    auto index = std::rand() % maps.size();
+    auto map = maps[index];
+    auto x = map->width() > 0 ? std::rand() % map->width() : 0;
+    auto y = map->height() > 0 ? std::rand() % map->height() : 0;
+
+    session.map(map, fb::game::point16_t(x, y));
+    return true;
+}
