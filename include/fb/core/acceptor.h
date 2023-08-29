@@ -49,6 +49,7 @@ protected:
     const fb::threads&                          threads() const;
 
 protected:
+    virtual void                                handle_start() {}
     virtual bool                                handle_parse(S<T>& session, const std::function<bool(S<T>&)>& fn) = 0;
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }

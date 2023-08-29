@@ -340,6 +340,21 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port, std:
 fb::game::context::~context()
 { }
 
+void fb::game::context::handle_start()
+{
+    // prepare lua context
+    auto& threads = this->threads();
+    for(int i = 0; i < threads.count(); i++)
+    {
+        auto thread = threads.at(i);
+        thread->dispatch([] (uint8_t) 
+        {
+            auto& ist = fb::game::lua::container::ist();
+            auto& main = ist.get();
+        });
+    }
+}
+
 bool fb::game::context::is_decrypt(uint8_t cmd) const
 {
     switch(cmd)

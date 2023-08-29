@@ -260,6 +260,8 @@ void fb::base::acceptor<S, T>::run(int thread_size)
             this->_context.run();
         });
     }
+
+    this->handle_start();
 }
 
 template <template<class> class S, class T>

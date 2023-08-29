@@ -199,6 +199,8 @@ bool context::resume(int argc)
 
     case LUA_ERRRUN:
     case LUA_ERRERR:
+        fb::logger::fatal("lua error message : %s", this->tostring(-1).c_str());
+        lua_pop(*this, 1);
         main->revoke(*this);
         return false;
 

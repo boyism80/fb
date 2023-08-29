@@ -15,6 +15,7 @@ extern "C"
 #include <random>
 #include <fb/core/socket.h>
 #include <fb/core/encoding.h>
+#include <fb/core/logger.h>
 #include <fb/game/mmo.h>
 
 #define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\
