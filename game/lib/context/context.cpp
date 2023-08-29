@@ -1778,35 +1778,6 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
             spawned_mobs.push_back(mob);
         }
     }
-
-
-    // 화면에 보이는 몹만 갱신
-    std::vector<object*> shown_mobs;
-    {
-        MUTEX_GUARD(this->sockets.mutex);
-        for(const auto& [key, value] : this->sockets)
-        {
-            auto session = value->data();
-            if(session == nullptr)
-                continue;
-
-            auto thread = this->thread(*session);
-            if(thread != nullptr && thread->id() != id)
-                continue;
-
-            shown_mobs.clear();
-            for(auto spawned : spawned_mobs)
-            {
-                if(session->sight(*spawned) == false)
-                    continue;
-
-                shown_mobs.push_back(spawned);
-            }
-
-            if(shown_mobs.size() > 0)
-                this->send(*session, fb::protocol::game::response::object::show(shown_mobs), scope::SELF);
-        }
-    }
 }
 
 void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
