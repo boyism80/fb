@@ -139,7 +139,7 @@ void game_bot::pattern_chat()
 {
     static std::random_device device;
     static std::mt19937 gen(device());
-    static std::vector<std::string> messages{ "hello world1", "hello world2", "hello world3" };
+    static std::vector<std::string> messages{ "/랜덤이동", "일반채팅" };
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
     
     auto& message = messages.at(dist(gen));
