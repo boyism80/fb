@@ -126,7 +126,9 @@ uint32_t fb::game::sectors::push(fb::game::object& object)
 std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
 {
     auto sectors = std::vector<fb::game::sector*>();
-    sectors.push_back(this->at(index));
+    auto center = this->at(index);
+    if(center == nullptr)
+        throw std::runtime_error("center sector cannot be null");
 
     auto is_left = index % this->_columns == 0;
     if(!is_left)
