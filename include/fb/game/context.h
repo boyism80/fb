@@ -80,8 +80,8 @@ public:
     void                    save(const std::function<void(fb::game::session&)>& fn);
 
 public:
-    fb::thread*             thread(const fb::game::map& map) const;
-    uint8_t                 thread_index(const fb::game::map& map) const;
+    fb::thread*             thread(const fb::game::map* map) const;
+    uint8_t                 thread_index(const fb::game::map* map) const;
     fb::thread*             thread(const fb::game::object& obj) const;
     uint8_t                 thread_index(const fb::game::object& obj) const;
     const fb::thread*       current_thread() const;

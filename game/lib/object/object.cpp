@@ -445,7 +445,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
             }
         };
 
-        auto thread = this->context.thread(*map);
+        auto thread = this->context.thread(map);
         if(thread == nullptr || thread == this->context.current_thread())
         {
             callback(0);

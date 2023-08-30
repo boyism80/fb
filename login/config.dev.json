@@ -12,6 +12,7 @@
     "allow other language": true,
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
+    "admin_mode": true,
     "database": 
     [
         {

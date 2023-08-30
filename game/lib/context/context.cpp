@@ -802,20 +802,23 @@ uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& so
     return this->thread_index(*socket.data());
 }
 
-fb::thread* fb::game::context::thread(const fb::game::map& map) const
+fb::thread* fb::game::context::thread(const fb::game::map* map) const
 {
     auto index = this->thread_index(map);
     return this->threads().at(index);
 }
 
-uint8_t fb::game::context::thread_index(const fb::game::map& map) const
+uint8_t fb::game::context::thread_index(const fb::game::map* map) const
 {
     const auto&             threads = this->threads();
     auto count = threads.count();
     if(count == 0)
         return 0xFF;
 
-    return map.id() % count;
+    if(map == nullptr)
+        return 0;
+
+    return map->id() % count;
 }
 
 fb::thread* fb::game::context::thread(const fb::game::object& obj) const
@@ -827,10 +830,7 @@ fb::thread* fb::game::context::thread(const fb::game::object& obj) const
 uint8_t fb::game::context::thread_index(const fb::game::object& obj) const
 {
     auto map = obj.map();
-    if(map == nullptr)
-        return 0xFF;
-
-    return this->thread_index(*map);
+    return this->thread_index(map);
 }
 
 const fb::thread* fb::game::context::current_thread() const
@@ -1722,7 +1722,7 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
         if(map->activated() == false)
             continue;
 
-        auto thread = this->thread(*map);
+        auto thread = this->thread(map.get());
         if(thread != nullptr && thread->id() != id)
             continue;
 
@@ -1756,7 +1756,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
         if(map->activated() == false)
             continue;
 
-        auto thread = this->thread(*map);
+        auto thread = this->thread(map.get());
         if(thread != nullptr && thread->id() != id)
             continue;
 
@@ -1788,7 +1788,7 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
         if(map->activated() == false)
             continue;
 
-        auto thread = this->thread(*map);
+        auto thread = this->thread(map.get());
         if(thread != nullptr && thread->id() != id)
             continue;
 
@@ -1824,7 +1824,7 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
         if(map->activated() == false)
             continue;
 
-        auto thread = this->thread(*map);
+        auto thread = this->thread(map.get());
         if(thread != nullptr && thread->id() != id)
             continue;
 

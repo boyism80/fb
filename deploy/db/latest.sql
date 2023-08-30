@@ -54,7 +54,7 @@ CREATE TABLE `item` (
   `owner` int(10) unsigned NOT NULL,
   `index` smallint(6) NOT NULL,
   `slot` smallint(6) NOT NULL,
-  `model` int(10) unsigned DEFAULT NULL,
+  `master` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`owner`,`index`,`slot`),
@@ -148,7 +148,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_clan_idx` (`clan`),
   CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5766 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7616 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -247,7 +247,8 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CHARACTER_INIT`(
     base_mp INT,
     map SMALLINT(5),
     position_x SMALLINT(5),
-    position_y SMALLINT(5)
+    position_y SMALLINT(5),
+    admin TINYINT
 )
 BEGIN
 	DECLARE exist TINYINT;
@@ -255,7 +256,7 @@ BEGIN
     IF exist > 0 THEN
 		SELECT 0;
 	ELSE
-		INSERT INTO user (name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y) VALUES (uname, pw, base_hp, base_hp, base_mp, base_mp, map, position_x, position_y);
+		INSERT INTO user (name, pw, hp, base_hp, mp, base_mp, map, position_x, position_y, admin) VALUES (uname, pw, base_hp, base_hp, base_mp, base_mp, map, position_x, position_y, admin);
 		SELECT 1;
     END IF;
 END ;;
@@ -274,4 +275,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-08-27  0:06:59
+-- Dump completed on 2023-08-30  9:52:14
