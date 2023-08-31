@@ -427,11 +427,13 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 
         auto callback = [=, this] (uint8_t) 
         {
+            if(this->map() != nullptr)
+                return;
+
             this->_map = map;
             this->_position = position;
             this->_map->update(*this);
             this->_map->objects.add(*this);
-
             this->_listener->on_map_changed(*this, before, map);
 
             for(auto x : map->nears(this->_position))

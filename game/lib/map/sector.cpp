@@ -83,8 +83,9 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
 
 uint32_t fb::game::sectors::index(const point16_t& position) const
 {
-    return (position.y / this->_size.height) * this->_columns + 
-        (position.x / this->_size.width);
+    auto x = std::max(0, std::min((int)position.x, this->_map_size.width - 1));
+    auto y = std::max(0, std::min((int)position.y, this->_map_size.height - 1));
+    return (y / this->_size.height) * this->_columns + (x / this->_size.width);
 }
 
 std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
