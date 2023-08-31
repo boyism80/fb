@@ -208,6 +208,7 @@ public:
     fb::game::objects               objects = fb::game::objects(this);
     fb::game::doors                 doors;
     const uint32_t                  group;
+    const bool                      active;
 
 public:
     map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, uint32_t group, const void* data, size_t size);

@@ -485,7 +485,7 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
                     throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
             }
 
-            auto                map = new fb::game::map(id, parent, bgm, name, option, effect, group, binary.data(), binary.size());
+            auto                map = new fb::game::map(id, parent, bgm, name, option, effect, required, binary.data(), binary.size());
             for (const auto& block : blocks)
                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
@@ -668,6 +668,9 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::con
             auto                map_id          = std::stoi(key.asString());
             auto                map             = fb::game::model::maps[map_id];
             if (map == nullptr)
+                return;
+
+            if (map->active == false)
                 return;
 
             for (auto& spawn : data)
@@ -891,6 +894,9 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::con
             auto                map_id  = std::stoi(key.asString());
             auto                map     = fb::game::model::maps[map_id];
             if (map == nullptr)
+                return;
+
+            if (map->active == false)
                 return;
 
             for (auto& spawn : data)

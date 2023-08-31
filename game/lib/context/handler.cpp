@@ -480,9 +480,13 @@ void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, c
             if(client == nullptr)
                 co_return;
 
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, e.what(), fb::game::message::type::STATE);
+            auto message = e.what();
+            this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
+            {
+                auto session = client->data();
+                session->refresh_map();
+                this->on_notify(*session, message, fb::game::message::type::STATE);
+            });
         }
         catch(std::exception& e)
         {
@@ -490,9 +494,13 @@ void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, c
             if(client == nullptr)
                 co_return;
 
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, "서버 에러", fb::game::message::type::STATE);
+            auto message = e.what();
+            this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
+            {
+                auto session = client->data();
+                session->refresh_map();
+                this->on_notify(*session, message, fb::game::message::type::STATE);
+            });
         }
     };
 

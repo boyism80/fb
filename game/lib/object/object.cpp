@@ -418,8 +418,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
         return true;
     }
 
-    auto switch_process = (this->_map != nullptr && this->_map->group != map->group);
-    if(switch_process == false)
+    if(map->active)
     {
         auto before = this->_map;
 

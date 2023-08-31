@@ -103,10 +103,10 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    group(group)
+    group(group),
+    active(fb::config::get()["group"].asUInt() == group)
 {
-    auto& config = fb::config::get();
-    if(config["group"].asUInt() != group)
+    if (this->active == false)
         return;
 
     std::string what;

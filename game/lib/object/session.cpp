@@ -35,7 +35,7 @@ object::types fb::game::session::type() const
 
 bool fb::game::session::map(fb::game::map* map, const point16_t& position)
 {
-    auto switch_process = (map != nullptr && this->_map != nullptr && this->_map->group != map->group);
+    auto switch_process = (map != nullptr && map->active == false);
     if(switch_process)
     {
         auto listener = this->get_listener<fb::game::session>();
