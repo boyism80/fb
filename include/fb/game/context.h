@@ -59,6 +59,11 @@ private:
     void                    fetch_gear(daotk::mysql::result& db_result, fb::game::session& session);
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
+private:
+    fb::task                co_login(std::string name, fb::game::session* session, const fb::protocol::game::request::login& request);
+    fb::task                co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position);
+    fb::task                co_whisper(fb::game::session* session, const std::string& to, const std::string& message);
+
 public:
     bool                    exists(const fb::game::object& object) const;
 
@@ -75,7 +80,7 @@ public:
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
     void                    save(fb::game::session& session);
-    void                    save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn);
+    fb::task                save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
     void                    save();
     void                    save(const std::function<void(fb::game::session&)>& fn);
 
