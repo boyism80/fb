@@ -63,8 +63,11 @@
     <ClCompile Include="lib\session.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="lib\data_set.cpp">
+    <ClCompile Include="lib\model.cpp">
       <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\logger.cpp">
+      <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

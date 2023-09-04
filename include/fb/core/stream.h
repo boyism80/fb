@@ -35,6 +35,7 @@ public:
 public:
     uint32_t                crc() const;
     buffer                  compress() const;
+    buffer                  decompress() const;
     void                    clear();
 };
 

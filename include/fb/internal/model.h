@@ -1,5 +1,5 @@
-#ifndef __FB_INTERNAL_TABLE_H__
-#define __FB_INTERNAL_TABLE_H__
+#ifndef __MODEL_H__
+#define __MODEL_H__
 
 #include <map>
 #include <optional>
@@ -42,4 +42,4 @@ private:
 };
 
 } }
-#endif // !__FB_INTERNAL_TABLE_H__
+#endif // !__MODEL_H__

@@ -3,10 +3,10 @@
 
 using namespace fb::game;
 
-fb::game::npc::master::master(const fb::game::npc::master::config& config) : 
-    fb::game::object::master(config),
+fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
+    fb::game::object::model(config),
     script(config.script)
 { }
 
-fb::game::npc::master::~master()
+fb::game::npc::model::~model()
 { }

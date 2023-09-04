@@ -12,22 +12,22 @@ public:
     const fb::game::session&        me;
 
 public:
-    dialog(const fb::game::session& me) : 
+    dialog(const fb::game::session& me) : fb::protocol::base::header(0x42),
         me(me)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto              class_name = fb::game::data_set::classes.class2name(this->me.cls(), this->me.promotion());
+        const auto              class_name = fb::game::model::classes.class2name(this->me.cls(), this->me.promotion());
         if(class_name == nullptr)
             return;
 
         std::stringstream sstream;
         sstream << this->me.name() << '(' << class_name->c_str() << ')';
 
-        out_stream.write_u8(0x42)
-                  .write_u8(0x00)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x00)
                   .write_u32(this->me.sequence())
                   .write(sstream.str())
                   .write_u8(0x00);
@@ -42,7 +42,7 @@ public:
     const bool                  mine;
 
 public:
-    upload(const fb::game::session& me, uint8_t index, bool mine) : 
+    upload(const fb::game::session& me, uint8_t index, bool mine) : fb::protocol::base::header(0x42),
         me(me), index(index), mine(mine)
     { }
 
@@ -51,8 +51,8 @@ public:
     {
         const auto              item = this->me.trade.item(this->index);
 
-        out_stream.write_u8(0x42)
-            .write_u8(0x02)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x02)
             .write_u8(this->mine ? 0x00 : 0x01)
             .write_u8(this->index) // trade slot index
             .write_u16(item->look())
@@ -65,14 +65,14 @@ public:
 class bundle : public fb::protocol::base::header
 {
 public:
-    bundle()
+    bundle() : fb::protocol::base::header(0x42)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x42)
-                  .write_u8(0x01)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x01)
                   .write_u8(0x00);
     }
 };
@@ -84,15 +84,15 @@ public:
     const bool                  mine;
 
 public:
-    money(const fb::game::session& me, bool mine) : 
+    money(const fb::game::session& me, bool mine) : fb::protocol::base::header(0x42),
         me(me), mine(mine)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x42)
-            .write_u8(0x03)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x03)
             .write_u8(this->mine ? 0x00 : 0x01)
             .write_u32(this->me.trade.money())
             .write_u8(0x00);
@@ -105,15 +105,15 @@ public:
     const std::string&          message;
 
 public:
-    close(const std::string& message) : 
+    close(const std::string& message) : fb::protocol::base::header(0x42),
         message(message)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x42)
-            .write_u8(0x04)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x04)
             .write(this->message, true)
             .write_u8(0x00);
     }
@@ -122,14 +122,14 @@ public:
 class lock : public fb::protocol::base::header
 {
 public:
-    lock()
+    lock() : fb::protocol::base::header(0x42)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x42)
-                  .write_u8(0x05)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(0x05)
                   .write_u8(0x00);
     }
 };

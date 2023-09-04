@@ -5,44 +5,41 @@
 
 namespace fb { namespace protocol { namespace internal { namespace request {
 
-class subscribe : public fb::protocol::base::header
+class subscribe : public fb::protocol::internal::header
 {
-public:
-    BIND_ID(SUBSCRIBE)
-
 public:
     std::string             name;
     services                service;
     uint8_t                 group;
 
 public:
-    subscribe() = default;
-    subscribe(const std::string& name, services service, uint8_t group) : 
+    subscribe() : fb::protocol::internal::header(SUBSCRIBE)
+    { }
+    subscribe(const std::string& name, services service, uint8_t group) : fb::protocol::internal::header(SUBSCRIBE),
         name(name), service(service), group(group)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(id)
-                  .writestr_u8(this->name, false)
+        fb::protocol::internal::header::serialize(out_stream);
+        out_stream.writestr_u8(this->name, false)
                   .write_u8(this->service)
                   .write_u8(this->group);
     }
 
     void deserialize(fb::istream& in_stream)
     {
+        fb::protocol::internal::header::deserialize(in_stream);
+
         this->name = in_stream.readstr_u8();
         this->service = (services)in_stream.read_u8();
         this->group = in_stream.read_u8();
     }
 };
 
-class transfer : public fb::protocol::base::header
+class transfer : public fb::protocol::internal::header
 {
-public:
-    BIND_ID(TRANSFER)
-
 public:
     std::string             name;
     services                from;
@@ -52,19 +49,20 @@ public:
     uint32_t                fd;
 
 public:
-    transfer() = default;
-    transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : 
+    transfer() : fb::protocol::internal::header(TRANSFER)
+    { }
+    transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : fb::protocol::internal::header(TRANSFER),
         name(name), from(from), to(to), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
     { }
-    transfer(const std::string& name, services from, services to, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : 
+    transfer(const std::string& name, services from, services to, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : fb::protocol::internal::header(TRANSFER),
         name(name), from(from), to(to), fd(fd), map(map), x(x), y(y)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(id)
-                  .writestr_u8(this->name, false)
+        fb::protocol::internal::header::serialize(out_stream);
+        out_stream.writestr_u8(this->name, false)
                   .write_u8(this->from)
                   .write_u8(this->to)
                   .write_u16(this->map)
@@ -75,6 +73,8 @@ public:
 
     void deserialize(fb::istream& in_stream)
     {
+        fb::protocol::internal::header::deserialize(in_stream);
+
         this->name = in_stream.readstr_u8(false);
         this->from = (services)in_stream.read_u8();
         this->to = (services)in_stream.read_u8();
@@ -85,110 +85,112 @@ public:
     }
 };
 
-class login : public fb::protocol::base::header
+class login : public fb::protocol::internal::header
 {
-public:
-    BIND_ID(LOGIN)
-
 public:
     std::string             name;
     uint16_t                map;
 
 public:
-    login() = default;
-    login(const std::string& name, uint32_t map) : 
+    login() : fb::protocol::internal::header(LOGIN)
+    { }
+    login(const std::string& name, uint32_t map) : fb::protocol::internal::header(LOGIN),
         name(name), map(map)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(id)
-                  .writestr_u8(this->name, false)
+        fb::protocol::internal::header::serialize(out_stream);
+        out_stream.writestr_u8(this->name, false)
                   .write_u16(this->map);
     }
 
     void deserialize(fb::istream& in_stream)
     {
+        fb::protocol::internal::header::deserialize(in_stream);
+
         this->name = in_stream.readstr_u8(false);
         this->map = in_stream.read_u16();
     }
 };
 
-class logout : public fb::protocol::base::header
+class logout : public fb::protocol::internal::header
 {
-public:
-    BIND_ID(LOGOUT)
-
 public:
     std::string             name;
 
 public:
-    logout() = default;
-    logout(const std::string& name) : name(name) { }
+    logout() : fb::protocol::internal::header(LOGOUT)
+    { }
+    logout(const std::string& name) : fb::protocol::internal::header(LOGOUT),
+        name(name)
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(id)
-                  .writestr_u8(this->name, false);
+        fb::protocol::internal::header::serialize(out_stream);
+        out_stream.writestr_u8(this->name, false);
     }
 
     void deserialize(fb::istream& in_stream)
     {
+        fb::protocol::internal::header::deserialize(in_stream);
+
         this->name = in_stream.readstr_u8(false);
     }
 };
 
-class whisper : public fb::protocol::base::header
+class whisper : public fb::protocol::internal::header
 {
-public:
-    BIND_ID(WHISPER)
-
 public:
     std::string             from;
     std::string             to;
     std::string             message;
 
 public:
-    whisper() = default;
-    whisper(const std::string& from, const std::string& to, const std::string& message) : 
+    whisper() : fb::protocol::internal::header(WHISPER)
+    { }
+    whisper(const std::string& from, const std::string& to, const std::string& message) : fb::protocol::internal::header(WHISPER),
         from(from), to(to), message(message) 
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(id)
-                  .writestr_u8(this->from, false)
+        fb::protocol::internal::header::serialize(out_stream);
+        out_stream.writestr_u8(this->from, false)
                   .writestr_u8(this->to, false)
                   .writestr_u8(this->message, false);
     }
 
     void deserialize(fb::istream& in_stream)
     {
+        fb::protocol::internal::header::deserialize(in_stream);
+
         this->from = in_stream.readstr_u8(false);
         this->to = in_stream.readstr_u8(false);
         this->message = in_stream.readstr_u8(false);
     }
 };
 
-class shutdown : public fb::protocol::base::header
+class shutdown : public fb::protocol::internal::header
 {
 public:
-    BIND_ID(SHUTDOWN)
-
-public:
-    shutdown() = default;
+    shutdown() : fb::protocol::internal::header(SHUTDOWN)
+    { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     { 
-        out_stream.write_u8(id);
+        fb::protocol::internal::header::serialize(out_stream);
     }
 
     void deserialize(fb::istream& in_stream)
-    { }
+    {
+        fb::protocol::internal::header::deserialize(in_stream);
+    }
 };
 
 } } } }

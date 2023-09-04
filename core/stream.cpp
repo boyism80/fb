@@ -35,10 +35,24 @@ fb::buffer fb::buffer::compress() const
 
     if(compress2(buffer, (uLongf*)&dst_size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
         throw std::runtime_error("cannot compress data");
-    
+
     auto compressed = fb::buffer(buffer, dst_size);
     delete[] buffer;
     return compressed;
+}
+
+fb::buffer fb::buffer::decompress() const
+{
+    uint32_t src_size = this->size();
+    uint32_t dst_size = this->size() * 2;
+    uint8_t* buffer = new uint8_t[dst_size];
+
+    if(uncompress(buffer, (uLongf*)& dst_size, vector<uint8_t>::data(), uint32_t(this->size())) != Z_OK)
+        throw std::runtime_error("cannot compress data");
+
+    auto decompressed = fb::buffer(buffer, dst_size);
+    delete[] buffer;
+    return decompressed;
 }
 
 void fb::buffer::clear()

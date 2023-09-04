@@ -1,19 +1,19 @@
 #include <fb/game/item.h>
 
-fb::game::helmet::master::master(const fb::game::equipment::master::config& config) : fb::game::equipment::master(config)
+fb::game::helmet::model::model(const fb::game::equipment::model::config& config) : fb::game::equipment::model(config)
 { }
 
-fb::game::helmet::master::~master()
+fb::game::helmet::model::~model()
 { }
 
-fb::game::item::attrs fb::game::helmet::master::attr() const
+fb::game::item::attrs fb::game::helmet::model::attr() const
 {
     return item::attrs::HELMET;
 }
 
 
-fb::game::helmet::helmet(fb::game::context& context, const master* master) : 
-    equipment(context, master)
+fb::game::helmet::helmet(fb::game::context& context, const model* model) : 
+    equipment(context, model)
 { }
 
 fb::game::helmet::helmet(const helmet& right) : 

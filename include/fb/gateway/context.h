@@ -4,16 +4,16 @@
 #include <fb/core/acceptor.h>
 #include <fb/core/config.h>
 #include <fb/gateway/session.h>
-#include <fb/gateway/gateway.h>
 #include <fb/gateway/util.h>
 #include <zlib.h>
 #include <memory>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/internal.h>
 #include <fb/core/encoding.h>
-#include <fb/core/console.h>
 
 namespace fb { namespace gateway {
+
+using namespace fb::protocol::gateway;
 
 class context : public fb::acceptor<fb::gateway::session>
 {
@@ -28,7 +28,7 @@ private:
     std::vector<unique_session> _sessions;
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~context();
 
 private:
@@ -39,9 +39,11 @@ private:
 
     // override
 protected:
+    bool                        is_decrypt(uint8_t) const final;
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    void                        handle_internal_connected() final;
 
 public:
     bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

@@ -1,8 +1,8 @@
 #include <fb/game/session.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 #include <regex>
 
-void assert_script(const std::string& script, const std::string& regex, const std::string& fnName, const std::function<void(const std::string&)>& callback)
+void assert_script(const std::string& script, const std::string& regex, const std::string& func_name, const std::function<void(const std::string&)>& callback)
 {
     if(script.empty())
         return;
@@ -29,7 +29,7 @@ void assert_script(const std::string& script, const std::string& regex, const st
         std::stringstream sstream;
         sstream << script
                 << " 파일에 "
-                << fnName
+                << func_name
                 << " 함수가 존재하지 않습니다.";
 
         callback(script);
@@ -37,22 +37,22 @@ void assert_script(const std::string& script, const std::string& regex, const st
     }
 }
 
-std::vector<fb::game::clan*> fb::game::data_set::clans;
-fb::game::board              fb::game::data_set::board;
-fb::game::container::map     fb::game::data_set::maps;
-fb::game::container::worlds  fb::game::data_set::worlds;
-fb::game::container::item    fb::game::data_set::items;
-fb::game::container::npc     fb::game::data_set::npcs;
-fb::game::container::mob     fb::game::data_set::mobs;
-fb::game::container::spell   fb::game::data_set::spells;
-fb::game::container::cls     fb::game::data_set::classes;
-fb::game::container::mix     fb::game::data_set::mixes;
-fb::game::container::door    fb::game::data_set::doors;
+std::vector<fb::game::clan*> fb::game::model::clans;
+fb::game::board              fb::game::model::board;
+fb::game::container::map     fb::game::model::maps;
+fb::game::container::worlds  fb::game::model::worlds;
+fb::game::container::item    fb::game::model::items;
+fb::game::container::npc     fb::game::model::npcs;
+fb::game::container::mob     fb::game::model::mobs;
+fb::game::container::spell   fb::game::model::spells;
+fb::game::container::cls     fb::game::model::classes;
+fb::game::container::mix     fb::game::model::mixes;
+fb::game::container::door    fb::game::model::doors;
 
-fb::game::data_set::data_set()
+fb::game::model::model()
 { }
 
-fb::game::data_set::~data_set()
+fb::game::model::~model()
 { }
 
 fb::game::map* fb::game::container::map::name2map(const std::string& name)
@@ -75,10 +75,10 @@ fb::game::map* fb::game::container::map::operator[](uint16_t id) const
     return found->second.get();
 }
 
-fb::game::npc::master* fb::game::container::npc::name2npc(const std::string& name)
+fb::game::npc::model* fb::game::container::npc::name2npc(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::npc::master>>& pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::npc::model>>& pair)
         {
             return pair.second->name == name;
         });
@@ -86,15 +86,15 @@ fb::game::npc::master* fb::game::container::npc::name2npc(const std::string& nam
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::npc::master* fb::game::container::npc::operator[](uint16_t id)
+fb::game::npc::model* fb::game::container::npc::operator[](uint16_t id)
 {
-    return std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::operator[](id).get();
+    return std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::operator[](id).get();
 }
 
-fb::game::mob::master* fb::game::container::mob::name2mob(const std::string& name)
+fb::game::mob::model* fb::game::container::mob::name2mob(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::mob::master>>& pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::mob::model>>& pair)
         {
             return pair.second->name == name;
         });
@@ -102,16 +102,16 @@ fb::game::mob::master* fb::game::container::mob::name2mob(const std::string& nam
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::mob::master* fb::game::container::mob::operator[](uint16_t id)
+fb::game::mob::model* fb::game::container::mob::operator[](uint16_t id)
 {
-    auto& ptr = std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::operator[](id);
+    auto& ptr = std::map<uint16_t, std::unique_ptr<fb::game::mob::model>>::operator[](id);
     return ptr.get();
 }
 
-fb::game::item::master* fb::game::container::item::name2item(const std::string& name)
+fb::game::item::model* fb::game::container::item::name2item(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::item::master>>& pair)
+        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::item::model>>& pair)
         {
             return pair.second->name == name;
         });
@@ -119,9 +119,9 @@ fb::game::item::master* fb::game::container::item::name2item(const std::string& 
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::item::master* fb::game::container::item::operator[](uint16_t id)
+fb::game::item::model* fb::game::container::item::operator[](uint16_t id)
 {
-    return std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::operator[](id).get();
+    return std::map<uint16_t, std::unique_ptr<fb::game::item::model>>::operator[](id).get();
 }
 
 fb::game::spell* fb::game::container::spell::name2spell(const std::string& name)
@@ -129,7 +129,7 @@ fb::game::spell* fb::game::container::spell::name2spell(const std::string& name)
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::spell>>& pair)
         {
-            return pair.second->name() == name;
+            return pair.second->name == name;
         });
 
     return i != this->end() ? i->second.get() : nullptr;
@@ -273,10 +273,10 @@ fb::game::container::item::item()
 fb::game::container::item::~item()
 { }
 
-fb::game::item::master* fb::game::container::item::create(uint32_t id, const Json::Value& data)
+fb::game::item::model* fb::game::container::item::create(uint32_t id, const Json::Value& data)
 {
     std::string         types   = CP949(data["type"].asString(), PLATFORM::Windows);
-    auto                config  = fb::game::item::master::config
+    auto                config  = fb::game::item::model::config
     {
         { 
             .name  = CP949(data["name"].asString(), PLATFORM::Windows),
@@ -294,8 +294,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
         /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
     };
 
-    auto& lua = lua::main::get();
-
+    
     assert_script(config.active_script, "function\\s+(on_active)\\(\\w+,\\s*\\w+\\)", "on_active", [](const auto& script) 
     {
 #if defined DEBUG | defined _DEBUG
@@ -305,11 +304,11 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
-    lua.load_file(config.active_script);
+    lua::load(config.active_script);
     
     if(types == "stuff")
     {
-        return new fb::game::item::master(config);
+        return new fb::game::item::model(config);
     }
 
     if(types == "consume")
@@ -318,16 +317,16 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
                                                                                                   // bundle  Ex) 도토리
         if (bundle_type == "package")
         {
-            return new fb::game::pack::master(config);
+            return new fb::game::pack::model(config);
         }
         else
         {
-            return new fb::game::consume::master(config);
+            return new fb::game::consume::model(config);
         }
     }
 
     auto&               option           = data["equipment option"];
-    auto                equipment_config = fb::game::equipment::master::config
+    auto                equipment_config = fb::game::equipment::model::config
     {
         config,
         /* dress          */ (uint16_t)option["look"].asInt(),
@@ -358,7 +357,7 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
-    lua.load_file(equipment_config.dress_script);
+    lua::load(equipment_config.dress_script);
 
     assert_script(equipment_config.undress_script, "function\\s+(on_undress)\\(\\w+,\\s*\\w+\\)", "on_undress", [](const auto& script) 
     {
@@ -369,12 +368,12 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             << "end";
 #endif
     });
-    lua.load_file(equipment_config.undress_script);
+    lua::load(equipment_config.undress_script);
 
     
     if(types == "weapon")
     {
-        auto weapon_config = fb::game::weapon::master::config
+        auto weapon_config = fb::game::weapon::model::config
         {
             equipment_config,
             /* small */ fb::game::range32_t(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt()),
@@ -382,26 +381,26 @@ fb::game::item::master* fb::game::container::item::create(uint32_t id, const Jso
             /* sound */ (uint16_t)option["sound"].asInt(),
             /* spell */ CP949(option["spell"].asString(), PLATFORM::Windows)
         };
-        return new fb::game::weapon::master(weapon_config);
+        return new fb::game::weapon::model(weapon_config);
     }
 
     if(types == "armor")
-        return new fb::game::armor::master(equipment_config);
+        return new fb::game::armor::model(equipment_config);
 
     if(types == "helmet")
-        return new fb::game::helmet::master(equipment_config);
+        return new fb::game::helmet::model(equipment_config);
 
     if(types == "shield")
-        return new fb::game::shield::master(equipment_config);
+        return new fb::game::shield::model(equipment_config);
 
     if(types == "ring")
-        return new fb::game::ring::master(equipment_config);
+        return new fb::game::ring::model(equipment_config);
 
     if(types == "auxiliary")
-        return new fb::game::auxiliary::master(equipment_config);
+        return new fb::game::auxiliary::model(equipment_config);
 
     if(types == "bow")
-        return new fb::game::bow::master(equipment_config);
+        return new fb::game::bow::model(equipment_config);
 
     return nullptr;
 }
@@ -486,13 +485,13 @@ bool fb::game::container::map::load(const std::string& path, fb::table::handle_c
                     throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
             }
 
-            auto                map = new fb::game::map(id, parent, bgm, name, option, effect, group, binary.data(), binary.size());
+            auto                map = new fb::game::map(id, parent, bgm, name, option, effect, required, binary.data(), binary.size());
             for (const auto& block : blocks)
                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
             {   auto _ = std::lock_guard<std::mutex>(*mutex);
 
-                std::map<uint16_t, std::unique_ptr<fb::game::map>>::insert(std::make_pair(id, std::unique_ptr<fb::game::map>(map)));
+                std::map<uint16_t, std::unique_ptr<fb::game::map>>::insert({id, std::unique_ptr<fb::game::map>(map)});
                 callback((map->name()), percentage);
             }
         },
@@ -518,7 +517,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id      = std::stoi(key.asString());
-            auto                map         = fb::game::data_set::maps[map_id];
+            auto                map         = fb::game::model::maps[map_id];
             if (map == nullptr)
                 return;
 
@@ -530,7 +529,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                 if(js_warp.isMember("world"))
                 {
                     auto        widx        = js_warp["world"]["wm"].asInt();
-                    auto        world       = fb::game::data_set::worlds[widx];
+                    auto        world       = fb::game::model::worlds[widx];
 
                     auto        gidx        = js_warp["world"]["group"].asInt();
                     auto&       group       = (*world)[gidx];
@@ -545,7 +544,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
                     const range8_t  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
 
                     auto        next_map_id = js_warp["to"].asInt();
-                    auto        next_map    = fb::game::data_set::maps[next_map_id];
+                    auto        next_map    = fb::game::model::maps[next_map_id];
                     map->push_warp(next_map, before, after, condition);
                 }
             }
@@ -556,7 +555,7 @@ bool fb::game::container::map::load_warps(const std::string& path, fb::table::ha
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id      = std::stoi(key.asString());
-            auto                map         = fb::game::data_set::maps[map_id];
+            auto                map         = fb::game::model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -573,7 +572,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                item = (fb::game::item::master*)nullptr;
+            auto                item = (fb::game::item::model*)nullptr;
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
             // Create x core
@@ -581,7 +580,7 @@ bool fb::game::container::item::load(const std::string& path, fb::table::handle_
             uint16_t            id = std::stoi(key.asString());
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, std::unique_ptr<fb::game::item::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::item::master>(item)));
+                std::map<uint16_t, std::unique_ptr<fb::game::item::model>>::insert({id, std::unique_ptr<fb::game::item::model>(item)});
                 callback(name, percentage);
             }
         },
@@ -617,8 +616,6 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
             uint8_t             color   = data["color"].asInt();
             auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
 
-            auto&               lua     = lua::main::get();
-
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
             {
 #if defined DEBUG | defined _DEBUG
@@ -628,12 +625,12 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
-            lua.load_file(script);
+            lua::load(script);
 
             {
                 //name, look, color, script
                 auto _ = std::lock_guard(*mutex);
-                auto npc = new fb::game::npc::master(fb::game::npc::master::config 
+                auto npc = new fb::game::npc::model(fb::game::npc::model::config 
                     {
                         {
                             .name = name,
@@ -642,7 +639,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                         },
                         script
                     });
-                std::map<uint16_t, std::unique_ptr<fb::game::npc::master>>::insert(std::make_pair(id, std::unique_ptr<fb::game::npc::master>(npc)));
+                std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);
             }
         },
@@ -669,14 +666,17 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::con
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id          = std::stoi(key.asString());
-            auto                map             = fb::game::data_set::maps[map_id];
+            auto                map             = fb::game::model::maps[map_id];
             if (map == nullptr)
+                return;
+
+            if (map->active == false)
                 return;
 
             for (auto& spawn : data)
             {
                 auto            npc_id          = spawn["npc"].asInt();
-                auto            core            = fb::game::data_set::npcs[npc_id];
+                auto            core            = fb::game::model::npcs[npc_id];
                 if (core == nullptr)
                     continue;
 
@@ -708,7 +708,7 @@ bool fb::game::container::npc::load_spawn(const std::string& path, fb::game::con
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id = std::stoi(key.asString());
-            auto                map    = fb::game::data_set::maps[map_id];
+            auto                map    = fb::game::model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -762,16 +762,15 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto&               lua = lua::main::get();
             uint16_t            id = std::stoi(key.asString());
-            auto                object_config = fb::game::object::master::config
+            auto                object_config = fb::game::object::model::config
             {
                 .name  = CP949(data["name"].asString(), PLATFORM::Windows),
                 .look  = (uint16_t)(data["look"].asInt() + 0x7FFF),
                 .color = (uint8_t)data["color"].asInt()
             };
 
-            auto                life_config = fb::game::life::master::config
+            auto                life_config = fb::game::life::model::config
             {
                 object_config,
                 /* defensive */ fb::game::defensive(data["defensive"]["physical"].asInt(), data["defensive"]["magical"].asInt()),
@@ -780,7 +779,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
                 /* exp       */ (uint32_t)data["experience"].asInt()
             };
 
-            auto                config = fb::game::mob::master::config
+            auto                config = fb::game::mob::model::config
             {
                 life_config,
                 /* damage        */ fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()),
@@ -800,7 +799,7 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
-            lua.load_file(config.script_attack);
+            lua::load(config.script_attack);
 
             assert_script(config.script_die, "function\\s+(on_die)\\(\\w+,\\s*\\w+\\)", "on_die", [](const auto& script) 
             {
@@ -811,12 +810,12 @@ bool fb::game::container::mob::load(const std::string& path, fb::table::handle_c
                     << "end";
 #endif
             });
-            lua.load_file(config.script_die);
+            lua::load(config.script_die);
 
-            auto                mob = std::make_unique<fb::game::mob::master>(config);
+            auto                mob = std::make_unique<fb::game::mob::model>(config);
             {
                 auto _ = std::lock_guard(*mutex);
-                std::map<uint16_t, std::unique_ptr<fb::game::mob::master>>::insert(std::make_pair(id, std::move(mob)));
+                std::map<uint16_t, std::unique_ptr<fb::game::mob::model>>::insert({id, std::move(mob)});
                 callback(config.name, percentage);
             }
         },
@@ -842,7 +841,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                name        = CP949(key.asString(), PLATFORM::Windows);
-            auto                core        = fb::game::data_set::mobs.name2mob(name);
+            auto                core        = fb::game::model::mobs.name2mob(name);
             if (core == nullptr)
             {
                 sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str());
@@ -853,7 +852,7 @@ bool fb::game::container::mob::load_drops(const std::string& path, fb::table::ha
             {
                 float       percentage      = x["percentage"].asFloat();
                 auto        item_name       = CP949(x["item"].asString(), PLATFORM::Windows);
-                auto        item_core       = fb::game::data_set::items.name2item(item_name);
+                auto        item_core       = fb::game::model::items.name2item(item_name);
 
                 if (item_core == nullptr)
                 {
@@ -893,14 +892,17 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::con
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id  = std::stoi(key.asString());
-            auto                map     = fb::game::data_set::maps[map_id];
+            auto                map     = fb::game::model::maps[map_id];
             if (map == nullptr)
+                return;
+
+            if (map->active == false)
                 return;
 
             for (auto& spawn : data)
             {
                 auto            mob_id  = spawn["mob"].asInt();
-                auto            core    = fb::game::data_set::mobs[mob_id];
+                auto            core    = fb::game::model::mobs[mob_id];
                 if (core == nullptr)
                     continue;
 
@@ -933,7 +935,7 @@ bool fb::game::container::mob::load_spawn(const std::string& path, fb::game::con
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id  = std::stoi(key.asString());
-            auto                map     = fb::game::data_set::maps[map_id];
+            auto                map     = fb::game::model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -956,7 +958,6 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto&               lua  = lua::main::get();
             uint16_t            id   = std::stoi(key.asString());
             const auto          name = CP949(data["name"].asString(), PLATFORM::Windows);
             uint8_t             type = data["type"].asInt();
@@ -977,7 +978,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                 if(std::filesystem::exists(cast) == false)
                     cast = "";
                 
-                lua.load_file(cast);
+                lua::load(cast);
             }
 
             std::string         uncast;
@@ -996,7 +997,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
                 if(std::filesystem::exists(uncast) == false)
                     uncast = "";
                 
-                lua.load_file(uncast);
+                lua::load(uncast);
             }
 
             std::string         concast;
@@ -1013,7 +1014,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
 #endif
                 });
 
-                lua.load_file(concast);
+                lua::load(concast);
             }
 
             std::string         message;
@@ -1025,7 +1026,7 @@ bool fb::game::container::spell::load(const std::string& path, fb::table::handle
             {
                 auto _ = std::lock_guard(*mutex);
                 auto spell = new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message);
-                std::map<uint16_t, std::unique_ptr<fb::game::spell>>::insert(std::make_pair(id, std::unique_ptr<fb::game::spell>(spell)));
+                std::map<uint16_t, std::unique_ptr<fb::game::spell>>::insert({id, std::unique_ptr<fb::game::spell>(spell)});
                 callback(name, percentage);
             }
         },
@@ -1109,21 +1110,21 @@ bool fb::game::container::mix::load(const std::string& path, fb::table::handle_c
 
             for(auto& require : data["require"])
             {
-                auto            item    = fb::game::data_set::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::model::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
             for(auto& success: data["success"])
             {
-                auto            item    = fb::game::data_set::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::model::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
             for(auto& failed: data["failed"])
             {
-                auto            item    = fb::game::data_set::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::model::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = failed["count"].asInt();
                 itemmix->failed_add(item, count);
             }
@@ -1177,7 +1178,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                id      = key.asInt();
-            auto                created = new fb::game::door::master();
+            auto                created = new fb::game::door::model();
             for(auto& e : data)
             {
                 auto            open    = e["open"].asInt();
@@ -1185,7 +1186,7 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
                 created->push_back(fb::game::door::element(open, close));
             }
 
-            std::vector<std::unique_ptr<fb::game::door::master>>::push_back(std::unique_ptr<fb::game::door::master>(created));
+            std::vector<std::unique_ptr<fb::game::door::model>>::push_back(std::unique_ptr<fb::game::door::model>(created));
             callback(std::to_string(id), percentage);
         },
         [&] (Json::Value& key, Json::Value& data, const std::string& e)
@@ -1200,10 +1201,10 @@ bool fb::game::container::door::load(const std::string& path, fb::table::handle_
     return true;
 }
 
-fb::game::door::master* fb::game::container::door::operator[](int index)
+fb::game::door::model* fb::game::container::door::operator[](int index)
 {
     // TODO: range assert
-    return std::vector<std::unique_ptr<fb::game::door::master>>::operator[](index).get();
+    return std::vector<std::unique_ptr<fb::game::door::model>>::operator[](index).get();
 }
 
 fb::game::container::worlds::worlds()
@@ -1244,7 +1245,7 @@ bool fb::game::container::worlds::load(const std::string& path, fb::table::handl
                                 js_offset["destination"]["x"].asInt(), 
                                 js_offset["destination"]["y"].asInt()
                             ), 
-                            data_set::maps[js_offset["destination"]["map"].asInt()]
+                            model::maps[js_offset["destination"]["map"].asInt()]
                         )
                     ));
                 }

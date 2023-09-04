@@ -7,7 +7,6 @@
 #include <zlib.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/console.h>
 #include <fb/core/acceptor.h>
 
 namespace fb { namespace login {
@@ -21,16 +20,24 @@ private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
     std::vector<unique_session>                 _sessions;
+    fb::db::context                             _db;
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~context();
+
+private:
+    task                        create_account(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
+    task                        login(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
+    task                        change_pw(fb::socket<fb::login::session>& socket, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
 
     // override
 protected:
+    bool                        is_decrypt(uint8_t) const final;
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
+    void                        handle_internal_connected() final;
 
 public:
     bool                        handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);

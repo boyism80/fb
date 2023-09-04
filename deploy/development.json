@@ -1,223 +1,232 @@
 {
-	"authorization":
-	{
-		"user": "ubuntu",
-		"port": 22,
-		"key": "/ssh/fb"
-	},
-	"deploy":
-	{
-		"internal":
-		{
-			"internal": 
-			{ 
-				"ip": "192.168.0.180", 
-				"port": 2000 
-			}
-		},
-		"gateway":
-		{
-			"gateway": 
-			{ 
-				"ip": "192.168.0.180", 
-				"port": 2001,
-				"internal": "internal",
-				"entrypoints": 
-				[
-					{ "name": "채승현", "desc": "채승현은 신이다.", "login": "login" },
-					{ "name": "채진영", "desc": "채진영은 바보다.", "login": "login" },
-					{ "name": "연", "desc": "1996년 4월 서비스 시작", "login": "login" },
-					{ "name": "무휼", "desc": "2000년 2월 서비스 시작", "login": "login" },
-					{ "name": "세류", "desc": "2000년 7월 서비스 시작", "login": "login" },
-					{ "name": "유리", "desc": "2000년 7월 서비스 시작", "login": "login" },
-					{ "name": "해명", "desc": "2000년 12월 서비스 시작", "login": "login" },
-					{ "name": "배극", "desc": "2000년 12월 서비스 시작(PK서버)", "login": "login" },
-					{ "name": "하자", "desc": "10대들을 위한 전용 서버", "login": "login" },
-					{ "name": "호동", "desc": "2001년 2월 서비스 시작", "login": "login" },
-					{ "name": "주몽", "desc": "2002년 2월 서비스 시작", "login": "login" },
-					{ "name": "낙랑", "desc": "2002년 8월 서비스 시작", "login": "login" },
-					{ "name": "괴유", "desc": "2002년 2월 서비스 시작(무료테스트 서버)", "login": "login" }
-				]
-			}
-		},
-		"login": 
-		{
-			"login": 
-			{ 
-				"ip": "192.168.0.180", 
-				"port": 2002,
-				"internal": "internal"
-			}
-		},
-		"game":
-		{
-			"game0": 
-			{ 
-				"group": 0,
-				"ip": "192.168.0.181", 
-				"port": 2003,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game1": 
-			{ 
-				"group": 1,
-				"ip": "192.168.0.182", 
-				"port": 2004,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game2": 
-			{ 
-				"group": 2,
-				"ip": "192.168.0.183", 
-				"port": 2005,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game3": 
-			{ 
-				"group": 3,
-				"ip": "192.168.0.181", 
-				"port": 2006,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game4": 
-			{ 
-				"group": 4,
-				"ip": "192.168.0.182", 
-				"port": 2007,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game5": 
-			{ 
-				"group": 5,
-				"ip": "192.168.0.183", 
-				"port": 2008,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game6": 
-			{ 
-				"group": 6,
-				"ip": "192.168.0.181", 
-				"port": 2009,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game7": 
-			{ 
-				"group": 7,
-				"ip": "192.168.0.182", 
-				"port": 2010,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game8": 
-			{ 
-				"group": 8,
-				"ip": "192.168.0.183", 
-				"port": 2011,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game9": 
-			{ 
-				"group": 9,
-				"ip": "192.168.0.181", 
-				"port": 2012,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game10": 
-			{ 
-				"group": 10,
-				"ip": "192.168.0.182", 
-				"port": 2013,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game11": 
-			{ 
-				"group": 11,
-				"ip": "192.168.0.183", 
-				"port": 2014,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game12": 
-			{ 
-				"group": 12,
-				"ip": "192.168.0.181", 
-				"port": 2015,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game13": 
-			{ 
-				"group": 13,
-				"ip": "192.168.0.182", 
-				"port": 2016,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game14": 
-			{ 
-				"group": 14,
-				"ip": "192.168.0.183", 
-				"port": 2017,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game15": 
-			{ 
-				"group": 15,
-				"ip": "192.168.0.181", 
-				"port": 2018,
-				"login": "login",
-				"internal": "internal"
-			},
-			"game16": 
-			{ 
-				"group": 16,
-				"ip": "192.168.0.182", 
-				"port": 2019,
-				"login": "login",
-				"internal": "internal"
-			}
-		}
-	},
-	"database": 
-	[
-		{
-			"ip": "192.168.0.180",
-			"port": 3306,
-			"name": "fb",
-			"uid": "fb",
-			"pwd": "admin"
-		},
-		{
-			"ip": "192.168.0.181",
-			"port": 3306,
-			"name": "fb",
-			"uid": "fb",
-			"pwd": "admin"
-		},
-		{
-			"ip": "192.168.0.182",
-			"port": 3306,
-			"name": "fb",
-			"uid": "fb",
-			"pwd": "admin"
-		},
-		{
-			"ip": "192.168.0.183",
-			"port": 3306,
-			"name": "fb",
-			"uid": "fb",
-			"pwd": "admin"
-		}
-	]
+    "authorization":
+    {
+        "user": "ubuntu",
+        "port": 22,
+        "key": "/ssh/fb"
+    },
+    "deploy":
+    {
+        "internal":
+        {
+            "internal": 
+            { 
+                "ip": "192.168.0.180", 
+                "port": 2000 
+            }
+        },
+        "gateway":
+        {
+            "gateway": 
+            { 
+                "ip": "192.168.0.180", 
+                "port": 2001,
+                "internal": "internal",
+                "entrypoints": 
+                [
+                    { "name": "채승현", "desc": "채승현은 신이다.", "login": "login" },
+                    { "name": "채진영", "desc": "채진영은 바보다.", "login": "login" },
+                    { "name": "연", "desc": "1996년 4월 서비스 시작", "login": "login" },
+                    { "name": "무휼", "desc": "2000년 2월 서비스 시작", "login": "login" },
+                    { "name": "세류", "desc": "2000년 7월 서비스 시작", "login": "login" },
+                    { "name": "유리", "desc": "2000년 7월 서비스 시작", "login": "login" },
+                    { "name": "해명", "desc": "2000년 12월 서비스 시작", "login": "login" },
+                    { "name": "배극", "desc": "2000년 12월 서비스 시작(PK서버)", "login": "login" },
+                    { "name": "하자", "desc": "10대들을 위한 전용 서버", "login": "login" },
+                    { "name": "호동", "desc": "2001년 2월 서비스 시작", "login": "login" },
+                    { "name": "주몽", "desc": "2002년 2월 서비스 시작", "login": "login" },
+                    { "name": "낙랑", "desc": "2002년 8월 서비스 시작", "login": "login" },
+                    { "name": "괴유", "desc": "2002년 2월 서비스 시작(무료테스트 서버)", "login": "login" }
+                ]
+            }
+        },
+        "login": 
+        {
+            "admin_mode": false,
+            "login": 
+            { 
+                "ip": "192.168.0.180", 
+                "port": 2002,
+                "internal": "internal"
+            },
+            "name_size": {
+                "min": 4,
+                "max": 12
+            },
+            "pw_size": {
+                "min": 4,
+                "max": 8
+            }
+        },
+        "game":
+        {
+            "game0": 
+            { 
+                "group": 0,
+                "ip": "192.168.0.181", 
+                "port": 2003,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game1": 
+            { 
+                "group": 1,
+                "ip": "192.168.0.182", 
+                "port": 2004,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game2": 
+            { 
+                "group": 2,
+                "ip": "192.168.0.183", 
+                "port": 2005,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game3": 
+            { 
+                "group": 3,
+                "ip": "192.168.0.181", 
+                "port": 2006,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game4": 
+            { 
+                "group": 4,
+                "ip": "192.168.0.182", 
+                "port": 2007,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game5": 
+            { 
+                "group": 5,
+                "ip": "192.168.0.183", 
+                "port": 2008,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game6": 
+            { 
+                "group": 6,
+                "ip": "192.168.0.181", 
+                "port": 2009,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game7": 
+            { 
+                "group": 7,
+                "ip": "192.168.0.182", 
+                "port": 2010,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game8": 
+            { 
+                "group": 8,
+                "ip": "192.168.0.183", 
+                "port": 2011,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game9": 
+            { 
+                "group": 9,
+                "ip": "192.168.0.181", 
+                "port": 2012,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game10": 
+            { 
+                "group": 10,
+                "ip": "192.168.0.182", 
+                "port": 2013,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game11": 
+            { 
+                "group": 11,
+                "ip": "192.168.0.183", 
+                "port": 2014,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game12": 
+            { 
+                "group": 12,
+                "ip": "192.168.0.181", 
+                "port": 2015,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game13": 
+            { 
+                "group": 13,
+                "ip": "192.168.0.182", 
+                "port": 2016,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game14": 
+            { 
+                "group": 14,
+                "ip": "192.168.0.183", 
+                "port": 2017,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game15": 
+            { 
+                "group": 15,
+                "ip": "192.168.0.181", 
+                "port": 2018,
+                "login": "login",
+                "internal": "internal"
+            },
+            "game16": 
+            { 
+                "group": 16,
+                "ip": "192.168.0.182", 
+                "port": 2019,
+                "login": "login",
+                "internal": "internal"
+            }
+        }
+    },
+    "database": 
+    [
+        {
+            "ip": "192.168.0.180",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        {
+            "ip": "192.168.0.181",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        {
+            "ip": "192.168.0.182",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        {
+            "ip": "192.168.0.183",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        }
+    ]
 }

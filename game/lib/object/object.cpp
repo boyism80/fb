@@ -2,33 +2,33 @@
 #include <fb/game/map.h>
 #include <fb/game/context.h>
 
-fb::game::object::master::master(const fb::game::object::master::config& config) : 
+fb::game::object::model::model(const fb::game::object::model::config& config) : 
     name(config.name),
     look(config.look),
     color(config.color)
 { }
 
-fb::game::object::master::~master()
+fb::game::object::model::~model()
 { }
 
-uint8_t fb::game::object::master::dialog_look_type() const
+uint8_t fb::game::object::model::dialog_look_type() const
 {
     return this->look > 0xBFFF ? 0x02 : 0x01;
 }
 
-fb::game::object::types fb::game::object::master::type() const
+fb::game::object::types fb::game::object::model::type() const
 {
     return types::UNKNOWN;
 }
 
 
 // fb::game::object
-fb::game::object::object(fb::game::context& context, const master* master, const fb::game::object::config& config) : 
+fb::game::object::object(fb::game::context& context, const model* model, const fb::game::object::config& config) : 
     luable(config.id),
     context(context),
     _listener(&context),
     _sequence(config.id),
-    _master(master),
+    _model(model),
     _position(config.position),
     _direction(config.direction),
     _map(config.map),
@@ -38,7 +38,7 @@ fb::game::object::object(fb::game::context& context, const master* master, const
 }
 
 fb::game::object::object(const object& right) :
-    object(right.context, right._master, 
+    object(right.context, right._model, 
         fb::game::object::config 
         {
             .id = right._sequence,
@@ -54,9 +54,9 @@ fb::game::object::~object()
     this->map(nullptr);
 }
 
-const fb::game::object::master* fb::game::object::based() const
+const fb::game::object::model* fb::game::object::based() const
 {
-    return this->_master;
+    return this->_model;
 }
 
 bool fb::game::object::is(object::types type) const
@@ -67,25 +67,25 @@ bool fb::game::object::is(object::types type) const
 
 const std::string& fb::game::object::name() const
 {
-    return this->_master->name;
+    return this->_model->name;
 }
 
 uint16_t fb::game::object::look() const
 {
-    return this->_master->look;
+    return this->_model->look;
 }
 
 uint8_t fb::game::object::color() const
 {
-    return this->_master->color;
+    return this->_model->color;
 }
 
 fb::game::object::types fb::game::object::type() const
 {
-    if(this->_master == nullptr)
+    if(this->_model == nullptr)
         return fb::game::object::types::UNKNOWN;
     else
-        return this->_master->type();
+        return this->_model->type();
 }
 
 void fb::game::object::destroy()
@@ -418,8 +418,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
         return true;
     }
 
-    auto switch_process = (this->_map != nullptr && this->_map->group != map->group);
-    if(switch_process == false)
+    if(map->active)
     {
         auto before = this->_map;
 
@@ -428,11 +427,13 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 
         auto callback = [=, this] (uint8_t) 
         {
+            if(this->map() != nullptr)
+                return;
+
             this->_map = map;
             this->_position = position;
             this->_map->update(*this);
             this->_map->objects.add(*this);
-
             this->_listener->on_map_changed(*this, before, map);
 
             for(auto x : map->nears(this->_position))
@@ -445,7 +446,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
             }
         };
 
-        auto thread = this->context.thread(*map);
+        auto thread = this->context.thread(map);
         if(thread == nullptr || thread == this->context.current_thread())
         {
             callback(0);

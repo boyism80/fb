@@ -1,19 +1,19 @@
 #include <fb/game/item.h>
 
-fb::game::ring::master::master(const fb::game::equipment::master::config& config) : fb::game::equipment::master(config)
+fb::game::ring::model::model(const fb::game::equipment::model::config& config) : fb::game::equipment::model(config)
 { }
 
-fb::game::ring::master::~master()
+fb::game::ring::model::~model()
 { }
 
-fb::game::item::attrs fb::game::ring::master::attr() const
+fb::game::item::attrs fb::game::ring::model::attr() const
 {
     return item::attrs::RING;
 }
 
 
-fb::game::ring::ring(fb::game::context& context, const master* master) : 
-    equipment(context, master)
+fb::game::ring::ring(fb::game::context& context, const model* model) : 
+    equipment(context, model)
 { }
 
 fb::game::ring::ring(const ring& right) : 

@@ -32,9 +32,6 @@
     <ClCompile Include="lib\context.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="lib\gateway.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="lib\util.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\core\query.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\core\logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>

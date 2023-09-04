@@ -1,6 +1,6 @@
 #include "resource.h"
 #include <fb/internal/context.h>
-#include <fb/internal/data_set.h>
+#include <fb/internal/model.h>
 #include <fb/core/leak.h>
 #include <fb/core/console.h>
 #include <fb/core/config.h>
@@ -18,11 +18,7 @@ int main(int argc, const char** argv)
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-        if(env == nullptr)
-            env = "dev";
-
-        auto& config = fb::config::get(env);
+        auto& config = fb::config::get();
 
         auto height = 8;
         c.box(0, 0, c.width()-1, height);
@@ -67,20 +63,16 @@ int main(int argc, const char** argv)
             std::chrono::seconds(config["delay"].asInt())
         );
 
-        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
-        signal.async_wait
-        (
-            [&context](const boost::system::error_code& error, int signal)
-            {
-                context.get()->exit();
-            }
-        );
-
-        io_context.run();
+        int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
+        context->run(count);
+        while (context->running())
+        {
+            std::this_thread::sleep_for(100ms);
+        }
     }
     catch(std::exception& e)
     {
-        c.puts(e.what());
+        fb::logger::fatal(e.what());
     }
 
     // Clean up

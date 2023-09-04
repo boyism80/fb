@@ -1,6 +1,6 @@
 #include <fb/game/session.h>
 #include <fb/game/trade.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 
 fb::game::trade::trade(session& owner) : 
     _owner(owner)
@@ -112,14 +112,14 @@ bool fb::game::trade::trading() const
 bool fb::game::trade::up(fb::game::item& item)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    auto master = item.based<fb::game::item>();
+    auto model = item.based<fb::game::item>();
 
     try
     {
         if(this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
-        if(master->trade.enabled == false)
+        if(model->trade.enabled == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
         if(enum_in(item.attr(), fb::game::item::attrs::BUNDLE) && item.count() > 1)
@@ -196,8 +196,8 @@ bool fb::game::trade::count(uint16_t count)
         if(this->_selected == nullptr)
             throw std::runtime_error(message::trade::NOT_SELECTED);
 
-        auto master = _selected->based<fb::game::item>();
-        if(master->trade.enabled == false)
+        auto model = _selected->based<fb::game::item>();
+        if(model->trade.enabled == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
         if(this->_selected->count() < count)

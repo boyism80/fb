@@ -3,8 +3,8 @@
 #include <fb/game/mob.h>
 #include <fb/core/thread.h>
 
-fb::game::mob::master::master(const fb::game::mob::master::config& config) : 
-    fb::game::life::master(config),
+fb::game::mob::model::model(const fb::game::mob::model::config& config) : 
+    fb::game::life::model(config),
     damage(config.damage),
     offensive(config.offensive),
     size(config.size),
@@ -14,16 +14,16 @@ fb::game::mob::master::master(const fb::game::mob::master::config& config) :
     items(_items)
 { }
 
-fb::game::mob::master::~master()
+fb::game::mob::model::~model()
 { }
 
-void fb::game::mob::master::push_drop(const drop& drop)
+void fb::game::mob::model::push_drop(const drop& drop)
 {
     this->_items.push_back(drop);
 }
 
-fb::game::mob::mob(fb::game::context& context, const mob::master* master, const fb::game::mob::config& config) : 
-    life(context, master, config)
+fb::game::mob::mob(fb::game::context& context, const mob::model* model, const fb::game::mob::config& config) : 
+    life(context, model, config)
 {
     this->visible(config.alive);
     if(config.alive)
@@ -50,8 +50,8 @@ bool fb::game::mob::action()
 {
     this->fix();
 
-    auto master = this->based<fb::game::mob>();
-    if(master->script_attack.empty())
+    auto model = this->based<fb::game::mob>();
+    if(model->script_attack.empty())
         return false;
 
     if(this->_attack_thread == nullptr)
@@ -60,7 +60,7 @@ bool fb::game::mob::action()
         if(this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->from(master->script_attack.c_str())
+        this->_attack_thread->from(model->script_attack.c_str())
             .func("on_attack")
             .pushobject(this);
 
@@ -188,7 +188,7 @@ bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
         if(this->_map->blocked(position.x, position.y))
             continue;
 
-        this->position(position);
+        this->position(position, true);
         break;
     }
 
@@ -221,8 +221,8 @@ fb::game::life* fb::game::mob::fix()
     }
     catch(...)
     {
-        auto master = this->based<fb::game::mob>();
-        if(master->offensive == mob::offensive_type::CONTAINMENT)
+        auto model = this->based<fb::game::mob>();
+        if(model->offensive == mob::offensive_type::CONTAINMENT)
             this->_target = this->find_target();
         else
             this->_target = nullptr;
@@ -256,7 +256,7 @@ fb::game::life* fb::game::mob::find_target()
 
 //const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
 //{
-//    return static_cast<const master*>(this->_master)->items();
+//    return static_cast<const model*>(this->_model)->items();
 //}
 
 bool fb::game::mob::near_target(fb::game::direction& out) const
@@ -278,8 +278,8 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 {
     try
     {
-        auto master = this->based<fb::game::mob>();
-        if(now < this->_action_time + master->speed)
+        auto model = this->based<fb::game::mob>();
+        if(now < this->_action_time + model->speed)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
@@ -331,9 +331,9 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
-    auto master = this->based<fb::game::mob>();
-    auto difference = std::abs(master->damage.max - master->damage.min);
-    return master->damage.min + (std::rand() % difference);
+    auto model = this->based<fb::game::mob>();
+    auto difference = std::abs(model->damage.max - model->damage.min);
+    return model->damage.min + (std::rand() % difference);
 }
 
 void fb::game::mob::on_attack(fb::game::object* target)
@@ -364,8 +364,8 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
 {
     fb::game::life::on_damaged(from, damage, critical);
 
-    auto master = this->based<fb::game::mob>();
-    if(master->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(fb::game::object::types::LIFE))
+    auto model = this->based<fb::game::mob>();
+    if(model->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(fb::game::object::types::LIFE))
     {
         this->target(static_cast<fb::game::life*>(from));
     }
@@ -376,8 +376,8 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
 
 uint32_t fb::game::mob::on_exp() const
 {
-    auto master = this->based<fb::game::mob>();
-    return master->experience;
+    auto model = this->based<fb::game::mob>();
+    return model->experience;
 }
 
 void fb::game::mob::on_die(fb::game::object* from)

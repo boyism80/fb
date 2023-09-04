@@ -10,7 +10,7 @@ bool fb::game::context::handle_command_map(fb::game::session& session, Json::Val
         return false;
 
     auto name = parameters[0].asString();
-    auto map = fb::game::data_set::maps.name2map(name);
+    auto map = fb::game::model::maps.name2map(name);
     if(map == nullptr)
         return false;
 
@@ -115,7 +115,7 @@ bool fb::game::context::handle_command_disguise(fb::game::session& session, Json
         return false;
 
     auto name = parameters[0].asString();
-    auto mob = fb::game::data_set::mobs.name2mob(name);
+    auto mob = fb::game::model::mobs.name2mob(name);
     if(mob == nullptr)
         return true;
 
@@ -141,7 +141,7 @@ bool fb::game::context::handle_command_mob(fb::game::session& session, Json::Val
         return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::data_set::mobs.name2mob(name);
+    auto core = fb::game::model::mobs.name2mob(name);
     if(core == nullptr)
         return true;
 
@@ -161,7 +161,7 @@ bool fb::game::context::handle_command_class(fb::game::session& session, Json::V
 
     auto name = parameters[0].asString();
     uint8_t cls, promotion;
-    if(fb::game::data_set::classes.name2class(name, &cls, &promotion) == false)
+    if(fb::game::model::classes.name2class(name, &cls, &promotion) == false)
         return true;
 
     session.cls(cls);
@@ -194,7 +194,7 @@ bool fb::game::context::handle_command_spell(fb::game::session& session, Json::V
         return false;
 
     auto name = parameters[0].asString();
-    auto spell = fb::game::data_set::spells.name2spell(name);
+    auto spell = fb::game::model::spells.name2spell(name);
     if(spell == nullptr)
         return false;
 
@@ -214,7 +214,7 @@ bool fb::game::context::handle_command_item(fb::game::session& session, Json::Va
         return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::data_set::items.name2item(name);
+    auto core = fb::game::model::items.name2item(name);
     if(core == nullptr)
         return false;
 
@@ -349,5 +349,27 @@ bool fb::game::context::handle_command_mapobj(fb::game::session& session, Json::
         return false;
 
     (*map)(session.x(), session.y())->object = value;
+    return true;
+}
+
+bool fb::game::context::handle_command_randmap(fb::game::session& session, Json::Value& parameters)
+{
+    static std::vector<fb::game::map*>  maps;
+    static std::once_flag               flag;
+    std::call_once(flag, [] 
+        { 
+            std::srand(std::time(nullptr));
+            for(auto& [id, map] : fb::game::model::maps)
+            {
+                maps.push_back(map.get());
+            }
+        });
+
+    auto index = std::rand() % maps.size();
+    auto map = maps[index];
+    auto x = map->width() > 0 ? std::rand() % map->width() : 0;
+    auto y = map->height() > 0 ? std::rand() % map->height() : 0;
+
+    session.map(map, fb::game::point16_t(x, y));
     return true;
 }

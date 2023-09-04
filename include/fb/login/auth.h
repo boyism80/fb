@@ -14,18 +14,11 @@
 #include <fb/core/thread.h>
 #include <fb/core/config.h>
 #include <fb/login/session.h>
-#include <fb/login/query.h>
 #include <fb/core/encoding.h>
 #include <fb/core/string.h>
-#include <fb/game/query.h>
 
-#define MIN_NAME_SIZE       4   // sizeof(wchar_t) * 2
-#define MAX_NAME_SIZE       12  // sizeof(wchar_t) * 6
-#define MIN_PASSWORD_SIZE   4
-#define MAX_PASSWORD_SIZE   8
 #define MAX_NXCLUB_SIZE     14
 
-#pragma region exceptions
 
 class login_exception : public std::runtime_error
 {
@@ -63,17 +56,17 @@ public:
     btd_exception() : login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY) { }
 };
 
-#pragma endregion
 
 namespace fb { namespace login { namespace service { 
 
 class auth
 {
 private:
+    fb::db::context&            _db;
     std::vector<std::string>    _forbiddens;
 
 public:
-    auth();
+    auth(fb::db::context& db);
     ~auth();
 
 private:
@@ -81,14 +74,20 @@ private:
     bool                        is_forbidden(const std::string& str) const;
     std::string                 sha256(const std::string& data) const;
 
+    fb::task                    __exists(fb::awaitable<bool>& awaitable, std::string name);
+    fb::task                    __create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw);
+    fb::task                    __login(fb::awaitable<uint32_t>& awaitable, std::string id, std::string pw);
+    fb::task                    __change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
+    fb::task                    __init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+
 public:
-    void                        exists(const std::string& name, const std::function<void(const std::string&, bool)>& callback);
+    auto                        exists(const std::string& name);
 
     void                        assert_account(const std::string& id, const std::string& pw) const;
-    void                        create_account(const std::string& id, const std::string& pw, const std::function<void(const std::string&)>& success, const std::function<void(const std::string&, const login_exception&)>& failed);
-    void                        init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    uint32_t                    login(const std::string& id, const std::string& pw, const std::function<void(uint32_t)>& success, const std::function<void(const login_exception&)>& failed);
-    void                        change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday, const std::function<void()>& success, const std::function<void(const login_exception&)>& failed);
+    fb::awaitable<void>         create_account(const std::string& id, const std::string& pw);
+    fb::awaitable<void>         init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+    fb::awaitable<uint32_t>     login(const std::string& id, const std::string& pw);
+    fb::awaitable<void>         change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
 };
 
 } } }

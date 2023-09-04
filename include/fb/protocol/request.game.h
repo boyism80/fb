@@ -2,6 +2,7 @@
 #define __PROTOCOL_REQUEST_GAME_H__
 
 #include <fb/protocol/protocol.h>
+#include <fb/game/mmo.h>
 #include <fb/game/trade.h>
 #include <optional>
 
@@ -28,6 +29,37 @@ public:
     std::optional<transfer_param>   transfer;
 
 public:
+#ifndef BOT
+    login() : fb::protocol::base::header(0x10)
+    { }
+#else
+    login(const fb::buffer& params) : fb::protocol::base::header(0x10)
+    {
+        auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
+        this->deserialize(in_stream);
+    }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->enc_type)
+                  .write_u8(this->key_size)
+                  .write((void*)this->enc_key, this->key_size)
+                  .write_u8(this->from)
+                  .writestr_u8(this->name)
+                  .write_u8(this->transfer.has_value());
+
+        if(transfer.has_value())
+        {
+            out_stream.write_u16(this->transfer.value().map)
+                      .write_u16(this->transfer.value().position.x)
+                      .write_u16(this->transfer.value().position.y);
+        }
+    }
+#endif
     void deserialize(fb::istream& in_stream)
     {
         // base
@@ -35,7 +67,7 @@ public:
         this->key_size = in_stream.read_u8();
         in_stream.read((void*)this->enc_key, this->key_size);
         this->from = (fb::protocol::internal::services)in_stream.read_u8();
-        
+
         // additional parameters
         this->name = in_stream.readstr_u8();
 
@@ -59,17 +91,42 @@ public:
 class direction : public fb::protocol::base::header
 {
 public:
-    fb::game::direction     direction;
+#ifndef BOT
+    fb::game::direction         value;
+#else
+    const fb::game::direction   value;
+#endif
 
 public:
+#ifndef BOT
+    direction() : fb::protocol::base::header(0x11)
+    { }
+#else
+    direction(fb::game::direction value) : fb::protocol::base::header(0x11), value(value)
+    { }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8((uint8_t)this->value);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
-        this->direction = fb::game::direction(in_stream.read_u8());
+        this->value = fb::game::direction(in_stream.read_u8());
     }
+#endif
 };
 
 class exit : public fb::protocol::base::header
 {
+public:
+    exit() : fb::protocol::base::header(0x0B)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream) { }
 };
@@ -82,7 +139,31 @@ public:
     uint8_t                 sequence;
     point16_t               position;
 
+protected:
+    move(int id) : fb::protocol::base::header(id)
+    { }
+
 public:
+#ifndef BOT
+    move() : fb::protocol::base::header(0x32)
+    { }
+#else
+    move(fb::game::direction direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
+        direction(direction), sequence(sequence), position(position)
+    { }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->direction);
+        out_stream.write_u8(this->sequence);
+        out_stream.write_u16(this->position.x);
+        out_stream.write_u16(this->position.y);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->direction = fb::game::direction(in_stream.read_u8());
@@ -90,10 +171,11 @@ public:
         this->position.x = in_stream.read_u16();
         this->position.y = in_stream.read_u16();
     }
+#endif
 };
 
 
-class update_move : public fb::protocol::game::request::move
+class update_move : public move
 {
 public:
     point16_t               begin;
@@ -101,9 +183,13 @@ public:
     uint16_t                crc;
 
 public:
+    update_move() : move(0x06)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
-        fb::protocol::game::request::move::deserialize(in_stream);
+        move::deserialize(in_stream);
 
         this->begin.x = in_stream.read_u16();
         this->begin.y = in_stream.read_u16();
@@ -116,38 +202,97 @@ public:
 class attack : public fb::protocol::base::header
 {
 public:
+    attack() : fb::protocol::base::header(0x13)
+    { }
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+    }
+#else
     void deserialize(fb::istream& in_stream) { }
+#endif
 };
 
 
 class pick_up : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     bool                    boost;
+#else
+    const bool              boost;
+#endif
 
 public:
+#ifndef BOT
+    pick_up() : fb::protocol::base::header(0x07)
+    { }
+#else
+    pick_up(bool boost) : fb::protocol::base::header(0x07),
+        boost(boost)
+    { }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->boost);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->boost = bool(in_stream.read_u8());
     }
+#endif
 };
 
 
 class emotion : public fb::protocol::base::header
 {
 public:
-    uint8_t                 emotion;
+#ifndef BOT
+    uint8_t                 value;
+#else
+    const uint8_t           value;
+#endif
 
 public:
+#ifndef BOT
+    emotion() : fb::protocol::base::header(0x1D)
+    { }
+#else
+    emotion(uint8_t value) : fb::protocol::base::header(0x1D),
+        value(value)
+    { }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->value);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
-        this->emotion = in_stream.read_u8();
+        this->value = in_stream.read_u8();
     }
+#endif
 };
 
 
 class refresh : public fb::protocol::base::header
 {
+public:
+    refresh() : fb::protocol::base::header(0x38)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream) { }
 };
@@ -155,11 +300,19 @@ public:
 class front_info : public fb::protocol::base::header
 {
 public:
+    front_info() : fb::protocol::base::header(0x09)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream) { }
 };
 
 class self_info : public fb::protocol::base::header
 {
+public:
+    self_info() : fb::protocol::base::header(0x2D)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream) { }
 };
@@ -169,6 +322,10 @@ class change_option : public fb::protocol::base::header
 {
 public:
     fb::game::options       option;
+
+public:
+    change_option() : fb::protocol::base::header(0x1B)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -182,6 +339,10 @@ class click : public fb::protocol::base::header
 {
 public:
     uint32_t                fd;
+
+public:
+    click() : fb::protocol::base::header(0x43)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -207,6 +368,10 @@ public:
     uint8_t                 action;
     uint32_t                fd;
     params                  parameter;
+
+public:
+    trade() : fb::protocol::base::header(0x4A)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -237,6 +402,10 @@ public:
     std::string             name;
 
 public:
+    group() : fb::protocol::base::header(0x2E)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->name = in_stream.readstr_u8();
@@ -246,6 +415,10 @@ public:
 
 class user_list : public fb::protocol::base::header
 {
+public:
+    user_list() : fb::protocol::base::header(0x18)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream)
     {
@@ -257,15 +430,39 @@ public:
 class chat : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     bool                    shout;
     std::string             message;
+#else
+    const bool              shout;
+    const std::string       message;
+#endif
 
 public:
+#ifndef BOT
+    chat() : fb::protocol::base::header(0x0E)
+    { }
+#else
+    chat(bool shout, const std::string& message) : fb::protocol::base::header(0x0E),
+        shout(shout), message(message)
+    { }
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::ostream& out_stream) const
+    {
+        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(this->shout)
+                  .writestr_u8(this->message);
+    }
+#else
     void deserialize(fb::istream& in_stream)
     {
         this->shout = in_stream.read_u8();
         this->message = in_stream.readstr_u8();
     }
+#endif
 };
 
 
@@ -275,6 +472,10 @@ public:
     fb::game::swap::type    type;
     uint8_t                 src;
     uint8_t                 dst;
+
+public:
+    swap() : fb::protocol::base::header(0x30)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -295,6 +496,10 @@ public:
     uint16_t                        index;      // MENU
     uint16_t                        pursuit;    // SELL
     std::string                     name;       // SELL
+
+protected:
+    dialog(int id) : fb::protocol::base::header(id)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -347,9 +552,27 @@ public:
     }
 };
 
+class dialog1 : public dialog
+{
+public:
+    dialog1() : dialog(0x3A)
+    { }
+};
+
+class dialog2 : public dialog
+{
+public:
+    dialog2() : dialog(0x39)
+    { }
+};
+
 
 class door : public fb::protocol::base::header
 {
+public:
+    door() : fb::protocol::base::header(0x20)
+    { }
+
 public:
     void deserialize(fb::istream& in_stream)
     { }
@@ -361,6 +584,10 @@ class whisper : public fb::protocol::base::header
 public:
     std::string             name;
     std::string             message;
+
+public:
+    whisper() : fb::protocol::base::header(0x19)
+    { }
 
 public:
     void deserialize(fb::istream& in_stream)

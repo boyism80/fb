@@ -1,6 +1,6 @@
 #include <fb/game/item.h>
 
-const fb::game::cash::master fb::game::cash::BRONZE(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::BRONZE(fb::game::item::model::config
     {
         {
             .name = "엽전", 
@@ -9,7 +9,7 @@ const fb::game::cash::master fb::game::cash::BRONZE(fb::game::item::master::conf
         },
         /* id */ 0xFFFFFFFF
     });
-const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::BRONZE_BUNDLE(fb::game::item::model::config
     {
         {
             .name = "엽전뭉치", 
@@ -17,7 +17,7 @@ const fb::game::cash::master fb::game::cash::BRONZE_BUNDLE(fb::game::item::maste
         },
         /* id */ 0xFFFFFFFF
     });
-const fb::game::cash::master fb::game::cash::SILVER(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::SILVER(fb::game::item::model::config
     {
         {
             .name = "은전", 
@@ -25,7 +25,7 @@ const fb::game::cash::master fb::game::cash::SILVER(fb::game::item::master::conf
         },
         /* id */ 0xFFFFFFFF
     });
-const fb::game::cash::master fb::game::cash::SILVER_BUNDLE(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::SILVER_BUNDLE(fb::game::item::model::config
     {
         {
             .name = "은전뭉치", 
@@ -33,7 +33,7 @@ const fb::game::cash::master fb::game::cash::SILVER_BUNDLE(fb::game::item::maste
         },
         /* id */ 0xFFFFFFFF
     });
-const fb::game::cash::master fb::game::cash::GOLD(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::GOLD(fb::game::item::model::config
     {
         {
             .name = "금전", 
@@ -41,7 +41,7 @@ const fb::game::cash::master fb::game::cash::GOLD(fb::game::item::master::config
         },
         /* id */ 0xFFFFFFFF
     });
-const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(fb::game::item::master::config
+const fb::game::cash::model fb::game::cash::GOLD_BUNDLE(fb::game::item::model::config
     {
         {
             .name = "금덩어리", 
@@ -50,13 +50,13 @@ const fb::game::cash::master fb::game::cash::GOLD_BUNDLE(fb::game::item::master:
         /* id */ 0xFFFFFFFF
     });
 
-fb::game::cash::master::master(const fb::game::item::master::config& config) : fb::game::item::master(config)
+fb::game::cash::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config)
 { }
 
-fb::game::cash::master::~master()
+fb::game::cash::model::~model()
 { }
 
-fb::game::item::attrs fb::game::cash::master::attr() const
+fb::game::item::attrs fb::game::cash::model::attr() const
 {
     return item::attrs::CASH;
 }
@@ -91,19 +91,19 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
 {
     this->_chunk = value;
 
-    const fb::game::item* master = nullptr;
+    const fb::game::item* model = nullptr;
     if(this->_chunk == 1)
-        this->_master = &fb::game::cash::BRONZE;
+        this->_model = &fb::game::cash::BRONZE;
     else if(this->_chunk < 100)
-        this->_master = &fb::game::cash::BRONZE_BUNDLE;
+        this->_model = &fb::game::cash::BRONZE_BUNDLE;
     else if(this->_chunk == 100)
-        this->_master = &fb::game::cash::SILVER;
+        this->_model = &fb::game::cash::SILVER;
     else if(this->_chunk < 1000)
-        this->_master = &fb::game::cash::SILVER_BUNDLE;
+        this->_model = &fb::game::cash::SILVER_BUNDLE;
     else if(this->_chunk == 1000)
-        this->_master = &fb::game::cash::GOLD;
+        this->_model = &fb::game::cash::GOLD;
     else
-        this->_master = &fb::game::cash::GOLD_BUNDLE;
+        this->_model = &fb::game::cash::GOLD_BUNDLE;
 
     if(this->_chunk == 0)
     {

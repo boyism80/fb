@@ -3,8 +3,9 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/session.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 #include <fb/game/clan.h>
+#include <fb/game/group.h>
 
 using namespace fb::game;
 
@@ -17,15 +18,15 @@ public:
     const fb::game::message::type   type;
 
 public:
-    message(const std::string& text, fb::game::message::type type) : 
+    message(const std::string& text, fb::game::message::type type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x0A)
-                  .write_u8(this->type)
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->type)
                   .write(this->text, true);
     }
 };
@@ -38,7 +39,7 @@ public:
     const bool                  light;
 
 public:
-    show(const fb::game::session& session, const fb::game::object& to, bool light = false) : 
+    show(const fb::game::session& session, const fb::game::object& to, bool light = false) : fb::protocol::base::header(light ? 0x1D : 0x33),
         session(session), to(to), light(light)
     { }
 
@@ -74,7 +75,7 @@ public:
         if(map == nullptr)
             return;
 
-        out_stream.write_u8(this->light ? 0x1D : 0x33); // cmd
+        base::header::serialize(out_stream);
         if(this->light == false)
         {
             out_stream.write_u16(this->session.x()) // x
@@ -157,41 +158,86 @@ public:
 class id : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::session&    session;
+#else
+    uint32_t                    sequence = 0;
+    uint32_t                    direction = 0;
+    uint8_t                     cls = 0;
+#endif
 
 public:
-    id(const fb::game::session& session) : 
+#ifndef BOT
+    id(const fb::game::session& session) : fb::protocol::base::header(0x05),
         session(session)
     { }
+#else
+    id() : fb::protocol::base::header(0x05)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x05)
-                  .write_u32(this->session.sequence())
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->session.sequence())
                   .write_u32(this->session.direction()) // side
                   .write_u8(this->session.cls()) // class
                   .write_u16(0x00)
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->sequence = in_stream.read_u32();
+        this->direction = in_stream.read_u32();
+        this->cls = in_stream.read_u8();
+    }
+#endif
 };
 
 class state : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    fb::game::state_level       state_level;
+    uint8_t                     nation       = 0;
+    uint8_t                     creature     = 0;
+    uint8_t                     level        = 0;
+    uint32_t                    base_hp      = 0;
+    uint32_t                    base_mp      = 0;
+    uint8_t                     strength     = 0;
+    uint8_t                     intelligence = 0;
+    uint8_t                     dexteritry   = 0;
+    uint32_t                    hp           = 0;
+    uint32_t                    mp           = 0;
+    uint32_t                    experience   = 0;
+    uint32_t                    money        = 0;
+    uint32_t                    condition    = 0;
+    uint8_t                     mail         = 0;
+    uint8_t                     fast_move    = 0;
+#else
     const fb::game::session&    session;
     const fb::game::state_level level;
+#endif
 
 public:
-    state(const fb::game::session& session, fb::game::state_level level) : 
+#ifdef BOT
+    state() : fb::protocol::base::header(0x08)
+    { }
+#else
+    state(const fb::game::session& session, fb::game::state_level level) : fb::protocol::base::header(0x08),
         session(session), level(level)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x08) // cmd
-                  .write_u8(this->level);
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->level);
 
         if(enum_in(this->level, state_level::BASED))
         {
@@ -236,23 +282,87 @@ public:
                   .write_u8(true)  // fast move
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->state_level = (fb::game::state_level)in_stream.read_u8();
+        if(enum_in(this->state_level, state_level::BASED))
+        {
+            this->nation = in_stream.read_u8();
+            this->creature = in_stream.read_u8();
+            in_stream.read_u8();
+            this->level = in_stream.read_u8();
+            this->base_hp = in_stream.read_u32();
+            this->base_mp = in_stream.read_u32();
+            this->strength = in_stream.read_u8();
+            this->intelligence = in_stream.read_u8();
+            in_stream.read_u8();
+            in_stream.read_u8();
+            this->dexteritry = in_stream.read_u8();
+            in_stream.read_u8();
+            in_stream.read_u32();
+            in_stream.read_u8();
+        }
+
+        if(enum_in(this->state_level, state_level::HP_MP))
+        {
+            this->hp = in_stream.read_u32();
+            this->mp = in_stream.read_u32();
+        }
+
+        if(enum_in(this->state_level, state_level::EXP_MONEY))
+        {
+            this->experience = in_stream.read_u32();
+            this->money = in_stream.read_u32();
+        }
+
+        if(enum_in(this->state_level, state_level::CONDITION))
+        {
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::MOVE;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::SIGHT;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::HEAR;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::ORAL;
+            if (in_stream.read_u8())
+                this->condition |= (uint32_t)fb::game::condition::MAP;
+        }
+
+        this->mail = in_stream.read_u8();
+        this->fast_move = in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class position : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::session&    session;
+#else
+    point16_t                   abs;
+    point16_t                   rel;
+#endif
 
 public:
-    position(const fb::game::session& session) : 
+#ifndef BOT
+    position(const fb::game::session& session) : fb::protocol::base::header(0x04),
         session(session)
     { }
+#else
+    position() : fb::protocol::base::header(0x04)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x04)
-                  .write_u16(this->session.x())  // 실제 x 좌표
+        base::header::serialize(out_stream);
+        out_stream.write_u16(this->session.x())  // 실제 x 좌표
                   .write_u16(this->session.y()); // 실제 y 좌표
 
         auto                    map = this->session.map();
@@ -277,6 +387,15 @@ public:
 
         out_stream.write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->abs.x = in_stream.read_u16();
+        this->abs.y = in_stream.read_u16();
+        this->rel.x = in_stream.read_u16();
+        this->rel.y = in_stream.read_u16();
+    }
+#endif
 };
 
 class internal_info : public fb::protocol::base::header
@@ -285,7 +404,7 @@ public:
     const fb::game::session&    session;
 
 public:
-    internal_info(const fb::game::session& session) : 
+    internal_info(const fb::game::session& session) : fb::protocol::base::header(0x39),
         session(session)
     { }
 
@@ -293,8 +412,8 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         auto clan = this->session.clan();
-        out_stream.write_u8(0x39)
-                  .write_u8((uint8_t)this->session.defensive_physical())
+        base::header::serialize(out_stream);
+        out_stream.write_u8((uint8_t)this->session.defensive_physical())
                   .write_u8(this->session.damage())
                   .write_u8(this->session.hit())
                   .write(clan != nullptr ? clan->name() : "")
@@ -332,7 +451,7 @@ public:
         uint32_t                remained_exp = this->session.experience_remained();
         out_stream.write_u32(remained_exp);
 
-        auto                    class_name = fb::game::data_set::classes.class2name(this->session.cls(), this->session.promotion());
+        auto                    class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 
@@ -374,20 +493,20 @@ public:
     const fb::game::session&    session;
 
 public:
-    external_info(const fb::game::session& session) : 
+    external_info(const fb::game::session& session) : fb::protocol::base::header(0x34),
         session(session)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x34)
-              .write(this->session.title())
-              .write("클랜 이름")
-              .write("클랜 타이틀");
+        base::header::serialize(out_stream);
+        out_stream.write(this->session.title())
+                  .write("클랜 이름")
+                  .write("클랜 타이틀");
 
         // 클래스 이름
-        const auto              class_name = fb::game::data_set::classes.class2name(this->session.cls(), this->session.promotion());
+        const auto              class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
         if(class_name == nullptr)
             return;
 
@@ -477,24 +596,49 @@ public:
 class option : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    bool                        weather_effect = false;
+    bool                        magic_effect = false;
+    bool                        roar_worlds = false;
+    bool                        fast_move = false;
+    bool                        effect_sound = false;
+#else
     const fb::game::session&    session;
+#endif
 
 public:
-    option(const fb::game::session& session) : 
+#ifdef BOT
+    option() : fb::protocol::base::header(0x23)
+    { }
+#else
+    option(const fb::game::session& session) : fb::protocol::base::header(0x23),
         session(session)
     { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x23)
-                  .write_u8(this->session.option(options::WEATHER_EFFECT)) // weather
+        base::header::serialize(out_stream);
+        out_stream.write_u8(this->session.option(options::WEATHER_EFFECT)) // weather
                   .write_u8(this->session.option(options::MAGIC_EFFECT)) // magic effect
                   .write_u8(this->session.option(options::ROAR_WORLDS)) // listen news
                   .write_u8(this->session.option(options::FAST_MOVE)) // fast move
                   .write_u8(this->session.option(options::EFFECT_SOUND)) // effect sound
                   .write_u8(0x00);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->weather_effect = in_stream.read_u8();
+        this->magic_effect = in_stream.read_u8();
+        this->roar_worlds = in_stream.read_u8();
+        this->fast_move = in_stream.read_u8();
+        this->effect_sound = in_stream.read_u8();
+        in_stream.read_u8();
+    }
+#endif
 };
 
 class throws : public fb::protocol::base::header
@@ -505,15 +649,15 @@ public:
     const point16_t             to;
 
 public:
-    throws(const fb::game::session& session, const fb::game::item& item, const point16_t& to) : 
+    throws(const fb::game::session& session, const fb::game::item& item, const point16_t& to) : fb::protocol::base::header(0x16),
         session(session), item(item), to(to)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x16)
-                  .write_u32(this->session.sequence())
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->session.sequence())
                   .write_u16(this->item.look())
                   .write_u8(this->item.color())
                   .write_u32(this->item.sequence())
@@ -536,15 +680,15 @@ public:
     const uint8_t                   sound;
 
 public:
-    action(const fb::game::session& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : 
+    action(const fb::game::session& me, fb::game::action value, fb::game::duration duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x1A)
-                  .write_u32(this->me.sequence())
+        base::header::serialize(out_stream);
+        out_stream.write_u32(this->me.sequence())
                   .write_u8(this->value) // type
                   .write_u16(this->duration) // duration
                   .write_u8(this->sound); // sound

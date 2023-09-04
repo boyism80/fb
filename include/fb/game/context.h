@@ -21,65 +21,54 @@
 
 namespace fb { namespace game {
 
-#pragma region message
-#pragma endregion
-
-#pragma region exceptions
-#pragma endregion
-
-class context : 
-    public fb::acceptor<fb::game::session>, 
-    public fb::game::listener
+class context : public fb::acceptor<fb::game::session>, public fb::game::listener
 {
 public:
     LUA_PROTOTYPE
 
-#pragma region enum
 public:
     enum class scope { SELF, PIVOT, GROUP, MAP, WORLD };
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     struct command;
-#pragma endregion
 
-#pragma region type definition
 public:
     using command_fn        = std::function<bool(fb::game::session&, Json::Value&)>;
     using commands          = std::map<std::string, command>;
     using object_set        = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-#pragma endregion
+    using transfer_param    = fb::protocol::game::request::login::transfer_param;
 
-#pragma region private field
 private:
     commands                _commands;
     std::mutex              _hash_mutex;
     object_set              _objects;
+    fb::db::context         _db;
     tm*                     _time = fb::now();
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, const INTERNAL_CONNECTION& internal_connection);
+    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
     ~context();
-#pragma endregion
 
-#pragma region private method
 private:
-    uint32_t                elapsed_seconds(const datetime& datetime);
-    std::string             elapsed_message(const datetime& datetime);
-    fb::game::session*      find(const std::string& name) const;
+    uint32_t                elapsed_seconds(const daotk::mysql::datetime& datetime);
+    std::string             elapsed_message(const daotk::mysql::datetime& datetime);
+    fb::game::session*      find(const std::string& name);
     void                    bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
-#pragma endregion
+    bool                    fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer);
+    void                    fetch_gear(daotk::mysql::result& db_result, fb::game::session& session);
+    void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
-#pragma region public method
+private:
+    fb::task                co_login(std::string name, fb::game::session* session, const fb::protocol::game::request::login& request);
+    fb::task                co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position);
+    fb::task                co_whisper(fb::game::session* session, const std::string& to, const std::string& message);
+
 public:
     bool                    exists(const fb::game::object& object) const;
 
     template <typename T, typename... Args>
-    T*                      make(const typename T::master* core, Args... args)
+    T*                      make(const typename T::model* core, Args... args)
     {
         return new T(*this, core, args...);
     }
@@ -91,25 +80,25 @@ public:
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
     void                    save(fb::game::session& session);
-    void                    save(fb::game::session& session, const std::function<void(fb::game::session&)>& fn);
+    fb::task                save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
     void                    save();
     void                    save(const std::function<void(fb::game::session&)>& fn);
 
 public:
-    fb::thread*             thread(const fb::game::map& map) const;
-    uint8_t                 thread_index(const fb::game::map& map) const;
+    fb::thread*             thread(const fb::game::map* map) const;
+    uint8_t                 thread_index(const fb::game::map* map) const;
     fb::thread*             thread(const fb::game::object& obj) const;
     uint8_t                 thread_index(const fb::game::object& obj) const;
     const fb::thread*       current_thread() const;
-#pragma endregion
 
-#pragma region handler method
 protected:
+    bool                    is_decrypt(uint8_t cmd) const final;
+    void                    handle_start() final;
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
     bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
+    void                    handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
-    void                    handle_exit() final;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
@@ -153,6 +142,8 @@ public:
     bool                    handle_board(fb::socket<fb::game::session>&, const fb::protocol::game::request::board::board&);
     bool                    handle_swap(fb::socket<fb::game::session>&, const fb::protocol::game::request::swap&);
     bool                    handle_dialog(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog&);
+    //bool                    handle_dialog_1(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog1&);
+    //bool                    handle_dialog_2(fb::socket<fb::game::session>&, const fb::protocol::game::request::dialog2&);
     bool                    handle_throw_item(fb::socket<fb::game::session>&, const fb::protocol::game::request::item::throws&);
     bool                    handle_spell(fb::socket<fb::game::session>&, const fb::protocol::game::request::spell::use&);
     bool                    handle_door(fb::socket<fb::game::session>&, const fb::protocol::game::request::door&);
@@ -191,9 +182,8 @@ public:
     bool                    handle_command_tile(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_save(fb::game::session& session, Json::Value& parameters);
     bool                    handle_command_mapobj(fb::game::session& session, Json::Value& parameters);
-#pragma endregion
+    bool                    handle_command_randmap(fb::game::session& session, Json::Value& parameters);
 
-#pragma region listener method
 public:
     // listener : object
     void                    on_create(fb::game::object& me) final;
@@ -270,15 +260,13 @@ public:
 
 
     // listener : dialog
-    void                    on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-#pragma endregion
+    void                    on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
 
-#pragma region built-in method
 public:
     static int              builtin_seed(lua_State* lua);
     static int              builtin_sleep(lua_State* lua);
@@ -288,7 +276,6 @@ public:
     static int              builtin_name2item(lua_State* lua);
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);
-#pragma endregion
 };
 
 

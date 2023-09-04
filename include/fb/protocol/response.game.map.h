@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/map.h>
-#include <fb/game/data_set.h>
+#include <fb/game/model.h>
 
 static constexpr uint16_t crc16tab[256] = 
 {
@@ -52,14 +52,14 @@ public:
     const uint16_t          crc;
 
 public:
-    update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) : 
+    update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) : fb::protocol::base::header(0x06),
         map(map), position(position), size(size), crc(crc)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x06);
+        base::header::serialize(out_stream);
 
         if(this->map.effect() == fb::game::map::effects::NONE)
             out_stream.write_u8(0x00);
@@ -103,15 +103,16 @@ public:
     const uint8_t                   volume;
 
 public:
-    bgm(const fb::game::map& map, uint16_t volume = 100) : 
+    bgm(const fb::game::map& map, uint16_t volume = 100) : fb::protocol::base::header(0x19),
         map(map), volume(volume)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x19)
-                  .write_u8(0x01)
+        base::header::serialize(out_stream);
+
+        out_stream.write_u8(0x01)
                   .write_u8(0x05)
                   .write_u16(this->map.id())
                   .write_u16(this->map.id())
@@ -127,23 +128,47 @@ public:
 class config : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::map&            map;
+#else
+    uint16_t                        id;
+    size16_t                        size;
+    bool                            building;
+    std::string                     name;
+#endif
 
 public:
-    config(const fb::game::map& map) : 
+#ifndef BOT
+    config(const fb::game::map& map) : fb::protocol::base::header(0x15),
         map(map)
     { }
+#else
+    config() : fb::protocol::base::header(0x15)
+    { }
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        out_stream.write_u8(0x15)
-                  .write_u16(this->map.id()) // id
+        base::header::serialize(out_stream);
+
+        out_stream.write_u16(this->map.id()) // id
                   .write_u16(this->map.width()) // width
                   .write_u16(this->map.height()) // height
                   .write_u8(enum_in(this->map.option(), fb::game::map::options::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
                   .write(this->map.name(), true);
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        this->id = in_stream.read_u16();
+        this->size.width = in_stream.read_u16();
+        this->size.height = in_stream.read_u16();
+        this->building = in_stream.read_u8();
+        this->name = in_stream.readstr_u16();
+    }
+#endif
 };
 
 
@@ -153,18 +178,18 @@ public:
     const fb::game::wm::offset*     offset;
 
 public:
-    worlds(const fb::game::wm::offset& offset) : 
+    worlds(const fb::game::wm::offset& offset) : fb::protocol::base::header(0x2E),
         offset(&offset)
     { }
-    worlds(const std::string& id)
+    worlds(const std::string& id) : fb::protocol::base::header(0x2E)
     {
         try
         {
-            auto  windex = fb::game::data_set::worlds.find(id);
+            auto  windex = fb::game::model::worlds.find(id);
             if(windex == -1)
                 throw nullptr;
 
-            auto  world = fb::game::data_set::worlds[windex];
+            auto  world = fb::game::model::worlds[windex];
             auto& offsets = world->offsets();
             auto  found = std::find_if
             (
@@ -189,14 +214,16 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
+        base::header::serialize(out_stream);
+
         if(this->offset == nullptr)
             return;
 
-        auto windex = fb::game::data_set::worlds.find(this->offset->id);
+        auto windex = fb::game::model::worlds.find(this->offset->id);
         if(windex == -1)
             return;
 
-        auto world = fb::game::data_set::worlds[windex];
+        auto world = fb::game::model::worlds[windex];
         if(world == nullptr)
             return;
 
@@ -213,10 +240,9 @@ public:
         if(current == -1)
             return;
 
-        out_stream.write_u8(0x2E)
-            .writestr_u8(world->name)
-            .write_u8(offsets.size())
-            .write_u8(current);
+        out_stream.writestr_u8(world->name)
+                  .write_u8(offsets.size())
+                  .write_u8(current);
 
         auto offset_id = 0;
         for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
@@ -225,13 +251,13 @@ public:
             for(auto& offset : *group)
             {
                 out_stream.write_u16(offset->position.x)
-                    .write_u16(offset->position.y)
-                    .writestr_u8(offset->name)
-                    .write_u16(0x0000)
-                    .write_u16(windex)
-                    .write_u16(current)
-                    .write_u16(offset_id++)
-                    .write_u16(group->size());
+                          .write_u16(offset->position.y)
+                          .writestr_u8(offset->name)
+                          .write_u16(0x0000)
+                          .write_u16(windex)
+                          .write_u16(current)
+                          .write_u16(offset_id++)
+                          .write_u16(group->size());
 
                 for(int i = 0; i < offsets.size(); i++)
                 {

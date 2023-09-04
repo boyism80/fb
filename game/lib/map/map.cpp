@@ -103,10 +103,10 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
     _name(name),
     _option(option),
     _effect(effect),
-    group(group)
+    group(group),
+    active(fb::config::get()["group"].asUInt() == group)
 {
-    auto& config = fb::config::get();
-    if(config["group"].asUInt() != group)
+    if (this->active == false)
         return;
 
     std::string what;
@@ -134,7 +134,7 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
     // compare linear doors
     point16_t position;
-    for(const auto& door : fb::game::data_set::doors)
+    for(const auto& door : fb::game::model::doors)
     {
         position.x = position.y = 0;
         while(door->find(*this, position, true))

@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/internal
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lncursesw -lboost_program_options -fcoroutines
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/data_set.o $(BUILD)/session.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/model.o $(BUILD)/session.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/data_set.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/model.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
@@ -15,6 +15,9 @@ $(BUILD)/config.o: ../core/config.cpp
 $(BUILD)/console.o: ../core/console.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ../core/console.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/console.o
+$(BUILD)/logger.o: ../core/logger.cpp
+	mkdir -p $(BUILD)
+	$(CXX) $(STD) -c ../core/logger.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/logger.o
 $(BUILD)/cryptor.o: ../core/cryptor.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ../core/cryptor.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/cryptor.o
@@ -42,9 +45,9 @@ $(BUILD)/time.o: ../core/time.cpp
 $(BUILD)/context.o: ./lib/context.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/context.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.o
-$(BUILD)/data_set.o: ./lib/data_set.cpp
+$(BUILD)/model.o: ./lib/model.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./lib/data_set.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/data_set.o
+	$(CXX) $(STD) -c ./lib/model.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/model.o
 $(BUILD)/session.o: ./lib/session.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o

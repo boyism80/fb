@@ -7,20 +7,15 @@ namespace fb { namespace game {
 
 class life : public object
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     interface listener;
 
 public:
-    class master;
-#pragma endregion
+    class model;
 
-#pragma region structure
 struct config : public fb::game::object::config
 {
 public:
@@ -28,31 +23,21 @@ public:
     uint32_t                    mp  = 0;
     uint32_t                    exp = 0;
 };
-#pragma endregion
 
-#pragma region protected field
 protected:
     uint32_t                    _hp = 0, _mp = 0;
     fb::game::condition         _condition = fb::game::condition::NONE;
-#pragma endregion
 
-#pragma region public field
 public:
     fb::game::spells            spells;
-#pragma endregion
 
-#pragma region constructor / destructor
 protected:
-    life(fb::game::context& context, const master* master, const fb::game::life::config& config);
+    life(fb::game::context& context, const model* model, const fb::game::life::config& config);
     virtual ~life();
-#pragma endregion
 
-#pragma region protected method
 protected:
     uint32_t                    calculate_damage(uint32_t value, const fb::game::life& life) const;
-#pragma endregion
 
-#pragma region public method
 public:
     virtual void                attack();
     virtual uint32_t            hp() const;
@@ -87,9 +72,7 @@ public:
     bool                        active(fb::game::spell& spell, uint32_t fd);
     bool                        active(fb::game::spell& spell, const std::string& message);
     bool                        active(fb::game::spell& spell, fb::game::object& to);
-#pragma endregion
 
-#pragma region virtual method
 protected:
     virtual void                on_update() { }
     virtual uint32_t            on_calculate_damage(bool critical) const = 0;
@@ -104,9 +87,7 @@ public:
     virtual uint32_t            on_exp() const { return 0; }
     virtual void                on_kill(fb::game::life& you);
 
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_hp(lua_State* lua);
     static int                  builtin_mp(lua_State* lua);
@@ -120,10 +101,8 @@ public:
     static int                  builtin_spell(lua_State* lua);
     static int                  builtin_damage(lua_State* lua);
     static int                  builtin_cast(lua_State* lua);
-#pragma endregion
 };
 
-#pragma region interface
 interface life::listener : public virtual fb::game::object::listener,
     public virtual fb::game::spell::listener
 {
@@ -138,14 +117,11 @@ interface life::listener : public virtual fb::game::object::listener,
     virtual void                on_hp(life& me, uint32_t before, uint32_t current) = 0;
     virtual void                on_mp(life& me, uint32_t before, uint32_t current) = 0;
 };
-#pragma endregion
 
-#pragma region master
-class life::master : public fb::game::object::master
+class life::model : public fb::game::object::model
 {
-#pragma region structure
 public:
-    struct config : public fb::game::object::master::config
+    struct config : public fb::game::object::model::config
     {
     public:
         fb::game::defensive     defensive;
@@ -153,39 +129,27 @@ public:
         uint32_t                mp  = 0;
         uint32_t                exp = 0;
     };
-#pragma endregion
 
-#pragma region friend
 public:
     friend class life;
-#pragma endregion
 
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region protected field
 public:
     const fb::game::defensive   defensive;
     const uint32_t              hp          = 0;
     const uint32_t              mp          = 0;
     const uint32_t              experience  = 0;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
-    master(const fb::game::life::master::config& config);
-    virtual ~master();
-#pragma endregion
+    model(const fb::game::life::model::config& config);
+    virtual ~model();
 
-#pragma region built-in method
 public:
     static int                  builtin_hp(lua_State* lua);
     static int                  builtin_mp(lua_State* lua);
-#pragma endregion
 };
-#pragma endregion
 
 } }
 

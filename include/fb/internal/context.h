@@ -4,9 +4,8 @@
 #include <fb/internal/session.h>
 #include <zlib.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/console.h>
 #include <fb/core/acceptor.h>
-#include <fb/internal/data_set.h>
+#include <fb/internal/model.h>
 #include <fb/internal/exception.h>
 #include <fb/core/config.h>
 
@@ -37,7 +36,6 @@ private:
     service*                        _login   = nullptr;
     subscriber_container            _games;
     unique_users                    _users;
-    std::vector<unique_session>     _sessions;
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
@@ -56,7 +54,8 @@ public:
     template <typename R>
     void                            bind(const std::function<bool(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
-        _handler_dict[R::id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        auto id = R().__id;
+        _handler_dict[id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
         {
             auto&   in_stream = socket.in_stream();
             R       header;

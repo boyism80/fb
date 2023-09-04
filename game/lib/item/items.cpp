@@ -212,7 +212,7 @@ uint8_t fb::game::items::inactive(equipment::slot slot)
     return this->equipment_off(slot);
 }
 
-uint8_t fb::game::items::index(const fb::game::item::master* item) const
+uint8_t fb::game::items::index(const fb::game::item::model* item) const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -433,7 +433,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
     return nullptr;
 }
 
-fb::game::item* fb::game::items::find(const fb::game::item::master& base) const
+fb::game::item* fb::game::items::find(const fb::game::item::model& base) const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -543,8 +543,8 @@ bool fb::game::items::throws(uint8_t index)
         if(item == nullptr)
             return false;
 
-        auto                    master = item->based<fb::game::item>();
-        if(master->trade.enabled == false)
+        auto                    model = item->based<fb::game::item>();
+        if(model->trade.enabled == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = this->_owner.map();

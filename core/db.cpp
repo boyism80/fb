@@ -1,34 +1,175 @@
 #include <fb/core/db.h>
 
-std::unique_ptr<fb::db>                 fb::db::_ist;
+using namespace fb::db;
 
-fb::db::db() : 
-    _context(nullptr)
+connections::connections(const Json::Value& config, int pool_size) : _config(config)
 {
-    auto& config    = fb::config::get();
-    auto& databases = config["database"];
-
-    for(int i = 0; i < databases.size(); i++)
+    for(int i = 0; i < pool_size; i++)
     {
-        this->_pools.push_back(std::make_unique<fb::db::pool>(SIZE));
-    };
+        this->_queue.push(connection_ptr(nullptr));
+    }
 }
 
-fb::db::~db()
+connections::~connections()
+{}
+
+void connections::enqueue(std::unique_ptr<daotk::mysql::connection>& conn)
+{
+    MUTEX_GUARD(this->_mutex);
+
+    this->_queue.push(std::move(conn));
+}
+
+connection_ptr connections::dequeue()
+{
+    MUTEX_GUARD(this->_mutex);
+
+    if (this->_queue.empty())
+        return nullptr;
+
+    auto ptr = std::move(this->_queue.front());
+    this->_queue.pop();
+
+    if (ptr == nullptr)
+    {
+        auto& config            = fb::config::get();
+        auto  option            = daotk::mysql::connect_options();
+        option.server           = this->_config["ip"].asString();
+        option.port             = this->_config["port"].asInt();
+        option.username         = this->_config["uid"].asString();
+        option.password         = this->_config["pwd"].asString();
+        option.dbname           = this->_config["name"].asString();
+        option.autoreconnect    = true;
+
+        ptr.reset(new daotk::mysql::connection(option));
+        auto busy = false;
+
+        while (ptr->is_open() == false)
+        {
+            busy = true;
+            std::this_thread::sleep_for(100ms);
+            ptr->open(option);
+        }
+        ptr->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
+
+        if (busy)
+        {
+            fb::logger::debug("db re-open success");
+            busy = false;
+        }
+    }
+
+    return std::move(ptr);
+}
+
+
+tasks::tasks()
 { }
 
-void fb::db::bind(boost::asio::io_context& context)
+tasks::~tasks()
+{ }
+
+void tasks::enqueue(const task& t)
 {
-    get()._context = &context;
+    MUTEX_GUARD(this->_mutex);
+    this->_queue.push(std::make_unique<task>(t));
 }
 
-uint64_t fb::db::hash(const char* name)
+std::unique_ptr<task> tasks::dequeue()
 {
-    if(name == nullptr)
+    MUTEX_GUARD(this->_mutex);
+    if(this->_queue.empty())
+        return nullptr;
+
+    auto ptr = std::move(this->_queue.front());
+    this->_queue.pop();
+
+    return std::move(ptr);
+}
+
+worker::worker(const Json::Value& config, int pool_size) : _connections(config, pool_size)
+{ }
+
+worker::~worker()
+{ }
+
+void worker::enqueue(const task& t)
+{
+    this->_tasks.enqueue(t);
+}
+
+void worker::exit()
+{
+    this->_exit = true;
+}
+
+void worker::on_work()
+{
+    constexpr auto term = 100ms;
+    while(true)
+    {
+        auto connection = this->_connections.dequeue();
+        if(connection == nullptr)
+        {
+            std::this_thread::sleep_for(term);
+            continue;
+        }
+
+        auto task = this->_tasks.dequeue();
+        if(task == nullptr)
+        {
+            if(this->_exit)
+                break;
+            
+            std::this_thread::sleep_for(term);
+            this->_connections.enqueue(connection);
+            continue;
+        }
+
+        std::async([this, connection = std::move(connection), task = std::move(task)] () mutable
+        {
+            try
+            {
+                auto results = connection->mquery(task->sql);
+                task->callback(results);
+            }
+            catch(...)
+            {
+                fb::logger::fatal("query failed : ", task->sql.c_str());
+            }
+
+            auto&& x = std::move(connection);
+            this->_connections.enqueue(x);
+        });
+    }
+}
+
+context::context(int pool_size)
+{
+    auto& config = fb::config::get();
+    auto& databases = config["database"];
+    auto  count = databases.size();
+
+    this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count);
+    for (int i = 0; i < count; i++)
+    {
+        this->_workers.push_back(std::make_unique<worker>(databases[i], pool_size));
+        post(*_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
+    }
+}
+
+context::~context()
+{
+    this->exit();
+}
+
+uint64_t context::hash(const std::string& name) const
+{
+    if(name.empty())
         return 0;
 
     auto hash   = uint64_t(0);
-    auto length = strlen(name);
+    auto length = name.length();
     for(int i = 0; i < length; i++)
     {
         hash = 31 * hash + name[i];
@@ -37,199 +178,104 @@ uint64_t fb::db::hash(const char* name)
     return hash;
 }
 
-uint8_t fb::db::index(const char* name)
+uint8_t context::index(const std::string& name) const
 {
-    if(name == nullptr)
+    if(name.empty())
         return 0;
 
-    auto size = this->_pools.size();
+    auto size = this->_workers.size();
     if(size == 1)
         return 0;
 
-    return (uint8_t)(hash(name) % size - 1) + 1;
+    return (uint8_t)(this->hash(name) % size - 1) + 1;
 }
 
-fb::db::pool* fb::db::connections(const char* name)
+void context::enqueue(const std::string& name, const task& t)
 {
-    auto index = fb::db::index(name);
-    return this->_pools[index].get();
+    auto index = this->index(name);
+    this->_workers[index]->enqueue(t);
 }
 
-fb::db::connection fb::db::get(const char* name)
+void context::exit()
 {
-    std::lock_guard<std::mutex> mg(this->_mutex);
+    std::lock_guard<std::mutex>(this->_mutex_exit);
 
-    auto& c                  = fb::console::get();
-    auto  connections        = fb::db::connections(name);
-    while(connections->empty())
+    for(auto& worker : this->_workers)
     {
-        c.puts("All connections are used.");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        worker->exit();
     }
 
-    auto index             = fb::db::index(name);
-    auto connection        = std::move(connections->front());
-    connections->pop_front();
-
-    if(connection == nullptr)
+    if (_thread_pool != nullptr)
     {
-        auto& config         = fb::config::get();
-        auto  option         = daotk::mysql::connect_options();
-        option.server        = config["database"][index]["ip"].asString();
-        option.port          = config["database"][index]["port"].asInt();
-        option.username      = config["database"][index]["uid"].asString();
-        option.password      = config["database"][index]["pwd"].asString();
-        option.dbname        = config["database"][index]["name"].asString();
-        option.autoreconnect = true;
-
-        connection.reset(new daotk::mysql::connection(option));
-    }
-
-    if(connection->is_open())
-        connection->set_server_option(MYSQL_OPTION_MULTI_STATEMENTS_ON);
-
-    return connection;
-}
-
-bool fb::db::release(const char* name, fb::db::connection& connection)
-{
-    std::lock_guard<std::mutex> mg(this->_mutex);
-
-    auto connections = fb::db::connections(name);
-
-    if(connections == nullptr)
-        return false;
-
-    try
-    {
-        connections->push_back(std::move(connection));
-        return true;
-    }
-    catch(std::exception&)
-    {
-        return false;
+        this->_thread_pool->join();
+        this->_workers.clear();
+        this->_thread_pool.reset();
     }
 }
 
-void fb::db::_exec(const char* name, const std::string& sql)
+void fb::db::context::exec(const std::string& name, const std::string& sql)
 {
-    auto connection = db::get(name);
-    try
-    {
-        connection->mquery(sql);
-    }
-    catch(std::exception& e)
-    {
-        auto& c = console::get();
-        c.puts(e.what());
-    }
-
-    this->release(name, connection);
+    this->enqueue(name, task {sql, [] (auto& results) {}});
 }
 
-void fb::db::_query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn)
+result_type fb::db::context::co_exec(const std::string& name, const std::string& sql)
 {
-    auto connection = db::get(name);
-    auto result = connection->query(sql);
-
-    try
+    auto await_callback = [this, name, sql](auto& awaitable)
     {
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection = std::move(connection), name = std::string(name), &fn, result = std::move(result)] () mutable
-            { 
-                fn(*connection, result); 
-                this->release(name.c_str(), connection);
-            }
-        );
-    }
-    catch(std::exception& e)
-    {
-        console::get().puts(e.what());
-    }
-}
-
-void fb::db::_mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn)
-{
-    auto connection = db::get(name);
-    auto result = connection->mquery(sql);
-
-    try
-    {
-        boost::asio::dispatch
-        (
-            *_context, 
-            [this, connection = std::move(connection), name = std::string(name), fn, result = std::move(result)] () mutable
-            { 
-                fn(*connection, result); 
-                this->release(name.c_str(), connection);
-            }
-        );
-    }
-    catch(std::exception& e)
-    {
-        console::get().puts(e.what());
-    }
-}
-
-fb::db& fb::db::get()
-{
-    static std::once_flag flag;
-    std::call_once(flag, [] () { _ist.reset(new fb::db()); });
-
-    return *_ist;
-}
-
-bool fb::db::query(const char* name, const std::vector<std::string>& queries)
-{
-    auto& ist = get();
-    if(ist._context == nullptr)
-        return false;
-
-    std::stringstream sstream;
-    for(int i = 0; i < queries.size(); i++)
-    {
-        if(i > 0)
-            sstream << "; ";
-
-        sstream << queries[i];
-    }
-
-    fb::async::launch
-    (
-        [&ist, name = std::string(name), query = std::string(sstream.str())]()
+        this->enqueue(name, task {sql, [&awaitable] (auto& results) 
         {
-            ist._exec(name.c_str(), query.c_str());
-        }
-    );
+            awaitable.result = &results;
+            awaitable.handler.resume();
+        }});
+    };
 
-    return true;
+    return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
 }
 
-bool fb::db::query(const char* name, const std::function<void()>& fn, const std::vector<std::string>& queries)
+void fb::db::context::exec(const std::string& name, const std::vector<std::string>& queries)
 {
-    auto& ist = get();
-    if(ist._context == nullptr)
-        return false;
-
-    std::stringstream sstream;
-    for(int i = 0; i < queries.size(); i++)
+    auto sstream = std::stringstream();
+    for (auto& query : queries)
     {
-        if(i > 0)
-            sstream << "; ";
+        if (query.empty())
+            continue;
 
-        sstream << queries[i];
+        sstream << query << ";";
     }
 
-    fb::async::launch
-    (
-        [&ist, name = std::string(name), query = std::string(sstream.str()), fn]()
-        {
-            ist._exec(name.c_str(), query.c_str());
-            fn();
-        }
-    );
+    this->exec(name, sstream.str());
+}
 
-    return true;
+result_type fb::db::context::co_exec(const std::string& name, const std::vector<std::string>& queries)
+{
+    auto sstream = std::stringstream();
+    for (auto& query : queries)
+    {
+        if (query.empty())
+            continue;
+
+        sstream << query << ";";
+    }
+
+    return this->co_exec(name, sstream.str());
+}
+
+void fb::db::context::exec_f(const std::string& name, const std::string& format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    auto sql = fstring_c(format, &args);
+    va_end(args);
+
+    this->exec(name, sql);
+}
+
+result_type fb::db::context::co_exec_f(const std::string& name, const std::string& format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    auto sql = fstring_c(format, &args);
+    va_end(args);
+    
+    return this->co_exec(name, sql);
 }

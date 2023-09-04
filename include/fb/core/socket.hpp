@@ -1,38 +1,46 @@
 #include "socket.h"
 
 template<typename T>
-fb::base::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::base::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) : 
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
 { }
 
 template<typename T>
-inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
+inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback)
 {
     auto clone = stream;
-    if(encrypt && this->on_encrypt(clone) == false)
+    if (encrypt && this->on_encrypt(clone) == false)
         return;
 
-    if(wrap && this->on_wrap(clone) == false)
+    if (wrap && this->on_wrap(clone) == false)
         return;
 
     auto buffer = boost::asio::buffer(clone.data(), clone.size());
-    boost::asio::async_write
-    (
-        *this, 
-        buffer, 
-        [this] (const boost::system::error_code error, size_t bytes_transferred)
-        { }
-    );
+    boost::asio::async_write(*this, buffer, callback);
+}
+
+template<typename T>
+inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{
+    static auto empty_fn = [](const boost::system::error_code, size_t) {};
+    this->send(stream, encrypt, wrap, empty_fn);
 }
 
 template<typename T>
 inline void fb::base::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
+    static auto empty_fn = [](const boost::system::error_code, size_t) {};
+    this->send(response, encrypt, wrap, empty_fn);
+}
+
+template<typename T>
+inline void fb::base::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback)
+{
     fb::ostream             out_stream;
     response.serialize(out_stream);
-    this->send(out_stream, encrypt, wrap);
+    this->send(out_stream, encrypt, wrap, callback);
 }
 
 template <typename T>
@@ -41,20 +49,35 @@ void fb::base::socket<T>::recv()
     this->async_read_some
     (
         boost::asio::buffer(this->_buffer),
-        [this](const boost::system::error_code& error, size_t bytes_transferred)
+        [this](const boost::system::error_code& ec, size_t bytes_transferred)
         {
             try
             {
-                if(error)
-                    throw std::exception();
+                if(ec)
+                    throw ec;
                 
-                auto gd = std::lock_guard<std::mutex>(mutex);
+                auto gd = std::lock_guard<std::mutex>(this->mutex);
 
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->_handle_received(*this);
+
+                if (this->is_open() == false)
+                    throw std::runtime_error("disconnected");
+
                 this->recv();
             }
-            catch(std::exception&)
+            catch(const boost::system::error_code& ec)
+            {
+                auto code = ec.value();
+                switch (code)
+                {
+                case 10054:
+                case boost::system::errc::errc_t::no_such_file_or_directory:
+                    this->_handle_closed(*this);
+                    break;
+                }
+            }
+            catch (std::exception& e)
             {
                 this->_handle_closed(*this);
             }
@@ -105,12 +128,12 @@ uint32_t fb::base::socket<T>::fd()
 // fb::socket
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
     fb::base::socket<T>(context, handle_received, handle_closed)
 { }
 
 template<typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
+fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
     fb::socket<T>(context, handle_received, handle_closed)
 {
     this->_crt = crt;
@@ -152,49 +175,117 @@ fb::socket<T>::operator fb::cryptor& ()
     return this->_crt;
 }
 
+template <typename T, typename C>
+template <typename R>
+fb::awaitable_socket<T,C>::awaitable<R>::awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R>& on_suspend) : fb::awaitable<R>(on_suspend), _owner(owner), _cmd(cmd)
+{ }
+
+template <typename T, typename C>
+template <typename R>
+fb::awaitable_socket<T,C>::awaitable<R>::~awaitable()
+{ }
+
+template <typename T, typename C>
+template <typename R>
+void fb::awaitable_socket<T,C>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
+{
+    this->_owner.register_awaiter(this->_cmd, this);
+
+    fb::awaitable<R>::await_suspend(h);
+}
+
+template <typename T, typename C>
+fb::awaitable_socket<T,C>::awaitable_socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_received, const fb::base::socket<T>::handler_event& handle_closed) : 
+    fb::base::socket<T>(context, handle_received, handle_closed)
+{ }
+
+template <typename T, typename C>
+fb::awaitable_socket<T,C>::~awaitable_socket()
+{ }
+
+
+template <typename T, typename C>
+template <typename R>
+void fb::awaitable_socket<T,C>::register_awaiter(C cmd, awaitable<R>* awaitable)
+{
+    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
+    auto i = this->_coroutines.find(cmd);
+    if(i != this->_coroutines.end())
+    {
+        auto awaitable = static_cast<awaitable_socket<T,C>::awaitable<R>*>(i->second);
+        awaitable->error = std::make_unique<std::runtime_error>("new awaitable object registered");
+    }
+    
+    this->_coroutines[cmd] = static_cast<void*>(awaitable);
+}
+
+
+template <typename T, typename C>
+template <typename R>
+void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
+{
+    awaitable_socket<T,C>::awaitable<R>* awaitable = nullptr;
+    
+    {
+        auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
+        if (this->_coroutines.contains(cmd) == false)
+            return;
+
+        awaitable = static_cast<awaitable_socket<T,C>::awaitable<R>*>(this->_coroutines[cmd]);
+        this->_coroutines.erase(cmd);
+    }
+
+    awaitable->result = &response;
+    awaitable->handler.resume();
+}
+
+template <typename T, typename C>
+template <typename R>
+fb::awaitable_socket<T, C>::awaitable<R> fb::awaitable_socket<T, C>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
+{
+    auto cmd = R().__id;
+    return awaitable_socket<T, C>::awaitable<R>(*this, cmd,
+        [=, &header, this](auto& awaitable)
+        {
+            auto callback = [this, &awaitable](const auto& ec, auto transfer_size)
+            {
+                if (!ec)
+                    return;
+
+                awaitable.error = std::make_unique<std::runtime_error>(ec.message());
+                awaitable.handler.resume();
+            };
+            this->send(header, encrypt, wrap, callback);
+        });
+}
+
+template <typename T, typename C>
+template <typename R>
+fb::awaitable_socket<T, C>::awaitable<R> fb::awaitable_socket<T, C>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+{
+    return awaitable_socket<T, C>::awaitable<R>(*this, header.trans,
+        [=, &header, this](auto& awaitable)
+        {
+            auto callback = [this, &awaitable](const auto& ec, auto transfer_size)
+            {
+                if (!ec)
+                    return;
+
+                awaitable.error = std::make_unique<std::runtime_error>(ec.message());
+                awaitable.handler.resume();
+            };
+            this->send(header, encrypt, wrap, callback);
+        });
+}
 
 
 // fb::internal::socket
 template <typename T>
-template <typename R>
-fb::internal::socket<T>::awaitable<R>::awaitable(socket<T>& owner, uint8_t cmd, const std::function<void()>& on_suspend) : _owner(owner), _on_suspend(on_suspend)
-{ }
-
-template <typename T>
-template <typename R>
-fb::internal::socket<T>::awaitable<R>::~awaitable()
-{ }
-
-template <typename T>
-template <typename R>
-bool fb::internal::socket<T>::awaitable<R>::await_ready()
-{
-    return false;
+fb::internal::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) :
+    fb::awaitable_socket<T,std::string>(context, handle_received, handle_closed)
+{ 
+    
 }
-
-template <typename T>
-template <typename R>
-void fb::internal::socket<T>::awaitable<R>::await_suspend(std::coroutine_handle<> h)
-{
-    this->handler = h;
-    this->_owner.register_awaiter(R::id, this);
-    this->_on_suspend();
-}
-
-template <typename T>
-template <typename R>
-R fb::internal::socket<T>::awaitable<R>::await_resume()
-{
-    if (this->e.has_value())
-        throw this->e.value();
-
-    return *this->result;
-}
-
-template <typename T>
-fb::internal::socket<T>::socket(boost::asio::io_context& context, const std::function<void(fb::base::socket<T>&)>& handle_received, const std::function<void(fb::base::socket<T>&)>& handle_closed) : 
-    fb::base::socket<T>(context, handle_received, handle_closed)
-{ }
 
 template <typename T>
 fb::internal::socket<T>::~socket()
@@ -209,54 +300,21 @@ bool fb::internal::socket<T>::on_wrap(fb::ostream& out)
     return true;
 }
 
-template <typename T>
-template <typename R>
-void fb::internal::socket<T>::register_awaiter(uint8_t cmd, awaitable<R>* awaiter)
-{
-    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
-    auto i = this->_coroutines.find(cmd);
-    if(i != this->_coroutines.end())
-    {
-        auto awaiter = static_cast<socket<T>::awaitable<R>*>(i->second);
-        awaiter->e = std::exception();
-    }
-    this->_coroutines[cmd] = static_cast<void*>(awaiter);
-}
-
-
-template <typename T>
-template <typename R>
-void fb::internal::socket<T>::invoke_awaiter(uint8_t cmd, R& response)
-{
-    auto mg = std::lock_guard<std::mutex>(this->_awaiter_mutex);
-
-    if(this->_coroutines.contains(cmd) == false)
-        return;
-
-    auto awaiter = static_cast<socket<T>::awaitable<R>*>(this->_coroutines[cmd]);
-    awaiter->result = &response;
-    awaiter->handler.resume();
-    this->_coroutines.erase(cmd);
-}
-
-template <typename T>
-template <typename R>
-auto fb::internal::socket<T>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
-{
-    return socket<T>::awaitable<R>(*this, R::id, 
-        [=, &header, this]
-        { 
-            this->send(header, encrypt, wrap); 
-        });
-}
-
 
 
 // socket_container
 
 template <template<class> class S, class T>
+fb::base::socket_container<S, T>::~socket_container()
+{
+    this->close();
+}
+
+template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 {
+    auto __gd = std::lock_guard(this->mutex);
+
     auto fd = session->fd();
     std::map<uint32_t, std::unique_ptr<S<T>>>::insert
     (
@@ -271,18 +329,54 @@ void fb::base::socket_container<S, T>::push(std::unique_ptr<S<T>>&& session)
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(S<T>& session)
 {
+    auto __gd = std::lock_guard(this->mutex);
+
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(session.fd());
 }
 
 template <template<class> class S, class T>
 void fb::base::socket_container<S, T>::erase(uint32_t fd)
 {
+    auto __gd = std::lock_guard(this->mutex);
+
     std::map<uint32_t, std::unique_ptr<S<T>>>::erase(fd);
 }
 
 template <template<class> class S, class T>
-inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd) const
+bool fb::base::socket_container<S, T>::empty()
 {
+    auto __gd = std::lock_guard(this->mutex);
+
+    return std::map<uint32_t, std::unique_ptr<S<T>>>::empty();
+}
+
+template <template<class> class S, class T>
+void fb::base::socket_container<S, T>::close()
+{
+    auto __gd = std::lock_guard(this->mutex);
+
+    auto empty = std::map<uint32_t, std::unique_ptr<S<T>>>::empty();
+    if(empty)
+        return;
+
+    for (auto& [k, v] : *this)
+    {
+        try
+        {
+            v->close();
+        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+    }
+}
+
+template <template<class> class S, class T>
+inline S<T>* fb::base::socket_container<S, T>::operator[](uint32_t fd)
+{
+    auto __gd = std::lock_guard(this->mutex);
+
     const auto& found = std::map<uint32_t, std::unique_ptr<S<T>>>::find(fd);
     if(found == this->cend())
         return nullptr;

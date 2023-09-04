@@ -9,139 +9,112 @@
 #include <future>
 #include <functional>
 #include <deque>
-#include <fb/core/console.h>
+#include <fb/core/logger.h>
+#include <fb/core/coroutine.h>
 
-using namespace daotk::mysql;
+namespace fb { namespace db {
 
-namespace fb {
+class connection;
+class task;
+class worker;
 
-class db
+using connection_ptr = std::unique_ptr<daotk::mysql::connection>;
+using task_ptr = std::unique_ptr<task>;
+using task_result = std::vector<daotk::mysql::result>&;
+using task_callback_func = std::function<void(std::vector<daotk::mysql::result>&)>;
+using workers = std::vector<std::unique_ptr<worker>>;
+using result_type = fb::awaitable<std::vector<daotk::mysql::result>>;
+
+class connections
 {
 private:
-    static std::unique_ptr<db>                      _ist;
-    static constexpr uint32_t                       SIZE = 2;
+    const Json::Value&          _config;
+    std::queue<connection_ptr>  _queue;
+    std::mutex                  _mutex;
 
 public:
-    using connection = std::unique_ptr<daotk::mysql::connection>;
-    using pool       = std::deque<std::unique_ptr<daotk::mysql::connection>>;
-    using pools      = std::vector<std::unique_ptr<pool>>;
-
-private:
-    pools                                           _pools;
-    boost::asio::io_context*                        _context;
-    std::mutex                                      _mutex;
-
-private:
-    db();
+    connections(const Json::Value& config, int pool_size);
+    ~connections();
 
 public:
-    db(const db&) = delete;
-    db(db&) = delete;
-    ~db();
-
-public:
-    db& operator = (db&) = delete;
-    db& operator = (const db&) = delete;
-
-private:
-    static std::string format_string_vargs(const char* fmt_str, va_list args) 
-    {
-        std::size_t size = 256;
-        std::vector<char> buf(size);
-
-        while (true) {
-            int needed = std::vsnprintf(&buf[0], size, fmt_str, args);
-
-            if (needed <= (int)size & needed >= 0)
-                return &buf[0];
-
-            size = (needed > 0) ? (needed + 1) : (size * 2);
-            buf.resize(size);
-        }
-    }
-
-    static std::string format_string(const char* fmt_str, ...) 
-    {
-        va_list vargs;
-        va_start(vargs, fmt_str);
-        std::string res = format_string_vargs(fmt_str, vargs);
-        va_end(vargs);
-        return std::move(res);
-    }
-
-private:
-    uint64_t                            hash(const char* name);
-    uint8_t                             index(const char* name);
-    fb::db::pool*                       connections(const char* name);
-    fb::db::connection                  get(const char* name);
-    bool                                release(const char* name, fb::db::connection& connection);
-
-private:
-    void                                _exec(const char* name, const std::string& sql);
-    void                                _query(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& fn);
-    void                                _mquery(const char* name, const std::string& sql, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& fn);
-
-private:
-    static db&                          get();
-
-public:
-    static void                         bind(boost::asio::io_context& context);
-
-    template <typename... Values>
-    static void query(const char* name, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return;
-
-        fb::async::launch
-        (
-            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...))]()
-            {
-                ist._exec(name.c_str(), fmt.c_str());
-            }
-        );
-    }
-
-    template <typename... Values>
-    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, daotk::mysql::result&)>& callback, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return false;
-
-        fb::async::launch
-        (
-            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
-            {
-                ist._query(name.c_str(), fmt.c_str(), callback);
-            }
-        );
-
-        return true;
-    }
-
-    template <typename... Values>
-    static bool query(const char* name, const std::function<void(daotk::mysql::connection&, std::vector<daotk::mysql::result>&)>& callback, const std::string& format, Values... values)
-    {
-        auto& ist = get();
-        if(ist._context == nullptr)
-            return false;
-
-        fb::async::launch
-        (
-            [&ist, name = std::string(name), fmt = std::string(format_string(format.c_str(), std::forward<Values>(values)...)), callback]()
-            {
-                ist._mquery(name.c_str(), fmt.c_str(), callback);
-            }
-        );
-        return true;
-    }
-    
-    static bool query(const char* name, const std::vector<std::string>& queries);
-    static bool query(const char* name, const std::function<void()>& fn, const std::vector<std::string>& queries);
+    void                        enqueue(std::unique_ptr<daotk::mysql::connection>& conn);
+    connection_ptr              dequeue();
 };
 
-}
+
+struct task
+{
+public:
+    std::string                 sql;
+    task_callback_func          callback;
+};
+
+class tasks
+{
+private:
+    std::queue<task_ptr>        _queue;
+    std::mutex                  _mutex;
+
+public:
+    tasks();
+    ~tasks();
+
+public:
+    void                        enqueue(const task& t);
+    std::unique_ptr<task>       dequeue();
+};
+
+
+class worker
+{
+private:
+    connections                 _connections;
+    tasks                       _tasks;
+    bool                        _exit = false;
+
+public:
+    worker(const Json::Value& config, int pool_size);
+    ~worker();
+
+public:
+    void                        enqueue(const task& t);
+    void                        exit();
+
+public:
+    void                        on_work();
+};
+
+
+class context
+{
+private:
+    using thread_pool = std::unique_ptr<boost::asio::thread_pool>;
+
+private:
+    workers                     _workers;
+    thread_pool                 _thread_pool;
+    std::mutex                  _mutex_exit;
+
+public:
+    context(int pool_size);
+    ~context();
+
+private:
+    uint64_t                    hash(const std::string& name) const;
+    uint8_t                     index(const std::string& name) const;
+
+public:
+    void                        enqueue(const std::string& name,  const task& t);
+    void                        exit();
+    void                        init();
+    void                        exec(const std::string& name, const std::string& sql);
+    result_type                 co_exec(const std::string& name, const std::string& sql);
+    void                        exec(const std::string& name, const std::vector<std::string>& queries);
+    result_type                 co_exec(const std::string& name, const std::vector<std::string>& queries);
+    void                        exec_f(const std::string& name, const std::string& format, ...);
+    result_type                 co_exec_f(const std::string& name, const std::string& format, ...);
+};
+
+} }
 
 #endif // !__DB_H__

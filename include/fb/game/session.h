@@ -17,21 +17,17 @@
 
 namespace fb { namespace game {
 
-#pragma region forward declaration
 class map;
 class clan;
 class group;
 class session;
-#pragma endregion
 
 namespace lua {
 
 class dialog
 {
-#pragma region forward nested declaration
 public:
     interface listener;
-#pragma endregion
 
 private:
     session&                _owner;
@@ -55,17 +51,17 @@ public:
     bool                    resume(int argc);
 
 public:
-    void                    show(const object::master& object, const std::string& message, bool button_prev = false, bool button_next = true, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const object::model& object, const std::string& message, bool button_prev = false, bool button_next = true, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
     void                    show(const object& object, const std::string& message, bool button_prev = false, bool button_next = true, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    show(const npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
     void                    show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    show(const npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
     void                    show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    show(const npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    show(const npc& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    input(const npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc::model& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    show(const npc& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
     void                    input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
-    void                    input(const npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
+    void                    input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
     void                    input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 };
 
@@ -74,15 +70,12 @@ public:
 
 class session : public life
 {
-#pragma region friend
     friend class group;
     friend class clan;
-#pragma endregion
 
 public:
     using fb::game::object::map;
 
-#pragma region container
 class container : private std::vector<fb::game::session*>
 {
 public:
@@ -107,29 +100,22 @@ public:
 public:
     fb::game::session*      operator [] (const std::string& name);
 };
-#pragma endregion
 
-#pragma region exception
 public:
     DECLARE_EXCEPTION(require_class_exception, fb::game::message::exception::REQUIRE_CLASS)
     DECLARE_EXCEPTION(ghost_exception, fb::game::message::exception::GHOST)
     DECLARE_EXCEPTION(ridding_exception, fb::game::message::exception::RIDDING)
     DECLARE_EXCEPTION(no_conveyance_exception, fb::game::message::exception::NO_CONVEYANCE)
     DECLARE_EXCEPTION(disguise_exception, fb::game::message::exception::DISGUISE)
-#pragma endregion
 
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     interface                   listener;
-#pragma endregion
 
-#pragma region private field
 private:
+    bool                        _init            = false;
     uint32_t                    _id              = 0xFFFFFFFF;
     fb::socket<session>&        _socket;
     bool                        _admin           = false;
@@ -166,28 +152,20 @@ private:
 
     fb::game::group*            _group           = nullptr;
     fb::game::clan*             _clan            = nullptr;
-#pragma endregion
 
-#pragma region public field
 public:
     fb::game::trade             trade            = fb::game::trade(*this);
     fb::game::items             items            = fb::game::items(*this);
     lua::dialog                 dialog           = lua::dialog(*this);
     legend_container            legends;
-#pragma endregion
 
-#pragma region hide parent method
 private:
     using object::based;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
     session(fb::socket<fb::game::session>& socket, fb::game::context& context);
     ~session();
-#pragma endregion
 
-#pragma region override method
 protected:
     void                        on_hold() final;
     void                        on_update() final;
@@ -203,15 +181,13 @@ public:
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     object::types               type() const final;
     bool                        map(fb::game::map* map, const point16_t& position) final;
-#pragma endregion
 
-#pragma region operator
 public:
     operator                    fb::socket<fb::game::session>& ();
-#pragma endregion
 
-#pragma region public method
 public:
+    bool                        inited() const;
+    void                        init(bool value);
     uint32_t                    id() const;
     void                        id(uint32_t id);
 
@@ -333,9 +309,7 @@ public:
     void                        unride();
     bool                        alive() const;
     void                        refresh_map();
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_look(lua_State* lua);
     static int                  builtin_color(lua_State* lua);
@@ -359,18 +333,17 @@ public:
     static int                  builtin_assert(lua_State* lua);
     static int                  builtin_admin(lua_State* lua);
 
-#pragma endregion
 };
 
 
 interface lua::dialog::listener
 {
-    virtual void                on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-    virtual void                on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+    virtual void                on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
 };
 
 

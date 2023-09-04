@@ -4,35 +4,50 @@
 #include <fb/game/mob.h>
 using namespace fb::game::lua;
 
-std::mutex                      main::mutex;
-
 context* fb::game::lua::get()
 {
-    return main::get().pop();
+    auto& main = container::ist().get();
+    return main.pop();
 }
 
 context* fb::game::lua::get(lua_State* ctx)
 {
-    return main::get().get(*ctx);
+    auto& main = container::ist().get();
+    return main.get(*ctx);
 }
 
 void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
 {
-    auto& main = main::get();
-    main.bind_function(name, fn);
+    auto& ist = container::ist();
+    ist.init_fn([name, fn] (main& m)
+    {
+        m.bind_function(name, fn);
+    });
     //lua_register(main::get(), name.c_str(), fn);
+}
+
+void fb::game::lua::load(const std::string& path)
+{
+    auto& ist = container::ist();
+    ist.load(path);
 }
 
 void luable::to_lua(lua_State* ctx) const
 {
+    auto context = fb::game::lua::get(ctx);
+    if (context == nullptr)
+        return;
+
     auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**)));     // [val]
     *allocated = (void*)this;
 
-    auto& metaname = this->metaname();
-    luaL_getmetatable(ctx, metaname.c_str());                                       // [val, mt]
-    lua_pushcfunction(ctx, luable::builtin_gc);                                     // [val, mt, gc]
-    lua_setfield(ctx, -2, "__gc");                                                  // [val, mt]
-    lua_setmetatable(ctx, -2);                                                      // [val]
+    {
+        auto& metaname = this->metaname();
+        luaL_getmetatable(ctx, metaname.c_str());                                   // [val, mt]
+        lua_pushcfunction(ctx, luable::builtin_gc);                                 // [val, mt, gc]
+        lua_setfield(ctx, -2, "__gc");                                              // [val, mt]
+        lua_setmetatable(ctx, -2);                                                  // [val]
+    }
 }
 
 luable::luable()
@@ -52,25 +67,27 @@ int luable::builtin_gc(lua_State* ctx)
     return 0;
 }
 
-context::context(lua_State* ctx) : _ctx(ctx)
+context::context(lua_State* ctx) : _ctx(ctx), owner(nullptr)
+{ }
+
+context::context(lua_State* ctx, context& owner) : _ctx(ctx), owner(&owner)
 { }
 
 context::~context()
 { }
 
-context& context::from(const char* format, ...)
+context& context::from(const char* fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    va_start(args, fmt);
+    auto buffer = fstring_c(fmt, &args);
     va_end(args);
 
-    auto& ist = main::get();
-    if(ist.bytecodes.contains(buffer) == false)
+    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    if(main->_bytecodes.contains(buffer) == false)
         return *this;
 
-    auto& bytes = ist.bytecodes[buffer];
+    auto& bytes = main->_bytecodes[buffer];
     if(luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 
@@ -80,15 +97,14 @@ context& context::from(const char* format, ...)
     return *this;
 }
 
-context& context::func(const char* format, ...)
+context& context::func(const char* fmt, ...)
 {
     va_list args;
-    va_start(args, format);
-    char buffer[256];
-    vsprintf(buffer, format, args);
+    va_start(args, fmt);
+    auto buffer = fstring_c(fmt, &args);
     va_end(args);
 
-    lua_getglobal(*this, buffer);
+    lua_getglobal(*this, buffer.c_str());
     return *this;
 }
 
@@ -148,13 +164,24 @@ context::operator lua_State* () const
     return this->_ctx;
 }
 
-int context::argc() const
+int context::argc()
 {
     return lua_gettop(this->_ctx);
 }
 
 bool context::resume(int argc)
 {
+    if (this->owner == nullptr)
+        throw std::runtime_error("this context is not lua thread");
+
+    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    if (main != &lua::container::ist().get())
+    {
+        // thread mismatch
+        main->revoke(*this);
+        return false;
+    }
+
     if(this->_state == LUA_PENDING)
         return *this;
 
@@ -163,6 +190,7 @@ bool context::resume(int argc)
     if(this->_state != LUA_PENDING)
         this->_state = state;
 
+    
     switch(this->_state)
     {
     case LUA_PENDING:
@@ -171,11 +199,13 @@ bool context::resume(int argc)
 
     case LUA_ERRRUN:
     case LUA_ERRERR:
-        main::get().revoke(*this);
+        fb::logger::fatal("lua error message : %s", this->tostring(-1).c_str());
+        lua_pop(*this, 1);
+        main->revoke(*this);
         return false;
 
     default:
-        main::get().release(*this);
+        main->release(*this);
         return true;
     }
 }
@@ -187,8 +217,8 @@ int context::state() const
 
 void context::release()
 {
-    auto& main = main::get();
-    main.release(*this);
+    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    main->release(*this);
 }
 
 bool context::pending() const
@@ -445,13 +475,13 @@ main::main() : context(::luaL_newstate())
 
 main::~main()
 {
+    this->idle.clear();
+    this->busy.clear();
     lua_close(*this);
 }
 
 context* main::get(lua_State& ctx)
 {
-    std::lock_guard gd(main::mutex);
-
     auto found = this->busy.find(&ctx);
     if(found == this->busy.end())
         return nullptr;
@@ -464,9 +494,7 @@ bool main::load_file(const std::string& path)
     if(path.empty())
         return true;
 
-    std::lock_guard gd(main::mutex);
-
-    if(bytecodes.contains(path))
+    if(_bytecodes.contains(path))
         return true;
 
     luaL_loadfile(*this, path.c_str());
@@ -476,11 +504,11 @@ bool main::load_file(const std::string& path)
         auto casted = (void**)(params);
         auto ist = (main*)casted[0];
         auto path = (const char*)casted[1];
-        if(ist->bytecodes.contains(path) == false)
-            ist->bytecodes[path] = std::vector<char>();
+        if(ist->_bytecodes.contains(path) == false)
+            ist->_bytecodes[path] = std::vector<char>();
 
         for (int i = 0; i < size; i++)
-            ist->bytecodes[path].push_back(static_cast<const char*>(bytes)[i]);
+            ist->_bytecodes[path].push_back(static_cast<const char*>(bytes)[i]);
 
         return 0;
     };
@@ -491,8 +519,6 @@ bool main::load_file(const std::string& path)
 
 context* main::pop()
 {
-    std::lock_guard gd(main::mutex);
-
     if(this->idle.empty() == false)
     {
         auto& ctx = this->idle.begin()->second;
@@ -503,11 +529,9 @@ context* main::pop()
     }
     else if(this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<thread>(this->_ctx);
+        auto ptr = std::make_unique<thread>(*this);
         auto key = (lua_State*)*ptr.get();
 
-        // lua_newthread가 이미 존재하는 lua_State*를 다시
-        // 반환하는 경우가 있는데.. 확인해볼 필요가 있을듯
         if(this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
 
@@ -522,9 +546,7 @@ context* main::pop()
 
 context& main::release(context& ctx)
 {
-    std::lock_guard gd(main::mutex);
-
-    if(this->busy.contains(ctx) == false)
+    if (this->busy.contains(ctx) == false)
         return ctx;
 
     if(this->idle.contains(ctx))
@@ -539,8 +561,6 @@ context& main::release(context& ctx)
 
 void main::revoke(context& ctx)
 {
-    std::lock_guard gd(main::mutex);
-
     auto i = this->busy.find(ctx);
     if(i == this->busy.end())
         return;
@@ -548,18 +568,9 @@ void main::revoke(context& ctx)
     this->busy.erase(i);
 }
 
-main& main::get()
-{
-    static std::once_flag           flag;
-    static std::unique_ptr<main>    ist;
-
-    std::call_once(flag, [] () { ist = std::unique_ptr<main>(new main()); });
-    return *ist;
-}
-
-thread::thread(lua_State* ctx) : 
-    context(::lua_newthread(ctx)),
-    ref(luaL_ref(ctx, LUA_REGISTRYINDEX))
+thread::thread(context& owner) : 
+    context(::lua_newthread(owner), owner),
+    ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 { }
 
 thread::thread(thread&& ctx) : 
@@ -572,8 +583,56 @@ thread::~thread()
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
 }
 
-//int thread::builtin_gc(lua_State* ctx)
-//{
-//    puts("delete lua thread");
-//    return 0;
-//}
+container::container()
+{
+    this->init_fn([this] (main& m)
+    {
+        for(auto& path : this->_scripts)
+            m.load_file(path);
+    });
+}
+
+container::~container()
+{ }
+
+main& container::get()
+{
+    std::lock_guard gd(this->_mutex);
+
+    auto id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
+    if(this->_mains.contains(id) == false)
+    {
+        auto ptr = std::unique_ptr<main>(new main());
+        for (auto& fn : this->_init_funcs)
+        {
+            fn(*ptr);
+        }
+        this->_mains.insert({id, std::move(ptr)});
+    }
+
+    return *this->_mains[id];
+}
+
+void container::init_fn(init_func&& fn)
+{
+    this->_init_funcs.push_back(fn);
+}
+
+void container::load(const std::string& path)
+{
+    std::lock_guard gd(this->_mutex);
+    
+    if(path.empty())
+        return;
+
+    this->_scripts.push_back(path);
+}
+
+container& container::ist()
+{
+    static std::once_flag               _flag;
+    static std::unique_ptr<container>   _ist;
+
+    std::call_once(_flag, [] { _ist = std::unique_ptr<container>(new container()); });
+    return *_ist;
+}

@@ -16,6 +16,10 @@ public:
     std::string             contents;
 
 public:
+    board() : fb::protocol::base::header(0x3B)
+    { }
+
+public:
     void deserialize(fb::istream& in_stream)
     {
         this->action = in_stream.read_u8();

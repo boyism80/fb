@@ -63,17 +63,16 @@ void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
 
 void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
-    auto& uncast = buff.spell().uncast();
-    if(uncast.empty())
+    if(buff.spell.uncast.empty())
         return;
 
      auto thread = lua::get();
      if(thread == nullptr)
          return;
-     thread->from(uncast.c_str())
+     thread->from(buff.spell.uncast.c_str())
          .func("on_uncast")
          .pushobject(me)
-         .pushobject(buff.spell())
+         .pushobject(buff.spell)
          .resume(2);
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
@@ -294,32 +293,32 @@ void fb::game::context::on_trade_success(session& me)
     this->send(me, fb::protocol::game::response::trade::close(fb::game::message::trade::SUCCESS), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const object::master& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::menu(npc, menus, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::vector<item::master*>& cores, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::item(npc, cores, message, 0xFFFF, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message,  fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input(npc, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::master& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
@@ -433,71 +432,79 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
+fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
+{
+    fb::ostream         parameter;
+    parameter.write(me.name());
+
+    auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
+    auto  fd       = socket.native_handle();
+    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
+    
+    try
+    {
+        auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(request, true, true);
+        auto client = this->sockets[response.fd];
+        if(client == nullptr)
+            co_return;
+
+        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
+            throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
+
+        auto session = client->data();
+        this->dispatch(client, [this, client, session, response](uint8_t)
+            {
+                session->map(nullptr);
+
+                this->save
+                (
+                    *session,
+                    [this, client, response](fb::game::session&)
+                    {
+                        fb::ostream         parameter;
+                        parameter.write(response.name);
+                        parameter.write_u8(1);
+                        parameter.write_u16(response.map);
+                        parameter.write_u16(response.x);
+                        parameter.write_u16(response.y);
+                        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
+                    }
+                );
+            });
+    }
+    catch(std::runtime_error& e)
+    {
+        auto client = this->sockets[fd];
+        if(client == nullptr)
+            co_return;
+
+        auto message = e.what();
+        this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
+        {
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, message, fb::game::message::type::STATE);
+        });
+    }
+    catch(std::exception& e)
+    {
+        auto client = this->sockets[fd];
+        if(client == nullptr)
+            co_return;
+
+        auto message = e.what();
+        this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
+        {
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, message, fb::game::message::type::STATE);
+        });
+    }
+}
+
 void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
-    static auto fn = [this] (auto& me, const auto& map, const auto& position) -> task
-    {
-        fb::ostream         parameter;
-        parameter.write(me.name());
-
-        auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
-        auto  fd       = socket.native_handle();
-        auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
-        
-        try
-        {
-            auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(request, true, true);
-            auto client = this->sockets[response.fd];
-            if(client == nullptr)
-                co_return;
-
-            if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
-                throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
-
-            auto session = client->data();
-            this->dispatch(client, [this, client, session, response](uint8_t)
-                {
-                    session->map(nullptr);
-
-                    this->save
-                    (
-                        *session,
-                        [this, client, response](fb::game::session&)
-                        {
-                            fb::ostream         parameter;
-                            parameter.write(response.name);
-                            parameter.write_u8(1);
-                            parameter.write_u16(response.map);
-                            parameter.write_u16(response.x);
-                            parameter.write_u16(response.y);
-                            this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
-                        }
-                    );
-                });
-        }
-        catch(std::runtime_error& e)
-        {
-            auto client = this->sockets[fd];
-            if(client == nullptr)
-                co_return;
-
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, e.what(), fb::game::message::type::STATE);
-        }
-        catch(std::exception& e)
-        {
-            auto client = this->sockets[fd];
-            if(client == nullptr)
-                co_return;
-
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, "서버 에러", fb::game::message::type::STATE);
-        }
-    };
-
-    fn(me, map, position);
+    this->co_transfer(me, map, position);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

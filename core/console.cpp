@@ -1,7 +1,5 @@
 #include <fb/core/console.h>
 
-std::unique_ptr<fb::console> fb::console::_ist;
-
 #ifdef _WIN32
 bool SetConsoleIcon(int id)
 {
@@ -50,28 +48,6 @@ fb::console::~console()
 #endif
 }
 
-std::string fb::console::format(const std::string& f, va_list* args)
-{
-    va_list clone;
-    va_copy(clone, *args);
-    auto size = vsnprintf(nullptr, 0, f.c_str(), clone) + 1;
-    if(size == -1)
-        throw std::exception();
-    va_end(clone);
-
-    auto buffer = new char[size];
-    if(buffer == nullptr)
-        throw std::exception();
-
-    if(vsprintf(buffer, f.c_str(), *args) == -1)
-        throw std::exception();
-
-    auto result = std::string(buffer);
-    delete[] buffer;
-
-    return result;
-}
-
 bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, char side)
 {
     if(width < 3)
@@ -88,12 +64,14 @@ bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, cha
     return true;
 }
 
-fb::console& fb::console::put(const char* format, ...)
+fb::console& fb::console::put(const char* fmt, ...)
 {
+    std::lock_guard<std::mutex> __gd(this->_mutex);
+    
     va_list                 args;
 
-    va_start(args, format);
-    auto                    combined = this->format(format, &args);
+    va_start(args, fmt);
+    auto                    combined = fstring_c(fmt, &args);
     va_end(args);
 
     uint16_t                x, y;
@@ -111,12 +89,13 @@ fb::console& fb::console::put(const char* format, ...)
     return *this;
 }
 
-fb::console& fb::console::puts(const char* format, ...)
+fb::console& fb::console::puts(const char* fmt, ...)
 {
-    va_list                 args;
+    std::lock_guard<std::mutex> __gd(this->_mutex);
 
-    va_start(args, format);
-    auto                    combined = this->format(format, &args);
+    va_list                 args;
+    va_start(args, fmt);
+    auto                    combined = fstring_c(fmt, &args);
     va_end(args);
 
     uint16_t                x, y;
@@ -244,7 +223,8 @@ void fb::console::cursor(uint16_t* x, uint16_t* y) const
 
 fb::console& fb::console::get()
 {
-    static std::once_flag flag;
-    std::call_once(flag, [] () { _ist.reset(new console()); });
-    return *_ist;
+    static std::unique_ptr<console> ist;
+    static std::once_flag           flag;
+    std::call_once(flag, [] { ist.reset(new console()); });
+    return *ist;
 }

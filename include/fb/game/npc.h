@@ -7,87 +7,61 @@ namespace fb { namespace game {
 
 class npc : public object
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
-    class master;
-#pragma endregion
+    class model;
 
-#pragma region constructor
 public:
-    npc(fb::game::context& context, const master* master);
+    npc(fb::game::context& context, const model* model);
     npc(const npc& right);
     ~npc();
-#pragma endregion
 
-#pragma region public method
 public:
     npc*                        make(fb::game::context& context);
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_input_dialog(lua_State* lua);
     static int                  builtin_menu_dialog(lua_State* lua);
     static int                  builtin_item_dialog(lua_State* lua);
-#pragma endregion
 };
 
-class npc::master : public object::master
+class npc::model : public object::model
 {
-#pragma region lua
 public:
     LUA_PROTOTYPE
-#pragma endregion
 
-#pragma region forward nested declaration
 public:
     interface listener;
-#pragma endregion
 
-#pragma region structure
-    struct config : public fb::game::object::master::config
+    struct config : public fb::game::object::model::config
     {
     public:
         std::string     script;
     };
-#pragma endregion
 
-#pragma region public field
 public:
     std::string                 script;
-#pragma endregion
 
-#pragma region friend
 public:
     friend class npc;
-#pragma endregion
 
-#pragma region constructor / destructor
 public:
-    master(const fb::game::npc::master::config& config);
-    ~master();
-#pragma endregion
+    model(const fb::game::npc::model::config& config);
+    ~model();
 
-#pragma region public method
 public:
     object::types               type() const { return object::types::NPC; }
-#pragma endregion
 
-#pragma region built-in method
 public:
     static int                  builtin_input_dialog(lua_State* lua);
     static int                  builtin_menu_dialog(lua_State* lua);
     static int                  builtin_item_dialog(lua_State* lua);
-#pragma endregion
 };
 
 
-interface npc::master::listener : public virtual fb::game::object::listener
+interface npc::model::listener : public virtual fb::game::object::listener
 { };
 
 } }

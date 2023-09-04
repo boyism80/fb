@@ -20,7 +20,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     auto pivot = height + 1;
     auto stack = 0;
-    if(fb::game::data_set::doors.load
+    if(fb::game::model::doors.load
     (
         config["table"]["door"].asString(),
         [&] (const auto& name, auto percentage)
@@ -44,7 +44,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::maps.load
+    if(fb::game::model::maps.load
     (
         config["table"]["map"].asString(),
         [&] (const auto& name, auto percentage)
@@ -68,7 +68,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::worlds.load
+    if(fb::game::model::worlds.load
     (
         config["table"]["world"].asString(),
         [&] (const auto& name, auto percentage)
@@ -92,7 +92,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::spells.load
+    if(fb::game::model::spells.load
     (
         config["table"]["spell"].asString(),
         [&] (const auto& name, auto percentage)
@@ -117,7 +117,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::maps.load_warps
+    if(fb::game::model::maps.load_warps
     (
         config["table"]["warp"].asString(),
         [&] (const auto& name, auto percentage)
@@ -141,7 +141,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::items.load
+    if(fb::game::model::items.load
     (
         config["table"]["item"].asString(),
         [&] (const auto& name, auto percentage)
@@ -165,7 +165,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mixes.load
+    if(fb::game::model::mixes.load
     (
         config["table"]["item mix"].asString(),
         [&] (const auto& name, auto percentage)
@@ -189,7 +189,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::npcs.load
+    if(fb::game::model::npcs.load
     (
         config["table"]["npc"].asString(),
         [&] (const auto& name, auto percentage)
@@ -213,7 +213,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load
+    if(fb::game::model::mobs.load
     (
         config["table"]["mob"].asString(),
         [&] (const auto& name, auto percentage)
@@ -237,7 +237,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load_drops
+    if(fb::game::model::mobs.load_drops
     (
         config["table"]["item drop"].asString(),
         [&] (const auto& name, auto percentage)
@@ -266,7 +266,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::npcs.load_spawn
+    if(fb::game::model::npcs.load_spawn
     (
         config["table"]["npc spawn"].asString(),
         context, 
@@ -291,7 +291,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::mobs.load_spawn
+    if(fb::game::model::mobs.load_spawn
     (
         config["table"]["mob spawn"].asString(),
         context, 
@@ -316,7 +316,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::data_set::classes.load
+    if(fb::game::model::classes.load
     (
         config["table"]["class"].asString(),
         [&] (const auto& name, auto percentage)
@@ -356,71 +356,30 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
-        if(env == nullptr)
-            env = "dev";
-        auto& config = fb::config::get(env);
-
         boost::asio::io_context io_context;
-        fb::db::bind(io_context);
-
-        const auto connection = INTERNAL_CONNECTION
-        {
-            config["internal"]["ip"].asString(),
-            (uint16_t)config["internal"]["port"].asInt(),
-            [&] (fb::base::socket<>& socket, bool success)
-            {
-                if(success)
-                {
-                    socket.send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GAME, (uint8_t)config["group"].asUInt()));
-                }
-                else
-                {
-                    auto& c = fb::console::get();
-                    auto t = std::time(nullptr);
-                    auto tm = *std::localtime(&t);
-
-                    std::ostringstream sstream;
-                    sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                    c.puts(" * [ERROR] Failed connect to internal server. (%s)", sstream.str().c_str());
-                }
-            },
-            [&] ()
-            {
-                auto& c = fb::console::get();
-                auto t = std::time(nullptr);
-                auto tm = *std::localtime(&t);
-
-                std::ostringstream sstream;
-                sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-                c.puts(" * [ERROR] Internal connection has disconnected. (%s)", sstream.str().c_str());
-            }
-        };
-
+        auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>
         (
             io_context, 
             config["port"].asInt(), 
-            std::chrono::seconds(config["delay"].asInt()),
-            connection
+            std::chrono::seconds(config["delay"].asInt())
         );
+        auto internal_ip = config["internal"]["ip"].asString();
+        auto internal_port = (uint16_t)config["internal"]["port"].asInt();
+        context->connect_internal(internal_ip, internal_port);
 
         load_db(c, *context);
-
-        boost::asio::signal_set signal(io_context, SIGINT, SIGTERM);
-        signal.async_wait
-        (
-            [&context](const boost::system::error_code& error, int signal)
-            {
-                context.get()->exit();
-            }
-        );
-
-        io_context.run();
+        
+        int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
+        context->run(count);
+        while (context->running())
+        {
+            std::this_thread::sleep_for(100ms);
+        }
     }
     catch(std::exception& e)
     {
-        c.puts(e.what());
+        fb::logger::fatal(e.what());
     }
 
     // Release

@@ -9,7 +9,6 @@
 #include <fb/core/stream.h>
 #include <fb/core/type.h>
 
-#pragma region type definition
 #ifndef interface
 #define interface struct
 #endif
@@ -19,7 +18,6 @@
                                         public:\
                                             name() : std::runtime_error(msg) { }\
                                         };
-#pragma endregion
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
 T operator | (T flag1, T flag2)

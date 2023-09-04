@@ -1,8 +1,8 @@
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
-fb::game::equipment::master::master(const fb::game::equipment::master::config& config) : 
-    fb::game::item::master(config),
+fb::game::equipment::model::model(const fb::game::equipment::model::config& config) : 
+    fb::game::item::model(config),
     dress(config.dress),
     durability(config.durability),
     repair(config.repair),
@@ -22,18 +22,18 @@ fb::game::equipment::master::master(const fb::game::equipment::master::config& c
     defensive(config.defensive)
 { }
 
-fb::game::equipment::master::~master()
+fb::game::equipment::model::~model()
 { }
 
-fb::game::item::attrs fb::game::equipment::master::attr() const
+fb::game::item::attrs fb::game::equipment::model::attr() const
 {
     return item::attrs::EQUIPMENT;
 }
 
-fb::game::equipment::equipment(fb::game::context& context, const equipment::master* master) : 
-    item(context, master)
+fb::game::equipment::equipment(fb::game::context& context, const equipment::model* model) : 
+    item(context, model)
 {
-    this->_durability = master->durability;
+    this->_durability = model->durability;
 }
 
 fb::game::equipment::equipment(const equipment& right) :
@@ -47,8 +47,8 @@ fb::game::equipment::~equipment()
 const std::string fb::game::equipment::name_trade() const
 {
     std::stringstream       sstream;
-    auto                    master = this->based<fb::game::equipment>();
-    float                   percentage = this->_durability / float(master->durability) * 100;
+    auto                    model = this->based<fb::game::equipment>();
+    float                   percentage = this->_durability / float(model->durability) * 100;
     sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
 
     return sstream.str();
@@ -141,43 +141,43 @@ std::string fb::game::equipment::mid_message() const
 std::string fb::game::equipment::tip_message() const
 {
     std::stringstream           sstream;
-    auto                        master = this->based<fb::game::equipment>();
+    auto                        model = this->based<fb::game::equipment>();
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(master->durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)master->durability) * 100 << '%' << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model->durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)model->durability) * 100 << '%' << std::endl;
     sstream << this->mid_message();
-    sstream << "무장:   " << std::to_string(master->defensive.physical) << " Hit:  " << std::to_string(master->hit) << " Dam:  " << std::to_string(master->damage);
+    sstream << "무장:   " << std::to_string(model->defensive.physical) << " Hit:  " << std::to_string(model->hit) << " Dam:  " << std::to_string(model->damage);
 
-    if(master->base_hp)
-        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(master->base_hp);
+    if(model->base_hp)
+        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model->base_hp);
 
-    if(master->base_mp)
-        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(master->base_mp);
+    if(model->base_mp)
+        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model->base_mp);
 
-    if(master->strength)
-        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(master->strength);
+    if(model->strength)
+        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model->strength);
 
-    if(master->dexteritry)
-        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(master->dexteritry);
+    if(model->dexteritry)
+        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model->dexteritry);
 
-    if(master->intelligence)
-        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(master->intelligence);
+    if(model->intelligence)
+        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model->intelligence);
 
-    if(master->healing_cycle)
-        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(master->healing_cycle);
+    if(model->healing_cycle)
+        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(model->healing_cycle);
 
     std::stringstream class_stream;
 
     class_stream << std::endl << std::setw(14) << std::left;
     
-    if(master->condition.cls == 0)
+    if(model->condition.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::data_set::classes.class2name(master->condition.cls, 0) << "용";
-    sstream << class_stream.str() << "레벨 " << std::to_string(master->condition.level) << " 이상";
+        class_stream << fb::game::model::classes.class2name(model->condition.cls, 0) << "용";
+    sstream << class_stream.str() << "레벨 " << std::to_string(model->condition.level) << " 이상";
 
-    if(master->desc.empty() == false)
-        sstream << std::endl << std::endl << master->desc;
+    if(model->desc.empty() == false)
+        sstream << std::endl << std::endl << model->desc;
 
     return sstream.str();
 }
