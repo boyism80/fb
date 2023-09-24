@@ -3,6 +3,9 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/core/cryptor.h>
+#ifndef _WIN32
+#include <arpa/inet.h>
+#endif
 
 namespace fb { namespace protocol { namespace gateway { 
 
