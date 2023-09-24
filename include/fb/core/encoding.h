@@ -9,6 +9,7 @@
 #endif
 #include <wchar.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string>
 #include <cstring>
 
