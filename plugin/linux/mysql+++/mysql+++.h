@@ -51,6 +51,10 @@ Macro Flags:
 #include "polyfill/optional.hpp"
 #endif
 
+#ifdef timeout
+#undef timeout
+#endif
+
 
 
 namespace daotk {

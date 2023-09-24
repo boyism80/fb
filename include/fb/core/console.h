@@ -1,6 +1,14 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+#ifdef  _WIN32
+#include <Windows.h>
+#define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
+bool SetConsoleIcon(int id);
+#else
+#include <locale.h>
+#include <ncursesw/curses.h>
+#endif
 #include <stdarg.h>
 #include <string>
 #include <cstring>
@@ -8,14 +16,6 @@
 #include <memory>
 #include <mutex>
 #include <fb/core/encoding.h>
-#ifdef  _WIN32
-#include <Windows.h>
-#define CONSOLE_TITLE   "Private kingdom of the wind - http://cshyeon.com"
-bool SetConsoleIcon(int id);
-#else
-#include <locale.h>
-#include <ncursesw/curses.h>
-#endif
 
 namespace fb {
 
