@@ -42,20 +42,20 @@
         },
         "login": 
         {
-            "admin_mode": false,
             "login": 
             { 
                 "ip": "192.168.0.180", 
                 "port": 2002,
-                "internal": "internal"
-            },
-            "name_size": {
-                "min": 4,
-                "max": 12
-            },
-            "pw_size": {
-                "min": 4,
-                "max": 8
+                "internal": "internal",
+                "name_size": {
+                    "min": 4,
+                    "max": 12
+                },
+                "pw_size": {
+                    "min": 4,
+                    "max": 8
+                },
+                "admin_mode": false
             }
         },
         "game":
