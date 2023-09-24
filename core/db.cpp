@@ -126,21 +126,18 @@ void worker::on_work()
             continue;
         }
 
-        std::async([this, connection = std::move(connection), task = std::move(task)] () mutable
+        try
         {
-            try
-            {
-                auto results = connection->mquery(task->sql);
-                task->callback(results);
-            }
-            catch(...)
-            {
-                fb::logger::fatal("query failed : ", task->sql.c_str());
-            }
+            auto results = connection->mquery(task->sql);
+            task->callback(results);
+        }
+        catch(...)
+        {
+            fb::logger::fatal("query failed : ", task->sql.c_str());
+        }
 
-            auto&& x = std::move(connection);
-            this->_connections.enqueue(x);
-        });
+        auto&& x = std::move(connection);
+        this->_connections.enqueue(x);
     }
 }
 
