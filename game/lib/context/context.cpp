@@ -766,16 +766,16 @@ void fb::game::context::save(fb::game::session& session)
 
 fb::task fb::game::context::save(fb::game::session& session, std::function<void(fb::game::session&)> fn)
 {
-    co_await this->_db.co_exec(session.name(), std::vector<std::string>
-    {
-        query::make_update_session(session),
-        query::make_update_item(session),
-        query::make_delete_item(session),
-        query::make_update_spell(session),
-        query::make_delete_spell(session),
-    });
+    auto sql = std::vector<std::string>();
+    sql.push_back(query::make_update_session(session));
+    sql.push_back(query::make_update_item(session));
+    sql.push_back(query::make_delete_item(session));
+    sql.push_back(query::make_update_spell(session));
+    sql.push_back(query::make_delete_spell(session));
+    co_await this->_db.co_exec(session.name(), sql);
 
-    fn(session);
+    if(this->exists(session))
+        fn(session);
 }
 
 void fb::game::context::save()
