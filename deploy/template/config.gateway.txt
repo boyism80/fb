@@ -8,7 +8,7 @@
         "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}
     },
-    "log": ["fatal"],
+    "log": ["info", "fatal"],
     "entrypoints": [
         {% for entry in deploy.gateway[name].entrypoints -%}
         {

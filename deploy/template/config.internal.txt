@@ -16,7 +16,7 @@
         {% endif %}
         {%- endfor %}
     ],
-    "log": ["fatal"],
+    "log": ["info", "fatal"],
     "table": {
         "host": "table/host.json"
     },
