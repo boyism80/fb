@@ -18,12 +18,13 @@ class connection;
 class task;
 class worker;
 
-using connection_ptr = std::unique_ptr<daotk::mysql::connection>;
-using task_ptr = std::unique_ptr<task>;
-using task_result = std::vector<daotk::mysql::result>&;
+using connection_ptr     = std::unique_ptr<daotk::mysql::connection>;
+using task_ptr           = std::unique_ptr<task>;
+using task_result        = std::vector<daotk::mysql::result>&;
 using task_callback_func = std::function<void(std::vector<daotk::mysql::result>&)>;
-using workers = std::vector<std::unique_ptr<worker>>;
-using result_type = fb::awaitable<std::vector<daotk::mysql::result>>;
+using task_error_func    = std::function<void(std::exception&)>;
+using workers            = std::vector<std::unique_ptr<worker>>;
+using result_type        = fb::awaitable<std::vector<daotk::mysql::result>>;
 
 class connections
 {
@@ -47,6 +48,8 @@ struct task
 public:
     std::string                 sql;
     task_callback_func          callback;
+    task_error_func             error;
+
 };
 
 class tasks

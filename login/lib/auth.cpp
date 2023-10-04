@@ -75,9 +75,17 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
 
 fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
 {
-    auto results = co_await this->_db.co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
-    auto exists = results[0].get_value<int>() > 0;
-    awaitable.result = &exists;
+    try
+    {
+        auto results = co_await this->_db.co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
+        auto exists = results[0].get_value<int>() > 0;
+        awaitable.result = &exists;
+    }
+    catch(std::exception& e)
+    {
+        awaitable.error = std::make_unique<std::runtime_error>(e.what());
+    }
+
     awaitable.handler.resume();
 }
 
@@ -139,6 +147,10 @@ fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitab
     {
         awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
     }
+    catch(std::exception& e)
+    {
+        awaitable.error = std::make_unique<login_exception>(0x0E, e.what());
+    }
 
     awaitable.handler.resume();
 }
@@ -155,7 +167,14 @@ fb::awaitable<void> fb::login::service::auth::create_account(const std::string& 
 
 fb::task fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
+    try
+    {
+        co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
+    }
+    catch(std::exception& e)
+    {
+        awaitable.error = std::make_unique<std::runtime_error>(e.what());
+    }
     awaitable.handler.resume();
 }
 
@@ -184,23 +203,24 @@ fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t, login_excepti
 
         auto value = result.get_value<uint32_t>(1);
         awaitable.result = &value;
-        awaitable.handler.resume();
     }
     catch(id_exception& e)
     {
         awaitable.error = std::make_unique<id_exception>(e.what());
-        awaitable.handler.resume();
     }
     catch(pw_exception& e)
     {
         awaitable.error = std::make_unique<pw_exception>(e.what());
-        awaitable.handler.resume();
     }
     catch(login_exception& e)
     {
         awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
-        awaitable.handler.resume();
     }
+    catch(std::exception& e)
+    {
+        awaitable.error = std::make_unique<login_exception>(0x0E, e.what());
+    }
+    awaitable.handler.resume();
 }
 
 fb::awaitable<uint32_t, login_exception> fb::login::service::auth::login(const std::string& id, const std::string& pw)
@@ -256,13 +276,17 @@ fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, s
             throw btd_exception();
 
         co_await this->_db.co_exec_f(id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
-        awaitable.handler.resume();
     }
     catch(login_exception& e)
     {
         awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
-        awaitable.handler.resume();
     }
+    catch(std::exception& e)
+    {
+        awaitable.error = std::make_unique<login_exception>(0x0E, e.what());
+    }
+
+    awaitable.handler.resume();
 }
 
 fb::awaitable<void> fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)

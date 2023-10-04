@@ -32,6 +32,10 @@ fb::task fb::login::context::create_account(fb::socket<fb::login::session>& sock
     {
         socket.send(fb::protocol::login::response::message(e.what(), e.type()));
     }
+    catch(std::exception& e)
+    {
+        socket.send(fb::protocol::login::response::message(e.what(), 0x0E));
+    }
 }
 
 fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::string id, std::string pw)
@@ -89,6 +93,10 @@ fb::task fb::login::context::change_pw(fb::socket<fb::login::session>& socket, s
     catch(login_exception& e)
     {
         socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+    }
+    catch(std::exception& e)
+    {
+        socket.send(fb::protocol::login::response::message(e.what(), 0x0E));
     }
 }
 
@@ -170,6 +178,7 @@ bool fb::login::context::handle_account_complete(fb::socket<fb::login::session>&
         if(session->created_id.empty())
             throw std::exception();
 
+        // TODO: 메소드로 빼야함
         static auto fn = [this] (fb::socket<fb::login::session>& socket, uint8_t look, uint8_t sex, uint8_t nation, uint8_t creature) -> task
         {
             auto session = socket.data();

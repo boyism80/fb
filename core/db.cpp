@@ -131,9 +131,10 @@ void worker::on_work()
             auto results = connection->mquery(task->sql);
             task->callback(results);
         }
-        catch(...)
+        catch(std::exception& e)
         {
             fb::logger::fatal("query failed : ", task->sql.c_str());
+            task->error(e);
         }
 
         auto&& x = std::move(connection);
@@ -212,7 +213,7 @@ void context::exit()
 
 void fb::db::context::exec(const std::string& name, const std::string& sql)
 {
-    this->enqueue(name, task {sql, [] (auto& results) {}});
+    this->enqueue(name, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
 result_type fb::db::context::co_exec(const std::string& name, const std::string& sql)
@@ -222,6 +223,10 @@ result_type fb::db::context::co_exec(const std::string& name, const std::string&
         this->enqueue(name, task {sql, [&awaitable] (auto& results) 
         {
             awaitable.result = &results;
+            awaitable.handler.resume();
+        }, [&awaitable] (auto& e)
+        {
+            awaitable.error = std::make_unique<std::runtime_error>(e.what());
             awaitable.handler.resume();
         }});
     };
