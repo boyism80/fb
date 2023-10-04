@@ -62,6 +62,10 @@ namespace fb { namespace login { namespace service {
 class auth
 {
 private:
+    using void_awaitable  = fb::awaitable<void>;
+    using login_awaitable = fb::awaitable<uint32_t, login_exception>;
+
+private:
     fb::db::context&            _db;
     std::vector<std::string>    _forbiddens;
 
@@ -76,7 +80,7 @@ private:
 
     fb::task                    __exists(fb::awaitable<bool>& awaitable, std::string name);
     fb::task                    __create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw);
-    fb::task                    __login(fb::awaitable<uint32_t>& awaitable, std::string id, std::string pw);
+    fb::task                    __login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw);
     fb::task                    __change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
     fb::task                    __init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
 
@@ -84,10 +88,10 @@ public:
     auto                        exists(const std::string& name);
 
     void                        assert_account(const std::string& id, const std::string& pw) const;
-    fb::awaitable<void>         create_account(const std::string& id, const std::string& pw);
-    fb::awaitable<void>         init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    fb::awaitable<uint32_t>     login(const std::string& id, const std::string& pw);
-    fb::awaitable<void>         change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
+    void_awaitable              create_account(const std::string& id, const std::string& pw);
+    void_awaitable              init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+    login_awaitable             login(const std::string& id, const std::string& pw);
+    void_awaitable              change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
 };
 
 } } }

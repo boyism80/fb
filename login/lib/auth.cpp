@@ -169,7 +169,7 @@ fb::awaitable<void> fb::login::service::auth::init_account(const std::string& id
     return fb::awaitable<void>(await_callback);
 }
 
-fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t>& awaitable, std::string id, std::string pw)
+fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw)
 {
     try
     {
@@ -186,6 +186,16 @@ fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t>& awaitable, s
         awaitable.result = &value;
         awaitable.handler.resume();
     }
+    catch(id_exception& e)
+    {
+        awaitable.error = std::make_unique<id_exception>(e.what());
+        awaitable.handler.resume();
+    }
+    catch(pw_exception& e)
+    {
+        awaitable.error = std::make_unique<pw_exception>(e.what());
+        awaitable.handler.resume();
+    }
     catch(login_exception& e)
     {
         awaitable.error = std::make_unique<login_exception>(e.type(), e.what());
@@ -193,14 +203,14 @@ fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t>& awaitable, s
     }
 }
 
-fb::awaitable<uint32_t> fb::login::service::auth::login(const std::string& id, const std::string& pw)
+fb::awaitable<uint32_t, login_exception> fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
     auto await_callback = [this, id, pw] (auto& awaitable)
     {
         this->__login(awaitable, id, pw);
     };
 
-    return fb::awaitable<uint32_t>(await_callback);
+    return fb::awaitable<uint32_t, login_exception>(await_callback);
 }
 
 fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday)

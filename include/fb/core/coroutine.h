@@ -19,25 +19,25 @@ struct task
     };
 };
 
-template <typename R>
+template <typename R, typename E>
 class awaitable;
 
-template <typename R>
-using awaitable_suspend_handler = std::function<void(awaitable<R>&)>;
+template <typename R, typename E>
+using awaitable_suspend_handler = std::function<void(awaitable<R, E>&)>;
 
-template <typename R>
+template <typename R, typename E = std::runtime_error>
 class awaitable
 {
 private:
-    const awaitable_suspend_handler<R> _on_suspend;
+    const awaitable_suspend_handler<R, E> _on_suspend;
 
 public:
     R*                              result;
-    std::unique_ptr<std::exception> error;
+    std::unique_ptr<E>              error;
     std::coroutine_handle<>         handler;
 
 public:
-    awaitable(const awaitable_suspend_handler<R>& on_suspend) : _on_suspend(on_suspend), result(nullptr)
+    awaitable(const awaitable_suspend_handler<R, E>& on_suspend) : _on_suspend(on_suspend), result(nullptr)
     { }
     virtual ~awaitable()
     { }
@@ -60,18 +60,18 @@ public:
     }
 };
 
-template <>
-class awaitable<void>
+template <typename E>
+class awaitable<void, E>
 {
 private:
-    const awaitable_suspend_handler<void> _on_suspend;
+    const awaitable_suspend_handler<void, E> _on_suspend;
 
 public:
-    std::unique_ptr<std::exception> error;
+    std::unique_ptr<E>              error;
     std::coroutine_handle<>         handler;
 
 public:
-    awaitable(const awaitable_suspend_handler<void>& on_suspend) : _on_suspend(on_suspend)
+    awaitable(const awaitable_suspend_handler<void, E>& on_suspend) : _on_suspend(on_suspend)
     { }
     virtual ~awaitable()
     { }
