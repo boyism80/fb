@@ -5,7 +5,7 @@
 using namespace fb::game;
 
 session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
-    life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.native_handle()} }),
+    life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.fd()} }),
     _socket(socket)
 { }
 

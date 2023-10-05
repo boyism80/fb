@@ -21,19 +21,30 @@ fb::login::context::~context()
 
 fb::task fb::login::context::create_account(fb::socket<fb::login::session>& socket, std::string id, std::string pw)
 {
+    auto fd = socket.fd();
+
     try
     {
         co_await this->_auth_service.create_account(id, pw);
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         this->send(socket, fb::protocol::login::response::message("", 0x00));
         auto session = socket.data();
         session->created_id = id;
     }
     catch(login_exception& e)
     {
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         socket.send(fb::protocol::login::response::message(e.what(), e.type()));
     }
     catch(std::exception& e)
     {
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         socket.send(fb::protocol::login::response::message(e.what(), 0x0E));
     }
 }
@@ -44,13 +55,11 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
     try
     {
         auto map = co_await this->_auth_service.login(id, pw);
+        if (this->sockets.contains(fd) == false)
+            co_return;
 
-        // 하나의 _internal 소켓에서 응답이 오기전에 request를 계속 호출하면서 발생하는 문제
-        // 코루틴으로 하면 안될거같다..
         auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
-
-        auto client = this->sockets[fd];
-        if(client == nullptr)
+        if (this->sockets.contains(fd) == false)
             co_return;
 
         if(response.code == fb::protocol::internal::response::transfer_code::CONNECTED)
@@ -59,43 +68,51 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
         if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw id_exception("비바람이 휘몰아치고 있습니다.");
 
-        client->send(fb::protocol::login::response::message("", 0x00));
+        socket.send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
         parameter.write(response.name);
         parameter.write_u8(0);
-        this->transfer(*client, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
+        this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
     }
     catch(login_exception& e)
     {
-        auto client = this->sockets[fd];
-        if (client == nullptr)
+        if (this->sockets.contains(fd) == false)
             co_return;
 
-        client->send(fb::protocol::login::response::message(e.what(), e.type()));
+        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        auto client = this->sockets[fd];
-        if (client == nullptr)
+        if (this->sockets.contains(fd) == false)
             co_return;
 
-        client->send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
+        socket.send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
     }
 }
 
 fb::task fb::login::context::change_pw(fb::socket<fb::login::session>& socket, std::string id, std::string pw, std::string new_pw, uint32_t birthday)
 {
+    auto fd = socket.fd();
     try
     {
         co_await this->_auth_service.change_pw(id, pw, new_pw, birthday);
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         socket.send(fb::protocol::login::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
     }
     catch(login_exception& e)
     {
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         socket.send(fb::protocol::login::response::message(e.what(), e.type()));
     }
     catch(std::exception& e)
     {
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
         socket.send(fb::protocol::login::response::message(e.what(), 0x0E));
     }
 }
@@ -172,7 +189,11 @@ bool fb::login::context::handle_create_account(fb::socket<fb::login::session>& s
 fb::task fb::login::context::account_complete(fb::socket<fb::login::session>& socket, uint8_t look, uint8_t sex, uint8_t nation, uint8_t creature)
 {
     auto session = socket.data();
+    auto fd = socket.fd();
     co_await this->_auth_service.init_account(session->created_id, look, sex, nation, creature);
+    if (this->sockets.contains(fd) == false)
+        co_return;
+
     socket.send(fb::protocol::login::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
     session->created_id.clear();
 }

@@ -85,6 +85,9 @@ private:
     void                    close();
 
 public:
+    bool                    contains(uint32_t fd);
+
+public:
     S<T>*                   operator [] (uint32_t fd);
 };
 

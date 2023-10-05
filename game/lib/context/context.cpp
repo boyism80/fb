@@ -772,9 +772,11 @@ fb::task fb::game::context::save(fb::game::session& session, std::function<void(
     sql.push_back(query::make_delete_item(session));
     sql.push_back(query::make_update_spell(session));
     sql.push_back(query::make_delete_spell(session));
+
+    auto fd = session.id();
     co_await this->_db.co_exec(session.name(), sql);
 
-    if(this->exists(session))
+    if(this->sockets.contains(fd))
         fn(session);
 }
 
@@ -882,13 +884,16 @@ fb::task fb::game::context::co_login(std::string name, fb::game::session* sessio
 {
     auto from = request.from;
     auto transfer = request.transfer;
-
+    auto fd = session->id();
     auto sql = "CALL USP_CHARACTER_GET('%s');";
     auto results = co_await this->_db.co_exec_f(name, sql, name.c_str());
+    
+    if (this->sockets.contains(fd) == false)
+        co_return;
 
     auto map = results[0].get_value<uint32_t>(12);
     auto last_login = results[0].get_value<daotk::mysql::datetime>(5);
-    if(this->fetch_user(results[0], *session, request.transfer) == false)
+    if (this->fetch_user(results[0], *session, request.transfer) == false)
         co_return;
 
     this->_internal->send(fb::protocol::internal::request::login(name, map));
@@ -1644,12 +1649,12 @@ bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const
 
 fb::task fb::game::context::co_whisper(fb::game::session* session, const std::string& to, const std::string& message)
 {
+    auto fd = session->id();
     auto& from = session->name();
     try
     {
         auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, to, message));
-        auto client = this->find(response.from);
-        if(client == nullptr)
+        if (this->sockets.contains(fd) == false)
             co_return;
 
         std::stringstream sstream;
@@ -1658,15 +1663,14 @@ fb::task fb::game::context::co_whisper(fb::game::session* session, const std::st
         else
             sstream << response.to << "님은 바람의나라에 없습니다.";
 
-        client->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+        session->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
     }
     catch(std::exception& e)
     {
-        auto client = this->find(from);
-        if(client == nullptr)
+        if (this->sockets.contains(fd) == false)
             co_return;
 
-        client->send(fb::protocol::game::response::message("서버 오류", fb::game::message::type::NOTIFY));
+        session->send(fb::protocol::game::response::message("서버 오류", fb::game::message::type::NOTIFY));
     }
 }
 
