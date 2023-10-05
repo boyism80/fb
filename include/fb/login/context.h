@@ -28,6 +28,7 @@ public:
 
 private:
     task                        create_account(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
+    task                        account_complete(fb::socket<fb::login::session>& socket, uint8_t look, uint8_t sex, uint8_t nation, uint8_t creature);
     task                        login(fb::socket<fb::login::session>& socket, std::string id, std::string pw);
     task                        change_pw(fb::socket<fb::login::session>& socket, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
 
