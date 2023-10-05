@@ -102,7 +102,7 @@ def deploy(service):
 
         for name, config in configs['deploy'][service].items():
             sudo(f'docker pull cshyeon/fb:latest')
-            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service}", quiet=True)
+            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service}")
 
 def current():
     global CONFIGURATION
