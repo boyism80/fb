@@ -60,7 +60,7 @@ private:
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
 private:
-    fb::task                co_login(std::string name, fb::game::session* session, const fb::protocol::game::request::login& request);
+    fb::task                co_login(std::string name, fb::socket<fb::game::session>& socket, const fb::protocol::game::request::login& request);
     fb::task                co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position);
     fb::task                co_whisper(fb::game::session* session, const std::string& to, const std::string& message);
 
