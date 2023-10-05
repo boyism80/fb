@@ -86,7 +86,7 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
         if (this->sockets.contains(fd) == false)
             co_return;
 
-        socket.send(fb::protocol::login::response::message("서버가 원활하지 않습니다.", 0x0E));
+        socket.send(fb::protocol::login::response::message(e.what(), 0x0E));
     }
 }
 
