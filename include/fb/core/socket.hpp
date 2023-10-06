@@ -114,11 +114,7 @@ std::string fb::base::socket<T>::IP() const
 template<typename T>
 uint32_t fb::base::socket<T>::fd()
 {
-    uint32_t fd = this->native_handle();
-    if(fd != 0xFFFFFFFF)
-        this->_fd = fd;
-    
-    return this->_fd;
+    return (uint32_t)this->native_handle();
 }
 
 

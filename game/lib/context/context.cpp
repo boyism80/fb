@@ -773,7 +773,7 @@ fb::task fb::game::context::save(fb::game::session& session, std::function<void(
     sql.push_back(query::make_update_spell(session));
     sql.push_back(query::make_delete_spell(session));
 
-    auto fd = session.id();
+    auto fd = session.fd();
     try
     {
         co_await this->_db.co_exec(session.name(), sql);
@@ -1667,7 +1667,7 @@ bool fb::game::context::handle_door(fb::socket<fb::game::session>& socket, const
 
 fb::task fb::game::context::co_whisper(fb::game::session* session, const std::string& to, const std::string& message)
 {
-    auto fd = session->id();
+    auto fd = session->fd();
     auto& from = session->name();
     try
     {

@@ -29,7 +29,6 @@ protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
     T*                      _data;
-    uint32_t                _fd;
 
 public:
     std::mutex              mutex;

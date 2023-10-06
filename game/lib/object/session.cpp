@@ -174,6 +174,11 @@ void fb::game::session::id(uint32_t id)
     this->_id = id;
 }
 
+uint32_t fb::game::session::fd()
+{
+    return this->_socket.fd();
+}
+
 bool fb::game::session::admin() const
 {
     return this->_admin;

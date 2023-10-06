@@ -190,6 +190,7 @@ public:
     void                        init(bool value);
     uint32_t                    id() const;
     void                        id(uint32_t id);
+    uint32_t                    fd();
 
     bool                        admin() const;
     void                        admin(bool value);
