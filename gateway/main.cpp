@@ -46,10 +46,6 @@ int main(int argc, const char** argv)
             std::chrono::seconds(config["delay"].asInt())
         );
 
-        auto internal_ip = config["internal"]["ip"].asString();
-        auto internal_port = (uint16_t)config["internal"]["port"].asInt();
-        context->connect_internal(internal_ip, internal_port);
-
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
         while (context->running())

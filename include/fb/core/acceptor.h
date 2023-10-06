@@ -104,7 +104,7 @@ public:
     ~acceptor();
 
 private:
-    //void                        connect_internal();
+    fb::task                    connect_internal();
     bool                        call(fb::socket<T>& socket, uint8_t cmd);
     fb::awaitable<void>         co_connect_internal(const std::string& ip, uint16_t port);
     bool                        handle_internal_receive(fb::base::socket<>& socket);
@@ -123,13 +123,14 @@ public:
     template <typename R>
     void                        bind();
 
+private:
+    void                        on_internal_connected();
+    void                        on_internal_disconnected(fb::base::socket<>& socket);
+
 protected:
     virtual void                handle_internal_disconnected(fb::base::socket<>& socket);
     virtual void                handle_internal_connected();
     virtual void                handle_internal_denied(std::exception& e);
-
-public:
-    fb::task                    connect_internal(std::string ip, uint16_t port);
 };
 
 }

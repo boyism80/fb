@@ -364,10 +364,7 @@ int main(int argc, const char** argv)
             config["port"].asInt(), 
             std::chrono::seconds(config["delay"].asInt())
         );
-        auto internal_ip = config["internal"]["ip"].asString();
-        auto internal_port = (uint16_t)config["internal"]["port"].asInt();
-        context->connect_internal(internal_ip, internal_port);
-
+        
         load_db(c, *context);
         
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();

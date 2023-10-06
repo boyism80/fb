@@ -333,7 +333,7 @@ template <typename T>
 fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads) : 
     fb::base::acceptor<fb::socket, T>(context, port, delay, num_threads)
 {
-    //this->connect_internal();
+    this->connect_internal();
 }
 
 template <typename T>
@@ -396,6 +396,11 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
     return false;
 }
 
+template <typename T>
+void fb::acceptor<T>::on_internal_connected()
+{
+    this->handle_internal_connected();
+}
 
 template <typename T>
 void fb::acceptor<T>::handle_internal_connected()
@@ -420,6 +425,14 @@ void fb::acceptor<T>::handle_internal_denied(std::exception& e)
 }
 
 template <typename T>
+void fb::acceptor<T>::on_internal_disconnected(fb::base::socket<>& socket)
+{
+    this->_internal->close();
+    this->handle_internal_disconnected(socket);
+    this->connect_internal();
+}
+
+template <typename T>
 void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
 {
     auto t = std::time(nullptr);
@@ -428,7 +441,6 @@ void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     fb::logger::warn("Disconnected from internal server. (%s)", sstream.str().c_str());
-    this->_internal->close();
 }
 
 template <typename T>
@@ -437,7 +449,7 @@ fb::awaitable<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, 
     auto await_callback = [this, ip, port](auto& awaitable)
     {
         auto handle_receive = std::bind(&fb::acceptor<T>::handle_internal_receive, this, std::placeholders::_1);
-        auto handle_disconnected = std::bind(&fb::acceptor<T>::handle_internal_disconnected, this, std::placeholders::_1);
+        auto handle_disconnected = std::bind(&fb::acceptor<T>::on_internal_disconnected, this, std::placeholders::_1);
         auto socket = new fb::internal::socket<>(this->_context, handle_receive, handle_disconnected);
         this->_internal.reset(socket);
 
@@ -465,14 +477,17 @@ fb::awaitable<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, 
 }
 
 template <typename T>
-fb::task fb::acceptor<T>::connect_internal(std::string ip, uint16_t port)
+fb::task fb::acceptor<T>::connect_internal()
 {
+    auto&           config = fb::config::get();
+    auto            ip     = config["internal"]["ip"].asString();
+    auto            port   = (uint16_t)config["internal"]["port"].asInt();
     while(true)
     {
         try
         {
             co_await this->co_connect_internal(ip, port);
-            this->handle_internal_connected();
+            this->on_internal_connected();
             break;
         }
         catch(std::exception& e)
