@@ -148,9 +148,15 @@ public:
                 }
                 else
                 {
-                    awaitable.result = &results;
-                    this->_owner.dispatch(&socket, [&awaitable](uint8_t)
+                    auto data = std::make_shared<std::vector<daotk::mysql::result>>();
+                    for(auto& x : results)
                     {
+                        data->push_back(std::move(x));
+                    }
+
+                    this->_owner.dispatch(&socket, [&awaitable, data](uint8_t) mutable
+                    {
+                        awaitable.result = data.get();
                         awaitable.handler.resume();
                     });
                 }
@@ -161,14 +167,6 @@ public:
             } });
         };
         return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
-    }
-    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& sql)
-    {
-        return this->co_exec(socket, this->_owner.handle_socket_name(socket), sql);
-    }
-    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::vector<std::string>& queries)
-    {
-        return this->co_exec(socket, this->_owner.handle_socket_name(socket), queries);
     }
     fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& name, const std::vector<std::string>& queries)
     {
@@ -182,15 +180,6 @@ public:
         }
 
         return this->co_exec(socket, name, sstream.str());
-    }
-    fb::db::result_type     co_exec_f(fb::socket<T>& socket, const std::string& format, ...)
-    {
-        va_list args;
-        va_start(args, format);
-        auto sql = fstring_c(format, &args);
-        va_end(args);
-
-        return this->co_exec(socket, this->_owner.handle_socket_name(socket), sql);
     }
     fb::db::result_type     co_exec_f(fb::socket<T>& socket, const std::string& name, const std::string& format, ...)
     {

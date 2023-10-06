@@ -110,12 +110,6 @@ uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 }
 
 template <template<class> class S, class T>
-std::string fb::base::acceptor<S, T>::handle_socket_name(S<T>& socket) const
-{
-    throw std::runtime_error("socket name not set");
-}
-
-template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
     if (this->_running == false)

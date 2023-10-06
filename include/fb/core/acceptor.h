@@ -58,9 +58,6 @@ protected:
     virtual void                                handle_exit() { }
 
 public:
-    virtual std::string                         handle_socket_name(S<T>& socket) const;
-
-public:
     void                                        handle_receive(fb::base::socket<T>& socket);
     void                                        handle_closed(fb::base::socket<T>& socket);
 
