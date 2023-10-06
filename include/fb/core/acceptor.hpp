@@ -110,6 +110,12 @@ uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 }
 
 template <template<class> class S, class T>
+std::string fb::base::acceptor<S, T>::handle_socket_name(S<T>& socket) const
+{
+    throw std::runtime_error("socket name not set");
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
     if (this->_running == false)
@@ -233,6 +239,18 @@ bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback&& fn)
 }
 
 template <template<class> class S, class T>
+fb::awaitable<void> fb::base::acceptor<S, T>::precedence(S<T>* socket)
+{
+    auto id = this->handle_thread_index(*socket);
+    auto thread = this->_threads[id];
+    
+    if(thread == nullptr)
+        throw std::runtime_error("precedence thread cannot be nullptr");
+
+    return this->_threads[id]->precedence();
+}
+
+template <template<class> class S, class T>
 bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
 {
     auto id = this->handle_thread_index(*socket);
@@ -243,6 +261,18 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
     else
         this->_threads[id]->dispatch(std::move(fn));
     return true;
+}
+
+template <template<class> class S, class T>
+fb::awaitable<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket)
+{
+    auto id = this->handle_thread_index(*socket);
+    auto thread = this->_threads[id];
+    
+    if(thread == nullptr)
+        throw std::runtime_error("dispatch thread cannot be nullptr");
+
+    return this->_threads[id]->dispatch();
 }
 
 template <template<class> class S, class T>

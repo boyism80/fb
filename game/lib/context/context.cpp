@@ -147,7 +147,7 @@ END_LUA_EXTENSION
 
 fb::game::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
     fb::acceptor<fb::game::session>(context, port, delay, std::thread::hardware_concurrency()),
-    _db(4)
+    _db(*this, 4)
 {
     const auto& config = fb::config::get();
 
@@ -776,7 +776,11 @@ fb::task fb::game::context::save(fb::game::session& session, std::function<void(
     auto fd = session.fd();
     try
     {
-        co_await this->_db.co_exec(session.name(), sql);
+        auto socket = this->sockets[fd];
+        if (socket == nullptr)
+            co_return;
+
+        co_await this->_db.co_exec(*socket, sql);
         if(this->sockets.contains(fd))
             fn(session);
     }
@@ -804,6 +808,15 @@ void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
 uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& socket) const
 {
     return this->thread_index(*socket.data());
+}
+
+std::string fb::game::context::handle_socket_name(fb::socket<fb::game::session>& socket) const
+{
+    auto session = socket.data();
+    if(session == nullptr)
+        throw std::runtime_error("session data cannot be nullptr");
+    
+    return session->name();
 }
 
 fb::thread* fb::game::context::thread(const fb::game::map* map) const
@@ -896,7 +909,7 @@ fb::task fb::game::context::co_login(std::string name, fb::socket<fb::game::sess
         auto from = request.from;
         auto transfer = request.transfer;
         auto sql = "CALL USP_CHARACTER_GET('%s');";
-        auto results = co_await this->_db.co_exec_f(name, sql, name.c_str());
+        auto results = co_await this->_db.co_exec_f(socket, sql, name.c_str());
         
         if (this->sockets.contains(fd) == false)
             co_return;

@@ -11,6 +11,7 @@
 #include <deque>
 #include <fb/core/logger.h>
 #include <fb/core/coroutine.h>
+#include <fb/core/acceptor.h>
 
 namespace fb { namespace db {
 
@@ -88,7 +89,7 @@ public:
 };
 
 
-class context
+class base_context
 {
 private:
     using thread_pool = std::unique_ptr<boost::asio::thread_pool>;
@@ -99,8 +100,8 @@ private:
     std::mutex                  _mutex_exit;
 
 public:
-    context(int pool_size);
-    ~context();
+    base_context(int pool_size);
+    virtual ~base_context();
 
 private:
     uint64_t                    hash(const std::string& name) const;
@@ -109,13 +110,97 @@ private:
 public:
     void                        enqueue(const std::string& name,  const task& t);
     void                        exit();
-    void                        init();
     void                        exec(const std::string& name, const std::string& sql);
     result_type                 co_exec(const std::string& name, const std::string& sql);
     void                        exec(const std::string& name, const std::vector<std::string>& queries);
     result_type                 co_exec(const std::string& name, const std::vector<std::string>& queries);
     void                        exec_f(const std::string& name, const std::string& format, ...);
     result_type                 co_exec_f(const std::string& name, const std::string& format, ...);
+};
+
+template <typename T>
+class context : base_context
+{
+private:
+    fb::acceptor<T>& _owner;
+
+public:
+    context(fb::acceptor<T>& owner, int pool_size) : fb::db::base_context(pool_size), _owner(owner)
+    {}
+    ~context()
+    {}
+
+public:
+    using fb::db::base_context::exit;
+
+public:
+    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& name, const std::string& sql)
+    {
+        auto await_callback = [this, &socket, sql, name](auto& awaitable)
+        {
+            auto fd = socket.fd();
+            this->enqueue(name, fb::db::task{ sql, [this, &socket, &awaitable, fd](auto& results)
+            {
+                if (this->_owner.sockets.contains(fd) == false)
+                {
+                    awaitable.error = std::make_unique<std::runtime_error>("socket disconnected");
+                    awaitable.handler.resume();
+                }
+                else
+                {
+                    awaitable.result = &results;
+                    this->_owner.dispatch(&socket, [&awaitable](uint8_t)
+                    {
+                        awaitable.handler.resume();
+                    });
+                }
+            }, [&awaitable](auto& e)
+            {
+                awaitable.error = std::make_unique<std::runtime_error>(e.what());
+                awaitable.handler.resume();
+            } });
+        };
+        return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
+    }
+    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& sql)
+    {
+        return this->co_exec(socket, this->_owner.handle_socket_name(socket), sql);
+    }
+    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::vector<std::string>& queries)
+    {
+        return this->co_exec(socket, this->_owner.handle_socket_name(socket), queries);
+    }
+    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& name, const std::vector<std::string>& queries)
+    {
+        auto sstream = std::stringstream();
+        for (auto& query : queries)
+        {
+            if (query.empty())
+                continue;
+
+            sstream << query << ";";
+        }
+
+        return this->co_exec(socket, name, sstream.str());
+    }
+    fb::db::result_type     co_exec_f(fb::socket<T>& socket, const std::string& format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        auto sql = fstring_c(format, &args);
+        va_end(args);
+
+        return this->co_exec(socket, this->_owner.handle_socket_name(socket), sql);
+    }
+    fb::db::result_type     co_exec_f(fb::socket<T>& socket, const std::string& name, const std::string& format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        auto sql = fstring_c(format, &args);
+        va_end(args);
+
+        return this->co_exec(socket, name, sql);
+    }
 };
 
 } }

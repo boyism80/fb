@@ -39,11 +39,11 @@ public:
     using transfer_param    = fb::protocol::game::request::login::transfer_param;
 
 private:
-    commands                _commands;
-    std::mutex              _hash_mutex;
-    object_set              _objects;
-    fb::db::context         _db;
-    tm*                     _time = fb::now();
+    commands                 _commands;
+    std::mutex               _hash_mutex;
+    object_set               _objects;
+    fb::db::context<session> _db;
+    tm*                      _time = fb::now();
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
@@ -99,6 +99,7 @@ protected:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
     void                    handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
+    std::string             handle_socket_name(fb::socket<fb::game::session>& socket) const final;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);

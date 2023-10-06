@@ -20,7 +20,7 @@ private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     service::auth                               _auth_service;
     std::vector<unique_session>                 _sessions;
-    fb::db::context                             _db;
+    fb::db::context<session>                    _db;
 
 public:
     context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);

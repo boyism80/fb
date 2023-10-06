@@ -9,54 +9,6 @@ fb::timer::~timer()
 { }
 
 
-
-
-// queue
-bool fb::queue::empty()
-{   MUTEX_GUARD(this->_mutex)
-    
-    return std::queue<fb::queue_callback>::empty();
-}
-
-void fb::queue::enqueue(fb::queue_callback&& fn)
-{   MUTEX_GUARD(this->_mutex)
-    
-    this->push(fn);
-}
-
-fb::queue_callback fb::queue::dequeue()
-{   MUTEX_GUARD(this->_mutex)
-
-    auto& fn = this->front();
-    this->pop();
-    return std::move(fn);
-}
-
-bool fb::queue::dequeue(fb::queue_callback& fn)
-{   MUTEX_GUARD(this->_mutex)
-
-    auto empty = std::queue<fb::queue_callback>::empty();
-    if(empty)
-        return false;
-
-    fn = this->front();
-    this->pop();
-    return true;
-}
-
-void fb::queue::flush(uint8_t index)
-{   MUTEX_GUARD(this->_mutex)
-
-    while(std::queue<fb::queue_callback>::empty() == false)
-    {
-        auto& fn = this->front();
-        fn(index);
-
-        this->pop();
-    }
-}
-
-
 fb::thread::thread(uint8_t index) : 
     _index(index)
 { 
@@ -74,12 +26,26 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        this->_precedence.flush(index);
-
         auto fn = fb::queue_callback();
+        auto awaitable = (fb::awaitable<void>*)nullptr;
+
+        while(this->_precedence.dequeue(fn))
+        {
+            fn(index);
+        }
+
+        while(this->_precedence_awaitable_queue.dequeue(awaitable))
+        {
+            awaitable->handler.resume();
+        }
+
         if(this->_queue.dequeue(fn))
         {
             fn(index);
+        }
+        else if(this->_dispatch_awaitable_queue.dequeue(awaitable))
+        {
+            awaitable->handler.resume();
         }
         else
         {
@@ -159,6 +125,26 @@ void fb::thread::dispatch(fb::queue_callback&& fn, bool precedence)
         this->_precedence.enqueue(std::move(fn));
     else
         this->_queue.enqueue(std::move(fn));
+}
+
+fb::awaitable<void> fb::thread::precedence()
+{
+    auto await_callback = [this](auto& awaitable)
+    {
+        this->_dispatch_awaitable_queue.enqueue(&awaitable);
+    };
+
+    return fb::awaitable<void>(await_callback);
+}
+
+fb::awaitable<void> fb::thread::dispatch()
+{
+    auto await_callback = [this](auto& awaitable)
+    {
+        this->_precedence_awaitable_queue.enqueue(&awaitable);
+    };
+
+    return fb::awaitable<void>(await_callback);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()

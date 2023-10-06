@@ -9,6 +9,7 @@
 #include <map>
 #include <future>
 #include <atomic>
+#include <fb/core/coroutine.h>
 
 #define MUTEX_GUARD(x) auto __gd = std::lock_guard<std::mutex>(x);
 
@@ -43,7 +44,8 @@ public:
     ~timer();
 };
 
-class queue : private std::queue<fb::queue_callback>
+template <typename T>
+class queue : private std::queue<T>
 {
 private:
     std::mutex                                      _mutex;
@@ -59,11 +61,34 @@ public:
     queue& operator = (const queue&) = delete;
 
 public:
-    bool                                            empty();
-    void                                            enqueue(fb::queue_callback&& fn);
-    fb::queue_callback                              dequeue();
-    bool                                            dequeue(fb::queue_callback& fn);
-    void                                            flush(uint8_t index);
+    bool                                            empty()
+    {   MUTEX_GUARD(this->_mutex)
+
+        return std::queue<T>::empty();
+    }
+    void                                            enqueue(T&& fn)
+    {   MUTEX_GUARD(this->_mutex)
+
+        this->push(fn);
+    }
+    T                                               dequeue()
+    {   MUTEX_GUARD(this->_mutex)
+
+        auto& fn = this->front();
+        this->pop();
+        return std::move(fn);
+    }
+    bool                                            dequeue(T& fn)
+    {   MUTEX_GUARD(this->_mutex)
+
+        auto empty = std::queue<T>::empty();
+        if(empty)
+            return false;
+
+        fn = this->front();
+        this->pop();
+        return true;
+    }
 };
 
 
@@ -79,7 +104,8 @@ private:
     std::mutex                                      _mutex_timer;
 
 private:
-    fb::queue                                       _queue, _precedence;
+    fb::queue<fb::queue_callback>                   _queue, _precedence;
+    fb::queue<fb::awaitable<void>*>                 _dispatch_awaitable_queue, _precedence_awaitable_queue;
 
 public:
     thread(uint8_t index);
@@ -104,6 +130,8 @@ public:
     void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
     void                                            dispatch(fb::queue_callback&& fn, bool precedence = false);
+    fb::awaitable<void>                             dispatch();
+    fb::awaitable<void>                             precedence();
 
 public:
     static std::chrono::steady_clock::duration      now();

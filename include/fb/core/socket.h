@@ -50,7 +50,7 @@ public:
     void                    recv();
     fb::istream&            in_stream();
     void                    data(T* value);
-    T*                      data();
+    T*                      data() const;
     std::string             IP() const;
     uint32_t                fd();
 };

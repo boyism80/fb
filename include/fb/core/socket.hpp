@@ -98,7 +98,7 @@ void fb::base::socket<T>::data(T* value)
 }
 
 template <typename T>
-T* fb::base::socket<T>::data()
+T* fb::base::socket<T>::data() const
 {
     return _data;
 }

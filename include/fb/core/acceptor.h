@@ -58,6 +58,9 @@ protected:
     virtual void                                handle_exit() { }
 
 public:
+    virtual std::string                         handle_socket_name(S<T>& socket) const;
+
+public:
     void                                        handle_receive(fb::base::socket<T>& socket);
     void                                        handle_closed(fb::base::socket<T>& socket);
 
@@ -73,7 +76,9 @@ public:
 
 public:
     bool                                        precedence(S<T>*, fb::queue_callback&& fn);
+    fb::awaitable<void>                         precedence(S<T>*);
     bool                                        dispatch(S<T>*, fb::queue_callback&& fn);
+    fb::awaitable<void>                         dispatch(S<T>*);
     void                                        run(int thread_size);
     bool                                        running() const;
     void                                        exit();

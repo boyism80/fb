@@ -142,7 +142,7 @@ void worker::on_work()
     }
 }
 
-context::context(int pool_size)
+base_context::base_context(int pool_size)
 {
     auto& config = fb::config::get();
     auto& databases = config["database"];
@@ -156,12 +156,12 @@ context::context(int pool_size)
     }
 }
 
-context::~context()
+base_context::~base_context()
 {
     this->exit();
 }
 
-uint64_t context::hash(const std::string& name) const
+uint64_t base_context::hash(const std::string& name) const
 {
     if(name.empty())
         return 0;
@@ -176,7 +176,7 @@ uint64_t context::hash(const std::string& name) const
     return hash;
 }
 
-uint8_t context::index(const std::string& name) const
+uint8_t base_context::index(const std::string& name) const
 {
     if(name.empty())
         return 0;
@@ -188,13 +188,13 @@ uint8_t context::index(const std::string& name) const
     return (uint8_t)(this->hash(name) % size - 1) + 1;
 }
 
-void context::enqueue(const std::string& name, const task& t)
+void base_context::enqueue(const std::string& name, const task& t)
 {
     auto index = this->index(name);
     this->_workers[index]->enqueue(t);
 }
 
-void context::exit()
+void base_context::exit()
 {
     std::lock_guard<std::mutex>(this->_mutex_exit);
 
@@ -211,12 +211,12 @@ void context::exit()
     }
 }
 
-void fb::db::context::exec(const std::string& name, const std::string& sql)
+void fb::db::base_context::exec(const std::string& name, const std::string& sql)
 {
     this->enqueue(name, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
-result_type fb::db::context::co_exec(const std::string& name, const std::string& sql)
+result_type fb::db::base_context::co_exec(const std::string& name, const std::string& sql)
 {
     auto await_callback = [this, name, sql](auto& awaitable)
     {
@@ -234,7 +234,7 @@ result_type fb::db::context::co_exec(const std::string& name, const std::string&
     return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
 }
 
-void fb::db::context::exec(const std::string& name, const std::vector<std::string>& queries)
+void fb::db::base_context::exec(const std::string& name, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -248,7 +248,7 @@ void fb::db::context::exec(const std::string& name, const std::vector<std::strin
     this->exec(name, sstream.str());
 }
 
-result_type fb::db::context::co_exec(const std::string& name, const std::vector<std::string>& queries)
+result_type fb::db::base_context::co_exec(const std::string& name, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -262,7 +262,7 @@ result_type fb::db::context::co_exec(const std::string& name, const std::vector<
     return this->co_exec(name, sstream.str());
 }
 
-void fb::db::context::exec_f(const std::string& name, const std::string& format, ...)
+void fb::db::base_context::exec_f(const std::string& name, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -272,7 +272,7 @@ void fb::db::context::exec_f(const std::string& name, const std::string& format,
     this->exec(name, sql);
 }
 
-result_type fb::db::context::co_exec_f(const std::string& name, const std::string& format, ...)
+result_type fb::db::base_context::co_exec_f(const std::string& name, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
