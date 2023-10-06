@@ -428,6 +428,7 @@ void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     fb::logger::warn("Disconnected from internal server. (%s)", sstream.str().c_str());
+    this->_internal->close();
 }
 
 template <typename T>
