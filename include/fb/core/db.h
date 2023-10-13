@@ -134,31 +134,31 @@ public:
     using fb::db::base_context::exit;
 
 public:
-    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& name, const std::string& sql)
+    fb::db::result_type     co_exec(const std::string& name, const std::string& sql)
     {
-        auto await_callback = [this, &socket, sql, name](auto& awaitable)
+        auto await_callback = [this, sql, name](auto& awaitable)
         {
-            auto fd = socket.fd();
-            this->enqueue(name, fb::db::task{ sql, [this, &socket, &awaitable, fd](auto& results)
+            auto thread = this->_owner.current_thread();
+            this->enqueue(name, fb::db::task{ sql, [this, thread, &awaitable](auto& results)
             {
-                if (this->_owner.sockets.contains(fd) == false)
+                auto data = std::make_shared<std::vector<daotk::mysql::result>>();
+                for(auto& x : results)
                 {
-                    awaitable.error = std::make_unique<std::runtime_error>("socket disconnected");
-                    awaitable.handler.resume();
+                    data->push_back(std::move(x));
                 }
-                else
-                {
-                    auto data = std::make_shared<std::vector<daotk::mysql::result>>();
-                    for(auto& x : results)
-                    {
-                        data->push_back(std::move(x));
-                    }
 
-                    this->_owner.dispatch(&socket, [&awaitable, data](uint8_t) mutable
+                if(thread != nullptr)
+                {
+                    thread->dispatch([&awaitable, data](uint8_t) mutable
                     {
                         awaitable.result = data.get();
                         awaitable.handler.resume();
                     });
+                }
+                else
+                {
+                    awaitable.result = data.get();
+                    awaitable.handler.resume();
                 }
             }, [&awaitable](auto& e)
             {
@@ -168,7 +168,7 @@ public:
         };
         return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
     }
-    fb::db::result_type     co_exec(fb::socket<T>& socket, const std::string& name, const std::vector<std::string>& queries)
+    fb::db::result_type     co_exec(const std::string& name, const std::vector<std::string>& queries)
     {
         auto sstream = std::stringstream();
         for (auto& query : queries)
@@ -179,16 +179,16 @@ public:
             sstream << query << ";";
         }
 
-        return this->co_exec(socket, name, sstream.str());
+        return this->co_exec(name, sstream.str());
     }
-    fb::db::result_type     co_exec_f(fb::socket<T>& socket, const std::string& name, const std::string& format, ...)
+    fb::db::result_type     co_exec_f(const std::string& name, const std::string& format, ...)
     {
         va_list args;
         va_start(args, format);
         auto sql = fstring_c(format, &args);
         va_end(args);
 
-        return this->co_exec(socket, name, sql);
+        return this->co_exec(name, sql);
     }
 };
 

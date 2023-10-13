@@ -220,6 +220,12 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 }
 
 template <template<class> class S, class T>
+fb::thread* fb::base::acceptor<S, T>::current_thread()
+{
+    return this->_threads.current();
+}
+
+template <template<class> class S, class T>
 bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback&& fn)
 {
     auto id = this->handle_thread_index(*socket);

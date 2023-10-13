@@ -73,11 +73,11 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
-fb::task fb::login::service::auth::__exists(fb::socket<fb::login::session>& socket, fb::awaitable<bool>& awaitable, std::string name)
+fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
 {
     try
     {
-        auto results = co_await this->_db.co_exec_f(socket, name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
+        auto results = co_await this->_db.co_exec_f(name, "CALL USP_CHARACTER_EXISTS('%s')", name.c_str());
         auto exists = results[0].get_value<int>() > 0;
         awaitable.result = &exists;
     }
@@ -89,11 +89,11 @@ fb::task fb::login::service::auth::__exists(fb::socket<fb::login::session>& sock
     awaitable.handler.resume();
 }
 
-auto fb::login::service::auth::exists(fb::socket<fb::login::session>& socket, const std::string& name)
+auto fb::login::service::auth::exists(const std::string& name)
 {
-    auto await_callback = [this, &socket, name] (auto& awaitable)
+    auto await_callback = [this, name] (auto& awaitable)
     {
-        this->__exists(socket, awaitable, name);
+        this->__exists(awaitable, name);
     };
 
     return fb::awaitable<bool>(await_callback);
@@ -121,7 +121,7 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-fb::task fb::login::service::auth::__create_account(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, std::string pw)
+fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw)
 {
     try
     {
@@ -136,7 +136,7 @@ fb::task fb::login::service::auth::__create_account(fb::socket<fb::login::sessio
         auto position_y = config["init"]["position"]["y"].asInt();
         auto admin = config["admin mode"].asBool() ? 0 : 1;
 
-        auto results = co_await this->_db.co_exec_f(socket, id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
+        auto results = co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_INIT('%s', '%s', %d, %d, %d, %d, %d, %d)", id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
         auto& result = results[0];
 
         auto success = result.get_value<bool>(0);
@@ -155,21 +155,21 @@ fb::task fb::login::service::auth::__create_account(fb::socket<fb::login::sessio
     awaitable.handler.resume();
 }
 
-fb::awaitable<void> fb::login::service::auth::create_account(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw)
+fb::awaitable<void> fb::login::service::auth::create_account(const std::string& id, const std::string& pw)
 {
-    auto await_callback = [this, &socket, id, pw] (auto& awaitable)
+    auto await_callback = [this, id, pw] (auto& awaitable)
     {
-        this->__create_account(socket, awaitable, id, pw);
+        this->__create_account(awaitable, id, pw);
     };
 
     return fb::awaitable<void>(await_callback);
 }
 
-fb::task fb::login::service::auth::__init_account(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
+fb::task fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
     try
     {
-        co_await this->_db.co_exec_f(socket, id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
+        co_await this->_db.co_exec_f(id, "CALL USP_CHARACTER_CREATE_FINISH('%s', %d, %d, %d, %d)", id.c_str(), hair, sex, nation, creature);
     }
     catch(std::exception& e)
     {
@@ -178,22 +178,22 @@ fb::task fb::login::service::auth::__init_account(fb::socket<fb::login::session>
     awaitable.handler.resume();
 }
 
-fb::awaitable<void> fb::login::service::auth::init_account(fb::socket<fb::login::session>& socket, const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
+fb::awaitable<void> fb::login::service::auth::init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
-    auto await_callback = [this, &socket, id, hair, sex, nation, creature] (auto& awaitable)
+    auto await_callback = [this, id, hair, sex, nation, creature] (auto& awaitable)
     {
-        this->__init_account(socket, awaitable, id, hair, sex, nation, creature);
+        this->__init_account(awaitable, id, hair, sex, nation, creature);
     };
 
     return fb::awaitable<void>(await_callback);
 }
 
-fb::task fb::login::service::auth::__login(fb::socket<fb::login::session>& socket, fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw)
+fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw)
 {
     try
     {
         this->assert_account(id, pw);
-        auto  results = co_await this->_db.co_exec_f(socket, id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", id.c_str(), this->sha256(pw).c_str());
+        auto  results = co_await this->_db.co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", id.c_str(), this->sha256(pw).c_str());
         auto& result = results[0];
         if(result.count() == 0)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
@@ -223,17 +223,17 @@ fb::task fb::login::service::auth::__login(fb::socket<fb::login::session>& socke
     awaitable.handler.resume();
 }
 
-fb::awaitable<uint32_t, login_exception> fb::login::service::auth::login(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw)
+fb::awaitable<uint32_t, login_exception> fb::login::service::auth::login(const std::string& id, const std::string& pw)
 {
-    auto await_callback = [this, &socket, id, pw] (auto& awaitable)
+    auto await_callback = [this, id, pw] (auto& awaitable)
     {
-        this->__login(socket, awaitable, id, pw);
+        this->__login(awaitable, id, pw);
     };
 
     return fb::awaitable<uint32_t, login_exception>(await_callback);
 }
 
-fb::task fb::login::service::auth::__change_pw(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday)
+fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday)
 {
     try
     {
@@ -252,7 +252,7 @@ fb::task fb::login::service::auth::__change_pw(fb::socket<fb::login::session>& s
         if(pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
             throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-        auto results = co_await this->_db.co_exec_f(socket, id, "SELECT pw, birth FROM user WHERE name='%s'", id.c_str());
+        auto results = co_await this->_db.co_exec_f(id, "SELECT pw, birth FROM user WHERE name='%s'", id.c_str());
         auto& result = results[0];
 
         if(result.count() == 0)
@@ -275,7 +275,7 @@ fb::task fb::login::service::auth::__change_pw(fb::socket<fb::login::session>& s
         if(birthday != found_birth)
             throw btd_exception();
 
-        co_await this->_db.co_exec_f(socket, id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
+        co_await this->_db.co_exec_f(id, "UPDATE user SET pw='%s' WHERE name='%s'", this->sha256(new_pw).c_str(), id.c_str());
     }
     catch(login_exception& e)
     {
@@ -289,12 +289,12 @@ fb::task fb::login::service::auth::__change_pw(fb::socket<fb::login::session>& s
     awaitable.handler.resume();
 }
 
-fb::awaitable<void> fb::login::service::auth::change_pw(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
+fb::awaitable<void> fb::login::service::auth::change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday)
 {
     // TODO: 프로시저 호출 방식으로 수정
-    auto await_callback = [this, &socket, id, pw, new_pw, birthday] (auto& awaitable)
+    auto await_callback = [this, id, pw, new_pw, birthday] (auto& awaitable)
     {
-        this->__change_pw(socket, awaitable, id, pw, new_pw, birthday);
+        this->__change_pw(awaitable, id, pw, new_pw, birthday);
     };
 
     return fb::awaitable<void>(await_callback);

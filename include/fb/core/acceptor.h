@@ -72,6 +72,7 @@ public:
     void                                        send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
 
 public:
+    fb::thread*                                 current_thread();
     bool                                        precedence(S<T>*, fb::queue_callback&& fn);
     fb::awaitable<void>                         precedence(S<T>*);
     bool                                        dispatch(S<T>*, fb::queue_callback&& fn);

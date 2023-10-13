@@ -78,19 +78,19 @@ private:
     bool                        is_forbidden(const std::string& str) const;
     std::string                 sha256(const std::string& data) const;
 
-    fb::task                    __exists(fb::socket<fb::login::session>& socket, fb::awaitable<bool>& awaitable, std::string name);
-    fb::task                    __create_account(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, std::string pw);
-    fb::task                    __login(fb::socket<fb::login::session>& socket, fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw);
-    fb::task                    __change_pw(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
-    fb::task                    __init_account(fb::socket<fb::login::session>& socket, fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+    fb::task                    __exists(fb::awaitable<bool>& awaitable, std::string name);
+    fb::task                    __create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw);
+    fb::task                    __login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw);
+    fb::task                    __change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday);
+    fb::task                    __init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
 
 public:
-    auto                        exists(fb::socket<fb::login::session>& socket, const std::string& name);
+    auto                        exists(const std::string& name);
     void                        assert_account(const std::string& id, const std::string& pw) const;
-    void_awaitable              create_account(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw);
-    void_awaitable              init_account(fb::socket<fb::login::session>& socket, const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
-    login_awaitable             login(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw);
-    void_awaitable              change_pw(fb::socket<fb::login::session>& socket, const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
+    void_awaitable              create_account(const std::string& id, const std::string& pw);
+    void_awaitable              init_account(const std::string& id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature);
+    login_awaitable             login(const std::string& id, const std::string& pw);
+    void_awaitable              change_pw(const std::string& id, const std::string& pw, const std::string& new_pw, uint32_t birthday);
 };
 
 } } }

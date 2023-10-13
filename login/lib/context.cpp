@@ -25,7 +25,7 @@ fb::task fb::login::context::create_account(fb::socket<fb::login::session>& sock
 
     try
     {
-        co_await this->_auth_service.create_account(socket, id, pw);
+        co_await this->_auth_service.create_account(id, pw);
         if (this->sockets.contains(fd) == false)
             co_return;
 
@@ -54,7 +54,7 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
     auto fd = socket.fd();
     try
     {
-        auto map = co_await this->_auth_service.login(socket, id, pw);
+        auto map = co_await this->_auth_service.login(id, pw);
         if (this->sockets.contains(fd) == false)
             co_return;
 
@@ -98,7 +98,7 @@ fb::task fb::login::context::change_pw(fb::socket<fb::login::session>& socket, s
     auto fd = socket.fd();
     try
     {
-        co_await this->_auth_service.change_pw(socket, id, pw, new_pw, birthday);
+        co_await this->_auth_service.change_pw(id, pw, new_pw, birthday);
         if (this->sockets.contains(fd) == false)
             co_return;
 
@@ -193,7 +193,7 @@ fb::task fb::login::context::account_complete(fb::socket<fb::login::session>& so
 {
     auto session = socket.data();
     auto fd = socket.fd();
-    co_await this->_auth_service.init_account(socket, session->created_id, look, sex, nation, creature);
+    co_await this->_auth_service.init_account(session->created_id, look, sex, nation, creature);
     if (this->sockets.contains(fd) == false)
         co_return;
 
