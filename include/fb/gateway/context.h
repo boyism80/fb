@@ -28,7 +28,7 @@ private:
     std::vector<unique_session> _sessions;
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
+    context(boost::asio::io_context& context, uint16_t port);
     ~context();
 
 private:

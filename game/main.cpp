@@ -358,12 +358,7 @@ int main(int argc, const char** argv)
 
         boost::asio::io_context io_context;
         auto& config = fb::config::get();
-        auto context = std::make_unique<fb::game::context>
-        (
-            io_context, 
-            config["port"].asInt(), 
-            std::chrono::seconds(config["delay"].asInt())
-        );
+        auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
         
         load_db(c, *context);
         

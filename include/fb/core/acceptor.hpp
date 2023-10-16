@@ -1,10 +1,9 @@
 #include "acceptor.h"
 
 template <template<class> class S, class T>
-fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads) : 
+fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads) : 
     boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     _context(context),
-    _delay(delay),
     _threads(context, num_threads)
 {
     this->accept();
@@ -73,14 +72,7 @@ void fb::base::acceptor<S, T>::accept()
 
                 this->sockets.push(std::move(socket));
                 this->handle_connected(*ptr);
-
-                this->_threads.dispatch
-                (
-                    [ptr] { ptr->recv(); },
-                    this->_delay,
-                    true
-                );
-
+                ptr->recv();
                 this->accept();
             }
             catch(std::exception& e)
@@ -301,6 +293,16 @@ bool fb::base::acceptor<S, T>::running() const
 }
 
 template <template<class> class S, class T>
+fb::awaitable<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_clock::duration& duration)
+{
+    auto thread = this->_threads.current();
+    if(thread == nullptr)
+        throw std::runtime_error("sleep thread cannot be nullptr");
+
+    return thread->sleep(duration);
+}
+
+template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
     std::lock_guard __gd(this->_mutex_exit);
@@ -336,8 +338,8 @@ inline fb::base::acceptor<S, T>::operator boost::asio::io_context& () const
 
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads) : 
-    fb::base::acceptor<fb::socket, T>(context, port, delay, num_threads)
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads) : 
+    fb::base::acceptor<fb::socket, T>(context, port, num_threads)
 {
     this->connect_internal();
 }

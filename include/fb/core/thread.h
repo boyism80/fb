@@ -132,6 +132,7 @@ public:
     void                                            dispatch(fb::queue_callback&& fn, bool precedence = false);
     fb::awaitable<void>                             dispatch();
     fb::awaitable<void>                             precedence();
+    fb::awaitable<void>                             sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();

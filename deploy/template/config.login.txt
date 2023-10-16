@@ -1,6 +1,5 @@
 {
     "id": "{{ name }}",
-    "delay": 0,
     "ip":  "{{ deploy.login[name].ip }}",
     "port": {{ deploy.login[name].port }},
     "thread": null,

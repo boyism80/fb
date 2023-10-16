@@ -46,7 +46,7 @@ private:
     tm*                      _time = fb::now();
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
+    context(boost::asio::io_context& context, uint16_t port);
     ~context();
 
 private:

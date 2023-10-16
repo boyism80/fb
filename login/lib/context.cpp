@@ -1,7 +1,7 @@
 #include <fb/login/context.h>
 
-fb::login::context::context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay) : 
-    fb::acceptor<fb::login::session>(context, port, delay),
+fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
+    fb::acceptor<fb::login::session>(context, port),
     _db(*this, 4),
     _auth_service(_db)
 {

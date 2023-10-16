@@ -1,6 +1,5 @@
 {
     "id": "{{ name }}",
-    "delay": 0,
     "ip":  "{{ deploy.gateway[name].ip }}",
     "port": {{ deploy.gateway[name].port }},
     "thread": null,

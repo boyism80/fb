@@ -23,7 +23,7 @@ private:
     fb::db::context<session>                    _db;
 
 public:
-    context(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay);
+    context(boost::asio::io_context& context, uint16_t port);
     ~context();
 
 private:

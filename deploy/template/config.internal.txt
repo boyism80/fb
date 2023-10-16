@@ -1,5 +1,4 @@
 {
-    "delay": 0,
     "port": {{ deploy.internal[name].port }},
     "thread": null,
     "database": 

@@ -29,7 +29,6 @@ private:
 protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
-    std::chrono::seconds                        _delay;
     std::unique_ptr<fb::internal::socket<>>     _internal;
 
 
@@ -37,7 +36,7 @@ public:
     fb::base::socket_container<S, T>            sockets;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads = 0);
     virtual ~acceptor();
 
 private:
@@ -79,6 +78,7 @@ public:
     fb::awaitable<void>                         dispatch(S<T>*);
     void                                        run(int thread_size);
     bool                                        running() const;
+    fb::awaitable<void>                         sleep(const std::chrono::steady_clock::duration& duration);
     void                                        exit();
 
 public:
@@ -101,7 +101,7 @@ private:
     std::map<uint8_t, private_handler>  _private_handler_dict;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, std::chrono::seconds delay, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads = 0);
     ~acceptor();
 
 private:

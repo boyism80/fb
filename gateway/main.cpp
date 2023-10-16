@@ -39,12 +39,7 @@ int main(int argc, const char** argv)
         // Execute acceptor
         boost::asio::io_context io_context;
         auto& config = fb::config::get();
-        auto context = std::make_unique<fb::gateway::context>
-        (
-            io_context, 
-            config["port"].asInt(), 
-            std::chrono::seconds(config["delay"].asInt())
-        );
+        auto context = std::make_unique<fb::gateway::context>(io_context, config["port"].asInt());
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
