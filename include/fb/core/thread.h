@@ -10,6 +10,7 @@
 #include <future>
 #include <atomic>
 #include <fb/core/coroutine.h>
+#include <fb/core/logger.h>
 
 #define MUTEX_GUARD(x) auto __gd = std::lock_guard<std::mutex>(x);
 
@@ -66,10 +67,10 @@ public:
 
         return std::queue<T>::empty();
     }
-    void                                            enqueue(T&& fn)
+    void                                            enqueue(T&& ref)
     {   MUTEX_GUARD(this->_mutex)
 
-        this->push(fn);
+        this->push(ref);
     }
     T                                               dequeue()
     {   MUTEX_GUARD(this->_mutex)
@@ -78,14 +79,14 @@ public:
         this->pop();
         return std::move(fn);
     }
-    bool                                            dequeue(T& fn)
+    bool                                            dequeue(T& ref)
     {   MUTEX_GUARD(this->_mutex)
 
         auto empty = std::queue<T>::empty();
         if(empty)
             return false;
 
-        fn = this->front();
+        ref = this->front();
         this->pop();
         return true;
     }

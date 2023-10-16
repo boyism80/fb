@@ -131,7 +131,7 @@ fb::awaitable<void> fb::thread::precedence()
 {
     auto await_callback = [this](auto& awaitable)
     {
-        this->_dispatch_awaitable_queue.enqueue(&awaitable);
+        this->_precedence_awaitable_queue.enqueue(&awaitable);
     };
 
     return fb::awaitable<void>(await_callback);
@@ -141,7 +141,7 @@ fb::awaitable<void> fb::thread::sleep(const std::chrono::steady_clock::duration&
 {
     auto await_callback = [this, duration](auto& awaitable)
     {
-        this->settimer([this, &awaitable] (std::chrono::steady_clock::duration, std::thread::id)
+        this->dispatch([this, &awaitable]
         {
             this->_dispatch_awaitable_queue.enqueue(&awaitable);
         }, duration);
@@ -153,7 +153,7 @@ fb::awaitable<void> fb::thread::dispatch()
 {
     auto await_callback = [this](auto& awaitable)
     {
-        this->_precedence_awaitable_queue.enqueue(&awaitable);
+        this->_dispatch_awaitable_queue.enqueue(&awaitable);
     };
 
     return fb::awaitable<void>(await_callback);
