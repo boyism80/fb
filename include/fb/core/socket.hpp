@@ -71,18 +71,7 @@ void fb::base::socket<T>::recv()
 
                 this->recv();
             }
-            catch(const boost::system::error_code& ec)
-            {
-                auto code = ec.value();
-                switch (code)
-                {
-                case 10054:
-                case boost::system::errc::errc_t::no_such_file_or_directory:
-                    this->_handle_closed(*this);
-                    break;
-                }
-            }
-            catch (std::exception& e)
+            catch(...)
             {
                 this->_handle_closed(*this);
             }
@@ -119,7 +108,11 @@ std::string fb::base::socket<T>::IP() const
 template<typename T>
 uint32_t fb::base::socket<T>::fd()
 {
-    return (uint32_t)this->native_handle();
+    if(this->_fd != 0xFFFFFFFF)
+        return this->_fd;
+
+    this->_fd = (uint32_t)this->native_handle();
+    return this->_fd;
 }
 
 

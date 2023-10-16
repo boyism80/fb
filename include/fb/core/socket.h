@@ -25,6 +25,7 @@ public:
 private:
     handler_event           _handle_received;
     handler_event           _handle_closed;
+    uint32_t                _fd = 0xFFFFFFFF;
 
 protected:
     std::array<char, 256>   _buffer;
