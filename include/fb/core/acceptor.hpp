@@ -36,7 +36,7 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 
     if(id != 0xFF)
     {
-        auto gd = std::lock_guard<std::mutex>(socket->mutex);
+        auto gd = std::lock_guard<std::mutex>(socket->stream_mutex);
         switched = this->handle_parse(*socket, fn);
     }
     else

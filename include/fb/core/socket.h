@@ -30,9 +30,10 @@ protected:
     std::array<char, 256>   _buffer;
     istream                 _instream;
     T*                      _data;
+    std::mutex              _boost_mutex;
 
 public:
-    std::mutex              mutex;
+    std::mutex              stream_mutex;
 
 protected:
     socket(boost::asio::io_context& context, const handler_event& handle_receive, const handler_event& handle_closed);

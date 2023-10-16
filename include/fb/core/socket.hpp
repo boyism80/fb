@@ -18,7 +18,10 @@ inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, b
         return;
 
     auto buffer = boost::asio::buffer(clone.data(), clone.size());
-    boost::asio::async_write(*this, buffer, callback);
+    {
+        auto boost_lock = std::lock_guard<std::mutex>(this->_boost_mutex);
+        boost::asio::async_write(*this, buffer, callback);
+    }
 }
 
 template<typename T>
@@ -46,6 +49,8 @@ inline void fb::base::socket<T>::send(const fb::protocol::base::header& response
 template <typename T>
 void fb::base::socket<T>::recv()
 {
+    auto boost_lock = std::lock_guard<std::mutex>(this->_boost_mutex);
+
     this->async_read_some
     (
         boost::asio::buffer(this->_buffer),
@@ -56,7 +61,7 @@ void fb::base::socket<T>::recv()
                 if(ec)
                     throw ec;
                 
-                auto gd = std::lock_guard<std::mutex>(this->mutex);
+                auto gd = std::lock_guard<std::mutex>(this->stream_mutex);
 
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 this->_handle_received(*this);
