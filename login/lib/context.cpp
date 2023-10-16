@@ -58,9 +58,6 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
         if (this->sockets.contains(fd) == false)
             co_return;
 
-        if(this->_internal->is_open() == false)
-            throw std::runtime_error("서버가 원활하지 않습니다.");
-
         auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
         if (this->sockets.contains(fd) == false)
             co_return;
@@ -83,6 +80,15 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
             co_return;
 
         socket.send(fb::protocol::login::response::message(e.what(), e.type()));
+    }
+    catch (boost::system::error_code& e)
+    {
+        if (this->sockets.contains(fd) == false)
+            co_return;
+
+        auto sstream = std::stringstream();
+        sstream << e.message() << "(" << e.value() << ")";
+        socket.send(fb::protocol::login::response::message(sstream.str(), 0x0E));
     }
     catch (std::exception& e)
     {

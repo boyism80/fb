@@ -8,6 +8,7 @@
 #include <optional>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
+#include <boost/system/error_code.hpp>
 #include <fb/protocol/protocol.h>
 #include <fb/core/cryptor.h>
 #include <fb/core/stream.h>
@@ -122,15 +123,15 @@ template <typename T, typename C = uint8_t>
 class awaitable_socket : public fb::base::socket<T>
 {
 public:
-    template <typename R, typename E = std::runtime_error>
-    class awaitable : public fb::awaitable<R, E>
+    template <typename R>
+    class awaitable : public fb::awaitable<R, boost::system::error_code>
     {
     private:
         awaitable_socket<T,C>&      _owner;
         C                           _cmd;
 
     public:
-        awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R, E>& on_suspend);
+        awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R, boost::system::error_code>& on_suspend);
         ~awaitable();
 
         void                        await_suspend(std::coroutine_handle<> h);
@@ -146,19 +147,19 @@ public:
     ~awaitable_socket();
 
 private:
-    template <typename R, typename E = std::runtime_error>
-    void                            register_awaiter(C cmd, awaitable<R, E>* awaitable);
+    template <typename R>
+    void                            register_awaiter(C cmd, awaitable<R>* awaitable);
 
 public:
-    template <typename R, typename E = std::runtime_error>
+    template <typename R>
     void                            invoke_awaiter(C cmd, R& response);
 
 public:
-    template <typename R, typename E = std::runtime_error>
-    awaitable<R, E>                 request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    template <typename R>
+    awaitable<R>                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 
-    template <typename R, typename E = std::runtime_error>
-    awaitable<R, E>                 request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    template <typename R>
+    awaitable<R>                    request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
 };
 
 }
