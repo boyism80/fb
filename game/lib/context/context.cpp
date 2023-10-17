@@ -909,15 +909,16 @@ fb::task fb::game::context::co_login(std::string name, fb::socket<fb::game::sess
 
     try
     {
+        auto session = socket.data();
+        auto from = request.from;
+        auto transfer = request.transfer;
+
         const auto& config = fb::config::get();
         auto delay = config["delay"].asInt();
         co_await this->sleep(std::chrono::seconds(delay));
         if (this->sockets.contains(fd) == false)
             co_return;
 
-        auto session = socket.data();
-        auto from = request.from;
-        auto transfer = request.transfer;
         auto sql = "CALL USP_CHARACTER_GET('%s');";
         auto results = co_await this->_db.co_exec_f(name, sql, name.c_str());
         if (this->sockets.contains(fd) == false)
