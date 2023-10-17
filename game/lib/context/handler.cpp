@@ -452,25 +452,17 @@ fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& ma
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = socket->data();
-        this->dispatch(socket, [this, socket, session, response](uint8_t)
-            {
-                session->map(nullptr);
-
-                this->save
-                (
-                    *session,
-                    [this, socket, response](fb::game::session&)
-                    {
-                        fb::ostream         parameter;
-                        parameter.write(response.name);
-                        parameter.write_u8(1);
-                        parameter.write_u16(response.map);
-                        parameter.write_u16(response.x);
-                        parameter.write_u16(response.y);
-                        this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
-                    }
-                );
-            });
+        co_await this->dispatch(socket);
+        session->map(nullptr);
+        
+        co_await this->co_save(*session);
+        fb::ostream         parameter;
+        parameter.write(response.name);
+        parameter.write_u8(1);
+        parameter.write_u16(response.map);
+        parameter.write_u16(response.x);
+        parameter.write_u16(response.y);
+        this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
     }
     catch(std::runtime_error& e)
     {

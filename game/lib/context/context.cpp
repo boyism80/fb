@@ -805,6 +805,19 @@ void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
     }
 }
 
+fb::awaitable<void> fb::game::context::co_save(fb::game::session& session)
+{
+    auto await_callback = [this, &session](auto& awaitable)
+    {
+        this->save(session, [this, &awaitable] (auto& session)
+        {
+            awaitable.handler.resume();
+        });
+    };
+
+    return fb::awaitable<void>(await_callback);
+}
+
 uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& socket) const
 {
     return this->thread_index(*socket.data());
