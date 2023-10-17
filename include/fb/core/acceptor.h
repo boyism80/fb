@@ -47,6 +47,9 @@ protected:
     fb::threads&                                threads();
     const fb::threads&                          threads() const;
 
+    template <typename R>
+    fb::task                                    co_internal_request(fb::awaitable<R>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
+
 protected:
     virtual void                                handle_start() {}
     virtual bool                                handle_parse(S<T>& session, const std::function<bool(S<T>&)>& fn) = 0;
