@@ -443,7 +443,7 @@ fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& ma
     
     try
     {
-        auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(request, true, true);
+        auto response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
         if(socket == nullptr)
             co_return;
@@ -452,7 +452,6 @@ fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& ma
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = socket->data();
-        co_await this->dispatch(socket);
         session->map(nullptr);
         
         co_await this->co_save(*session);

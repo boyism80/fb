@@ -212,6 +212,29 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 }
 
 template <template<class> class S, class T>
+template <typename R>
+fb::awaitable<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+{
+    auto await_callback = [=, this, &header](auto& awaitable)
+    {
+        auto thread = this->current_thread();
+        auto fn = [=, this, &header, &awaitable] () -> fb::task
+        {
+            auto response = co_await this->_internal->request<R>(header, encrypt, wrap);
+            if(thread != nullptr)
+                co_await thread->dispatch();
+
+            awaitable.result = &response;
+            awaitable.handler.resume();
+        };
+
+        fn();
+    };
+
+    return fb::awaitable<R>(await_callback);
+}
+
+template <template<class> class S, class T>
 fb::thread* fb::base::acceptor<S, T>::current_thread()
 {
     return this->_threads.current();

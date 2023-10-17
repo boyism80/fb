@@ -1694,7 +1694,7 @@ fb::task fb::game::context::co_whisper(fb::game::session* session, const std::st
     auto& from = session->name();
     try
     {
-        auto response = co_await this->_internal->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, to, message));
+        auto response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, to, message));
         if (this->sockets.contains(fd) == false)
             co_return;
 

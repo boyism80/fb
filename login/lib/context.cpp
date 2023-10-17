@@ -58,7 +58,7 @@ fb::task fb::login::context::login(fb::socket<fb::login::session>& socket, std::
         if (this->sockets.contains(fd) == false)
             co_return;
 
-        auto response = co_await this->_internal->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
+        auto response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(id, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
         if (this->sockets.contains(fd) == false)
             co_return;
 
