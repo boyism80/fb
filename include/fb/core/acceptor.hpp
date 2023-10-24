@@ -227,8 +227,19 @@ fb::task fb::base::acceptor<S, T>::co_internal_request(fb::awaitable<R, boost::s
     }
     catch(const boost::system::error_code& ec)
     {
-        awaitable.error = std::make_unique<boost::system::error_code>(ec);
-        awaitable.handler.resume();
+        if(thread != nullptr)
+        {
+            thread->dispatch([&awaitable, &ec] (uint8_t)
+            {
+                awaitable.error = std::make_unique<boost::system::error_code>(ec);
+                awaitable.handler.resume();
+            });
+        }
+        else
+        {
+            awaitable.error = std::make_unique<boost::system::error_code>(ec);
+            awaitable.handler.resume();
+        }
     }
 }
 

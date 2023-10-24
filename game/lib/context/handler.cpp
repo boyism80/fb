@@ -463,20 +463,6 @@ fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& ma
         parameter.write_u16(response.y);
         this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
     }
-    catch(std::runtime_error& e)
-    {
-        auto client = this->sockets[fd];
-        if(client == nullptr)
-            co_return;
-
-        auto message = e.what();
-        this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
-        {
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, message, fb::game::message::type::STATE);
-        });
-    }
     catch(std::exception& e)
     {
         auto client = this->sockets[fd];
@@ -484,12 +470,20 @@ fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& ma
             co_return;
 
         auto message = e.what();
-        this->dispatch(client, [this, client, message = std::string(message)](uint8_t)
-        {
-            auto session = client->data();
-            session->refresh_map();
-            this->on_notify(*session, message, fb::game::message::type::STATE);
-        });
+        auto session = client->data();
+        session->refresh_map();
+        this->on_notify(*session, message, fb::game::message::type::STATE);
+    }
+    catch(boost::system::error_code& e)
+    {
+        auto client = this->sockets[fd];
+        if(client == nullptr)
+            co_return;
+
+        auto message = "비바람이 휘몰아치고 있습니다.";
+        auto session = client->data();
+        session->refresh_map();
+        this->on_notify(*session, message, fb::game::message::type::STATE);
     }
 }
 
