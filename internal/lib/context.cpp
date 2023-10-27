@@ -112,7 +112,7 @@ bool fb::internal::context::handle_disconnected(fb::internal::socket<fb::interna
     return false;
 }
 
-bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::subscribe& request)
+fb::task<bool> fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::subscribe& request)
 {
     auto session = socket.data();
     session->name = request.name;
@@ -124,7 +124,7 @@ bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::
     case fb::protocol::internal::services::GATEWAY:
     {
         if(this->_gateway != nullptr)
-            return false;
+            co_return false;
 
         this->_gateway = &socket;
     } break;
@@ -132,7 +132,7 @@ bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::
     case fb::protocol::internal::services::LOGIN:
     {
         if(this->_login != nullptr)
-            return false;
+            co_return false;
 
         this->_login = &socket;
     } break;
@@ -140,20 +140,20 @@ bool fb::internal::context::handle_subscribe(fb::internal::socket<fb::internal::
     case fb::protocol::internal::services::GAME:
     {
         if(this->_games[request.group] != nullptr)
-            return false;
+            co_return false;
 
         this->_games[request.group] = &socket;
     } break;
 
     default:
-        return false;
+        co_return false;
     }
 
     fb::logger::info("%s 서버가 연결되었습니다.", request.name.c_str());
-    return true;
+    co_return true;
 }
 
-bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::transfer& request)
+fb::task<bool> fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::transfer& request)
 {
     auto group = std::optional<uint8_t>(0xFF);
 
@@ -179,7 +179,7 @@ bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::s
         } break;
 
         default:
-            return false;
+            co_return false;
         }
 
         auto& config = fb::config::get();
@@ -205,20 +205,20 @@ bool fb::internal::context::handle_transfer(fb::internal::socket<fb::internal::s
         this->send(socket, fb::protocol::internal::response::transfer(request.trans, request.name, fb::protocol::internal::response::transfer_code::UNKNOWN,  request.map, request.x, request.y, "", 0, request.fd, request.from));
     }
     
-    return true;
+    co_return true;
 }
 
-bool fb::internal::context::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
+fb::task<bool> fb::internal::context::handle_login(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::login& request)
 {
     try
     {
         auto group = fb::internal::table::hosts[request.map];
         if(group.has_value() == false)
-            return true;
+            co_return true;
 
         auto subscriber = this->get(fb::protocol::internal::services::GAME, *group);
         if(subscriber == nullptr)
-            return true;
+            co_return true;
 
         auto found = this->_users.find(request.name);
         if(found != this->_users.end())
@@ -234,19 +234,19 @@ bool fb::internal::context::handle_login(fb::internal::socket<fb::internal::sess
         // TODO
     }
 
-    return true;
+    co_return true;
 }
 
-bool fb::internal::context::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
+fb::task<bool> fb::internal::context::handle_logout(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::logout& request)
 {
     auto found = this->_users.find(request.name);
     if(found != this->_users.end())
         this->_users.erase(found);
     
-    return true;
+    co_return true;
 }
 
-bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::whisper& request)
+fb::task<bool> fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::whisper& request)
 {
     try
     {
@@ -268,10 +268,10 @@ bool fb::internal::context::handle_whisper(fb::internal::socket<fb::internal::se
     {
         this->send(socket, fb::protocol::internal::response::whisper(request.trans, false, request.from, request.to, request.message));
     }
-    return true;
+    co_return true;
 }
 
-bool fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
+fb::task<bool> fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::session>& socket, const fb::protocol::internal::request::shutdown& request)
 {
     if (this->_gateway != nullptr)
         this->send(*this->_gateway, fb::protocol::internal::response::shutdown(request.trans));
@@ -283,5 +283,5 @@ bool fb::internal::context::handle_shutdown(fb::internal::socket<fb::internal::s
         this->send(*x.second, fb::protocol::internal::response::shutdown(request.trans));
 
     this->exit();
-    return true;
+    co_return true;
 }

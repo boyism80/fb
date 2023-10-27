@@ -37,7 +37,7 @@ bool login_bot::is_decrypt(int cmd) const
     }
 }
 
-fb::task login_bot::co_login(std::string id, std::string pw)
+fb::task<void> login_bot::co_login(std::string id, std::string pw)
 {
     try
     {

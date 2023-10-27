@@ -213,7 +213,7 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 
 template <template<class> class S, class T>
 template <typename R>
-fb::task fb::base::acceptor<S, T>::co_internal_request(fb::awaitable<R, boost::system::error_code>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaitable<R, boost::system::error_code>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap)
 {
     auto thread = this->current_thread();
     try
@@ -341,7 +341,12 @@ fb::awaitable<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_cl
 {
     auto thread = this->_threads.current();
     if(thread == nullptr)
-        throw std::runtime_error("sleep thread cannot be nullptr");
+    {
+        return fb::awaitable<void>([this](auto& awaitable)
+        {
+            awaitable.handler.resume();
+        });
+    }
 
     return thread->sleep(duration);
 }
@@ -385,14 +390,14 @@ fb::acceptor<T>::~acceptor()
 { }
 
 template <typename T>
-bool fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
+fb::task<bool> fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 {
     auto i = this->_public_handler_dict.find(cmd);
     if(i == this->_public_handler_dict.end())
     {
         auto& c = fb::console::get();
         fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
-        return true; 
+        return this->default_handler();
     }
 
     return i->second(socket);
@@ -521,7 +526,13 @@ fb::awaitable<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, 
 }
 
 template <typename T>
-fb::task fb::acceptor<T>::connect_internal()
+fb::task<bool> fb::acceptor<T>::default_handler()
+{
+    co_return true;
+}
+
+template <typename T>
+fb::task<void> fb::acceptor<T>::connect_internal()
 {
     auto&           config = fb::config::get();
     auto            ip     = config["internal"]["ip"].asString();
@@ -584,7 +595,8 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
                 size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
             // Call function that matched by command byte
-            if(this->call(socket, cmd) == false)
+            auto                task = this->call(socket, cmd);
+            if(task.done() && task.value() == false)
                 throw std::exception();
 
             // Set data pointer to process next packet bytes
@@ -614,7 +626,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(int cmd, const std::function<bool(fb::socket<T>&, R&)>& fn)
+void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn)
 {
     this->_public_handler_dict.insert({cmd, [this, fn](fb::socket<T>& socket)
     {
@@ -627,7 +639,7 @@ void fb::acceptor<T>::bind(int cmd, const std::function<bool(fb::socket<T>&, R&)
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(const std::function<bool(fb::socket<T>&, R&)>& fn)
+void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn)
 {
     auto id = R().__id;
     this->bind(id, fn);
@@ -635,7 +647,7 @@ void fb::acceptor<T>::bind(const std::function<bool(fb::socket<T>&, R&)>& fn)
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn)
+void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::socket<>&, R&)>& fn)
 {
     auto id = R().__id;
     this->_private_handler_dict.insert({id, [this, fn](fb::internal::socket<>& socket)
@@ -652,5 +664,8 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind()
 {
-    this->bind<R>([this] (fb::internal::socket<>&, R&) {return true;});
+    this->bind<R>([this] (fb::internal::socket<>&, R&) -> fb::task<bool>
+    {
+        co_return true;
+    });
 }

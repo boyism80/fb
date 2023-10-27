@@ -48,7 +48,7 @@ protected:
     const fb::threads&                          threads() const;
 
     template <typename R>
-    fb::task                                    co_internal_request(fb::awaitable<R, boost::system::error_code>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
+    fb::task<void>                              co_internal_request(fb::awaitable<R, boost::system::error_code>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
 
 protected:
     virtual void                                handle_start() {}
@@ -98,8 +98,8 @@ template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    using public_handler                = std::function<bool(fb::socket<T>&)>;
-    using private_handler               = std::function<bool(fb::internal::socket<>&)>;
+    using public_handler                = std::function<fb::task<bool>(fb::socket<T>&)>;
+    using private_handler               = std::function<fb::task<bool>(fb::internal::socket<>&)>;
 
 private:
     std::map<uint8_t, public_handler>   _public_handler_dict;
@@ -110,8 +110,9 @@ public:
     ~acceptor();
 
 private:
-    fb::task                    connect_internal();
-    bool                        call(fb::socket<T>& socket, uint8_t cmd);
+    fb::task<bool>              default_handler();
+    fb::task<void>              connect_internal();
+    fb::task<bool>              call(fb::socket<T>& socket, uint8_t cmd);
     fb::awaitable<void>         co_connect_internal(const std::string& ip, uint16_t port);
     bool                        handle_internal_receive(fb::base::socket<>& socket);
 
@@ -121,11 +122,11 @@ protected:
 
 public:
     template <typename R>
-    void                        bind(int cmd, const std::function<bool(fb::socket<T>&, R&)>& fn);
+    void                        bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<bool(fb::socket<T>&, R&)>& fn);
+    void                        bind(const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn);
+    void                        bind(const std::function<fb::task<bool>(fb::internal::socket<>&, R&)>& fn);
     template <typename R>
     void                        bind();
 

@@ -25,7 +25,7 @@ class context : public fb::base::acceptor<fb::internal::socket, fb::internal::se
 {
 public:
     using service                   = fb::internal::socket<fb::internal::session>;
-    using handler                   = std::function<bool(service&)>;
+    using handler                   = std::function<fb::task<bool>(service&)>;
     using subscriber_container      = std::map<uint8_t, service*>;
     using unique_session            = std::unique_ptr<fb::internal::session>;
     using unique_users              = std::map<std::string, std::unique_ptr<user>>;
@@ -52,26 +52,26 @@ protected:
 
 public:
     template <typename R>
-    void                            bind(const std::function<bool(fb::internal::socket<fb::internal::session>&, R&)>& fn)
+    void                            bind(const std::function<fb::task<bool>(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
         auto id = R().__id;
-        _handler_dict[id] = [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        _handler_dict.insert({id, [this, fn] (fb::internal::socket<fb::internal::session>& socket)
         {
             auto&   in_stream = socket.in_stream();
             R       header;
             header.deserialize(in_stream);
             
             return fn(socket, header);
-        };
+        }});
     }
 
 public:
-    bool                            handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
-    bool                            handle_transfer(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::transfer&);
-    bool                            handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
-    bool                            handle_logout(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::logout&);
-    bool                            handle_whisper(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::whisper&);
-    bool                            handle_shutdown(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::shutdown&);
+    fb::task<bool>                  handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
+    fb::task<bool>                  handle_transfer(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::transfer&);
+    fb::task<bool>                  handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
+    fb::task<bool>                  handle_logout(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::logout&);
+    fb::task<bool>                  handle_whisper(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::whisper&);
+    fb::task<bool>                  handle_shutdown(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::shutdown&);
 };
 
 } }

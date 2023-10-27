@@ -7,16 +7,85 @@
 
 namespace fb {
 
+template <typename T>
 struct task
 {
+    struct promise_type;
+    using handle_type = std::coroutine_handle<promise_type>;
+
     struct promise_type
     {
-        auto get_return_object() { return task{}; }
-        auto initial_suspend() { return std::suspend_never{}; }
-        auto final_suspend() noexcept { return std::suspend_never{}; }
-        void return_void() {}
-        void unhandled_exception() {}
+        std::optional<T> _value;
+        std::exception_ptr _exception;
+
+        auto get_return_object()        { return task(handle_type::from_promise(*this)); }
+        auto initial_suspend()          { return std::suspend_never{}; }
+        auto final_suspend() noexcept   { return std::suspend_always{}; }
+        void unhandled_exception()      { this->_exception = std::current_exception(); }
+
+        template<std::convertible_to<T> From>
+        void return_value(From&& from)  { this->_value = std::forward<From>(from); }
     };
+
+    handle_type _handler;
+
+    task(handle_type handler) : _handler(handler) { }
+    ~task() { }
+
+    bool done()
+    {
+        return this->_handler.done();
+    }
+
+    void operator()()
+    {
+        this->_handler();
+        if (this->_handler.promise()._exception)
+            std::rethrow_exception(this->_handler.promise()._exception);
+    }
+
+    T value()
+    {
+        if (this->_handler.promise()._value.has_value() == false)
+            throw std::runtime_error("value is empty");
+
+        return *this->_handler.promise()._value;
+    }
+};
+
+template <>
+struct task<void>
+{
+    struct promise_type;
+    using handle_type = std::coroutine_handle<promise_type>;
+
+    struct promise_type
+    {
+        std::exception_ptr _exception;
+
+        auto get_return_object()        { return task(handle_type::from_promise(*this)); }
+        auto initial_suspend()          { return std::suspend_never{}; }
+        auto final_suspend() noexcept   { return std::suspend_always{}; }
+        void return_void()              { }
+        void unhandled_exception()      { this->_exception = std::current_exception(); }
+    };
+
+    handle_type _handler;
+
+    task(handle_type handler) : _handler(handler) {}
+    ~task() { }
+
+    bool done()
+    {
+        return this->_handler.done();
+    }
+
+    void operator()()
+    {
+        this->_handler();
+        if (this->_handler.promise()._exception)
+            std::rethrow_exception(this->_handler.promise()._exception);
+    }
 };
 
 template <typename R, typename E>

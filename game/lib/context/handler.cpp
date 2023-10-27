@@ -432,7 +432,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
+fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());

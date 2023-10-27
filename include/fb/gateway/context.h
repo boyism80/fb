@@ -46,11 +46,11 @@ protected:
     void                        handle_internal_connected() final;
 
 public:
-    bool                        handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
-    bool                        handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
+    fb::task<bool>              handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
+    fb::task<bool>              handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
 
 public:
-    bool                        handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
+    fb::task<bool>              handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 };
 
 } }

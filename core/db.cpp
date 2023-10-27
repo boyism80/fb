@@ -148,8 +148,6 @@ base_context::base_context(int pool_size)
     auto& databases = config["database"];
     auto  count = databases["shard"].size();
     auto  global_exists = (databases["global"].isNull() == false);
-    if(global_exists)
-        count++;
 
     this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count);
     for (int i = 0; i < count; i++)

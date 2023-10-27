@@ -103,7 +103,7 @@ public:
     ~login_bot();
 
 private:
-    task                                        co_login(std::string id, std::string pw);
+    fb::task<void>                              co_login(std::string id, std::string pw);
 
 protected:
     void                                        on_connected();

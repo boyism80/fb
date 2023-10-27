@@ -103,7 +103,7 @@ void fb::gateway::context::handle_internal_connected()
     this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GATEWAY, 0xFF));
 }
 
-bool fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
+fb::task<bool> fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
 {
     try
     {
@@ -113,15 +113,15 @@ bool fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>
         socket.crt(crt);
 
         this->send(socket, fb::protocol::gateway::response::crt(crt, this->_entry_crc32_cache), false);
-        return true;
+        co_return true;
     }
     catch(std::exception& e)
     {
-        return false;
+        co_return false;
     }
 }
 
-bool fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
+fb::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
 {
     switch(request.action)
     {
@@ -129,22 +129,22 @@ bool fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>& s
     {
         const auto&         entry = this->_entrypoints[request.index];
         this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::services::GATEWAY);
-        return true;
+        co_return true;
     }
 
     case 0x01:
     {
         this->send_stream(socket, this->_entry_stream_cache);
-        return true;
+        co_return true;
     }
 
     default:
-        return false;
+        co_return false;
     }
 }
 
-bool fb::gateway::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
+fb::task<bool> fb::gateway::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
 {
     this->exit();
-    return true;
+    co_return true;
 }

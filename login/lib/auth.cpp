@@ -73,7 +73,7 @@ std::string fb::login::service::auth::sha256(const std::string& data) const
     return sstream.str();
 }
 
-fb::task fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
+fb::task<void> fb::login::service::auth::__exists(fb::awaitable<bool>& awaitable, std::string name)
 {
     try
     {
@@ -121,7 +121,7 @@ void fb::login::service::auth::assert_account(const std::string& id, const std::
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
-fb::task fb::login::service::auth::__create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw)
+fb::task<void> fb::login::service::auth::__create_account(fb::awaitable<void>& awaitable, std::string id, std::string pw)
 {
     try
     {
@@ -165,7 +165,7 @@ fb::awaitable<void> fb::login::service::auth::create_account(const std::string& 
     return fb::awaitable<void>(await_callback);
 }
 
-fb::task fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
+fb::task<void> fb::login::service::auth::__init_account(fb::awaitable<void>& awaitable, std::string id, uint8_t hair, uint8_t sex, uint8_t nation, uint8_t creature)
 {
     try
     {
@@ -188,7 +188,7 @@ fb::awaitable<void> fb::login::service::auth::init_account(const std::string& id
     return fb::awaitable<void>(await_callback);
 }
 
-fb::task fb::login::service::auth::__login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw)
+fb::task<void> fb::login::service::auth::__login(fb::awaitable<uint32_t, login_exception>& awaitable, std::string id, std::string pw)
 {
     try
     {
@@ -233,7 +233,7 @@ fb::awaitable<uint32_t, login_exception> fb::login::service::auth::login(const s
     return fb::awaitable<uint32_t, login_exception>(await_callback);
 }
 
-fb::task fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday)
+fb::task<void> fb::login::service::auth::__change_pw(fb::awaitable<void>& awaitable, std::string id, std::string pw, std::string new_pw, uint32_t birthday)
 {
     try
     {
