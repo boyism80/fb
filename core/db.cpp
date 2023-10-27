@@ -146,13 +146,22 @@ base_context::base_context(int pool_size)
 {
     auto& config = fb::config::get();
     auto& databases = config["database"];
-    auto  count = databases.size();
+    auto  count = databases["shard"].size();
+    auto  global_exists = (databases["global"].isNull() == false);
+    if(global_exists)
+        count++;
 
     this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count);
     for (int i = 0; i < count; i++)
     {
-        this->_workers.push_back(std::make_unique<worker>(databases[i], pool_size));
+        this->_workers.push_back(std::make_unique<worker>(databases["shard"][i], pool_size));
         post(*_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
+    }
+
+    if(global_exists)
+    {
+        this->_global_worker = std::make_unique<worker>(databases["global"], pool_size);
+        post(*_thread_pool, [this] { this->_global_worker->on_work(); });
     }
 }
 
@@ -176,22 +185,32 @@ uint64_t base_context::hash(const std::string& name) const
     return hash;
 }
 
-uint8_t base_context::index(const std::string& name) const
+int base_context::index(const std::string& name) const
 {
     if(name.empty())
-        return 0;
+        return -1;
 
     auto size = this->_workers.size();
     if(size == 1)
         return 0;
 
-    return (uint8_t)(this->hash(name) % size - 1) + 1;
+    return (int)(this->hash(name) % size - 1) + 1;
 }
 
 void base_context::enqueue(const std::string& name, const task& t)
 {
     auto index = this->index(name);
-    this->_workers[index]->enqueue(t);
+    if(index == -1)
+    {
+        if(this->_global_worker == nullptr)
+            throw std::runtime_error("global db not set");
+
+        this->_global_worker->enqueue(t);
+    }
+    else
+    {
+        this->_workers[index]->enqueue(t);
+    }
 }
 
 void base_context::exit()
@@ -203,10 +222,16 @@ void base_context::exit()
         worker->exit();
     }
 
+    if(this->_global_worker != nullptr)
+    {
+        this->_global_worker->exit();
+    }
+
     if (_thread_pool != nullptr)
     {
         this->_thread_pool->join();
         this->_workers.clear();
+        this->_global_worker.reset();
         this->_thread_pool.reset();
     }
 }

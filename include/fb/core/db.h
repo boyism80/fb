@@ -96,6 +96,7 @@ private:
 
 private:
     workers                     _workers;
+    std::unique_ptr<worker>     _global_worker;
     thread_pool                 _thread_pool;
     std::mutex                  _mutex_exit;
 
@@ -105,7 +106,7 @@ public:
 
 private:
     uint64_t                    hash(const std::string& name) const;
-    uint8_t                     index(const std::string& name) const;
+    int                        index(const std::string& name) const;
 
 public:
     void                        enqueue(const std::string& name,  const task& t);

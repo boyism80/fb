@@ -14,15 +14,24 @@
         "ip": "192.168.0.100",
         "port": 3002
     },
-    "database": [
-        {
+    "database": {
+        "global": {
             "ip": "192.168.0.100",
             "port": 3306,
             "name": "fb",
             "uid": "fb",
             "pwd": "admin"
-        }
-    ],
+        },
+        "shard": [
+            {
+                "ip": "192.168.0.100",
+                "port": 3306,
+                "name": "fb",
+                "uid": "fb",
+                "pwd": "admin"
+            }
+        ]
+    },
     "log": ["debug", "info", "warn", "fatal"],
     "table": {
         "class": "table.dev/class.json",

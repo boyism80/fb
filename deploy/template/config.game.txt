@@ -14,20 +14,22 @@
         "ip": "{{ deploy.login[deploy.game[name].login].ip }}",
         "port": {{ deploy.login[deploy.game[name].login].port }}
     },
-    "database": 
-    [
-        {% for database in database -%}
-        {
-            "ip": "{{ database.ip }}",
-            "port": {{ database.port }},
-            "name": "{{ database.name}}",
-            "uid": "{{ database.uid }}",
-            "pwd": "{{ database.pwd }}"
-        }
-        {%- if not loop.last %}, 
-        {% endif %}
-        {%- endfor %}
-    ],
+    "database": {
+        "global": {{ database.global }},
+        "shard": [
+            {% for database in database.shard -%}
+            {
+                "ip": "{{ database.ip }}",
+                "port": {{ database.port }},
+                "name": "{{ database.name}}",
+                "uid": "{{ database.uid }}",
+                "pwd": "{{ database.pwd }}"
+            }
+            {%- if not loop.last %}, 
+            {% endif %}
+            {%- endfor %}
+        ]
+    },
     "log": ["info", "fatal"],
     "table": {
         "class": "table/class.json",
