@@ -55,14 +55,14 @@ public:
     template <typename T>
     void bind(int cmd, const std::function<void(T&)> fn)
     {
-        this->_handler_dict[cmd] = [this, fn]
+        this->_handler_dict.insert({ cmd, [this, fn]
         {
             auto& in_stream = this->in_stream();
             T     header;
             header.deserialize(in_stream);
             this->invoke_awaiter(header.__id, header);
             fn(header);
-        };
+        }});
     }
 
     template <typename T>

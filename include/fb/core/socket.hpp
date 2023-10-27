@@ -208,9 +208,10 @@ void fb::awaitable_socket<T,C>::register_awaiter(C cmd, awaitable<R>* awaitable)
     {
         auto awaitable = static_cast<awaitable_socket<T,C>::awaitable<R>*>(i->second);
         awaitable->error = std::make_unique<boost::system::error_code>();
+        this->_coroutines.erase(cmd);
     }
     
-    this->_coroutines[cmd] = static_cast<void*>(awaitable);
+    this->_coroutines.insert({cmd, static_cast<void*>(awaitable)});
 }
 
 

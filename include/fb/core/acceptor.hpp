@@ -355,21 +355,13 @@ void fb::base::acceptor<S, T>::exit()
         return;
 
     this->handle_exit();
-    // async_accept 멈춤
     this->cancel();
     if (this->_internal != nullptr)
     {
         this->_internal->close();
     }
     this->_threads.exit();
-
-    //this->_boost_threads.reset();
     this->_running = false;
-
-    //this->cancel();
-    //this->handle_exit();
-    //this->close();
-    //this->_running = false;
 }
 
 template <template<class> class S, class T>
@@ -624,13 +616,13 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind(int cmd, const std::function<bool(fb::socket<T>&, R&)>& fn)
 {
-    this->_public_handler_dict[cmd] = [this, fn](fb::socket<T>& socket)
+    this->_public_handler_dict.insert({cmd, [this, fn](fb::socket<T>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;
         header.deserialize(in_stream);
         return fn(socket, header);
-    };
+    }});
 }
 
 template <typename T>
@@ -646,14 +638,14 @@ template <typename R>
 void fb::acceptor<T>::bind(const std::function<bool(fb::internal::socket<>&, R&)>& fn)
 {
     auto id = R().__id;
-    this->_private_handler_dict[id] = [this, fn](fb::internal::socket<>& socket)
+    this->_private_handler_dict.insert({id, [this, fn](fb::internal::socket<>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;
         header.deserialize(in_stream);
         socket.invoke_awaiter(header.trans, header);
         return fn(socket, header);
-    };
+    }});
 }
 
 template <typename T>
