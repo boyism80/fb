@@ -1,20 +1,6 @@
 {
     "port": {{ deploy.internal[name].port }},
     "thread": null,
-    "database": 
-    [
-        {% for database in database -%}
-        {
-            "ip": "{{ database.ip }}",
-            "port": {{ database.port }},
-            "name": "{{ database.name}}",
-            "uid": "{{ database.uid }}",
-            "pwd": "{{ database.pwd }}"
-        }
-        {%- if not loop.last %}, 
-        {% endif %}
-        {%- endfor %}
-    ],
     "log": ["info", "fatal"],
     "table": {
         "host": "table/host.json"

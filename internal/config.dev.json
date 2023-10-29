@@ -1,13 +1,6 @@
 {
     "port": 3000,
     "thread": null,
-    "database": {
-        "ip": "192.168.0.100",
-        "port": 3306,
-        "name": "fb",
-        "uid": "fb",
-        "pwd": "admin"
-    },
     "log": ["debug", "info", "warn", "fatal"],
     "table": {
         "host": "table/host.json"
