@@ -15,7 +15,14 @@
         "port": {{ deploy.login[deploy.game[name].login].port }}
     },
     "database": {
-        "global": {{ database.global }},
+        "global": 
+        {
+            "ip": "{{ database.global.ip }}",
+            "port": {{ database.global.port }},
+            "name": "{{ database.global.name}}",
+            "uid": "{{ database.global.uid }}",
+            "pwd": "{{ database.global.pwd }}"
+        },
         "shard": [
             {% for database in database.shard -%}
             {
