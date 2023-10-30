@@ -19,7 +19,7 @@ CONFIGURATION = None
 def environment(e):
     global CONFIGURATION
 
-    with open(f'deploy/{e}.json') as f:
+    with open(f'deploy/{e}.json', encoding='utf8') as f:
         CONFIGURATION = json.load(f)
 
     env.user = CONFIGURATION['authorization']['user']
@@ -96,7 +96,9 @@ def deploy(service):
             context.update({'name': name})
 
             template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"deploy/template")).get_template(f'config.{service}.txt')
-            sudo(f"echo '{template.render(context)}' > config.{name}.json", quiet=True)
+            json_str = template.render(context)
+            json.loads(json_str)
+            sudo(f"echo '{json_str}' > config.{name}.json", quiet=True)
 
         put(f'dist/fb/{service}/{service}', '.', use_sudo=True, mode='0755')
 
