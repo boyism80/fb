@@ -24,7 +24,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
         if(parameters[2].isNumeric())
             y = parameters[2].asInt();
     }
-    session.map(map, point16_t(x, y));
+    co_await session.co_map(map, point16_t(x, y));
     co_return true;
 }
 
@@ -147,7 +147,7 @@ fb::task<bool> fb::game::context::handle_command_mob(fb::game::session& session,
 
     auto mob = this->make<fb::game::mob>(core, fb::game::mob::config { .alive = true });
     auto map = session.map();
-    mob->map(map, session.position());
+    co_await mob->co_map(map, session.position());
     co_return true;
 }
 
@@ -222,7 +222,7 @@ fb::task<bool> fb::game::context::handle_command_item(fb::game::session& session
         parameters[1].asInt() : 1;
 
     auto item = core->make(*this, count);
-    item->map(session.map(), session.position());
+    co_await item->co_map(session.map(), session.position());
     co_return true;
 }
 
@@ -370,6 +370,6 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     auto x = map->width() > 0 ? std::rand() % map->width() : 0;
     auto y = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    session.map(map, fb::game::point16_t(x, y));
+    co_await session.co_map(map, fb::game::point16_t(x, y));
     co_return true;
 }

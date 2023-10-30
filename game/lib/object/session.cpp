@@ -33,8 +33,36 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
+fb::awaitable<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
+{
+    if (this->_map_lock)
+        return fb::awaitable<bool>([this, map, position](auto& awaitable) { return false; });
+    
+    auto switch_process = (map != nullptr && map->active == false);
+    if(switch_process)
+    {
+        return fb::awaitable<bool>([this, map, position](auto& awaitable)
+        {
+            auto listener = this->get_listener<fb::game::session>();
+            listener->on_transfer(*this, *map, position, &awaitable);
+        });
+    }
+    else
+    {
+        return fb::game::object::co_map(map, position);
+    }
+}
+
+fb::awaitable<bool> fb::game::session::co_map(fb::game::map* map)
+{
+    return this->co_map(map, point16_t(0, 0));
+}
+
 bool fb::game::session::map(fb::game::map* map, const point16_t& position)
 {
+    if(this->_map_lock)
+        return false;
+
     auto switch_process = (map != nullptr && map->active == false);
     if(switch_process)
     {
@@ -46,6 +74,11 @@ bool fb::game::session::map(fb::game::map* map, const point16_t& position)
     {
         return fb::game::object::map(map, position);
     }
+}
+
+bool fb::game::session::map(fb::game::map* map)
+{
+    return this->map(map, point16_t(0, 0));
 }
 
 void fb::game::session::on_hold()

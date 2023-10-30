@@ -432,7 +432,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
+fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
@@ -443,16 +443,24 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
     
     try
     {
+        auto result = false;
         auto response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
         if(socket == nullptr)
+        {
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
             co_return;
+        }
 
         if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = socket->data();
-        session->map(nullptr);
+        co_await session->co_map(nullptr);
         
         co_await this->co_save(*session);
         fb::ostream         parameter;
@@ -462,34 +470,69 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         parameter.write_u16(response.x);
         parameter.write_u16(response.y);
         this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
+        
+        result = true;
+        if(awaitable != nullptr)
+        {
+            awaitable->result = &result;
+            awaitable->handler.resume();
+        }
     }
     catch(std::exception& e)
     {
+        auto result = false;
         auto client = this->sockets[fd];
         if(client == nullptr)
+        {
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
             co_return;
+        }
 
         auto message = e.what();
         auto session = client->data();
         session->refresh_map();
         this->on_notify(*session, message, fb::game::message::type::STATE);
+
+        if(awaitable != nullptr)
+        {
+            awaitable->result = &result;
+            awaitable->handler.resume();
+        }
     }
     catch(boost::system::error_code& e)
     {
+        auto result = false;
         auto client = this->sockets[fd];
         if(client == nullptr)
+        {
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
             co_return;
+        }
 
         auto message = "비바람이 휘몰아치고 있습니다.";
         auto session = client->data();
         session->refresh_map();
         this->on_notify(*session, message, fb::game::message::type::STATE);
+
+        if(awaitable != nullptr)
+        {
+            awaitable->result = &result;
+            awaitable->handler.resume();
+        }
     }
 }
 
-void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
+void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable)
 {
-    this->co_transfer(me, map, position);
+    this->co_transfer(me, map, position, awaitable);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

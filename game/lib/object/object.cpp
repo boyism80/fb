@@ -392,74 +392,126 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-bool fb::game::object::map(fb::game::map* map, const point16_t& position)
+fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaitable<bool>* awaitable)
 {
-    if(map == nullptr)
+    try
     {
-        if(this->_map != nullptr)
+        if(this->_map_lock)
+            co_return false;
+
+        if(map == nullptr)
         {
-            this->_map->objects.remove(*this);
-            for (auto x : this->_map->nears(this->_position))
+            if(this->_map != nullptr)
             {
-                if (x != this)
-                    this->_listener->on_hide(*x, *this);
+                this->_map->objects.remove(*this);
+                for (auto x : this->_map->nears(this->_position))
+                {
+                    if (x != this)
+                        this->_listener->on_hide(*x, *this);
+                }
+
+                this->_map = nullptr;
             }
-
-            this->_map = nullptr;
+            this->_position = point16_t(1, 1); // 가상계 위치
+            this->sector(nullptr);
+            auto result = true;
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
+            co_return result;
         }
-        this->_position = point16_t(1, 1); // 가상계 위치
-        this->sector(nullptr);
-        return true;
-    }
 
-    if(this->_map == map)
-    {
-        this->position(position, true);
-        return true;
-    }
+        if(this->_map == map)
+        {
+            this->position(position, true);
+            auto result = true;
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
+            co_return result;
+        }
 
-    if(map->active)
-    {
+        if(map->active == false)
+        {
+            auto result = false;
+            if(awaitable != nullptr)
+            {
+                awaitable->result = &result;
+                awaitable->handler.resume();
+            }
+            co_return result;
+        }
+
         auto before = this->_map;
 
         if(this->_map != nullptr)
-            this->map(nullptr);
-
-        auto callback = [=, this] (uint8_t) 
         {
-            if(this->map() != nullptr)
-                return;
-
-            this->_map = map;
-            this->_position = position;
-            this->_map->update(*this);
-            this->_map->objects.add(*this);
-            this->_listener->on_map_changed(*this, before, map);
-
-            for(auto x : map->nears(this->_position))
-            {
-                if(x == this)
-                    continue;
-
-                this->_listener->on_show(*this, *x, false);
-                this->_listener->on_show(*x, *this, false);
-            }
-        };
+            co_await this->co_map(nullptr);
+        }
+        this->_map_lock = true;
 
         auto thread = this->context.thread(map);
-        if(thread == nullptr || thread == this->context.current_thread())
+        if(thread != nullptr && thread != this->context.current_thread())
+            co_await thread->precedence();
+
+        this->_map = map;
+        this->_position = position;
+        this->_map->update(*this);
+        this->_map->objects.add(*this);
+        this->_listener->on_map_changed(*this, before, map);
+
+        for(auto x : map->nears(this->_position))
         {
-            callback(0);
-        }
-        else
-        {
-            thread->dispatch(callback, true);
+            if(x == this)
+                continue;
+
+            this->_listener->on_show(*this, *x, false);
+            this->_listener->on_show(*x, *this, false);
         }
 
-        return true;
+        auto result = true;
+        if(awaitable != nullptr)
+        {
+            awaitable->result = &result;
+            awaitable->handler.resume();
+        }
+        this->_map_lock = false;
+        co_return result;
     }
+    catch(std::exception& e)
+    {
 
-    return false;
+    }
+    catch(...)
+    {
+        
+    }
+}
+
+fb::awaitable<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
+{
+    return fb::awaitable<bool>([this, map, position](auto& awaitable)
+    {
+        this->__map(map, position, &awaitable);
+    });
+}
+
+fb::awaitable<bool> fb::game::object::co_map(fb::game::map* map)
+{
+    return this->co_map(map, point16_t(0, 0));
+}
+
+bool fb::game::object::map(fb::game::map* map, const point16_t& position)
+{
+    auto task = this->__map(map, position);
+    if (task.done())
+        return task.value();
+
+    return true;
 }
 
 bool fb::game::object::map(fb::game::map* map)

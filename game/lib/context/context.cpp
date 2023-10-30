@@ -1021,7 +1021,7 @@ fb::task<bool> fb::game::context::handle_move(fb::socket<fb::game::session>& soc
         }
         else
         {
-            session->map(warp->map, warp->after);
+            co_await session->co_map(warp->map, warp->after);
         }
     }
     else
@@ -1745,10 +1745,7 @@ fb::task<bool> fb::game::context::handle_world(fb::socket<fb::game::session>& so
     }
     else
     {
-        session->map(after.map, after.position);
-        // TODO: 맵이동 실패한 경우 before로 위치이동
-        // if(session->map(after.map, after.position) == false)
-        //     session->map(before.map, before.position)
+        co_await session->co_map(after.map, after.position);
         this->save(*session);
     }
     co_return true;

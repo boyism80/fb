@@ -60,7 +60,8 @@ private:
 
 protected:
     uint32_t                            _sequence   = 0;
-    const fb::game::object::model*     _model;
+    const fb::game::object::model*      _model;
+    bool                                _map_lock   = false;
 
     point16_t                           _position   = point16_t(0, 0);
     fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
@@ -77,6 +78,7 @@ public:
     virtual ~object();
 
 private:
+    fb::task<bool>                      __map(fb::game::map* map, const point16_t position, fb::awaitable<bool>* awaitable = nullptr);
     void                                leave();
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 
@@ -90,9 +92,9 @@ public:
     uint32_t                            sequence() const { return this->_sequence; }
     void                                sequence(uint32_t value) { this->_sequence = value; }
 
-    const model*                       based() const;
+    const model*                        based() const;
     template <typename T>
-    const typename T::model*           based() const { return static_cast<const typename T::model*>(this->_model); }
+    const typename T::model*            based() const { return static_cast<const typename T::model*>(this->_model); }
     bool                                is(object::types type) const;
 
     virtual const std::string&          name() const;
@@ -118,8 +120,10 @@ public:
     fb::game::direction                 direction() const;
     bool                                direction(fb::game::direction value);
 
+    virtual fb::awaitable<bool>         co_map(fb::game::map* map, const point16_t& position);
+    virtual fb::awaitable<bool>         co_map(fb::game::map* map);
     virtual bool                        map(fb::game::map* map, const point16_t& position);
-    bool                                map(fb::game::map* map);
+    virtual bool                        map(fb::game::map* map);
     fb::game::map*                      map() const;
 
     bool                                sector(fb::game::sector* sector);
