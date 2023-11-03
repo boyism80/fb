@@ -1489,9 +1489,10 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
         auto& result = results[0];
         auto sections = std::list<fb::game::board_section>();
-        result.each([&sections] (uint32_t id, std::string& title)
+        result.each([&sections] (uint32_t id, std::string title)
         {
             sections.push_back(fb::game::board_section {id, title});
+            return true;
         });
         
         this->send(*session, fb::protocol::game::response::board::sections(sections), scope::SELF);
@@ -1500,13 +1501,44 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
     case 0x02: // article list
     {
-        this->send(*session, fb::protocol::game::response::board::articles(request.section, request.offset), scope::SELF);
+        auto section = request.section;
+        auto offset = request.offset;
+        auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_GET_LIST(%d, %d)", section, offset);
+
+        auto section_title = results[0].get_value<std::string>(0);
+        auto articles = std::list<board_article_new>();
+        results[1].each([section, &articles] (uint32_t id, uint32_t uid, std::string uname, std::string title, daotk::mysql::datetime created_date)
+        {
+            articles.push_back(board_article_new {id, section, uid, uname, title, (uint8_t)created_date.month, (uint8_t)created_date.day});
+            return true;
+        });
+        this->send(*session, fb::protocol::game::response::board::articles(board_section { section, section_title}, articles), scope::SELF);
         break;
     }
 
     case 0x03: // article
     {
-        this->send(*session, fb::protocol::game::response::board::article(request.section, request.article, *session), scope::SELF);
+        auto section = request.section;
+        auto article = request.article;
+        auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_GET(%d, %d)", section, article);
+
+        if(results[0].count() == 0)
+        {
+            this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::ARTICLE_NOT_EXIST, true, false), scope::SELF);
+            co_return true;
+        }
+
+        auto created_date = results[0].get_value<daotk::mysql::datetime>(5);
+        this->send(*session, fb::protocol::game::response::board::article(board_article_new 
+        {
+            results[0].get_value<uint32_t>(0), 
+            section,
+            results[0].get_value<uint32_t>(1),
+            results[0].get_value<std::string>(2),
+            results[0].get_value<std::string>(3),
+            (uint8_t)created_date.month, (uint8_t)created_date.day,
+            results[0].get_value<std::string>(4)
+        }), scope::SELF);
         break;
     }
 

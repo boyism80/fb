@@ -20,6 +20,24 @@ public:
     ~board_section() = default;
 };
 
+class board_article_new
+{
+public:
+    const uint32_t                  id;
+    const uint32_t                  section;
+    const uint32_t                  uid;
+    const uint8_t                   month, day;
+    const std::string               uname;
+    const std::string               title;
+    const std::string               contents;
+
+public:
+    board_article_new(uint32_t id, uint32_t section, uint32_t uid, const std::string& uname, const std::string& title, uint8_t month, uint8_t day, const std::string& contents = "") : 
+        id(id), section(section), uid(uid), uname(uname), title(title), month(month), day(day), contents(contents)
+    { }
+    ~board_article_new() = default;
+};
+
 class board_article
 {
 public:

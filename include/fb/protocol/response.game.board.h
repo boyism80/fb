@@ -34,12 +34,10 @@ public:
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        auto i = 0;
         for(auto& section : this->section_list)
         {
-            out_stream.write_u16(i)
+            out_stream.write_u16(section.id)
                       .write(section.title);
-            i++;
         }
     }
 #else
@@ -61,49 +59,35 @@ public:
 class articles : public fb::protocol::base::header
 {
 public:
-    const uint16_t              section_id;
-    const uint16_t              offset;
+    const board_section&                    section;
+    const std::list<board_article_new>&     article_list;
 
 public:
-    articles(uint16_t section_id, uint16_t offset) : fb::protocol::base::header(0x31),
-        section_id(section_id), offset(offset)
+    articles(const board_section& section, const std::list<board_article_new>& article_list) : fb::protocol::base::header(0x31),
+        section(section), article_list(article_list)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto&             section = fb::game::model::board.sections()[section_id];
-
         base::header::serialize(out_stream);
         out_stream.write_u8(0x02)
                   .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
-                  .write_u16(section_id)
-                  .write(section->title());
+                  .write_u16(section.id)
+                  .write(section.title);
 
 
-        auto offset = this->offset;
-        if(offset == 0x7FFF)
-            offset = uint16_t(section->size() - 1);
-        auto                    reverse_offset = uint16_t(section->size() - (offset + 1));
-
-        auto                    count = std::min(size_t(20), section->size() - reverse_offset);
+        auto                    count = this->article_list.size();
         out_stream.write_u8((uint8_t)count);
 
-        for(auto i = section->rbegin() + reverse_offset; i != section->rend(); i++)
+        for(auto& article : this->article_list)
         {
-            const auto          article = i->get();
-            if(article->deleted())
-                continue;
-
             out_stream.write_u8(0x00)
-                .write_u16(article->id())
-                .write(article->writer())
-                .write_u8(article->month())
-                .write_u8(article->day())
-                .write(article->title());
-
-            if(--count == 0)
-                break;
+                .write_u16(article.id)
+                .write(article.uname)
+                .write_u8(article.month)
+                .write_u8(article.day)
+                .write(article.title);
         }
 
         out_stream.write_u8(0x00);
@@ -113,36 +97,34 @@ public:
 class article : public fb::protocol::base::header
 {
 public:
-    const uint16_t              section_id;
-    const uint16_t              article_id;
-    const fb::game::session&    me;
+    const board_article_new&            value;
 
 public:
-    article(uint16_t section_id, uint16_t article_id, const fb::game::session& me) : fb::protocol::base::header(0x31),
-        section_id(section_id), article_id(article_id), me(me)
+    article(const board_article_new& value) : fb::protocol::base::header(0x31),
+        value(value)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto                    section = fb::game::model::board.at(section_id);
-        if(section == nullptr)
-            throw fb::game::board::section::not_found_exception();
+        //auto                    section = fb::game::model::board.at(section_id);
+        //if(section == nullptr)
+        //    throw fb::game::board::section::not_found_exception();
 
-        auto                    article = section->find(article_id);
-        if(article == nullptr)
-            throw fb::game::board::article::not_found_exception();
+        //auto                    article = section->find(article_id);
+        //if(article == nullptr)
+        //    throw fb::game::board::article::not_found_exception();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x03)
                   .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
                   .write_u8(0x00)
-                  .write_u16(this->article_id)
-                  .write(article->writer())
-                  .write_u8(article->month())
-                  .write_u8(article->day())
-                  .write(article->title())
-                  .write(article->content(), true)
+                  .write_u16(this->value.id)
+                  .write(this->value.uname)
+                  .write_u8(this->value.month)
+                  .write_u8(this->value.day)
+                  .write(this->value.title)
+                  .write(this->value.contents, true)
                   .write_u8(0x00);
     }
 };
