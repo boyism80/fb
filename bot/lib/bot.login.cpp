@@ -37,8 +37,11 @@ bool login_bot::is_decrypt(int cmd) const
     }
 }
 
-fb::task<void> login_bot::co_login(std::string id, std::string pw)
+fb::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
+    auto id = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto pw = "admin123";
+    
     try
     {
         auto response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
@@ -65,14 +68,7 @@ fb::task<void> login_bot::co_login(std::string id, std::string pw)
     }
 }
 
-void login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
-{
-    auto id = boost::uuids::to_string(boost::uuids::random_generator()());
-    auto pw = "admin123";
-    this->co_login(id, pw);
-}
-
-void login_bot::handle_message(const fb::protocol::login::response::message& response)
+fb::task<void> login_bot::handle_message(const fb::protocol::login::response::message& response)
 { 
     if (this->_try_login)
     {
@@ -82,9 +78,10 @@ void login_bot::handle_message(const fb::protocol::login::response::message& res
             this->send(fb::protocol::login::request::login{ this->_id, this->_pw });
         }
     }
+    co_return;
 }
 
-void login_bot::handle_transfer(const fb::protocol::response::transfer& response)
+fb::task<void> login_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
     this->close();
     
@@ -92,4 +89,5 @@ void login_bot::handle_transfer(const fb::protocol::response::transfer& response
     auto ip = boost::asio::ip::address_v4(_byteswap_ulong(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
+    co_return;
 }

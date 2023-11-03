@@ -8,6 +8,37 @@
 
 namespace fb { namespace game {
 
+class board_section
+{
+public:
+    const uint32_t                  id;
+    const std::string               title;
+
+public:
+    board_section(uint32_t id, const std::string& title) : id(id), title(title)
+    {}
+    ~board_section() = default;
+};
+
+class board_article
+{
+public:
+    const uint32_t                  id;
+    const uint32_t                  section;
+    const std::string               title;
+    const std::string               content;
+    const std::string               writer;
+    const uint8_t                   month, day;
+    const uint8_t                   color;
+    const bool                      deleted;
+
+public:
+    board_article(uint32_t id, uint32_t section, const std::string& title, const std::string& content, const std::string& writer, uint8_t month, uint8_t day, uint8_t color, bool deleted) : 
+        id(id), section(section), title(title), content(content), writer(writer), month(month), day(day), color(color), deleted(deleted)
+    {}
+    ~board_article() = default;
+};
+
 class board
 {
 public:

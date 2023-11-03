@@ -169,6 +169,10 @@ public:
         };
         return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
     }
+    fb::db::result_type     co_exec_g(const std::string& sql)
+    {
+        return this->co_exec("", sql);
+    }
     fb::db::result_type     co_exec(const std::string& name, const std::vector<std::string>& queries)
     {
         auto sstream = std::stringstream();
@@ -182,6 +186,10 @@ public:
 
         return this->co_exec(name, sstream.str());
     }
+    fb::db::result_type     co_exec_g(const std::vector<std::string>& queries)
+    {
+        return this->co_exec("", queries);
+    }
     fb::db::result_type     co_exec_f(const std::string& name, const std::string& format, ...)
     {
         va_list args;
@@ -190,6 +198,15 @@ public:
         va_end(args);
 
         return this->co_exec(name, sql);
+    }
+    fb::db::result_type     co_exec_f_g(const std::string& format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        auto sql = fstring_c(format, &args);
+        va_end(args);
+
+        return this->co_exec("", sql);
     }
 };
 

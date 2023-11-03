@@ -1478,11 +1478,23 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     if (session->inited() == false)
         co_return true;
 
+    auto fd = session->fd();
     switch(request.action)
     {
     case 0x01: // section list
     {
-        this->send(*session, fb::protocol::game::response::board::sections(), scope::SELF);
+        auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_SECTION_GET()");
+        if (this->sockets.contains(fd) == false)
+            co_return false;
+
+        auto& result = results[0];
+        auto sections = std::list<fb::game::board_section>();
+        result.each([&sections] (uint32_t id, std::string& title)
+        {
+            sections.push_back(fb::game::board_section {id, title});
+        });
+        
+        this->send(*session, fb::protocol::game::response::board::sections(sections), scope::SELF);
         break;
     }
 

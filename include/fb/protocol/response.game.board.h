@@ -9,25 +9,52 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class sections : public fb::protocol::base::header
 {
 public:
-    sections() : fb::protocol::base::header(0x31)
-    { }
+#ifdef BOT
+    std::list<board_section>        section_list;
+#else
+    const std::list<board_section>& section_list;
+#endif
 
 public:
+#ifdef BOT
+    sections() : fb::protocol::base::header(0x31)
+    { }
+#else
+    sections(const std::list<board_section>& section_list) : fb::protocol::base::header(0x31), section_list(section_list)
+    { }
+#endif
+
+public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        const auto& sections = fb::game::model::board.sections();
-        auto size = (uint16_t)sections.size();
+        auto size = (uint16_t)this->section_list.size();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        for(int i = 0; i < size; i++)
+        auto i = 0;
+        for(auto& section : this->section_list)
         {
             out_stream.write_u16(i)
-                      .write(sections[i]->title());
+                      .write(section.title);
+            i++;
         }
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        in_stream.read_u8();
+        auto size = in_stream.read_u16();
+        for(auto i = 0; i < size; i++)
+        {
+            auto id = in_stream.read_u16();
+            auto title = in_stream.readstr_u8();
+            this->section_list.push_back(board_section {id, title});
+        }
+    }
+#endif
 };
 
 
