@@ -1544,9 +1544,8 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
     case 0x04:
     {
-        auto section = fb::game::model::board.sections()[request.section].get();
-        if(section->add(request.title, request.contents, session->name()) != nullptr)
-            this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
+        co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_ADD(%d, %d, '%s', '%s')", request.section, session->id(), request.title.c_str(), request.contents.c_str());
+        this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
         break;
     }
 
@@ -1554,18 +1553,9 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     {
         try
         {
-            auto section = fb::game::model::board.at(request.section);
-            if(section == nullptr)
-                throw board::section::not_found_exception();
-
-            auto article = section->find(request.article);
-            if(article == nullptr)
-                throw board::article::not_found_exception();
-
-            if(session->name() != article->writer())
-                throw board::auth_exception();
-
-            if(section->remove(article->id()) == false)
+            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_DELETE(%d, %d, %d)", request.section, request.article, session->id());
+            auto success = results[0].get_value<bool>(0);
+            if(success == false)
                 throw board::article::not_found_exception();
 
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::SUCCESS_DELETE, true, false), scope::SELF);
