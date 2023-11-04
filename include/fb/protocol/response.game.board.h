@@ -60,10 +60,10 @@ class articles : public fb::protocol::base::header
 {
 public:
     const board_section&                    section;
-    const std::list<board_article_new>&     article_list;
+    const std::list<board_article>&     article_list;
 
 public:
-    articles(const board_section& section, const std::list<board_article_new>& article_list) : fb::protocol::base::header(0x31),
+    articles(const board_section& section, const std::list<board_article>& article_list) : fb::protocol::base::header(0x31),
         section(section), article_list(article_list)
     { }
 
@@ -72,7 +72,7 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(0x02)
-                  .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
+                  .write_u8(fb::game::board_button_enabled::NEXT | fb::game::board_button_enabled::WRITE)
                   .write_u16(section.id)
                   .write(section.title);
 
@@ -97,10 +97,10 @@ public:
 class article : public fb::protocol::base::header
 {
 public:
-    const board_article_new&            value;
+    const board_article&            value;
 
 public:
-    article(const board_article_new& value) : fb::protocol::base::header(0x31),
+    article(const board_article& value) : fb::protocol::base::header(0x31),
         value(value)
     { }
 
@@ -117,7 +117,7 @@ public:
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x03)
-                  .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
+                  .write_u8(fb::game::board_button_enabled::NEXT | fb::game::board_button_enabled::WRITE)
                   .write_u8(0x00)
                   .write_u16(this->value.id)
                   .write(this->value.uname)

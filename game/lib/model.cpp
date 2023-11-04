@@ -38,7 +38,6 @@ void assert_script(const std::string& script, const std::string& regex, const st
 }
 
 std::vector<fb::game::clan*> fb::game::model::clans;
-fb::game::board              fb::game::model::board;
 fb::game::container::map     fb::game::model::maps;
 fb::game::container::worlds  fb::game::model::worlds;
 fb::game::container::item    fb::game::model::items;

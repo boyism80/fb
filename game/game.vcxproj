@@ -182,7 +182,6 @@
     <ClCompile Include="..\core\table.cpp" />
     <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="..\core\time.cpp" />
-    <ClCompile Include="lib\board.cpp" />
     <ClCompile Include="lib\clan.cpp" />
     <ClCompile Include="lib\context\command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />

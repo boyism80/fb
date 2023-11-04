@@ -12,9 +12,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lib\board.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="lib\clan.cpp">
       <Filter>source</Filter>
     </ClCompile>

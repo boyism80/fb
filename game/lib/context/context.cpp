@@ -1506,10 +1506,10 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_GET_LIST(%d, %d)", section, offset);
 
         auto section_title = results[0].get_value<std::string>(0);
-        auto articles = std::list<board_article_new>();
+        auto articles = std::list<board_article>();
         results[1].each([section, &articles] (uint32_t id, uint32_t uid, std::string uname, std::string title, daotk::mysql::datetime created_date)
         {
-            articles.push_back(board_article_new {id, section, uid, uname, title, (uint8_t)created_date.month, (uint8_t)created_date.day});
+            articles.push_back(board_article {id, section, uid, uname, title, (uint8_t)created_date.month, (uint8_t)created_date.day});
             return true;
         });
         this->send(*session, fb::protocol::game::response::board::articles(board_section { section, section_title}, articles), scope::SELF);
@@ -1529,7 +1529,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
 
         auto created_date = results[0].get_value<daotk::mysql::datetime>(5);
-        this->send(*session, fb::protocol::game::response::board::article(board_article_new 
+        this->send(*session, fb::protocol::game::response::board::article(board_article 
         {
             results[0].get_value<uint32_t>(0), 
             section,
@@ -1556,7 +1556,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_ARTICLE_DELETE(%d, %d, %d)", request.section, request.article, session->id());
             auto success = results[0].get_value<bool>(0);
             if(success == false)
-                throw board::article::not_found_exception();
+                throw std::runtime_error(fb::game::message::board::ARTICLE_NOT_EXIST);
 
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }

@@ -271,7 +271,6 @@ class model
 {
 public:
     static std::vector<clan*>               clans;
-    static fb::game::board                  board;
     static fb::game::container::map         maps;
     static fb::game::container::worlds      worlds;
     static fb::game::container::item        items;
