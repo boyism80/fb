@@ -45,7 +45,7 @@ CREATE TABLE `board` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_idx` (`user`),
   CONSTRAINT `user` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -171,7 +171,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_clan_idx` (`clan`),
   CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20736 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=20738 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,7 +228,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET`(section INT, article INT)
 BEGIN
@@ -236,7 +236,7 @@ BEGIN
 	LEFT JOIN user AS U ON A.user = U.id
 	WHERE A.id = article AND A.section = section AND deleted = 0;
     
-    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.id < article AND board.deleted = 0 LIMIT 1) as continuous;
+    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.id > article AND board.deleted = 0 LIMIT 1) as `next`;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -251,7 +251,7 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET_LIST`(section INT, position INT)
 BEGIN
@@ -263,8 +263,6 @@ BEGIN
     WHERE A.section = section AND A.deleted = 0 AND position >= A.id
     ORDER BY A.id DESC
 	LIMIT 0, 20;
-    
-    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.deleted = 0 AND board.id < position + 20 LIMIT 1) as continuous;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -392,4 +390,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-06 16:36:21
+-- Dump completed on 2023-11-06 21:08:19

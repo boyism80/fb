@@ -1507,10 +1507,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
                 return true;
             });
 
-            auto continuous = results[2].get_value<bool>();
-            auto button_flags = fb::game::board::button_enabled::NONE;
-            if (continuous)
-                button_flags |= fb::game::board::button_enabled::NEXT;
+            auto button_flags = fb::game::board::button_enabled::UP;
             if (section->writable(session->level(), session->admin()))
                 button_flags |= fb::game::board::button_enabled::WRITE;
             this->send(*session, fb::protocol::game::response::board::articles(*section, articles, button_flags), scope::SELF);
@@ -1536,17 +1533,18 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
             if (results[0].count() == 0)
             {
-                this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::ARTICLE_NOT_EXIST, true, false), scope::SELF);
+                this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
                 co_return true;
             }
 
             auto created_date = results[0].get_value<daotk::mysql::datetime>(5);
-            auto continuous = results[1].get_value<bool>();
             auto button_flags = fb::game::board::button_enabled::NONE;
-            if(continuous)
-                button_flags |= fb::game::board::button_enabled::NEXT;
-            if (section->writable(session->level(), session->admin()))
-                button_flags |= fb::game::board::button_enabled::WRITE;
+             auto next = results[1].get_value<bool>(0);
+             if(next)
+                 button_flags |= fb::game::board::button_enabled::NEXT;
+
+             if (section->writable(session->level(), session->admin()))
+                 button_flags |= fb::game::board::button_enabled::WRITE;
             
             this->send(*session, fb::protocol::game::response::board::article(fb::game::board::article
             {

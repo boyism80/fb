@@ -120,12 +120,12 @@ class message : public fb::protocol::base::header
 {
 public:
     const std::string       text;
-    const bool              success;
+    const bool              deleted;
     const bool              refresh;
 
 public:
-    message(const std::string& text, bool success, bool refresh = false) : fb::protocol::base::header(0x31),
-        text(text), success(success), refresh(refresh)
+    message(const std::string& text, bool deleted, bool refresh = false) : fb::protocol::base::header(0x31),
+        text(text), deleted(deleted), refresh(refresh)
     { }
 
 public:
@@ -133,7 +133,7 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(this->refresh ? 0x06 : 0x07)     // mail 관련 0x06인 것 같다. 확인 필요
-                  .write_u8(this->success)
+                  .write_u8(this->deleted)
                   .write(this->text)
                   .write_u8(0x00);
     }

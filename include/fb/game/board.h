@@ -16,7 +16,8 @@ enum class button_enabled : uint8_t
 {
     NONE      = 0x00,
     NEXT      = 0x01,
-    WRITE     = 0x02
+    UP        = 0x01,
+    WRITE     = 0x02,
 };
 
 enum class action : uint8_t

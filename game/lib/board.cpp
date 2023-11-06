@@ -2,7 +2,10 @@
 
 bool fb::game::board::section::writable(uint8_t level, bool admin) const
 {
-    if(this->admin && admin == false)
+    if(admin)
+        return true;
+
+    if(this->admin)
         return false;
 
     if(this->min_level != std::nullopt && level < this->min_level.value())
