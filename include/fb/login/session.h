@@ -8,7 +8,8 @@ namespace fb { namespace login {
 class session
 {
 public:
-    std::string             created_id;
+    uint32_t                pk = -1;
+    std::string             name;
 
 public:
     session();

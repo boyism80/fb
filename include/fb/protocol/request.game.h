@@ -25,6 +25,7 @@ public:
     uint8_t                         key_size;
     uint8_t                         enc_key[0x09];
     internal::services              from;
+    uint32_t                        id;
     std::string                     name;
     std::optional<transfer_param>   transfer;
 
@@ -49,6 +50,7 @@ public:
                   .write_u8(this->key_size)
                   .write((void*)this->enc_key, this->key_size)
                   .write_u8(this->from)
+                  .write_u32(this->id)
                   .writestr_u8(this->name)
                   .write_u8(this->transfer.has_value());
 
@@ -69,6 +71,7 @@ public:
         this->from = (fb::protocol::internal::services)in_stream.read_u8();
 
         // additional parameters
+        this->id = in_stream.read_u32();
         this->name = in_stream.readstr_u8();
 
         auto transfer = in_stream.read_8();

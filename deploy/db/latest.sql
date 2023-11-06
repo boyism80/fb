@@ -104,6 +104,23 @@ CREATE TABLE `legend` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `name`
+--
+
+DROP TABLE IF EXISTS `name`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `name` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(256) COLLATE utf8_bin NOT NULL,
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `spell`
 --
 
@@ -255,12 +272,44 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET_LIST`(section INT, position INT
 BEGIN
 	SELECT title FROM board WHERE id = section;
 
-	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.created_date FROM board AS A
-	LEFT JOIN user AS U
-	ON A.user = U.id
+	SELECT A.id, N.id AS uid, N.name AS uname, A.title, A.created_date FROM board AS A
+	LEFT JOIN name AS N
+	ON A.user = N.id
     WHERE A.section = section AND A.deleted = 0 AND position >= A.id
     ORDER BY A.id DESC
 	LIMIT 0, 20;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_CHANGE_PW` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CHANGE_PW`(id INT, pw NVARCHAR(256), new_pw NVARCHAR(256), birthday INT)
+BEGIN
+	DECLARE _pw NVARCHAR(256);
+    DECLARE _birthday INT;
+    
+    SELECT pw, birthday INTO _pw, _birthday FROM user WHERE user.id = id;
+    IF _pw IS NULL THEN
+		SELECT -1 AS result;
+    ELSEIF strcmp(pw, _pw) != 0 THEN
+		SELECT -2 AS result;
+    ELSEIF birthday != _birthday THEN
+		SELECT -3 AS result;
+	ELSE
+		UPDATE user SET pw = new_pw WHERE user.id = id;
+		SELECT 1 AS result;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -378,6 +427,53 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_GET_ID` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_GET_ID`(n NVARCHAR(256))
+BEGIN
+	SELECT id FROM name WHERE name.name = n;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_SET` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_SET`(name NVARCHAR(256))
+BEGIN
+	DECLARE exist TINYINT;
+    SELECT EXISTS(SELECT * FROM name WHERE name.name = name) INTO exist;
+    
+    IF exist = 0 THEN
+		SELECT 1 as result;
+		INSERT INTO name (name) VALUES (name);
+        SELECT last_insert_id() as id;
+	ELSE
+		SELECT 0 AS result;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -388,4 +484,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-06 22:45:07
+-- Dump completed on 2023-11-07  1:04:30

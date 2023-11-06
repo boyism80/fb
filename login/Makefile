@@ -5,9 +5,9 @@ TARGET          = $(BUILD)/login
 LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -lncursesw -lboost_program_options -fcoroutines
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
-all: $(BUILD)/config.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o
+all: $(BUILD)/config.o $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o
 	mkdir -p $(BUILD)
-	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/auth.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
+	$(CXX) $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/context.o $(BUILD)/gateway.o $(BUILD)/session.o $(BUILD)/main.o $(INC) $(LIB_DIRS) $(LIBS) -o $(TARGET)
 
 $(BUILD)/config.o: ../core/config.cpp
 	mkdir -p $(BUILD)
@@ -42,9 +42,6 @@ $(BUILD)/thread.o: ../core/thread.cpp
 $(BUILD)/time.o: ../core/time.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ../core/time.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/time.o
-$(BUILD)/auth.o: ./lib/auth.cpp
-	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./lib/auth.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/auth.o
 $(BUILD)/context.o: ./lib/context.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/context.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/context.o

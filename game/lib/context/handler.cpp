@@ -464,6 +464,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         
         co_await this->co_save(*session);
         fb::ostream         parameter;
+        parameter.write_u32(me.id());
         parameter.write(response.name);
         parameter.write_u8(1);
         parameter.write_u16(response.map);

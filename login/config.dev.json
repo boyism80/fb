@@ -13,7 +13,13 @@
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
     "admin_mode": true,
     "database": {
-        "global": null,
+        "global": {
+            "ip": "192.168.0.100",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        },
         "shard": [
             {
                 "ip": "192.168.0.100",

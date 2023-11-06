@@ -780,7 +780,7 @@ fb::task<void> fb::game::context::save(fb::game::session& session, std::function
         if (socket == nullptr)
             co_return;
 
-        co_await this->_db.co_exec(session.name(), sql);
+        co_await this->_db.co_exec(session.id(), sql);
         if(this->sockets.contains(fd))
             fn(session);
     }
@@ -924,6 +924,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
 
     try
     {
+        auto id = request.id;
         auto name = request.name;
         auto from = request.from;
         auto transfer = request.transfer;
@@ -935,7 +936,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
             co_return false;
 
         auto sql = "CALL USP_CHARACTER_GET('%s');";
-        auto results = co_await this->_db.co_exec_f(name, sql, name.c_str());
+        auto results = co_await this->_db.co_exec_f(id, sql, name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
