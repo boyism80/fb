@@ -56,9 +56,6 @@
     <ClCompile Include="..\core\time.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="lib\auth.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="lib\context.cpp">
       <Filter>source</Filter>
     </ClCompile>

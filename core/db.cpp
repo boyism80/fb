@@ -168,36 +168,21 @@ base_context::~base_context()
     this->exit();
 }
 
-uint64_t base_context::hash(const std::string& name) const
+int base_context::index(uint32_t id) const
 {
-    if(name.empty())
-        return 0;
-
-    auto hash   = uint64_t(0);
-    auto length = name.length();
-    for(int i = 0; i < length; i++)
-    {
-        hash = 31 * hash + name[i];
-    }
-
-    return hash;
-}
-
-int base_context::index(const std::string& name) const
-{
-    if(name.empty())
+    if(id == -1)
         return -1;
 
     auto size = this->_workers.size();
     if(size == 1)
         return 0;
 
-    return (int)(this->hash(name) % size - 1) + 1;
+    return (int)(id % size - 1) + 1;
 }
 
-void base_context::enqueue(const std::string& name, const task& t)
+void base_context::enqueue(uint32_t id, const task& t)
 {
-    auto index = this->index(name);
+    auto index = this->index(id);
     if(index == -1)
     {
         if(this->_global_worker == nullptr)
@@ -234,16 +219,16 @@ void base_context::exit()
     }
 }
 
-void fb::db::base_context::exec(const std::string& name, const std::string& sql)
+void fb::db::base_context::exec(uint32_t id, const std::string& sql)
 {
-    this->enqueue(name, task {sql, [] (auto& results) {}, [] (auto& e) {}});
+    this->enqueue(id, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
-result_type fb::db::base_context::co_exec(const std::string& name, const std::string& sql)
+result_type fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
 {
-    auto await_callback = [this, name, sql](auto& awaitable)
+    auto await_callback = [this, id, sql](auto& awaitable)
     {
-        this->enqueue(name, task {sql, [&awaitable] (auto& results) 
+        this->enqueue(id, task {sql, [&awaitable] (auto& results) 
         {
             awaitable.result = &results;
             awaitable.handler.resume();
@@ -257,7 +242,7 @@ result_type fb::db::base_context::co_exec(const std::string& name, const std::st
     return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
 }
 
-void fb::db::base_context::exec(const std::string& name, const std::vector<std::string>& queries)
+void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -268,10 +253,10 @@ void fb::db::base_context::exec(const std::string& name, const std::vector<std::
         sstream << query << ";";
     }
 
-    this->exec(name, sstream.str());
+    this->exec(id, sstream.str());
 }
 
-result_type fb::db::base_context::co_exec(const std::string& name, const std::vector<std::string>& queries)
+result_type fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -282,25 +267,25 @@ result_type fb::db::base_context::co_exec(const std::string& name, const std::ve
         sstream << query << ";";
     }
 
-    return this->co_exec(name, sstream.str());
+    return this->co_exec(id, sstream.str());
 }
 
-void fb::db::base_context::exec_f(const std::string& name, const std::string& format, ...)
+void fb::db::base_context::exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
     auto sql = fstring_c(format, &args);
     va_end(args);
 
-    this->exec(name, sql);
+    this->exec(id, sql);
 }
 
-result_type fb::db::base_context::co_exec_f(const std::string& name, const std::string& format, ...)
+result_type fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
     auto sql = fstring_c(format, &args);
     va_end(args);
     
-    return this->co_exec(name, sql);
+    return this->co_exec(id, sql);
 }
