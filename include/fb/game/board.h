@@ -6,23 +6,29 @@
 #include <ctime>
 #include <fb/game/session.h>
 
-namespace fb { namespace game {
+namespace fb { namespace game { namespace board {
 
-enum class board_button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
+enum class button_enabled : uint8_t { NONE = 0x00, NEXT = 0x01, WRITE = 0x02 };
 
-class board_section
+class section
 {
 public:
     const uint32_t                  id;
     const std::string               title;
+    const std::optional<uint8_t>    min_level, max_level;
+    const bool                      admin;
 
 public:
-    board_section(uint32_t id, const std::string& title) : id(id), title(title)
+    section(uint32_t id, const std::string& title, const std::optional<uint8_t>& min_level = std::nullopt, const std::optional<uint8_t>& max_level = std::nullopt, bool admin = false) : 
+        id(id), title(title), min_level(min_level), max_level(max_level), admin(admin)
     {}
-    ~board_section() = default;
+    ~section() = default;
+
+public:
+    bool                            writable(uint8_t level, bool admin) const;
 };
 
-class board_article
+class article
 {
 public:
     const uint32_t                  id;
@@ -34,12 +40,12 @@ public:
     const std::string               contents;
 
 public:
-    board_article(uint32_t id, uint32_t section, uint32_t uid, const std::string& uname, const std::string& title, uint8_t month, uint8_t day, const std::string& contents = "") : 
+    article(uint32_t id, uint32_t section, uint32_t uid, const std::string& uname, const std::string& title, uint8_t month, uint8_t day, const std::string& contents = "") : 
         id(id), section(section), uid(uid), uname(uname), title(title), month(month), day(day), contents(contents)
     { }
-    ~board_article() = default;
+    ~article() = default;
 };
 
-} }
+} } }
 
 #endif // !__BOARD_H__

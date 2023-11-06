@@ -47,6 +47,7 @@ fb::game::container::spell   fb::game::model::spells;
 fb::game::container::cls     fb::game::model::classes;
 fb::game::container::mix     fb::game::model::mixes;
 fb::game::container::door    fb::game::model::doors;
+fb::game::container::board   fb::game::model::boards;
 
 fb::game::model::model()
 { }
@@ -1299,4 +1300,41 @@ fb::game::wm::world* fb::game::container::worlds::operator[](int index)
 {
     // TODO: range assert
     return std::vector<std::unique_ptr<fb::game::wm::world>>::operator[](index).get();
+}
+
+bool fb::game::container::board::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+{
+    auto                        count   = fb::table::load
+    (
+        path, 
+        [&] (Json::Value& key, Json::Value& data, double percentage)
+        {
+            auto                id      = key.asUInt();
+            auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
+            auto&               level   = data["level"];
+            auto                admin   = data["admin"].asBool();
+
+            auto                min_level = level.isNull() ? std::optional<uint32_t>() : (level["min"].isNull() ? std::optional<uint32_t>() : level["min"].asUInt());
+            auto                max_level = level.isNull() ? std::optional<uint32_t>() : (level["max"].isNull() ? std::optional<uint32_t>() : level["max"].asUInt());
+            std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::insert({id, std::make_unique<fb::game::board::section>(id, name, min_level, max_level, admin) });
+            callback(std::to_string(id), percentage);
+        },
+        [&] (Json::Value& key, Json::Value& data, const std::string& e)
+        {
+            auto                id      = key.asInt();
+            error(std::to_string(id), e);
+        },
+        false
+    );
+
+    complete(count);
+    return true;
+}
+
+fb::game::board::section* fb::game::container::board::operator [] (uint32_t index)
+{
+    if(std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains(index) == false)
+        return nullptr;
+
+    return std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::operator[](index).get();
 }

@@ -26,45 +26,26 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fb` /*!40100 DEFAULT CHARACTER SET euc
 USE `fb`;
 
 --
--- Table structure for table `board_article`
+-- Table structure for table `board`
 --
 
-DROP TABLE IF EXISTS `board_article`;
+DROP TABLE IF EXISTS `board`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
-CREATE TABLE `board_article` (
+CREATE TABLE `board` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `section` int(10) unsigned NOT NULL,
   `user` int(10) unsigned NOT NULL,
-  `title` varchar(64) COLLATE utf8_bin NOT NULL,
-  `contents` varchar(256) COLLATE utf8_bin NOT NULL,
+  `title` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `contents` varchar(256) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_idx` (`user`),
-  KEY `section_idx` (`section`),
-  CONSTRAINT `section` FOREIGN KEY (`section`) REFERENCES `board_section` (`id`),
   CONSTRAINT `user` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `board_section`
---
-
-DROP TABLE IF EXISTS `board_section`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
- SET character_set_client = utf8mb4 ;
-CREATE TABLE `board_section` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `title` varchar(64) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `created_date` datetime NOT NULL,
-  `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -196,19 +177,19 @@ CREATE TABLE `user` (
 --
 -- Dumping routines for database 'fb'
 --
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_ARTICLE_ADD` */;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_ADD` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_ARTICLE_ADD`(section INT, uid INT, title NVARCHAR(64), contents NVARCHAR(256))
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_ADD`(section INT, uid INT, title NVARCHAR(64), contents NVARCHAR(256))
 BEGIN
-	INSERT INTO board_article (`section`, `user`, `title`, `contents`, `created_date`, `updated_date`)
+	INSERT INTO board (`section`, `user`, `title`, `contents`, `created_date`, `updated_date`)
     VALUES (section, uid, title, contents, NOW(), NOW());
 END ;;
 DELIMITER ;
@@ -216,21 +197,21 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_ARTICLE_DELETE` */;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_DELETE` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_ARTICLE_DELETE`(section INT, id INT, uid INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(section INT, id INT, uid INT)
 BEGIN
-	UPDATE board_article
+	UPDATE board
     SET `deleted` = 1
-    WHERE board_article.id = id AND board_article.section = section AND board_article.user = uid;
+    WHERE board.id = id AND board.section = section AND board.user = uid;
     
     SELECT ROW_COUNT() AS success;
 END ;;
@@ -239,85 +220,51 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_ARTICLE_GET` */;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_GET` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_ARTICLE_GET`(section INT, article INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET`(section INT, article INT)
 BEGIN
-	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.contents, A.created_date FROM board_article AS A
+	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.contents, A.created_date FROM board AS A
 	LEFT JOIN user AS U ON A.user = U.id
 	WHERE A.id = article AND A.section = section AND deleted = 0;
+    
+    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.id < article AND board.deleted = 0 LIMIT 1) as continuous;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_ARTICLE_GET_LIST` */;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_GET_LIST` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_ARTICLE_GET_LIST`(section INT, position INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET_LIST`(section INT, position INT)
 BEGIN
-	SELECT title FROM board_section WHERE id = section;
+	SELECT title FROM board WHERE id = section;
 
-	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.created_date FROM board_article AS A
+	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.created_date FROM board AS A
 	LEFT JOIN user AS U
 	ON A.user = U.id
     WHERE A.section = section AND A.deleted = 0 AND position >= A.id
     ORDER BY A.id DESC
 	LIMIT 0, 20;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_SECTION_ADD` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_SECTION_ADD`(title nvarchar(64))
-BEGIN
-	INSERT INTO board_section (title, created_date, updated_date) VALUES (title, NOW(), NOW());
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_BOARD_SECTION_GET` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_SECTION_GET`()
-BEGIN
-	SELECT * FROM fb.board_section;
+    
+    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.deleted = 0 AND board.id < position + 20 LIMIT 1) as continuous;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -445,4 +392,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-05  1:18:04
+-- Dump completed on 2023-11-06 11:35:55

@@ -10,9 +10,7 @@ class sections : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    std::list<board_section>        section_list;
-#else
-    const std::list<board_section>& section_list;
+    std::list<fb::game::board::section>         section_list;
 #endif
 
 public:
@@ -20,7 +18,7 @@ public:
     sections() : fb::protocol::base::header(0x31)
     { }
 #else
-    sections(const std::list<board_section>& section_list) : fb::protocol::base::header(0x31), section_list(section_list)
+    sections() : fb::protocol::base::header(0x31)
     { }
 #endif
 
@@ -28,16 +26,16 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        auto size = (uint16_t)this->section_list.size();
+        auto size = fb::game::model::boards.size();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        for(auto& section : this->section_list)
+        for(const auto& [k, v] : fb::game::model::boards)
         {
-            out_stream.write_u16(section.id)
-                      .write(section.title);
+            out_stream.write_u16(k)
+                      .write(v->title);
         }
     }
 #else
@@ -49,7 +47,7 @@ public:
         {
             auto id = in_stream.read_u16();
             auto title = in_stream.readstr_u8();
-            this->section_list.push_back(board_section {id, title});
+            this->section_list.push_back(fb::game::board::section{id, title});
         }
     }
 #endif
@@ -59,12 +57,13 @@ public:
 class articles : public fb::protocol::base::header
 {
 public:
-    const board_section&                    section;
-    const std::list<board_article>&     article_list;
+    const fb::game::board::section&                 section;
+    const std::list<fb::game::board::article>&      article_list;
+    const fb::game::board::button_enabled           button_flags;
 
 public:
-    articles(const board_section& section, const std::list<board_article>& article_list) : fb::protocol::base::header(0x31),
-        section(section), article_list(article_list)
+    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+        section(section), article_list(article_list), button_flags(button_flags)
     { }
 
 public:
@@ -72,10 +71,9 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(0x02)
-                  .write_u8(fb::game::board_button_enabled::NEXT | fb::game::board_button_enabled::WRITE)
+                  .write_u8(button_flags)
                   .write_u16(section.id)
                   .write(section.title);
-
 
         auto                    count = this->article_list.size();
         out_stream.write_u8((uint8_t)count);
@@ -97,27 +95,20 @@ public:
 class article : public fb::protocol::base::header
 {
 public:
-    const board_article&            value;
+    const fb::game::board::article&            value;
+    const fb::game::board::button_enabled      button_flags;
 
 public:
-    article(const board_article& value) : fb::protocol::base::header(0x31),
-        value(value)
+    article(const fb::game::board::article& value, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+        value(value), button_flags(button_flags)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        //auto                    section = fb::game::model::board.at(section_id);
-        //if(section == nullptr)
-        //    throw fb::game::board::section::not_found_exception();
-
-        //auto                    article = section->find(article_id);
-        //if(article == nullptr)
-        //    throw fb::game::board::article::not_found_exception();
-
         base::header::serialize(out_stream);
         out_stream.write_u8(0x03)
-                  .write_u8(fb::game::board_button_enabled::NEXT | fb::game::board_button_enabled::WRITE)
+                  .write_u8(button_flags)
                   .write_u8(0x00)
                   .write_u16(this->value.id)
                   .write(this->value.uname)

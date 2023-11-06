@@ -166,6 +166,9 @@
     <ClCompile Include="..\core\logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="lib\board.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
