@@ -45,7 +45,7 @@ CREATE TABLE `board` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_idx` (`user`),
   CONSTRAINT `user` FOREIGN KEY (`user`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -171,7 +171,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_clan_idx` (`clan`),
   CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20728 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=20736 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -211,7 +211,7 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(section INT, id INT, uid IN
 BEGIN
 	UPDATE board
     SET `deleted` = 1
-    WHERE board.id = id AND board.section = section AND board.user = uid;
+    WHERE board.id = id AND board.section = section AND board.user = uid AND board.deleted = 0;
     
     SELECT ROW_COUNT() AS success;
 END ;;
@@ -392,4 +392,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-06 11:35:55
+-- Dump completed on 2023-11-06 16:36:21
