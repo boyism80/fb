@@ -226,11 +226,11 @@ fb::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login:
     try
     {
         auto session = socket.data();
-        if(session->pk == -1 || session->name.empty())
+        if(session->pk == -1)
             throw std::exception();
 
         auto fd = socket.fd();
-        co_await this->_db.co_exec_f(session->pk, "CALL USP_CHARACTER_CREATE_FINISH(%d, '%s', %d, %d, %d, %d)", session->pk, session->name.c_str(), request.hair, request.sex, request.nation, request.creature);
+        co_await this->_db.co_exec_f(session->pk, "CALL USP_CHARACTER_CREATE_FINISH(%d, %d, %d, %d, %d)", session->pk, request.hair, request.sex, request.nation, request.creature);
         if (this->sockets.contains(fd) == false)
             co_return false;
 
