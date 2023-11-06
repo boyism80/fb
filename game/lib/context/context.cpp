@@ -1576,6 +1576,12 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (section->writable(session->level(), session->admin()))
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
+            if (request.title.length() > 64)
+                throw std::runtime_error(fb::game::message::board::TOO_LONG_TITLE);
+
+            if(request.contents.length() > 256)
+                throw std::runtime_error(fb::game::message::board::TOO_LONG_CONTENTS);
+
             co_await this->_db.co_exec_f_g("CALL USP_BOARD_ADD(%d, %d, '%s', '%s')", section->id, session->id(), request.title.c_str(), request.contents.c_str());
             if (this->sockets.contains(fd) == false)
                 co_return false;
