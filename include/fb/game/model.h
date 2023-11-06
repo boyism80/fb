@@ -238,9 +238,8 @@ public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
-    fb::game::door::model*                 operator [] (int index);
+    fb::game::door::model*                  operator [] (int index);
 };
-
 
 class worlds : private std::vector<std::unique_ptr<fb::game::wm::world>>
 {
@@ -263,6 +262,26 @@ public:
     fb::game::wm::world*                    operator [] (int index);
 };
 
+class board : private std::map<uint32_t, std::unique_ptr<fb::game::board::section>>
+{
+
+public:
+    board() = default;
+    ~board() = default;
+
+public:
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::begin;
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::end;
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::cbegin;
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::cend;
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::size;
+    using std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains;
+
+public:
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    fb::game::board::section*               operator [] (uint32_t index);
+};
+
 }
 
 class session;
@@ -271,7 +290,6 @@ class model
 {
 public:
     static std::vector<clan*>               clans;
-    static fb::game::board                  board;
     static fb::game::container::map         maps;
     static fb::game::container::worlds      worlds;
     static fb::game::container::item        items;
@@ -281,6 +299,7 @@ public:
     static fb::game::container::cls         classes;
     static fb::game::container::mix         mixes;
     static fb::game::container::door        doors;
+    static fb::game::container::board       boards;
 
 private:
     model();

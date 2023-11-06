@@ -9,74 +9,78 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class sections : public fb::protocol::base::header
 {
 public:
+#ifdef BOT
+    std::vector<fb::game::board::section>       section_list;
+#endif
+
+public:
     sections() : fb::protocol::base::header(0x31)
     { }
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        const auto& sections = fb::game::model::board.sections();
-        auto size = (uint16_t)sections.size();
+        auto size = fb::game::model::boards.size();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        for(int i = 0; i < size; i++)
+        for(const auto& [k, v] : fb::game::model::boards)
         {
-            out_stream.write_u16(i)
-                      .write(sections[i]->title());
+            out_stream.write_u16(k)
+                      .write(v->title);
         }
     }
+#else
+    void deserialize(fb::istream& in_stream)
+    {
+        in_stream.read_u8();
+        auto size = in_stream.read_u16();
+        for(auto i = 0; i < size; i++)
+        {
+            auto id = in_stream.read_u16();
+            auto title = in_stream.readstr_u8();
+            this->section_list.push_back(fb::game::board::section{id, title});
+        }
+    }
+#endif
 };
 
 
 class articles : public fb::protocol::base::header
 {
 public:
-    const uint16_t              section_id;
-    const uint16_t              offset;
+    const fb::game::board::section&                 section;
+    const std::list<fb::game::board::article>&      article_list;
+    const fb::game::board::button_enabled           button_flags;
 
 public:
-    articles(uint16_t section_id, uint16_t offset) : fb::protocol::base::header(0x31),
-        section_id(section_id), offset(offset)
+    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+        section(section), article_list(article_list), button_flags(button_flags)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto&             section = fb::game::model::board.sections()[section_id];
-
         base::header::serialize(out_stream);
         out_stream.write_u8(0x02)
-                  .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
-                  .write_u16(section_id)
-                  .write(section->title());
+                  .write_u8(button_flags)
+                  .write_u16(section.id)
+                  .write(section.title);
 
-
-        auto offset = this->offset;
-        if(offset == 0x7FFF)
-            offset = uint16_t(section->size() - 1);
-        auto                    reverse_offset = uint16_t(section->size() - (offset + 1));
-
-        auto                    count = std::min(size_t(20), section->size() - reverse_offset);
+        auto                    count = this->article_list.size();
         out_stream.write_u8((uint8_t)count);
 
-        for(auto i = section->rbegin() + reverse_offset; i != section->rend(); i++)
+        for(auto& article : this->article_list)
         {
-            const auto          article = i->get();
-            if(article->deleted())
-                continue;
-
             out_stream.write_u8(0x00)
-                .write_u16(article->id())
-                .write(article->writer())
-                .write_u8(article->month())
-                .write_u8(article->day())
-                .write(article->title());
-
-            if(--count == 0)
-                break;
+                .write_u16(article.id)
+                .write(article.uname)
+                .write_u8(article.month)
+                .write_u8(article.day)
+                .write(article.title);
         }
 
         out_stream.write_u8(0x00);
@@ -86,36 +90,27 @@ public:
 class article : public fb::protocol::base::header
 {
 public:
-    const uint16_t              section_id;
-    const uint16_t              article_id;
-    const fb::game::session&    me;
+    const fb::game::board::article&            value;
+    const fb::game::board::button_enabled      button_flags;
 
 public:
-    article(uint16_t section_id, uint16_t article_id, const fb::game::session& me) : fb::protocol::base::header(0x31),
-        section_id(section_id), article_id(article_id), me(me)
+    article(const fb::game::board::article& value, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+        value(value), button_flags(button_flags)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        auto                    section = fb::game::model::board.at(section_id);
-        if(section == nullptr)
-            throw fb::game::board::section::not_found_exception();
-
-        auto                    article = section->find(article_id);
-        if(article == nullptr)
-            throw fb::game::board::article::not_found_exception();
-
         base::header::serialize(out_stream);
         out_stream.write_u8(0x03)
-                  .write_u8(fb::game::board::button_enabled::NEXT | fb::game::board::button_enabled::WRITE)
+                  .write_u8(button_flags)
                   .write_u8(0x00)
-                  .write_u16(this->article_id)
-                  .write(article->writer())
-                  .write_u8(article->month())
-                  .write_u8(article->day())
-                  .write(article->title())
-                  .write(article->content(), true)
+                  .write_u16(this->value.id)
+                  .write(this->value.uname)
+                  .write_u8(this->value.month)
+                  .write_u8(this->value.day)
+                  .write(this->value.title)
+                  .write(this->value.contents, true)
                   .write_u8(0x00);
     }
 };
@@ -125,12 +120,12 @@ class message : public fb::protocol::base::header
 {
 public:
     const std::string       text;
-    const bool              success;
+    const bool              deleted;
     const bool              refresh;
 
 public:
-    message(const std::string& text, bool success, bool refresh = false) : fb::protocol::base::header(0x31),
-        text(text), success(success), refresh(refresh)
+    message(const std::string& text, bool deleted, bool refresh = false) : fb::protocol::base::header(0x31),
+        text(text), deleted(deleted), refresh(refresh)
     { }
 
 public:
@@ -138,7 +133,7 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(this->refresh ? 0x06 : 0x07)     // mail 관련 0x06인 것 같다. 확인 필요
-                  .write_u8(this->success)
+                  .write_u8(this->deleted)
                   .write(this->text)
                   .write_u8(0x00);
     }

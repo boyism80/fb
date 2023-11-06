@@ -6,102 +6,66 @@
 #include <ctime>
 #include <fb/game/session.h>
 
-namespace fb { namespace game {
+#ifdef DELETE
+#undef DELETE
+#endif
 
-class board
+namespace fb { namespace game { namespace board {
+
+enum class button_enabled : uint8_t
 {
-public:
-    enum class button_enabled : uint8_t { NEXT = 0x01, WRITE = 0x02 };
-
-public:
-    class article;
-    class section;
-
-public:
-    DECLARE_EXCEPTION(auth_exception, fb::game::message::board::NOT_AUTH)
-
-    using unique_sections = std::vector<std::unique_ptr<section>>;
-
-private:
-    unique_sections                 _sections;
-
-public:
-    board();
-    ~board();
-
-public:
-    const unique_sections&          sections() const;
-    section*                        at(uint32_t index) const;
-
-    section*                        add(const std::string& name);
-    void                            remove(uint32_t index);
-    void                            clear();
-
-public:
-    section*                        operator [] (uint32_t index);
+    NONE      = 0x00,
+    NEXT      = 0x01,
+    UP        = 0x01,
+    WRITE     = 0x02,
 };
 
-class board::article
+enum class action : uint8_t
 {
-public:
-    DECLARE_EXCEPTION(not_found_exception, fb::game::message::board::ARTICLE_NOT_EXIST)
-
-private:
-    uint16_t                        _id;
-    std::string                     _title;
-    std::string                     _content;
-    std::string                     _writer;
-    uint8_t                         _month, _day;
-    uint8_t                         _color;
-    bool                            _deleted;
-
-public:
-    article(uint16_t id, const std::string& title, const std::string& content, const std::string& writer, uint8_t month, uint8_t day, uint8_t color = 0x00, bool deleted = false);
-    ~article();
-
-public:
-    uint16_t                        id() const;
-    const std::string&              title() const;
-    const std::string&              content() const;
-    const std::string&              writer() const;
-    uint8_t                         month() const;
-    uint8_t                         day() const;
-    uint8_t                         color() const;
-    bool                            deleted() const;
-    void                            deleted(bool value);
+    NONE      = 0x00,
+    SECTIONS  = 0x01,
+    ARTICLES  = 0x02,
+    ARTICLE   = 0x03,
+    WRITE     = 0x04,
+    DELETE    = 0x05
 };
 
-class board::section : private std::vector<std::unique_ptr<board::article>>
+class section
 {
 public:
-    DECLARE_EXCEPTION(not_found_exception, fb::game::message::board::SECTION_NOT_EXIST)
+    const uint32_t                  id;
+    const std::string               title;
+    const std::optional<uint8_t>    min_level, max_level;
+    const bool                      admin;
 
 public:
-    using std::vector<std::unique_ptr<board::article>>::operator[];
-    using std::vector<std::unique_ptr<board::article>>::begin;
-    using std::vector<std::unique_ptr<board::article>>::end;
-    using std::vector<std::unique_ptr<board::article>>::cbegin;
-    using std::vector<std::unique_ptr<board::article>>::cend;
-    using std::vector<std::unique_ptr<board::article>>::rbegin;
-    using std::vector<std::unique_ptr<board::article>>::rend;
-    using std::vector<std::unique_ptr<board::article>>::size;
-
-private:
-    std::string          _title;
+    section(uint32_t id, const std::string& title, const std::optional<uint8_t>& min_level = std::nullopt, const std::optional<uint8_t>& max_level = std::nullopt, bool admin = false) : 
+        id(id), title(title), min_level(min_level), max_level(max_level), admin(admin)
+    {}
+    ~section() = default;
 
 public:
-    section(const std::string& title);
-    ~section();
-
-public:
-    const std::string&              title() const;
-    board::article*                 add(const std::string& title, const std::string& content, const session& session, uint8_t color = 0x00);
-    board::article*                 add(const std::string& title, const std::string& content, const std::string& writer, uint8_t color = 0x00);
-    bool                            remove(uint16_t id);
-    const board::article*           at(uint32_t index) const;
-    const board::article*           find(uint16_t id) const;
+    bool                            writable(uint8_t level, bool admin) const;
 };
 
-} }
+class article
+{
+public:
+    const uint32_t                  id;
+    const uint32_t                  section;
+    const uint32_t                  uid;
+    const uint8_t                   month, day;
+    const std::string               uname;
+    const std::string               title;
+    const std::string               contents;
+
+public:
+    article(uint32_t id, uint32_t section, uint32_t uid, const std::string& uname, const std::string& title, uint8_t month, uint8_t day, const std::string& contents = "") : 
+        id(id), section(section), uid(uid), uname(uname), title(title), month(month), day(day), contents(contents)
+    { }
+    ~article() = default;
+};
+
+} } }
 
 #endif // !__BOARD_H__

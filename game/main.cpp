@@ -339,6 +339,30 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     pivot += (stack + 1);
+    stack = 0;
+    if(fb::game::model::boards.load
+    (
+        config["table"]["board"].asString(),
+        [&] (const auto& name, auto percentage)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::BOARD_LOADED, percentage, name.c_str());
+        }, 
+        [&] (const auto& name, const auto& error)
+        {
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
+        }, 
+        [&] (uint32_t count)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::BOARD_ALL_LOADED, count);
+        }) == false)
+    {
+        return false;
+    }
+
+    pivot += (stack + 1);
     c.cursor(0, pivot);
     return true;
 }

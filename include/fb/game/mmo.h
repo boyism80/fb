@@ -124,14 +124,14 @@ namespace message
 {
     enum class type : uint8_t
     {
-        NOTIFY      = 0x00,
-        BLUE        = 0x01,
-        STATE       = 0x03,
-        SHOUT       = 0x04,\
-        WORLD       = 0x05,
-        POPUP       = 0x08,
-        YELLOW      = 0x0B,
-        BROWN       = 0x0C,
+        NOTIFY              = 0x00,
+        BLUE                = 0x01,
+        STATE               = 0x03,
+        SHOUT               = 0x04,
+        WORLD               = 0x05,
+        POPUP               = 0x08,
+        YELLOW              = 0x0B,
+        BROWN               = 0x0C,
     };
 }
 

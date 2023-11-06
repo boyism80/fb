@@ -1478,51 +1478,138 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     if (session->inited() == false)
         co_return true;
 
+    auto fd = session->fd();
     switch(request.action)
     {
-    case 0x01: // section list
+    case fb::game::board::action::SECTIONS:
     {
         this->send(*session, fb::protocol::game::response::board::sections(), scope::SELF);
-        break;
-    }
+    } break;
 
-    case 0x02: // article list
-    {
-        this->send(*session, fb::protocol::game::response::board::articles(request.section, request.offset), scope::SELF);
-        break;
-    }
-
-    case 0x03: // article
-    {
-        this->send(*session, fb::protocol::game::response::board::article(request.section, request.article, *session), scope::SELF);
-        break;
-    }
-
-    case 0x04:
-    {
-        auto section = fb::game::model::board.sections()[request.section].get();
-        if(section->add(request.title, request.contents, session->name()) != nullptr)
-            this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
-        break;
-    }
-
-    case 0x05:
+    case fb::game::board::action::ARTICLES:
     {
         try
         {
-            auto section = fb::game::model::board.at(request.section);
-            if(section == nullptr)
-                throw board::section::not_found_exception();
+            auto section = fb::game::model::boards[request.section];
+            if (section == nullptr)
+                throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
-            auto article = section->find(request.article);
-            if(article == nullptr)
-                throw board::article::not_found_exception();
+            auto offset = request.offset;
+            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
+            if (this->sockets.contains(fd) == false)
+                co_return false;
 
-            if(session->name() != article->writer())
-                throw board::auth_exception();
+            auto section_title = results[0].get_value<std::string>(0);
+            auto articles = std::list<fb::game::board::article>();
+            results[1].each([section, &articles](uint32_t id, uint32_t uid, std::string uname, std::string title, daotk::mysql::datetime created_date)
+            {
+                articles.push_back(fb::game::board::article{ id, section->id, uid, uname, title, (uint8_t)created_date.month, (uint8_t)created_date.day });
+                return true;
+            });
 
-            if(section->remove(article->id()) == false)
-                throw board::article::not_found_exception();
+            auto button_flags = fb::game::board::button_enabled::UP;
+            if (section->writable(session->level(), session->admin()))
+                button_flags |= fb::game::board::button_enabled::WRITE;
+            this->send(*session, fb::protocol::game::response::board::articles(*section, articles, button_flags), scope::SELF);
+        }
+        catch (std::exception& e)
+        {
+            this->send(*session, fb::protocol::game::response::board::message(e.what(), false, false), scope::SELF);
+        }
+    } break;
+
+    case fb::game::board::action::ARTICLE:
+    {
+        try
+        {
+            auto section = fb::game::model::boards[request.section];
+            if (section == nullptr)
+                throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
+
+            auto article = request.article;
+            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_GET(%d, %d)", section->id, article);
+            if (this->sockets.contains(fd) == false)
+                co_return false;
+
+            if (results[0].count() == 0)
+            {
+                this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
+                co_return true;
+            }
+
+            auto created_date = results[0].get_value<daotk::mysql::datetime>(5);
+            auto button_flags = fb::game::board::button_enabled::NONE;
+             auto next = results[1].get_value<bool>(0);
+             if(next)
+                 button_flags |= fb::game::board::button_enabled::NEXT;
+
+             if (section->writable(session->level(), session->admin()))
+                 button_flags |= fb::game::board::button_enabled::WRITE;
+            
+            this->send(*session, fb::protocol::game::response::board::article(fb::game::board::article
+            {
+                results[0].get_value<uint32_t>(0),
+                section->id,
+                results[0].get_value<uint32_t>(1),
+                results[0].get_value<std::string>(2),
+                results[0].get_value<std::string>(3),
+                (uint8_t)created_date.month, (uint8_t)created_date.day,
+                results[0].get_value<std::string>(4)
+            }, button_flags), scope::SELF);
+        }
+        catch (std::exception& e)
+        {
+            this->send(*session, fb::protocol::game::response::board::message(e.what(), false, false), scope::SELF);
+        }
+    } break;
+
+    case fb::game::board::action::WRITE:
+    {
+        try
+        {
+            auto section = fb::game::model::boards[request.section];
+            if (section == nullptr)
+                throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
+
+            if (section->writable(session->level(), session->admin()) == false)
+                throw std::runtime_error(fb::game::message::board::NOT_AUTH);
+
+            if (request.title.length() > 64)
+                throw std::runtime_error(fb::game::message::board::TOO_LONG_TITLE);
+
+            if(request.contents.length() > 256)
+                throw std::runtime_error(fb::game::message::board::TOO_LONG_CONTENTS);
+
+            co_await this->_db.co_exec_f_g("CALL USP_BOARD_ADD(%d, %d, '%s', '%s')", section->id, session->id(), request.title.c_str(), request.contents.c_str());
+            if (this->sockets.contains(fd) == false)
+                co_return false;
+
+            this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::WRITE, true, true), scope::SELF);
+        }
+        catch (std::exception& e)
+        {
+            this->send(*session, fb::protocol::game::response::board::message(e.what(), false, false), scope::SELF);
+        }
+    } break;
+
+    case fb::game::board::action::DELETE:
+    {
+        try
+        {
+            auto section = fb::game::model::boards[request.section];
+            if (section == nullptr)
+                throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
+
+            if (section->writable(session->level(), session->admin()) == false)
+                throw std::runtime_error(fb::game::message::board::NOT_AUTH);
+
+            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_DELETE(%d, %d, %d)", request.section, request.article, session->id());
+            if (this->sockets.contains(fd) == false)
+                co_return false;
+
+            auto success = results[0].get_value<bool>(0);
+            if(success == false)
+                throw std::runtime_error(fb::game::message::board::ARTICLE_NOT_EXIST);
 
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }
@@ -1530,9 +1617,10 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         {
             this->send(*session, fb::protocol::game::response::board::message(e.what(), false, false), scope::SELF);
         }
-        break;
-    }
+    } break;
 
+    default:
+        co_return false;
     }
 
     co_return true;

@@ -148,6 +148,8 @@ namespace fb { namespace game { namespace message {
         static constexpr const char* SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
         static constexpr const char* NOT_AUTH = "권한이 없습니다.";
         static constexpr const char* SUCCESS_DELETE = "글이 삭제되었습니다.";
+        static constexpr const char* TOO_LONG_TITLE = "게시글 제목이 너무 깁니다.";
+        static constexpr const char* TOO_LONG_CONTENTS = "게시글 내용이 너무 깁니다.";
     }
     
     namespace door 
