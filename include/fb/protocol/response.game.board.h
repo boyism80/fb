@@ -10,17 +10,12 @@ class sections : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    std::list<fb::game::board::section>         section_list;
+    std::vector<fb::game::board::section>       section_list;
 #endif
 
 public:
-#ifdef BOT
     sections() : fb::protocol::base::header(0x31)
     { }
-#else
-    sections() : fb::protocol::base::header(0x31)
-    { }
-#endif
 
 public:
 #ifndef BOT

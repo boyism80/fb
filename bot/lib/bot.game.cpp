@@ -237,5 +237,16 @@ fb::task<void> game_bot::pattern_emotion()
 
 fb::task<void> game_bot::pattern_board_sections()
 {
-    auto response = co_await this->request<fb::protocol::game::response::board::sections>(fb::protocol::game::request::board::board(0x01));
+    std::random_device device;
+    std::mt19937 gen(device());
+    std::uniform_int_distribution<> dist(0, 1);
+
+    this->send(fb::protocol::game::request::board::board(board::action::SECTIONS));
+
+    auto section = (uint32_t)dist(gen);
+    this->send(fb::protocol::game::request::board::board(board::action::ARTICLES, section));
+    this->send(fb::protocol::game::request::board::board(board::action::ARTICLE, section, 0));
+    this->send(fb::protocol::game::request::board::board(board::action::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(fb::protocol::game::request::board::board(board::action::DELETE, section, 0));
+    co_return;
 }

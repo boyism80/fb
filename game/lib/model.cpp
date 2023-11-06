@@ -1309,7 +1309,7 @@ bool fb::game::container::board::load(const std::string& path, fb::table::handle
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                id      = key.asUInt();
+            auto                id      = std::stoi(key.asCString());
             auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
             auto&               level   = data["level"];
             auto                admin   = data["admin"].asBool();

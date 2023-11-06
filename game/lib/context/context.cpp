@@ -1481,12 +1481,12 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     auto fd = session->fd();
     switch(request.action)
     {
-    case 0x01: // section list
+    case fb::game::board::action::SECTIONS:
     {
         this->send(*session, fb::protocol::game::response::board::sections(), scope::SELF);
     } break;
 
-    case 0x02: // article list
+    case fb::game::board::action::ARTICLES:
     {
         try
         {
@@ -1521,7 +1521,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case 0x03: // article
+    case fb::game::board::action::ARTICLE:
     {
         try
         {
@@ -1565,7 +1565,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case 0x04:
+    case fb::game::board::action::WRITE:
     {
         try
         {
@@ -1573,7 +1573,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (section == nullptr)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
-            if (section->writable(session->level(), session->admin()))
+            if (section->writable(session->level(), session->admin()) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
             if (request.title.length() > 64)
@@ -1594,7 +1594,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case 0x05:
+    case fb::game::board::action::DELETE:
     {
         try
         {
@@ -1602,7 +1602,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (section == nullptr)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
-            if (section->writable(session->level(), session->admin()))
+            if (section->writable(session->level(), session->admin()) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
             auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_DELETE(%d, %d, %d)", request.section, request.article, session->id());
@@ -1621,6 +1621,8 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
+    default:
+        co_return false;
     }
 
     co_return true;
