@@ -258,8 +258,8 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET`(section INT, article INT)
 BEGIN
-	SELECT A.id, U.id AS uid, U.name AS uname, A.title, A.contents, A.created_date FROM board AS A
-	LEFT JOIN user AS U ON A.user = U.id
+	SELECT A.id, N.id AS uid, N.name AS uname, A.title, A.contents, A.created_date FROM board AS A
+	LEFT JOIN name AS N ON A.user = N.id
 	WHERE A.id = article AND A.section = section AND deleted = 0;
     
     SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.id > article AND board.deleted = 0 LIMIT 1) as `next`;
@@ -475,4 +475,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-07 22:32:30
+-- Dump completed on 2023-11-07 23:09:57
