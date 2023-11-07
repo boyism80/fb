@@ -46,7 +46,7 @@ protected:
     virtual void                                on_disconnected();
     virtual bool                                on_encrypt(fb::ostream& out);
     virtual bool                                on_wrap(fb::ostream& out);
-    virtual bool                                is_decrypt(int cmd) const;
+    virtual bool                                decrypt_policy(int cmd) const;
 
 public:
     void connect(const boost::asio::ip::tcp::endpoint& endpoint);
@@ -87,7 +87,7 @@ private:
     fb::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
 
 protected:
-    bool                                        is_decrypt(int cmd) const;
+    bool                                        decrypt_policy(int cmd) const;
 };
 
 
@@ -107,7 +107,7 @@ private:
 
 protected:
     void                                        on_connected();
-    bool                                        is_decrypt(int cmd) const;
+    bool                                        decrypt_policy(int cmd) const;
 
 public:
     fb::task<void>                              handle_agreement(const fb::protocol::login::response::agreement& response);

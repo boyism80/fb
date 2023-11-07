@@ -61,7 +61,7 @@ fb::ostream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
     return ostream;
 }
 
-bool fb::gateway::context::is_decrypt(uint8_t cmd) const
+bool fb::gateway::context::decrypt_policy(uint8_t cmd) const
 {
     switch(cmd)
     {

@@ -554,7 +554,7 @@ fb::task<void> fb::acceptor<T>::connect_internal()
 }
 
 template <typename T>
-bool fb::acceptor<T>::is_decrypt(uint8_t cmd) const
+bool fb::acceptor<T>::decrypt_policy(uint8_t cmd) const
 {
     return true;
 }
@@ -591,7 +591,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
 
 
             auto                cmd = in_stream.read_u8();
-            if (this->is_decrypt(cmd))
+            if (this->decrypt_policy(cmd))
                 size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
             // Call function that matched by command byte

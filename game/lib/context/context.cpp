@@ -361,7 +361,7 @@ void fb::game::context::handle_start()
     }
 }
 
-bool fb::game::context::is_decrypt(uint8_t cmd) const
+bool fb::game::context::decrypt_policy(uint8_t cmd) const
 {
     switch(cmd)
     {

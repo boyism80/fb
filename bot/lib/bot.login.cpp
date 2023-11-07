@@ -28,12 +28,12 @@ void login_bot::on_connected()
     this->send(fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()), false, true);
 }
 
-bool login_bot::is_decrypt(int cmd) const
+bool login_bot::decrypt_policy(int cmd) const
 {
     switch(cmd)
     {
         default:
-        return base_bot::is_decrypt(cmd);
+        return base_bot::decrypt_policy(cmd);
     }
 }
 

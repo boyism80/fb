@@ -22,7 +22,7 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
 fb::login::context::~context()
 { }
 
-bool fb::login::context::is_decrypt(uint8_t cmd) const
+bool fb::login::context::decrypt_policy(uint8_t cmd) const
 {
     switch(cmd)
     {

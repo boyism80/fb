@@ -34,7 +34,7 @@ void base_bot::on_receive(fb::base::socket<>& socket)
                 break;
 
             auto cmd = in_stream.read_8();
-            if (this->is_decrypt(cmd))
+            if (this->decrypt_policy(cmd))
             {
                 size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
             }
@@ -94,7 +94,7 @@ bool base_bot::on_wrap(fb::ostream& out)
     return this->_cryptor.wrap(out);
 }
 
-bool base_bot::is_decrypt(int cmd) const
+bool base_bot::decrypt_policy(int cmd) const
 {
     switch(cmd)
     {

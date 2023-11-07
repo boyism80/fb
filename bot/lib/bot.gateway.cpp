@@ -43,7 +43,7 @@ fb::task<void> gateway_bot::handle_transfer(const fb::protocol::response::transf
     co_return;
 }
 
-bool gateway_bot::is_decrypt(int cmd) const
+bool gateway_bot::decrypt_policy(int cmd) const
 {
     switch(cmd)
     {
@@ -52,6 +52,6 @@ bool gateway_bot::is_decrypt(int cmd) const
         return false;
 
         default:
-        return base_bot::is_decrypt(cmd);
+        return base_bot::decrypt_policy(cmd);
     }
 }
