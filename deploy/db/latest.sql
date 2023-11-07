@@ -113,7 +113,7 @@ DROP TABLE IF EXISTS `name`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `name` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(256) COLLATE utf8_bin NOT NULL,
+  `name` varchar(256) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -223,13 +223,23 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(section INT, id INT, uid INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(id INT, uid INT)
 BEGIN
-	UPDATE board
-    SET `deleted` = 1
-    WHERE board.id = id AND board.section = section AND board.user = uid AND board.deleted = 0;
+	DECLARE _id INT;
+    DECLARE _uid INT;
+    DECLARE _deleted TINYINT;
     
-    SELECT ROW_COUNT() AS success;
+    SELECT id, uid, deleted INTO _id, _uid, _deleted FROM board WHERE board.id = id LIMIT 1;
+    IF _id IS NULL THEN
+		SELECT -1 AS result;
+	ELSEIF _deleted = 1 THEN
+		SELECT -2 AS result;
+	ELSEIF _uid != uid THEN
+		SELECT -3 AS result;
+	ELSE
+		UPDATE board SET deleted = 1 WHERE board.id = id;
+		SELECT 1 AS result;
+    END IF;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -465,4 +475,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-07  1:32:06
+-- Dump completed on 2023-11-07 14:09:21

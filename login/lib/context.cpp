@@ -174,15 +174,15 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
 
         this->assert_account(id, pw);
 
-        auto results = co_await this->_db.co_exec_f_g("CALL USP_NAME_SET('%s')", id.c_str());
+        auto nameset_result = co_await this->_db.co_exec_f_g("CALL USP_NAME_SET('%s')", id.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto success = results[0].get_value<bool>(0);
+        auto success = nameset_result[0].get_value<bool>(0);
         if(success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        auto pk = results[1].get_value<uint32_t>(0);
+        auto pk = nameset_result[1].get_value<uint32_t>(0);
         auto& config = fb::config::get();
         std::srand(std::time(nullptr));
         auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
@@ -192,11 +192,12 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
         auto position_y = config["init"]["position"]["y"].asInt();
         auto admin = config["admin mode"].asBool() ? 0 : 1;
 
-        auto results2 = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
+        auto init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(results2[0].get_value<bool>(0) == false)
+        auto& init_row = init_result[0];
+        if(init_row.get_value<bool>(0) == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
         this->send(socket, fb::protocol::login::response::message("", 0x00));

@@ -1604,13 +1604,23 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (section->writable(session->level(), session->admin()) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
-            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_DELETE(%d, %d, %d)", request.section, request.article, session->id());
+            auto delete_result = co_await this->_db.co_exec_f_g("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
-            auto success = results[0].get_value<bool>(0);
-            if(success == false)
-                throw std::runtime_error(fb::game::message::board::ARTICLE_NOT_EXIST);
+            auto& delete_row = delete_result[0];
+            auto  result_code = delete_row.get_value<int>(0);
+            switch(result_code)
+            {
+                case -1: // article not found
+                    throw std::runtime_error(fb::game::message::board::ARTICLE_NOT_EXIST);
+
+                case -2: // article deleted
+                    throw std::runtime_error(fb::game::message::board::ARTICLE_NOT_EXIST);
+
+                case -3: // no authenticate
+                    throw std::runtime_error(fb::game::message::board::NOT_AUTH);
+            }
 
             this->send(*session, fb::protocol::game::response::board::message(fb::game::message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }
