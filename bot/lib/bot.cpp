@@ -39,9 +39,9 @@ void base_bot::on_receive(fb::base::socket<>& socket)
                 size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
             }
 
-            if (this->_handler_dict.contains(cmd))
+            if (this->_handler.contains(cmd))
             {
-                this->_handler_dict[cmd]();
+                this->_handler[cmd]();
             }
 
             in_stream.reset();

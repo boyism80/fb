@@ -392,8 +392,8 @@ fb::acceptor<T>::~acceptor()
 template <typename T>
 fb::task<bool> fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 {
-    auto i = this->_public_handler_dict.find(cmd);
-    if(i == this->_public_handler_dict.end())
+    auto i = this->_external_handler.find(cmd);
+    if(i == this->_external_handler.end())
     {
         auto& c = fb::console::get();
         fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
@@ -424,8 +424,8 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
                 throw std::exception();
 
             auto cmd = in_stream.read_8();
-            if(this->_private_handler_dict.contains(cmd))
-                this->_private_handler_dict[cmd](static_cast<fb::internal::socket<>&>(socket));
+            if(this->_internal_handler.contains(cmd))
+                this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
 
             in_stream.reset();
             in_stream.shift(base_size + size);
@@ -628,7 +628,7 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn)
 {
-    this->_public_handler_dict.insert({cmd, [this, fn](fb::socket<T>& socket)
+    this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;
@@ -650,7 +650,7 @@ template <typename R>
 void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::socket<>&, R&)>& fn)
 {
     auto id = R().__id;
-    this->_private_handler_dict.insert({id, [this, fn](fb::internal::socket<>& socket)
+    this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket)
     {
         auto& in_stream = socket.in_stream();
         R     header;

@@ -26,7 +26,7 @@ class base_bot : public fb::awaitable_socket<void*>
 protected:
     bot_container&                              _owner;
     fb::cryptor                                 _cryptor;
-    std::map<uint8_t, std::function<void()>>    _handler_dict;
+    std::map<uint8_t, std::function<void()>>    _handler;
 
 public:
     const uint32_t                              id;
@@ -55,7 +55,7 @@ public:
     template <typename T>
     void bind(int cmd, const std::function<fb::task<void>(T&)> fn)
     {
-        this->_handler_dict.insert({ cmd, [this, fn]
+        this->_handler.insert({ cmd, [this, fn]
         {
             auto& in_stream = this->in_stream();
             T     header;

@@ -98,12 +98,12 @@ template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    using public_handler                = std::function<fb::task<bool>(fb::socket<T>&)>;
-    using private_handler               = std::function<fb::task<bool>(fb::internal::socket<>&)>;
+    using external_func                 = std::function<fb::task<bool>(fb::socket<T>&)>;
+    using internal_func                 = std::function<fb::task<bool>(fb::internal::socket<>&)>;
 
 private:
-    std::map<uint8_t, public_handler>   _public_handler_dict;
-    std::map<uint8_t, private_handler>  _private_handler_dict;
+    std::map<uint8_t, external_func>    _external_handler;
+    std::map<uint8_t, internal_func>    _internal_handler;
 
 public:
     acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads = 0);

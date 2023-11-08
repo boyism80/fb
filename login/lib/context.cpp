@@ -174,7 +174,7 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
 
         this->assert_account(id, pw);
 
-        auto nameset_result = co_await this->_db.co_exec_f_g("CALL USP_NAME_SET('%s')", id.c_str());
+        auto nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -262,7 +262,7 @@ fb::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& 
         auto pw = request.pw;
         this->assert_account(name, pw);
 
-        auto  name_result = co_await this->_db.co_exec_f_g("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto  name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -364,7 +364,7 @@ fb::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::
         if(pw == new_pw)
             throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-        auto  name_result = co_await this->_db.co_exec_f_g("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto  name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 

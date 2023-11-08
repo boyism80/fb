@@ -52,8 +52,8 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
                 throw std::exception();
 
             auto cmd = in_stream.read_8();
-            auto found = this->_handler_dict.find(cmd);
-            if(found == this->_handler_dict.end())
+            auto found = this->_handler.find(cmd);
+            if(found == this->_handler.end())
                 throw std::exception();
 
             found->second(socket);

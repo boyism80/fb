@@ -31,7 +31,7 @@ public:
     using unique_users              = std::map<std::string, std::unique_ptr<user>>;
 
 private:
-    std::map<uint8_t, handler>      _handler_dict;
+    std::map<uint8_t, handler>      _handler;
     service*                        _gateway = nullptr;
     service*                        _login   = nullptr;
     subscriber_container            _games;
@@ -55,7 +55,7 @@ public:
     void                            bind(const std::function<fb::task<bool>(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
         auto id = R().__id;
-        _handler_dict.insert({id, [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        _handler.insert({id, [this, fn] (fb::internal::socket<fb::internal::session>& socket)
         {
             auto&   in_stream = socket.in_stream();
             R       header;

@@ -213,11 +213,11 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     this->bind<fb::protocol::internal::response::logout>      (std::bind(&context::handle_in_logout,       this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
     this->bind<fb::protocol::internal::response::shutdown>    (std::bind(&context::handle_in_shutdown,     this, std::placeholders::_1, std::placeholders::_2));   // 서버종료
 
-    this->bind_timer(std::bind(&context::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);                                             // 몹 행동 타이머
-    this->bind_timer(std::bind(&context::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 몹 리젠 타이머
-    this->bind_timer(std::bind(&context::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                                // 버프 타이머
-    this->bind_timer(std::bind(&context::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(config["save"].asInt()));      // DB 저장 타이머
-    this->bind_timer(std::bind(&context::handle_time,         this, std::placeholders::_1, std::placeholders::_2), 1min);                                              // 세계 시간 타이머
+    this->bind_timer(std::bind(&context::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);                                         // 몹 행동 타이머
+    this->bind_timer(std::bind(&context::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 1s);                                            // 몹 리젠 타이머
+    this->bind_timer(std::bind(&context::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                            // 버프 타이머
+    this->bind_timer(std::bind(&context::handle_save_timer,   this, std::placeholders::_1, std::placeholders::_2), std::chrono::seconds(config["save"].asInt()));  // DB 저장 타이머
+    this->bind_timer(std::bind(&context::handle_time,         this, std::placeholders::_1, std::placeholders::_2), 1min);                                          // 세계 시간 타이머
 
     this->bind_command("맵이동", command 
         { 
@@ -1496,7 +1496,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
             auto offset = request.offset;
-            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
+            auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1528,7 +1528,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
             auto article = request.article;
-            auto results = co_await this->_db.co_exec_f_g("CALL USP_BOARD_GET(%d, %d)", section->id, article);
+            auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET(%d, %d)", section->id, article);
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1581,7 +1581,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if(request.contents.length() > 256)
                 throw std::runtime_error(fb::game::message::board::TOO_LONG_CONTENTS);
 
-            co_await this->_db.co_exec_f_g("CALL USP_BOARD_ADD(%d, %d, '%s', '%s')", section->id, session->id(), request.title.c_str(), request.contents.c_str());
+            co_await this->_db.co_exec_f("CALL USP_BOARD_ADD(%d, %d, '%s', '%s')", section->id, session->id(), request.title.c_str(), request.contents.c_str());
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1604,7 +1604,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (section->writable(session->level(), session->admin()) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
-            auto delete_result = co_await this->_db.co_exec_f_g("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
+            auto delete_result = co_await this->_db.co_exec_f("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
