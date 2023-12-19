@@ -1,0 +1,1300 @@
+//callfunc "VIEW_MAP";
+FUNC_VIEW_MAP	{
+	set @sd, mysd();
+	set @id, myid();
+	set @mapname$, get_mapname(@sd);
+
+	if(@mapname$ == "부여성") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_183/gale043_1311043655449p3bkp_png/k-1_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "국내성") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_268/gale043_13110436565797j7IU_png/k-2_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "대방성") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_56/gale043_1311043665819mbpsP_png/k-11_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "장안성") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_243/gale043_13110437670133BXsN_png/k-25_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "현도성") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_199/gale043_1311043764887Kzehi_png/k-23_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "강서성") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110721_155/gale043_1311235480481jdik9_png/k-1_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "낙양성") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_62/gale043_1311043671821X1d7v_png/k-16_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "광동성") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_144/gale043_1311043672852teXpw_png/k-17_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "복건성") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_148/gale043_1311043673997srfBz_png/k-18_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "세시마을") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_234/gale043_1311043653910Rw08x_png/k-41_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "극지방입구") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_103/gale043_131104365763998Fyq_png/k-3_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "천상계제일계") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_278/gale043_1311043658635sSt2w_png/k-4_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "12지신의유적") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_163/gale043_1311043659758WgkxJ_png/k-5_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "길림성") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_135/gale043_1311043660632QvFs9_png/k-6_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "압록강") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_111/gale043_1311043661592ScMuB_png/k-7_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "국경지대") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_10/gale043_1311043662643MvlpM_png/k-8_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "대방성입구") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_177/gale043_1311043664751esvBo_png/k-10_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "신비족입구") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_282/gale043_1311043663678aeGYK_png/k-9_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "일본신궁") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_289/gale043_13110437829721kkly_png/k-39_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "일본표신궁") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_143/gale043_1311043816264HoMJU_png/k-40_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "흉노족1") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_234/gale043_13110437660024yLGM_png/k-24_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "고균도") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_168/gale043_1311043768068tT6pG_png/k-26_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "가릉도") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_184/gale043_1311043769380tyy4X_png/k-27_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "폭염도") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_281/gale043_1311043770347ftqm6_png/k-28_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "용궁") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_135/gale043_1311043763902dncCb_png/k-22_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "상해1") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_276/gale043_1311043674976vkhLy_png/k-19_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "상해2") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_6/gale043_1311044643966tBah4_png/k-20_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "상해3") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_85/gale043_1311043762774RSAmQ_png/k-21_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "만리장성1") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_49/gale043_1311043666793el5Mg_png/k-12_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "만리장성2") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_274/gale043_1311044645155GiuPI_png/k-13_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "만리장성3") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_168/gale043_1311043669728pjNyn_png/k-14_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "만리장성4") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_283/gale043_1311043670875K3qeF_png/k-15_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_273/gale043_1311043771371USbY3_png/k-29_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산100층상점") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_101/gale043_1311043772176Vw9Ti_png/k-30_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산200층상점") { internet @sd, 0, "http://cafeptthumb1.phinf.naver.net/20110719_129/gale043_1311043773195zmxxA_png/k-31_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산300층상점") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_56/gale043_1311043774313gUr1a_png/k-32_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산400층상점") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_141/gale043_1311043776888YjHsO_png/k-34_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산500층상점") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_64/gale043_1311043775818Wr5Ed_png/k-33_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산600층상점") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_19/gale043_1311043777966buvQ4_png/k-35_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산700층상점") { internet @sd, 0, "http://cafeptthumb4.phinf.naver.net/20110719_177/gale043_13110437791767juw5_png/k-36_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산800층상점") { internet @sd, 0, "http://cafeptthumb3.phinf.naver.net/20110719_60/gale043_1311043780827z4b00_png/k-37_gale043.png?type=w740", " "; }
+	else if(@mapname$ == "도삭산900층상점") { internet @sd, 0, "http://cafeptthumb2.phinf.naver.net/20110719_67/gale043_1311043782054RdIvp_png/k-38_gale043.png?type=w740", " "; }
+	else
+	{
+		message @sd, 8, "맵 데이터가 존재하지 않습니다.";
+	}
+	return;
+}
+
+//callfunc "CLANDOWNROOM", "신수", 신수성서버변수;
+FUNC_CLANDOWNROOM	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if(clan_exist(@sd) != 0)
+	{
+		if(get_level(@sd) == 99 && !strcmp(get_clanname(@sd), getarg(1)))
+		{
+			warp @sd, name2mapid(getarg(0) + "지하수로"), 1, rand(6, 19);
+		}
+	}
+	return;
+}
+
+//callfunc "EIGHTROOM", "신수", 신수성서버변수;
+FUNC_EIGHTROOM	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if(clan_exist(@sd) != 0)
+	{
+		if(get_level(@sd) == 99 && !strcmp(get_clanname(@sd), getarg(1)))
+		{
+			warp @sd, name2mapid(getarg(0) + "팔괘방"), rand(16, 17), rand(29, 30);
+		}
+	}
+	return;
+}
+
+//callfunc "KONGSUNG", "신수이름(청룡, 주작, 백호, 현무)", 신수이름성서버변수, 이미지, 염색;
+FUNC_KONGSUNG	{
+	image 0, getarg(2), getarg(3);
+	set @sd, mysd();
+	set @id, myid();
+	set @totem$, getarg(0);
+	set @list, list1("안녕하세요. 어떻게 오셨나요?", @totem$ + "성 입장");
+	if(@list == 1)
+	{
+		if(clan_exist(@sd) != 0)
+		{
+			if(get_state(@sd) != 1)
+			{
+				if(!strcmp(get_clanname(@sd), getarg(1)))
+				{
+					if(#clan_start == 0)
+					{
+						warp @sd, name2mapid(@totem$ + "의성"), rand(11, 17), rand(4, 11);
+					}
+					else
+					{
+						warp @sd, name2mapid(@totem$ + "성입구"), rand(49, 57), rand(145, 148);
+					}
+				}
+				else
+				{
+					if(#clan_mapname$ == @totem$ + "성")
+					{
+						warp @sd, name2mapid(@totem$ + "성입구"), rand(49, 57), rand(145, 148);
+					}
+					else
+					{
+						set @pos, dialog(0, 0, 0, "현재 " + @totem$ + "성 공성이 진행중이지 않습니다.");
+					}
+				}
+			}
+			else
+			{
+				set @pos, dialog(0, 0, 0, "유령은 참가할 수 없습니다.");
+				end;
+			}
+		}
+		else
+		{
+			set @pos, dialog(0, 0, 0, "가입된 문파가 없습니다.");
+			end;
+		}
+	}
+	return;
+}
+
+//callfunc "CHANGEITEM";
+FUNC_CHANGEITEM	{
+	set @sd, mysd();
+	set @id, myid();
+	set @list, list1("안쓰는 물건을 비슷한 종류의 다른 물건으로 바꿔주는 소일거리를 하고 있어요. 혹시 이런 물건 가지고 있으세요?", "낡은어전의칼", "원숭이잔털", "너구리잔털", "은여우잔털", "낡은도깨비방망이", "참나무껍질", "깨진불의수정", "낡은철도", "늑대의큰송곳니", "다랑어살코기뭉치", "노회뭉치");
+	if(@list == 1)
+	{
+		setarray @item$[0], "낡은어전의칼", "원숭이잔털", "너구리잔털", "은여우잔털", "낡은도깨비방망이", "참나무껍질", "깨진불의수정", "낡은철도", "늑대의큰송곳니", "다랑어살코기뭉치", "노회뭉치";
+		setarray @change$[0], "어전의칼", "원숭이털", "너구리털", "은여우털", "도깨비방망이", "참나무조각", "불의수정", "철도", "늑대의송곳니", "다랑어살코기", "노회";
+		setarray @need[0], 10, 10, 10, 10, 10, 10, 10, 10, 1, 1, 1;
+		setarray @success[0], 1, 1, 1, 1, 1, 1, 1, 1, 2, 10, 10;
+		set @val, @list-1;
+		set @list2, list1(@item$[@val] + " " + @need[@val] + "개를 가져오시면 " + @change[@val] + " " + @success[@val] + "개로 교환해 드려요. 하시겠어요?", "예", "아뇨");
+		if(@list2 == 1)
+		{
+			if(countitem(name2itemid(@item$[@val])) < @need[@val])
+			{
+				set @pos, dialog(0, 0, 0, @item$[@val] + " " + @need$[@val] + "개를 가져오셔야 바꿔드려요.");
+			}
+			else
+			{
+				delitem @sd, name2itemid(@item$[@val]), @need[@val];
+				message @sd, 3, @item$[@val] + " 주었습니다";
+				additem @sd, name2itemid(@change$[@list]), @success[@val];
+			}
+		}
+		deletearray @item$[0], getarraysize(@item$);
+		deletearray @change$[0], getarraysize(@change);
+		deletearray @need[0], getarraysize(@need);
+		deletearray @success[0], getarraysize(@success);
+	}
+	return;
+}
+//callfunc "INFORMATION";
+FUNC_INFORMATION	{
+	set @sd, mysd();
+	set @id, myid();
+
+	image 0, 4, 4;
+COS001:
+	set @pos, list2(@list, 0, 0, "안녕하세요? 저는 바람의나라의 '연' 입니다.\\n\\n무엇을 도와드릴까요?", "먼저 말하는 방법을 가르쳐주세요~", "저는 완전 초보에요~!", "단축키 설명", "어디가 어딘지 모르겠어요~!", "바람의나라 이용등급을 알려주세요.");
+	if(@pos == 0) end;
+	else if(@list == 1)
+	{
+		set @pos, dialog(0, 0, 1, "하고 싶은 이야기를 입력하고 엔터를 치면 캐릭터 머리위에 말풍선이 나옵니다.\\n(Enter)의 경우 설정에 따라 동작하지 않을 수도 있습니다.");
+		if(@pos == 0) end;
+COS002:
+		set @pos, list2(@list_2, 0, 0, "바람의 나라 단축키 입니다. 자세한 설명을 보시려면 더블클릭 하세요.", "(Space): 공격", "(') 또는 (Enter): 말하기", "(!): 외치기", "(Shift + '): 귓속말", "(i): 아이템창", "(*): 마법창", "(Shift + ;): 감정표현", "(,): 줍기", "(d): 떨구기", "(s): 상태", "(c): 아이템 슬롯 변경", "(e): 먹기", "(u): 아이템 사용", "(Shift_z): 마법사용", "(t): 던지기", "(g): 그룹", "(w): 착용", "(o): 문열기", "(b): 게시판", "처음으로..");
+		if(@pos == 0) end;
+
+		switch(@list_2)
+		{
+		case 1:
+			set @say$, "정면을 향해 손을 휘두르면서 공격을 합니다.";
+			break;
+		case 2:
+			set @say$, "하고 싶은 이야기를 입력하고 엔터를 치면 캐릭터 머리위에 말풍선이 나옵니다.\\n(Enter)의 경우 설정에 따라 동작하지 않을 수도 있습니다.";
+			break;
+		case 3:
+			set @say$, "일반 말보다 멀리 있는 사람까지 들린다.";
+			break;
+		case 4:
+			set @say$, "귓속말을 하고 싶은 이름을 정하고 메시지를 입력하면, 해당 아이디 에게만 메시지가 전달됩니다.";
+			break;
+		case 5:
+			set @say$, "자신이 가진 아이템 리스트가 오른쪽 화면에 나타납니다.";
+			break;
+		case 6:
+			set @say$, "자신이 사용할 수 있는 마법 리스트가 오른쪽 화면에 나타납니다.";
+			break;
+		case 7:
+			set @say$, "캐릭터의 감정 표현을 할 수 있습니다.";
+			break;
+		case 8:
+			set @say$, "발아래 있는 물건을 하나씩 줍습니다. Shift + (,) 는 한꺼번에 모든 아이템을 줍습니다.";
+			break;
+		case 9:
+			set @say$, "가진 물건을 버립니다. (Shift + d) 는 가진물건중 한칸에 여러개 들수 있는 (노란비서,호박,도토리) 이런 아이템들을 한꺼번에 모두 버립니다.";
+			break;
+		case 10:
+			set @say$, "오른쪽 창에 간략한 자신의 정보가 나옵니다. Clan, C.T, TITLE, 아이디, 직업, 장착중인 아이템 등을 볼 수 있습니다.";
+			break;
+		case 11:
+			set @say$, "물건의 순서를 바꿀때 사용됩니다. Shift + c = 마법의 순서를 바꿀때 사용합니다.";
+			break;
+		case 12:
+			set @say$, "음식류의 아이템을 먹을때 사용합니다.";
+			break;
+		case 13:
+			set @say$, "사용 가능한 아이템을 사용합니다.";
+			break;
+		case 14:
+			set @say$, "(Shift + z) 마법을 외울때 사용합니다.";
+			break;
+		case 15:
+			set @say$, "선택한 아이템을 멀리 던집니다.";
+			break;
+		case 16:
+			set @say$, "그룹을 만듭니다. g를 누른 후, 그룹하고 싶은 사람의 아이디를 치고, 엔터를 치면 그룹이 생깁니다.";
+			break;
+		case 17:
+			set @say$, "방어구, 무기를 장착할때 사용됩니다. 무기(w), 투구(h), 오른손/왼손(r/l), 몸통방어구(a)로 구분됩니다. (Shift + t) 무기나 방어구를 벗을때 사용합니다.";
+			break;
+		case 18:
+			set @say$, "정면의 문을 열거나 닫거나 할 때 사용합니다. (문이 잠겼을 경우엔 열쇠가 필요합니다).";
+			break;
+		case 19:
+			set @say$, "바람의나라 게시판 전체를 볼 수 있는 창이 나타납니다. 또한 편지함에 편지를 읽거나 쓸 수 있습니다.";
+			break;
+		case 20:
+			goto COS001;
+			break;
+		}
+		set @pos, dialog(0, 0, 1, @say$);
+		if(@pos == 1) goto COS002;
+	}
+	else if(@list == 2)
+	{
+COS003:
+		image 0, 4, 4;
+
+		set @pos, list2(@list_3, 0, 0, "기본적인 질문에 답해드릴께요...", "돈은 어떻게 벌어요?", "체력은 어떻게 회복하나요?", "죽었을 때는 어떻게 해야 하나요?", "직업은 언제 가질수 있나요?", "현재 위치를 어떻게 알 수 있나요?", "기초적인 용어를 설명해주세요.", "이제 기본적인 것은 터득!");
+		if(@pos == 0) end;
+		else if(@list_3 == 1)
+		{
+COS004:
+			image 0, 3, 0;
+
+			set @pos, dialog(0, 0, 1, "안녕하세요? 저는 바람의나라의 무휼 입니다. 원시 수렵 시대와 마찬가지로 바람의나라의 배경인 고구려 시대에도 사냥이 생활의 기본입니다.");
+			if(@pos == 0) end;
+
+			set @pos, dialog(0, 1, 1, "그러기에 닭, 다람쥐, 토끼등을 사냥하여 경험치를 올리는 동시에 그 고기나, 다른 수렵물 들을 '푸줏간'에 팔면서 돈을 법니다.");
+			if(@pos == -1) goto COS004;
+			else if(@pos == 1) goto COS003;
+		}
+		else if(@list_3 == 2)
+		{
+COS005:
+			image 0, 76, 0;
+
+			set @pos, dialog(0, 0, 1, "안녕하세요? 저는 바람의나라의 세류 입니다.");
+			if(@pos == 0) end;
+COS006:
+			set @pos, dialog(0, 1, 1, "사냥을 하다가 체력이 닳은 경우는 i를 눌러, 가지고 있는 물품을 확인 하신뒤, e를 눌러서 물품이 있는 알파벳을 누릅니다.");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS005;
+
+			set @pos, dialog(0, 1, 1, "보통 체력을 체우는 아이템으론 고기류와 웅담이 있습니다.");
+			if(@pos == -1) goto COS006;
+			else if(@pos == 1) goto COS003;
+		}
+		else if(@list_3 == 3)
+		{
+COS007:
+			image 0, 10, 3;
+
+			set @pos, dialog(0, 0, 1, "반갑네.. 나는 성황당 할머니라네.. 쿨럭쿨럭...");
+			if(@pos == 0) end;
+COS008:
+			set @pos, dialog(0, 1, 1, "처음 게임을 시작했는데.. 렙이 낮은데, 죽으면 정말 황당하지??? 그리고 난처하고...후후.. 쿨럭쿨럭");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS007;
+COS009:
+			set @pos, dialog(0, 1, 1, "평민일때 죽으면 애교로 봐주고 주막으로 옮겨주니.. 별 문제는 없는데. 직업을 갖고 나서.. 죽어버리면.. 네 죽은 모습이 보일게야..");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS008;
+COS010:
+			set @pos, dialog(0, 1, 1, "이럴때 당황하지 말고, 성의 동쪽과 서쪽에 있는 성황당으로 오게.. 기술중 <성황령> 이 있다면 바로 올 수 있겠지만.. 그게 없다면 걸어와야 할 것이야..");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS009;
+COS011:
+			set @pos, dialog(0, 1, 1, "성황당에는 내가 있으니 살려달라고 부탁을 하게.. 쿨럭쿨럭 예의가 바르다면, 내가 이뻐해주기도 하.. 쿨럭쿨럭.");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS010;
+
+			set @pos, dialog(0, 1, 1, "잊지 말게.. 직업을 가질때 <성황령> 이란 기술은 꼭 배우게.. 꼭 필요한 기술이 될 것이야..");
+			if(@pos == -1) goto COS011;
+			else if(@pos == 1) goto COS003;	
+		}
+		else if(@list_3 == 4)
+		{
+COS012:
+			image 0, 17, 0;
+
+			set @pos, dialog(0, 0, 1, "안녕하세요? 저는 바람의나라의 괴유입니다.");
+			if(@pos == 0) end;
+COS013:
+			set @pos, dialog(0, 1, 1, "초보자 던전에서 열심히 토끼와 다람쥐를 잡다 보면 레벨이 올라갑니다. 한동안 싸우다가 레벨 5가 되면 더이상 경험치가 늘지 않습니다.");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS012;
+
+			set @pos, dialog(0, 1, 1, "그 이상의 경험치를 가지고 레벨을 올리려면 '직업'을 가져야 합니다. 직업에는 '전사', '도적', '주술사', '도사'가 있습니다.");
+			if(@pos == -1) goto COS013;
+			else if(@pos == 1) goto COS003;
+		}
+		else if(@list_3 == 5)
+		{
+COS014:
+			image 0, 4, 4;
+
+			set @pos, dialog(0, 0, 1, "게임 화면의 맨위, 가운데 위치한 나무판에 현재 캐릭터가 위치하고 있는 장소의 지명이 표시됩니다. 그리고 화면의 가장 오른쪽 밑의 " + get_x(@id) + "/" + get_y(@id) + " 이런 숫자는 좌표를 나타냅니다.");
+			if(@pos == 0) end;
+
+			set @pos, dialog(0, 1, 1, "이 두가지 지명과 좌표로 자신의 위치를 알 수 있으며, 남에게 자신의 위치를 알려줄 수 있습니다.");
+			if(@pos == -1) goto COS014;
+			else if(@pos == 1) goto COS003;
+		}
+		else if(@list_3 == 6)
+		{
+COS015:
+			image 0, 4, 4;
+
+			set @message$, "대해서...";
+			set @pos, list2(@list_4, 0, 0, "어떤 것을 알고 싶으신가요?", "레벨에 " + @message$, "힘에 " + @message$, "지력에 " + @message$, "민첩성에 " + @message$, "경험치에 " + @message$, "신수에 " + @message$, "국적에 " + @message$, "체력에 " + @message$, "마력에 " + @message$, "모두 터득!");
+			if(@pos == 0) end;
+			else if(@list_4 == 1)
+			{
+COS016:
+				set @pos, dialog(0, 0, 1, "레벨이란, 그 캐릭터의 성장정도를 수치로 나타낸 것입니다. 레벨은 많은 경험을 쌓을수록 올라갑니다.");
+				if(@pos == 0) end;
+COS017:
+				set @pos, dialog(0, 1, 1, "게임에서의 경험은 역시 경험치라는 수치로 표시됩니다. 레벨이 올라가면 올라갈수록, 많은 마법과 기술을 배우실 수 있습니다.");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS016;
+COS018:
+				set @pos, dialog(0, 1, 1, "특정 던전(사냥터, 몬스터가 사는 곳)은 어느 정도 레벨이 되지 않으면 들어갈 수 없는 곳들도 있답니다. 이해가 되셨나요?");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS017;
+
+				set @pos, dialog(0, 1, 1, "참, 레벨은 렙이라고도 합니다....");
+				if(@pos == -1) goto COS018;
+				else if(@pos == 1) goto COS015;		
+			}
+			else if(@list_4 == 2)
+			{
+COS019:
+				set @pos, dialog(0, 0, 1, "(s)키를 사용한 후 오른쪽 창에 (▶)버튼을 누르면 '힘'이라는 글자가 있습니다. 그 옆에 씌여있는 숫자가 힘을 나타냅니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "1에서 130까지의 수치를 가지며, 힘이 높을수록 일반 공격력이 향상됩니다. 레벨 90이상이 되면, 영혼사에 가셔서 일정 경험치를 대가로 힘을 1단계 올릴 수 있습니다.");
+				if(@pos == -1) goto COS019;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 3)
+			{
+COS020:
+				set @pos, dialog(0, 0, 1, "(s)키를 사용한 후 오른쪽 창에 (▶)버튼을 누르면 '지력'이라는 글자가 있습니다. 그 옆에 씌여있는 숫자가 지력을 나타냅니다.");
+				if(@pos == 0) end;
+COS021:
+				set @pos, dialog(0, 1, 1, "지력은 캐릭터의 현명함을 나타냅니다. 1에서 130까지의 수치를 가지며, 지력이 높을수록 마법 공격력이 향상 됩니다.");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS020;
+
+				set @pos, dialog(0, 1, 1, "레벨 90 이상이 되면, 영혼사에 가셔서 일정 경험치를 대가로 지력을 1단계 올릴 수 있습니다.");
+				if(@pos == -1) goto COS021;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 4)
+			{
+COS022:
+				set @pos, dialog(0, 0, 1, "(s)키를 사용한 후 오른쪽 창에 (▶)버튼을 누르면 '민첩'이라는 글자가 있습니다. 그 옆에 씌여있는 숫자가 민첩을 나타냅니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "이 수치가 높으면 높을수록, 직접 공격의 명중률, 회피율이 올라갑니다. 1에서 130까지의 수치를 가지며, 레벨 90 이상이 되면, 영혼사에 가셔서 일정 경험치를 대가로 민첩성을 1단계 올릴 수 있습니다.");
+				if(@pos == -1) goto COS022;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 5)
+			{
+COS023:
+				set @pos, dialog(0, 0, 1, "경험치는, 몹(생물, 몬스터)을 사냥, 퇴치함으로써 얻어집니다. 강력한 몹일수록 더 많은 경험치를 줍니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "경험치가 일정 수치를 넘기면 레벨이 올라갑니다. 이것은 경치라고도 합니다...");
+				if(@pos == -1) goto COS023;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 6)
+			{
+COS024:
+				set @pos, dialog(0, 0, 1, "신수란, 캐릭터를 처음 만드실 적에 결정하는 것으로 주작, 백호, 현무, 청룡 이 4마리의 성스러운 동물을 뜻합니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "캐릭터의 수호신수는 이중 하나로 각각의 신수에 따라 다른 효과가 있습니다...");
+				if(@pos == -1) goto COS024;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 7)
+			{
+				set @pos, dialog(0, 0, 1, "국적은 현재 고구려, 부여 2가지 종류가 있습니다. 이것은 처음 시작 위치, 노란비서, 성황령 등을 사용할 경우 위치와 기타 여러가지에 영향을 줍니다.");
+				if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 8)
+			{
+COS025:
+				set @pos, dialog(0, 0, 1, "체력은 캐릭터의 육체적인 에너지를 말합니다.");
+				if(@pos == 0) end;
+COS026:
+				set @pos, dialog(0, 1, 1, "1에서 무한대의 수치를 가지며, 체력이 0이 되면, 유령이 되어 아무것도 할 수 없습니다.");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS025;
+
+				set @pos, dialog(0, 1, 1, "레벨 90이 되면, 영혼사에서 일정 경험치를 대가로 체력을 늘릴 수 있습니다.");
+				if(@pos == -1) goto COS026;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 9)
+			{
+COS027:
+				set @pos, dialog(0, 0, 1, "체력은 캐릭터의 정신적인 에너지를 말합니다.");
+				if(@pos == 0) end;
+COS028:
+				set @pos, dialog(0, 1, 1, "1에서 무한대의 수치를 가지며, 마력이 0이 되면, 마법이나 기술을 사용할 수 없습니다.");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS027;
+
+				set @pos, dialog(0, 1, 1, "레벨 90이 되면, 영혼사에서 일정 경험치를 대가로 마력을 늘릴 수 있습니다.");
+				if(@pos == -1) goto COS028;
+				else if(@pos == 1) goto COS015;
+			}
+			else if(@list_4 == 10)
+			{
+				goto COS003;
+			}
+		}
+	}
+	else if(@list == 3)
+	{
+COS029:
+		image 0, 4, 4;
+
+		set @pos, list2(@list_2, 0, 0, "바람의 나라 단축키 입니다. 자세한 설명을 보시려면 더블클릭 하세요.", "(Space): 공격", "(') 또는 (Enter): 말하기", "(!): 외치기", "(Shift + '): 귓속말", "(i): 아이템창", "(*): 마법창", "(Shift + ;): 감정표현", "(,): 줍기", "(d): 떨구기", "(s): 상태", "(c): 아이템 슬롯 변경", "(e): 먹기", "(u): 아이템 사용", "(Shift_z): 마법사용", "(t): 던지기", "(g): 그룹", "(w): 착용", "(o): 문열기", "(b): 게시판", "처음으로..");
+		if(@pos == 0) end;
+
+		switch(@list_2)
+		{
+		case 1:
+			set @say$, "정면을 향해 손을 휘두르면서 공격을 합니다.";
+			break;
+		case 2:
+			set @say$, "하고 싶은 이야기를 입력하고 엔터를 치면 캐릭터 머리위에 말풍선이 나옵니다.\\n(Enter)의 경우 설정에 따라 동작하지 않을 수도 있습니다.";
+			break;
+		case 3:
+			set @say$, "일반 말보다 멀리 있는 사람까지 들린다.";
+			break;
+		case 4:
+			set @say$, "귓속말을 하고 싶은 이름을 정하고 메시지를 입력하면, 해당 아이디 에게만 메시지가 전달됩니다.";
+			break;
+		case 5:
+			set @say$, "자신이 가진 아이템 리스트가 오른쪽 화면에 나타납니다.";
+			break;
+		case 6:
+			set @say$, "자신이 사용할 수 있는 마법 리스트가 오른쪽 화면에 나타납니다.";
+			break;
+		case 7:
+			set @say$, "캐릭터의 감정 표현을 할 수 있습니다.";
+			break;
+		case 8:
+			set @say$, "발아래 있는 물건을 하나씩 줍습니다. Shift + (,) 는 한꺼번에 모든 아이템을 줍습니다.";
+			break;
+		case 9:
+			set @say$, "가진 물건을 버립니다. (Shift + d) 는 가진물건중 한칸에 여러개 들수 있는 (노란비서,호박,도토리) 이런 아이템들을 한꺼번에 모두 버립니다.";
+			break;
+		case 10:
+			set @say$, "오른쪽 창에 간략한 자신의 정보가 나옵니다. Clan, C.T, TITLE, 아이디, 직업, 장착중인 아이템 등을 볼 수 있습니다.";
+			break;
+		case 11:
+			set @say$, "물건의 순서를 바꿀때 사용됩니다. Shift + c = 마법의 순서를 바꿀때 사용합니다.";
+			break;
+		case 12:
+			set @say$, "음식류의 아이템을 먹을때 사용합니다.";
+			break;
+		case 13:
+			set @say$, "사용 가능한 아이템을 사용합니다.";
+			break;
+		case 14:
+			set @say$, "(Shift + z) 마법을 외울때 사용합니다.";
+			break;
+		case 15:
+			set @say$, "선택한 아이템을 멀리 던집니다.";
+			break;
+		case 16:
+			set @say$, "그룹을 만듭니다. g를 누른 후, 그룹하고 싶은 사람의 아이디를 치고, 엔터를 치면 그룹이 생깁니다.";
+			break;
+		case 17:
+			set @say$, "방어구, 무기를 장착할때 사용됩니다. 무기(w), 투구(h), 오른손/왼손(r/l), 몸통방어구(a)로 구분됩니다. (Shift + t) 무기나 방어구를 벗을때 사용합니다.";
+			break;
+		case 18:
+			set @say$, "정면의 문을 열거나 닫거나 할 때 사용합니다. (문이 잠겼을 경우엔 열쇠가 필요합니다).";
+			break;
+		case 19:
+			set @say$, "바람의나라 게시판 전체를 볼 수 있는 창이 나타납니다. 또한 편지함에 편지를 읽거나 쓸 수 있습니다.";
+			break;
+		case 20:
+			goto COS001;
+			break;
+		}
+		set @pos, dialog(0, 0, 1, @say$);
+		if(@pos == 1) goto COS029;
+	}
+	else if(@list == 4)
+	{
+COS030:
+		image 0, 4, 4;
+
+		set @pos, list2(@list_5, 0, 0, "지금부터 바람의나라 지리 안내를 해드리겠습니다.", "옛 국내성", "옛 부여성", "신 국내성", "신 부여성", "이전 메뉴로..");
+		if(@pos == 0) end;
+		else if(@list_5 == 1)
+		{
+COS100:
+			image 0, 4, 4;
+
+			set @pos, list2(@list_6, 0, 0, "그렇다면 국내성 안내입니다.", "이전 메뉴로..", "주막", "대장간", "푸줏간", "포목상", "갑옷점", "성황당", "검성 태백의관", "현자 해두의관", "태성 마로의관", "신선 진선의관");
+			if(@pos == 0) end;
+			else if(@list_6 == 1) goto COS030;
+			else if(@list_6 == 2)
+			{
+COS031:
+				image 0, 15, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 고구려 주막의 안주인 왈숙네여요. 언니와 이모와 함께 주막을 운영하고 있답니다. 주막이 뭐하는 곳인가 하면~ 많은 분들이 힘든 사냥과 여행을 잠시 멈추고 쉬어가는 곳이랍니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "저희는 주로 주류를 판매하고 있지요... 주막으로 오시려면 국내성 (49, 166), 국내성 (156, 105) 등으로 오시거나, 노란비서, 귀환을 사용하시면 됩니다. 꼭 들러주세요~");
+				if(@pos == -1) goto COS031;
+				else if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 3)
+			{
+COS032:
+				image 0, 7, 3;
+
+				set @pos, dialog(0, 0, 1, "만나서 반갑군. 나는 고구려 대장간의 주인 털보라네. 나는 간단한 무기를 만들어 팔고 있지... 처음에는 내가 만든 무기를 주로 사용하게 될 것이니 자주 들르게나.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "우리 가게는 국내성 (60, 122) 의 위치에 있다네... 우리 가게는 값도 싸니 꼭 들르게나...");
+				if(@pos == -1) goto COS032;
+				else if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 4)
+			{
+COS033:
+				image 0, 12, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 고구려 푸줏간의 안주인 순이에요. 여러가지 고기와 보약(?)을 판답니다. 저희 가게는 국내성 (40, 131) 바로 주막 위에 있답니다. 자주 들르세요~");
+				if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 5)
+			{
+COS034:
+				image 0, 6, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 호호호, 저는 고구려 여자의류전문점 안주인 이쁜이랍니다. 저처럼 이쁜 옷가지들을 사고 판답니다. 저희 매장으로 오실려면 국내성 (83, 160) 바로 주막 오른쪽에 있답니다. 자주 들르세요~ 호호호");
+				if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 6)
+			{
+COS035:
+				image 0, 11, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 고구려 남자 의류전문점 주인 떼보랍니다. 저처럼 튼튼한 남자용 갑옷을 사고 판답니다. 저희 매장으로 오실려면 국내성 (82, 168) 로 오시면 됩니다. 자주 들러주세요~~");
+				if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 7)
+			{
+COS036:
+				image 0, 10, 3;
+
+				set @pos, dialog(0, 0, 1, "나는 죽은 사람을 살려주는 성황당 할머니라네. 되도록이면 나랑 자주 만나지 않는 것이 좋을 것이야... 불의의 사고로 죽었을 경우엔 성황당을 사용하거나 국내성 (43, 91), 국내성 (198, 93)로 오게나...");
+				if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 8)
+			{
+COS037:
+				image 0, 40, 1;
+
+				set @pos, dialog(0, 0, 1, "나는 검성 태백이라네. 혹시 전사가 되고 싶다면 내게로 오게나. 하지만 먼저 전사가 되기 전에 레벨이 5가 되어야 한다네. 나는 국내성 (48, 38)에 있는 건물에 있다네...");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "내 거처 주변에는 사냥하기 쉬운 다람쥐와 토끼가 많이 살고 있어서 레벨 5가 되기 전까지는 이곳에서 사냥을 하는 것도 좋다네...");
+				if(@pos == -1) goto COS037;
+				else if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 9)
+			{
+COS038:
+				image 0, 41, 11;
+
+				set @pos, dialog(0, 0, 1, "나는 현자 해두라네. 혹시 주술사가 되고 싶다면 내게로 오게나. 하지만 먼저 주술사가 되기 전에 레벨이 5가 되어야 한다네... 나는 국내성 (169, 64)에 있는 건물에 있다네...");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "태백의 거처와 마찬가지로 내 거처 주변에도 사냥하기 쉬운 다람쥐와 토끼가 많이 살고 있어서 레벨 5가 되기 전까지는 이곳에서 사냥을 하는 것도 좋다네...");
+				if(@pos == -1) goto COS038;
+				else if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 10)
+			{
+COS039:
+				image 0, 39, 28;
+
+				set @pos, dialog(0, 0, 1, "나는 태성 마로라네. 혹시 도적가 되고 싶다면 내게로 오게나. 하지만 먼저 도적가 되기 전에 레벨이 5가 되어야 한다네... 나는 국내성 (21, 187)에 있는 건물에 있다네...");
+				if(@pos == 1) goto COS100;
+			}
+			else if(@list_6 == 11)
+			{
+COS040:
+				image 0, 88, 11;
+
+				set @pos, dialog(0, 0, 1, "나는 신선 진선이라네. 혹시 도사가 되고 싶다면 내게로 오게나. 하지만 먼저 도사가 되기 전에 레벨이 5가 되어야 한다네... 나는 국내성 (21, 187), 국내성 동문 근처의 조그만 집에 있다네...");
+				if(@pos == 1) goto COS100;
+			}
+		}
+		else if(@list_5 == 2)
+		{
+COS041:
+			image 0, 4, 4;
+
+			set @pos, list2(@list_7, 0, 0, "그렇다면 부여성 안내입니다.", "이전 메뉴로..", "주막", "대장간", "푸줏간", "포목상", "갑옷점", "성황당", "검성 예백의관", "현자 처연의관", "태성 마서의관", "신선 선후의관");
+			if(@pos == 0) end;
+			else if(@list_7 == 1) goto COS030;
+			else if(@list_7 == 2)
+			{
+COS042:
+				image 0, 15, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 부여성 주막의 안주인 연실이여요. 언니와 이모와 함께 주막을 운영하고 있답니다. 주막이 뭐하는 곳인가 하면~ 많은 분들이 힘든 사냥과 여행을 잠시 멈추고 쉬어가는 곳이랍니다.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "저희는 주로 주류를 판매하고 있지요... 주막으로 오시려면 부여성 (37, 111), 으로 오시거나, 노란비서, 귀환을 사용하시면 됩니다. 꼭 들러주세요~");
+				if(@pos == -1) goto COS042;
+				else if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 3)
+			{
+COS043:
+				image 0, 7, 3;
+
+				set @pos, dialog(0, 0, 1, "만나서 반갑군. 나는 부여성 대장간의 주인 떡쇠라네. 나는 간단한 무기를 만들어 팔고 있지... 처음에는 내가 만든 무기를 주로 사용하게 될 것이니 자주 들르게나.");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "우리 가게는 부여성 (18, 103) 의 위치에 있다네... 우리 가게는 값도 싸니 꼭 들르게나...");
+				if(@pos == -1) goto COS043;
+				else if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 4)
+			{
+COS044:
+				image 0, 12, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 부여성 푸줏간의 안주인 옥이에요. 여러가지 고기와 보약(?)을 판답니다. 저희 가게는 부여성 (38, 129) 에 있으니 자주 들르세요~");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 5)
+			{
+COS045:
+				image 0, 6, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 호호호, 저는 부여성 여자의류전문점 안주인 예쁜이랍니다. 저처럼 이쁜 옷가지들을 사고 판답니다. 저희 매장으로 오실려면 부여성 (19, 119) 에 있답니다. 자주 들르세요~ 호호호");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 6)
+			{
+COS046:
+				image 0, 11, 3;
+
+				set @pos, dialog(0, 0, 1, "안녕하세요. 저는 부여성 남자 의류전문점 주인 뭉치랍니다. 저처럼 튼튼한 남자용 갑옷을 사고 판답니다. 저희 매장으로 오실려면 부여성 (18, 127) 로 오시면 됩니다. 자주 들러주세요~~");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 7)
+			{
+COS047:
+				image 0, 10, 3;
+
+				set @pos, dialog(0, 0, 1, "나는 죽은 사람을 살려주는 성황당 할머니라네. 되도록이면 나랑 자주 만나지 않는 것이 좋을 것이야... 불의의 사고로 죽었을 경우엔 성황당을 사용하거나 부여성 (29, 57), 부여성 (125, 58)로 오게나...");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 8)
+			{
+COS048:
+				image 0, 40, 1;
+
+				set @pos, dialog(0, 0, 1, "나는 검성 예백이라네. 혹시 전사가 되고 싶다면 내게로 오게나. 하지만 먼저 전사가 되기 전에 레벨이 5가 되어야 한다네. 나는 부여성 (26, 26)에 있는 건물에 있다네...");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 9)
+			{
+COS049:
+				image 0, 41, 11;
+
+				set @pos, dialog(0, 0, 1, "나는 현자 처연 이라네. 혹시 주술사가 되고 싶다면 내게로 오게나. 하지만 먼저 주술사가 되기 전에 레벨이 5가 되어야 한다네... 나는 부여성 (126, 36)에 있는 건물에 있다네...");
+				if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 10)
+			{
+COS050:
+				image 0, 39, 28;
+
+				set @pos, dialog(0, 0, 1, "나는 태성 마서라네. 혹시 도적가 되고 싶다면 내게로 오게나. 하지만 먼저 도적가 되기 전에 레벨이 5가 되어야 한다네... 나의 산채는 부여성 (22, 89)에 있다네...");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "만약 고구려에 가게 된다면 안부좀 전해주게나....");
+				if(@pos == -1) goto COS050;
+				else if(@pos == 1) goto COS041;
+			}
+			else if(@list_6 == 11)
+			{
+COS051:
+				image 0, 88, 11;
+
+				set @pos, dialog(0, 0, 1, "나는 신선 선후이라네. 혹시 도사가 되고 싶다면 내게로 오게나. 하지만 먼저 도사가 되기 전에 레벨이 5가 되어야 한다네... 나는 부여성 (21, 187) 에 있다네.. 자그마한 돌집이지..");
+				if(@pos == 0) end;
+
+				set @pos, dialog(0, 1, 1, "자네도.. 나처럼 나이를 먹게 되면 이렇게 한적하고 조용한 곳이 더 좋을것이야....");
+				if(@pos == -1) goto COS051;
+				else if(@pos == 1) goto COS041;
+			}
+		}
+		else if(@list_5 == 5)
+		{
+			goto COS001;
+		}
+	}
+	else
+	{
+		set @pos, dialog(0, 0, 1, "개발중입니다...");
+		end;
+	}
+	return;
+}
+
+//callfunc "USERSAY";
+FUNC_USERSAY	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if(last_say(@sd, "검정깃발") && get_mapname(@sd) == "대방성대장간")
+	{
+		image 0, 487, 0;
+
+		if(get_money(@sd) < 5000)
+		{
+			set @pos, dialog(0, 0, 0, "금전이 " + (5000-get_money(@sd)) + "전 부족합니다.");
+		}
+		else
+		{
+			set_money @sd, get_money(@sd)-5000;
+			updatestatus @sd, 2;
+
+			additem @sd, name2itemid("검정깃발"), 1;
+
+			set @pos, dialog(0, 0, 1, "자, 받게나 여기있네.");
+		}
+	}
+	else if(last_say(@sd, "참가"))
+	{
+		if(get_x(@id) >= 19 && get_x(@id) <= 35 && get_y(@id) >= 25 && get_y(@id) <= 40)
+		{
+			if(get_mapname(@sd) == "현무성남쪽")
+			{
+				callfunc "KONGSUNG", "현무", #turtle_castle$, 1, 3;
+			}
+			else if(get_mapname(@sd) == "주작성남쪽")
+			{
+				callfunc "KONGSUNG", "주작", #bird_castle$, 1, 31;
+			}
+			else if(get_mapname(@sd) == "청룡성남쪽")
+			{
+				callfunc "KONGSUNG", "청룡", #dragon_castle$, 1, 2;
+			}
+			else if(get_mapname(@sd) == "백호성남쪽")
+			{
+				callfunc "KONGSUNG", "백호", #tiger_castle$, 1, 11;
+			}
+		}
+	}
+	else if(last_say(@sd, "/레전드") && get_gmlevel(@sd) == 2)
+	{
+		message @sd, 0, "주의사항 : 레전드 테스트시 레전드 번호는 50000번으로 합니다.";
+		set @pos, input1(@a, "모양");
+		set @pos, input1(@b, "글씨색");
+		addlegend @sd, 50000, @a, 0, @b, "좆같은테스트";
+		message @sd, 0, "모양 : " + @a + ", 글씨색 : " + @b;
+	}
+	else if(last_say(@sd, "/버그해결"))
+	{
+		callfunc "BUGCLEAR";
+	}
+	else if(last_say(@sd, "/몹지우기1") && get_gmlevel(@sd) == 2)
+	{
+		set @target_id, obj_getfront();
+		if(@target_id > 0 && istype(@target_id) == 2)
+		{
+			deletemob @target_id, mapid();
+		}
+	}
+	else if(last_say(@sd, "ㅇㄴㅁ멀티닷!굞멀튀"))
+	{
+		set_level @sd, 5;
+		set_job @sd, rand(1, 4);
+		addspell name2spellid("비영사천문");
+	}
+	else if(last_say(@sd, "/?"))
+	{
+		message @sd, 3, "/버그해결";
+	}
+	return;
+}
+
+//callfunc "ADMINSPELL";
+FUNC_ADMINSPELL	{
+	set @sd, mysd();
+	set @id, myid();
+
+	for(set @loop, 5001; @loop <= 5009; set @loop, @loop+1)
+	{
+		if(checkspell(@loop) == 52)
+		{
+			addspell @loop;
+		}
+	}
+	message @sd, 0, "운영자 마법을 성공적으로 배웠습니다";
+	return;
+}
+
+//callfunc "BUGCLEAR";
+FUNC_BUGCLEAR	{
+	set @sd, mysd();
+	set @id, myid();
+	set @job, get_job(@sd);
+
+	for(set @i, 0; @i < 8; set @i, @i+1)
+	{
+		if(get_equipitem(@sd, @i) != 0) { set @pos, dialog(0, 0, 0, "아이템을 하나라도 착용하고 있으면 날 만날수 없네!"); end; }
+	}
+
+	if(@job == 3)
+	{
+		set_s_mindam @sd, @job*4;
+		set_s_maxdam @sd, @job*4;
+		set_l_mindam @sd, @job*4;
+		set_l_maxdam @sd, @job*4;
+	}
+	else if(@job == 4)
+	{
+		set_s_mindam @sd, @job*3;
+		set_s_maxdam @sd, @job*3;
+		set_l_mindam @sd, @job*3;
+		set_l_maxdam @sd, @job*3;
+	}
+	else
+	{
+		set_s_mindam @sd, 0;
+		set_s_maxdam @sd, 0;
+		set_l_mindam @sd, 0;
+		set_l_maxdam @sd, 0;
+	}
+
+	set_ac @sd, 100-get_level(@sd);
+	set_protection @sd, 0;
+	set_healing @sd, 0;
+	set_dam @sd, 0;
+	set_hit @sd, 0;
+	set_healrecycling @sd, 0;
+	set_maxhp @sd, get_purehp(@sd);
+	set_maxmp @sd, get_puremp(@sd);
+	message @sd, 3, "버그해결 완료.";
+	return;
+}
+
+//callfunc "SERVEREXPRATE";
+FUNC_SERVEREXPRATE	{
+	set @sd, mysd();
+	set @id, myid();
+
+	message @sd, 5, "현재 경험치 배율은 " + #server_exprate + "배 입니다.";
+
+	set @pos, input1(@exprate, "경험치 배율을 몇배로 수정하시겠습니까?");
+	if(@pos == 0) { end; }
+
+	if(@exprate <= 2) { set #server_exprate, 3; }
+	else { set #server_exprate, @exprate; }
+
+	broadcast 5, "경험치가 " + #server_exprate + "배로 수정되었습니다.";
+
+	return;
+}
+
+//callfunc "DEADEXP";
+FUNC_DEADEXP	{
+	set @sd, mysd();
+	set @id, myid();
+	set @mapname$, get_mapname(@sd);
+
+	spelleveryuncast @sd;
+
+	if(@mapname$ == "청룡성남쪽" || @mapname$ == "청룡성입구" || @mapname$ == "청룡의성" || @mapname$ == "청룡의심장")
+	{
+		warp @sd, name2mapid("청룡성남쪽"), rand(24, 34), rand(36, 40);
+		announce 5, "[알림] " + get_name(@sd) + "님이 죽어서 탈락하셨습니다.";
+		pcdead @sd;
+	}
+	else if(@mapname$ == "주작성남쪽" || @mapname$ == "주작성입구" || @mapname$ == "주작의성" || @mapname$ == "주작의심장")
+	{
+		warp @sd, name2mapid("주작성남쪽"), rand(24, 34), rand(36, 40);
+		announce 5, "[알림] " + get_name(@sd) + "님이 죽어서 탈락하셨습니다.";
+		pcdead @sd;
+	}
+	else if(@mapname$ == "현무성남쪽" || @mapname$ == "현무성입구" || @mapname$ == "현무의성" || @mapname$ == "현무의심장")
+	{
+		warp @sd, name2mapid("현무성남쪽"), rand(24, 34), rand(36, 40);
+		announce 5, "[알림] " + get_name(@sd) + "님이 죽어서 탈락하셨습니다.";
+		pcdead @sd;
+	}
+	else if(@mapname$ == "백호성남쪽" || @mapname$ == "백호성입구" || @mapname$ == "백호의성" || @mapname$ == "백호의심장")
+	{
+		warp @sd, name2mapid("백호성남쪽"), rand(24, 34), rand(36, 40);
+		announce 5, "[알림] " + get_name(@sd) + "님이 죽어서 탈락하셨습니다.";
+		pcdead @sd;
+	}
+	else
+	{
+		if(get_job(@sd) >= 1 && get_job(@sd) <= 4)
+		{
+			if(get_level(@sd) < 99)
+			{
+				pcdead @sd;
+			}
+			else
+			{
+				if(ismapoption(@sd, 5))
+				{
+					set @exp, get_exp(@sd);
+					if(@exp < 0) { set @exp1, 2147483647; }
+					else { set @exp1, @exp; }
+
+					set @exp2, (@exp1/100)*3;
+					set_exp @sd, get_exp(@sd)-@exp2;
+					updatestatus @sd, 0;
+
+					pcdead @sd;
+				}
+				else
+				{
+					pcdead @sd;
+				}
+			}
+		}
+		else
+		{
+			effect @id, 22;
+			set_hp @sd, get_maxhp(@sd);
+			updatestatus @sd, 1;
+
+			if(get_nation(@sd) == 1)
+			{
+				setarray @mapid[0], 29, 30, 31, 8016, 8017, 8018, 8043, 8044, 8045, 8070, 8071, 8072, 8097, 8098, 8099, 8124, 8125, 8126, 8151, 8152, 8153, 8178, 8179, 8180, 8205, 8206, 8207, 8232, 8233, 8234, 8259, 8260, 8261;
+				setarray @x[0], 3, 4, 7, 8, 3, 4, 7, 8;
+				setarray @y[0], 5, 5, 5, 5, 9, 9, 9, 9;
+			}
+			else
+			{
+				setarray @mapid[0], 15, 16, 17, 7716, 7717, 7718, 7743, 7744, 7745, 7770, 7771, 7772, 7797, 7798, 7799, 7824, 7825, 7826, 7851, 7852, 7853, 7878, 7879, 7880, 7905, 7906, 7907, 7932, 7933, 7934, 7959, 7960, 7961;
+				setarray @x[0], 3, 4, 7, 8, 3, 4, 7, 8;
+				setarray @y[0], 5, 5, 5, 5, 9, 9, 9, 9;
+			}
+
+			set @warp_mapid, @mapid[rand(0, getarraysize(@mapid)-1)];
+			set @warp_x, @x[rand(0, getarraysize(@x)-1)];
+			set @warp_y, @y[rand(0, getarraysize(@y)-1)];
+
+			deletearray @mapid[0], getarraysize(@mapid);
+			deletearray @x[0], getarraysize(@x);
+			deletearray @y[0], getarraysize(@y);
+
+			warp @sd, @warp_mapid, @warp_x, @warp_y;
+
+			message @sd, 8, "죽으셨군요! 아직은 레벨이 낮으니 주막에서 살려드립니다. 직업을 가지신 후 죽으실 경우 유령이되니 조심하세요!";
+		}
+	}
+	return;
+}
+
+//callfunc "BANUSER";
+FUNC_BANUSER	{
+	set @sd, mysd();
+	set @id, myid();
+
+	set @pos, input1(@user$, "어느 유저를 제재하시겠습니까?");
+	if(@pos == 0) { end; }
+
+	set @target_sd, name2sd(@user$);
+	if(@target_sd > 0)
+	{
+		set @pos, input1(@ban, "몇초간 제재하시겠습니까?");
+		if(@pos == 0) { end; }
+		else if(@ban <= 0) { set @pos, dialog(0,0,0, "제재는 1초이상만 가능합니다."); end; }
+
+		set @ban_list, list1("정말 " + @user$ + "님을 " + @ban + "초간 제재하시겠습니까? 제재는 해제가 불가능합니다.", "예", "아뇨");
+		if(@ban_list == 1)
+		{
+			set @nt, callfunc("Server_Nowtime");
+			set #ban_timer, @nt + @ban;
+			message @sd, 0, @user$ + "님을 " + @ban + "초간 제재합니다.";
+			runscript @target_sd, "킥밴";
+			end;
+		}
+		else { end; }
+	}
+	else
+	{
+		set @pos, dialog(0,0,0, @user$ + "님은 바람의나라에 없습니다.");
+		end;
+	}
+	return;
+}
+
+//callfunc "Item_Heal", 체력회복량, 마력회복량;
+FUNC_Item_Heal	{
+	set @sd, mysd();
+	set @id, myid();
+
+	set @healhp, getarg(0);
+	set @healmp, getarg(1);
+
+	if(get_hp(@sd)+@healhp > get_maxhp(@sd)) { set_hp @sd, get_maxhp(@sd); }
+	else { set_hp @sd, get_hp(@sd)+@healhp; }
+
+	if(get_mp(@sd)+@healmp > get_maxmp(@sd)) { set_mp @sd, get_maxmp(@sd); }
+	else { set_mp @sd, get_mp(@sd)+@healmp; }
+
+	return;
+}
+
+FUNC_Login_Quest_Spell	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if($myungsukboo == 1 || $myungsukboo == 3)
+	{
+		spellaether @sd, name2spellid("귀신퇴치부적"), 180;
+	}
+	if($geumgang_rock == 8)
+	{
+		spellaether @sd, name2spellid("표신궁고문서6"), 180;
+	}
+	if($donuhap == 1 || $donuhap == 2)
+	{
+		spellaether @sd, name2spellid("동충하초인삼"), 180;
+	}
+	if($dojaeyoung == 6)
+	{
+		spellaether @sd, name2spellid("만리향씨앗심기"), 180;
+	}
+	if($greatwall_repair == 7)
+	{
+		spellaether @sd, name2spellid("만리향씨앗"), 180;
+	}
+	if($hansangyak == 1)
+	{
+		spellaether @sd, name2spellid("적심토"), 180;
+	}
+	if($find_play_object == 1)
+	{
+		spellaether @sd, name2spellid("태자의장난감"), 180;
+	}
+	if($greatwall_repair == 1)
+	{
+		spellaether @sd, name2spellid("만리장성수리"), 180;
+	}
+	if($mountain_god_clothes == 1)
+	{
+		spellaether @sd, name2spellid("산신의보물지도"), 180;
+	}
+	if($totem_clothes == 1)
+	{
+		spellaether @sd, name2spellid("여신의이슬"), 180;
+	}
+	if($alcoholic_drink == 1)
+	{
+		spellaether @sd, name2spellid("청심초"), 180;
+	}
+	return;
+}
+
+FUNC_Login_Check	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if(get_name(@sd) == "연GM" || get_name(@sd) == "무휼GM" || get_name(@sd) == "세류GM" || get_name(@sd) == "유리GM" || get_name(@sd) == "해명GM" || get_name(@sd) == "배극GM" || get_name(@sd) == "하자GM" || get_name(@sd) == "호동GM" || get_name(@sd) == "주몽GM" || get_name(@sd) == "낙랑GM" || get_name(@sd) == "괴유GM")
+	{
+		set @pos, input2(@pass$, 0, 15, "비밀번호를 입력해주세요.", " ", " ");
+		if(@pos == 0) { getoutofhere @sd; }
+		else if(@pass$ == "gkgkgk")
+		{
+			message @sd, 0, get_name(@sd) + "님 안녕하세요?";
+			set_gmlevel @sd, 2;
+		}
+		else { getoutofhere @sd; }
+	}
+	else
+	{
+		if(get_gmlevel(@sd) > 0)
+		{
+			set_gmlevel @sd, 0;
+			getoutofhere @sd;
+		}
+	}
+	return;
+}
+
+FUNC_Login_Warp	{
+	set @sd, mysd();
+	set @id, myid();
+	set @mapid, get_mapid(@sd);
+	set @mapname$, get_mapname(@sd);
+	if(@mapname$ == "소호의방" || @mapname$ == "전욱의방" || @mapname$ == "제곡의방" || @mapname$ == "요제의방" || @mapname$ == "순제의방" || @mapname$ == "반고의방" || @mapname$ == "용왕용마의침소" || @mapname$ == "용왕용천의침소" || @mapname$ == "용왕용랑의침소" || @mapname$ == "용왕용겸의침소" || @mapid >= 2200 && @mapid <= 2230 || @mapid >= 2240 && @mapid <= 2243)
+	{
+		set_mp @sd, get_mp(@sd)+30;
+		spellcast @sd, name2spellid("귀환");
+		message @sd, 0, "[알림] " + @mapname$ + "에서 로그아웃 하실경우 자동귀환 됩니다."; 
+	}
+	else if(@mapname$ == "청룡성남쪽" || @mapname$ == "청룡성입구" || @mapname$ == "청룡의성" || @mapname$ == "청룡의심장")
+	{
+		warp @sd, name2mapid("청룡성남쪽"), rand(24, 34), rand(36, 40);
+		message @sd, 0, "[알림] " + @mapname$ + "에서 로그아웃 하실경우 청룡성남쪽으로 귀환됩니다.";
+	}
+	else if(@mapname$ == "주작성남쪽" || @mapname$ == "주작성입구" || @mapname$ == "주작의성" || @mapname$ == "주작의심장")
+	{
+		warp @sd, name2mapid("주작성남쪽"), rand(24, 34), rand(36, 40);
+		message @sd, 0, "[알림] " + @mapname$ + "에서 로그아웃 하실경우 주작성남쪽으로 귀환됩니다.";
+	}
+	else if(@mapname$ == "현무성남쪽" || @mapname$ == "현무성입구" || @mapname$ == "현무의성" || @mapname$ == "현무의심장")
+	{
+		warp @sd, name2mapid("현무성남쪽"), rand(24, 34), rand(36, 40);
+		message @sd, 0, "[알림] " + @mapname$ + "에서 로그아웃 하실경우 현무성남쪽으로 귀환됩니다.";
+	}
+	else if(@mapname$ == "백호성남쪽" || @mapname$ == "백호성입구" || @mapname$ == "백호의성" || @mapname$ == "백호의심장")
+	{
+		warp @sd, name2mapid("백호성남쪽"), rand(24, 34), rand(36, 40);
+		message @sd, 0, "[알림] " + @mapname$ + "에서 로그아웃 하실경우 백호성남쪽으로 귀환됩니다.";
+	}
+	else
+	{
+		set @nt, callfunc("Server_Nowtime");
+		if($logout_time+172800 < @nt)
+		{
+			if(get_level(@sd) >= 5)
+			{
+				set_mp @sd, get_mp(@sd)+30;
+				spellcast @sd, name2spellid("귀환");
+			}
+		}
+	}
+	return;
+}
+
+FUNC_Ban_Check	{
+	set @sd, mysd();
+	set @id, myid();
+	set @nt, callfunc("Server_Nowtime");
+
+	if(get_level(@sd) >= 5)
+	{
+		if($ban_time > @nt)
+		{
+			getoutofhere @sd;
+			end;
+		}
+	}
+	return;
+}
+
+//callfunc "Warp_Map_Item", 이동맵, x좌표, y좌표, 사운드, 아이템;
+FUNC_Warp_Map_Item	{
+	set @sd, mysd();
+	set @id, myid();
+
+	delitem @sd, getarg(4), 1;
+	sound @id, getarg(3);
+	warp @sd, getarg(0), getarg(1), getarg(2);
+	return;
+}
+
+FUNC_Server_Nowtime	{
+	set @nowtime, gettime(0, 0) + (gettime(1, 0)*60) + (gettime(2, 0)*3600) + ((gettime(3, 0)+callfunc("Server_Lasttime", gettime(4, 0)))*86400) + ((gettime(5, 0)-2011)*31536000);
+	return @nowtime;
+	return;
+}
+
+FUNC_Server_Lasttime	{
+	if(getarg(0) == 1)
+	{
+		return 31;
+	}
+	else if(getarg(0) == 2)
+	{
+		return 59;
+	}
+	else if(getarg(0) == 3)
+	{
+		return 90;
+	}
+	else if(getarg(0) == 4)
+	{
+		return 120;
+	}
+	else if(getarg(0) == 5)
+	{
+		return 151;
+	}
+	else if(getarg(0) == 6)
+	{
+		return 181;
+	}
+	else if(getarg(0) == 7)
+	{
+		return 212;
+	}
+	else if(getarg(0) == 8)
+	{
+		return 243;
+	}
+	else if(getarg(0) == 9)
+	{
+		return 273;
+	}
+	else if(getarg(0) == 10)
+	{
+		return 304;
+	}
+	else if(getarg(0) == 11)
+	{
+		return 334;
+	}
+	else if(getarg(0) == 12)
+	{
+		return 365;
+	}
+	return;
+}
+
+FUNC_Server_Lastday	{
+	if(getarg(0) == 1 || getarg(0) == 3 || getarg(0) == 5 || getarg(0) == 7 || getarg(0) == 8 || getarg(0) == 10 || getarg(0) == 12)
+	{
+		return 31;
+	}
+	else if(getarg(0) == 4 || getarg(0) == 6 || getarg(0) == 9 || getarg(0) == 11)
+	{
+		return 30;
+	}
+	else if(getarg(0) == 2)
+	{
+		return 28;
+	}
+	return;
+}
+
+킥밴	{
+	set @sd, mysd();
+	set @id, myid();
+
+	set $ban_time, #ban_timer;
+	getoutofhere @sd;
+}

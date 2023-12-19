@@ -1,0 +1,331 @@
+북천황신수	{
+	set @sd, mysd();
+	set @id, myid();
+
+POS01:
+	set @pos, dialog(0, 0, 1, "이 곳은 북천황이 봉인된 곳..");
+	if(@pos == 0) end;
+POS02:
+	set @pos, dialog(0, 1, 1, "북천황은 여러사람을 아무렇지도 않게 죽인 매우 잔인한 녀석이다.");
+	if(@pos == 0) end;
+	else if(@pos == -1) goto POS01;
+POS03:
+	set @pos, dialog(0, 1, 1, "그러해서 하늘의 선녀가 북천황을 이곳에 봉인하고 나는 이 문을 지키고있다.");
+	if(@pos == 0) end;
+	else if(@pos == -1) goto POS02;
+POS04:
+	set @pos, dialog(0, 1, 1, "그렇기 때문에 북천황을 부르기위해선 북천황이 다른곳으로 나갈 수 없도록 현철과 오독산으로 그문을 지켜야한다.");
+	if(@pos == 0) end;
+	else if(@pos == -1) goto POS03;
+POS05:
+	set @pos, list2(@list, 0, 1, "현철과 오독산이 있는가?", "네", "아니오");
+	if(@pos == -1) goto POS04;
+	else if(@list != 1) end;
+
+	setarray @checkitem$[0], "현철", "오독산";
+	for(set @i, 0; @i < 2; set @i, @i+1)
+	{
+		if(countitem(name2itemid(@checkitem$[@i])) == 0)
+		{
+			set @pos, dialog(0,0,0, "자네에겐 " + @checkitem$[@i] + "이(가) 없군.");
+			deletearray @checkitem$[0], getarraysize(@checkitem$);
+			end;
+		}
+	}
+POS06:
+	set @pos, dialog(0, 0, 1, "현철과 오독산을 가지고 있군.. 그럼 북천황을 부르겠네");
+	if(@pos == 0) { deletearray @checkitem$[0], getarraysize(@checkitem$); end; }
+POS07:
+	mobspawn 1912, 10, 9, 2, 1051;
+	for(set @i, 0; @i < 2; set @i, @i+1)
+	{
+		delitem @sd, name2itemid(@checkitem$[@i]), 1;
+		message @sd, 3, @checkitem$[@i] + " 주었습니다";
+	}
+	deletearray @checkitem$[0], getarraysize(@checkitem$);
+	set @pos, dialog(0, 0, 1, "지금 북천황이 나왔네! 빠른시간내에 처리해주게!");
+	end;
+}
+
+사천족제사장	{
+	set @sd, mysd();
+	set @id, myid();
+	set @nt, callfunc("Server_Nowtime");
+
+	if(get_level(@sd) < 99)
+	{
+		set @pos, dialog(0, 0, 0, "99레벨 이상만 이용이 가능합니다.");
+		end;
+	}
+
+	if($holytree == 0)
+	{
+		if($holytreetime < @nt)
+		{
+COS001:
+			set @pos, dialog(1, 0, 1, "최근 몇 년간 흉년이 계속되고 있어 마을을 위한 제를 지내기 위해 신성한 나무 가지를 구하고 있습니다.\\n\\n북방대초원에는 백현목,자현목,노송의가지,천년묵은가지와 같이 신성한 기운이 깃든 나무 가지들을 구할 수 있는데,\\n매일 매일 제를 지내야 하다 보니 많은 양의 나무 가지가 필요합니다.");
+			if(@pos == 0) end;
+COS002:
+			set @pos, list2(@list, 1, 1, "저에게 신성한 기운이 깃든 나무를 가져다 주실 수 있을까요?", "네. 구해보도록 할께요.", "아니요. 제가 좀 바빠서.");
+			if(@pos == 0) end;
+			else if(@pos == -1) goto COS001;
+			else if(@list == 1)
+			{
+				set $holytree, 1;
+				set @pos, dialog(1, 0, 1, "신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\\n\\n그럼 부탁드리겠습니다.");
+				end;
+			}
+			else end;
+		}
+		else
+		{
+			set @pos, dialog(0, 0, 0, "" + ($holytreetime-@nt) + "초 후에 다시 오세요.");
+			end;
+		}
+	}
+	if($holytree == 1)
+	{
+COS003:
+		set @pos, list2(@list_2, 1, 0, "이렇게 열심히 제를 올리는데 언제쯤 흉년이 멈추려나..", "백현목을 가지고 왔습니다.", "자현목을 가지고 왔습니다.", "노송의가지를 가지고 왔습니다.", "천년묵은가지를 가지고 왔습니다.");
+		if(@pos == 0) end;
+		else if(@list_2 > 0)
+		{
+			setarray @item$[1], "백현목", "자현목", "노송의가지", "천년묵은가지";
+			setarray @message$[1], "을", "을", "를", "를";
+			setarray @message2$[1], "이", "이", "가", "가";
+			setarray @exp[1], 926000000, 1353000000, 1550000000, 2100000000;
+			set @pos, list2(@list_3, 1, 0, "풍년을 위한 제를 올릴 수 있도록 저에게 " + @item$[@list_2] + "" + @message$[@list_2] + " 주시겠습니까?", "네. 드릴께요.", "아니요. 제가 쓸데가 있어서요.");
+			if(@pos == 0) { goto failed; end; }
+			else if(@list_3 == 1)
+			{
+				if(countitem(name2itemid(@item$[@list_2])) == 0)
+				{
+					set @pos, dialog(0, 0, 0, @item$[@list_2] + "" + @message2$[@list_2] + " 없는데요?");
+				}
+				else
+				{
+					if(party(@sd) == 0)
+					{
+						delitem @sd, name2itemid(@item$[@list_2]), 1;
+						message @sd, 3, @item$[@list_2] + " 주었습니다";
+
+						set @giveexp, @exp[@list_2]/#server_exprate;
+						giveexp @sd, @giveexp;
+
+						set @nt, callfunc("Server_Nowtime");
+						set $holytreetime, @nt+86400;
+						set $holytreecount, $holytreecount+1;
+						set $holytree, 0;
+
+						deletearray @item$[1], getarraysize(@item$);
+						deletearray @message$[1], getarraysize(@message$);
+						deletearray @message2$[1], getarraysize(@message2$);
+						deletearray @exp[1], getarraysize(@exp);
+
+						addlegend @sd, 5, 7, 0, 15, "신성한나무를 " + $holytreecount + "회 가져다 주었다.";
+						set @pos, dialog(1, 0, 0, "감사합니다.\\n\\n하루 빨리 풍년이 찾아 올 수 있도록 몸과 마음을 다해 제를 올려야겠습니다.\\n\\n계속해서 잘 부탁드립니다.");
+					}
+					else
+					{
+						deletearray @item$[1], getarraysize(@item$);
+						deletearray @message$[1], getarraysize(@message$);
+						deletearray @message2$[1], getarraysize(@message2$);
+						deletearray @exp[1], getarraysize(@exp);
+						set @pos, dialog(0, 0, 1, "그룹을 하신 상태로는 보상을 받을 수 없습니다.");
+					}
+				}
+				deletearray @item$[1], getarraysize(@item$);
+				deletearray @message$[1], getarraysize(@message$);
+				deletearray @message2$[1], getarraysize(@message2$);
+				deletearray @exp[1], getarraysize(@exp);
+			}
+			else { goto failed; end; }
+		}
+		else end;
+	}
+failed:
+	deletearray @item$[1], getarraysize(@item$);
+	deletearray @message$[1], getarraysize(@message$);
+	deletearray @message2$[1], getarraysize(@message2$);
+	deletearray @exp[1], getarraysize(@exp);
+}
+
+백의장인	{
+	set @sd, mysd();
+	set @id, myid();
+
+	if(countitem(name2itemid("얼음")) == 0)
+	{
+		set @pos, dialog(0, 0, 0, "아이고.. 더워.. 본좌는 지금 더워서 아무것도 못하겠으니 그만 돌아가거라.");
+		end;
+	}
+START:
+	set @pos, list2(@list, 0, 0, "안녕하신가? 무엇을 도와줄까?", "상급 용무기를 각성시켜 주세요.", "호박무기만들기", "연호박무기만들기");
+	if(@pos == 0) { end; }
+	else if(@list == 1)
+	{
+COS001:
+		set @pos, dialog(0, 0, 1, "상급 용무기를 각성시키러 왔다고? 그렇다면 잘 찾아왔네.");
+		if(@pos == 0) { end; }
+COS002:
+		set @pos, dialog(0, 1, 1, "이제까지 나의 제자 천금장인에게 용무기를 맡기느라 수고가 많았네.");
+		if(@pos == 0) end;
+		else if(@pos == -1) { goto COS001; }
+COS003:
+		set @pos, dialog(0, 1, 1, "하지만 아무리 나라도 가끔 실수할 때가 있는법.");
+		if(@pos == 0) end;
+		else if(@pos == -1) { goto COS002; }
+COS01:
+		set @pos, list2(@list, 0, 0, "그래. 그래도 나에게 용무기 각성을 맡기겠나?", "네. 용무기를 각성해주세요.");
+		if(@pos == 0) { end; }
+		else if(@list != 1) { end; }
+		else
+		{
+COS02:
+			set @pos, list2(@lst, 0, 0, "좋아. 각오가 대단하군. 그럼 각성시킬 용무기를 고르게.", "용마", "용천", "용랑", "용겸");
+			if(@pos == 0) { end; }
+			else if(@lst == 1)
+			{
+				set @pos, list2(@choose, 0, 1, "어떤 무기를 각성할건가?", "용마제육검", "용마제칠검", "용마제팔검");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS02;
+
+				setarray @success$[1], "용마제칠검", "용마제팔검", "용마제구검";
+				setarray @failed$[1], "없어요", "용마제칠검(손상)", "용마제팔검(손상)";
+				setarray @check$[1], "용마제육검", "용마제칠검", "용마제팔검";
+			}
+			else if(@lst == 2)
+			{
+				set @pos, list2(@choose, 0, 1, "어떤 무기를 각성할건가?", "용천제육검", "용천제칠검", "용천제팔검");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS02;
+
+				setarray @success$[1], "용천제칠검", "용천제팔검", "용천제구검";
+				setarray @failed$[1], "없어요", "용천제칠검(손상)", "용천제팔검(손상)";
+				setarray @check$[1], "용천제육검", "용천제칠검", "용천제팔검";
+			}
+			else if(@lst == 3)
+			{
+				set @pos, list2(@choose, 0, 1, "어떤 무기를 각성할건가?", "용랑제육봉", "용랑제칠봉", "용랑제팔봉");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS02;
+
+				setarray @success$[1], "용랑제칠봉", "용랑제팔봉", "용랑제구봉";
+				setarray @failed$[1], "없어요", "용랑제칠봉(손상)", "용랑제팔봉(손상)";
+				setarray @check$[1], "용랑제육봉", "용랑제칠봉", "용랑제팔봉";
+			}
+			else if(@lst == 4)
+			{
+				set @pos, list2(@choose, 0, 1, "어떤 무기를 각성할건가?", "용겸제육봉", "용겸제칠봉", "용겸제팔봉");
+				if(@pos == 0) end;
+				else if(@pos == -1) goto COS02;
+
+				setarray @success$[1], "용겸제칠봉", "용겸제팔봉", "용겸제구봉";
+				setarray @failed$[1], "없어요", "용겸제칠봉(손상)", "용겸제팔봉(손상)";
+				setarray @check$[1], "용겸제육봉", "용겸제칠봉", "용겸제팔봉";
+			}
+		}
+		setarray @rand[1], 20, 8, 2;
+		if(countitem(name2itemid("얼음")) == 0 || countitem(name2itemid("은나무가지")) == 0 || countitem(name2itemid(@check$[@choose])) == 0 || get_purehp(@sd) < 1000)
+		{
+			set @pos, dialog(0, 0, 0, "자네는 아직 용무기를 각성시킬 준비가 모자라군.");
+		}
+		else
+		{
+			if(rand(1, 100) <= @rand[@choose])
+			{
+				broadcast 5, get_name(@sd) + "님이 " + @check$[@choose] + " 강화에 성공하셨습니다.";
+				delitem @sd, name2itemid("얼음"), 1;
+				delitem @sd, name2itemid("은나무가지"), 1;
+				delitem @sd, name2itemid(@check$[@choose]), 1;
+				message @sd, 3, "얼음 주었습니다";
+				message @sd, 3, "은나무가지 주었습니다";
+				message @sd, 3, @check$[@choose] + " 주었습니다";
+				additem @sd, name2itemid(@success$[@choose]), 1;
+				set_purehp @sd, get_purehp(@sd)-1000;
+				set_hp @sd, get_maxhp(@sd);
+				set @pos, dialog(0, 0, 1, "축하하네. 하늘이 자네를 " + @success$[@choose] + "의 주인으로 인정하는군");
+			}
+			else
+			{
+				broadcast 5, get_name(@sd) + "님이 " + @check$[@choose] + " 강화에 실패하셨습니다.";
+				delitem @sd, name2itemid("얼음"), 1;
+				delitem @sd, name2itemid("은나무가지"), 1;
+				delitem @sd, name2itemid(@check$[@choose]), 1;
+				message @sd, 3, "얼음 주었습니다";
+				message @sd, 3, "은나무가지 주었습니다";
+				message @sd, 3, @check$[@choose] + " 주었습니다";
+				if(name2itemid(@failed$[@choose]) > 0) { additem @sd, name2itemid(@failed$[@choose]), 1; }
+				set_purehp @sd, get_purehp(@sd)-1000;
+				set_hp @sd, get_maxhp(@sd);
+				set @pos, dialog(0, 0, 0, "이런.. 용무기가 온도를 이기지 못하고 부숴저 버렸군..");
+			}
+		}
+		deletearray @success$[1], getarraysize(@success$);
+		deletearray @failed$[1], getarraysize(@failed$);
+		deletearray @check$[1], getarraysize(@check$);
+		deletearray @rand[1], getarraysize(@rand);
+	}
+	else if(@list == 2)
+	{
+		set @pos, list2(@make1, 0, 1, "그럼.. 어떤 색깔의 호박별을 가지고 왔는가?", "황호박별입니다.", "적호박별입니다.", "녹호박별입니다.", "청호박별입니다.", "회호박별입니다.", "갈호박별입니다.", "자호박별입니다.");
+		if(@pos == 0) end;
+		else if(@pos == -1) goto START;
+		if(@make1 > 0)
+		{
+			setarray @clothes_name$[1], "별검", "별도", "별봉", "별곤";
+			setarray @clothes_color$[1], "황호박", "적호박", "녹호박", "갈호박", "청호박", "회호박", "자호박";
+
+			set @pos, list2(@make2, 0, 0, "그래.. " + @clothes$[@make1] + "별로 어떤 아이템을 만들텐가?", @clothes_color$[@make1] + "별검입니다.", @clothes_color$[@make1] + "별도입니다.", @clothes_color$[@make1] + "별봉입니다.", @clothes_color$[@make1] + "별곤입니다.");
+			if(@pos == 1 && @make2 > 0)
+			{
+				if(countitem(name2itemid(@clothes_color$[@make1] + "별")) == 0 || countitem(name2itemid("죽은지네")) == 0)
+				{
+					set @pos, dialog(0, 0, 0, "재료를 다시 한번 살펴보게. " + @clothes_color$[@make1] + "별과 죽은지네가 있어야 제작할 수 있다네.");
+				}
+				else
+				{
+					delitem @sd, name2itemid(@clothes_color$[@make1] + "별"), 1;
+					delitem @sd, name2itemid("죽은지네"), 1;
+					message @sd, 3, @clothes_color$[@make1] + "별 주었습니다";
+					message @sd, 3, "죽은지네 주었습니다";
+					additem @sd, name2itemid(@clothes_color$[@make1] + @clothes_name$[@make2]), 1;
+					set @pos, dialog(0, 0, 1, @clothes_color$[@make1] + "별로 " + @clothes_color$[@make1] + "" + @clothes_name$[@make2] + " 만들어주었네.");
+				}
+			}
+		}
+		deletearray @clothes_name$[1], getarraysize(@clothes_name$);
+		deletearray @clothes_color$[1], getarraysize(@clothes_color$);
+	}
+	else if(@list == 3)
+	{
+		set @pos, list2(@make1, 0, 1, "그럼.. 어떤 색깔의 호박별을 가지고 왔는가?", "연녹호박별입니다.", "연청호박별입니다.", "연갈호박별입니다.", "연자호박별입니다.");
+		if(@pos == 0) end;
+		else if(@pos == -1) goto START;
+		if(@make1 > 0)
+		{
+			setarray @clothes_name$[1], "별검", "별도", "별봉", "별곤";
+			setarray @clothes_color$[1], "연녹호박", "연청호박", "연갈호박", "연자호박";
+
+			set @pos, list2(@make2, 0, 0, "그래.. " + @clothes$[@make1] + "별로 어떤 아이템을 만들텐가?", @clothes_color$[@make1] + "별검입니다.", @clothes_color$[@make1] + "별도입니다.", @clothes_color$[@make1] + "별봉입니다.", @clothes_color$[@make1] + "별곤입니다.");
+			if(@pos == 1 && @make2 > 0)
+			{
+				if(countitem(name2itemid(@clothes_color$[@make1] + "별")) == 0 || countitem(name2itemid("죽은지네")) == 0)
+				{
+					set @pos, dialog(0, 0, 0, "재료를 다시 한번 살펴보게. " + @clothes_color$[@make1] + "별과 죽은지네가 있어야 제작할 수 있다네.");
+				}
+				else
+				{
+					delitem @sd, name2itemid(@clothes_color$[@make1] + "별"), 1;
+					delitem @sd, name2itemid("죽은지네"), 1;
+					message @sd, 3, @clothes_color$[@make1] + "별 주었습니다";
+					message @sd, 3, "죽은지네 주었습니다";
+					additem @sd, name2itemid(@clothes_color$[@make1] + @clothes_name$[@make2]), 1;
+					set @pos, dialog(0, 0, 1, @clothes_color$[@make1] + "별로 " + @clothes_color$[@make1] + "" + @clothes_name$[@make2] + " 만들어주었네.");
+				}
+			}
+		}
+		deletearray @clothes_name$[1], getarraysize(@clothes_name$);
+		deletearray @clothes_color$[1], getarraysize(@clothes_color$);
+	}
+}
