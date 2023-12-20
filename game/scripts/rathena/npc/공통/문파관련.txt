@@ -1,28 +1,28 @@
-¹®ÆÄ°¡ÀÔ¿äÃ»	{
+ë¬¸íŒŒê°€ì…ìš”ì²­	{
 	image 0, 220, 0;
 	set @sd, mysd();
 	set @id, myid();
 	set @name$, #clanname$;
 	
-	set @join, list1(@name$ + "¹®ÆÄ¿¡¼­ ¹®ÆÄ°¡ÀÔ ¿äÃ»ÀÌ µé¾î¿Ô½À´Ï´Ù. °¡ÀÔÇÏ½Ã°Ú½À´Ï±î? ", "³×, °¡ÀÔÇÏ°Ú½À´Ï´Ù.", "¾Æ´Ï¿À, ¾ÈÇÒ·¡¿ä.");
+	set @join, list1(@name$ + "ë¬¸íŒŒì—ì„œ ë¬¸íŒŒê°€ì… ìš”ì²­ì´ ë“¤ì–´ì™”ìŠµë‹ˆë‹¤. ê°€ì…í•˜ì‹œê² ìŠµë‹ˆê¹Œ? ", "ë„¤, ê°€ì…í•˜ê² ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ì•ˆí• ë˜ìš”.");
 	if(@join == 1)
 	{
 		set @err, set_clan(@sd, @name$, get_name(@sd));
 		if(@err == 0)
 		{
-			set @pos, dialog(0, 0, 0, "Á¤»óÀûÀ¸·Î °¡ÀÔµÇ¾ú½À´Ï´Ù.");
+			set @pos, dialog(0, 0, 0, "ì •ìƒì ìœ¼ë¡œ ê°€ì…ë˜ì—ˆìŠµë‹ˆë‹¤.");
 			end;
 		}
 		else
 		{
-			set @pos, dialog(0, 0, 0, "¿À·ù·Î ÀÎÇØ °¡ÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù..");
+			set @pos, dialog(0, 0, 0, "ì˜¤ë¥˜ë¡œ ì¸í•´ ê°€ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤..");
 			end;
 		}
 	}
 	end;
 }
 
-¹®ÆÄ°­Á¦°¡ÀÔ	{
+ë¬¸íŒŒê°•ì œê°€ì…	{
 	image 0, 220, 0;
 	set @sd, mysd();
 	set @id, myid();
@@ -31,24 +31,24 @@
 	set @err, set_clan(@sd, @name$, get_name(@sd));
 	if(@err == 0)
 	{
-		set @pos, dialog(0, 0, 0, "Á¤»óÀûÀ¸·Î °¡ÀÔµÇ¾ú½À´Ï´Ù.");
+		set @pos, dialog(0, 0, 0, "ì •ìƒì ìœ¼ë¡œ ê°€ì…ë˜ì—ˆìŠµë‹ˆë‹¤.");
 		end;
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 0, "¿À·ù·Î ÀÎÇØ °¡ÀÔµÇÁö ¾Ê¾Ò½À´Ï´Ù..");
+		set @pos, dialog(0, 0, 0, "ì˜¤ë¥˜ë¡œ ì¸í•´ ê°€ì…ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤..");
 		end;
 	}
 	end;
 }
 
-¹®ÆÄ´ë¸®ÀÎ	{
+ë¬¸íŒŒëŒ€ë¦¬ì¸	{
 	image 0, 220, 0;
 	set @sd, mysd();
 	set @id, myid();
 	set @money, 2000000;
 	set @limit_member, 5;
-	set @menu, menu("¾È³çÇÏ¼¼¿ä. ¹«¾ùÀ» µµ¿Íµå¸±±î¿ä?", "¹®ÆÄ Á¦ÀÛ", "¹®ÆÄ °ü¸®");
+	set @menu, menu("ì•ˆë…•í•˜ì„¸ìš”. ë¬´ì—‡ì„ ë„ì™€ë“œë¦´ê¹Œìš”?", "ë¬¸íŒŒ ì œì‘", "ë¬¸íŒŒ ê´€ë¦¬");
 	if(@menu == 1) goto make;
 	else if(@menu == 2) goto setting;
 	else end;
@@ -56,26 +56,26 @@
 make:
 	if(clan_exist(@sd) != 0)
 	{
-		set @pos, dialog(1, 0, 1, "ÀÌ¹Ì ¹®ÆÄ¿¡ È°µ¿ÁßÀÌ½Ê´Ï´Ù.");
+		set @pos, dialog(1, 0, 1, "ì´ë¯¸ ë¬¸íŒŒì— í™œë™ì¤‘ì´ì‹­ë‹ˆë‹¤.");
 		end;
 	}
 
 	if(get_level(@sd) < 99)
 	{
-		set @pos, dialog(1, 0, 1, "·¹º§ 99ÀÌ»ó¸¸ ¹®ÆÄ¸¦ Á¦ÀÛÇÒ ¼ö ÀÖ½À´Ï´Ù.");
+		set @pos, dialog(1, 0, 1, "ë ˆë²¨ 99ì´ìƒë§Œ ë¬¸íŒŒë¥¼ ì œì‘í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
 		end;
 	}
 
-	set @menu, menu("¹®ÆÄ¸¦ Á¦ÀÛÇÏ´Âµ¥´Â, " + @money + "¸¸ÀüÀÌ ÇÊ¿äÇÕ´Ï´Ù. Á¤¸»·Î ¸¸µå½Ã°Ú½À´Ï±î?", "³×", "¾Æ´Ï¿ä");
+	set @menu, menu("ë¬¸íŒŒë¥¼ ì œì‘í•˜ëŠ”ë°ëŠ”, " + @money + "ë§Œì „ì´ í•„ìš”í•©ë‹ˆë‹¤. ì •ë§ë¡œ ë§Œë“œì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤", "ì•„ë‹ˆìš”");
 	if(@menu == 1)
 	{
-		set @menu, menu("Á¤¸»·Î¿ä?", "³×", "¾Æ´Ï¿ä");
+		set @menu, menu("ì •ë§ë¡œìš”?", "ë„¤", "ì•„ë‹ˆìš”");
 		if(@menu == 1)
 		{
 AAA_001:
-			set @pos, dialog(1, 0, 1, "<ÁÖÀÇ»çÇ×>\\n¹®ÆÄ¸¦ Á¤ÇÏ±â ÀÌÀü¿¡, ÆÄÆ¼¿ø " + (@limit_member-1) + "¸íÀÌ ÀÖ´ÂÁö È®ÀÎÇØ ÁÖ¼¼¿ä. ÆÄÆ¼¿øÀÌ ÀÚ½ÅÀ» Á¦¿ÜÇÑ " + (@limit_member-1) + "¸íÀÌ Á¸ÀçÇÏÁö ¾ÊÀ¸¸é ¹®ÆÄ¸¦ Ã¢¼³ÇÒ ¼ö ¾ø½À´Ï´Ù.");
+			set @pos, dialog(1, 0, 1, "<ì£¼ì˜ì‚¬í•­>\\në¬¸íŒŒë¥¼ ì •í•˜ê¸° ì´ì „ì—, íŒŒí‹°ì› " + (@limit_member-1) + "ëª…ì´ ìˆëŠ”ì§€ í™•ì¸í•´ ì£¼ì„¸ìš”. íŒŒí‹°ì›ì´ ìì‹ ì„ ì œì™¸í•œ " + (@limit_member-1) + "ëª…ì´ ì¡´ì¬í•˜ì§€ ì•Šìœ¼ë©´ ë¬¸íŒŒë¥¼ ì°½ì„¤í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
 			if(@pos == 0) end;
-			if(party(@sd) == 0) { set @pos, dialog(1, 0, 0, "ÀÚ½ÅÀ» Æ÷ÇÔÇÑ " + @limit_member + "¸íÀÌ»óÀÇ ÆÄÆ¼¿øÀ» ¸ğ¾Æ¼­ ¿ÍÁÖ¼¼¿ä."); end; }
+			if(party(@sd) == 0) { set @pos, dialog(1, 0, 0, "ìì‹ ì„ í¬í•¨í•œ " + @limit_member + "ëª…ì´ìƒì˜ íŒŒí‹°ì›ì„ ëª¨ì•„ì„œ ì™€ì£¼ì„¸ìš”."); end; }
 			else
 			{
 				for(set @i, 0; @i < partymax(); set @i, @i+1)
@@ -89,35 +89,35 @@ AAA_001:
 						}
 					}
 				}
-				if(@member_count < @limit_member) { set @pos, dialog(1, 0, 0, "ÆÄÆ¼¿øÁß ÇÑ¸íÀÌ ¹®ÆÄ¿¡ ÀÌ¹Ì ¼ÓÇØ ÀÖ°Å³ª, ¶Ç´Â °°Àº ¸Ê¿¡ Á¸ÀçÇÏÁö ¾Ê´ø°¡, ÆÄÆ¼¿øÀÌ ºÎÁ·ÇÕ´Ï´Ù."); end; }
+				if(@member_count < @limit_member) { set @pos, dialog(1, 0, 0, "íŒŒí‹°ì›ì¤‘ í•œëª…ì´ ë¬¸íŒŒì— ì´ë¯¸ ì†í•´ ìˆê±°ë‚˜, ë˜ëŠ” ê°™ì€ ë§µì— ì¡´ì¬í•˜ì§€ ì•Šë˜ê°€, íŒŒí‹°ì›ì´ ë¶€ì¡±í•©ë‹ˆë‹¤."); end; }
 			}
 AAA_002:
-			set @pos, input2(@input$, 1, 12, "¸¸µé ¹®ÆÄ ÀÌ¸§À» Á¤ÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.", "", "");
+			set @pos, input2(@input$, 1, 12, "ë§Œë“¤ ë¬¸íŒŒ ì´ë¦„ì„ ì •í•˜ì‹œê¸° ë°”ëë‹ˆë‹¤.", "", "");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto AAA_001;
 AAA_003:
-			set @pos, dialog(1, 1, 1, @input$ + "ÀÌ¶ó°í ¹®ÆÄÀÌ¸§À» Á¤ÇÏ¼Ì½À´Ï´Ù.\\nÈ®½ÇÇÏ¸é '´ÙÀ½'À» ´­¸£½Ã°í, ±×·¸Áö ¾ÊÀ¸¸é Á¾·áÇØÁÖ½Ê½Ã¿À.");
+			set @pos, dialog(1, 1, 1, @input$ + "ì´ë¼ê³  ë¬¸íŒŒì´ë¦„ì„ ì •í•˜ì…¨ìŠµë‹ˆë‹¤.\\ní™•ì‹¤í•˜ë©´ 'ë‹¤ìŒ'ì„ ëˆŒë¥´ì‹œê³ , ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ì¢…ë£Œí•´ì£¼ì‹­ì‹œì˜¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto AAA_002;
 AAA_004:
-			set @list, list1(@input$ + "ÀÌ¶ó°í ¹®ÆÄÀÌ¸§À» Á¤ÇÏ¼Ì½À´Ï´Ù. Á¤¸»·Î ¸Â½À´Ï±î? ", "³×", "¾Æ´Ï¿ä");
+			set @list, list1(@input$ + "ì´ë¼ê³  ë¬¸íŒŒì´ë¦„ì„ ì •í•˜ì…¨ìŠµë‹ˆë‹¤. ì •ë§ë¡œ ë§ìŠµë‹ˆê¹Œ? ", "ë„¤", "ì•„ë‹ˆìš”");
 			if(@list == 1)
 			{
 AAA_005:
-				set @pos, dialog(0, 0, 1, "±×·³ ¹®ÆÄ¸¦ Á¦ÀÛÇÏ°Ú½À´Ï´Ù. Àá½Ã¸¸ ±â´Ù·Á ÁÖ½Ê½Ã¿ä.");
-				if(get_money(@sd) < @money) { set @pos, dialog(0, 0, 0, "¹®ÆÄ¸¦ Á¦ÀÛÇÒ µ·ÀÌ ºÎÁ·ÇÕ´Ï´Ù."); end; }
+				set @pos, dialog(0, 0, 1, "ê·¸ëŸ¼ ë¬¸íŒŒë¥¼ ì œì‘í•˜ê² ìŠµë‹ˆë‹¤. ì ì‹œë§Œ ê¸°ë‹¤ë ¤ ì£¼ì‹­ì‹œìš”.");
+				if(get_money(@sd) < @money) { set @pos, dialog(0, 0, 0, "ë¬¸íŒŒë¥¼ ì œì‘í•  ëˆì´ ë¶€ì¡±í•©ë‹ˆë‹¤."); end; }
 				if(@pos == 0) end;
 				else if(@pos == -1) goto AAA_004;
 AAA_006:
-				//¹®ÆÄ ¼¼ÆÃ
+				//ë¬¸íŒŒ ì„¸íŒ…
 				set @err, makeclan(@input$, 0, get_name(@sd), "0");
-				if(@err == 1) { set @pos, dialog(1, 0, 0, "¹®ÆÄÀÌ¸§ÀÌ Áßº¹µÇ¾ú½À´Ï´Ù."); end; }
-				else if(@err == 2) { set @pos, dialog(1, 0, 0, "¹®ÆÄÀåÀÌ Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù."); end; }
-				else if(@err == 3) { set @pos, dialog(1, 0, 0, "ÀÌ¹Ì ¹®ÆÄ¿¡ °¡ÀÔµÇ¾îÀÖ½À´Ï´Ù."); end; }
+				if(@err == 1) { set @pos, dialog(1, 0, 0, "ë¬¸íŒŒì´ë¦„ì´ ì¤‘ë³µë˜ì—ˆìŠµë‹ˆë‹¤."); end; }
+				else if(@err == 2) { set @pos, dialog(1, 0, 0, "ë¬¸íŒŒì¥ì´ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤."); end; }
+				else if(@err == 3) { set @pos, dialog(1, 0, 0, "ì´ë¯¸ ë¬¸íŒŒì— ê°€ì…ë˜ì–´ìˆìŠµë‹ˆë‹¤."); end; }
 				else
 				{
 					set @member_count, 0;
-					if(party(@sd) == 0) { set @pos, dialog(1, 0, 0, "ÀÚ½ÅÀ» Æ÷ÇÔÇÑ " + @limit_member + "¸íÀÌ»óÀÇ ÆÄÆ¼¿øÀ» ¸ğ¾Æ¼­ ¿ÍÁÖ¼¼¿ä."); end; }
+					if(party(@sd) == 0) { set @pos, dialog(1, 0, 0, "ìì‹ ì„ í¬í•¨í•œ " + @limit_member + "ëª…ì´ìƒì˜ íŒŒí‹°ì›ì„ ëª¨ì•„ì„œ ì™€ì£¼ì„¸ìš”."); end; }
 					else
 					{
 						for(set @i, 0; @i < partymax(); set @i, @i+1)
@@ -141,14 +141,14 @@ AAA_006:
 						{
 							if(clan_exist(@target_sd) != 1 && get_mapid(@sd) == get_mapid(@target_sd))
 							{
-								runscript @target_sd, "¹®ÆÄ°­Á¦°¡ÀÔ";
+								runscript @target_sd, "ë¬¸íŒŒê°•ì œê°€ì…";
 							}
 						}
 					}
 					set_money @sd, get_money(@sd)-@money;
 					updatestatus @sd, 2;
-					broadcast 5, get_name(@sd) + "´ÔÀÌ " + @input$ + "¹®ÆÄ¸¦ Á¦ÀÛÇÏ¼Ì½À´Ï´Ù. ÃàÇÏÇÕ´Ï´Ù.";
-					set @pos, dialog(1, 0, 0, "¹®ÆÄ¸¦ Á¦ÀÛÇÏ¼Ì½À´Ï´Ù.\\n¹®ÆÄ °ü¸® ºÎºĞÀ» ÀÌ¿ëÇÏ½Ç ¼ö ÀÖ½À´Ï´Ù.");
+					broadcast 5, get_name(@sd) + "ë‹˜ì´ " + @input$ + "ë¬¸íŒŒë¥¼ ì œì‘í•˜ì…¨ìŠµë‹ˆë‹¤. ì¶•í•˜í•©ë‹ˆë‹¤.";
+					set @pos, dialog(1, 0, 0, "ë¬¸íŒŒë¥¼ ì œì‘í•˜ì…¨ìŠµë‹ˆë‹¤.\\në¬¸íŒŒ ê´€ë¦¬ ë¶€ë¶„ì„ ì´ìš©í•˜ì‹¤ ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
 					end;
 				}
 			}
@@ -161,24 +161,24 @@ AAA_006:
 setting:
 	if(clan_exist(@sd) == 0)
 	{
-		set @pos, dialog(1, 0, 1, "¹®ÆÄ¿¡ °¡ÀÔÇÏ½ÃÁö ¾Ê¾Ò½À´Ï´Ù.");
+		set @pos, dialog(1, 0, 1, "ë¬¸íŒŒì— ê°€ì…í•˜ì‹œì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
 		end;
 	}
 	else if(strcmp(get_clanmaster(@sd), get_name(@sd)) != 0 && strcmp(get_clanlowmaster(@sd), get_name(@sd)) != 0)
 	{
-		set @menu, menu("¾È³çÇÏ¼¼¿ä? " + get_clanname(@sd) + "ÀÇ " + get_name(@sd) + "È¸¿ø´Ô ¹«½¼ ÀÏ·Î ¿À¼Ì³ª¿ä?", "¹®ÆÄ Å»Åğ");
+		set @menu, menu("ì•ˆë…•í•˜ì„¸ìš”? " + get_clanname(@sd) + "ì˜ " + get_name(@sd) + "íšŒì›ë‹˜ ë¬´ìŠ¨ ì¼ë¡œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¸íŒŒ íƒˆí‡´");
 		if(@menu == 1)
 		{
-			set @menu, menu("Å»Åğ½Ã ±İÀü 20¸¸ÀüÀÌ ÇÊ¿äÇÕ´Ï´Ù.\\nÁ¤¸»·Î Å»ÅğÇÏ½Ã°Ú½À´Ï±î?", "³×", "¾Æ´Ï¿ä");
+			set @menu, menu("íƒˆí‡´ì‹œ ê¸ˆì „ 20ë§Œì „ì´ í•„ìš”í•©ë‹ˆë‹¤.\\nì •ë§ë¡œ íƒˆí‡´í•˜ì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤", "ì•„ë‹ˆìš”");
 			if(@menu == 1)
 			{
-				if(get_money(@sd) < 200000) { set @pos, dialog(0, 0, 0, "¹®ÆÄ¸¦ Å»ÅğÇÒ µ·ÀÌ ºÎÁ·ÇÕ´Ï´Ù."); end; }
+				if(get_money(@sd) < 200000) { set @pos, dialog(0, 0, 0, "ë¬¸íŒŒë¥¼ íƒˆí‡´í•  ëˆì´ ë¶€ì¡±í•©ë‹ˆë‹¤."); end; }
 				set_money @sd, get_money(@sd)-200000;
 				updatestatus @sd, 2;
 
 				set @err, del_clan(@sd, get_clanname(@sd), get_name(@sd));
-				if(@err == 0) { set @pos, dialog(0, 0, 0, "Á¤»óÀûÀ¸·Î Å»ÅğµÇ¾ú½À´Ï´Ù."); end; }
-				else { set @pos, dialog(0, 0, 0, "¿¡·¯°¡ ¹ß»ıÇÏ¿´½À´Ï´Ù."); end; }
+				if(@err == 0) { set @pos, dialog(0, 0, 0, "ì •ìƒì ìœ¼ë¡œ íƒˆí‡´ë˜ì—ˆìŠµë‹ˆë‹¤."); end; }
+				else { set @pos, dialog(0, 0, 0, "ì—ëŸ¬ê°€ ë°œìƒí•˜ì˜€ìŠµë‹ˆë‹¤."); end; }
 			}
 			else end;
 		}
@@ -187,10 +187,10 @@ setting:
 	else
 	{
 POC_000:
-		set @menu, menu("¾È³çÇÏ¼¼¿ä? " + get_clanname(@sd) + "ÀÇ " + get_name(@sd) + "È¸¿ø´Ô ¹«½¼ ÀÏ·Î ¿À¼Ì³ª¿ä?", "¹®ÆÄ ÇöÈ²", "¹®ÆÄ¼º °ü¸®", "¹®ÆÄ¿ø ÃÊ´ë", "¹®ÆÄ¿ø ÃàÃâ", "¹®ÆÄÀå ÀÌÀÓ", "ºÎ¹®ÁÖ ¼³Á¤", "ºÎ¹®ÁÖ ÇØÀÓ", "¹®ÆÄÅ¸ÀÌÆ² ¼³Á¤");
+		set @menu, menu("ì•ˆë…•í•˜ì„¸ìš”? " + get_clanname(@sd) + "ì˜ " + get_name(@sd) + "íšŒì›ë‹˜ ë¬´ìŠ¨ ì¼ë¡œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¸íŒŒ í˜„í™©", "ë¬¸íŒŒì„± ê´€ë¦¬", "ë¬¸íŒŒì› ì´ˆëŒ€", "ë¬¸íŒŒì› ì¶•ì¶œ", "ë¬¸íŒŒì¥ ì´ì„", "ë¶€ë¬¸ì£¼ ì„¤ì •", "ë¶€ë¬¸ì£¼ í•´ì„", "ë¬¸íŒŒíƒ€ì´í‹€ ì„¤ì •");
 		if(@menu == 1)
 		{
-			set @pos, dialog(1, 0, 1, "Ã»·æÀÇ¼º Á¡·É ¹®ÆÄ: " + #dragon_castle$ + " ¹®ÁÖ ÀÌ¸§: " + #dragon_castle_master$ + "\\nÁÖÀÛÀÇ¼º Á¡·É ¹®ÆÄ: " + #bird_castle$ + " ¹®ÁÖ ÀÌ¸§: " + #bird_castle_master$ + "\\n¹éÈ£ÀÇ¼º Á¡·É ¹®ÆÄ: " + #tiger_castle$ + " ¹®ÁÖ ÀÌ¸§: " + #tiger_castle_master$ + "\\nÇö¹«ÀÇ¼º Á¡·É ¹®ÆÄ: " + #turtle_castle$ + " ¹®ÁÖ ÀÌ¸§: " + #turtle_castle_master$);
+			set @pos, dialog(1, 0, 1, "ì²­ë£¡ì˜ì„± ì ë ¹ ë¬¸íŒŒ: " + #dragon_castle$ + " ë¬¸ì£¼ ì´ë¦„: " + #dragon_castle_master$ + "\\nì£¼ì‘ì˜ì„± ì ë ¹ ë¬¸íŒŒ: " + #bird_castle$ + " ë¬¸ì£¼ ì´ë¦„: " + #bird_castle_master$ + "\\në°±í˜¸ì˜ì„± ì ë ¹ ë¬¸íŒŒ: " + #tiger_castle$ + " ë¬¸ì£¼ ì´ë¦„: " + #tiger_castle_master$ + "\\ní˜„ë¬´ì˜ì„± ì ë ¹ ë¬¸íŒŒ: " + #turtle_castle$ + " ë¬¸ì£¼ ì´ë¦„: " + #turtle_castle_master$);
 			if(@pos == 0) end;
 			else if(@pos == 1) goto POC_000;
 		}
@@ -198,31 +198,31 @@ POC_000:
 		{
 			if(!strcmp(get_clanname(@sd), #dragon_castle$))
 			{
-				set @pos, dialog(1, 0, 1, "ÇöÀç Ã»·æÀÇ¼ºÀ» º¸À¯ÇÏ°í ÀÖ½À´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "í˜„ì¬ ì²­ë£¡ì˜ì„±ì„ ë³´ìœ í•˜ê³  ìˆìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == 1) goto POC_000;
 			}
 			else if(!strcmp(get_clanname(@sd), #bird_castle$))
 			{
-				set @pos, dialog(1, 0, 1, "ÇöÀç ÁÖÀÛÀÇ¼ºÀ» º¸À¯ÇÏ°í ÀÖ½À´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "í˜„ì¬ ì£¼ì‘ì˜ì„±ì„ ë³´ìœ í•˜ê³  ìˆìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == 1) goto POC_000;
 			}
 			else if(!strcmp(get_clanname(@sd), #tiger_castle$))
 			{
-				set @pos, dialog(1, 0, 1, "ÇöÀç ¹éÈ£ÀÇ¼ºÀ» º¸À¯ÇÏ°í ÀÖ½À´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "í˜„ì¬ ë°±í˜¸ì˜ì„±ì„ ë³´ìœ í•˜ê³  ìˆìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == 1) goto POC_000;
 			}
 			else if(!strcmp(get_clanname(@sd), #turtle_castle$))
 			{
-				set @pos, dialog(1, 0, 1, "ÇöÀç Çö¹«ÀÇ¼ºÀ» º¸À¯ÇÏ°í ÀÖ½À´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "í˜„ì¬ í˜„ë¬´ì˜ì„±ì„ ë³´ìœ í•˜ê³  ìˆìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == 1) goto POC_000;
 			}
 			else
 			{
-				set @pos, dialog(1, 0, 1, "ÇöÀç º¸À¯ÇÏ°í ÀÖ´Â ¼ºÀÌ ¾ø½À´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "í˜„ì¬ ë³´ìœ í•˜ê³  ìˆëŠ” ì„±ì´ ì—†ìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == 1) goto POC_000;
 			}
@@ -230,56 +230,56 @@ POC_000:
 		else if(@menu == 3)
 		{
 POC_001:
-			set @pos, input2(@invite$, 0, 12, "°¡ÀÔÇÏ°íÀÚ ÇÏ´Â »ç¶÷ÀÇ ÀÌ¸§À» Àû¾îÁÖ¼¼¿ä.", "", "");
+			set @pos, input2(@invite$, 0, 12, "ê°€ì…í•˜ê³ ì í•˜ëŠ” ì‚¬ëŒì˜ ì´ë¦„ì„ ì ì–´ì£¼ì„¸ìš”.", "", "");
 			if(@pos == 0) end;
 
 			if(name2sd(@invite$) == 0)
 			{
-				set @pos, dialog(0, 0, 1, "ÇöÀç Á¢¼ÓÇØ ÀÖÁö ¾Ê°Å³ª, ¾ø´Â ¾ÆÀÌµğÀÔ´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "í˜„ì¬ ì ‘ì†í•´ ìˆì§€ ì•Šê±°ë‚˜, ì—†ëŠ” ì•„ì´ë””ì…ë‹ˆë‹¤.");
 				end;
 			}
 			set @target_sd, name2sd(@invite$);
 			if(get_mapid(@sd) != get_mapid(@target_sd))
 			{
-				set @pos, dialog(0, 0, 1, "´ë»óÀÌ °°Àº ¸Ê¿¡ ÀÖÁö ¾Ê½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "ëŒ€ìƒì´ ê°™ì€ ë§µì— ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.");
 				end;
 			}
 
 			if(clan_exist(@target_sd) != 0)
 			{
-				set @pos, dialog(0, 0, 1, "ÀÌ¹Ì ¹®ÆÄ¿¡ °¡ÀÔµÇ¾îÀÖ½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "ì´ë¯¸ ë¬¸íŒŒì— ê°€ì…ë˜ì–´ìˆìŠµë‹ˆë‹¤.");
 				end;
 			}
 			set #clanname$, get_clanname(@sd);
-			runscript @target_sd, "¹®ÆÄ°¡ÀÔ¿äÃ»";
+			runscript @target_sd, "ë¬¸íŒŒê°€ì…ìš”ì²­";
 			end;
 		}
 		else if(@menu == 4)
 		{
 POD_001:
-			set @pos, input2(@invite$, 1, 12, "ÃàÃâÇÏ°íÀÚ ÇÏ´Â »ç¶÷ÀÇ ÀÌ¸§À» Àû¾îÁÖ¼¼¿ä.", "", "");
+			set @pos, input2(@invite$, 1, 12, "ì¶•ì¶œí•˜ê³ ì í•˜ëŠ” ì‚¬ëŒì˜ ì´ë¦„ì„ ì ì–´ì£¼ì„¸ìš”.", "", "");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto POC_000;
 
-			if(!strcmp(get_clanmaster(@sd), @invite$) || !strcmp(get_clanlowmaster(@sd), @invite$)) { set @pos, dialog(0, 0, 0, "¹®ÆÄÀå ¶Ç´Â ºÎ¹®ÆÄÀåÀº Å»ÅğÇÒ ¼ö ¾ø½À´Ï´Ù."); end; }
+			if(!strcmp(get_clanmaster(@sd), @invite$) || !strcmp(get_clanlowmaster(@sd), @invite$)) { set @pos, dialog(0, 0, 0, "ë¬¸íŒŒì¥ ë˜ëŠ” ë¶€ë¬¸íŒŒì¥ì€ íƒˆí‡´í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."); end; }
 
 			if(name2sd(@invite$) == 0)
 			{
 				set @err, del_clan(0, get_clanname(@sd), @invite$);
-				if(@err == 0) { set @pos, dialog(0, 0, 0, "Á¤»óÀûÀ¸·Î Å»ÅğµÇ¾ú½À´Ï´Ù."); end; }
-				else { set @pos, dialog(0, 0, 0, "±×·± ¹®ÆÄ¿øÀº Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù."); end; }
+				if(@err == 0) { set @pos, dialog(0, 0, 0, "ì •ìƒì ìœ¼ë¡œ íƒˆí‡´ë˜ì—ˆìŠµë‹ˆë‹¤."); end; }
+				else { set @pos, dialog(0, 0, 0, "ê·¸ëŸ° ë¬¸íŒŒì›ì€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤."); end; }
 			}
 			else
 			{
 				set @target_sd, name2sd(@invite$);
 				set @err, del_clan(@target_sd, get_clanname(@target_sd), @invite$);
-				if(@err == 0) { set @pos, dialog(0, 0, 0, "Á¤»óÀûÀ¸·Î Å»ÅğµÇ¾ú½À´Ï´Ù."); end; }
-				else { set @pos, dialog(0, 0, 0, "±×·± ¹®ÆÄ¿øÀº Á¸ÀçÇÏÁö ¾Ê½À´Ï´Ù."); end; }
+				if(@err == 0) { set @pos, dialog(0, 0, 0, "ì •ìƒì ìœ¼ë¡œ íƒˆí‡´ë˜ì—ˆìŠµë‹ˆë‹¤."); end; }
+				else { set @pos, dialog(0, 0, 0, "ê·¸ëŸ° ë¬¸íŒŒì›ì€ ì¡´ì¬í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤."); end; }
 			}
 		}
 		else if(@menu == 5)
 		{
-			set @pos, dialog(1, 0, 0, "°³¹ßÁßÀÔ´Ï´Ù..");
+			set @pos, dialog(1, 0, 0, "ê°œë°œì¤‘ì…ë‹ˆë‹¤..");
 			end;
 		}
 		else if(@menu == 6)
@@ -287,10 +287,10 @@ POD_001:
 			if(strcmp(get_clanmaster(@sd), get_name(@sd)) == 0)
 			{
 POE_001:
-				set @pos, dialog(1, 0, 1, "¡ØÁÖÀÇ¡Ø\\n\\n  ¼³Á¤ÇÏ°íÀÚ ÇÏ´Â ºÎ¹®ÁÖ´Â °°Àº À§Ä¡¿¡ ÀÖ¾î¾ß ÇÏ¸ç, ¹®ÆÄ°¡ °°¾Æ¾ß ÇÕ´Ï´Ù.");
+				set @pos, dialog(1, 0, 1, "â€»ì£¼ì˜â€»\\n\\n  ì„¤ì •í•˜ê³ ì í•˜ëŠ” ë¶€ë¬¸ì£¼ëŠ” ê°™ì€ ìœ„ì¹˜ì— ìˆì–´ì•¼ í•˜ë©°, ë¬¸íŒŒê°€ ê°™ì•„ì•¼ í•©ë‹ˆë‹¤.");
 				if(@pos == 0) end;
 POE_002:
-				set @pos, input2(@invite$, 0, 6, "ÀÓ¸íÇÏ°íÀÚ ÇÏ´Â ºÎ¹®ÁÖ¸¦ °í¸£¼¼¿ä. ºÎ¹®ÁÖ´Â °°Àº ¹®ÆÄ¿©¾ß ÇÕ´Ï´Ù.", "", "");
+				set @pos, input2(@invite$, 0, 6, "ì„ëª…í•˜ê³ ì í•˜ëŠ” ë¶€ë¬¸ì£¼ë¥¼ ê³ ë¥´ì„¸ìš”. ë¶€ë¬¸ì£¼ëŠ” ê°™ì€ ë¬¸íŒŒì—¬ì•¼ í•©ë‹ˆë‹¤.", "", "");
 				if(@pos == 0) end;
 
 				set @target_sd, name2sd(@invite$);
@@ -301,30 +301,30 @@ POE_002:
 						if(@sd != @target_sd)
 						{
 							set_clanlowmaster @sd, @invite$;
-							set @pos, dialog(0, 0, 1, @invite$ + "´ÔÀÌ ºÎ¹®ÁÖ·Î ÀÓ¸íµÇ¾ú½À´Ï´Ù");
+							set @pos, dialog(0, 0, 1, @invite$ + "ë‹˜ì´ ë¶€ë¬¸ì£¼ë¡œ ì„ëª…ë˜ì—ˆìŠµë‹ˆë‹¤");
 							end;
 						}
 						else
 						{
-							set @pos, dialog(0, 0, 0, "ÀÚ½ÅÀ» ºÎ¹®ÁÖ·Î ¼³Á¤ÇÒ ¼ö ¾ø½À´Ï´Ù.");
+							set @pos, dialog(0, 0, 0, "ìì‹ ì„ ë¶€ë¬¸ì£¼ë¡œ ì„¤ì •í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
 							end;
 						}
 					}
 					else
 					{
-						set @pos, dialog(0, 0, 0, "°°Àº ¹®ÆÄ¿øÀÌ ¾Æ´Õ´Ï´Ù.");
+						set @pos, dialog(0, 0, 0, "ê°™ì€ ë¬¸íŒŒì›ì´ ì•„ë‹™ë‹ˆë‹¤.");
 						end;
 					}
 				}
 				else
 				{
-					set @pos, dialog(0, 0, 0, @invite$ + "´ÔÀº ¹Ù¶÷ÀÇ³ª¶ó¿¡ ¾ø½À´Ï´Ù");
+					set @pos, dialog(0, 0, 0, @invite$ + "ë‹˜ì€ ë°”ëŒì˜ë‚˜ë¼ì— ì—†ìŠµë‹ˆë‹¤");
 					end;
 				}
 			}
 			else
 			{
-				set @pos, dialog(0, 0, 0, "¹®ÁÖ°¡ ¾Æ´Õ´Ï´Ù.");
+				set @pos, dialog(0, 0, 0, "ë¬¸ì£¼ê°€ ì•„ë‹™ë‹ˆë‹¤.");
 				end;
 			}
 		}
@@ -333,12 +333,12 @@ POE_002:
 			if(strcmp(get_clanmaster(@sd), get_name(@sd)) == 0)
 			{
 				set_clanlowmaster @sd, get_name(@sd);
-				set @pos, dialog(0, 0, 1, "ºÎ¹®ÁÖ°¡ ÇØÀÓµÇ¾ú½À´Ï´Ù");
+				set @pos, dialog(0, 0, 1, "ë¶€ë¬¸ì£¼ê°€ í•´ì„ë˜ì—ˆìŠµë‹ˆë‹¤");
 				end;
 			}
 			else
 			{
-				set @pos, dialog(0, 0, 0, "¹®ÁÖ°¡ ¾Æ´Õ´Ï´Ù.");
+				set @pos, dialog(0, 0, 0, "ë¬¸ì£¼ê°€ ì•„ë‹™ë‹ˆë‹¤.");
 				end;
 			}
 		}
@@ -346,13 +346,13 @@ POE_002:
 		{
 			if(strcmp(get_clanmaster(@sd), get_name(@sd)) == 0)
 			{
-				set @pos, input2(@username$, 0, 6, "¹®ÆÄÅ¸ÀÌÆ²À» ¼³Á¤ÇØÁÙ À¯Àú¸¦ ÀÔ·ÂÇØÁÖ¼¼¿ä.", " ", " ");
+				set @pos, input2(@username$, 0, 6, "ë¬¸íŒŒíƒ€ì´í‹€ì„ ì„¤ì •í•´ì¤„ ìœ ì €ë¥¼ ì…ë ¥í•´ì£¼ì„¸ìš”.", " ", " ");
 				if(@pos == 0) end;
 
 				set @target_sd, name2sd(@username$);
 				if(@target_sd > 0)
 				{
-					set @pos, input2(@clantitle$, 0, 10, "ÁöÁ¤ÇÒ ¹®ÆÄÅ¸ÀÌÆ²À» ½áÁÖ¼¼¿ä.", "¹®ÆÄÅ¸ÀÌÆ²:", "À¸·Î ÁöÁ¤ÇÏ°Ú½À´Ï´Ù.");
+					set @pos, input2(@clantitle$, 0, 10, "ì§€ì •í•  ë¬¸íŒŒíƒ€ì´í‹€ì„ ì¨ì£¼ì„¸ìš”.", "ë¬¸íŒŒíƒ€ì´í‹€:", "ìœ¼ë¡œ ì§€ì •í•˜ê² ìŠµë‹ˆë‹¤.");
 					if(@pos == 0) end;
 	
 					if(get_clanname(@sd) == get_clanname(@target_sd))
@@ -362,42 +362,42 @@ POE_002:
 					}
 					else
 					{
-						set @pos, dialog(0, 0, 0, "°°Àº ¹®ÆÄ¿øÀÌ ¾Æ´Õ´Ï´Ù.");
+						set @pos, dialog(0, 0, 0, "ê°™ì€ ë¬¸íŒŒì›ì´ ì•„ë‹™ë‹ˆë‹¤.");
 						end;
 					}
 				}
 				else
 				{
-					set @pos, dialog(0, 0, 0, @username$ + "´ÔÀº ¹Ù¶÷ÀÇ³ª¶ó¿¡ ¾ø½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 0, @username$ + "ë‹˜ì€ ë°”ëŒì˜ë‚˜ë¼ì— ì—†ìŠµë‹ˆë‹¤.");
 					end;
 				}
 			}
 			else
 			{
-				set @pos, dialog(0, 0, 0, "¹®ÆÄÀåÀÌ ¾Æ´Õ´Ï´Ù.");
+				set @pos, dialog(0, 0, 0, "ë¬¸íŒŒì¥ì´ ì•„ë‹™ë‹ˆë‹¤.");
 				end;
 			}
 		}
 	}
 }
 
-Ã»·æ¼º¹®Áö±â	{
-	callfunc "KONGSUNG", "Ã»·æ", #dragon_castle$, 1, 2;
+ì²­ë£¡ì„±ë¬¸ì§€ê¸°	{
+	callfunc "KONGSUNG", "ì²­ë£¡", #dragon_castle$, 1, 2;
 }
 
-ÁÖÀÛ¼º¹®Áö±â	{
-	callfunc "KONGSUNG", "ÁÖÀÛ", #bird_castle$, 1, 31;
+ì£¼ì‘ì„±ë¬¸ì§€ê¸°	{
+	callfunc "KONGSUNG", "ì£¼ì‘", #bird_castle$, 1, 31;
 }
 
-Çö¹«¼º¹®Áö±â	{
-	callfunc "KONGSUNG", "Çö¹«", #turtle_castle$, 1, 3;
+í˜„ë¬´ì„±ë¬¸ì§€ê¸°	{
+	callfunc "KONGSUNG", "í˜„ë¬´", #turtle_castle$, 1, 3;
 }
 
-¹éÈ£¼º¹®Áö±â	{
-	callfunc "KONGSUNG", "¹éÈ£", #tiger_castle$, 1, 11;
+ë°±í˜¸ì„±ë¬¸ì§€ê¸°	{
+	callfunc "KONGSUNG", "ë°±í˜¸", #tiger_castle$, 1, 11;
 }
 
-°ø¼ºÅ¸ÀÌ¸Ó	{
+ê³µì„±íƒ€ì´ë¨¸	{
 	set @id, objid();
 	if(#clan_start == 1)
 	{
@@ -422,53 +422,53 @@ POE_002:
 							switch(#clan_timer)
 							{
 							case 1:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 5:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 15:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 20:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 35:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 45:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 55:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 60:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 65:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 70:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 73:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 74:
-								announce 5, "[¾Ë¸²] " + get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ ¿ÁÁÂ¸¦ " + (#clan_timer*4) + "ÃÊ°£ ÁöÅ°°í °è½Ê´Ï´Ù.";
+								announce 5, "[ì•Œë¦¼] " + get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ ì˜¥ì¢Œë¥¼ " + (#clan_timer*4) + "ì´ˆê°„ ì§€í‚¤ê³  ê³„ì‹­ë‹ˆë‹¤.";
 								break;
 							case 75:
-								if(#clan_mapname$ == "ÁÖÀÛ¼º") { set #bird_castle$, get_clanname(@target_sd); }
-								else if(#clan_mapname$ == "Çö¹«¼º") { set #turtle_castle$, get_clanname(@target_sd); }
-								else if(#clan_mapname$ == "Ã»·æ¼º") { set #dragon_castle$, get_clanname(@target_sd); }
-								else if(#clan_mapname$ == "¹éÈ£¼º") { set #tiger_castle$, get_clanname(@target_sd); }
+								if(#clan_mapname$ == "ì£¼ì‘ì„±") { set #bird_castle$, get_clanname(@target_sd); }
+								else if(#clan_mapname$ == "í˜„ë¬´ì„±") { set #turtle_castle$, get_clanname(@target_sd); }
+								else if(#clan_mapname$ == "ì²­ë£¡ì„±") { set #dragon_castle$, get_clanname(@target_sd); }
+								else if(#clan_mapname$ == "ë°±í˜¸ì„±") { set #tiger_castle$, get_clanname(@target_sd); }
 
-								announce 5, get_clanname(@target_sd) + " ¹®ÆÄÀÇ " + get_name(@target_sd) + "´ÔÀÌ " + #clan_mapname$ + "À» Å»È¯ÇÏ¿´½À´Ï´Ù.";
+								announce 5, get_clanname(@target_sd) + " ë¬¸íŒŒì˜ " + get_name(@target_sd) + "ë‹˜ì´ " + #clan_mapname$ + "ì„ íƒˆí™˜í•˜ì˜€ìŠµë‹ˆë‹¤.";
 
-								if(#clan_mapname$ == "ÁÖÀÛ¼º") { npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-								else if(#clan_mapname$ == "Ã»·æ¼º") { npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-								else if(#clan_mapname$ == "¹éÈ£¼º") { npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-								else if(#clan_mapname$ == "Çö¹«¼º") { npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
+								if(#clan_mapname$ == "ì£¼ì‘ì„±") { npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+								else if(#clan_mapname$ == "ì²­ë£¡ì„±") { npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+								else if(#clan_mapname$ == "ë°±í˜¸ì„±") { npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+								else if(#clan_mapname$ == "í˜„ë¬´ì„±") { npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
 
 								set #clan_start, 0;
 								set #clan_timer, 0;
@@ -512,12 +512,12 @@ POE_002:
 	}
 	else
 	{
-		announce 5, "[¾Ë¸²] ¿ÁÁÂ¸¦ Á¡·ÉÇÑ À¯Àú°¡ ¾ø±â¿¡ ¼ºÀº ±âÁ¸¹®ÆÄ·Î µ¹¾Æ°©´Ï´Ù.";
+		announce 5, "[ì•Œë¦¼] ì˜¥ì¢Œë¥¼ ì ë ¹í•œ ìœ ì €ê°€ ì—†ê¸°ì— ì„±ì€ ê¸°ì¡´ë¬¸íŒŒë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.";
 
-		if(#clan_mapname$ == "ÁÖÀÛ¼º") { npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-		else if(#clan_mapname$ == "Ã»·æ¼º") { npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("Ã»·æ¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-		else if(#clan_mapname$ == "¹éÈ£¼º") { npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("¹éÈ£¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
-		else if(#clan_mapname$ == "Çö¹«¼º") { npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 70, 105, 2, 228, "¼º¹®¹®Áö±â1"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 71, 105, 2, 242, "¼º¹®¹®Áö±â2"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 72, 105, 2, 243, "¼º¹®¹®Áö±â3"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 73, 105, 2, 244, "¼º¹®¹®Áö±â4"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 74, 105, 2, 245, "¼º¹®¹®Áö±â5"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 75, 105, 2, 246, "¼º¹®¹®Áö±â6"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 76, 105, 2, 247, "¼º¹®¹®Áö±â7"; npcspawn name2mapid("Çö¹«¼ºÀÔ±¸"), 77, 105, 2, 248, "¼º¹®¹®Áö±â8"; }
+		if(#clan_mapname$ == "ì£¼ì‘ì„±") { npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ì£¼ì‘ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+		else if(#clan_mapname$ == "ì²­ë£¡ì„±") { npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ì²­ë£¡ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+		else if(#clan_mapname$ == "ë°±í˜¸ì„±") { npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("ë°±í˜¸ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
+		else if(#clan_mapname$ == "í˜„ë¬´ì„±") { npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 70, 105, 2, 228, "ì„±ë¬¸ë¬¸ì§€ê¸°1"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 71, 105, 2, 242, "ì„±ë¬¸ë¬¸ì§€ê¸°2"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 72, 105, 2, 243, "ì„±ë¬¸ë¬¸ì§€ê¸°3"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 73, 105, 2, 244, "ì„±ë¬¸ë¬¸ì§€ê¸°4"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 74, 105, 2, 245, "ì„±ë¬¸ë¬¸ì§€ê¸°5"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 75, 105, 2, 246, "ì„±ë¬¸ë¬¸ì§€ê¸°6"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 76, 105, 2, 247, "ì„±ë¬¸ë¬¸ì§€ê¸°7"; npcspawn name2mapid("í˜„ë¬´ì„±ì…êµ¬"), 77, 105, 2, 248, "ì„±ë¬¸ë¬¸ì§€ê¸°8"; }
 
 		set #clan_start, 0;
 		set #clan_timer, 0;
@@ -530,72 +530,72 @@ POE_002:
 	}
 }
 
-¼º¹®¹®Áö±â1	{
+ì„±ë¬¸ë¬¸ì§€ê¸°1	{
 	set @target_id, obj_getxy(70, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®1")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸1")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â2	{
+ì„±ë¬¸ë¬¸ì§€ê¸°2	{
 	set @target_id, obj_getxy(71, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®2")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸2")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â3	{
+ì„±ë¬¸ë¬¸ì§€ê¸°3	{
 	set @target_id, obj_getxy(72, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®3")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸3")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â4	{
+ì„±ë¬¸ë¬¸ì§€ê¸°4	{
 	set @target_id, obj_getxy(73, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®4")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸4")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â5	{
+ì„±ë¬¸ë¬¸ì§€ê¸°5	{
 	set @target_id, obj_getxy(74, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®5")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸5")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â6	{
+ì„±ë¬¸ë¬¸ì§€ê¸°6	{
 	set @target_id, obj_getxy(75, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®6")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸6")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â7	{
+ì„±ë¬¸ë¬¸ì§€ê¸°7	{
 	set @target_id, obj_getxy(76, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®7")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸7")
 	{
 		deletemob @target_id, mapid();
 	}
 	deletenpc objid(), mapid();
 }
 
-¼º¹®¹®Áö±â8	{
+ì„±ë¬¸ë¬¸ì§€ê¸°8	{
 	set @target_id, obj_getxy(77, 104);
-	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "¼º¹®8")
+	if(@target_id > 0 && istype(@target_id) == 2 && get_mobname(@target_id) == "ì„±ë¬¸8")
 	{
 		deletemob @target_id, mapid();
 	}

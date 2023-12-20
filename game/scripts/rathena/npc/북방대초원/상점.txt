@@ -1,41 +1,41 @@
-ºÏ¹æ»óÁ¡1	{
+ë¶ë°©ìƒì 1	{
 	set @sd, mysd();
 	set @id, myid();
-	set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", "¹°°Ç »ç±â", "¹°°Ç ÆÈ±â");
+	set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¼ê±´ ì‚¬ê¸°", "ë¬¼ê±´ íŒ”ê¸°");
 	if(@ret == 1) { callshop 0, 42; }
 	else if(@ret == 2) { callshop 1, 43; }
 }
 
-ºÏ¹æ»óÁ¡2	{
+ë¶ë°©ìƒì 2	{
 	set @sd, mysd();
 	set @id, myid();
 COS001:
-	set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", "¹°°Ç »ç±â", "¹°°Ç ÆÈ±â", "È£¹Ú¹æ¾î±¸¸¸µé±â", "¿¬È£¹Ú¹æ¾î±¸¸¸µé±â", "È²±İÈ£¹Ú¹æ¾î±¸¸¸µé±â");
+	set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¼ê±´ ì‚¬ê¸°", "ë¬¼ê±´ íŒ”ê¸°", "í˜¸ë°•ë°©ì–´êµ¬ë§Œë“¤ê¸°", "ì—°í˜¸ë°•ë°©ì–´êµ¬ë§Œë“¤ê¸°", "í™©ê¸ˆí˜¸ë°•ë°©ì–´êµ¬ë§Œë“¤ê¸°");
 	if(@ret == 1) { callshop 0, 44; }
 	else if(@ret == 2) { callshop 1, 45; }
 	else if(@ret == 3)
 	{
-		set @pos, list2(@list, 0, 1, "±×·³.. ¾î¶² »ö±òÀÇ È£¹Ú°áÁ¤À» °¡Áö°í ¿Ô´Â°¡?", "È²È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "ÀûÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "³ìÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "Ã»È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "È¸È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "°¥È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "ÀÚÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.");
+		set @pos, list2(@list, 0, 1, "ê·¸ëŸ¼.. ì–´ë–¤ ìƒ‰ê¹”ì˜ í˜¸ë°•ê²°ì •ì„ ê°€ì§€ê³  ì™”ëŠ”ê°€?", "í™©í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ì í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ë…¹í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ì²­í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "íšŒí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ê°ˆí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ìí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 		if(@list > 0)
 		{
-			setarray @clothes_name$[1], "Àå°©", "ÆÈÂî", "¹İÁö", "¼±·ù";
-			setarray @clothes_color$[1], "È²È£¹Ú", "ÀûÈ£¹Ú", "³ìÈ£¹Ú", "°¥È£¹Ú", "Ã»È£¹Ú", "È¸È£¹Ú", "ÀÚÈ£¹Ú";
+			setarray @clothes_name$[1], "ì¥ê°‘", "íŒ”ì°Œ", "ë°˜ì§€", "ì„ ë¥˜";
+			setarray @clothes_color$[1], "í™©í˜¸ë°•", "ì í˜¸ë°•", "ë…¹í˜¸ë°•", "ê°ˆí˜¸ë°•", "ì²­í˜¸ë°•", "íšŒí˜¸ë°•", "ìí˜¸ë°•";
 
-			set @pos, list2(@make, 0, 0, "±×·¡.. " + @clothes$[@list] + "°áÁ¤À¸·Î ¾î¶² ¾ÆÀÌÅÛÀ» ¸¸µéÅÙ°¡?", @clothes_color$[@list] + "Àå°©ÀÔ´Ï´Ù.", @clothes_color$[@list] + "ÆÈÂîÀÔ´Ï´Ù.", @clothes_color$[@list] + "¹İÁöÀÔ´Ï´Ù.", @clothes_color$[@list] + "¼±·ùÀÔ´Ï´Ù.");
+			set @pos, list2(@make, 0, 0, "ê·¸ë˜.. " + @clothes$[@list] + "ê²°ì •ìœ¼ë¡œ ì–´ë–¤ ì•„ì´í…œì„ ë§Œë“¤í…ê°€?", @clothes_color$[@list] + "ì¥ê°‘ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "íŒ”ì°Œì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ë°˜ì§€ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ì„ ë¥˜ì…ë‹ˆë‹¤.");
 			if(@pos == 1 && @make > 0)
 			{
-				if(countitem(name2itemid(@clothes_color$[@list] + "°áÁ¤")) == 0)
+				if(countitem(name2itemid(@clothes_color$[@list] + "ê²°ì •")) == 0)
 				{
-					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "°áÁ¤ÀÌ ¾ø´Â°Í °°±º.");
+					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "ê²°ì •ì´ ì—†ëŠ”ê²ƒ ê°™êµ°.");
 				}
 				else
 				{
-					delitem @sd, name2itemid(@clothes_color$[@list] + "°áÁ¤"), 1;
-					message @sd, 3, @clothes_color$[@list] + "°áÁ¤ ÁÖ¾ú½À´Ï´Ù";
+					delitem @sd, name2itemid(@clothes_color$[@list] + "ê²°ì •"), 1;
+					message @sd, 3, @clothes_color$[@list] + "ê²°ì • ì£¼ì—ˆìŠµë‹ˆë‹¤";
 					additem @sd, name2itemid(@clothes_color$[@list] + @clothes_name$[@make]), 1;
-					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "°áÁ¤À¸·Î " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ¸¸µé¾îÁÖ¾ú³×.");
+					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "ê²°ì •ìœ¼ë¡œ " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ë§Œë“¤ì–´ì£¼ì—ˆë„¤.");
 				}
 			}
 		}
@@ -44,27 +44,27 @@ COS001:
 	}
 	else if(@ret == 4)
 	{
-		set @pos, list2(@list, 0, 1, "±×·³.. ¾î¶² »ö±òÀÇ È£¹Ú°áÁ¤À» °¡Áö°í ¿Ô´Â°¡?", "¿¬³ìÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "¿¬Ã»È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "¿¬°¥È£¹Ú°áÁ¤ÀÔ´Ï´Ù.", "¿¬ÀÚÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.");
+		set @pos, list2(@list, 0, 1, "ê·¸ëŸ¼.. ì–´ë–¤ ìƒ‰ê¹”ì˜ í˜¸ë°•ê²°ì •ì„ ê°€ì§€ê³  ì™”ëŠ”ê°€?", "ì—°ë…¹í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ì—°ì²­í˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ì—°ê°ˆí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.", "ì—°ìí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 		if(@list > 0)
 		{
-			setarray @clothes_name$[1], "Àå°©", "ÆÈÂî", "¹İÁö", "¼±·ù";
-			setarray @clothes_color$[1], "¿¬³ìÈ£¹Ú", "¿¬Ã»È£¹Ú", "¿¬°¥È£¹Ú", "¿¬ÀÚÈ£¹Ú";
+			setarray @clothes_name$[1], "ì¥ê°‘", "íŒ”ì°Œ", "ë°˜ì§€", "ì„ ë¥˜";
+			setarray @clothes_color$[1], "ì—°ë…¹í˜¸ë°•", "ì—°ì²­í˜¸ë°•", "ì—°ê°ˆí˜¸ë°•", "ì—°ìí˜¸ë°•";
 
-			set @pos, list2(@make, 0, 0, "±×·¡.. " + @clothes$[@list] + "°áÁ¤À¸·Î ¾î¶² ¾ÆÀÌÅÛÀ» ¸¸µéÅÙ°¡?", @clothes_color$[@list] + "Àå°©ÀÔ´Ï´Ù.", @clothes_color$[@list] + "ÆÈÂîÀÔ´Ï´Ù.", @clothes_color$[@list] + "¹İÁöÀÔ´Ï´Ù.", @clothes_color$[@list] + "¼±·ùÀÔ´Ï´Ù.");
+			set @pos, list2(@make, 0, 0, "ê·¸ë˜.. " + @clothes$[@list] + "ê²°ì •ìœ¼ë¡œ ì–´ë–¤ ì•„ì´í…œì„ ë§Œë“¤í…ê°€?", @clothes_color$[@list] + "ì¥ê°‘ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "íŒ”ì°Œì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ë°˜ì§€ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ì„ ë¥˜ì…ë‹ˆë‹¤.");
 			if(@pos == 1 && @make > 0)
 			{
-				if(countitem(name2itemid(@clothes_color$[@list] + "°áÁ¤")) == 0)
+				if(countitem(name2itemid(@clothes_color$[@list] + "ê²°ì •")) == 0)
 				{
-					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "°áÁ¤ÀÌ ¾ø´Â°Í °°±º.");
+					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "ê²°ì •ì´ ì—†ëŠ”ê²ƒ ê°™êµ°.");
 				}
 				else
 				{
-					delitem @sd, name2itemid(@clothes_color$[@list] + "°áÁ¤"), 1;
-					message @sd, 3, @clothes_color$[@list] + "°áÁ¤ ÁÖ¾ú½À´Ï´Ù";
+					delitem @sd, name2itemid(@clothes_color$[@list] + "ê²°ì •"), 1;
+					message @sd, 3, @clothes_color$[@list] + "ê²°ì • ì£¼ì—ˆìŠµë‹ˆë‹¤";
 					additem @sd, name2itemid(@clothes_color$[@list] + @clothes_name$[@make]), 1;
-					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "°áÁ¤À¸·Î " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ¸¸µé¾îÁÖ¾ú³×.");
+					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "ê²°ì •ìœ¼ë¡œ " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ë§Œë“¤ì–´ì£¼ì—ˆë„¤.");
 				}
 			}
 		}
@@ -73,27 +73,27 @@ COS001:
 	}
 	else if(@ret == 5)
 	{
-		set @pos, list2(@list, 0, 1, "±×·³.. ¾î¶² »ö±òÀÇ È£¹Ú°áÁ¤À» °¡Áö°í ¿Ô´Â°¡?", "È²±İÈ£¹Ú°áÁ¤ÀÔ´Ï´Ù.");
+		set @pos, list2(@list, 0, 1, "ê·¸ëŸ¼.. ì–´ë–¤ ìƒ‰ê¹”ì˜ í˜¸ë°•ê²°ì •ì„ ê°€ì§€ê³  ì™”ëŠ”ê°€?", "í™©ê¸ˆí˜¸ë°•ê²°ì •ì…ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 		if(@list > 0)
 		{
-			setarray @clothes_name$[1], "Àå°©", "ÆÈÂî", "¹İÁö", "¼±·ù";
-			setarray @clothes_color$[1], "È²±İÈ£¹Ú";
+			setarray @clothes_name$[1], "ì¥ê°‘", "íŒ”ì°Œ", "ë°˜ì§€", "ì„ ë¥˜";
+			setarray @clothes_color$[1], "í™©ê¸ˆí˜¸ë°•";
 
-			set @pos, list2(@make, 0, 0, "±×·¡.. " + @clothes$[@list] + "°áÁ¤À¸·Î ¾î¶² ¾ÆÀÌÅÛÀ» ¸¸µéÅÙ°¡?", @clothes_color$[@list] + "Àå°©ÀÔ´Ï´Ù.", @clothes_color$[@list] + "ÆÈÂîÀÔ´Ï´Ù.", @clothes_color$[@list] + "¹İÁöÀÔ´Ï´Ù.", @clothes_color$[@list] + "¼±·ùÀÔ´Ï´Ù.");
+			set @pos, list2(@make, 0, 0, "ê·¸ë˜.. " + @clothes$[@list] + "ê²°ì •ìœ¼ë¡œ ì–´ë–¤ ì•„ì´í…œì„ ë§Œë“¤í…ê°€?", @clothes_color$[@list] + "ì¥ê°‘ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "íŒ”ì°Œì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ë°˜ì§€ì…ë‹ˆë‹¤.", @clothes_color$[@list] + "ì„ ë¥˜ì…ë‹ˆë‹¤.");
 			if(@pos == 1 && @make > 0)
 			{
-				if(countitem(name2itemid(@clothes_color$[@list] + "°áÁ¤")) == 0)
+				if(countitem(name2itemid(@clothes_color$[@list] + "ê²°ì •")) == 0)
 				{
-					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "°áÁ¤ÀÌ ¾ø´Â°Í °°±º.");
+					set @pos, dialog(0, 0, 0, @clothes_color$[@list] + "ê²°ì •ì´ ì—†ëŠ”ê²ƒ ê°™êµ°.");
 				}
 				else
 				{
-					delitem @sd, name2itemid(@clothes_color$[@list] + "°áÁ¤"), 1;
-					message @sd, 3, @clothes_color$[@list] + "°áÁ¤ ÁÖ¾ú½À´Ï´Ù";
+					delitem @sd, name2itemid(@clothes_color$[@list] + "ê²°ì •"), 1;
+					message @sd, 3, @clothes_color$[@list] + "ê²°ì • ì£¼ì—ˆìŠµë‹ˆë‹¤";
 					additem @sd, name2itemid(@clothes_color$[@list] + @clothes_name$[@make]), 1;
-					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "°áÁ¤À¸·Î " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ¸¸µé¾îÁÖ¾ú³×.");
+					set @pos, dialog(0, 0, 1, @clothes_color$[@list] + "ê²°ì •ìœ¼ë¡œ " + @clothes_color$[@list] + "" + @clothes_name$[@make] + " ë§Œë“¤ì–´ì£¼ì—ˆë„¤.");
 				}
 			}
 		}
@@ -102,18 +102,18 @@ COS001:
 	}
 }
 
-ºÏ¹æ»óÁ¡3	{
+ë¶ë°©ìƒì 3	{
 	set @sd, mysd();
 	set @id, myid();
-	set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", "¹°°Ç »ç±â", "¹°°Ç ÆÈ±â");
+	set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¼ê±´ ì‚¬ê¸°", "ë¬¼ê±´ íŒ”ê¸°");
 	if(@ret == 1) { callshop 0, 46; }
 	else if(@ret == 2) { callshop 1, 57; }
 }
 
-ºÏ¹æ»óÁ¡4	{
+ë¶ë°©ìƒì 4	{
 	set @sd, mysd();
 	set @id, myid();
-	set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", "¹°°Ç »ç±â", "¹°°Ç ÆÈ±â");
+	set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", "ë¬¼ê±´ ì‚¬ê¸°", "ë¬¼ê±´ íŒ”ê¸°");
 	if(@ret == 1) { callshop 0, 48; }
 	else if(@ret == 2) { callshop 1, 49; }
 }

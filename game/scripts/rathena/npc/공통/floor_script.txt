@@ -1,76 +1,76 @@
-@¿ÁÁÂ	{
+@ì˜¥ì¢Œ	{
 	set @sd, mysd();
 	set @id, myid();
 
-	message @sd, 4, "[¾Ë¸²] ¿ÁÁÂ¸¦ Á¡·ÉÇÏ¿´½À´Ï´Ù.";
-	spellaether @sd, name2spellid("¿ÁÁÂÁ¡·É"), 310;
+	message @sd, 4, "[ì•Œë¦¼] ì˜¥ì¢Œë¥¼ ì ë ¹í•˜ì˜€ìŠµë‹ˆë‹¤.";
+	spellaether @sd, name2spellid("ì˜¥ì¢Œì ë ¹"), 310;
 }
 
-@3Â÷½Â±ŞÁÖÀÛ	{
+@3ì°¨ìŠ¹ê¸‰ì£¼ì‘	{
 	image 0, 0, 0;
 	set @sd, mysd();
 	set @id, myid();
-	if(get_totem(@sd) == 0 && countitem(name2itemid("½Â±ŞÀÇ¼­Àå")) > 0)
+	if(get_totem(@sd) == 0 && countitem(name2itemid("ìŠ¹ê¸‰ì˜ì„œì¥")) > 0)
 	{
-		if(countitem(name2itemid("±¸¸§ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("±¸¸§ÀÇ¿Á"), 1; message @sd, 3, "±¸¸§ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("µ¿¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("¹°ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("¹°ÀÇ¿Á"), 1; message @sd, 3, "¹°ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("¼­¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("ºÒÀÇ¿Á")) > 0) { delitem @sd, name2itemid("ºÒÀÇ¿Á"), 1; message @sd, 3, "ºÒÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'ÇÏ"), 1; }
-		if(countitem(name2itemid("»êÀÇ¿Á")) > 0) { delitem @sd, name2itemid("»êÀÇ¿Á"), 1; message @sd, 3, "»êÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'»ó"), 1; }
-		if(countitem(name2itemid("°í´ë¸¶¹ı¼­'»ó")) > 0 && countitem(name2itemid("°í´ë¸¶¹ı¼­'ÇÏ")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ÀÌÁ¦ ¸ğµç Á¶°ÇÀÌ °¡ÃçÁ³À¸´Ï Ãµ¼ºÇö¿¡°Ô °¡Á®°¡¼¼¿ä."); }
+		if(countitem(name2itemid("êµ¬ë¦„ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("êµ¬ë¦„ì˜ì˜¥"), 1; message @sd, 3, "êµ¬ë¦„ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ë™ë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¬¼ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¬¼ì˜ì˜¥"), 1; message @sd, 3, "ë¬¼ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ì„œë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¶ˆì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¶ˆì˜ì˜¥"), 1; message @sd, 3, "ë¶ˆì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜"), 1; }
+		if(countitem(name2itemid("ì‚°ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ì‚°ì˜ì˜¥"), 1; message @sd, 3, "ì‚°ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ"), 1; }
+		if(countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ")) > 0 && countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ì´ì œ ëª¨ë“  ì¡°ê±´ì´ ê°€ì¶°ì¡Œìœ¼ë‹ˆ ì²œì„±í˜„ì—ê²Œ ê°€ì ¸ê°€ì„¸ìš”."); }
 	}
 }
 
-@3Â÷½Â±Ş¹éÈ£	{
+@3ì°¨ìŠ¹ê¸‰ë°±í˜¸	{
 	image 0, 0, 0;
 	set @sd, mysd();
 	set @id, myid();
-	if(get_totem(@sd) == 1 && countitem(name2itemid("½Â±ŞÀÇ¼­Àå")) > 0)
+	if(get_totem(@sd) == 1 && countitem(name2itemid("ìŠ¹ê¸‰ì˜ì„œì¥")) > 0)
 	{
-		if(countitem(name2itemid("±¸¸§ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("±¸¸§ÀÇ¿Á"), 1; message @sd, 3, "±¸¸§ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("µ¿¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("¹°ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("¹°ÀÇ¿Á"), 1; message @sd, 3, "¹°ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("¼­¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("ºÒÀÇ¿Á")) > 0) { delitem @sd, name2itemid("ºÒÀÇ¿Á"), 1; message @sd, 3, "ºÒÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'ÇÏ"), 1; }
-		if(countitem(name2itemid("»êÀÇ¿Á")) > 0) { delitem @sd, name2itemid("»êÀÇ¿Á"), 1; message @sd, 3, "»êÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'»ó"), 1; }
-		if(countitem(name2itemid("°í´ë¸¶¹ı¼­'»ó")) > 0 && countitem(name2itemid("°í´ë¸¶¹ı¼­'ÇÏ")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ÀÌÁ¦ ¸ğµç Á¶°ÇÀÌ °¡ÃçÁ³À¸´Ï Ãµ¼ºÇö¿¡°Ô °¡Á®°¡¼¼¿ä."); }
+		if(countitem(name2itemid("êµ¬ë¦„ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("êµ¬ë¦„ì˜ì˜¥"), 1; message @sd, 3, "êµ¬ë¦„ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ë™ë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¬¼ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¬¼ì˜ì˜¥"), 1; message @sd, 3, "ë¬¼ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ì„œë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¶ˆì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¶ˆì˜ì˜¥"), 1; message @sd, 3, "ë¶ˆì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜"), 1; }
+		if(countitem(name2itemid("ì‚°ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ì‚°ì˜ì˜¥"), 1; message @sd, 3, "ì‚°ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ"), 1; }
+		if(countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ")) > 0 && countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ì´ì œ ëª¨ë“  ì¡°ê±´ì´ ê°€ì¶°ì¡Œìœ¼ë‹ˆ ì²œì„±í˜„ì—ê²Œ ê°€ì ¸ê°€ì„¸ìš”."); }
 	}
 }
 
-@3Â÷½Â±ŞÇö¹«	{
+@3ì°¨ìŠ¹ê¸‰í˜„ë¬´	{
 	image 0, 0, 0;
 	set @sd, mysd();
 	set @id, myid();
-	if(get_totem(@sd) == 2 && countitem(name2itemid("½Â±ŞÀÇ¼­Àå")) > 0)
+	if(get_totem(@sd) == 2 && countitem(name2itemid("ìŠ¹ê¸‰ì˜ì„œì¥")) > 0)
 	{
-		if(countitem(name2itemid("±¸¸§ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("±¸¸§ÀÇ¿Á"), 1; message @sd, 3, "±¸¸§ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("µ¿¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("¹°ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("¹°ÀÇ¿Á"), 1; message @sd, 3, "¹°ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("¼­¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("ºÒÀÇ¿Á")) > 0) { delitem @sd, name2itemid("ºÒÀÇ¿Á"), 1; message @sd, 3, "ºÒÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'ÇÏ"), 1; }
-		if(countitem(name2itemid("»êÀÇ¿Á")) > 0) { delitem @sd, name2itemid("»êÀÇ¿Á"), 1; message @sd, 3, "»êÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'»ó"), 1; }
-		if(countitem(name2itemid("°í´ë¸¶¹ı¼­'»ó")) > 0 && countitem(name2itemid("°í´ë¸¶¹ı¼­'ÇÏ")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ÀÌÁ¦ ¸ğµç Á¶°ÇÀÌ °¡ÃçÁ³À¸´Ï Ãµ¼ºÇö¿¡°Ô °¡Á®°¡¼¼¿ä."); }
+		if(countitem(name2itemid("êµ¬ë¦„ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("êµ¬ë¦„ì˜ì˜¥"), 1; message @sd, 3, "êµ¬ë¦„ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ë™ë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¬¼ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¬¼ì˜ì˜¥"), 1; message @sd, 3, "ë¬¼ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ì„œë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¶ˆì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¶ˆì˜ì˜¥"), 1; message @sd, 3, "ë¶ˆì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜"), 1; }
+		if(countitem(name2itemid("ì‚°ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ì‚°ì˜ì˜¥"), 1; message @sd, 3, "ì‚°ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ"), 1; }
+		if(countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ")) > 0 && countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ì´ì œ ëª¨ë“  ì¡°ê±´ì´ ê°€ì¶°ì¡Œìœ¼ë‹ˆ ì²œì„±í˜„ì—ê²Œ ê°€ì ¸ê°€ì„¸ìš”."); }
 	}
 }
 
-@3Â÷½Â±ŞÃ»·æ	{
+@3ì°¨ìŠ¹ê¸‰ì²­ë£¡	{
 	image 0, 0, 0;
 	set @sd, mysd();
 	set @id, myid();
-	if(get_totem(@sd) == 3 && countitem(name2itemid("½Â±ŞÀÇ¼­Àå")) > 0)
+	if(get_totem(@sd) == 3 && countitem(name2itemid("ìŠ¹ê¸‰ì˜ì„œì¥")) > 0)
 	{
-		if(countitem(name2itemid("±¸¸§ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("±¸¸§ÀÇ¿Á"), 1; message @sd, 3, "±¸¸§ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("µ¿¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("¹°ÀÇ¿Á")) > 0) { delitem @sd, name2itemid("¹°ÀÇ¿Á"), 1; message @sd, 3, "¹°ÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("¼­¹®¿­¼è"), 1; }
-		if(countitem(name2itemid("ºÒÀÇ¿Á")) > 0) { delitem @sd, name2itemid("ºÒÀÇ¿Á"), 1; message @sd, 3, "ºÒÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'ÇÏ"), 1; }
-		if(countitem(name2itemid("»êÀÇ¿Á")) > 0) { delitem @sd, name2itemid("»êÀÇ¿Á"), 1; message @sd, 3, "»êÀÇ¿Á ÁÖ¾ú½À´Ï´Ù"; additem @sd, name2itemid("°í´ë¸¶¹ı¼­'»ó"), 1; }
-		if(countitem(name2itemid("°í´ë¸¶¹ı¼­'»ó")) > 0 && countitem(name2itemid("°í´ë¸¶¹ı¼­'ÇÏ")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ÀÌÁ¦ ¸ğµç Á¶°ÇÀÌ °¡ÃçÁ³À¸´Ï Ãµ¼ºÇö¿¡°Ô °¡Á®°¡¼¼¿ä."); }
+		if(countitem(name2itemid("êµ¬ë¦„ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("êµ¬ë¦„ì˜ì˜¥"), 1; message @sd, 3, "êµ¬ë¦„ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ë™ë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¬¼ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¬¼ì˜ì˜¥"), 1; message @sd, 3, "ë¬¼ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ì„œë¬¸ì—´ì‡ "), 1; }
+		if(countitem(name2itemid("ë¶ˆì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ë¶ˆì˜ì˜¥"), 1; message @sd, 3, "ë¶ˆì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜"), 1; }
+		if(countitem(name2itemid("ì‚°ì˜ì˜¥")) > 0) { delitem @sd, name2itemid("ì‚°ì˜ì˜¥"), 1; message @sd, 3, "ì‚°ì˜ì˜¥ ì£¼ì—ˆìŠµë‹ˆë‹¤"; additem @sd, name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ"), 1; }
+		if(countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'ìƒ")) > 0 && countitem(name2itemid("ê³ ëŒ€ë§ˆë²•ì„œ'í•˜")) > 0) { set $thirdclass, 2; set @pos, dialog(0, 0, 1, "ì´ì œ ëª¨ë“  ì¡°ê±´ì´ ê°€ì¶°ì¡Œìœ¼ë‹ˆ ì²œì„±í˜„ì—ê²Œ ê°€ì ¸ê°€ì„¸ìš”."); }
 	}
 }
 
-@µ¿ÅÂ±Ø´øÀü	{
+@ë™íƒœê·¹ë˜ì „	{
 	set @sd, mysd();
 	set @id, myid();
 	image 0, 0, 0;
-	set @pos, menu("µ¿ÅÂ±Ø´øÀüÀ¸·Î °¡½Ã°Ú½À´Ï±î?", "³×, °¡°Ú½À´Ï´Ù.", "¾Æ´Ï¿À, ¾È°¥·¡¿ä.");
+	set @pos, menu("ë™íƒœê·¹ë˜ì „ìœ¼ë¡œ ê°€ì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤, ê°€ê² ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ì•ˆê°ˆë˜ìš”.");
 	if(@pos == 2) { end; }
-	if(countitem(name2itemid("µ¿¹®¿­¼è")) == 0) { set @pos, dialog(0, 0, 1, "µ¿¹®¿­¼è°¡ ¾øÀ¸¸é µé¾î°¥ ¼ö ¾ø½À´Ï´Ù."); end; }
-	delitem @sd, name2itemid("µ¿¹®¿­¼è"), 1;
-	set @pos, dialog(0, 0, 1, "ÀÌµ¿ÇÏ°Ú½À´Ï´Ù.");
+	if(countitem(name2itemid("ë™ë¬¸ì—´ì‡ ")) == 0) { set @pos, dialog(0, 0, 1, "ë™ë¬¸ì—´ì‡ ê°€ ì—†ìœ¼ë©´ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."); end; }
+	delitem @sd, name2itemid("ë™ë¬¸ì—´ì‡ "), 1;
+	set @pos, dialog(0, 0, 1, "ì´ë™í•˜ê² ìŠµë‹ˆë‹¤.");
 	if(party(@sd) != 0)
 	{
 		for(set @i, 0; @i < partymax(); set @i, @i+1)
@@ -89,15 +89,15 @@
 	else { warp @sd, 1772, 13, 13; }
 }
 
-@¼­ÅÂ±Ø´øÀü	{
+@ì„œíƒœê·¹ë˜ì „	{
 	set @sd, mysd();
 	set @id, myid();
 	image 0, 0, 0;
-	set @pos, menu("¼­ÅÂ±Ø´øÀüÀ¸·Î °¡½Ã°Ú½À´Ï±î?", "³×, °¡°Ú½À´Ï´Ù.", "¾Æ´Ï¿À, ¾È°¥·¡¿ä.");
+	set @pos, menu("ì„œíƒœê·¹ë˜ì „ìœ¼ë¡œ ê°€ì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤, ê°€ê² ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ì•ˆê°ˆë˜ìš”.");
 	if(@pos == 2) { end; }
-	if(countitem(name2itemid("¼­¹®¿­¼è")) == 0) { set @pos, dialog(0, 0, 1, "¼­¹®¿­¼è°¡ ¾øÀ¸¸é µé¾î°¥ ¼ö ¾ø½À´Ï´Ù."); end; }
-	delitem @sd, name2itemid("¼­¹®¿­¼è"), 1;
-	set @pos, dialog(0, 0, 1, "ÀÌµ¿ÇÏ°Ú½À´Ï´Ù.");
+	if(countitem(name2itemid("ì„œë¬¸ì—´ì‡ ")) == 0) { set @pos, dialog(0, 0, 1, "ì„œë¬¸ì—´ì‡ ê°€ ì—†ìœ¼ë©´ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."); end; }
+	delitem @sd, name2itemid("ì„œë¬¸ì—´ì‡ "), 1;
+	set @pos, dialog(0, 0, 1, "ì´ë™í•˜ê² ìŠµë‹ˆë‹¤.");
 	if(party(@sd) != 0)
 	{
 		for(set @i, 0; @i < partymax(); set @i, @i+1)
@@ -116,47 +116,47 @@
 	else { warp @sd, 1773, 13, 13; }
 }
 
-@º»¼ºÀÔ±¸7_1	{
+@ë³¸ì„±ì…êµ¬7_1	{
 	callfunc "JAPAN_WARP";
 }
 
-@º»¼ºÀÔ±¸7_2	{
+@ë³¸ì„±ì…êµ¬7_2	{
 	callfunc "JAPAN_WARP";
 }
 
-@º»¼ºÀÔ±¸7_3	{
+@ë³¸ì„±ì…êµ¬7_3	{
 	callfunc "JAPAN_WARP";
 }
 
-@º»¼ºÀÔ±¸7_4	{
+@ë³¸ì„±ì…êµ¬7_4	{
 	callfunc "JAPAN_WARP";
 }
 
-@¼ÒÈ£ÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 1, 2009, rand(11, 18), 28, "¼ÒÈ£", "°¡";
+@ì†Œí˜¸ì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 1, 2009, rand(11, 18), 28, "ì†Œí˜¸", "ê°€";
 }
 
-@Àü¿íÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 2, 2008, rand(12, 17), 2, "Àü¿í", "ÀÌ";
+@ì „ìš±ì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 2, 2008, rand(12, 17), 2, "ì „ìš±", "ì´";
 }
 
-@Á¦°îÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 3, 1964, 2, rand(12, 17), "Á¦°î", "ÀÌ";
+@ì œê³¡ì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 3, 1964, 2, rand(12, 17), "ì œê³¡", "ì´";
 }
 
-@¿äÁ¦ÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 4, 2007, 27, rand(12, 17), "¿äÁ¦", "°¡";
+@ìš”ì œì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 4, 2007, 27, rand(12, 17), "ìš”ì œ", "ê°€";
 }
 
-@¼øÁ¦ÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 5, 2006, rand(12, 17), 27, "¼øÁ¦", "°¡";
+@ìˆœì œì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 5, 2006, rand(12, 17), 27, "ìˆœì œ", "ê°€";
 }
 
-@¹İ°íÀÇ¹æ	{
-	callfunc "FOURCLASS_WARP", 6, 2010, rand(9, 16), 23, "¹İ°í", "°¡";
+@ë°˜ê³ ì˜ë°©	{
+	callfunc "FOURCLASS_WARP", 6, 2010, rand(9, 16), 23, "ë°˜ê³ ", "ê°€";
 }
 
-@º­¶ô¸ÂÀº°¡Áö	{
+@ë²¼ë½ë§ì€ê°€ì§€	{
 	set @sd, mysd();
 	set @id, myid();
 
@@ -169,32 +169,32 @@
 			if($thunder_tree == 0)
 			{
 COS001:
-				set @pos, dialog(0, 0, 1, "¾î¼­¿À½Ã°Ô, ³ª´Â ÀÌ ¿Àµ¿³ª¹«ÀÇ ¼öÈ£½ÅÀÏ¼¼.\\n\\nº¸½Ã´Â ¹Ù¿Í °°ÀÌ ÀÌ ³ª¹«´Â º­¶ôÀ» ¸Â¾Ò´Ù³×. °¡½¿¾ÆÇÂ ÀÏÀÌÁö...");
+				set @pos, dialog(0, 0, 1, "ì–´ì„œì˜¤ì‹œê²Œ, ë‚˜ëŠ” ì´ ì˜¤ë™ë‚˜ë¬´ì˜ ìˆ˜í˜¸ì‹ ì¼ì„¸.\\n\\në³´ì‹œëŠ” ë°”ì™€ ê°™ì´ ì´ ë‚˜ë¬´ëŠ” ë²¼ë½ì„ ë§ì•˜ë‹¤ë„¤. ê°€ìŠ´ì•„í”ˆ ì¼ì´ì§€...");
 				if(@pos == 0) end;
 COS002:
-				set @pos, dialog(0, 1, 1, "±× ´ë½Å º­¶ôÀ» ¸ÂÀº ³ª¹«ÀÇ °¡Áö´Â Æ¯º°ÇÑ ¾µ¸ğ°¡ ÀÖ´Ù³×...\\n\\n\\nÈ¤½Ã ÀÚ³×°¡ ÀÌ ³ª¹«¸¦ ¼Ò»ı½ÃÅ³ ¼ö ÀÖ´Â È¸º¹ÀÇ »ù¹°À» ±¸ÇØ¿Â´Ù¸é, ³ª¹µ°¡Áö ÇÏ³ª Á¤µµ´Â ³»¾îÁÜ¼¼.");
+				set @pos, dialog(0, 1, 1, "ê·¸ ëŒ€ì‹  ë²¼ë½ì„ ë§ì€ ë‚˜ë¬´ì˜ ê°€ì§€ëŠ” íŠ¹ë³„í•œ ì“¸ëª¨ê°€ ìˆë‹¤ë„¤...\\n\\n\\ní˜¹ì‹œ ìë„¤ê°€ ì´ ë‚˜ë¬´ë¥¼ ì†Œìƒì‹œí‚¬ ìˆ˜ ìˆëŠ” íšŒë³µì˜ ìƒ˜ë¬¼ì„ êµ¬í•´ì˜¨ë‹¤ë©´, ë‚˜ë­‡ê°€ì§€ í•˜ë‚˜ ì •ë„ëŠ” ë‚´ì–´ì¤Œì„¸.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS001;
 COS003:
-				set @pos, dialog(0, 1, 1, "¼Ò»ıÃµÀÌ ÀÖ´Ù¸é, ±× ¹°À» ¶°¿À¸é µÉ°É¼¼... Çà¿îÀ» ºñ³×...");
+				set @pos, dialog(0, 1, 1, "ì†Œìƒì²œì´ ìˆë‹¤ë©´, ê·¸ ë¬¼ì„ ë– ì˜¤ë©´ ë ê±¸ì„¸... í–‰ìš´ì„ ë¹„ë„¤...");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS002;
 
 				set $thunder_tree, 1;
-				addlegend @sd, 2, 7, 0, 4, "È¸º¹ÀÇ »ù¹°À» ±¸ÇÏ·¯....";
+				addlegend @sd, 2, 7, 0, 4, "íšŒë³µì˜ ìƒ˜ë¬¼ì„ êµ¬í•˜ëŸ¬....";
 			}
 			else if($thunder_tree == 1)
 			{
-				if(countitem(name2itemid("È¸º¹ÀÇ»ù¹°")) > 0)
+				if(countitem(name2itemid("íšŒë³µì˜ìƒ˜ë¬¼")) > 0)
 				{
-					set @pos, dialog(0, 0, 1, "°í¸¿³×. ¾ÆÁÖ ½Ã¿øÇÑ ¹°ÀÏ¼¼...\\n¾à¼ÓÇÑ´ë·Î ¿©±â °¡Áö ÇÏ³ª¸¦ ³»¾îÁÜ¼¼. ¿ä±äÇÏ°Ô ¾²°Ô³ª...");
+					set @pos, dialog(0, 0, 1, "ê³ ë§™ë„¤. ì•„ì£¼ ì‹œì›í•œ ë¬¼ì¼ì„¸...\\nì•½ì†í•œëŒ€ë¡œ ì—¬ê¸° ê°€ì§€ í•˜ë‚˜ë¥¼ ë‚´ì–´ì¤Œì„¸. ìš”ê¸´í•˜ê²Œ ì“°ê²Œë‚˜...");
 					if(@pos == 0) end;
 
-					delitem @sd, name2itemid("È¸º¹ÀÇ»ù¹°"), 1;
-					message @sd, 3, "È¸º¹ÀÇ»ù¹° ÁÖ¾ú½À´Ï´Ù.";
-					additem @sd, name2itemid("º­¶ô³ª¹µ°¡Áö"), 1;
+					delitem @sd, name2itemid("íšŒë³µì˜ìƒ˜ë¬¼"), 1;
+					message @sd, 3, "íšŒë³µì˜ìƒ˜ë¬¼ ì£¼ì—ˆìŠµë‹ˆë‹¤.";
+					additem @sd, name2itemid("ë²¼ë½ë‚˜ë­‡ê°€ì§€"), 1;
 					set $thunder_tree, 2;
-					addlegend @sd, 2, 7, 0, 4, "È¸º¹ÀÇ »ù¹°À» ¼öÈ£½Å¿¡°Ô °¡Á®´Ù ÁÖ¾ú´Ù.";
+					addlegend @sd, 2, 7, 0, 4, "íšŒë³µì˜ ìƒ˜ë¬¼ì„ ìˆ˜í˜¸ì‹ ì—ê²Œ ê°€ì ¸ë‹¤ ì£¼ì—ˆë‹¤.";
 				}
 			}
 			else end;
@@ -202,7 +202,7 @@ COS003:
 	}
 }
 
-@¼Ò»ıÃµ¹°¶ß±â	{
+@ì†Œìƒì²œë¬¼ëœ¨ê¸°	{
 	set @sd, mysd();
 	set @id, myid();
 
@@ -210,32 +210,32 @@ COS003:
 
 	if(get_state(@sd) != 1)
 	{
-		if(countitem(name2itemid("¹°º´")) > 0)
+		if(countitem(name2itemid("ë¬¼ë³‘")) > 0)
 		{
-			set @pos, dialog(0, 0, 1, "¹°º´¿¡ È¸º¹ÀÇ »ù¹°À» °¡µæ Ã¤¿ü½À´Ï´Ù.");
+			set @pos, dialog(0, 0, 1, "ë¬¼ë³‘ì— íšŒë³µì˜ ìƒ˜ë¬¼ì„ ê°€ë“ ì±„ì› ìŠµë‹ˆë‹¤.");
 			if(@pos == 0) end;
 
-			delitem @sd, name2itemid("¹°º´"), 1;
-			message @sd, 3, "¹°º´ ÁÖ¾ú½À´Ï´Ù";
-			additem @sd, name2itemid("È¸º¹ÀÇ»ù¹°"), 1;
-			addlegend @sd, 2, 7, 0, 4, "¼Ò»ıÃµ¿¡¼­ È¸º¹ÀÇ »ù¹°À» °¡µæ Ã¤¿ü´Ù.";
+			delitem @sd, name2itemid("ë¬¼ë³‘"), 1;
+			message @sd, 3, "ë¬¼ë³‘ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			additem @sd, name2itemid("íšŒë³µì˜ìƒ˜ë¬¼"), 1;
+			addlegend @sd, 2, 7, 0, 4, "ì†Œìƒì²œì—ì„œ íšŒë³µì˜ ìƒ˜ë¬¼ì„ ê°€ë“ ì±„ì› ë‹¤.";
 		}
 	}
 }
 
-@³­ÆÄ¼±¼±ÀåÀÇ¹æ	{
+@ë‚œíŒŒì„ ì„ ì¥ì˜ë°©	{
 	set @sd, mysd();
 	set @id, myid();
 
 	image 0, 0, 0;
 
-	if(countitem(name2itemid("ºÀ·¡»êÀü¼³")) > 0)
+	if(countitem(name2itemid("ë´‰ë˜ì‚°ì „ì„¤")) > 0)
 	{
-		warp @sd, name2mapid("³­ÆÄ¼±¼±ÀåÀÇ¹æ"), 1, rand(10, 13);
+		warp @sd, name2mapid("ë‚œíŒŒì„ ì„ ì¥ì˜ë°©"), 1, rand(10, 13);
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 0, "ºÒ±æÇÑ ±â¿î¿¡ °¡·Î¸·Çô µé¾î°¥ ¼ö ¾ø´Ù.");
+		set @pos, dialog(0, 0, 0, "ë¶ˆê¸¸í•œ ê¸°ìš´ì— ê°€ë¡œë§‰í˜€ ë“¤ì–´ê°ˆ ìˆ˜ ì—†ë‹¤.");
 		set_x @id, get_x(@id)-1;
 		updatexy @sd;
 		updatelookpc @sd, 0;
@@ -243,110 +243,110 @@ COS003:
 	}
 }
 
-@ÁÖÀÛÆÈ±¥¹æ	{
-	callfunc "EIGHTROOM", "ÁÖÀÛ", #bird_castle$;
+@ì£¼ì‘íŒ”ê´˜ë°©	{
+	callfunc "EIGHTROOM", "ì£¼ì‘", #bird_castle$;
 }
 
-@Çö¹«ÆÈ±¥¹æ	{
-	callfunc "EIGHTROOM", "Çö¹«", #turtle_castle$;
+@í˜„ë¬´íŒ”ê´˜ë°©	{
+	callfunc "EIGHTROOM", "í˜„ë¬´", #turtle_castle$;
 }
 
-@Ã»·æÆÈ±¥¹æ	{
-	callfunc "EIGHTROOM", "Ã»·æ", #dragon_castle$;
+@ì²­ë£¡íŒ”ê´˜ë°©	{
+	callfunc "EIGHTROOM", "ì²­ë£¡", #dragon_castle$;
 }
 
-@¹éÈ£ÆÈ±¥¹æ	{
-	callfunc "EIGHTROOM", "¹éÈ£", #tiger_castle$;
+@ë°±í˜¸íŒ”ê´˜ë°©	{
+	callfunc "EIGHTROOM", "ë°±í˜¸", #tiger_castle$;
 }
 
-@ÁÖÀÛÆÈ±¥¹æÅğÀå	{
+@ì£¼ì‘íŒ”ê´˜ë°©í‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 
-	warp @sd, name2mapid("ÁÖÀÛ¼ºÀÔ±¸"), rand(16, 17), 31;
+	warp @sd, name2mapid("ì£¼ì‘ì„±ì…êµ¬"), rand(16, 17), 31;
 }
 
-@Ã»·æÆÈ±¥¹æÅğÀå	{
+@ì²­ë£¡íŒ”ê´˜ë°©í‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 
-	warp @sd, name2mapid("Ã»·æ¼ºÀÔ±¸"), rand(16, 17), 31;
+	warp @sd, name2mapid("ì²­ë£¡ì„±ì…êµ¬"), rand(16, 17), 31;
 }
 
-@¹éÈ£ÆÈ±¥¹æÅğÀå	{
+@ë°±í˜¸íŒ”ê´˜ë°©í‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 
-	warp @sd, name2mapid("¹éÈ£¼ºÀÔ±¸"), rand(71, 74), 1;
+	warp @sd, name2mapid("ë°±í˜¸ì„±ì…êµ¬"), rand(71, 74), 1;
 }
 
-@Çö¹«ÆÈ±¥¹æÅğÀå	{
+@í˜„ë¬´íŒ”ê´˜ë°©í‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 
-	warp @sd, name2mapid("Çö¹«¼ºÀÔ±¸"), rand(16, 17), 31;
+	warp @sd, name2mapid("í˜„ë¬´ì„±ì…êµ¬"), rand(16, 17), 31;
 }
 
-@ÁÖÀÛÁöÇÏ¼ö·Î	{
-	callfunc "CLANDOWNROOM", "ÁÖÀÛ", #bird_castle$;
+@ì£¼ì‘ì§€í•˜ìˆ˜ë¡œ	{
+	callfunc "CLANDOWNROOM", "ì£¼ì‘", #bird_castle$;
 }
 
-@Çö¹«ÁöÇÏ¼ö·Î	{
-	callfunc "CLANDOWNROOM", "Çö¹«", #turtle_castle$;
+@í˜„ë¬´ì§€í•˜ìˆ˜ë¡œ	{
+	callfunc "CLANDOWNROOM", "í˜„ë¬´", #turtle_castle$;
 }
 
-@Ã»·æÁöÇÏ¼ö·Î	{
-	callfunc "CLANDOWNROOM", "Ã»·æ", #dragon_castle$;
+@ì²­ë£¡ì§€í•˜ìˆ˜ë¡œ	{
+	callfunc "CLANDOWNROOM", "ì²­ë£¡", #dragon_castle$;
 }
 
-@¹éÈ£ÁöÇÏ¼ö·Î	{
-	callfunc "CLANDOWNROOM", "¹éÈ£", #tiger_castle$;
+@ë°±í˜¸ì§€í•˜ìˆ˜ë¡œ	{
+	callfunc "CLANDOWNROOM", "ë°±í˜¸", #tiger_castle$;
 }
 
-@ÁÖÀÛÁöÇÏ¼ö·ÎÅğÀå	{
-	set @sd, mysd();
-	set @id, myid();
-	if(rand(1, 2) == 1) { set @x, rand(3, 6); }
-	else { set @x, rand(34, 37); }
-
-	warp @sd, name2mapid("ÁÖÀÛÀÇ½ÉÀå"), @x, 6;
-}
-
-@Çö¹«ÁöÇÏ¼ö·ÎÅğÀå	{
+@ì£¼ì‘ì§€í•˜ìˆ˜ë¡œí‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 	if(rand(1, 2) == 1) { set @x, rand(3, 6); }
 	else { set @x, rand(34, 37); }
 
-	warp @sd, name2mapid("Çö¹«ÀÇ½ÉÀå"), @x, 6;
+	warp @sd, name2mapid("ì£¼ì‘ì˜ì‹¬ì¥"), @x, 6;
 }
 
-@Ã»·æÁöÇÏ¼ö·ÎÅğÀå	{
+@í˜„ë¬´ì§€í•˜ìˆ˜ë¡œí‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 	if(rand(1, 2) == 1) { set @x, rand(3, 6); }
 	else { set @x, rand(34, 37); }
 
-	warp @sd, name2mapid("Ã»·æÀÇ½ÉÀå"), @x, 6;
+	warp @sd, name2mapid("í˜„ë¬´ì˜ì‹¬ì¥"), @x, 6;
 }
 
-@¹éÈ£ÁöÇÏ¼ö·ÎÅğÀå	{
+@ì²­ë£¡ì§€í•˜ìˆ˜ë¡œí‡´ì¥	{
 	set @sd, mysd();
 	set @id, myid();
 	if(rand(1, 2) == 1) { set @x, rand(3, 6); }
 	else { set @x, rand(34, 37); }
 
-	warp @sd, name2mapid("Ã»·æÀÇ½ÉÀå"), @x, 6;
+	warp @sd, name2mapid("ì²­ë£¡ì˜ì‹¬ì¥"), @x, 6;
 }
 
-@º¸¹°Áöµµ	{
+@ë°±í˜¸ì§€í•˜ìˆ˜ë¡œí‡´ì¥	{
+	set @sd, mysd();
+	set @id, myid();
+	if(rand(1, 2) == 1) { set @x, rand(3, 6); }
+	else { set @x, rand(34, 37); }
+
+	warp @sd, name2mapid("ì²­ë£¡ì˜ì‹¬ì¥"), @x, 6;
+}
+
+@ë³´ë¬¼ì§€ë„	{
 	set @sd, mysd();
 	set @id, myid();
 
-	if(get_mapname(@sd) == $mountain_name$ && get_x(@id) == $mountain_x && get_y(@id) == $mountain_y && countitem(name2itemid("»ê½ÅÀÇº¸¹°Áöµµ")) > 0)
+	if(get_mapname(@sd) == $mountain_name$ && get_x(@id) == $mountain_x && get_y(@id) == $mountain_y && countitem(name2itemid("ì‚°ì‹ ì˜ë³´ë¬¼ì§€ë„")) > 0)
 	{
-		delitem @sd, name2itemid("»ê½ÅÀÇº¸¹°Áöµµ"), 1;
-		message @sd, 3, "»ê½ÅÀÇº¸¹°Áöµµ ÁÖ¾ú½À´Ï´Ù";
-		additem @sd, name2itemid("»ê½ÅÀÇºñ´Ü"), 1;
+		delitem @sd, name2itemid("ì‚°ì‹ ì˜ë³´ë¬¼ì§€ë„"), 1;
+		message @sd, 3, "ì‚°ì‹ ì˜ë³´ë¬¼ì§€ë„ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		additem @sd, name2itemid("ì‚°ì‹ ì˜ë¹„ë‹¨"), 1;
 	}
 }

@@ -1,70 +1,70 @@
-ÁÖ°æ¿ø	{
+ì£¼ê²½ì›	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($alcoholic_drink == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Ã¿À. " + get_name(@sd) + "¾¾, Ã³À½ ºË°Ú¼Ò. ³­ ¿©±â ³²¾ç¿¡¼­ ¹ì¼úÀ» ¸¸µå´Â ÁÖ°æ¿øÀÌ¶ó°í ÇÏ¿À.");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹œì˜¤. " + get_name(@sd) + "ì”¨, ì²˜ìŒ ëµ™ê² ì†Œ. ë‚œ ì—¬ê¸° ë‚¨ì–‘ì—ì„œ ë±€ìˆ ì„ ë§Œë“œëŠ” ì£¼ê²½ì›ì´ë¼ê³  í•˜ì˜¤.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "³ª´Â 20³âµ¿¾È ¹ì¼úÀ» ¸¸µé¸é¼­ »ì¾Æ¿ÔÁö. ¿ì¸® Áý¾È ´ë´ë·Î ÀüÇØÁö´Â Æ¯º°ÇÑ ¹æ¹ýÀ¸·Î ¸¸µå´Âµ¥, ¸¹Àº Àç·á°¡ ÇÊ¿äÇÏÁö.");
+		set @pos, dialog(0, 1, 1, "ë‚˜ëŠ” 20ë…„ë™ì•ˆ ë±€ìˆ ì„ ë§Œë“¤ë©´ì„œ ì‚´ì•„ì™”ì§€. ìš°ë¦¬ ì§‘ì•ˆ ëŒ€ëŒ€ë¡œ ì „í•´ì§€ëŠ” íŠ¹ë³„í•œ ë°©ë²•ìœ¼ë¡œ ë§Œë“œëŠ”ë°, ë§Žì€ ìž¬ë£Œê°€ í•„ìš”í•˜ì§€.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 
-		set @pos, dialog(0, 1, 1, "±×·±µ¥ ¿äÁòÀº ³²¾ç¿¡µµ ±«¹°µéÀÌ ¸¹¾Æ¼­ ¶¥²ÛµéÀÌ ¹ìÀ» ÀâÀ» ¼ö°¡ ¾ø´Ü ¸»ÀÌ³×. ¹ì¼úÀ» ¸¸µå´Â °Ô ³» À¯ÀÏÇÑ ³«ÀÎµ¥...");
+		set @pos, dialog(0, 1, 1, "ê·¸ëŸ°ë° ìš”ì¦˜ì€ ë‚¨ì–‘ì—ë„ ê´´ë¬¼ë“¤ì´ ë§Žì•„ì„œ ë•…ê¾¼ë“¤ì´ ë±€ì„ ìž¡ì„ ìˆ˜ê°€ ì—†ë‹¨ ë§ì´ë„¤. ë±€ìˆ ì„ ë§Œë“œëŠ” ê²Œ ë‚´ ìœ ì¼í•œ ë‚™ì¸ë°...");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS002;
 
-		set @pos, list2(@list, 0, 0, "¹ìÀÌ ÇÊ¿äÇÑµ¥.. ¾î¶»°Ô ±¸ÇÑ´ã?", "Á¦°¡ µµ¿Íµå¸®ÁÒ. ¹ìÀ» ±¸ÇØ µå¸®¸é µÇ´Â °Ç°¡¿ä?", "¹ì¼ú¸»°í ´Ù¸¥ ¼úÀ» ¸¸µå½Ã¸é µÇÁö ¾Ê³ª¿ä?");
+		set @pos, list2(@list, 0, 0, "ë±€ì´ í•„ìš”í•œë°.. ì–´ë–»ê²Œ êµ¬í•œë‹´?", "ì œê°€ ë„ì™€ë“œë¦¬ì£ . ë±€ì„ êµ¬í•´ ë“œë¦¬ë©´ ë˜ëŠ” ê±´ê°€ìš”?", "ë±€ìˆ ë§ê³  ë‹¤ë¥¸ ìˆ ì„ ë§Œë“œì‹œë©´ ë˜ì§€ ì•Šë‚˜ìš”?");
 		if(@pos == 0) end;
 		else if(@list == 1)
 		{
 			set $alcoholic_drink, 1;
-			addlegend @sd, 40, 7, 0, 20, "Ã»½É»çÁÖÀÇ Àç·á¸¦ ±¸ÇÏÀÚ.[1/2]";
-			set @pos, dialog(0, 0, 1, "¾Æ¾Æ! °í¸¿³× °í¸¶¿ö. Àç·á¸¦ ±¸ÇØÁÖ¸é ³»°¡ ¸¸µç ¼úÀ» ÇÑº´ ÁÖ°Ú³×.\\n\\n³»°¡ ¸¸µé·Á´Â °ÍÀº ±×³É ¹ì¼úÀÌ ¾Æ´Ï°í, 'Ã»½É»çÁÖ'¶ó´Â °ÍÀÌÁö. º¸Åë ¹ì¼úµµ ¸ö¿¡ ÁÁ´Ù°í ÇÏÁö¸¸, Ã»½É»çÁÖ¿¡ ºñÇÒ¹Ù´Â ¾Æ´Ï¾ß. ¹ì°í±â 100°³¿Í ÁÁÀº¹ì°í±â 5°³¸¦ ³óÃàÇÏ¿© ¸¸µç´Ù³×.");
+			addlegend @sd, 40, 7, 0, 20, "ì²­ì‹¬ì‚¬ì£¼ì˜ ìž¬ë£Œë¥¼ êµ¬í•˜ìž.[1/2]";
+			set @pos, dialog(0, 0, 1, "ì•„ì•„! ê³ ë§™ë„¤ ê³ ë§ˆì›Œ. ìž¬ë£Œë¥¼ êµ¬í•´ì£¼ë©´ ë‚´ê°€ ë§Œë“  ìˆ ì„ í•œë³‘ ì£¼ê² ë„¤.\\n\\në‚´ê°€ ë§Œë“¤ë ¤ëŠ” ê²ƒì€ ê·¸ëƒ¥ ë±€ìˆ ì´ ì•„ë‹ˆê³ , 'ì²­ì‹¬ì‚¬ì£¼'ë¼ëŠ” ê²ƒì´ì§€. ë³´í†µ ë±€ìˆ ë„ ëª¸ì— ì¢‹ë‹¤ê³  í•˜ì§€ë§Œ, ì²­ì‹¬ì‚¬ì£¼ì— ë¹„í• ë°”ëŠ” ì•„ë‹ˆì•¼. ë±€ê³ ê¸° 100ê°œì™€ ì¢‹ì€ë±€ê³ ê¸° 5ê°œë¥¼ ë†ì¶•í•˜ì—¬ ë§Œë“ ë‹¤ë„¤.");
 			end;
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 0, "±×°Ç ¿ë³³ÇÒ ¼ö ¾ø³×! ³ª´Â ¿À·ÎÁö ¹ì¼ú¸¸À» ¸¸µé °ÍÀÌ³×!");
+			set @pos, dialog(0, 0, 0, "ê·¸ê±´ ìš©ë‚©í•  ìˆ˜ ì—†ë„¤! ë‚˜ëŠ” ì˜¤ë¡œì§€ ë±€ìˆ ë§Œì„ ë§Œë“¤ ê²ƒì´ë„¤!");
 			end;
 		}
 	}
 	if($alcoholic_drink == 1)
 	{
-		if(countitem(name2itemid("¹ì°í±â")) < 100 && countitem(name2itemid("ÁÁÀº¹ì°í±â")) < 5)
+		if(countitem(name2itemid("ë±€ê³ ê¸°")) < 100 && countitem(name2itemid("ì¢‹ì€ë±€ê³ ê¸°")) < 5)
 		{
-			set @pos, dialog(0, 0, 0, "Ã»½É»çÁÖ¸¦ ¸¸µé±â À§ÇØ¼± ¹ì°í±â 100°³¿Í ÁÁÀº¹ì°í±â 5°³°¡ ÇÊ¿äÇÏ³×.");
+			set @pos, dialog(0, 0, 0, "ì²­ì‹¬ì‚¬ì£¼ë¥¼ ë§Œë“¤ê¸° ìœ„í•´ì„  ë±€ê³ ê¸° 100ê°œì™€ ì¢‹ì€ë±€ê³ ê¸° 5ê°œê°€ í•„ìš”í•˜ë„¤.");
 			end;
 		}
 		else
 		{
 COS003:
-			set @pos, dialog(0, 0, 1, "¿À¿À, ¹ì°í±â 100°³¿Í ÁÁÀº¹ì°í±â 5°³¸¦ Á¤¸» ±¸ÇØ¿Ô±º. °í¸¿³× °í¸¶¿ö.. ÀÌÁ¦ ¹ì¼úÀ» ÇÑ ¹ø ¸¸µé¾î º¸°Ú³×.");
+			set @pos, dialog(0, 0, 1, "ì˜¤ì˜¤, ë±€ê³ ê¸° 100ê°œì™€ ì¢‹ì€ë±€ê³ ê¸° 5ê°œë¥¼ ì •ë§ êµ¬í•´ì™”êµ°. ê³ ë§™ë„¤ ê³ ë§ˆì›Œ.. ì´ì œ ë±€ìˆ ì„ í•œ ë²ˆ ë§Œë“¤ì–´ ë³´ê² ë„¤.");
 			if(@pos == 0) end;
 
-			set @pos, dialog(0, 1, 1, "........\\n\\n¾Æ¾Æ ÀÌ·²¼ö°¡... ¿À·§µ¿¾È ¹ì¼úÀ» ¸¸µéÁö ¸øÇØ ¾ó¸¶°£ Àç·á »ìÇÇ´Â °ÍÀ» ¼ÒÈ¦È÷ Çß´õ´Ï Àç·á°¡ ¸ù¶¥ ¸ø¾²°Ô µÇ¾ú±º. Ã»½É»çÁÖ¿£ ¹ì¸¸ ÇÊ¿äÇÑ °ÍÀÌ ¾Æ´Ï°Åµç.");
+			set @pos, dialog(0, 1, 1, "........\\n\\nì•„ì•„ ì´ëŸ´ìˆ˜ê°€... ì˜¤ëž«ë™ì•ˆ ë±€ìˆ ì„ ë§Œë“¤ì§€ ëª»í•´ ì–¼ë§ˆê°„ ìž¬ë£Œ ì‚´í”¼ëŠ” ê²ƒì„ ì†Œí™€ížˆ í–ˆë”ë‹ˆ ìž¬ë£Œê°€ ëª½ë•… ëª»ì“°ê²Œ ë˜ì—ˆêµ°. ì²­ì‹¬ì‚¬ì£¼ì—” ë±€ë§Œ í•„ìš”í•œ ê²ƒì´ ì•„ë‹ˆê±°ë“ .");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS003;
 
-			set @pos, list2(@list, 0, 0, "ÀÌ ÀÏÀ» ¾îÂ¾´Ù....", "³»Ä£±è¿¡ ³ª¸ÓÁö Àç·áµµ Á¦°¡ ±¸ÇØ´Ù µå¸®Áö¿ä.", "¿¡ÀÌ, ÀÌÁ¨ Àúµµ ¸ô¶ó¿ä.");
+			set @pos, list2(@list, 0, 0, "ì´ ì¼ì„ ì–´ì©ë‹¤....", "ë‚´ì¹œê¹€ì— ë‚˜ë¨¸ì§€ ìž¬ë£Œë„ ì œê°€ êµ¬í•´ë‹¤ ë“œë¦¬ì§€ìš”.", "ì—ì´, ì´ì   ì €ë„ ëª°ë¼ìš”.");
 			if(@pos == 1 && @list == 1)
 			{
 				set $alcoholic_drink, 2;
-				addlegend @sd, 40, 7, 0, 20, "Ã»½É»çÁÖÀÇ Àç·á¸¦ ±¸ÇÏÀÚ.[2/2]";
+				addlegend @sd, 40, 7, 0, 20, "ì²­ì‹¬ì‚¬ì£¼ì˜ ìž¬ë£Œë¥¼ êµ¬í•˜ìž.[2/2]";
 
-				spellaether @sd, name2spellid("Ã»½ÉÃÊ"), 180;
+				spellaether @sd, name2spellid("ì²­ì‹¬ì´ˆ"), 180;
 
-				delitem @sd, name2itemid("¹ì°í±â"), 100;
-				delitem @sd, name2itemid("ÁÁÀº¹ì°í±â"), 5;
-				message @sd, 3, "¹ì°í±â ÁÖ¾ú½À´Ï´Ù";
-				message @sd, 3, "ÁÁÀº¹ì°í±â ÁÖ¾ú½À´Ï´Ù";
+				delitem @sd, name2itemid("ë±€ê³ ê¸°"), 100;
+				delitem @sd, name2itemid("ì¢‹ì€ë±€ê³ ê¸°"), 5;
+				message @sd, 3, "ë±€ê³ ê¸° ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				message @sd, 3, "ì¢‹ì€ë±€ê³ ê¸° ì£¼ì—ˆìŠµë‹ˆë‹¤";
 COS004:
-				set @pos, dialog(0, 0, 1, "¾Æ¾Æ °í¸¿³×, ±×·³ ÀÏ´Ü ¹ì°í±â´Â ³»°¡ °¡Á®°¡°Ú³×..\\n\\n³ª¸ÓÁö Àç·á´Â ±â¸°ÀÇÇÇ¿Í Ã»½ÉÃÊ 5»Ñ¸®¶ó³×. ±â¸°ÀÇÇÇ´Â ºÓÀº»öÀÇ ±â¸°À» Àâ¾Æ¼­ ÇÇ¸¦ ¹Þ¾Æ¿À¸é µÇ³×.");
+				set @pos, dialog(0, 0, 1, "ì•„ì•„ ê³ ë§™ë„¤, ê·¸ëŸ¼ ì¼ë‹¨ ë±€ê³ ê¸°ëŠ” ë‚´ê°€ ê°€ì ¸ê°€ê² ë„¤..\\n\\në‚˜ë¨¸ì§€ ìž¬ë£ŒëŠ” ê¸°ë¦°ì˜í”¼ì™€ ì²­ì‹¬ì´ˆ 5ë¿Œë¦¬ë¼ë„¤. ê¸°ë¦°ì˜í”¼ëŠ” ë¶‰ì€ìƒ‰ì˜ ê¸°ë¦°ì„ ìž¡ì•„ì„œ í”¼ë¥¼ ë°›ì•„ì˜¤ë©´ ë˜ë„¤.");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "Ã»½ÉÃÊ´Â ³²°æÁö¿ªÀ» ÇÑÂü µ¹¾Æ´Ù´Ï´Ù º¸¸é ¿îÀÌ ÁÁÀº »ç¶÷¿¡°Ô ¹ß°ßµÈ´Ù³×.\\n\\n±â¸°ÀÇÇÇ¿Í Ã»½ÉÃÊ 5»Ñ¸®¸¸ ÀÖÀ¸¸é ÀÌÁ¦ Á¤¸» ¸¸µé ¼ö ÀÖÀ» °ÍÀÌ³×.");
+				set @pos, dialog(0, 1, 1, "ì²­ì‹¬ì´ˆëŠ” ë‚¨ê²½ì§€ì—­ì„ í•œì°¸ ëŒì•„ë‹¤ë‹ˆë‹¤ ë³´ë©´ ìš´ì´ ì¢‹ì€ ì‚¬ëžŒì—ê²Œ ë°œê²¬ëœë‹¤ë„¤.\\n\\nê¸°ë¦°ì˜í”¼ì™€ ì²­ì‹¬ì´ˆ 5ë¿Œë¦¬ë§Œ ìžˆìœ¼ë©´ ì´ì œ ì •ë§ ë§Œë“¤ ìˆ˜ ìžˆì„ ê²ƒì´ë„¤.");
 				if(@pos == -1) goto COS004;
 				end;
 			}
@@ -74,147 +74,147 @@ COS004:
 	}
 	if($alcoholic_drink == 2)
 	{
-		if(countitem(name2itemid("±â¸°ÀÇÇÇ")) == 0 && countitem(name2itemid("Ã»½ÉÃÊ")) < 5)
+		if(countitem(name2itemid("ê¸°ë¦°ì˜í”¼")) == 0 && countitem(name2itemid("ì²­ì‹¬ì´ˆ")) < 5)
 		{
-			set @pos, dialog(0, 0, 0, "Àç·á°¡ ¸ðÀÚ¶ó±º.. ±â¸°ÀÇÇÇ¿Í Ã»½ÉÃÊ 5»Ñ¸®¸¸ ÀÖ´Ù¸é ÀÌÁ¨ Á¤¸» ¸¸µé¼ö ÀÖÀ» °ÍÀÌ³×.");
+			set @pos, dialog(0, 0, 0, "ìž¬ë£Œê°€ ëª¨ìžë¼êµ°.. ê¸°ë¦°ì˜í”¼ì™€ ì²­ì‹¬ì´ˆ 5ë¿Œë¦¬ë§Œ ìžˆë‹¤ë©´ ì´ì   ì •ë§ ë§Œë“¤ìˆ˜ ìžˆì„ ê²ƒì´ë„¤.");
 			end;
 		}
 		else
 		{
 COS005:
-			set @pos, dialog(0, 0, 1, "¿À¿À, °í¸¿³× °í¸¶¿ö.. ³» ¹ì¼úÀ» ¸¸µé¾î ÁÙ Å×´Ï Àá½Ã¸¸ ±â´Ù¸®°Ô!");
+			set @pos, dialog(0, 0, 1, "ì˜¤ì˜¤, ê³ ë§™ë„¤ ê³ ë§ˆì›Œ.. ë‚´ ë±€ìˆ ì„ ë§Œë“¤ì–´ ì¤„ í…Œë‹ˆ ìž ì‹œë§Œ ê¸°ë‹¤ë¦¬ê²Œ!");
 			if(@pos == 0) end;
 
-			set @pos, dialog(0, 1, 1, "... ... ...\\n\\n´Ù µÆ³×! ÇÑ º´Àº Æò¼Ò¿¡ ½Å¼¼°¡ ¸¹¾Ò´ø Ãµ¼±µµ»ç¿¡°Ô Á» °¡Á®´Ù µå¸®°í, ÇÑº´Àº ÀÚ³×°¡ ¸¶½Ã°Ô. ÇãÇãÇã.. Á¤¸» °í¸¶¿ìÀÌ..");
+			set @pos, dialog(0, 1, 1, "... ... ...\\n\\në‹¤ ëë„¤! í•œ ë³‘ì€ í‰ì†Œì— ì‹ ì„¸ê°€ ë§Žì•˜ë˜ ì²œì„ ë„ì‚¬ì—ê²Œ ì¢€ ê°€ì ¸ë‹¤ ë“œë¦¬ê³ , í•œë³‘ì€ ìžë„¤ê°€ ë§ˆì‹œê²Œ. í—ˆí—ˆí—ˆ.. ì •ë§ ê³ ë§ˆìš°ì´..");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS005;
 
-			delitem @sd, name2itemid("±â¸°ÀÇÇÇ"), 1;
-			delitem @sd, name2itemid("Ã»½ÉÃÊ"), 5;
-			message @sd, 3, "±â¸°ÀÇÇÇ ÁÖ¾ú½À´Ï´Ù";
-			message @sd, 3, "Ã»½ÉÃÊ ÁÖ¾ú½À´Ï´Ù";
+			delitem @sd, name2itemid("ê¸°ë¦°ì˜í”¼"), 1;
+			delitem @sd, name2itemid("ì²­ì‹¬ì´ˆ"), 5;
+			message @sd, 3, "ê¸°ë¦°ì˜í”¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			message @sd, 3, "ì²­ì‹¬ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 
 			set $alcoholic_drink, 3;
-			additem @sd, name2itemid("Ã»½É»çÁÖ"), 2;
-			addlegend @sd, 40, 7, 0, 20, "Ã»½É»çÁÖ¸¦ Ãµ¼±µµ»ç¿¡°Ô ÀüÇØÁÖÀÚ.";
+			additem @sd, name2itemid("ì²­ì‹¬ì‚¬ì£¼"), 2;
+			addlegend @sd, 40, 7, 0, 20, "ì²­ì‹¬ì‚¬ì£¼ë¥¼ ì²œì„ ë„ì‚¬ì—ê²Œ ì „í•´ì£¼ìž.";
 			end;
 		}
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¾î¶²°¡? Ã»½É»çÁÖÀÇ ¸ÀÀÌ ¾ÆÁÖ ±â°¡ ¸·È÷Áö ¾ÊÀº°¡?");
+		set @pos, dialog(0, 0, 1, "ì–´ë–¤ê°€? ì²­ì‹¬ì‚¬ì£¼ì˜ ë§›ì´ ì•„ì£¼ ê¸°ê°€ ë§‰ížˆì§€ ì•Šì€ê°€?");
 		end;
 	}
 }
 
-Ãµ¼±µµ»ç	{
+ì²œì„ ë„ì‚¬	{
 	set @sd, mysd();
 	set @id, myid();
 
-	if($alcoholic_drink == 3 && countitem(name2itemid("Ã»½É»çÁÖ")) > 0)
+	if($alcoholic_drink == 3 && countitem(name2itemid("ì²­ì‹¬ì‚¬ì£¼")) > 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "ÇãÇã, ÁÖ°æ¿øÀÌ Ã»½É»çÁÖ¸¦ ¸¸µå´Â°ÍÀ» ÀÚ³×°¡ µµ¿ÍÁÖ¾úÁö? ³» ½ÅÅë·ÂÀ¸·Î ´Ù º¸°í ÀÖ¾úÁö.");
+		set @pos, dialog(0, 0, 1, "í—ˆí—ˆ, ì£¼ê²½ì›ì´ ì²­ì‹¬ì‚¬ì£¼ë¥¼ ë§Œë“œëŠ”ê²ƒì„ ìžë„¤ê°€ ë„ì™€ì£¼ì—ˆì§€? ë‚´ ì‹ í†µë ¥ìœ¼ë¡œ ë‹¤ ë³´ê³  ìžˆì—ˆì§€.");
 		if(@pos == 0) end;
 
-		set @pos, dialog(0, 1, 1, "Á¤¸» ¿À·§¸¸¿¡ º¸´Â ¼úÀÌ±º! °í¸¿³×. ÀÌ ¼úÀ» ´Ù ¸¶¼Å¹ö¸®Áö ¾Ê°í °¡Á®´Ù ÁØ Á¤Á÷ÇÑ ÀÚ³×¿¡°Ô ¼±¹°À» ÁÖ°í ½Í±º. ¿äÁòÀº ÀÚ³×°°Àº »ç¶÷µµ µå¹°´Ù³×. ³» °í´ë±Ý¼ÓÁ¶°¢'À½À» ÇÏ³ª ÁÖÁö. ¾îµò°¡¿¡ ¾µ¸ð°¡ ÀÖÀ»°Ô¾ß..");
+		set @pos, dialog(0, 1, 1, "ì •ë§ ì˜¤ëž«ë§Œì— ë³´ëŠ” ìˆ ì´êµ°! ê³ ë§™ë„¤. ì´ ìˆ ì„ ë‹¤ ë§ˆì…”ë²„ë¦¬ì§€ ì•Šê³  ê°€ì ¸ë‹¤ ì¤€ ì •ì§í•œ ìžë„¤ì—ê²Œ ì„ ë¬¼ì„ ì£¼ê³  ì‹¶êµ°. ìš”ì¦˜ì€ ìžë„¤ê°™ì€ ì‚¬ëžŒë„ ë“œë¬¼ë‹¤ë„¤. ë‚´ ê³ ëŒ€ê¸ˆì†ì¡°ê°'ìŒì„ í•˜ë‚˜ ì£¼ì§€. ì–´ë”˜ê°€ì— ì“¸ëª¨ê°€ ìžˆì„ê²Œì•¼..");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 
-		delitem @sd, name2itemid("Ã»½É»çÁÖ"), 1;
-		message @sd, 3, "Ã»½É»çÁÖ ÁÖ¾ú½À´Ï´Ù";
+		delitem @sd, name2itemid("ì²­ì‹¬ì‚¬ì£¼"), 1;
+		message @sd, 3, "ì²­ì‹¬ì‚¬ì£¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 
 		set $alcoholic_drink, 4;
-		additem @sd, name2itemid("°í´ë±Ý¼ÓÁ¶°¢'À½"), 1;
-		addlegend @sd, 40, 7, 0, 20, "Ã»½É»çÁÖ¸¦ Ãµ¼±µµ»ç¿¡°Ô ÀüÇØÁÖ¾ú´Ù.";
+		additem @sd, name2itemid("ê³ ëŒ€ê¸ˆì†ì¡°ê°'ìŒ"), 1;
+		addlegend @sd, 40, 7, 0, 20, "ì²­ì‹¬ì‚¬ì£¼ë¥¼ ì²œì„ ë„ì‚¬ì—ê²Œ ì „í•´ì£¼ì—ˆë‹¤.";
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¾Ð·Ï°­ÀÇ ¹°Àº Á¤¸» ½Åºñ·ÓÁö...");
+		set @pos, dialog(0, 0, 1, "ì••ë¡ê°•ì˜ ë¬¼ì€ ì •ë§ ì‹ ë¹„ë¡­ì§€...");
 		end;
 	}
 }
 
-Àå¾È¼ºÀå±º	{
+ìž¥ì•ˆì„±ìž¥êµ°	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($jang_general == 0)
 	{
-		set @pos, dialog(0, 0, 1, "È²±ÃÀ» °ßÇÐÇÏ·¯ ¿Ô´Â°¡? ÇãÇã, ¹Ì¾ÈÇÏ³×¸¸ Áö±ÝÀº º¸½Ã´Ù½ÃÇÇ Á» ¾î¼ö¼±ÇÏ´Ù³×.");
+		set @pos, dialog(0, 0, 1, "í™©ê¶ì„ ê²¬í•™í•˜ëŸ¬ ì™”ëŠ”ê°€? í—ˆí—ˆ, ë¯¸ì•ˆí•˜ë„¤ë§Œ ì§€ê¸ˆì€ ë³´ì‹œë‹¤ì‹œí”¼ ì¢€ ì–´ìˆ˜ì„ í•˜ë‹¤ë„¤.");
 		if(@pos == 0) end;
 
-		set @pos, list2(@list, 0, 0, "ÀÚ³× È¤½Ã È²ºñ¿¬ÀÌ¶ó´Â ÀÚ¸¦ ¾Æ´Â°¡?", "Àß ¸ð¸£°Ú´Âµ¥¿ä. ±×°Ô ´©±Á´Ï±î?", "Àü ¾Æ¹«°Íµµ ¸ð¸¨´Ï´Ù. ±×·³ ÀÌ¸¸...");
+		set @pos, list2(@list, 0, 0, "ìžë„¤ í˜¹ì‹œ í™©ë¹„ì—°ì´ë¼ëŠ” ìžë¥¼ ì•„ëŠ”ê°€?", "ìž˜ ëª¨ë¥´ê² ëŠ”ë°ìš”. ê·¸ê²Œ ëˆ„êµ½ë‹ˆê¹Œ?", "ì „ ì•„ë¬´ê²ƒë„ ëª¨ë¦…ë‹ˆë‹¤. ê·¸ëŸ¼ ì´ë§Œ...");
 		if(@pos == 0) end;
 		else if(@list == 1)
 		{
-			set @pos, dialog(0, 0, 1, "À½... È²ºñ¿¬ÀÌ¶ó´Â ÀÚ´Â ¿äÁò ±â½ÂÀ» ºÎ¸®°í ÀÖ´Â ½ÅÃâ±Í¸ôÇÑ µµµÏÀÌÁö. ÀÚÄª ÀÇÀûÀ¸·Î, °ËÀº ¸Ó¸®¶ì¸¦ µÎ¸£°í ³ªÅ¸³ª Å½°ü¿À¸®µéÀÇ Àç¹°À» ÈÉÃÄ °¡³­ÇÑ »ç¶÷µé¿¡°Ô ³ª´² ÁØ´Ù´Â±º.");
+			set @pos, dialog(0, 0, 1, "ìŒ... í™©ë¹„ì—°ì´ë¼ëŠ” ìžëŠ” ìš”ì¦˜ ê¸°ìŠ¹ì„ ë¶€ë¦¬ê³  ìžˆëŠ” ì‹ ì¶œê·€ëª°í•œ ë„ë‘‘ì´ì§€. ìžì¹­ ì˜ì ìœ¼ë¡œ, ê²€ì€ ë¨¸ë¦¬ë ë¥¼ ë‘ë¥´ê³  ë‚˜íƒ€ë‚˜ íƒê´€ì˜¤ë¦¬ë“¤ì˜ ìž¬ë¬¼ì„ í›”ì³ ê°€ë‚œí•œ ì‚¬ëžŒë“¤ì—ê²Œ ë‚˜ëˆ  ì¤€ë‹¤ëŠ”êµ°.");
 			if(@pos == 0) end;
 
-			set @pos, list2(@list_2, 0, 0, "¹é¼ºµéµµ È²ºñ¿¬¿¡°Ô µµ¿òÀ» ¸¹ÀÌ ¹Þ°í ÀÖ´Â ¸ð¾çÀÌ¾ß. ±×¿¡ ´ëÇØ ¹°À¸¸é ´Ùµé ¸ð¸¥´Ù°í Àâ¾Æ¶¼´õ±º. ÇãÇã, ÀÌ°Å¾ß ¿ø...", "ÀÇÀûÀÌ±º¿ä? ±×·³ ½½Â½ ´«°¨¾ÆÁàµµ µÇÁö ¾ÊÀ»±î¿ä?", "°í»ýÀÌ ¸¹À¸½Ã³×¿ä. Àú´Â ¹Ù»Û ÀÏÀÌ ÀÖ¾î¼­ ÀÌ¸¸..");
+			set @pos, list2(@list_2, 0, 0, "ë°±ì„±ë“¤ë„ í™©ë¹„ì—°ì—ê²Œ ë„ì›€ì„ ë§Žì´ ë°›ê³  ìžˆëŠ” ëª¨ì–‘ì´ì•¼. ê·¸ì— ëŒ€í•´ ë¬¼ìœ¼ë©´ ë‹¤ë“¤ ëª¨ë¥¸ë‹¤ê³  ìž¡ì•„ë–¼ë”êµ°. í—ˆí—ˆ, ì´ê±°ì•¼ ì›...", "ì˜ì ì´êµ°ìš”? ê·¸ëŸ¼ ìŠ¬ì© ëˆˆê°ì•„ì¤˜ë„ ë˜ì§€ ì•Šì„ê¹Œìš”?", "ê³ ìƒì´ ë§Žìœ¼ì‹œë„¤ìš”. ì €ëŠ” ë°”ìœ ì¼ì´ ìžˆì–´ì„œ ì´ë§Œ..");
 			if(@pos == 1 && @list_2 == 1)
 			{
 COS001:
-				set @pos, dialog(0, 0, 1, "...½ÇÀº ³ªµµ ±×·¸°Ô ÇÏ°í ½ÍÁö¸¸, »óºÎ¿¡¼­ ±×¸¦ Àâ¾ÆµéÀÌ¶ó°í ³­¸®¶ó¼­ ¾îÂ¿ ¼ö ¾ø´Ù³×. Çö»ó±Ýµµ Å©°Ô °É·Á ÀÖÁö.");
+				set @pos, dialog(0, 0, 1, "...ì‹¤ì€ ë‚˜ë„ ê·¸ë ‡ê²Œ í•˜ê³  ì‹¶ì§€ë§Œ, ìƒë¶€ì—ì„œ ê·¸ë¥¼ ìž¡ì•„ë“¤ì´ë¼ê³  ë‚œë¦¬ë¼ì„œ ì–´ì©” ìˆ˜ ì—†ë‹¤ë„¤. í˜„ìƒê¸ˆë„ í¬ê²Œ ê±¸ë ¤ ìžˆì§€.");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "»ç½Ç Å½°ü¿À¸®µéÀÌ ºÎÁ¤ÇÏ°Ô ¸ð¾Æ¿Â Àç¹°ÀÌ±ä ÇÏÁö¸¸, ¾îÂî µÇ¾ú°Ç °£¿¡ µµµÏÁúÀº ³ª»Û ÀÏÀÌÁö ¾ÊÀº°¡.");
+				set @pos, dialog(0, 1, 1, "ì‚¬ì‹¤ íƒê´€ì˜¤ë¦¬ë“¤ì´ ë¶€ì •í•˜ê²Œ ëª¨ì•„ì˜¨ ìž¬ë¬¼ì´ê¸´ í•˜ì§€ë§Œ, ì–´ì°Œ ë˜ì—ˆê±´ ê°„ì— ë„ë‘‘ì§ˆì€ ë‚˜ìœ ì¼ì´ì§€ ì•Šì€ê°€.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS001;
 
-				set @pos, list2(@list_3, 0, 0, "±×·¡¼­ Áö±Ýµµ È²ºñ¿¬À» ÀâÀ¸·Á°í ¼ö»öÁßÀÎµ¥, Á¤¸» ½ÅÃâ±Í¸ôÇÏ´õ±º. µµÀúÈ÷ ÀâÀ» ¼ö°¡ ¾ø¾î...", "Àúµµ ÇùÁ¶ÇÏ°Ú½À´Ï´Ù. È²ºñ¿¬À» ¸¸³ªº¸°í ½Í±º¿ä.", "¼ÖÁ÷È÷ ÀâÈ÷Áö ¸»¾ÒÀ¸¸é ÁÁ°Ú±º¿ä. ±×·³ Àü ÀÌ¸¸..");
+				set @pos, list2(@list_3, 0, 0, "ê·¸ëž˜ì„œ ì§€ê¸ˆë„ í™©ë¹„ì—°ì„ ìž¡ìœ¼ë ¤ê³  ìˆ˜ìƒ‰ì¤‘ì¸ë°, ì •ë§ ì‹ ì¶œê·€ëª°í•˜ë”êµ°. ë„ì €ížˆ ìž¡ì„ ìˆ˜ê°€ ì—†ì–´...", "ì €ë„ í˜‘ì¡°í•˜ê² ìŠµë‹ˆë‹¤. í™©ë¹„ì—°ì„ ë§Œë‚˜ë³´ê³  ì‹¶êµ°ìš”.", "ì†”ì§ížˆ ìž¡ížˆì§€ ë§ì•˜ìœ¼ë©´ ì¢‹ê² êµ°ìš”. ê·¸ëŸ¼ ì „ ì´ë§Œ..");
 				if(@pos == 1 && @list_3 == 1)
 				{
 COS002:
-					set @pos, dialog(0, 0, 1, "À½! Á¤¸» ±×·¡ ÁÖ°Ú´Â°¡? °í¸¿³×. ÀÚ³×´Â È²±Ã »ç¶÷ÀÌ ¾Æ´Ï´Ï ¾îÂ¼¸é È²ºñ¿¬¿¡°Ô ½±°Ô Á¢±ÛÇÒ ¼ö ÀÖÀ»Áöµµ ¸ð¸£Áö.");
+					set @pos, dialog(0, 0, 1, "ìŒ! ì •ë§ ê·¸ëž˜ ì£¼ê² ëŠ”ê°€? ê³ ë§™ë„¤. ìžë„¤ëŠ” í™©ê¶ ì‚¬ëžŒì´ ì•„ë‹ˆë‹ˆ ì–´ì©Œë©´ í™©ë¹„ì—°ì—ê²Œ ì‰½ê²Œ ì ‘ê¸€í•  ìˆ˜ ìžˆì„ì§€ë„ ëª¨ë¥´ì§€.");
 					if(@pos == 0) end;
 
-					set @pos, dialog(0, 1, 1, "È²ºñ¿¬ÀÌ ¸¶Áö¸·À¸·Î ³ªÅ¸³­ Àå¼Ò´Â »óÇØÀÏ¼¼. ±× ºÎ±Ù¿¡ ¼û¾î ÀÖÀ» °Í °°À¸´Ï Àß »ìÆì º¸°Ô³ª. ±×·³ ¼ö°íÇØÁÖ°Ô.");
+					set @pos, dialog(0, 1, 1, "í™©ë¹„ì—°ì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ë‚˜íƒ€ë‚œ ìž¥ì†ŒëŠ” ìƒí•´ì¼ì„¸. ê·¸ ë¶€ê·¼ì— ìˆ¨ì–´ ìžˆì„ ê²ƒ ê°™ìœ¼ë‹ˆ ìž˜ ì‚´íŽ´ ë³´ê²Œë‚˜. ê·¸ëŸ¼ ìˆ˜ê³ í•´ì£¼ê²Œ.");
 					if(@pos == 0) end;
 					else if(@pos == -1) goto COS002;
 
 					set $jang_general, 1;
-					addlegend @sd, 39, 7, 0, 2, "È²ºñ¿¬À» ¸¸³ª·¯ »óÇØ·Î °¡ÀÚ.";
+					addlegend @sd, 39, 7, 0, 2, "í™©ë¹„ì—°ì„ ë§Œë‚˜ëŸ¬ ìƒí•´ë¡œ ê°€ìž.";
 					end;
 				}
 			}
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 0, "ÇãÇã.. ½Ì°Ì±â´Â..");
+			set @pos, dialog(0, 0, 0, "í—ˆí—ˆ.. ì‹±ê²ê¸°ëŠ”..");
 			end;
 		}
 	}
 	if($jang_general >= 1 && $jang_general <= 3)
 	{
-		set @pos, dialog(0, 0, 1, "ÇÑ¹ø »óÇØ·Î °¡º¸½Ê½Ã¿ä. È²ºñ¿¬ÀÌ ¸¶Áö¸·À¸·Î ³ªÅ¸³­ Àå¼Ò°¡ »óÇØÀÔ´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "í•œë²ˆ ìƒí•´ë¡œ ê°€ë³´ì‹­ì‹œìš”. í™©ë¹„ì—°ì´ ë§ˆì§€ë§‰ìœ¼ë¡œ ë‚˜íƒ€ë‚œ ìž¥ì†Œê°€ ìƒí•´ìž…ë‹ˆë‹¤.");
 		end;
 	}
 	if($jang_general == 4)
 	{
-		set @pos, list2(@list, 0, 0, "È²ºñ¿¬Àº Àâ¾Æ¿Ô´Â°¡?", "±×´Â Á×¾ú°í, ±×ÀÇ ¸Ó¸®¶ì¸¦ °¡Á®¿Ô½À´Ï´Ù.", "¾Æ´Ï¿À, ¾ÆÁ÷...");
+		set @pos, list2(@list, 0, 0, "í™©ë¹„ì—°ì€ ìž¡ì•„ì™”ëŠ”ê°€?", "ê·¸ëŠ” ì£½ì—ˆê³ , ê·¸ì˜ ë¨¸ë¦¬ë ë¥¼ ê°€ì ¸ì™”ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ì•„ì§...");
 		if(@pos == 1 && @list == 1)
 		{
-			if(countitem(name2itemid("È²ºñ¿¬ÀÇ¸Ó¸®¶ì")) == 0)
+			if(countitem(name2itemid("í™©ë¹„ì—°ì˜ë¨¸ë¦¬ë ")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "¸Ó¸®¶ì°¡ ¾ø´Â°Í °°Àºµ¥¿ä?");
+				set @pos, dialog(0, 0, 0, "ë¨¸ë¦¬ë ê°€ ì—†ëŠ”ê²ƒ ê°™ì€ë°ìš”?");
 				end;
 			}
 			else
 			{
 COS003:
-				set @pos, dialog(0, 0, 1, "¿À, ¸Ó¸®¶ì¶ó... ¾îµð º¸¼¼.\\n\\nÀ½! °ú¿¬... ÀÌ°ÍÀº ±×°¡ Ç×»ó ¸Ó¸®¿¡ µÎ¸£°í ÀÖ´Ù´Â ±× ¸Ó¸®¶ì°¡ ºÐ¸íÇÏ±º!");
+				set @pos, dialog(0, 0, 1, "ì˜¤, ë¨¸ë¦¬ë ë¼... ì–´ë”” ë³´ì„¸.\\n\\nìŒ! ê³¼ì—°... ì´ê²ƒì€ ê·¸ê°€ í•­ìƒ ë¨¸ë¦¬ì— ë‘ë¥´ê³  ìžˆë‹¤ëŠ” ê·¸ ë¨¸ë¦¬ë ê°€ ë¶„ëª…í•˜êµ°!");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "±×°¡ Á¤¸»·Î Á×¾ú´ÂÁö ¾î¶²Áö´Â ÀÚ³×¸¸ÀÌ ¾Ë°í ÀÖ°ÚÁö¸¸... ÇãÇãÇã.\\n\\n¹¹, ÀÌ ¸Ó¸®¶ì¸é »óºÎ¿¡ È²ºñ¿¬ÀÌ Á×¾ú´Ù°í º¸°íÇÒ ¼ö ÀÖ°ÚÁö. ¾Æ¹«Æ° ¼ö°íÇß³×. ¿©±â Çö»ó±Ý 10¸¸ÀüÀ» °¡Á®°¡°Ô.");
+				set @pos, dialog(0, 1, 1, "ê·¸ê°€ ì •ë§ë¡œ ì£½ì—ˆëŠ”ì§€ ì–´ë–¤ì§€ëŠ” ìžë„¤ë§Œì´ ì•Œê³  ìžˆê² ì§€ë§Œ... í—ˆí—ˆí—ˆ.\\n\\në­, ì´ ë¨¸ë¦¬ë ë©´ ìƒë¶€ì— í™©ë¹„ì—°ì´ ì£½ì—ˆë‹¤ê³  ë³´ê³ í•  ìˆ˜ ìžˆê² ì§€. ì•„ë¬´íŠ¼ ìˆ˜ê³ í–ˆë„¤. ì—¬ê¸° í˜„ìƒê¸ˆ 10ë§Œì „ì„ ê°€ì ¸ê°€ê²Œ.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS003;
 
 				set $jang_general, 5;
-				addlegend @sd, 39, 7, 0, 2, "ÀÇÀû È²ºñ¿¬ ÀÓ¹«¸¦ ¿Ïº®È÷ ¼öÇàÇÏ¿´´Ù.";
+				addlegend @sd, 39, 7, 0, 2, "ì˜ì  í™©ë¹„ì—° ìž„ë¬´ë¥¼ ì™„ë²½ížˆ ìˆ˜í–‰í•˜ì˜€ë‹¤.";
 
-				delitem @sd, name2itemid("È²ºñ¿¬ÀÇ¸Ó¸®¶ì"), 1;
-				message @sd, 3, "È²ºñ¿¬ÀÇ¸Ó¸®¶ì ÁÖ¾ú½À´Ï´Ù";
+				delitem @sd, name2itemid("í™©ë¹„ì—°ì˜ë¨¸ë¦¬ë "), 1;
+				message @sd, 3, "í™©ë¹„ì—°ì˜ë¨¸ë¦¬ë  ì£¼ì—ˆìŠµë‹ˆë‹¤";
 
 				set_money @sd, get_money(@sd)+100000;
 				updatestatus @sd, 2;
@@ -224,62 +224,62 @@ COS003:
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Å°¡? ÀÚ³× ´öºÐ¿¡ ³­ Áø±ÞÀ»ÇÏ¿© ÆíÇÑ¾È »îÀ» »ì°í ÀÖÁö. Á¤¸» °í¸¿³×.");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹ ê°€? ìžë„¤ ë•ë¶„ì— ë‚œ ì§„ê¸‰ì„í•˜ì—¬ íŽ¸í•œì•ˆ ì‚¶ì„ ì‚´ê³  ìžˆì§€. ì •ë§ ê³ ë§™ë„¤.");
 		end;
 	}
 }
 
-»óÇØÁÖ¹Î	{
+ìƒí•´ì£¼ë¯¼	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($jang_general == 1)
 	{
-		set @pos, list2(@list, 0, 0, "¾È³çÇÏ½Ê´Ï±î. ÇãÇã, ¾Æ±îºÎÅÍ ¹º°¡ Ã£À¸½Ã´Â ´«Ä¡½Åµ¥... ¹» ±×¸® Ã£À¸½Ã´ÂÁö¿ä?", "È²ºñ¿¬ÀÌ¶ó´Â »ç¶÷À» Ã£°í ÀÖ½À´Ï´Ù.", "¾Æ¹« °Íµµ ¾Æ´Õ´Ï´Ù.");
+		set @pos, list2(@list, 0, 0, "ì•ˆë…•í•˜ì‹­ë‹ˆê¹Œ. í—ˆí—ˆ, ì•„ê¹Œë¶€í„° ë­”ê°€ ì°¾ìœ¼ì‹œëŠ” ëˆˆì¹˜ì‹ ë°... ë­˜ ê·¸ë¦¬ ì°¾ìœ¼ì‹œëŠ”ì§€ìš”?", "í™©ë¹„ì—°ì´ë¼ëŠ” ì‚¬ëžŒì„ ì°¾ê³  ìžˆìŠµë‹ˆë‹¤.", "ì•„ë¬´ ê²ƒë„ ì•„ë‹™ë‹ˆë‹¤.");
 		if(@pos == 1 && @list == 1)
 		{
-			set @pos, dialog(0, 0, 1, "È²ºñ¿¬? ...À½, È²ºñ¿¬ÀÌ¶ó¸é ¿äÁò Å½°ü¿À¸®ÀÇ Àç¹°À» ÈÉÃÄ °¡³­ÇÑ »ç¶÷µé¿¡°Ô ³ª´² ÁØ´Ù´Â ÀÇÀû ¾Æ´Õ´Ï±î?");
+			set @pos, dialog(0, 0, 1, "í™©ë¹„ì—°? ...ìŒ, í™©ë¹„ì—°ì´ë¼ë©´ ìš”ì¦˜ íƒê´€ì˜¤ë¦¬ì˜ ìž¬ë¬¼ì„ í›”ì³ ê°€ë‚œí•œ ì‚¬ëžŒë“¤ì—ê²Œ ë‚˜ëˆ  ì¤€ë‹¤ëŠ” ì˜ì  ì•„ë‹™ë‹ˆê¹Œ?");
 			if(@pos == 0) end;
 
-			set @pos, list2(@list_2, 0, 0, "ÂüÀ¸·Î ÈÇ¸¢ÇÑ »ç¶÷ÀÌÁö¿ä. ±×·±µ¥ ±×´Â ¿Ö Ã£À¸½Ê´Ï±î?", "±×¸¦ Àâ¾Æ¼­ Çö»ó±ÝÀ» Å¸·Á°í ÇÕ´Ï´Ù.", "²À ÇÑ ¹ø ¸¸³ª º¸°í ½ÍÀº »ç¶÷ÀÔ´Ï´Ù.");
+			set @pos, list2(@list_2, 0, 0, "ì°¸ìœ¼ë¡œ í›Œë¥­í•œ ì‚¬ëžŒì´ì§€ìš”. ê·¸ëŸ°ë° ê·¸ëŠ” ì™œ ì°¾ìœ¼ì‹­ë‹ˆê¹Œ?", "ê·¸ë¥¼ ìž¡ì•„ì„œ í˜„ìƒê¸ˆì„ íƒ€ë ¤ê³  í•©ë‹ˆë‹¤.", "ê¼­ í•œ ë²ˆ ë§Œë‚˜ ë³´ê³  ì‹¶ì€ ì‚¬ëžŒìž…ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 			else if(@list_2 == 1)
 			{
-				set @pos, dialog(0, 0, 1, "È²ºñ¿¬ÀÌ Çö»ó±ÝÀÌ ³ô±ä ÇÏÁÒ... ÇÏÁö¸¸ ½±°Ô Àâ±â´Â ¾î·Á¿ï °Ì´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "í™©ë¹„ì—°ì´ í˜„ìƒê¸ˆì´ ë†’ê¸´ í•˜ì£ ... í•˜ì§€ë§Œ ì‰½ê²Œ ìž¡ê¸°ëŠ” ì–´ë ¤ìš¸ ê²ë‹ˆë‹¤.");
 				end;
 			}
 			else if(@list_2 == 2)
 			{
 COS001:
-				set @pos, dialog(0, 0, 1, "±×·¸½À´Ï±î! ÇÏÇÏ. ¾Æ¸¶ È²ºñ¿¬¿¡°Ô µµ¿òÀ» ¹ÞÀ¸¼Ì¾ú´ø ¸ð¾çÀÌÁö¿ä?\\n\\n½ÇÀº Àúµµ ±×¸¦ ²À ÇÑ ¹ø ¸¸³ª º¸°í ½ÍÁö¸¸, ÇÑ ¹øµµ º» ÀûÀÌ ¾ø´ä´Ï´Ù. ÇÏÇÏ...");
+				set @pos, dialog(0, 0, 1, "ê·¸ë ‡ìŠµë‹ˆê¹Œ! í•˜í•˜. ì•„ë§ˆ í™©ë¹„ì—°ì—ê²Œ ë„ì›€ì„ ë°›ìœ¼ì…¨ì—ˆë˜ ëª¨ì–‘ì´ì§€ìš”?\\n\\nì‹¤ì€ ì €ë„ ê·¸ë¥¼ ê¼­ í•œ ë²ˆ ë§Œë‚˜ ë³´ê³  ì‹¶ì§€ë§Œ, í•œ ë²ˆë„ ë³¸ ì ì´ ì—†ë‹µë‹ˆë‹¤. í•˜í•˜...");
 				if(@pos == 0) end;
 COS002:
 				set @pos, dialog(0, 1, 1, "......");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS001;
 COS003:
-				set @pos, dialog(0, 1, 1, "......±×¸¦ ²À ¸¸³ª°í ½ÍÀ¸½Ã´Ù¸é, Á¦ ºÎÅ¹ ÇÏ³ª¸¸ µé¾îÁÖ½Ã°Ú½À´Ï±î? ¾Æ½Ã´Ù½ÃÇÇ È²ºñ¿¬Àº ½ÅÃâ±Í¸ôÇÏ°í, »ç¶÷µéÀÌ ¸ðµÎ ±×¸¦ °¨½ÎÁÖ±â ¶§¹®¿¡ ¾Æ¹«µµ ±×ÀÇ Çà¹æÀ» ¸ð¸£Áö¿ä.");
+				set @pos, dialog(0, 1, 1, "......ê·¸ë¥¼ ê¼­ ë§Œë‚˜ê³  ì‹¶ìœ¼ì‹œë‹¤ë©´, ì œ ë¶€íƒ í•˜ë‚˜ë§Œ ë“¤ì–´ì£¼ì‹œê² ìŠµë‹ˆê¹Œ? ì•„ì‹œë‹¤ì‹œí”¼ í™©ë¹„ì—°ì€ ì‹ ì¶œê·€ëª°í•˜ê³ , ì‚¬ëžŒë“¤ì´ ëª¨ë‘ ê·¸ë¥¼ ê°ì‹¸ì£¼ê¸° ë•Œë¬¸ì— ì•„ë¬´ë„ ê·¸ì˜ í–‰ë°©ì„ ëª¨ë¥´ì§€ìš”.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS002;
 COS004:
-				set @pos, dialog(0, 1, 1, "ÇÏÁö¸¸ Àú´Â »ç½Ç È²ºñ¿¬À» Á» ¾Ë°í ÀÖ½À´Ï´Ù. ´ç½ÅÀÌ Á¦ ºÎÅ¹À» µé¾îÁÖ½Å´Ù¸é È²ºñ¿¬°ú ¸¸³ª º¸½Ç ¼ö ÀÖµµ·Ï ÀÚ¸®¸¦ ¸¸µé¾î º¸°Ú½À´Ï´Ù.");
+				set @pos, dialog(0, 1, 1, "í•˜ì§€ë§Œ ì €ëŠ” ì‚¬ì‹¤ í™©ë¹„ì—°ì„ ì¢€ ì•Œê³  ìžˆìŠµë‹ˆë‹¤. ë‹¹ì‹ ì´ ì œ ë¶€íƒì„ ë“¤ì–´ì£¼ì‹ ë‹¤ë©´ í™©ë¹„ì—°ê³¼ ë§Œë‚˜ ë³´ì‹¤ ìˆ˜ ìžˆë„ë¡ ìžë¦¬ë¥¼ ë§Œë“¤ì–´ ë³´ê² ìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS003;
 
-				set @pos, list2(@list_3, 0, 0, "...ÀÚ, ¾î¶»½À´Ï±î?", "¾Ë°Ú½À´Ï´Ù, ±×·¸°Ô ÇÏÁÒ.", "½È½À´Ï´Ù. ¾îÂ° ²¨¸²Ä¢ÇÏ±º¿ä.");
+				set @pos, list2(@list_3, 0, 0, "...ìž, ì–´ë–»ìŠµë‹ˆê¹Œ?", "ì•Œê² ìŠµë‹ˆë‹¤, ê·¸ë ‡ê²Œ í•˜ì£ .", "ì‹«ìŠµë‹ˆë‹¤. ì–´ì§¸ êº¼ë¦¼ì¹™í•˜êµ°ìš”.");
 				if(@pos == 1 && @list_3 == 1)
 				{
 COS005:
-					set @pos, dialog(0, 0, 1, "°¨»çÇÕ´Ï´Ù. ±×·³...\\n\\nÀÌ ³ëºñ¹®¼­¸¦ µµ»è»ê 100Ãþ ÁÖ¸·¿¡ °è½Ã´Â ºÐ²² ÀüÇØ ÁÖ½Ê½Ã¿À. ÀÏÀÌ ³¡³­ ´ÙÀ½ Á¦°Ô ¿À½Ã¸é ¾à¼Ó´ë·Î Á¤º¸¸¦ µå¸®°Ú½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 1, "ê°ì‚¬í•©ë‹ˆë‹¤. ê·¸ëŸ¼...\\n\\nì´ ë…¸ë¹„ë¬¸ì„œë¥¼ ë„ì‚­ì‚° 100ì¸µ ì£¼ë§‰ì— ê³„ì‹œëŠ” ë¶„ê»˜ ì „í•´ ì£¼ì‹­ì‹œì˜¤. ì¼ì´ ëë‚œ ë‹¤ìŒ ì œê²Œ ì˜¤ì‹œë©´ ì•½ì†ëŒ€ë¡œ ì •ë³´ë¥¼ ë“œë¦¬ê² ìŠµë‹ˆë‹¤.");
 					if(@pos == 0) end;
 
-					set @pos, dialog(0, 1, 1, "±×·³ ¼ö°í½º·¯¿ì½Ã°ÚÁö¸¸ Àß ºÎÅ¹µå¸³´Ï´Ù.");
+					set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ ìˆ˜ê³ ìŠ¤ëŸ¬ìš°ì‹œê² ì§€ë§Œ ìž˜ ë¶€íƒë“œë¦½ë‹ˆë‹¤.");
 					if(@pos == 0) end;
 					else if(@pos == -1) goto COS005;
 
 					set $jang_general, 2;
-					additem @sd, name2itemid("³ëºñ¹®¼­"), 1;
-					addlegend @sd, 39, 7, 0, 16, "µµ»è»ê 100ÃþÀ¸·Î°¡ ³ëºñ¹®¼­¸¦ ÀüÇØÁÖÀÚ.";
+					additem @sd, name2itemid("ë…¸ë¹„ë¬¸ì„œ"), 1;
+					addlegend @sd, 39, 7, 0, 16, "ë„ì‚­ì‚° 100ì¸µìœ¼ë¡œê°€ ë…¸ë¹„ë¬¸ì„œë¥¼ ì „í•´ì£¼ìž.";
 					end;
 				}
 				else end;
@@ -293,63 +293,63 @@ COS005:
 	}
 	if($jang_general == 2)
 	{
-		set @pos, dialog(0, 0, 1, "¾ÆÁ÷ µµ»è»ê 100Ãþ¿¡ °è½ÅºÐÀ» ¸¸³ªÁö ¸øÇÏ¼Ì³ª º¸±º¿ä.");
+		set @pos, dialog(0, 0, 1, "ì•„ì§ ë„ì‚­ì‚° 100ì¸µì— ê³„ì‹ ë¶„ì„ ë§Œë‚˜ì§€ ëª»í•˜ì…¨ë‚˜ ë³´êµ°ìš”.");
 		end;
 	}
 	if($jang_general == 3)
 	{
-		if(countitem(name2itemid("º¸ÆÐ")) == 0)
+		if(countitem(name2itemid("ë³´íŒ¨")) == 0)
 		{
-			set @pos, dialog(0, 0, 1, "¾ÆÁ÷ µµ»è»ê 100Ãþ¿¡ °è½ÅºÐÀ» ¸¸³ªÁö ¸øÇÏ¼Ì³ª º¸±º¿ä.");
+			set @pos, dialog(0, 0, 1, "ì•„ì§ ë„ì‚­ì‚° 100ì¸µì— ê³„ì‹ ë¶„ì„ ë§Œë‚˜ì§€ ëª»í•˜ì…¨ë‚˜ ë³´êµ°ìš”.");
 			end;
 		}
 		else
 		{
-			set @pos, list2(@list, 0, 0, "¹®¼­´Â ÀüÇØ ÁÖ°í ¿À¼Ì´ÂÁö¿ä?", "¿¹, È®½ÇÈ÷ ÀüÇØ Áá½À´Ï´Ù.", "¾Æ´Ï¿À, ¾ÆÁ÷...");
+			set @pos, list2(@list, 0, 0, "ë¬¸ì„œëŠ” ì „í•´ ì£¼ê³  ì˜¤ì…¨ëŠ”ì§€ìš”?", "ì˜ˆ, í™•ì‹¤ížˆ ì „í•´ ì¤¬ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ì•„ì§...");
 			if(@pos == 1 && @list == 1)
 			{
-				set @pos, dialog(0, 0, 1, "±×·¸±º¿ä. °¨»çÇÕ´Ï´Ù. ¼ö°íÇÏ¼Ì½À´Ï´Ù... ±×·±µ¥ ÀÌ º¸ÆÐ´Â À¢ °ÍÀÔ´Ï±î?");
+				set @pos, dialog(0, 0, 1, "ê·¸ë ‡êµ°ìš”. ê°ì‚¬í•©ë‹ˆë‹¤. ìˆ˜ê³ í•˜ì…¨ìŠµë‹ˆë‹¤... ê·¸ëŸ°ë° ì´ ë³´íŒ¨ëŠ” ì›¬ ê²ƒìž…ë‹ˆê¹Œ?");
 				if(@pos == 0) end;
 
-				set @pos, list2(@list_2, 0, 0, "¿¹? µµÀç¿µ´ÔÀÌ ÀÌ°ÍÀ» Á¦°Ô ÀüÇØ´Þ¶ó°í ÇÏ¼Ì´Ù°í¿ä? Á¤¸»ÀÔ´Ï±î?", "¿¹, ´ç½ÅÀ» ÀÚ¶û½º·¯¿öÇÏ¼Ì½À´Ï´Ù. È²ºñ¿¬¾¾.");
+				set @pos, list2(@list_2, 0, 0, "ì˜ˆ? ë„ìž¬ì˜ë‹˜ì´ ì´ê²ƒì„ ì œê²Œ ì „í•´ë‹¬ë¼ê³  í•˜ì…¨ë‹¤ê³ ìš”? ì •ë§ìž…ë‹ˆê¹Œ?", "ì˜ˆ, ë‹¹ì‹ ì„ ìžëž‘ìŠ¤ëŸ¬ì›Œí•˜ì…¨ìŠµë‹ˆë‹¤. í™©ë¹„ì—°ì”¨.");
 				if(@pos == 1 && @list_2 == 1)
 				{
-					set @pos, dialog(0, 0, 1, "...´Ù ¾Ë°í °è¼Ì±º¿ä. ÇÏÇÏ. ÀÌ°Å µéÄÑ¹ö·È³×¿ä. ÁË¼ÛÇÕ´Ï´Ù. ¿¹, Á¦°¡ È²ºñ¿¬ÀÔ´Ï´Ù.\\n\\nºÎÅ¹µµ µé¾î ÁÖ¼Ì°í, Á¦ ÇÒ ÀÏµµ ´Ù ³¡³µ½À´Ï´Ù. ¸¹Àº »ç¶÷À» µµ¿Ô°í, ³ªÀ¸¸®²²¼­µµ Àú¸¦ ÀÚ¶û½º·´°Ô ¿©°Ü ÁÖ½Å´Ù´Ï ¿©ÇÑÀÌ ¾ø½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 1, "...ë‹¤ ì•Œê³  ê³„ì…¨êµ°ìš”. í•˜í•˜. ì´ê±° ë“¤ì¼œë²„ë ¸ë„¤ìš”. ì£„ì†¡í•©ë‹ˆë‹¤. ì˜ˆ, ì œê°€ í™©ë¹„ì—°ìž…ë‹ˆë‹¤.\\n\\në¶€íƒë„ ë“¤ì–´ ì£¼ì…¨ê³ , ì œ í•  ì¼ë„ ë‹¤ ëë‚¬ìŠµë‹ˆë‹¤. ë§Žì€ ì‚¬ëžŒì„ ë„ì™”ê³ , ë‚˜ìœ¼ë¦¬ê»˜ì„œë„ ì €ë¥¼ ìžëž‘ìŠ¤ëŸ½ê²Œ ì—¬ê²¨ ì£¼ì‹ ë‹¤ë‹ˆ ì—¬í•œì´ ì—†ìŠµë‹ˆë‹¤.");
 					if(@pos == 0) end;
 
-					set @pos, list2(@list_3, 0, 0, "ÀÚ, ÀÌÁ¦ Àú¸¦ Ã¼Æ÷ÇÏ¼Å¼­ °ü¾Æ¿¡ ³Ñ°Ü ÁÖ½Ê½Ã¿À.", "±×·² ¼ö´Â ¾ø½À´Ï´Ù.");
+					set @pos, list2(@list_3, 0, 0, "ìž, ì´ì œ ì €ë¥¼ ì²´í¬í•˜ì…”ì„œ ê´€ì•„ì— ë„˜ê²¨ ì£¼ì‹­ì‹œì˜¤.", "ê·¸ëŸ´ ìˆ˜ëŠ” ì—†ìŠµë‹ˆë‹¤.");
 					if(@pos == 1 && @list_3 == 1)
 					{
-						set @pos, list2(@list_4, 0, 0, "¿¹? ¹«½¼ ¸»¾¸ÀÌ½ÅÁö...", "´ç½ÅÀº ÀÇÀûÀ¸·Î¼­ ¸¹Àº »ç¶÷À» µµ¿ÔÁÒ.");
+						set @pos, list2(@list_4, 0, 0, "ì˜ˆ? ë¬´ìŠ¨ ë§ì”€ì´ì‹ ì§€...", "ë‹¹ì‹ ì€ ì˜ì ìœ¼ë¡œì„œ ë§Žì€ ì‚¬ëžŒì„ ë„ì™”ì£ .");
 						if(@pos == 1 && @list_4 == 1)
 						{
-							set @pos, list2(@list_5, 0, 0, "......", "±×·± »ç¶÷À» Ã¼Æ÷ÇÒ ¼ö´Â ¾ø½À´Ï´Ù.");
+							set @pos, list2(@list_5, 0, 0, "......", "ê·¸ëŸ° ì‚¬ëžŒì„ ì²´í¬í•  ìˆ˜ëŠ” ì—†ìŠµë‹ˆë‹¤.");
 							if(@pos == 1 && @list_5 == 1)
 							{
-								set @pos, list2(@list_6, 0, 0, "À½......ÇÏÁö¸¸ ÀÇÀûÀÌ¶ó°í´Â ÇØµµ µµµÏÁúÀº ³ª»Û ÀÏÀÔ´Ï´Ù. Àú´Â ÁÐ°ªÀ» Ä¡·¯¾ß ÇÕ´Ï´Ù.", "¾ÕÀ¸·Î ÁÁÀº ÀÏÀ» ´õ ¸¹ÀÌ ÇÏ½Ã¸é µÇÁö ¾Ê°Ú½À´Ï±î?");
+								set @pos, list2(@list_6, 0, 0, "ìŒ......í•˜ì§€ë§Œ ì˜ì ì´ë¼ê³ ëŠ” í•´ë„ ë„ë‘‘ì§ˆì€ ë‚˜ìœ ì¼ìž…ë‹ˆë‹¤. ì €ëŠ” ì£—ê°’ì„ ì¹˜ëŸ¬ì•¼ í•©ë‹ˆë‹¤.", "ì•žìœ¼ë¡œ ì¢‹ì€ ì¼ì„ ë” ë§Žì´ í•˜ì‹œë©´ ë˜ì§€ ì•Šê² ìŠµë‹ˆê¹Œ?");
 								if(@pos == 1 && @list_6 == 1)
 								{
 COS006:
-									set @pos, dialog(0, 0, 1, "¾Æ... Á¤¸»·Î ±×·²±î¿ä? ºÎ²ô·´½À´Ï´Ù...\\n\\nÇÏÁö¸¸ ´ç½ÅÀÇ ÀÌ¾ß±â¸¦ µé¾î º¸´Ï ±×·± °Í °°±âµµ ÇÕ´Ï´Ù. ±×°Ô ´õ º¸¶÷ÀÖ´Â ±æÀÌ¶õ°Ç È®½ÇÇÏ°ÚÁö¿ä...");
+									set @pos, dialog(0, 0, 1, "ì•„... ì •ë§ë¡œ ê·¸ëŸ´ê¹Œìš”? ë¶€ë„ëŸ½ìŠµë‹ˆë‹¤...\\n\\ní•˜ì§€ë§Œ ë‹¹ì‹ ì˜ ì´ì•¼ê¸°ë¥¼ ë“¤ì–´ ë³´ë‹ˆ ê·¸ëŸ° ê²ƒ ê°™ê¸°ë„ í•©ë‹ˆë‹¤. ê·¸ê²Œ ë” ë³´ëžŒìžˆëŠ” ê¸¸ì´ëž€ê±´ í™•ì‹¤í•˜ê² ì§€ìš”...");
 									if(@pos == 0) end;
 COS007:
-									set @pos, dialog(0, 1, 1, "±×·¸´Ù¸é...\\n\\nÀÌ°ÍÀ» °¡Á®°¡ ÁÖ½Ê½Ã¿À. Á¦°¡ ¾²´ø ¸Ó¸®¶ìÀÔ´Ï´Ù. ÀÌ°ÍÀ» °ü¾Æ¿¡ °¡Á®°¡½Ã¸é Á¦°¡ Á×¾ú´Ù°í »ý°¢ÇÒ °ÍÀÌ°í, ¾Æ¸¶ Á¦ Çö»ó±ÝÀ» ¹ÞÀ¸½Ç ¼ö ÀÖÀ» °Ì´Ï´Ù.");
+									set @pos, dialog(0, 1, 1, "ê·¸ë ‡ë‹¤ë©´...\\n\\nì´ê²ƒì„ ê°€ì ¸ê°€ ì£¼ì‹­ì‹œì˜¤. ì œê°€ ì“°ë˜ ë¨¸ë¦¬ë ìž…ë‹ˆë‹¤. ì´ê²ƒì„ ê´€ì•„ì— ê°€ì ¸ê°€ì‹œë©´ ì œê°€ ì£½ì—ˆë‹¤ê³  ìƒê°í•  ê²ƒì´ê³ , ì•„ë§ˆ ì œ í˜„ìƒê¸ˆì„ ë°›ìœ¼ì‹¤ ìˆ˜ ìžˆì„ ê²ë‹ˆë‹¤.");
 									if(@pos == 0) end;
 									else if(@pos == -1) goto COS006;
 COS008:
-									set @pos, dialog(0, 1, 1, "º¸´äÀÌ¶ó°í ÇÏ±â¿£ ¹½ÇÏÁö¸¸... ÈÉÄ£ Àç¹°Àº ÀüºÎ °¡³­ÇÑ »ç¶÷µé¿¡°Ô ³ª´²Áá±â ¶§¹®¿¡ µå¸± °ÍÀÌ ¾ø±º¿ä. ÇÏÇÏ...");
+									set @pos, dialog(0, 1, 1, "ë³´ë‹µì´ë¼ê³  í•˜ê¸°ì—” ë­£í•˜ì§€ë§Œ... í›”ì¹œ ìž¬ë¬¼ì€ ì „ë¶€ ê°€ë‚œí•œ ì‚¬ëžŒë“¤ì—ê²Œ ë‚˜ëˆ ì¤¬ê¸° ë•Œë¬¸ì— ë“œë¦´ ê²ƒì´ ì—†êµ°ìš”. í•˜í•˜...");
 									if(@pos == 0) end;
 									else if(@pos == -1) goto COS007;
 
-									set @pos, dialog(0, 1, 1, "Àú´Â ´õ ¸¹Àº »ç¶÷µéÀ» µ½µµ·Ï ÇÏ°Ú½À´Ï´Ù. ¹°·Ð ÀÌÁ¦ µµµÏÁúÀº ÇÏÁö ¾Ê°Ú½À´Ï´Ù. ¶¸¶¸ÇÑ ¹æ¹ýÀ¸·Î »ç¶÷µéÀ» µµ¿ï °Ì´Ï´Ù. Á¤¸» °¨»çÇÕ´Ï´Ù.");
+									set @pos, dialog(0, 1, 1, "ì €ëŠ” ë” ë§Žì€ ì‚¬ëžŒë“¤ì„ ë•ë„ë¡ í•˜ê² ìŠµë‹ˆë‹¤. ë¬¼ë¡  ì´ì œ ë„ë‘‘ì§ˆì€ í•˜ì§€ ì•Šê² ìŠµë‹ˆë‹¤. ë–³ë–³í•œ ë°©ë²•ìœ¼ë¡œ ì‚¬ëžŒë“¤ì„ ë„ìš¸ ê²ë‹ˆë‹¤. ì •ë§ ê°ì‚¬í•©ë‹ˆë‹¤.");
 									if(@pos == 0) end;
 									else if(@pos == -1) goto COS008;
 
 									set $jang_general, 4;
-									delitem @sd, name2itemid("º¸ÆÐ"), 1;
-									message @sd, 3, "º¸ÆÐ ÁÖ¾ú½À´Ï´Ù";
-									additem @sd, name2itemid("È²ºñ¿¬ÀÇ¸Ó¸®¶ì"), 1;
-									addlegend @sd, 39, 7, 0, 16, "È²ºñ¿¬ÀÇ¸Ó¸®¶ì¸¦ °ü¾Æ¿¡ °¡Á®°¡ÀÚ.";
+									delitem @sd, name2itemid("ë³´íŒ¨"), 1;
+									message @sd, 3, "ë³´íŒ¨ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+									additem @sd, name2itemid("í™©ë¹„ì—°ì˜ë¨¸ë¦¬ë "), 1;
+									addlegend @sd, 39, 7, 0, 16, "í™©ë¹„ì—°ì˜ë¨¸ë¦¬ë ë¥¼ ê´€ì•„ì— ê°€ì ¸ê°€ìž.";
 									end;									
 								}
 								else end;
@@ -373,13 +373,13 @@ COS008:
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Å°¡¿ä?");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹ ê°€ìš”?");
 		end;
 	}
 }
 
 //http://oo0809.blog.me/30093272671
-³²ÃµÁÂ»ó	{
+ë‚¨ì²œì¢Œìƒ	{
 	set @sd, mysd();
 	set @id, myid();
 	set @count, 500;
@@ -387,60 +387,60 @@ COS008:
 	if($hoo_kill == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¿äÁò ¹é¼ºµéÀÌ ÈÄ¸¦ µÎ·Á¿öÇØ¼­ Áý¹ÛÀ¸·Î ´Ù´Ï´Â°Í Á¶Â÷ µÎ·Á¿öÇÏ°í ÀÖ´Ù³×. ÀÏÁ¤ÇÑ °÷¿¡ ¸Ó¹°Áö ¾Ê°í ¶¥À» ÆÄ°í ¾îµðµçÁö µ¹¾Æ´Ù´Ï±â ¶§¹®¿¡ ´õ¿í µÎ·Á¿î Á¸Àç¾ß.");
+		set @pos, dialog(0, 0, 1, "ìš”ì¦˜ ë°±ì„±ë“¤ì´ í›„ë¥¼ ë‘ë ¤ì›Œí•´ì„œ ì§‘ë°–ìœ¼ë¡œ ë‹¤ë‹ˆëŠ”ê²ƒ ì¡°ì°¨ ë‘ë ¤ì›Œí•˜ê³  ìžˆë‹¤ë„¤. ì¼ì •í•œ ê³³ì— ë¨¸ë¬¼ì§€ ì•Šê³  ë•…ì„ íŒŒê³  ì–´ë””ë“ ì§€ ëŒì•„ë‹¤ë‹ˆê¸° ë•Œë¬¸ì— ë”ìš± ë‘ë ¤ìš´ ì¡´ìž¬ì•¼.");
 		if(@pos == 0) end;
 
-		set @pos, dialog(0, 1, 1, "ÀÌ³ðµéÀ» ÅðÄ¡ÇÏÁö ¾ÊÀ¸¸é ¸ÓÁö¾Ê¾Æ ¿ì¸®³ª¶ó°¡ ¾¦¹çÀÌ µÉ Áö°æÀÌ´Ï ÀÌ°Å Á¤¸» Å«ÀÏÀÌ³×.");
+		set @pos, dialog(0, 1, 1, "ì´ë†ˆë“¤ì„ í‡´ì¹˜í•˜ì§€ ì•Šìœ¼ë©´ ë¨¸ì§€ì•Šì•„ ìš°ë¦¬ë‚˜ë¼ê°€ ì‘¥ë°­ì´ ë  ì§€ê²½ì´ë‹ˆ ì´ê±° ì •ë§ í°ì¼ì´ë„¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 
-		set @pos, list2(@list, 0, 0, "ÀÚ³×°¡ ÈÄ¸¦ ÅðÄ¡ÇÏ¿© ÁÖÁö ¾Ê°Ú³ª? Á¦¹ß ºÎÅ¹ÇÏ³×.", "±×·¯ÁÒ. Á¦°¡ Ã³¸®ÇÏ°Ú½À´Ï´Ù!!", "Àúº¸´Ù ³ªÀº ÀûÀÓÀÚ°¡ ºÐ¸í ÀÖÀ»°Ì´Ï´Ù.");
+		set @pos, list2(@list, 0, 0, "ìžë„¤ê°€ í›„ë¥¼ í‡´ì¹˜í•˜ì—¬ ì£¼ì§€ ì•Šê² ë‚˜? ì œë°œ ë¶€íƒí•˜ë„¤.", "ê·¸ëŸ¬ì£ . ì œê°€ ì²˜ë¦¬í•˜ê² ìŠµë‹ˆë‹¤!!", "ì €ë³´ë‹¤ ë‚˜ì€ ì ìž„ìžê°€ ë¶„ëª… ìžˆì„ê²ë‹ˆë‹¤.");
 		if(@pos == 1 && @list == 1)
 		{
 COS002:
-			set @pos, dialog(0, 0, 1, "°í¸¿³×. ÈÄ´Â ¹ø½Ä·Âµµ °­ÇØ¼­ ÇÑ¹ø¿¡ " + @count + "¸¶¸® ÀÌ»ó ÀâÁö ¾ÊÀ¸¸é ±Ý¹æ ´Ù½Ã ¹ø½ÄÀ» ÇÑ´Ù³×. ÈÄ´Â ¿©·¯Á¾·ù°¡ ÀÖÁö¸¸, ¾î¶² Á¾·ùµç ÈÄ¸¦ ÀâÀ¸¸é »À¸¦ ³²±ä´Ù³×.");
+			set @pos, dialog(0, 0, 1, "ê³ ë§™ë„¤. í›„ëŠ” ë²ˆì‹ë ¥ë„ ê°•í•´ì„œ í•œë²ˆì— " + @count + "ë§ˆë¦¬ ì´ìƒ ìž¡ì§€ ì•Šìœ¼ë©´ ê¸ˆë°© ë‹¤ì‹œ ë²ˆì‹ì„ í•œë‹¤ë„¤. í›„ëŠ” ì—¬ëŸ¬ì¢…ë¥˜ê°€ ìžˆì§€ë§Œ, ì–´ë–¤ ì¢…ë¥˜ë“  í›„ë¥¼ ìž¡ìœ¼ë©´ ë¼ˆë¥¼ ë‚¨ê¸´ë‹¤ë„¤.");
 			if(@pos == 0) end;
 
-			set @pos, dialog(0, 1, 1, "ÀÚ³×°¡ ÈÄ¸¦ " + @count + "¸¶¸® ÀÌ»ó Àâ¾Ò´Ù´Â Áõ°Å·Î, " + @count + "¸¶¸®ÀÇ »À¸¦ °¡Áö°í ¿À¸é ³» Æ÷»óÀ» ÇÏÁö. 'ÈÄÀÇ»À' " + @count + "°³¶ó³×.");
+			set @pos, dialog(0, 1, 1, "ìžë„¤ê°€ í›„ë¥¼ " + @count + "ë§ˆë¦¬ ì´ìƒ ìž¡ì•˜ë‹¤ëŠ” ì¦ê±°ë¡œ, " + @count + "ë§ˆë¦¬ì˜ ë¼ˆë¥¼ ê°€ì§€ê³  ì˜¤ë©´ ë‚´ í¬ìƒì„ í•˜ì§€. 'í›„ì˜ë¼ˆ' " + @count + "ê°œë¼ë„¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS002;
 
 			set $hoo_kill, 1;
-			addlegend @sd, 38, 7, 0, 1, "ÈÄ ¸»»ì Äù½ºÆ®¸¦ ¹Þ´Ù.";
+			addlegend @sd, 38, 7, 0, 1, "í›„ ë§ì‚´ í€˜ìŠ¤íŠ¸ë¥¼ ë°›ë‹¤.";
 			end;
 		}
 	}
 	if($hoo_kill == 1)
 	{
-		if(countitem(name2itemid("ÈÄÀÇ»À")) < @count)
+		if(countitem(name2itemid("í›„ì˜ë¼ˆ")) < @count)
 		{
-			set @pos, dialog(0, 0, 0, "ÈÄÀÇ»À°¡ ³Ê¹« ÀûÀº°ÍÀº ¾Æ´Ñ°¡? " + @count + "¸¶¸® ÀÌ»óÀ» Àâ°í ÈÄÀÇ»À " + @count + "°³¸¦ °¡Á®¿ÍÁÖ°Ô.");
+			set @pos, dialog(0, 0, 0, "í›„ì˜ë¼ˆê°€ ë„ˆë¬´ ì ì€ê²ƒì€ ì•„ë‹Œê°€? " + @count + "ë§ˆë¦¬ ì´ìƒì„ ìž¡ê³  í›„ì˜ë¼ˆ " + @count + "ê°œë¥¼ ê°€ì ¸ì™€ì£¼ê²Œ.");
 			end;
 		}
 		else
 		{
 COS003:
-			set @pos, dialog(0, 0, 1, @count + "¸¶¸®¸¦ Àâ´Âµ¥ ¼º°øÇß±º! ÇÏÁö¸¸ ¾ÆÁ÷ ÀÏÀÌ ³¡³­°Ô ¾Æ´Ò¼¼. ¹Ì¸® ¾ê±â¸¦ ÇÏÁö ¾Ê¾ÒÁö¸¸ ÈÄ¶ó´Â ³à¼®Àº ¸¶°èÃµ½ÅÀÌ¶ó´Â ¿ÕÀÌ ÀÖ¾î¼­ ±× ¿ÕÀÌ »ç¶óÁöÁö ¾Ê´Â ÀÌ»ó ½Ã°£ÀÌ Áö³ª¸é ´õ¿í °­ÇÏ°Ô µÇ»ì¾Æ³ªÁö.");
+			set @pos, dialog(0, 0, 1, @count + "ë§ˆë¦¬ë¥¼ ìž¡ëŠ”ë° ì„±ê³µí–ˆêµ°! í•˜ì§€ë§Œ ì•„ì§ ì¼ì´ ëë‚œê²Œ ì•„ë‹ì„¸. ë¯¸ë¦¬ ì–˜ê¸°ë¥¼ í•˜ì§€ ì•Šì•˜ì§€ë§Œ í›„ë¼ëŠ” ë…€ì„ì€ ë§ˆê³„ì²œì‹ ì´ë¼ëŠ” ì™•ì´ ìžˆì–´ì„œ ê·¸ ì™•ì´ ì‚¬ë¼ì§€ì§€ ì•ŠëŠ” ì´ìƒ ì‹œê°„ì´ ì§€ë‚˜ë©´ ë”ìš± ê°•í•˜ê²Œ ë˜ì‚´ì•„ë‚˜ì§€.");
 			if(@pos == 0) end;
 
-			set @pos, dialog(0, 1, 1, "±×·¡¼­ ÇÑ°¡Áö ºÎÅ¹À» ´õ ÇØ¾ß°Ú³×. ¸¶°èÃµ½ÅÀ» Àâ¾Æ ±×ÀÇ »À¸¦ °¡Á®¿ÍÁÖ°Ô. Á¤¸» ¸¶Áö¸· ºÎÅ¹ÀÌ³×.");
+			set @pos, dialog(0, 1, 1, "ê·¸ëž˜ì„œ í•œê°€ì§€ ë¶€íƒì„ ë” í•´ì•¼ê² ë„¤. ë§ˆê³„ì²œì‹ ì„ ìž¡ì•„ ê·¸ì˜ ë¼ˆë¥¼ ê°€ì ¸ì™€ì£¼ê²Œ. ì •ë§ ë§ˆì§€ë§‰ ë¶€íƒì´ë„¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS003;
 
-			set @pos, list2(@list, 0, 0, "¸¶°èÃµ½ÅÀÇ»À¸¦ °¡Á®¿ÍÁÙ ¼ö ÀÖ°Ú³ª?", "¹°·ÐÀÌÁÒ! ´Ù½Ã´Â µÇ»ì¾Æ³ªÁö ¸øÇÏµµ·Ï ÇØ¾ßÇÕ´Ï´Ù.", "±×·±°Í±îÁö Á¦°¡ ÇÒ ÇÊ¿ä´Â ¾ø´Â°Í °°±º¿ä.");
+			set @pos, list2(@list, 0, 0, "ë§ˆê³„ì²œì‹ ì˜ë¼ˆë¥¼ ê°€ì ¸ì™€ì¤„ ìˆ˜ ìžˆê² ë‚˜?", "ë¬¼ë¡ ì´ì£ ! ë‹¤ì‹œëŠ” ë˜ì‚´ì•„ë‚˜ì§€ ëª»í•˜ë„ë¡ í•´ì•¼í•©ë‹ˆë‹¤.", "ê·¸ëŸ°ê²ƒê¹Œì§€ ì œê°€ í•  í•„ìš”ëŠ” ì—†ëŠ”ê²ƒ ê°™êµ°ìš”.");
 			if(@pos == 1 && @list == 1)
 			{
 				set $hoo_kill, 2;
 
-				delitem @sd, name2itemid("ÈÄÀÇ»À"), @count;
-				message @sd, 3, "ÈÄÀÇ»À ÁÖ¾ú½À´Ï´Ù";
+				delitem @sd, name2itemid("í›„ì˜ë¼ˆ"), @count;
+				message @sd, 3, "í›„ì˜ë¼ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 
-				addlegend @sd, 38, 7, 0, 1, "¸¶°èÃµ½ÅÀÇ»À¸¦ ±¸ÇÏÀÚ.";
+				addlegend @sd, 38, 7, 0, 1, "ë§ˆê³„ì²œì‹ ì˜ë¼ˆë¥¼ êµ¬í•˜ìž.";
 COS004:
-				set @pos, dialog(0, 0, 1, "¿À, °í¸¿³×. ±×·³ ÀÚ³×°¡ °¡Áö°í¿Â ÈÄÀÇ»À´Â °¡Á®°¡µµ·Ï ÇÏ°Ú³×.");
+				set @pos, dialog(0, 0, 1, "ì˜¤, ê³ ë§™ë„¤. ê·¸ëŸ¼ ìžë„¤ê°€ ê°€ì§€ê³ ì˜¨ í›„ì˜ë¼ˆëŠ” ê°€ì ¸ê°€ë„ë¡ í•˜ê² ë„¤.");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "±×·³ ¸¶Àú ºÎÅ¹ÇÏÁö. Çà¿îÀ» ºñ³×.");
+				set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ ë§ˆì € ë¶€íƒí•˜ì§€. í–‰ìš´ì„ ë¹„ë„¤.");
 				if(@pos == -1) goto COS004;
 				end;
 			}
@@ -448,82 +448,82 @@ COS004:
 	}
 	if($hoo_kill == 2)
 	{
-		if(countitem(name2itemid("¸¶°èÃµ½ÅÀÇ»À")) == 0)
+		if(countitem(name2itemid("ë§ˆê³„ì²œì‹ ì˜ë¼ˆ")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ ¸¶°èÃµ½ÅÀÇ»À¸¦ ±¸ÇÏÁö ¸øÇÑ ¸ð¾çÀÌ·Î±º..");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ë§ˆê³„ì²œì‹ ì˜ë¼ˆë¥¼ êµ¬í•˜ì§€ ëª»í•œ ëª¨ì–‘ì´ë¡œêµ°..");
 			end;
 		}
 		else
 		{
 COS005:
-			set @pos, dialog(0, 0, 1, "¿À¿À, Á¤¸»·Î ¸¶°èÃµ½ÅÀÇ»À¸¦ °¡Áö°í ¿Ô±º. ÀÚ³Ù Á¤¸» ´ë´ÜÇÑ ÀÎ¹°ÀÌ±º..");
+			set @pos, dialog(0, 0, 1, "ì˜¤ì˜¤, ì •ë§ë¡œ ë§ˆê³„ì²œì‹ ì˜ë¼ˆë¥¼ ê°€ì§€ê³  ì™”êµ°. ìžë„¨ ì •ë§ ëŒ€ë‹¨í•œ ì¸ë¬¼ì´êµ°..");
 			if(@pos == 0) end;
 COS006:
-			set @pos, dialog(0, 1, 1, "Á¤¸» Áø½ÉÀ¸·Î °í¸¿³×. ÀÚ³Ù Á¤¸» Å«ÀÏÀ» ÇØ³Â¾î! ÇãÇã...");
+			set @pos, dialog(0, 1, 1, "ì •ë§ ì§„ì‹¬ìœ¼ë¡œ ê³ ë§™ë„¤. ìžë„¨ ì •ë§ í°ì¼ì„ í•´ëƒˆì–´! í—ˆí—ˆ...");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS005;
 COS007:
-			set @pos, dialog(0, 1, 1, "ÀÌ°Ç °í¸¶¿òÀÇ Ç¥½Ã´Ï °¡Á®°¡µµ·Ï ÇÏ°Ô. °í±¸·Á¿¡ ÀÖ´Ù´Â ¼û°ÜÁø ¸¶À»¿¡¼­ ¸¸µé¾ú´Ù´Â '¼¼½ÃÅõ±¸'¸¦ Èä³»³»¾î ¸¸µé¾î º» °ÍÀÌ¶ó³×. ¹°·Ð ¼¼½ÃÅõ±¸¸¸Å­ÀÇ ¼º´ÉÀÌ ³ª¿ÀÁø ¾ÊÁö¸¸ ¸»ÀÌ¾ß.");
+			set @pos, dialog(0, 1, 1, "ì´ê±´ ê³ ë§ˆì›€ì˜ í‘œì‹œë‹ˆ ê°€ì ¸ê°€ë„ë¡ í•˜ê²Œ. ê³ êµ¬ë ¤ì— ìžˆë‹¤ëŠ” ìˆ¨ê²¨ì§„ ë§ˆì„ì—ì„œ ë§Œë“¤ì—ˆë‹¤ëŠ” 'ì„¸ì‹œíˆ¬êµ¬'ë¥¼ í‰ë‚´ë‚´ì–´ ë§Œë“¤ì–´ ë³¸ ê²ƒì´ë¼ë„¤. ë¬¼ë¡  ì„¸ì‹œíˆ¬êµ¬ë§Œí¼ì˜ ì„±ëŠ¥ì´ ë‚˜ì˜¤ì§„ ì•Šì§€ë§Œ ë§ì´ì•¼.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS006;
 
-			set @pos, dialog(0, 1, 1, "ÀÌ Åõ±¸¸¦ ¾²°í ÀÖÀ¸¸é ÀÚ³×ÀÇ ¹«±â¿Í °©¿ÊÀÇ ³»±¸·ÂÀÌ ¿À·§µ¿¾È À¯ÁöµÉ°É¼¼. ±×·³ Àß °¡½Ã°Ô..");
+			set @pos, dialog(0, 1, 1, "ì´ íˆ¬êµ¬ë¥¼ ì“°ê³  ìžˆìœ¼ë©´ ìžë„¤ì˜ ë¬´ê¸°ì™€ ê°‘ì˜·ì˜ ë‚´êµ¬ë ¥ì´ ì˜¤ëž«ë™ì•ˆ ìœ ì§€ë ê±¸ì„¸. ê·¸ëŸ¼ ìž˜ ê°€ì‹œê²Œ..");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS007;
 
 			set $hoo_kill, 3;
 
-			delitem @sd, name2itemid("¸¶°èÃµ½ÅÀÇ»À"), 1;
-			message @sd, 3, "¸¶°èÃµ½ÅÀÇ»À ÁÖ¾ú½À´Ï´Ù";
-			additem @sd, name2itemid("°­Ã¶Åõ±¸"), 1;
-			addlegend @sd, 38, 6, 0, 1, "ÈÄ ¸»»ì ÀÓ¹«¸¦ ¿Ï¼öÇÏ¿´´Ù.";
+			delitem @sd, name2itemid("ë§ˆê³„ì²œì‹ ì˜ë¼ˆ"), 1;
+			message @sd, 3, "ë§ˆê³„ì²œì‹ ì˜ë¼ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			additem @sd, name2itemid("ê°•ì² íˆ¬êµ¬"), 1;
+			addlegend @sd, 38, 6, 0, 1, "í›„ ë§ì‚´ ìž„ë¬´ë¥¼ ì™„ìˆ˜í•˜ì˜€ë‹¤.";
 			end;
 		}
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, get_name(@sd) + "¾¾ ¾Æ´Ï¿À? Àú¹ø¿£ Á¤¸» °¨»çÇß¼Ò. ´öºÐ¿¡ ¹é¼ºµéÀÇ °í¹ÎÀ» ÇÑ°á ´ú¾îÁÖ¾ú´Ù³×.");
+		set @pos, dialog(0, 0, 1, get_name(@sd) + "ì”¨ ì•„ë‹ˆì˜¤? ì €ë²ˆì—” ì •ë§ ê°ì‚¬í–ˆì†Œ. ë•ë¶„ì— ë°±ì„±ë“¤ì˜ ê³ ë¯¼ì„ í•œê²° ëœì–´ì£¼ì—ˆë‹¤ë„¤.");
 		end;
 	}
 }
 
-º´µç¾ÆÀÌ¾î¸Ó´Ï	{
+ë³‘ë“ ì•„ì´ì–´ë¨¸ë‹ˆ	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if(get_level(@sd) < 56)
 	{
-		set @pos, dialog(0, 0, 0, "(¿·¿¡ ÀÖ´Â ¾ÆÀÌ¸¦ º¸¸ç Å©°Ô ÇÑ¼ûÀ» ³»½®´Ù.)");
+		set @pos, dialog(0, 0, 0, "(ì˜†ì— ìžˆëŠ” ì•„ì´ë¥¼ ë³´ë©° í¬ê²Œ í•œìˆ¨ì„ ë‚´ì‰°ë‹¤.)");
 		end;
 	}
 
 	if($sick_children == 0)
 	{
-		set @pos, list2(@list, 0, 0, "¾Æ... °¡³­ÀÌ ¿ø¼öÁö, º´µç ³×°Ô º¸¾à ÇÑ Ã¸ Áö¾îÁÙ ÇüÆíµµ ¸ø µÇ´Â±¸³ª! ÀÌ·² ¶§ ³× ¾Æ¹öÁö°¡ ÀÖ¾ú´Ù¸é... ¿¡ÈÞ...", "Àú... ¹«½¼ ÀÏÀÌ¶óµµ ÀÖ³ª¿ä?", "¾ÆÇÂ »ç¶÷ÀÌ¶óµµ ÀÖ³ª? ¹¹, ³ª¶ûÀº »ó°ü¾øÁö...");
+		set @pos, list2(@list, 0, 0, "ì•„... ê°€ë‚œì´ ì›ìˆ˜ì§€, ë³‘ë“  ë„¤ê²Œ ë³´ì•½ í•œ ì²© ì§€ì–´ì¤„ í˜•íŽ¸ë„ ëª» ë˜ëŠ”êµ¬ë‚˜! ì´ëŸ´ ë•Œ ë„¤ ì•„ë²„ì§€ê°€ ìžˆì—ˆë‹¤ë©´... ì—íœ´...", "ì €... ë¬´ìŠ¨ ì¼ì´ë¼ë„ ìžˆë‚˜ìš”?", "ì•„í”ˆ ì‚¬ëžŒì´ë¼ë„ ìžˆë‚˜? ë­, ë‚˜ëž‘ì€ ìƒê´€ì—†ì§€...");
 		if(@pos == 1 && @list == 1)
 		{
 COS001:
-			set @pos, dialog(0, 0, 1, "¾Æ... µéÀ¸¼Ì³ª¿ä? .....Á¦ ¿·¿¡ ÀÖ´Â ¾ÆÀÌ´Â ÀúÈñ ¾ÆµéÀÎµ¥, ¾ó¸¶ Àü¿¡ º´À» ¾Î°í ³ª´õ´Ï ±â·ÂÀÌ ¼èÇß´ÂÁö ±â¿îÀÌ ¾ø°í ¸»µµ ¸øÇØ¿ä.");
+			set @pos, dialog(0, 0, 1, "ì•„... ë“¤ìœ¼ì…¨ë‚˜ìš”? .....ì œ ì˜†ì— ìžˆëŠ” ì•„ì´ëŠ” ì €í¬ ì•„ë“¤ì¸ë°, ì–¼ë§ˆ ì „ì— ë³‘ì„ ì•“ê³  ë‚˜ë”ë‹ˆ ê¸°ë ¥ì´ ì‡ í–ˆëŠ”ì§€ ê¸°ìš´ì´ ì—†ê³  ë§ë„ ëª»í•´ìš”.");
 			if(@pos == 0) end;
 COS002:
-			set @pos, dialog(0, 1, 1, "¾ÆÀÌ ¾Æºü´Â ¿À·¡ Àü¿¡ µ·À» ¹ú°Ú´Ù°í ¤· ¤Ãµð·Ð°¡ ¶°³ª¼­´Â ¼Ò½ÄÀÌ ¾ø°í, Àú È¥ÀÚ ³²ÀÇ Áý »é¹Ù´ÀÁú·Î ¸Ô°í »ç´Âµ¥, ÀÌ ¾Ö¿¡°Ô º¸¾à ÇÑ Ã¸ Áö¾î ¸ÔÀÏ ÇüÆíµµ ¸ø µÇ³×¿ä.");
+			set @pos, dialog(0, 1, 1, "ì•„ì´ ì•„ë¹ ëŠ” ì˜¤ëž˜ ì „ì— ëˆì„ ë²Œê² ë‹¤ê³  ã…‡ ã…“ë””ë¡ ê°€ ë– ë‚˜ì„œëŠ” ì†Œì‹ì´ ì—†ê³ , ì € í˜¼ìž ë‚¨ì˜ ì§‘ ì‚¯ë°”ëŠì§ˆë¡œ ë¨¹ê³  ì‚¬ëŠ”ë°, ì´ ì• ì—ê²Œ ë³´ì•½ í•œ ì²© ì§€ì–´ ë¨¹ì¼ í˜•íŽ¸ë„ ëª» ë˜ë„¤ìš”.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS001;
 
-			set @pos, list2(@list_2, 0, 0, "ÀÌ´ë·Î °¡´Ù°£ È¤½Ã ÀÌ ¾Ö°¡ ¾Æ¿¹ ¸»À» ¸øÇÏ°Ô µÇ´Â °Ç ¾Æ´Ò±î °ÌÀÌ ´úÄÀ ³ª¼­, Àúµµ ¸ð¸£°Ô ±×¸¸ ¼Ò¸®¸¦ ³»¾î ÇÑÅºÇÏ°í ¸»¾Ò±º¿ä...", "±×·± °¡¿²Àº ÀÏÀÌ... Á¦°¡ µµ¿Íµå¸®°Ú½À´Ï´Ù!", "±×·¡¿ä? ¹¹, Àú¶ûÀº »ó°ü¾ø´Â ÀÏÀÌ´Ï±î Àü ÀÌ¸¸..");
+			set @pos, list2(@list_2, 0, 0, "ì´ëŒ€ë¡œ ê°€ë‹¤ê°„ í˜¹ì‹œ ì´ ì• ê°€ ì•„ì˜ˆ ë§ì„ ëª»í•˜ê²Œ ë˜ëŠ” ê±´ ì•„ë‹ê¹Œ ê²ì´ ëœì»¥ ë‚˜ì„œ, ì €ë„ ëª¨ë¥´ê²Œ ê·¸ë§Œ ì†Œë¦¬ë¥¼ ë‚´ì–´ í•œíƒ„í•˜ê³  ë§ì•˜êµ°ìš”...", "ê·¸ëŸ° ê°€ì—¾ì€ ì¼ì´... ì œê°€ ë„ì™€ë“œë¦¬ê² ìŠµë‹ˆë‹¤!", "ê·¸ëž˜ìš”? ë­, ì €ëž‘ì€ ìƒê´€ì—†ëŠ” ì¼ì´ë‹ˆê¹Œ ì „ ì´ë§Œ..");
 			if(@pos == 1 && @list_2 == 1)
 			{
 				set $sick_children, 1;
-				addlegend @sd, 36, 7, 0, 1, "¾ÆÇÂ ¾ÆÀÌ¸¦ À§ÇØ º¸¾àÀ» ±¸ÇÏÀÚ.";
+				addlegend @sd, 36, 7, 0, 1, "ì•„í”ˆ ì•„ì´ë¥¼ ìœ„í•´ ë³´ì•½ì„ êµ¬í•˜ìž.";
 COS003:
-				set @pos, dialog(0, 0, 1, "¿¹? Á¤¸»ÀÌ¼¼¿ä? ÀÌ·¸°Ô °í¸¶¿ï µ¥°¡...\\n\\n¾Æ½Ã´Ù½ÃÇÇ º¸¾àÀº ¿ö³« ºñ½Î¼­, ÀúÈñ ÇüÆíÀ¸·Î´Â ÁöÀ» ¼ö°¡ ¾ø´ä´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "ì˜ˆ? ì •ë§ì´ì„¸ìš”? ì´ë ‡ê²Œ ê³ ë§ˆìš¸ ë°ê°€...\\n\\nì•„ì‹œë‹¤ì‹œí”¼ ë³´ì•½ì€ ì›Œë‚™ ë¹„ì‹¸ì„œ, ì €í¬ í˜•íŽ¸ìœ¼ë¡œëŠ” ì§€ì„ ìˆ˜ê°€ ì—†ë‹µë‹ˆë‹¤.");
 				if(@pos == 0) end;
 COS004:
-				set @pos, dialog(0, 1, 1, "±×·±µ¥... Àç·á¸¸ °¡Á®´Ù ÁÖ¸é ¾î¶² º¸¾àÀÌµç °øÂ¥·Î Áö¾îÁÖ´Â »ç¶÷ÀÌ Àå¾È¼º ÇªÁÞ°£¿¡ ÀÖ´Ù°í ÇØ¿ä.");
+				set @pos, dialog(0, 1, 1, "ê·¸ëŸ°ë°... ìž¬ë£Œë§Œ ê°€ì ¸ë‹¤ ì£¼ë©´ ì–´ë–¤ ë³´ì•½ì´ë“  ê³µì§œë¡œ ì§€ì–´ì£¼ëŠ” ì‚¬ëžŒì´ ìž¥ì•ˆì„± í‘¸ì¤ê°„ì— ìžˆë‹¤ê³  í•´ìš”.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS003;
 COS005:
-				set @pos, dialog(0, 1, 1, "±× »ç¶÷ÀÌ¶ó¸é ÀúÈñ ¾ÆµéÀÇ Áõ¼¼¸¸ µè°íµµ º¸¾àÀ» Áö¾îÁÙ °Í °°Àºµ¥... Á¤¸» ÁË¼ÛÇÏÁö¸¸ ÇÑ¹ø ±×ºÐ²² ¿©Âå ºÁ ÁÖ¼¼¿ä. ºÎÅ¹µå¸³´Ï´Ù...");
+				set @pos, dialog(0, 1, 1, "ê·¸ ì‚¬ëžŒì´ë¼ë©´ ì €í¬ ì•„ë“¤ì˜ ì¦ì„¸ë§Œ ë“£ê³ ë„ ë³´ì•½ì„ ì§€ì–´ì¤„ ê²ƒ ê°™ì€ë°... ì •ë§ ì£„ì†¡í•˜ì§€ë§Œ í•œë²ˆ ê·¸ë¶„ê»˜ ì—¬ì­¤ ë´ ì£¼ì„¸ìš”. ë¶€íƒë“œë¦½ë‹ˆë‹¤...");
 				if(@pos == -1) goto COS004;
 				end;
 			}
@@ -533,38 +533,38 @@ COS005:
 	}
 	if($sick_children == 1)
 	{
-		if(countitem(name2itemid("»ïÀü½Åº¸ÅÁ")) == 0)
+		if(countitem(name2itemid("ì‚¼ì „ì‹ ë³´íƒ•")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "º¸¾àÀº Àå¾È¼º ÇªÁÞ°£¿¡ °¡º¸½Ã¸é µÉ°Å¿¹¿ä.");
+			set @pos, dialog(0, 0, 0, "ë³´ì•½ì€ ìž¥ì•ˆì„± í‘¸ì¤ê°„ì— ê°€ë³´ì‹œë©´ ë ê±°ì˜ˆìš”.");
 			end;
 		}
 		else
 		{
-			set @pos, list2(@list, 0, 0, "¾Æ¾Æ...! º¸¾àÀ» Á¤¸»·Î ±¸ÇØ´Ù ÁÖ¼Ì±º¿ä! ÀÌ ÀºÇý¸¦ ¾îÂî °±¾Æ¾ß ÇÒÁö...", "»ç·Ê´Â ÇÊ¿ä¾ø½À´Ï´Ù. ÀÚ, ÀÌ ¾àÀ» ¹ÞÀ¸¼¼¿ä.", "¾Æ¹«¸® °¡³­ÇØµµ... ¼ö°íºñ Á¤µµ´Â ÁÖ½Ã°ÚÁÒ?");
+			set @pos, list2(@list, 0, 0, "ì•„ì•„...! ë³´ì•½ì„ ì •ë§ë¡œ êµ¬í•´ë‹¤ ì£¼ì…¨êµ°ìš”! ì´ ì€í˜œë¥¼ ì–´ì°Œ ê°šì•„ì•¼ í• ì§€...", "ì‚¬ë¡€ëŠ” í•„ìš”ì—†ìŠµë‹ˆë‹¤. ìž, ì´ ì•½ì„ ë°›ìœ¼ì„¸ìš”.", "ì•„ë¬´ë¦¬ ê°€ë‚œí•´ë„... ìˆ˜ê³ ë¹„ ì •ë„ëŠ” ì£¼ì‹œê² ì£ ?");
 			if(@pos == 0) end;
 			if(@list == 1)
 			{
 				set $sick_children, 2;
 
-				delitem @sd, name2itemid("»ïÀü½Åº¸ÅÁ"), 1;
-				message @sd, 3, "»ïÀü½Åº¸ÅÁ ÁÖ¾ú½À´Ï´Ù";
-				additem @sd, name2itemid("Ã»ÀÚ´Ù¶÷ÁãÀÎÇü"), 1;
-				addlegend @sd, 36, 7, 0, 1, "¾ÆÇÂ ¾ÆÀÌÀÇ º´À» Ä¡·áÇØ ÁÖ¾ú´Ù.";
+				delitem @sd, name2itemid("ì‚¼ì „ì‹ ë³´íƒ•"), 1;
+				message @sd, 3, "ì‚¼ì „ì‹ ë³´íƒ• ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				additem @sd, name2itemid("ì²­ìžë‹¤ëžŒì¥ì¸í˜•"), 1;
+				addlegend @sd, 36, 7, 0, 1, "ì•„í”ˆ ì•„ì´ì˜ ë³‘ì„ ì¹˜ë£Œí•´ ì£¼ì—ˆë‹¤.";
 COS006:
-				set @pos, dialog(0, 0, 1, "°¨»çÇÕ´Ï´Ù... Á¤¸» °¨»çÇÕ´Ï´Ù... ÀÌ ÀºÇý ¾ðÁ¨°¡´Â ²À °±°Ú¾î¿ä.......");
+				set @pos, dialog(0, 0, 1, "ê°ì‚¬í•©ë‹ˆë‹¤... ì •ë§ ê°ì‚¬í•©ë‹ˆë‹¤... ì´ ì€í˜œ ì–¸ì  ê°€ëŠ” ê¼­ ê°šê² ì–´ìš”.......");
 				if(@pos == 0) end;
 COS007:
-				set @pos, dialog(0, 1, 1, "......¾Æ, ÀÌ°Ç ÀúÈñ ¾Ö°¡ °¡Áö°í ³î´ø Àå³²°£ÀÎµ¥, º¸Àß°Í ¾ø¾î º¸¿©µµ ¾ÆÀÌ ¾Æºü°¡ ¿¹Àü¿¡ ±ÍÇÑ Àå³­°¨ÀÌ¶ó¸é¼­ °¡Á®¿Â °ÍÀÌ¶ø´Ï´Ù.");
+				set @pos, dialog(0, 1, 1, "......ì•„, ì´ê±´ ì €í¬ ì• ê°€ ê°€ì§€ê³  ë†€ë˜ ìž¥ë‚¨ê°„ì¸ë°, ë³´ìž˜ê²ƒ ì—†ì–´ ë³´ì—¬ë„ ì•„ì´ ì•„ë¹ ê°€ ì˜ˆì „ì— ê·€í•œ ìž¥ë‚œê°ì´ë¼ë©´ì„œ ê°€ì ¸ì˜¨ ê²ƒì´ëžë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS006;
 
-				set @pos, dialog(0, 1, 1, "¿À·¡µÈ Àå³­°¨ÀÌ´Ï ´©±º°¡ Àå³­°¨À» ¼öÁýÇÏ´Â »ç¶÷ÀÌ¶óµµ ÀÖ´Ù¸é, ºñ½Î°Ô ÆÈ ¼ö ÀÖÀ» °Å¿¹¿ä.");
+				set @pos, dialog(0, 1, 1, "ì˜¤ëž˜ëœ ìž¥ë‚œê°ì´ë‹ˆ ëˆ„êµ°ê°€ ìž¥ë‚œê°ì„ ìˆ˜ì§‘í•˜ëŠ” ì‚¬ëžŒì´ë¼ë„ ìžˆë‹¤ë©´, ë¹„ì‹¸ê²Œ íŒ” ìˆ˜ ìžˆì„ ê±°ì˜ˆìš”.");
 				if(@pos == -1) goto COS007;
 				end;
 			}
 			else if(@list == 2)
 			{
-				set @pos, dialog(0, 0, 0, "Àú... ±×.. ±×°Ô...");
+				set @pos, dialog(0, 0, 0, "ì €... ê·¸.. ê·¸ê²Œ...");
 				end;
 			}
 			else end;
@@ -573,18 +573,18 @@ COS007:
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "Àú¹ø¿£ Á¤¸» °¨»çÇß½À´Ï´Ù. ¾ÆÀÌ°¡ ´öºÐ¿¡ °Ç°­À» ¸¹ÀÌ È¸º¹Çß½À´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì €ë²ˆì—” ì •ë§ ê°ì‚¬í–ˆìŠµë‹ˆë‹¤. ì•„ì´ê°€ ë•ë¶„ì— ê±´ê°•ì„ ë§Žì´ íšŒë³µí–ˆìŠµë‹ˆë‹¤.");
 		end;
 	}
 }
 
-º´µç¾ÆÀÌ	{
+ë³‘ë“ ì•„ì´	{
 	set @sd, mysd();
 	set @id, myid();
 
 }
 
-µ·À¯ÇÕÀÇ´ÞÀÎ	{
+ëˆìœ í•©ì˜ë‹¬ì¸	{
 	set @sd, mysd();
 	set @id, myid();
 
@@ -593,98 +593,98 @@ COS007:
 		if($donuhap == 0)
 		{
 COS001:
-			set @pos, list2(@list, 0, 0, "ÀÚ³×´Â ¿Ö ³¯ Ã£¾Æ¿Ô³ª? ¹«½¼ º¼ÀÏÀÌ¶óµµ?", "È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀÇ ´ÞÀÎÀÌ¶ó ÇÏ¿© Ã£¾Æ¿Ô½À´Ï´Ù.", "¾Æ´Õ´Ï´Ù...Áö³ª°¡´Â ±æÀÔ´Ï´Ù.");
+			set @pos, list2(@list, 0, 0, "ìžë„¤ëŠ” ì™œ ë‚  ì°¾ì•„ì™”ë‚˜? ë¬´ìŠ¨ ë³¼ì¼ì´ë¼ë„?", "í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì˜ ë‹¬ì¸ì´ë¼ í•˜ì—¬ ì°¾ì•„ì™”ìŠµë‹ˆë‹¤.", "ì•„ë‹™ë‹ˆë‹¤...ì§€ë‚˜ê°€ëŠ” ê¸¸ìž…ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 			else if(@list == 1)
 			{
 COS002:
-				set @pos, dialog(0, 0, 1, "¾ÆÇÏ...±×·±°ÍÀÌ¶ó¸é ³»°¡ µµ¿ÍÁÙ ¼ö ÀÖÁö. ³ªµµ °øÂ¥·Î´Â µµ¿ÍÁÙ¼ö ¾øÀ¸´Ï ³»°¡ ÇÊ¿äÇÑ ¹°°ÇÁ» ±¸ÇØ´ÙÁÖ°Ô. ¾àÀç·Î »ç¿ëÇÒ ÀÎ»ï°ú µ¿ÃæÇÏÃÊ°¡ ±ÞÈ÷ ÇÊ¿äÇÏ°Åµç. ºÎÅ¹ÇÏ³×.");
+				set @pos, dialog(0, 0, 1, "ì•„í•˜...ê·¸ëŸ°ê²ƒì´ë¼ë©´ ë‚´ê°€ ë„ì™€ì¤„ ìˆ˜ ìžˆì§€. ë‚˜ë„ ê³µì§œë¡œëŠ” ë„ì™€ì¤„ìˆ˜ ì—†ìœ¼ë‹ˆ ë‚´ê°€ í•„ìš”í•œ ë¬¼ê±´ì¢€ êµ¬í•´ë‹¤ì£¼ê²Œ. ì•½ìž¬ë¡œ ì‚¬ìš©í•  ì¸ì‚¼ê³¼ ë™ì¶©í•˜ì´ˆê°€ ê¸‰ížˆ í•„ìš”í•˜ê±°ë“ . ë¶€íƒí•˜ë„¤.");
 				if(@pos == 0) end;
 COS003:
-				set @pos, dialog(0, 1, 1, "µ¿ÃæÇÏÃÊ´Â ´ë¹æ¼ºÀÔ±¸¿¡, ÀÎ»ïÀº ±¹°æÁö´ë¸¦ µÚÁ®º¸¸é ³ª¿Ã°É¼¼.");
+				set @pos, dialog(0, 1, 1, "ë™ì¶©í•˜ì´ˆëŠ” ëŒ€ë°©ì„±ìž…êµ¬ì—, ì¸ì‚¼ì€ êµ­ê²½ì§€ëŒ€ë¥¼ ë’¤ì ¸ë³´ë©´ ë‚˜ì˜¬ê±¸ì„¸.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS002;
 
 				set $donuhap, 1;
 
-				addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖÀÚ. [1/2]";
-				spellaether @sd, name2spellid("µ¿ÃæÇÏÃÊÀÎ»ï"), 180;
+				addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ìž. [1/2]";
+				spellaether @sd, name2spellid("ë™ì¶©í•˜ì´ˆì¸ì‚¼"), 180;
 				end;
 			}
 			else if(@list == 2)
 			{
-				set @pos, dialog(0, 0, 1, "ÇãÇã. ±×·¯½Ã¿À?");
+				set @pos, dialog(0, 0, 1, "í—ˆí—ˆ. ê·¸ëŸ¬ì‹œì˜¤?");
 				end;
 			}
 		}
 		if($donuhap == 1)
 		{
-			if(countitem(name2itemid("µ¿ÃæÇÏÃÊ")) == 0 || countitem(name2itemid("ÀÎ»ï")) == 0)
+			if(countitem(name2itemid("ë™ì¶©í•˜ì´ˆ")) == 0 || countitem(name2itemid("ì¸ì‚¼")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "¾ÆÁ÷ Àç·á°¡ ºÎÁ·ÇÑ°Í °°¼Ò. µ¿ÃæÇÏÃÊ´Â ´ë¹æ¼ºÀÔ±¸, ÀÎ»ïÀº ±¹°æÁö´ë¸¦ µÚÁ®º¸¸é ³ª¿Ã°É¼¼.");
+				set @pos, dialog(0, 0, 0, "ì•„ì§ ìž¬ë£Œê°€ ë¶€ì¡±í•œê²ƒ ê°™ì†Œ. ë™ì¶©í•˜ì´ˆëŠ” ëŒ€ë°©ì„±ìž…êµ¬, ì¸ì‚¼ì€ êµ­ê²½ì§€ëŒ€ë¥¼ ë’¤ì ¸ë³´ë©´ ë‚˜ì˜¬ê±¸ì„¸.");
 				end;
 			}
 COS004:
-			set @pos, dialog(0, 0, 1, "ÇãÇã °í¸¿±¸¸¸. ÀÌ Àç·áµéÀº ³»°¡ Àß »ç¿ëÇÏµµ·Ï ÇÏÁö.");
+			set @pos, dialog(0, 0, 1, "í—ˆí—ˆ ê³ ë§™êµ¬ë§Œ. ì´ ìž¬ë£Œë“¤ì€ ë‚´ê°€ ìž˜ ì‚¬ìš©í•˜ë„ë¡ í•˜ì§€.");
 			if(@pos == 0) end;
 COS005:
-			set @pos, dialog(0, 1, 1, "±×·³ È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀÇ Àç·á¸¦ ¾Ë·ÁÁÖ°Ú³×. ºñµÑ±â°í±â,ÀÎ»ï,µ¿ÃæÇÏÃÊ,±¸±âÀÚ ÀÌ·¸°Ô ³×°¡ÁöÀÇ Àç·á°¡ ÇÊ¿äÇÏ´Ù³×. ±¸ÇØ¿À¸é ³»°¡ Á÷Á¢ ¿ä¸®ÇØÁÙÅ×´Ï Àç·á¸¦ Ã£¾Æ¿À°Ô.");
+			set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì˜ ìž¬ë£Œë¥¼ ì•Œë ¤ì£¼ê² ë„¤. ë¹„ë‘˜ê¸°ê³ ê¸°,ì¸ì‚¼,ë™ì¶©í•˜ì´ˆ,êµ¬ê¸°ìž ì´ë ‡ê²Œ ë„¤ê°€ì§€ì˜ ìž¬ë£Œê°€ í•„ìš”í•˜ë‹¤ë„¤. êµ¬í•´ì˜¤ë©´ ë‚´ê°€ ì§ì ‘ ìš”ë¦¬í•´ì¤„í…Œë‹ˆ ìž¬ë£Œë¥¼ ì°¾ì•„ì˜¤ê²Œ.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS004;
 COS006:
-			set @pos, dialog(0, 1, 1, "µ¿ÃæÇÏÃÊ¿Í ÀÎ»ïÀº ¾îµð¼­ ±¸ÇÒ ¼ö ÀÖ´ÂÁö ¾Ë°í ÀÖÁö? ºñµÑ±â°í±â¿Í ±¸±âÀÚ´Â ±ÍÇÏ±â ¶§¹®¿¡ ¾Æ¹«°÷¿¡¼­³ª ÆÈÁö´Â ¾Ê°í Áß±¹ ¾îµò°¡ÀÇ ÇªÁÞ°£¿¡¼­ »ì ¼ö ÀÖÀ»°É¼¼.");
+			set @pos, dialog(0, 1, 1, "ë™ì¶©í•˜ì´ˆì™€ ì¸ì‚¼ì€ ì–´ë””ì„œ êµ¬í•  ìˆ˜ ìžˆëŠ”ì§€ ì•Œê³  ìžˆì§€? ë¹„ë‘˜ê¸°ê³ ê¸°ì™€ êµ¬ê¸°ìžëŠ” ê·€í•˜ê¸° ë•Œë¬¸ì— ì•„ë¬´ê³³ì—ì„œë‚˜ íŒ”ì§€ëŠ” ì•Šê³  ì¤‘êµ­ ì–´ë”˜ê°€ì˜ í‘¸ì¤ê°„ì—ì„œ ì‚´ ìˆ˜ ìžˆì„ê±¸ì„¸.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS005;
 
 			set $donuhap, 2;
-			addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖÀÚ. [2/2]";
-			delitem @sd, name2itemid("µ¿ÃæÇÏÃÊ"), 1;
-			delitem @sd, name2itemid("ÀÎ»ï"), 1;
-			message @sd, 3, "µ¿ÃæÇÏÃÊ ÁÖ¾ú½À´Ï´Ù";
-			message @sd, 3, "ÀÎ»ï ÁÖ¾ú½À´Ï´Ù";
+			addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ìž. [2/2]";
+			delitem @sd, name2itemid("ë™ì¶©í•˜ì´ˆ"), 1;
+			delitem @sd, name2itemid("ì¸ì‚¼"), 1;
+			message @sd, 3, "ë™ì¶©í•˜ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			message @sd, 3, "ì¸ì‚¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 			end;
 		}
 		if($donuhap == 2)
 		{
-			if(countitem(name2itemid("µ¿ÃæÇÏÃÊ")) == 0 || countitem(name2itemid("ÀÎ»ï")) == 0 || countitem(name2itemid("ºñµÑ±â°í±â")) == 0 || countitem(name2itemid("±¸±âÀÚ")) == 0)
+			if(countitem(name2itemid("ë™ì¶©í•˜ì´ˆ")) == 0 || countitem(name2itemid("ì¸ì‚¼")) == 0 || countitem(name2itemid("ë¹„ë‘˜ê¸°ê³ ê¸°")) == 0 || countitem(name2itemid("êµ¬ê¸°ìž")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "¾ÆÁ÷ Àç·á¸¦ ´Ù ±¸ÇÏÁö ¸øÇß±º. Àç·á´Â µ¿ÃæÇÏÃÊ,ÀÎ»ï,ºñµÑ±â°í±â,±¸±âÀÚ¸¦ ±¸ÇØ¿À°Ô.");
+				set @pos, dialog(0, 0, 0, "ì•„ì§ ìž¬ë£Œë¥¼ ë‹¤ êµ¬í•˜ì§€ ëª»í–ˆêµ°. ìž¬ë£ŒëŠ” ë™ì¶©í•˜ì´ˆ,ì¸ì‚¼,ë¹„ë‘˜ê¸°ê³ ê¸°,êµ¬ê¸°ìžë¥¼ êµ¬í•´ì˜¤ê²Œ.");
 				end;
 			}
 COS007:
-			set @pos, dialog(0, 0, 1, "Àç·á¸¦ ´Ù ±¸ÇØ¿Ô±º. ³»°¡ Á÷Á¢ ¿ä¸®ÇØÁÖ°Ú³×.");
+			set @pos, dialog(0, 0, 1, "ìž¬ë£Œë¥¼ ë‹¤ êµ¬í•´ì™”êµ°. ë‚´ê°€ ì§ì ‘ ìš”ë¦¬í•´ì£¼ê² ë„¤.");
 			if(@pos == 0) end;
 COS008:
-			set @pos, dialog(0, 1, 1, "ÀÚ~ ´ÙµÆ³×. ±ÍÈ¯ À½½ÄÀÌ´Ï ÁÁÀº °÷¿¡ ¾²µµ·Ï ÇÏ°Ô.");
+			set @pos, dialog(0, 1, 1, "ìž~ ë‹¤ëë„¤. ê·€í™˜ ìŒì‹ì´ë‹ˆ ì¢‹ì€ ê³³ì— ì“°ë„ë¡ í•˜ê²Œ.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS007;
 
 			set $donuhap, 3;
-			delitem @sd, name2itemid("µ¿ÃæÇÏÃÊ"), 1;
-			delitem @sd, name2itemid("ÀÎ»ï"), 1;
-			delitem @sd, name2itemid("ºñµÑ±â°í±â"), 1;
-			delitem @sd, name2itemid("±¸±âÀÚ"), 1;
-			message @sd, 3, "µ¿ÃæÇÏÃÊ ÁÖ¾ú½À´Ï´Ù";
-			message @sd, 3, "ÀÎ»ï ÁÖ¾ú½À´Ï´Ù";
-			message @sd, 3, "ºñµÑ±â°í±â ÁÖ¾ú½À´Ï´Ù";
-			message @sd, 3, "±¸±âÀÚ ÁÖ¾ú½À´Ï´Ù";
-			additem @sd, name2itemid("È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕ"), 1;
-			addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖ¾ú´Ù.";
+			delitem @sd, name2itemid("ë™ì¶©í•˜ì´ˆ"), 1;
+			delitem @sd, name2itemid("ì¸ì‚¼"), 1;
+			delitem @sd, name2itemid("ë¹„ë‘˜ê¸°ê³ ê¸°"), 1;
+			delitem @sd, name2itemid("êµ¬ê¸°ìž"), 1;
+			message @sd, 3, "ë™ì¶©í•˜ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			message @sd, 3, "ì¸ì‚¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			message @sd, 3, "ë¹„ë‘˜ê¸°ê³ ê¸° ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			message @sd, 3, "êµ¬ê¸°ìž ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			additem @sd, name2itemid("í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©"), 1;
+			addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ì—ˆë‹¤.";
 			end;
 		}
 		if($donuhap == 3)
 		{
-			set @pos, dialog(0, 0, 1, "ÈåÀ½..");
+			set @pos, dialog(0, 0, 1, "íìŒ..");
 			end;
 		}
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Ã¿À. Àå¾È¼º¿¡´Â ¹«½¼ÀÏ·Î ¿À¼Ì´Â°¡?");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹œì˜¤. ìž¥ì•ˆì„±ì—ëŠ” ë¬´ìŠ¨ì¼ë¡œ ì˜¤ì…¨ëŠ”ê°€?");
 	}
 }
 
-º¸¾àÀÇ´ÞÀÎ	{
+ë³´ì•½ì˜ë‹¬ì¸	{
 	set @sd, mysd();
 	set @id, myid();
 
@@ -692,26 +692,26 @@ COS008:
 	{
 		if($sick_medical == 0)
 		{
-			set @pos, list2(@list, 0, 0, "¹«½¼ ÀÏÀÎ°¡? ±ÞÇÑ ÀÏÀÌ¶óµµ ÀÖ´Â°¡?", "½ÇÀº ¾ÆÇÂ ¾ÆÀÌ°¡ ÀÖ´Âµ¥...", "¾Æ´Ï¿À, ¾Æ¹« ÀÏµµ ¾Æ´Õ´Ï´Ù.");
+			set @pos, list2(@list, 0, 0, "ë¬´ìŠ¨ ì¼ì¸ê°€? ê¸‰í•œ ì¼ì´ë¼ë„ ìžˆëŠ”ê°€?", "ì‹¤ì€ ì•„í”ˆ ì•„ì´ê°€ ìžˆëŠ”ë°...", "ì•„ë‹ˆì˜¤, ì•„ë¬´ ì¼ë„ ì•„ë‹™ë‹ˆë‹¤.");
 			if(@pos == 1 && @list == 1)
 			{
 COS009:
-				set @pos, dialog(0, 0, 1, "......À½... ²¿¸¶°¡ ±â·ÂÀÌ ¾ø°í ¸»À» Àß ÇÏÁö ¸øÇÑ´Ù... ±×·² ¶§¿¡´Â »ïÀü½Åº¸ÅÁÀÌ Á¦°ÝÀÌÁö.");
+				set @pos, dialog(0, 0, 1, "......ìŒ... ê¼¬ë§ˆê°€ ê¸°ë ¥ì´ ì—†ê³  ë§ì„ ìž˜ í•˜ì§€ ëª»í•œë‹¤... ê·¸ëŸ´ ë•Œì—ëŠ” ì‚¼ì „ì‹ ë³´íƒ•ì´ ì œê²©ì´ì§€.");
 				if(@pos == 0) end;
 COS010:
-				set @pos, dialog(0, 1, 1, "¸¸µå´Â °ÍÀº ½±´Ù³×, ÇÏÁö¸¸ Áö±Ý Àç·á°¡ ´Ù ¶³¾îÁ³±º. ÀÚ³×°¡ Àç·á¸¦ ±¸ÇØ´Ù ÁÖ¸é »ïÀü½Åº¸ÅÁÀ» ¹Ù·Î ¸¸µé¾î ÁÖÁö.");
+				set @pos, dialog(0, 1, 1, "ë§Œë“œëŠ” ê²ƒì€ ì‰½ë‹¤ë„¤, í•˜ì§€ë§Œ ì§€ê¸ˆ ìž¬ë£Œê°€ ë‹¤ ë–¨ì–´ì¡Œêµ°. ìžë„¤ê°€ ìž¬ë£Œë¥¼ êµ¬í•´ë‹¤ ì£¼ë©´ ì‚¼ì „ì‹ ë³´íƒ•ì„ ë°”ë¡œ ë§Œë“¤ì–´ ì£¼ì§€.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS009;
 COS011:
-				set @pos, dialog(0, 1, 1, "»ïÀüº¸½ÅÅÁÀ» ¸¸µé±â À§ÇØ¼­´Â °¨ÃÊ, ³ì¿ë, ±¹±¤ÀÌ ÇÊ¿äÇÏÁö. °¨ÃÊ´Â ±¤µ¿¼º ÇªÁÞ°£¿¡¼­, ³ì¿ëÀº ¾îµðµç ÇªÁÞ°£¿¡¼­ ½±°Ô ±¸ÇÒ ¼ö ÀÖ°í, ±¹±¤Àº ¾îµò°¡ÀÇ ¹Ì±Ã¿¡¼­ ±¸ÇÒ ¼ö ÀÖ´Ù°í ÇÏ³×.");
+				set @pos, dialog(0, 1, 1, "ì‚¼ì „ë³´ì‹ íƒ•ì„ ë§Œë“¤ê¸° ìœ„í•´ì„œëŠ” ê°ì´ˆ, ë…¹ìš©, êµ­ê´‘ì´ í•„ìš”í•˜ì§€. ê°ì´ˆëŠ” ê´‘ë™ì„± í‘¸ì¤ê°„ì—ì„œ, ë…¹ìš©ì€ ì–´ë””ë“  í‘¸ì¤ê°„ì—ì„œ ì‰½ê²Œ êµ¬í•  ìˆ˜ ìžˆê³ , êµ­ê´‘ì€ ì–´ë”˜ê°€ì˜ ë¯¸ê¶ì—ì„œ êµ¬í•  ìˆ˜ ìžˆë‹¤ê³  í•˜ë„¤.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS010;
 
-				set @pos, dialog(0, 1, 1, "Àç·á¸¦ °¡Á®¿À±â¸¸ ÇÏ¸é ¸¸µå´Â °Ç ±Ý¹æÀÌ¶ó³×. ±×·³ Èû ³»°Ô³ª.");
+				set @pos, dialog(0, 1, 1, "ìž¬ë£Œë¥¼ ê°€ì ¸ì˜¤ê¸°ë§Œ í•˜ë©´ ë§Œë“œëŠ” ê±´ ê¸ˆë°©ì´ë¼ë„¤. ê·¸ëŸ¼ íž˜ ë‚´ê²Œë‚˜.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS011;
 
-				addlegend @sd, 36, 7, 0, 1, "»ïÀüº¸½ÅÅÁ Àç·á¸¦ ±¸ÇÏÀÚ.";
+				addlegend @sd, 36, 7, 0, 1, "ì‚¼ì „ë³´ì‹ íƒ• ìž¬ë£Œë¥¼ êµ¬í•˜ìž.";
 				set $sick_medical, 1;
 				end;
 			}
@@ -720,29 +720,29 @@ COS011:
 		}
 		if($sick_medical == 1)
 		{
-			if(countitem(name2itemid("³ì¿ë")) == 0 || countitem(name2itemid("±¹±¤")) == 0 || countitem(name2itemid("°¨ÃÊ")) == 0)
+			if(countitem(name2itemid("ë…¹ìš©")) == 0 || countitem(name2itemid("êµ­ê´‘")) == 0 || countitem(name2itemid("ê°ì´ˆ")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "»ïÀü½Åº¸½ÅÅÁÀ» ¸¸µé±â À§ÇÑ Àç·á°¡ ºÎÁ·ÇÑ °Í °°³×¸¸. ³ì¿ë°ú ±¹±¤ ±×¸®°í °¨ÃÊ°¡ ÀÖ¾î¾ß Á¦ÀÛÀÌ °¡´ÉÇÏÁö.");
+				set @pos, dialog(0, 0, 0, "ì‚¼ì „ì‹ ë³´ì‹ íƒ•ì„ ë§Œë“¤ê¸° ìœ„í•œ ìž¬ë£Œê°€ ë¶€ì¡±í•œ ê²ƒ ê°™ë„¤ë§Œ. ë…¹ìš©ê³¼ êµ­ê´‘ ê·¸ë¦¬ê³  ê°ì´ˆê°€ ìžˆì–´ì•¼ ì œìž‘ì´ ê°€ëŠ¥í•˜ì§€.");
 				end;
 			}
 			else
 			{
 COS012:
-				set @pos, dialog(0, 0, 1, "¸ðµç Àç·á¸¦ °¡Á®¿Ô±º! ¼ö°íÇß³×. ÀÚ, ±×·³ »ïÀü½Åº¸ÅÁÀ» ¸¸µé¾î º¼±î? Àá½Ã¸¸ ±â´Ù¸®°Ô.");
+				set @pos, dialog(0, 0, 1, "ëª¨ë“  ìž¬ë£Œë¥¼ ê°€ì ¸ì™”êµ°! ìˆ˜ê³ í–ˆë„¤. ìž, ê·¸ëŸ¼ ì‚¼ì „ì‹ ë³´íƒ•ì„ ë§Œë“¤ì–´ ë³¼ê¹Œ? ìž ì‹œë§Œ ê¸°ë‹¤ë¦¬ê²Œ.");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "ÀÚ, ÀÚ µÇ¾ú³×. ÀÌ°É ¸ÔÀ¸¸é ±× ¾Öµµ °Ç°­ÇØÁú °Å¾ß. ÇãÇã. ¼ö°íÇß³×.");
+				set @pos, dialog(0, 1, 1, "ìž, ìž ë˜ì—ˆë„¤. ì´ê±¸ ë¨¹ìœ¼ë©´ ê·¸ ì• ë„ ê±´ê°•í•´ì§ˆ ê±°ì•¼. í—ˆí—ˆ. ìˆ˜ê³ í–ˆë„¤.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS012;
 
-				delitem @sd, name2itemid("³ì¿ë"), 1;
-				delitem @sd, name2itemid("±¹±¤"), 1;
-				delitem @sd, name2itemid("°¨ÃÊ"), 1;
-				message @sd, 3, "³ì¿ë ÁÖ¾ú½À´Ï´Ù";
-				message @sd, 3, "±¹±¤ ÁÖ¾ú½À´Ï´Ù";
-				message @sd, 3, "°¨ÃÊ ÁÖ¾ú½À´Ï´Ù";
-				additem @sd, name2itemid("»ïÀü½Åº¸ÅÁ"), 1;
-				addlegend @sd, 36, 7, 0, 1, "»ïÀüº¸½ÅÅÁÀ» ¸¸µé¾ú´Ù.";
+				delitem @sd, name2itemid("ë…¹ìš©"), 1;
+				delitem @sd, name2itemid("êµ­ê´‘"), 1;
+				delitem @sd, name2itemid("ê°ì´ˆ"), 1;
+				message @sd, 3, "ë…¹ìš© ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				message @sd, 3, "êµ­ê´‘ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				message @sd, 3, "ê°ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				additem @sd, name2itemid("ì‚¼ì „ì‹ ë³´íƒ•"), 1;
+				addlegend @sd, 36, 7, 0, 1, "ì‚¼ì „ë³´ì‹ íƒ•ì„ ë§Œë“¤ì—ˆë‹¤.";
 				set $sick_medical, 2;
 				end;
 			}
@@ -755,41 +755,41 @@ COS012:
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "Àå¾È¼º¿£ ¾îÂ¾ÀÏ·Î ¿À¼Ì³ª? º¸¾àÀÌ¶óµµ ÇÑ Ã¤ Áö¾î¸ÔÀ¸·¯ ¿À¼Ì³ª?");
+		set @pos, dialog(0, 0, 1, "ìž¥ì•ˆì„±ì—” ì–´ì©ì¼ë¡œ ì˜¤ì…¨ë‚˜? ë³´ì•½ì´ë¼ë„ í•œ ì±„ ì§€ì–´ë¨¹ìœ¼ëŸ¬ ì˜¤ì…¨ë‚˜?");
 		end;
 	}
 }
 
-º¹°Ç¼ºÅÂÀÚ	{
+ë³µê±´ì„±íƒœìž	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($sell_doll == 0)
 	{
-		if(countitem(name2itemid("Ã»ÀÚ´Ù¶÷ÁãÀÎÇü")) == 0)
+		if(countitem(name2itemid("ì²­ìžë‹¤ëžŒì¥ì¸í˜•")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÈì.. ¾îµð Àç¹ÌÀÖ´Â Àå³­°¨ÀÌ ¾ø³ª..");
+			set @pos, dialog(0, 0, 0, "ì•„í .. ì–´ë”” ìž¬ë¯¸ìžˆëŠ” ìž¥ë‚œê°ì´ ì—†ë‚˜..");
 			end;
 		}
 		else
 		{
-			set @pos, dialog(0, 0, 1, "¾Ñ, ±ÍÇÑ Àå³­°¨À» °¡Áö°í °è½Ã³×¿ä. ±×°Ç... Ã»ÀÚ´Ù¶÷ÁãÀÎÇüÀÌ±º¿ä.");
+			set @pos, dialog(0, 0, 1, "ì•—, ê·€í•œ ìž¥ë‚œê°ì„ ê°€ì§€ê³  ê³„ì‹œë„¤ìš”. ê·¸ê±´... ì²­ìžë‹¤ëžŒì¥ì¸í˜•ì´êµ°ìš”.");
 			if(@pos == 0) end;
 
-			set @list, list1("±×°É Á¦°Ô ÆÄ½ÃÁö ¾Ê°Ú¾î¿ä?", "±×·¡, ÆÈ²²!", "¾Æ´Ï, µÆ¾î.");
+			set @list, list1("ê·¸ê±¸ ì œê²Œ íŒŒì‹œì§€ ì•Šê² ì–´ìš”?", "ê·¸ëž˜, íŒ”ê»˜!", "ì•„ë‹ˆ, ëì–´.");
 			if(@list == 1)
 			{
 COS001:
-				set @pos, dialog(0, 0, 1, "°í¸¿½À´Ï´Ù! À½... ÀÌ°Ç ²Ï ±ÍÇÑ Àå³­°¨ÀÌ´Ï±î 10¸¸Àü¿¡ »ì°Ô¿ä!");
+				set @pos, dialog(0, 0, 1, "ê³ ë§™ìŠµë‹ˆë‹¤! ìŒ... ì´ê±´ ê½¤ ê·€í•œ ìž¥ë‚œê°ì´ë‹ˆê¹Œ 10ë§Œì „ì— ì‚´ê²Œìš”!");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "´Ù¸¥ Àç¹ÌÀÖ´Â Àå³­°¨ÀÌ ÀÖÀ¸¸é Á¦°Ô °¡Á®¿Í ÁÖ¼¼¿ä. Á¦°¡ ´Ù »çµå¸±°Ô¿ä.");
+				set @pos, dialog(0, 1, 1, "ë‹¤ë¥¸ ìž¬ë¯¸ìžˆëŠ” ìž¥ë‚œê°ì´ ìžˆìœ¼ë©´ ì œê²Œ ê°€ì ¸ì™€ ì£¼ì„¸ìš”. ì œê°€ ë‹¤ ì‚¬ë“œë¦´ê²Œìš”.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS001;
 
 				set $sell_doll, 1;
-				delitem @sd, name2itemid("Ã»ÀÚ´Ù¶÷ÁãÀÎÇü"), 1;
-				message @sd, 3, "Ã»ÀÚ´Ù¶÷ÁãÀÎÇü ÁÖ¾ú½À´Ï´Ù";
+				delitem @sd, name2itemid("ì²­ìžë‹¤ëžŒì¥ì¸í˜•"), 1;
+				message @sd, 3, "ì²­ìžë‹¤ëžŒì¥ì¸í˜• ì£¼ì—ˆìŠµë‹ˆë‹¤";
 				set_money @sd, get_money(@sd)+100000;
 				updatestatus @sd, 2;
 			}
@@ -799,61 +799,61 @@ COS001:
 	{
 		if($find_play_object == 0)
 		{
-			set @pos, dialog(0, 0, 1, "¾Æ... ´ëÃ¼ ¾îµð ÀÖÁö? ¾îµð¼­ ÀÒ¾î¹ö·È´õ¶ó? µÚÀûµÚÀû...");
+			set @pos, dialog(0, 0, 1, "ì•„... ëŒ€ì²´ ì–´ë”” ìžˆì§€? ì–´ë””ì„œ ìžƒì–´ë²„ë ¸ë”ë¼? ë’¤ì ë’¤ì ...");
 			if(@pos == 0) end;
 
-			set @pos, list2(@list, 0, 0, "¾î, ´©±¸¼¼¿ä? Á¦°Ô ÇÏ½Ç ¸»¾¸ÀÌ¶óµµ ÀÖ³ª¿ä?", "³­ ±×³É Áö³ª°¡´Â »ç¶÷ÀÎµ¥. ¹» ±×¸® Ã£°í ÀÖ´Ï?", "¾Æ´Ï, ¾Æ¹«°Íµµ ¾Æ´Ï¾ß.");
+			set @pos, list2(@list, 0, 0, "ì–´, ëˆ„êµ¬ì„¸ìš”? ì œê²Œ í•˜ì‹¤ ë§ì”€ì´ë¼ë„ ìžˆë‚˜ìš”?", "ë‚œ ê·¸ëƒ¥ ì§€ë‚˜ê°€ëŠ” ì‚¬ëžŒì¸ë°. ë­˜ ê·¸ë¦¬ ì°¾ê³  ìžˆë‹ˆ?", "ì•„ë‹ˆ, ì•„ë¬´ê²ƒë„ ì•„ë‹ˆì•¼.");
 			if(@pos == 1 && @list == 1)
 			{
-				set @pos, dialog(0, 0, 1, "¾Æ, ÀÒ¾î¹ö¸° Àå³­°¨À» Ã£°í ÀÖ¾î¿ä. ¿©±â º¹°Ç¼º¿¡ °è½Ã´Â °ü¸®°¡ Á¦ ¾Æ¹ö´ÔÀÌ½ÃÁÒ.");
+				set @pos, dialog(0, 0, 1, "ì•„, ìžƒì–´ë²„ë¦° ìž¥ë‚œê°ì„ ì°¾ê³  ìžˆì–´ìš”. ì—¬ê¸° ë³µê±´ì„±ì— ê³„ì‹œëŠ” ê´€ë¦¬ê°€ ì œ ì•„ë²„ë‹˜ì´ì‹œì£ .");
 				if(@pos == 0) end;
 
-				set @pos, list2(@list_2, 0, 0, "±ÍÇÑ Àå³­°¨µéÀÎµ¥, ÀÌ¹ø¿¡ ¶Ç ÀÒ¾î¹ö¸®¸é ¾Æ¹ö´ÔÀÌ ´õ ÀÌ»ó »çÁÖ½ÃÁö ¾Ê°Ú´ë¿ä. ÀÌ¸¦ ¾îÂ¼Áö...", "Àå³­°¨Àº ³»°¡ Ã£¾Æ ÁÙ Å×´Ï ¿©±â¼­ ±â´Ù¸®·Å.", "±×·¡, ¿­½ÉÈ÷ Ã£À¸·Å");
+				set @pos, list2(@list_2, 0, 0, "ê·€í•œ ìž¥ë‚œê°ë“¤ì¸ë°, ì´ë²ˆì— ë˜ ìžƒì–´ë²„ë¦¬ë©´ ì•„ë²„ë‹˜ì´ ë” ì´ìƒ ì‚¬ì£¼ì‹œì§€ ì•Šê² ëŒ€ìš”. ì´ë¥¼ ì–´ì©Œì§€...", "ìž¥ë‚œê°ì€ ë‚´ê°€ ì°¾ì•„ ì¤„ í…Œë‹ˆ ì—¬ê¸°ì„œ ê¸°ë‹¤ë¦¬ë ´.", "ê·¸ëž˜, ì—´ì‹¬ížˆ ì°¾ìœ¼ë ´");
 				if(@pos == 1 && @list_2 == 1)
 				{
 COS002:
-					set @pos, dialog(0, 0, 1, "¾î, Á¤¸»¿ä? °í¸¿½À´Ï´Ù! Ã£¾ÆÁÖ½Ã¸é Àúµµ ¹º°¡ ²À º¸´äÀ» ÇÒ°Ô¿ä.\\n\\nÀÒ¾î¹ö¸° Àå³­°¨Àº »ó¾ÆÁÖ»çÀ§, ¿À»öÆøÁ×, Ã»¿ÁÆØÀÌ¿¹¿ä.");
+					set @pos, dialog(0, 0, 1, "ì–´, ì •ë§ìš”? ê³ ë§™ìŠµë‹ˆë‹¤! ì°¾ì•„ì£¼ì‹œë©´ ì €ë„ ë­”ê°€ ê¼­ ë³´ë‹µì„ í• ê²Œìš”.\\n\\nìžƒì–´ë²„ë¦° ìž¥ë‚œê°ì€ ìƒì•„ì£¼ì‚¬ìœ„, ì˜¤ìƒ‰í­ì£½, ì²­ì˜¥íŒ½ì´ì˜ˆìš”.");
 					if(@pos == 0) end;
 COS003:
-					set @pos, dialog(0, 1, 1, "»ó¾ÆÁÖ»çÀ§´Â ¿©±â º¹°Ç¼º ¾îµò°¡¿¡¼­ ÀÒ¾î¹ö·È°í......\\n\\n¿À»öÆøÁ×Àº »óÇØ ¾îµò°¡¿¡¼­ ÀÒ¾î¹ö·È°í......\\n\\nÃ»¿ÁÆØÀÌ´Â °­¼­¼º¿¡¼­ ÀÒ¾î¹ö·ÈÁÒ.");
+					set @pos, dialog(0, 1, 1, "ìƒì•„ì£¼ì‚¬ìœ„ëŠ” ì—¬ê¸° ë³µê±´ì„± ì–´ë”˜ê°€ì—ì„œ ìžƒì–´ë²„ë ¸ê³ ......\\n\\nì˜¤ìƒ‰í­ì£½ì€ ìƒí•´ ì–´ë”˜ê°€ì—ì„œ ìžƒì–´ë²„ë ¸ê³ ......\\n\\nì²­ì˜¥íŒ½ì´ëŠ” ê°•ì„œì„±ì—ì„œ ìžƒì–´ë²„ë ¸ì£ .");
 					if(@pos == 0) end;
 					else if(@pos == -1) goto COS002;
 
-					set @pos, dialog(0, 1, 1, "±×·³ Àú´Â ¿©±â¼­ ±â´Ù¸±²²¿ä. Àå³­°¨À» Ã£À¸½Ã°Åµç Á¦°Ô ¸»¾¸ÇØ ÁÖ¼¼¿ä.");
+					set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ ì €ëŠ” ì—¬ê¸°ì„œ ê¸°ë‹¤ë¦´ê»˜ìš”. ìž¥ë‚œê°ì„ ì°¾ìœ¼ì‹œê±°ë“  ì œê²Œ ë§ì”€í•´ ì£¼ì„¸ìš”.");
 					if(@pos == 0) end;
 					else if(@pos == -1) goto COS003;
 
 					set $find_play_object, 1;
-					spellaether @sd, name2spellid("ÅÂÀÚÀÇÀå³­°¨"), 180;
-					addlegend @sd, 37, 7, 0, 1, "º¹°Ç¼ºÅÂÀÚÀÇ ÀÒ¾î¹ö¸° Àå³­°¨À» Ã£¾ÆÁÖÀÚ.";
+					spellaether @sd, name2spellid("íƒœìžì˜ìž¥ë‚œê°"), 180;
+					addlegend @sd, 37, 7, 0, 1, "ë³µê±´ì„±íƒœìžì˜ ìžƒì–´ë²„ë¦° ìž¥ë‚œê°ì„ ì°¾ì•„ì£¼ìž.";
 					end;
 				}
 			}
 		}
 		else
 		{
-			if(countitem(name2itemid("»ó¾ÆÁÖ»çÀ§")) == 0 || countitem(name2itemid("¿À»öÆøÁ×")) == 0 || countitem(name2itemid("Ã»¿ÁÆØÀÌ")) == 0)
+			if(countitem(name2itemid("ìƒì•„ì£¼ì‚¬ìœ„")) == 0 || countitem(name2itemid("ì˜¤ìƒ‰í­ì£½")) == 0 || countitem(name2itemid("ì²­ì˜¥íŒ½ì´")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "»ó¾ÆÁÖ»çÀ§´Â º¹°Ç¼º¿¡¼­, ¿À»öÆøÁ×Àº »óÇØ¾îµò°¡¿¡¼­, Ã»¿ÁÆØÀÌ´Â °­¼­¼º¿¡¼­ ÀÒ¾î¹ö·È¾î¿ä.");
+				set @pos, dialog(0, 0, 0, "ìƒì•„ì£¼ì‚¬ìœ„ëŠ” ë³µê±´ì„±ì—ì„œ, ì˜¤ìƒ‰í­ì£½ì€ ìƒí•´ì–´ë”˜ê°€ì—ì„œ, ì²­ì˜¥íŒ½ì´ëŠ” ê°•ì„œì„±ì—ì„œ ìžƒì–´ë²„ë ¸ì–´ìš”.");
 				end;
 			}
 			else
 			{
 COS004:
-				set @pos, dialog(0, 0, 1, "¿ì¿Í! »ó¾ÆÁÖ»çÀ§, ¿À»öÆøÁ×, Ã»¿ÁÆØÀÌ¸¦ ¸ðµÎ Ã£¾Æ ÁÖ¼Ì±º¿ä! ´ë´ÜÇØ¿ä! Á¤¸» °í¸¿½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "ìš°ì™€! ìƒì•„ì£¼ì‚¬ìœ„, ì˜¤ìƒ‰í­ì£½, ì²­ì˜¥íŒ½ì´ë¥¼ ëª¨ë‘ ì°¾ì•„ ì£¼ì…¨êµ°ìš”! ëŒ€ë‹¨í•´ìš”! ì •ë§ ê³ ë§™ìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "Ã£´À¶ó Èûµå¼ÌÁÒ? ÀÌ°Ç ÆÈ°úÅÁÀÌ¶ó´Â ¿ä¸®ÀÎµ¥, ¸Àµµ ÁÁ°í ¾àÀ¸·Îµµ ¾²ÀÌ´Â ¿ì¸® ÀüÅë¿ä¸®¶ø´Ï´Ù. ÇÑ ¹ø µå¼Åº¸¼¼¿ä.");
+				set @pos, dialog(0, 1, 1, "ì°¾ëŠë¼ íž˜ë“œì…¨ì£ ? ì´ê±´ íŒ”ê³¼íƒ•ì´ë¼ëŠ” ìš”ë¦¬ì¸ë°, ë§›ë„ ì¢‹ê³  ì•½ìœ¼ë¡œë„ ì“°ì´ëŠ” ìš°ë¦¬ ì „í†µìš”ë¦¬ëžë‹ˆë‹¤. í•œ ë²ˆ ë“œì…”ë³´ì„¸ìš”.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS004;
 
-				delitem @sd, name2itemid("»ó¾ÆÁÖ»çÀ§"), 1;
-				delitem @sd, name2itemid("¿À»öÆøÁ×"), 1;
-				delitem @sd, name2itemid("Ã»¿ÁÆØÀÌ"), 1;
-				message @sd, 3, "»ó¾ÆÁÖ»çÀ§ ÁÖ¾ú½À´Ï´Ù";
-				message @sd, 3, "¿À»öÆøÁ× ÁÖ¾ú½À´Ï´Ù";
-				message @sd, 3, "Ã»¿ÁÆØÀÌ ÁÖ¾ú½À´Ï´Ù";
-				additem @sd, name2itemid("ÆÈ°úÅÁ"), 10;
+				delitem @sd, name2itemid("ìƒì•„ì£¼ì‚¬ìœ„"), 1;
+				delitem @sd, name2itemid("ì˜¤ìƒ‰í­ì£½"), 1;
+				delitem @sd, name2itemid("ì²­ì˜¥íŒ½ì´"), 1;
+				message @sd, 3, "ìƒì•„ì£¼ì‚¬ìœ„ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				message @sd, 3, "ì˜¤ìƒ‰í­ì£½ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				message @sd, 3, "ì²­ì˜¥íŒ½ì´ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+				additem @sd, name2itemid("íŒ”ê³¼íƒ•"), 10;
 				set $find_play_object, 0;
 				dellegend @sd, 37;
 			}
@@ -861,14 +861,14 @@ COS004:
 	}
 }
 
-Àå¾ÈÈ²Á¦	{
+ìž¥ì•ˆí™©ì œ	{
 	image 0, 498, 0;
 	set @sd, mysd();
 	set @id, myid();
-	set @kingname$, "Àå¾ÈÈ²Á¦";
+	set @kingname$, "ìž¥ì•ˆí™©ì œ";
 	if(get_level(@sd) < 99)
 	{
-		set @pos, dialog(0, 0, 0, "°¨È÷ ¿©±â°¡ ¾îµð¶ó°í!");
+		set @pos, dialog(0, 0, 0, "ê°ížˆ ì—¬ê¸°ê°€ ì–´ë””ë¼ê³ !");
 		end;
 	}
 	else if($quest_100_3 != 1)
@@ -876,14 +876,14 @@ COS004:
 		if(get_level(@sd) >= 56)
 		{
 START0:
-			set @pos, dialog (0, 0, 1, "¹«·ÊÇÏ°Ô ÆóÇÏ²² Á÷Á¢!\ ÆóÇÏ²² ÀüÇÒ ¸»¾¸Àº ³ª¸¦ ÅëÇØ¼­ ÇÏ½Ã¿À!");
+			set @pos, dialog (0, 0, 1, "ë¬´ë¡€í•˜ê²Œ íí•˜ê»˜ ì§ì ‘!\ íí•˜ê»˜ ì „í•  ë§ì”€ì€ ë‚˜ë¥¼ í†µí•´ì„œ í•˜ì‹œì˜¤!");
 			if(@pos == 0) end;
 START1:
-			set @pos, dialog (0, 1, 1, "ÆóÇÏ°Ô ÀÓ¹«¸¦ ¹ÞÀ¸·Á°í ÇÏ½Ã´Â °Ì´Ï±î? ÀÓ¹«¸¦ ¿Ï¼öÇÏ¸é ¸¹Àº °æÇèÄ¡¸¦ ¹ÞÀ¸½Ã°ÚÁö¸¸, ÇÏÁö ¸øÇÏ¸é Çü¹úÀ» ¹Þ°Ô µÈ´Ù¿À!");
+			set @pos, dialog (0, 1, 1, "íí•˜ê²Œ ìž„ë¬´ë¥¼ ë°›ìœ¼ë ¤ê³  í•˜ì‹œëŠ” ê²ë‹ˆê¹Œ? ìž„ë¬´ë¥¼ ì™„ìˆ˜í•˜ë©´ ë§Žì€ ê²½í—˜ì¹˜ë¥¼ ë°›ìœ¼ì‹œê² ì§€ë§Œ, í•˜ì§€ ëª»í•˜ë©´ í˜•ë²Œì„ ë°›ê²Œ ëœë‹¤ì˜¤!");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto START0;
 
-			set @list1, list2(@list, 0, 1, "±×·¡µµ ÀÓ¹«¸¦ ¹ÞÀ¸½Ã·Á¿À?", "³×, ¹Þ°Ú½À´Ï´Ù.", "¹«¼­¿ö¼­ ¾ÈµÇ°Ú¾î¿ä.");
+			set @list1, list2(@list, 0, 1, "ê·¸ëž˜ë„ ìž„ë¬´ë¥¼ ë°›ìœ¼ì‹œë ¤ì˜¤?", "ë„¤, ë°›ê² ìŠµë‹ˆë‹¤.", "ë¬´ì„œì›Œì„œ ì•ˆë˜ê² ì–´ìš”.");
 			if(@list1 == 0) end;
 			else if(@list1 == -1) goto START1;
 
@@ -892,41 +892,41 @@ START1:
 				if(get_joblevel(@sd) < 1)
 				{
 					set @rand_quest, rand(0, 9);
-					if(@rand_quest == 0) { set $quest_100_name_2$, "³ì»ìÄéÀÌ"; set $quest_100_exp_2, 1500000; }
-					else if(@rand_quest == 1) { set $quest_100_name_2$, "Ç¥È²»ìÄéÀÌ"; set $quest_100_exp_2, 2200000; }
-					else if(@rand_quest == 2) { set $quest_100_name_2$, "¿Ü´«È²Ãµ±¸"; set $quest_100_exp_2, 3000000; }
-					else if(@rand_quest == 3) { set $quest_100_name_2$, "¿Ü´«ÀÚÃµ±¸"; set $quest_100_exp_2, 35000000; }
-					else if(@rand_quest == 4) { set $quest_100_name_2$, "ÈæÇ÷ÈÄ"; set $quest_100_exp_2, 4000000; }
-					else if(@rand_quest == 5) { set $quest_100_name_2$, "³ìÇ÷ÈÄ"; set $quest_100_exp_2, 4000000; }
-					else if(@rand_quest == 6) { set $quest_100_name_2$, "Èæ¼±¹®ÈÄ"; set $quest_100_exp_2, 5000000; }
-					else if(@rand_quest == 7) { set $quest_100_name_2$, "ÈíÇ÷°­½Ã"; set $quest_100_exp_2, 5500000; }
-					else if(@rand_quest == 8) { set $quest_100_name_2$, "¾Æ±â°­½Ã"; set $quest_100_exp_2, 4000000; }
-					else if(@rand_quest == 9) { set $quest_100_name_2$, "Èæ¹ß°­½Ã"; set $quest_100_exp_2, 12000000; }
+					if(@rand_quest == 0) { set $quest_100_name_2$, "ë…¹ì‚´ì¾¡ì´"; set $quest_100_exp_2, 1500000; }
+					else if(@rand_quest == 1) { set $quest_100_name_2$, "í‘œí™©ì‚´ì¾¡ì´"; set $quest_100_exp_2, 2200000; }
+					else if(@rand_quest == 2) { set $quest_100_name_2$, "ì™¸ëˆˆí™©ì²œêµ¬"; set $quest_100_exp_2, 3000000; }
+					else if(@rand_quest == 3) { set $quest_100_name_2$, "ì™¸ëˆˆìžì²œêµ¬"; set $quest_100_exp_2, 35000000; }
+					else if(@rand_quest == 4) { set $quest_100_name_2$, "í‘í˜ˆí›„"; set $quest_100_exp_2, 4000000; }
+					else if(@rand_quest == 5) { set $quest_100_name_2$, "ë…¹í˜ˆí›„"; set $quest_100_exp_2, 4000000; }
+					else if(@rand_quest == 6) { set $quest_100_name_2$, "í‘ì„ ë¬¸í›„"; set $quest_100_exp_2, 5000000; }
+					else if(@rand_quest == 7) { set $quest_100_name_2$, "í¡í˜ˆê°•ì‹œ"; set $quest_100_exp_2, 5500000; }
+					else if(@rand_quest == 8) { set $quest_100_name_2$, "ì•„ê¸°ê°•ì‹œ"; set $quest_100_exp_2, 4000000; }
+					else if(@rand_quest == 9) { set $quest_100_name_2$, "í‘ë°œê°•ì‹œ"; set $quest_100_exp_2, 12000000; }
 				}
 				else if(get_joblevel(@sd) >= 1 && get_joblevel(@sd) <= 2)
 				{
 					set @rand_quest, rand(0, 4);
-					if(@rand_quest == 0) { set $quest_100_name_2$, "¼±ºñÆò¹Î"; set $quest_100_exp_2, 20000000; }
-					else if(@rand_quest == 1) { set $quest_100_name_2$, "¼±ºñ°Ë°´"; set $quest_100_exp_2, 25000000; }
-					else if(@rand_quest == 2) { set $quest_100_name_2$, "ÈíÇ÷°­½Ã"; set $quest_100_exp_2, 25000000; }
-					else if(@rand_quest == 3) { set $quest_100_name_2$, "¾Æ±â°­½Ã"; set $quest_100_exp_2, 25000000; }
-					else if(@rand_quest == 4) { set $quest_100_name_2$, "Èæ¹ß°­½Ã"; set $quest_100_exp_2, 25000000; }
+					if(@rand_quest == 0) { set $quest_100_name_2$, "ì„ ë¹„í‰ë¯¼"; set $quest_100_exp_2, 20000000; }
+					else if(@rand_quest == 1) { set $quest_100_name_2$, "ì„ ë¹„ê²€ê°"; set $quest_100_exp_2, 25000000; }
+					else if(@rand_quest == 2) { set $quest_100_name_2$, "í¡í˜ˆê°•ì‹œ"; set $quest_100_exp_2, 25000000; }
+					else if(@rand_quest == 3) { set $quest_100_name_2$, "ì•„ê¸°ê°•ì‹œ"; set $quest_100_exp_2, 25000000; }
+					else if(@rand_quest == 4) { set $quest_100_name_2$, "í‘ë°œê°•ì‹œ"; set $quest_100_exp_2, 25000000; }
 				}
 				else if(get_joblevel(@sd) >= 3)
 				{
 					set @rand_quest, rand(0, 4);
-					if(@rand_quest == 0) { set $quest_100_name_2$, "¼±ºñÆò¹Î"; set $quest_100_exp_2, 20000000; }
-					else if(@rand_quest == 1) { set $quest_100_name_2$, "¼±ºñ°Ë°´"; set $quest_100_exp_2, 25000000; }
-					else if(@rand_quest == 2) { set $quest_100_name_2$, "Èä³ëÆò¹Î"; set $quest_100_exp_2, 90000000; }
-					else if(@rand_quest == 3) { set $quest_100_name_2$, "Èä³ë¹«»ç"; set $quest_100_exp_2, 100000000; }
-					else if(@rand_quest == 4) { set $quest_100_name_2$, "Èä³ëÀü»ç"; set $quest_100_exp_2, 150000000; }
+					if(@rand_quest == 0) { set $quest_100_name_2$, "ì„ ë¹„í‰ë¯¼"; set $quest_100_exp_2, 20000000; }
+					else if(@rand_quest == 1) { set $quest_100_name_2$, "ì„ ë¹„ê²€ê°"; set $quest_100_exp_2, 25000000; }
+					else if(@rand_quest == 2) { set $quest_100_name_2$, "í‰ë…¸í‰ë¯¼"; set $quest_100_exp_2, 90000000; }
+					else if(@rand_quest == 3) { set $quest_100_name_2$, "í‰ë…¸ë¬´ì‚¬"; set $quest_100_exp_2, 100000000; }
+					else if(@rand_quest == 4) { set $quest_100_name_2$, "í‰ë…¸ì „ì‚¬"; set $quest_100_exp_2, 150000000; }
 				}
-				set @pos, dialog (0, 0, 1, "¾î¸íÀÌ¿À! "+ $quest_100_name_2$ +"À» ÀâÀ¸¶ó´Â ÆóÇÏÀÇ ¸»¾¸ÀÌ ÀÖÀ¸¼Ì¼Ò! ÀÓ¹«¸¦ ¼öÇàÇÑ ÈÄ¿¡´Â ½Ã°£À» ÁöÃ¼ÇÏÁö ¸»°í ¹Ù·Î È²±ÃÀ¸·Î µ¹¾Æ¿À½Ã¿À!");
+				set @pos, dialog (0, 0, 1, "ì–´ëª…ì´ì˜¤! "+ $quest_100_name_2$ +"ì„ ìž¡ìœ¼ë¼ëŠ” íí•˜ì˜ ë§ì”€ì´ ìžˆìœ¼ì…¨ì†Œ! ìž„ë¬´ë¥¼ ìˆ˜í–‰í•œ í›„ì—ëŠ” ì‹œê°„ì„ ì§€ì²´í•˜ì§€ ë§ê³  ë°”ë¡œ í™©ê¶ìœ¼ë¡œ ëŒì•„ì˜¤ì‹œì˜¤!");
 				if(@pos == 0) end;
 
 				set $quest_100_3, 1;
 				set $quest_100_count_2, 0;
-				addlegend @sd, 43, 6, 0, 17, @kingname$ + "¿¡°Ô " + $quest_100_name_2$ + "À» Àâ´Â ÀÓ¹«¸¦ ¹ÞÀ½";
+				addlegend @sd, 43, 6, 0, 17, @kingname$ + "ì—ê²Œ " + $quest_100_name_2$ + "ì„ ìž¡ëŠ” ìž„ë¬´ë¥¼ ë°›ìŒ";
 				end;
 			}
 		}
@@ -936,12 +936,12 @@ START1:
 		set @my_exp, get_exp(@sd);
 		if($quest_100_count_2 == 0)
 		{
-			set @pos, dialog(0, 0, 1, "°¨È÷ ÆóÇÏÀÇ ÀÓ¹«¸¦ Ãë¼ÒÇØ´Þ¶ó°í? ÀÌ³ð¿¡°Ô Çü¹úÀ» °¡ÇÏ¶ó! ");
+			set @pos, dialog(0, 0, 1, "ê°ížˆ íí•˜ì˜ ìž„ë¬´ë¥¼ ì·¨ì†Œí•´ë‹¬ë¼ê³ ? ì´ë†ˆì—ê²Œ í˜•ë²Œì„ ê°€í•˜ë¼! ");
 			if(@pos == 0) end;
 
-			if(spellaethered(@sd, name2spellid("¿ÕÀÇÀúÁÖ")) == 0)
+			if(spellaethered(@sd, name2spellid("ì™•ì˜ì €ì£¼")) == 0)
 			{
-				spellaether @sd, name2spellid("¿ÕÀÇÀúÁÖ"), 600;
+				spellaether @sd, name2spellid("ì™•ì˜ì €ì£¼"), 600;
 				set_ac @sd, get_ac(@sd)+40;
 				effect @id, 13;
 				sound @id, 69;
@@ -952,7 +952,7 @@ START1:
 			set $quest_100_count_2, 0;
 			set $quest_100_name_2$, "";
 			set $quest_100_exp_2, 0;
-			set @pos, dialog(0, 0, 0, "ÀÌ Çü¹ú·Î ³ÊÀÇ ÀÓ¹«°¡ Áö¿öÁ³À¸´Ï, ´Ù½Ã ÀÓ¹«¸¦ ¹ÞÀ» ¼ö ÀÖÀ» °ÍÀÌ´Ù.");
+			set @pos, dialog(0, 0, 0, "ì´ í˜•ë²Œë¡œ ë„ˆì˜ ìž„ë¬´ê°€ ì§€ì›Œì¡Œìœ¼ë‹ˆ, ë‹¤ì‹œ ìž„ë¬´ë¥¼ ë°›ì„ ìˆ˜ ìžˆì„ ê²ƒì´ë‹¤.");
 			end;
 		}
 		else
@@ -962,11 +962,11 @@ START1:
 			{ 
 				if(@cal_exp > -1)
 				{
-					set @pos, dialog(0, 0, 0, "°æÇèÄ¡¸¦ ÆÈ°í ¿À°Ô");
+					set @pos, dialog(0, 0, 0, "ê²½í—˜ì¹˜ë¥¼ íŒ”ê³  ì˜¤ê²Œ");
 					end;
 				}
 			}
-			set @pos, dialog(0, 0, 1, "¾î¸íÀ» ¹Þµç °øÀ» ³ôÀÌ »ç½Å ÆóÇÏ²²¼­ ±×´ë¿¡°Ô °æÇèÄ¡ " + ($quest_100_exp_2*#server_exprate) + " À» ÇÏ»çÇÏ½Ê´Ï´Ù.");
+			set @pos, dialog(0, 0, 1, "ì–´ëª…ì„ ë°›ë“  ê³µì„ ë†’ì´ ì‚¬ì‹  íí•˜ê»˜ì„œ ê·¸ëŒ€ì—ê²Œ ê²½í—˜ì¹˜ " + ($quest_100_exp_2*#server_exprate) + " ì„ í•˜ì‚¬í•˜ì‹­ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 
 			dellegend @sd, 43;
@@ -980,320 +980,320 @@ START1:
 	else { end; }
 }
 
-¸¶Å¸	{
+ë§ˆíƒ€	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($myungsukboo != 2)
 	{
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Ê´Ï±î? Àú´Â ¸¶Å¸¶ó°í ÇÕ´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹­ë‹ˆê¹Œ? ì €ëŠ” ë§ˆíƒ€ë¼ê³  í•©ë‹ˆë‹¤.");
 		end;
 	}
 	else
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "À½... ºÎÀûÀÌ ´õ ÇÊ¿äÇÏ´Ù°í¿ä? ¾Ë°Ú½À´Ï´Ù. ¸¶Ä§ ±× ºÎÀûÀÌ Á¶±Ý ³²¾Æ ÀÖÀ¸´Ï µå¸®Áö¿ä.");
+		set @pos, dialog(0, 0, 1, "ìŒ... ë¶€ì ì´ ë” í•„ìš”í•˜ë‹¤ê³ ìš”? ì•Œê² ìŠµë‹ˆë‹¤. ë§ˆì¹¨ ê·¸ ë¶€ì ì´ ì¡°ê¸ˆ ë‚¨ì•„ ìžˆìœ¼ë‹ˆ ë“œë¦¬ì§€ìš”.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "±×³ªÀú³ª Âü Ä£ÀýÇÑ ºÐÀÌ½Ã±º¿ä. »ýÆÇ ¸ð¸£´Â ³²À» À§ÇØ ±× ¸Ó³ª¸Õ ÀÏº»°ú ÀÌ Áß±¹À» ¿Õº¹ÇÏ´Ù´Ï. Åºº¹Çß½À´Ï´Ù.");
+		set @pos, dialog(0, 1, 1, "ê·¸ë‚˜ì €ë‚˜ ì°¸ ì¹œì ˆí•œ ë¶„ì´ì‹œêµ°ìš”. ìƒíŒ ëª¨ë¥´ëŠ” ë‚¨ì„ ìœ„í•´ ê·¸ ë¨¸ë‚˜ë¨¼ ì¼ë³¸ê³¼ ì´ ì¤‘êµ­ì„ ì™•ë³µí•˜ë‹¤ë‹ˆ. íƒ„ë³µí–ˆìŠµë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 
 		set $myungsukboo_check, 1;
-		additem @sd, name2itemid("±Í½ÅÅðÄ¡ºÎÀû"), 5;
-		addlegend @sd, 29, 7, 0, 1, "±Í½ÅÅðÄ¡ºÎÀûÀ» ´õ ¹Þ´Ù.";
+		additem @sd, name2itemid("ê·€ì‹ í‡´ì¹˜ë¶€ì "), 5;
+		addlegend @sd, 29, 7, 0, 1, "ê·€ì‹ í‡´ì¹˜ë¶€ì ì„ ë” ë°›ë‹¤.";
 	}
 }
 
-Á¶¿ÕÀÇµ¿»ý	{
+ì¡°ì™•ì˜ë™ìƒ	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($hwagisamdongchung == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¾Æ.. ÀÌ ±ÙÃ³¿¡ ÀÖ´Ù°í Çß´Âµ¥... ¾îµðÀÖ´Â °ÍÀÏ±î...");
+		set @pos, dialog(0, 0, 1, "ì•„.. ì´ ê·¼ì²˜ì— ìžˆë‹¤ê³  í–ˆëŠ”ë°... ì–´ë””ìžˆëŠ” ê²ƒì¼ê¹Œ...");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "¾Æ, ¹Ý°©³× ³»°¡ Áö±Ý ¹» Á» Ã£°í ÀÖ´À¶ó ¸»ÀÌÁö. ½ÇÀº ¾Æ³»°¡ ¾ÆÀÌ¸¦ °¡Á³´Âµ¥ È­±â»ïµ¿ÃÊµ·À¯ÇÕÀ» ³Ê¹« ¸Ô°í ½Í´Ù°í ÇÏ´Â±¸¸¸.");
+		set @pos, dialog(0, 1, 1, "ì•„, ë°˜ê°‘ë„¤ ë‚´ê°€ ì§€ê¸ˆ ë­˜ ì¢€ ì°¾ê³  ìžˆëŠë¼ ë§ì´ì§€. ì‹¤ì€ ì•„ë‚´ê°€ ì•„ì´ë¥¼ ê°€ì¡ŒëŠ”ë° í™”ê¸°ì‚¼ë™ì´ˆëˆìœ í•©ì„ ë„ˆë¬´ ë¨¹ê³  ì‹¶ë‹¤ê³  í•˜ëŠ”êµ¬ë§Œ.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "±×·¡¼­ ¿©±âÀú±â¼­ ÀüÇØÁö´Â ¿ä¸®¹ýÀ¸·Î ³»°¡ ÇÑ¹ø ¸¸µé¾îº¸·Á°í ÇÏ´Âµ¥ Àç·áÁ¶Â÷ ±¸ÇÏ±â°¡ ¾î·Æ±º.");
+		set @pos, dialog(0, 1, 1, "ê·¸ëž˜ì„œ ì—¬ê¸°ì €ê¸°ì„œ ì „í•´ì§€ëŠ” ìš”ë¦¬ë²•ìœ¼ë¡œ ë‚´ê°€ í•œë²ˆ ë§Œë“¤ì–´ë³´ë ¤ê³  í•˜ëŠ”ë° ìž¬ë£Œì¡°ì°¨ êµ¬í•˜ê¸°ê°€ ì–´ë µêµ°.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 1, "³¯ Á» µµ¿ÍÁÖÁö ¾Ê°Ú´Â°¡?", "¹°·ÐÀÔ´Ï´Ù. ºÎÀÎÀÇ ¸öÁ¶¸®¿¡³ª ½Å°æ¾²½Ê½Ã¿À.", "ÁË¼ÛÇÕ´Ï´Ù¸¸ ±×·±ÀÏ±îÁö ÇÒ ½Ã°£ÀÌ ¾ø±º¿ä.");
+		set @pos, list2(@list, 0, 1, "ë‚  ì¢€ ë„ì™€ì£¼ì§€ ì•Šê² ëŠ”ê°€?", "ë¬¼ë¡ ìž…ë‹ˆë‹¤. ë¶€ì¸ì˜ ëª¸ì¡°ë¦¬ì—ë‚˜ ì‹ ê²½ì“°ì‹­ì‹œì˜¤.", "ì£„ì†¡í•©ë‹ˆë‹¤ë§Œ ê·¸ëŸ°ì¼ê¹Œì§€ í•  ì‹œê°„ì´ ì—†êµ°ìš”.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS003;
 		else if(@list == 1)
 		{
 			set $hwagisamdongchung, 1;
-			addlegend @sd, 31, 7, 0, 1, "Á¶¿ÕÀÇµ¿»ýÀÇ ºÎÅ¹À» µé¾îÁÖÀÚ.";
-			set @pos, dialog(0, 0, 1, "±×·³ ÀÚ³×¸¸ ¹Ï°í ÀÖ°Ú³×. Àå¾È¼ºÀÇ ÇªÁÞ°£¿¡ ±× À½½Ä¿¡ ´ëÇØ Àß ¾Ë°í ÀÖ´Â »ç¶÷ÀÌ ÀÖ´Ù´Â ¾ê±æ µéÀºÀûÀÌ ÀÖ´Âµ¥.. È¤½Ã Âü°í°¡ µÉÁö ¸ð¸£°Ú±º.");
+			addlegend @sd, 31, 7, 0, 1, "ì¡°ì™•ì˜ë™ìƒì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ìž.";
+			set @pos, dialog(0, 0, 1, "ê·¸ëŸ¼ ìžë„¤ë§Œ ë¯¿ê³  ìžˆê² ë„¤. ìž¥ì•ˆì„±ì˜ í‘¸ì¤ê°„ì— ê·¸ ìŒì‹ì— ëŒ€í•´ ìž˜ ì•Œê³  ìžˆëŠ” ì‚¬ëžŒì´ ìžˆë‹¤ëŠ” ì–˜ê¸¸ ë“¤ì€ì ì´ ìžˆëŠ”ë°.. í˜¹ì‹œ ì°¸ê³ ê°€ ë ì§€ ëª¨ë¥´ê² êµ°.");
 			end;
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 0, "±×·¸´Ù¸é ÇÒ ¼ö ¾ø±º¿ä..");
+			set @pos, dialog(0, 0, 0, "ê·¸ë ‡ë‹¤ë©´ í•  ìˆ˜ ì—†êµ°ìš”..");
 			end;
 		}
 	}
 	if($hwagisamdongchung == 1)
 	{
-		if(countitem(name2itemid("È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕ")) == 0)
+		if(countitem(name2itemid("í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©")) == 0)
 		{
 COS005:
-			set @pos, dialog(0, 0, 1, "¾ÆÁ÷ È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀ» ±¸ÇÏÁö ¸øÇÏ¼Ì³ªº¸±º¿ä.");
+			set @pos, dialog(0, 0, 1, "ì•„ì§ í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì„ êµ¬í•˜ì§€ ëª»í•˜ì…¨ë‚˜ë³´êµ°ìš”.");
 			if(@pos == 0) end;
 COS006:
-			set @pos, dialog(0, 1, 1, "Àå¾È¼ºÀÇ ÇªÁÞ°£¿¡ ±× À½½Ä¿¡ ´ëÇØ Àß ¾Ë°í ÀÖ´Â »ç¶÷ÀÌ ÀÖ´Ù³×. Âü°í°¡ µÉÁö ¸ð¸£°Ú±º.");
+			set @pos, dialog(0, 1, 1, "ìž¥ì•ˆì„±ì˜ í‘¸ì¤ê°„ì— ê·¸ ìŒì‹ì— ëŒ€í•´ ìž˜ ì•Œê³  ìžˆëŠ” ì‚¬ëžŒì´ ìžˆë‹¤ë„¤. ì°¸ê³ ê°€ ë ì§€ ëª¨ë¥´ê² êµ°.");
 			if(@pos == -1) goto COS005;
 			end;
 		}
 COS007:
-		set @pos, dialog(0, 0, 1, "¿À! µåµð¾î ±¸ÇØ¿Ô±º! ¼ö°íÇÞ³×. ¾î·Á¿î ºÎÅ¹À» µé¾îÁà¼­ Á¤¸» °í¸¿³×. ÀÌ°Ç ³» ÀÛÀº Á¤¼ºÀÌ´Ï ¹Þ¾ÆÁÖ°Ô.");
+		set @pos, dialog(0, 0, 1, "ì˜¤! ë“œë””ì–´ êµ¬í•´ì™”êµ°! ìˆ˜ê³ í–‡ë„¤. ì–´ë ¤ìš´ ë¶€íƒì„ ë“¤ì–´ì¤˜ì„œ ì •ë§ ê³ ë§™ë„¤. ì´ê±´ ë‚´ ìž‘ì€ ì •ì„±ì´ë‹ˆ ë°›ì•„ì£¼ê²Œ.");
 		if(@pos == 0) end;
 COS008:
-		set @pos, dialog(0, 1, 1, "ÀÌ°É ¸ÔÀ¸¸é ÀÚ³×ÀÇ Ã¼·ÂÀÌ ´õ °­ÇØÁú °É¼¼! ±×·³ °í¸¿³×.. Àß°¡°Ô³ª.");
+		set @pos, dialog(0, 1, 1, "ì´ê±¸ ë¨¹ìœ¼ë©´ ìžë„¤ì˜ ì²´ë ¥ì´ ë” ê°•í•´ì§ˆ ê±¸ì„¸! ê·¸ëŸ¼ ê³ ë§™ë„¤.. ìž˜ê°€ê²Œë‚˜.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS007;
 
 		set $hwagisamdongchung, 2;
-		delitem @sd, name2itemid("È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕ"), 1;
-		message @sd, 3, "È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕ ÁÖ¾ú½À´Ï´Ù";
-		additem @sd, name2itemid("ÀÚ¾ç°­Àå¿ä¸®"), 1;
-		addlegend @sd, 31, 6, 0, 1, "È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀ» ÀüÇØÁÖ¾ú´Ù.";
+		delitem @sd, name2itemid("í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©"), 1;
+		message @sd, 3, "í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•© ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		additem @sd, name2itemid("ìžì–‘ê°•ìž¥ìš”ë¦¬"), 1;
+		addlegend @sd, 31, 6, 0, 1, "í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì„ ì „í•´ì£¼ì—ˆë‹¤.";
 		end;
 	}
 	if($hwagisamdongchung == 2)
 	{
-		set @pos, dialog(0, 0, 1, "Àú¹ø¿£ Á¤¸» °¨»çÇß¼Ò!");
+		set @pos, dialog(0, 0, 1, "ì €ë²ˆì—” ì •ë§ ê°ì‚¬í–ˆì†Œ!");
 		end;
 	}
 }
 
-µ·À¯ÇÕÀÇ´ÞÀÎ	{
+ëˆìœ í•©ì˜ë‹¬ì¸	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($hwagisamdongchung != 1)
 	{
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Ã¿À. Àå¾È¼º¿¡´Â ¹«½¼ÀÏ·Î ¿À¼Ì´Â°¡?");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹œì˜¤. ìž¥ì•ˆì„±ì—ëŠ” ë¬´ìŠ¨ì¼ë¡œ ì˜¤ì…¨ëŠ”ê°€?");
 		end;
 	}
 	if($donuhap == 0)
 	{
 COS001:
-		set @pos, list2(@list, 0, 0, "ÀÚ³×´Â ¿Ö ³¯ Ã£¾Æ¿Ô³ª? ¹«½¼ º¼ÀÏÀÌ¶óµµ?", "È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀÇ ´ÞÀÎÀÌ¶ó ÇÏ¿© Ã£¾Æ¿Ô½À´Ï´Ù.", "¾Æ´Õ´Ï´Ù...Áö³ª°¡´Â ±æÀÔ´Ï´Ù.");
+		set @pos, list2(@list, 0, 0, "ìžë„¤ëŠ” ì™œ ë‚  ì°¾ì•„ì™”ë‚˜? ë¬´ìŠ¨ ë³¼ì¼ì´ë¼ë„?", "í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì˜ ë‹¬ì¸ì´ë¼ í•˜ì—¬ ì°¾ì•„ì™”ìŠµë‹ˆë‹¤.", "ì•„ë‹™ë‹ˆë‹¤...ì§€ë‚˜ê°€ëŠ” ê¸¸ìž…ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@list == 1)
 		{
 COS002:
-			set @pos, dialog(0, 0, 1, "¾ÆÇÏ...±×·±°ÍÀÌ¶ó¸é ³»°¡ µµ¿ÍÁÙ ¼ö ÀÖÁö. ³ªµµ °øÂ¥·Î´Â µµ¿ÍÁÙ¼ö ¾øÀ¸´Ï ³»°¡ ÇÊ¿äÇÑ ¹°°ÇÁ» ±¸ÇØ´ÙÁÖ°Ô. ¾àÀç·Î »ç¿ëÇÒ ÀÎ»ï°ú µ¿ÃæÇÏÃÊ°¡ ±ÞÈ÷ ÇÊ¿äÇÏ°Åµç. ºÎÅ¹ÇÏ³×.");
+			set @pos, dialog(0, 0, 1, "ì•„í•˜...ê·¸ëŸ°ê²ƒì´ë¼ë©´ ë‚´ê°€ ë„ì™€ì¤„ ìˆ˜ ìžˆì§€. ë‚˜ë„ ê³µì§œë¡œëŠ” ë„ì™€ì¤„ìˆ˜ ì—†ìœ¼ë‹ˆ ë‚´ê°€ í•„ìš”í•œ ë¬¼ê±´ì¢€ êµ¬í•´ë‹¤ì£¼ê²Œ. ì•½ìž¬ë¡œ ì‚¬ìš©í•  ì¸ì‚¼ê³¼ ë™ì¶©í•˜ì´ˆê°€ ê¸‰ížˆ í•„ìš”í•˜ê±°ë“ . ë¶€íƒí•˜ë„¤.");
 			if(@pos == 0) end;
 COS003:
-			set @pos, dialog(0, 1, 1, "µ¿ÃæÇÏÃÊ´Â ´ë¹æ¼ºÀÔ±¸¿¡, ÀÎ»ïÀº ±¹°æÁö´ë¸¦ µÚÁ®º¸¸é ³ª¿Ã°É¼¼.");
+			set @pos, dialog(0, 1, 1, "ë™ì¶©í•˜ì´ˆëŠ” ëŒ€ë°©ì„±ìž…êµ¬ì—, ì¸ì‚¼ì€ êµ­ê²½ì§€ëŒ€ë¥¼ ë’¤ì ¸ë³´ë©´ ë‚˜ì˜¬ê±¸ì„¸.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS002;
 
 			set $donuhap, 1;
 
-			addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖÀÚ. [1/2]";
-			spellaether @sd, name2spellid("µ¿ÃæÇÏÃÊÀÎ»ï"), 180;
+			addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ìž. [1/2]";
+			spellaether @sd, name2spellid("ë™ì¶©í•˜ì´ˆì¸ì‚¼"), 180;
 			end;
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 1, "ÇãÇã. ±×·¯½Ã¿À?");
+			set @pos, dialog(0, 0, 1, "í—ˆí—ˆ. ê·¸ëŸ¬ì‹œì˜¤?");
 			end;
 		}
 	}
 	if($donuhap == 1)
 	{
-		if(countitem(name2itemid("µ¿ÃæÇÏÃÊ")) == 0 || countitem(name2itemid("ÀÎ»ï")) == 0)
+		if(countitem(name2itemid("ë™ì¶©í•˜ì´ˆ")) == 0 || countitem(name2itemid("ì¸ì‚¼")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ Àç·á°¡ ºÎÁ·ÇÑ°Í °°¼Ò. µ¿ÃæÇÏÃÊ´Â ´ë¹æ¼ºÀÔ±¸, ÀÎ»ïÀº ±¹°æÁö´ë¸¦ µÚÁ®º¸¸é ³ª¿Ã°É¼¼.");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ìž¬ë£Œê°€ ë¶€ì¡±í•œê²ƒ ê°™ì†Œ. ë™ì¶©í•˜ì´ˆëŠ” ëŒ€ë°©ì„±ìž…êµ¬, ì¸ì‚¼ì€ êµ­ê²½ì§€ëŒ€ë¥¼ ë’¤ì ¸ë³´ë©´ ë‚˜ì˜¬ê±¸ì„¸.");
 			end;
 		}
 COS004:
-		set @pos, dialog(0, 0, 1, "ÇãÇã °í¸¿±¸¸¸. ÀÌ Àç·áµéÀº ³»°¡ Àß »ç¿ëÇÏµµ·Ï ÇÏÁö.");
+		set @pos, dialog(0, 0, 1, "í—ˆí—ˆ ê³ ë§™êµ¬ë§Œ. ì´ ìž¬ë£Œë“¤ì€ ë‚´ê°€ ìž˜ ì‚¬ìš©í•˜ë„ë¡ í•˜ì§€.");
 		if(@pos == 0) end;
 COS005:
-		set @pos, dialog(0, 1, 1, "±×·³ È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕÀÇ Àç·á¸¦ ¾Ë·ÁÁÖ°Ú³×. ºñµÑ±â°í±â,ÀÎ»ï,µ¿ÃæÇÏÃÊ,±¸±âÀÚ ÀÌ·¸°Ô ³×°¡ÁöÀÇ Àç·á°¡ ÇÊ¿äÇÏ´Ù³×. ±¸ÇØ¿À¸é ³»°¡ Á÷Á¢ ¿ä¸®ÇØÁÙÅ×´Ï Àç·á¸¦ Ã£¾Æ¿À°Ô.");
+		set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©ì˜ ìž¬ë£Œë¥¼ ì•Œë ¤ì£¼ê² ë„¤. ë¹„ë‘˜ê¸°ê³ ê¸°,ì¸ì‚¼,ë™ì¶©í•˜ì´ˆ,êµ¬ê¸°ìž ì´ë ‡ê²Œ ë„¤ê°€ì§€ì˜ ìž¬ë£Œê°€ í•„ìš”í•˜ë‹¤ë„¤. êµ¬í•´ì˜¤ë©´ ë‚´ê°€ ì§ì ‘ ìš”ë¦¬í•´ì¤„í…Œë‹ˆ ìž¬ë£Œë¥¼ ì°¾ì•„ì˜¤ê²Œ.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS004;
 COS006:
-		set @pos, dialog(0, 1, 1, "µ¿ÃæÇÏÃÊ¿Í ÀÎ»ïÀº ¾îµð¼­ ±¸ÇÒ ¼ö ÀÖ´ÂÁö ¾Ë°í ÀÖÁö? ºñµÑ±â°í±â¿Í ±¸±âÀÚ´Â ±ÍÇÏ±â ¶§¹®¿¡ ¾Æ¹«°÷¿¡¼­³ª ÆÈÁö´Â ¾Ê°í Áß±¹ ¾îµò°¡ÀÇ ÇªÁÞ°£¿¡¼­ »ì ¼ö ÀÖÀ»°É¼¼.");
+		set @pos, dialog(0, 1, 1, "ë™ì¶©í•˜ì´ˆì™€ ì¸ì‚¼ì€ ì–´ë””ì„œ êµ¬í•  ìˆ˜ ìžˆëŠ”ì§€ ì•Œê³  ìžˆì§€? ë¹„ë‘˜ê¸°ê³ ê¸°ì™€ êµ¬ê¸°ìžëŠ” ê·€í•˜ê¸° ë•Œë¬¸ì— ì•„ë¬´ê³³ì—ì„œë‚˜ íŒ”ì§€ëŠ” ì•Šê³  ì¤‘êµ­ ì–´ë”˜ê°€ì˜ í‘¸ì¤ê°„ì—ì„œ ì‚´ ìˆ˜ ìžˆì„ê±¸ì„¸.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS005;
 
 		set $donuhap, 2;
-		addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖÀÚ. [2/2]";
-		delitem @sd, name2itemid("µ¿ÃæÇÏÃÊ"), 1;
-		delitem @sd, name2itemid("ÀÎ»ï"), 1;
-		message @sd, 3, "µ¿ÃæÇÏÃÊ ÁÖ¾ú½À´Ï´Ù";
-		message @sd, 3, "ÀÎ»ï ÁÖ¾ú½À´Ï´Ù";
+		addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ìž. [2/2]";
+		delitem @sd, name2itemid("ë™ì¶©í•˜ì´ˆ"), 1;
+		delitem @sd, name2itemid("ì¸ì‚¼"), 1;
+		message @sd, 3, "ë™ì¶©í•˜ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		message @sd, 3, "ì¸ì‚¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 		end;
 	}
 	if($donuhap == 2)
 	{
-		if(countitem(name2itemid("µ¿ÃæÇÏÃÊ")) == 0 || countitem(name2itemid("ÀÎ»ï")) == 0 || countitem(name2itemid("ºñµÑ±â°í±â")) == 0 || countitem(name2itemid("±¸±âÀÚ")) == 0)
+		if(countitem(name2itemid("ë™ì¶©í•˜ì´ˆ")) == 0 || countitem(name2itemid("ì¸ì‚¼")) == 0 || countitem(name2itemid("ë¹„ë‘˜ê¸°ê³ ê¸°")) == 0 || countitem(name2itemid("êµ¬ê¸°ìž")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ Àç·á¸¦ ´Ù ±¸ÇÏÁö ¸øÇß±º. Àç·á´Â µ¿ÃæÇÏÃÊ,ÀÎ»ï,ºñµÑ±â°í±â,±¸±âÀÚ¸¦ ±¸ÇØ¿À°Ô.");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ìž¬ë£Œë¥¼ ë‹¤ êµ¬í•˜ì§€ ëª»í–ˆêµ°. ìž¬ë£ŒëŠ” ë™ì¶©í•˜ì´ˆ,ì¸ì‚¼,ë¹„ë‘˜ê¸°ê³ ê¸°,êµ¬ê¸°ìžë¥¼ êµ¬í•´ì˜¤ê²Œ.");
 			end;
 		}
 COS007:
-		set @pos, dialog(0, 0, 1, "Àç·á¸¦ ´Ù ±¸ÇØ¿Ô±º. ³»°¡ Á÷Á¢ ¿ä¸®ÇØÁÖ°Ú³×.");
+		set @pos, dialog(0, 0, 1, "ìž¬ë£Œë¥¼ ë‹¤ êµ¬í•´ì™”êµ°. ë‚´ê°€ ì§ì ‘ ìš”ë¦¬í•´ì£¼ê² ë„¤.");
 		if(@pos == 0) end;
 COS008:
-		set @pos, dialog(0, 1, 1, "ÀÚ~ ´ÙµÆ³×. ±ÍÈ¯ À½½ÄÀÌ´Ï ÁÁÀº °÷¿¡ ¾²µµ·Ï ÇÏ°Ô.");
+		set @pos, dialog(0, 1, 1, "ìž~ ë‹¤ëë„¤. ê·€í™˜ ìŒì‹ì´ë‹ˆ ì¢‹ì€ ê³³ì— ì“°ë„ë¡ í•˜ê²Œ.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS007;
 
 		set $donuhap, 3;
-		delitem @sd, name2itemid("µ¿ÃæÇÏÃÊ"), 1;
-		delitem @sd, name2itemid("ÀÎ»ï"), 1;
-		delitem @sd, name2itemid("ºñµÑ±â°í±â"), 1;
-		delitem @sd, name2itemid("±¸±âÀÚ"), 1;
-		message @sd, 3, "µ¿ÃæÇÏÃÊ ÁÖ¾ú½À´Ï´Ù";
-		message @sd, 3, "ÀÎ»ï ÁÖ¾ú½À´Ï´Ù";
-		message @sd, 3, "ºñµÑ±â°í±â ÁÖ¾ú½À´Ï´Ù";
-		message @sd, 3, "±¸±âÀÚ ÁÖ¾ú½À´Ï´Ù";
-		additem @sd, name2itemid("È­±â»ïµ¿ÃæÃÊµ·À¯ÇÕ"), 1;
-		addlegend @sd, 31, 7, 0, 1, "µ·À¯ÇÕÀÇ´ÞÀÎÀÇ ºÎÅ¹À» µé¾îÁÖ¾ú´Ù.";
+		delitem @sd, name2itemid("ë™ì¶©í•˜ì´ˆ"), 1;
+		delitem @sd, name2itemid("ì¸ì‚¼"), 1;
+		delitem @sd, name2itemid("ë¹„ë‘˜ê¸°ê³ ê¸°"), 1;
+		delitem @sd, name2itemid("êµ¬ê¸°ìž"), 1;
+		message @sd, 3, "ë™ì¶©í•˜ì´ˆ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		message @sd, 3, "ì¸ì‚¼ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		message @sd, 3, "ë¹„ë‘˜ê¸°ê³ ê¸° ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		message @sd, 3, "êµ¬ê¸°ìž ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		additem @sd, name2itemid("í™”ê¸°ì‚¼ë™ì¶©ì´ˆëˆìœ í•©"), 1;
+		addlegend @sd, 31, 7, 0, 1, "ëˆìœ í•©ì˜ë‹¬ì¸ì˜ ë¶€íƒì„ ë“¤ì–´ì£¼ì—ˆë‹¤.";
 		end;
 	}
 	if($donuhap == 3)
 	{
-		set @pos, dialog(0, 0, 1, "ÈåÀ½..");
+		set @pos, dialog(0, 0, 1, "íìŒ..");
 		end;
 	}
 }
 
-Áß±¹°øÁÖ	{
+ì¤‘êµ­ê³µì£¼	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($princess_ring == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "Á¦°¡ °­¿¡¼­ ¹è¸¦ Å¸´Ù°¡ ¹ÝÁö¸¦ ºü¶ß¸®°í ¸»¾Ò¾î¿ä. ±× ¹ÝÁö´Â ¿·³ª¶óÀÇ Á¦ Á¤È¥ÀÚÀÎ ¿ÕÀÚ°¡ ÁØ ¹ÝÁö¶ó ÀÒ¾î¹ö¸®¸é ±× ³ª¶ó¿ÍÀÇ °ü°è±îÁö À§ÇèÇØÁú¼ö ÀÖ¾î¿ä.");
+		set @pos, dialog(0, 0, 1, "ì œê°€ ê°•ì—ì„œ ë°°ë¥¼ íƒ€ë‹¤ê°€ ë°˜ì§€ë¥¼ ë¹ ëœ¨ë¦¬ê³  ë§ì•˜ì–´ìš”. ê·¸ ë°˜ì§€ëŠ” ì˜†ë‚˜ë¼ì˜ ì œ ì •í˜¼ìžì¸ ì™•ìžê°€ ì¤€ ë°˜ì§€ë¼ ìžƒì–´ë²„ë¦¬ë©´ ê·¸ ë‚˜ë¼ì™€ì˜ ê´€ê³„ê¹Œì§€ ìœ„í—˜í•´ì§ˆìˆ˜ ìžˆì–´ìš”.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "Ã£À¸·¯ ¿©·¯ºÐÀÌ µé¾î°¬Áö¸¸ ¾ÆÁ÷µµ ³ª¿À½Å ºÐÀÌ ¾ø³×¿ä. ¾Æ¹«·¡µµ Æò¹üÇÑ °­ÀÌ ¾Æ´Ñ°Å °°¾Æ¿ä.");
+		set @pos, dialog(0, 1, 1, "ì°¾ìœ¼ëŸ¬ ì—¬ëŸ¬ë¶„ì´ ë“¤ì–´ê°”ì§€ë§Œ ì•„ì§ë„ ë‚˜ì˜¤ì‹  ë¶„ì´ ì—†ë„¤ìš”. ì•„ë¬´ëž˜ë„ í‰ë²”í•œ ê°•ì´ ì•„ë‹Œê±° ê°™ì•„ìš”.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, list2(@list, 0, 1, "Á¦¹ß ºÎÅ¹µå·Á¿ä. ¹ÝÁö¸¦ Ã£¾ÆÁÖ¼¼¿ä.", "°ÆÁ¤¸¶¼¼¿ä. Á¦°¡ ²À Ã£¾Æµå¸®ÁÒ.", "Èì. Àü ¹°À» ½È¾îÇØ¼­¿ä. ÁË¼ÛÇÏ³×¿ä.");
+		set @pos, list2(@list, 0, 1, "ì œë°œ ë¶€íƒë“œë ¤ìš”. ë°˜ì§€ë¥¼ ì°¾ì•„ì£¼ì„¸ìš”.", "ê±±ì •ë§ˆì„¸ìš”. ì œê°€ ê¼­ ì°¾ì•„ë“œë¦¬ì£ .", "í . ì „ ë¬¼ì„ ì‹«ì–´í•´ì„œìš”. ì£„ì†¡í•˜ë„¤ìš”.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS002;
 		else if(@list == 1)
 		{
-			set @pos, dialog(0, 0, 1, "Á¤¸» °í¸¶¿ö¿ä. ±×·³ ¹Ï°í ±â´Ù¸®ÁÒ.");
+			set @pos, dialog(0, 0, 1, "ì •ë§ ê³ ë§ˆì›Œìš”. ê·¸ëŸ¼ ë¯¿ê³  ê¸°ë‹¤ë¦¬ì£ .");
 			if(@pos == 0) end;
 
 			set $princess_ring, 1;
-			addlegend @sd, 3, 7, 0, 1, "Áß±¹°øÁÖÀÇ ÀÒ¾î¹ö¸° ¹ÝÁö¸¦ µÇÃ£ÀÚ.";
+			addlegend @sd, 3, 7, 0, 1, "ì¤‘êµ­ê³µì£¼ì˜ ìžƒì–´ë²„ë¦° ë°˜ì§€ë¥¼ ë˜ì°¾ìž.";
 			end;
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 0, "±×·¯½Ã´Ù¸é¾ß.. ÀÌ¸¦ ¾îÂ¾´ã...");
+			set @pos, dialog(0, 0, 0, "ê·¸ëŸ¬ì‹œë‹¤ë©´ì•¼.. ì´ë¥¼ ì–´ì©ë‹´...");
 			end;
 		}
 		else end;
 	}
 	if($princess_ring == 1)
 	{
-		if(countitem(name2itemid("°øÁÖÀÇ¹ÝÁö")) == 0)
+		if(countitem(name2itemid("ê³µì£¼ì˜ë°˜ì§€")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ Á¦ ¹ÝÁö°¡ ¾øÀ¸½Å°Å°°Àºµ¥..");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ì œ ë°˜ì§€ê°€ ì—†ìœ¼ì‹ ê±°ê°™ì€ë°..");
 			end;
 		}
 		
-		set @pos, dialog(0, 0, 1, "Á¤¸» °¨»çÇØ¿ä. Á¤¸»... ÀÌ ÀºÇý´Â ÀØÁö ¸øÇÒ²¨¿¡¿ä. ÀÌ°Ç ¾à¼ÒÇÏÁö¸¸ Á¦°¡ µå¸®´Â ¼±¹°ÀÔ´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì •ë§ ê°ì‚¬í•´ìš”. ì •ë§... ì´ ì€í˜œëŠ” ìžŠì§€ ëª»í• êº¼ì—ìš”. ì´ê±´ ì•½ì†Œí•˜ì§€ë§Œ ì œê°€ ë“œë¦¬ëŠ” ì„ ë¬¼ìž…ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 
 		set $princess_ring, 2;
-		delitem @sd, name2itemid("°øÁÖÀÇ¹ÝÁö"), 1;
-		message @sd, 3, "°øÁÖÀÇ¹ÝÁö ÁÖ¾ú½À´Ï´Ù";
-		additem @sd, name2itemid("Ã»¿Á¹ÝÁö"), 1;
-		addlegend @sd, 3, 7, 0, 1, "ÀÒ¾î¹ö¸° °øÁÖÀÇ ¹ÝÁö¸¦ µÇÃ£¾Æ ÁÖ´Ù.";
+		delitem @sd, name2itemid("ê³µì£¼ì˜ë°˜ì§€"), 1;
+		message @sd, 3, "ê³µì£¼ì˜ë°˜ì§€ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		additem @sd, name2itemid("ì²­ì˜¥ë°˜ì§€"), 1;
+		addlegend @sd, 3, 7, 0, 1, "ìžƒì–´ë²„ë¦° ê³µì£¼ì˜ ë°˜ì§€ë¥¼ ë˜ì°¾ì•„ ì£¼ë‹¤.";
 		end;
 	}
 	if($princess_ring == 2)
 	{
-		set @pos, dialog(0, 0, 1, "Àú¹ø¿£ Á¤¸»·Î °¨»çÇß½À´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì €ë²ˆì—” ì •ë§ë¡œ ê°ì‚¬í–ˆìŠµë‹ˆë‹¤.");
 		end;
 	}
 }
 
-¼Ò¸²»ç½Â·Á	{
+ì†Œë¦¼ì‚¬ìŠ¹ë ¤	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($handmagic <= 0 || $hangmagic >= 3)
 	{
-		set @pos, dialog(0, 0, 1, "³ª¹«¾ÆºñÅ¸ºÒ..");
+		set @pos, dialog(0, 0, 1, "ë‚˜ë¬´ì•„ë¹„íƒ€ë¶ˆ..");
 		end;
 	}
 	if($handmagic == 1)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¾È³çÇÏ½Ê´Ï±î. ÀÌ·± °÷¿¡¼­ ÀÌ±¹ÀÇ ÇàÀÎÀ» ¸¸³ª°Ô µÇ´Ù´Ï, ÀÌ°Íµµ ´Ù ÀÎ¿¬ÀÌ°ÚÁö¿ä.");
+		set @pos, dialog(0, 0, 1, "ì•ˆë…•í•˜ì‹­ë‹ˆê¹Œ. ì´ëŸ° ê³³ì—ì„œ ì´êµ­ì˜ í–‰ì¸ì„ ë§Œë‚˜ê²Œ ë˜ë‹¤ë‹ˆ, ì´ê²ƒë„ ë‹¤ ì¸ì—°ì´ê² ì§€ìš”.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, list2(@list, 0, 0, "Àú¿¡°Ô ¹«½¼ º¼ÀÏÀÌ¶óµµ ÀÖÀ¸½Å°ÇÁö¿ä?", "¼Ò¸²»çÀÇ Àý±â¸¦ Àü¼öÇØÁÖ½Ê½Ã¿À.", "½º´ÔÀ» º¸´Ï ¹Ý°¡¿ö¼­ ±×¸¸..");
+		set @pos, list2(@list, 0, 0, "ì €ì—ê²Œ ë¬´ìŠ¨ ë³¼ì¼ì´ë¼ë„ ìžˆìœ¼ì‹ ê±´ì§€ìš”?", "ì†Œë¦¼ì‚¬ì˜ ì ˆê¸°ë¥¼ ì „ìˆ˜í•´ì£¼ì‹­ì‹œì˜¤.", "ìŠ¤ë‹˜ì„ ë³´ë‹ˆ ë°˜ê°€ì›Œì„œ ê·¸ë§Œ..");
 		if(@pos == 0) end;
 		else if(@list == 1)
 		{
 COS003:
-			set @pos, dialog(0, 0, 1, "Á¦°¡ ¼Ò¸²»ç¿¡¼­ ¿Â°Ç ¾î¶»°Ô ¾Æ¼Ì½À´Ï±î. ÀúÈñ ¼Ò¸²»çÀÇ Àý±âµéÀº ¿ø·¡ °æ³»¿¡¼­¸¸ ¼ö·ÃÇÏ´Â °ÍÀ¸·Î, Àü¼ö¹Þ±â À§ÇØ¼­´Â ÀÔ¹®À» ÇÏ¼Å¾ß ÇÕ´Ï´Ù.");
+			set @pos, dialog(0, 0, 1, "ì œê°€ ì†Œë¦¼ì‚¬ì—ì„œ ì˜¨ê±´ ì–´ë–»ê²Œ ì•„ì…¨ìŠµë‹ˆê¹Œ. ì €í¬ ì†Œë¦¼ì‚¬ì˜ ì ˆê¸°ë“¤ì€ ì›ëž˜ ê²½ë‚´ì—ì„œë§Œ ìˆ˜ë ¨í•˜ëŠ” ê²ƒìœ¼ë¡œ, ì „ìˆ˜ë°›ê¸° ìœ„í•´ì„œëŠ” ìž…ë¬¸ì„ í•˜ì…”ì•¼ í•©ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 COS004:
-			set @pos, dialog(0, 1, 1, "±×·¸Áö¸¸, ÀÔ¹®À» ÇÏ±â À§ÇØ¼± ¼Ò¸²»ç±îÁö °¡¾ßÇÏ°í, Àú´Â Áö±Ý °í±¸·Á¿¡ ºñ´ÜÀ» »ç·¯ °¡´Â ±æÀÌ¶ó ´Ù½Ã µ¹¾Æ°¡·Á¸é ¸î´ÞÀº °É¸± °ÍÀÔ´Ï´Ù.");
+			set @pos, dialog(0, 1, 1, "ê·¸ë ‡ì§€ë§Œ, ìž…ë¬¸ì„ í•˜ê¸° ìœ„í•´ì„  ì†Œë¦¼ì‚¬ê¹Œì§€ ê°€ì•¼í•˜ê³ , ì €ëŠ” ì§€ê¸ˆ ê³ êµ¬ë ¤ì— ë¹„ë‹¨ì„ ì‚¬ëŸ¬ ê°€ëŠ” ê¸¸ì´ë¼ ë‹¤ì‹œ ëŒì•„ê°€ë ¤ë©´ ëª‡ë‹¬ì€ ê±¸ë¦´ ê²ƒìž…ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS003;
 COS005:
-			set @pos, dialog(0, 1, 1, "¾Æ.. °í±¸·ÁÀÇ ¹«µµ°¡¿¡°Ô¼­ ±×·± ºÎÅ¹À» ¹ÞÀ¸¼Ì½À´Ï±î. ÇÏÁö¸¸ ¸»¾¸µå¸°´ë·Î Àý±âÀÇ Àü¼ö´Â ºÒµµ¿¡ ÀÔ¹®ÇÑ ºÐ¿¡°Ô¸¸ °¡´ÉÇÕ´Ï´Ù.");
+			set @pos, dialog(0, 1, 1, "ì•„.. ê³ êµ¬ë ¤ì˜ ë¬´ë„ê°€ì—ê²Œì„œ ê·¸ëŸ° ë¶€íƒì„ ë°›ìœ¼ì…¨ìŠµë‹ˆê¹Œ. í•˜ì§€ë§Œ ë§ì”€ë“œë¦°ëŒ€ë¡œ ì ˆê¸°ì˜ ì „ìˆ˜ëŠ” ë¶ˆë„ì— ìž…ë¬¸í•œ ë¶„ì—ê²Œë§Œ ê°€ëŠ¥í•©ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS004;
 COS006:
-			set @pos, list2(@list_2, 0, 0, "ºÒµµ¿¡ ÀÔ¹®ÇÏ½Ã°Ú½À´Ï±î?", "³×, ÀÔ¹®ÇÏ°Ú½À´Ï´Ù.", "¾Æ´Ï¿À, ±×°ÇÁ»...");
+			set @pos, list2(@list_2, 0, 0, "ë¶ˆë„ì— ìž…ë¬¸í•˜ì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤, ìž…ë¬¸í•˜ê² ìŠµë‹ˆë‹¤.", "ì•„ë‹ˆì˜¤, ê·¸ê±´ì¢€...");
 			if(@pos == 0) end;
 			else if(@list_2 == 1)
 			{
 COS007:
-				set @pos, dialog(0, 0, 1, "Áø½ÉÀÌ½Ê´Ï±î? ±×·³ Á¦°¡ °í±¸·Á¿¡ ´Ù³à¿Ã¶§±îÁö ±â´Ù·ÁÁÖ½Ã°ÚÁÒ? ±× ÀÌÈÄ·Î ¼Ò¸²»ç·Î µ¹¾Æ°¡¼­ ¸î³â°£ ¼Ó¼¼¿Í ÀÎ¿¬À» ²÷°í ¼ö·ÃÀ» °è¼Ó ÇÏ½Ê½Ã´Ù.");
+				set @pos, dialog(0, 0, 1, "ì§„ì‹¬ì´ì‹­ë‹ˆê¹Œ? ê·¸ëŸ¼ ì œê°€ ê³ êµ¬ë ¤ì— ë‹¤ë…€ì˜¬ë•Œê¹Œì§€ ê¸°ë‹¤ë ¤ì£¼ì‹œê² ì£ ? ê·¸ ì´í›„ë¡œ ì†Œë¦¼ì‚¬ë¡œ ëŒì•„ê°€ì„œ ëª‡ë…„ê°„ ì†ì„¸ì™€ ì¸ì—°ì„ ëŠê³  ìˆ˜ë ¨ì„ ê³„ì† í•˜ì‹­ì‹œë‹¤.");
 				if(@pos == 0) end;
 COS008:
-				set @pos, dialog(0, 1, 1, "³×? ±×·±°ÇÁö´Â ¸ô¶ú´Ù±¸¿ä? ÀÌ·±ÀÌ·±.. ±×·± ¸¶À½À¸·Ð ºÒµµ¿¡ ÀÔ¹®ÇÏ½Ã±â Èûµå½Ã°Ú½À´Ï´Ù.");
+				set @pos, dialog(0, 1, 1, "ë„¤? ê·¸ëŸ°ê±´ì§€ëŠ” ëª°ëžë‹¤êµ¬ìš”? ì´ëŸ°ì´ëŸ°.. ê·¸ëŸ° ë§ˆìŒìœ¼ë¡  ë¶ˆë„ì— ìž…ë¬¸í•˜ì‹œê¸° íž˜ë“œì‹œê² ìŠµë‹ˆë‹¤.");
 				if(@pos == -1) goto COS007;
 				end;
 			}
 			else if(@list_2 == 2)
 			{
 COS009:
-				set @pos, dialog(0, 0, 1, "½±°Ô °áÁ¤ÇÒ ¼ö ÀÖ´Â ¹®Á¦°¡ ¾Æ´ÏÁö¿ä.");
+				set @pos, dialog(0, 0, 1, "ì‰½ê²Œ ê²°ì •í•  ìˆ˜ ìžˆëŠ” ë¬¸ì œê°€ ì•„ë‹ˆì§€ìš”.");
 				if(@pos == 0) end;
 COS010:
-				set @pos, dialog(0, 1, 1, "¾Æ, Àú¿¡°Ô ÁÁÀº »ý°¢ÀÌ ³µ´Âµ¥, °í±¸·ÁºÐÀÌ½Ã´Ï, °í±¸·Á Áö¸®¿¡ ÀÍ¼÷ÇÏ½Ã°ÚÁÒ? ±¹³»¼ºÆ÷¸ñ»ó¿¡¼­ ºñ´ÜÀ» ÇÑÇÊ »ç´ÙÁÖ½Ã¸é.. Á¦°¡ °£´ÜÇÑ ±â¼úÀÌ³ª¸¶ ¾Ë·Áµå¸± ¼ö ÀÖÀ» °Í °°Àºµ¥¿ä..");
+				set @pos, dialog(0, 1, 1, "ì•„, ì €ì—ê²Œ ì¢‹ì€ ìƒê°ì´ ë‚¬ëŠ”ë°, ê³ êµ¬ë ¤ë¶„ì´ì‹œë‹ˆ, ê³ êµ¬ë ¤ ì§€ë¦¬ì— ìµìˆ™í•˜ì‹œê² ì£ ? êµ­ë‚´ì„±í¬ëª©ìƒì—ì„œ ë¹„ë‹¨ì„ í•œí•„ ì‚¬ë‹¤ì£¼ì‹œë©´.. ì œê°€ ê°„ë‹¨í•œ ê¸°ìˆ ì´ë‚˜ë§ˆ ì•Œë ¤ë“œë¦´ ìˆ˜ ìžˆì„ ê²ƒ ê°™ì€ë°ìš”..");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS009;
 COS011:
-				set @pos, list2(@list_3, 0, 0, "ºñ´ÜÀ» ±¸ÇØÁÖ½Ç ¼ö ÀÖÀ¸½Ã°Ú½À´Ï±î?", "³×, ºñ´ÜÀ» ±¸ÇØµå¸®°Ú½À´Ï´Ù.", "Áö±ÝÀº °í±¸·Á·Î µ¹¾Æ°¡±â°¡ Á» °ï¶õÇØ¼­...");
+				set @pos, list2(@list_3, 0, 0, "ë¹„ë‹¨ì„ êµ¬í•´ì£¼ì‹¤ ìˆ˜ ìžˆìœ¼ì‹œê² ìŠµë‹ˆê¹Œ?", "ë„¤, ë¹„ë‹¨ì„ êµ¬í•´ë“œë¦¬ê² ìŠµë‹ˆë‹¤.", "ì§€ê¸ˆì€ ê³ êµ¬ë ¤ë¡œ ëŒì•„ê°€ê¸°ê°€ ì¢€ ê³¤ëž€í•´ì„œ...");
 				if(@pos == 0) end;
 				else if(@list_3 == 1)
 				{
 					set $handmagic, 2;
-					addlegend @sd, 26, 7, 0, 1, "¼Ò¸²»ç½Â·Á¿¡°Ô ºñ´ÜÀ» °¡Á®´ÙÁÖÀÚ.";
-					set @pos, dialog(0, 0, 1, "³× °¨»çÇÕ´Ï´Ù. ÀÌÁ¤µµ´Â ÁÖÁö½º´Ô²²¼­µµ ÀÌÇØÇØ ÁÖ½Ã°ÚÁö¿ä..\\n\\n±×·³ ¹«»çÈ÷ ´Ù³à¿À½Ã±æ.. ³ª¹«¾Æ¹ÌÅ¸ºÒ..");
+					addlegend @sd, 26, 7, 0, 1, "ì†Œë¦¼ì‚¬ìŠ¹ë ¤ì—ê²Œ ë¹„ë‹¨ì„ ê°€ì ¸ë‹¤ì£¼ìž.";
+					set @pos, dialog(0, 0, 1, "ë„¤ ê°ì‚¬í•©ë‹ˆë‹¤. ì´ì •ë„ëŠ” ì£¼ì§€ìŠ¤ë‹˜ê»˜ì„œë„ ì´í•´í•´ ì£¼ì‹œê² ì§€ìš”..\\n\\nê·¸ëŸ¼ ë¬´ì‚¬ížˆ ë‹¤ë…€ì˜¤ì‹œê¸¸.. ë‚˜ë¬´ì•„ë¯¸íƒ€ë¶ˆ..");
 					end;
 				}
 				else if(@list_3 == 2)
 				{
-					set @pos, dialog(0, 0, 1, "±×·¯½Ã±º¿ä.. ±×°Å ¾Æ½±°Ô ‰ç³×¿ä.");
+					set @pos, dialog(0, 0, 1, "ê·¸ëŸ¬ì‹œêµ°ìš”.. ê·¸ê±° ì•„ì‰½ê²Œ ë¬ë„¤ìš”.");
 					end;
 				}
 				else end;
@@ -1302,219 +1302,219 @@ COS011:
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 1, "±×·±°¡¿ä?");
+			set @pos, dialog(0, 0, 1, "ê·¸ëŸ°ê°€ìš”?");
 			end;
 		}
 		else end;
 	}
 	if($handmagic == 2)
 	{
-		if(countitem(name2itemid("°í±¸·Áºñ´Ü")) == 0)
+		if(countitem(name2itemid("ê³ êµ¬ë ¤ë¹„ë‹¨")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ °í±¸·Áºñ´ÜÀ» ¸ø »ç¿À½Å°Í °°±º¿ä.");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ê³ êµ¬ë ¤ë¹„ë‹¨ì„ ëª» ì‚¬ì˜¤ì‹ ê²ƒ ê°™êµ°ìš”.");
 			end;
 		}
 		else
 		{
 COS012:
-			set @pos, dialog(0, 0, 1, "ºñ´ÜÀ» °¡Á®¿À¼Ì±º¿ä. °¨»çÇÕ´Ï´Ù.\\n\\n±×·³ ±â¼úÀ» °¡¸£ÃÄµå¸®°Ú½À´Ï´Ù.");
+			set @pos, dialog(0, 0, 1, "ë¹„ë‹¨ì„ ê°€ì ¸ì˜¤ì…¨êµ°ìš”. ê°ì‚¬í•©ë‹ˆë‹¤.\\n\\nê·¸ëŸ¼ ê¸°ìˆ ì„ ê°€ë¥´ì³ë“œë¦¬ê² ìŠµë‹ˆë‹¤.");
 			if(@pos == 0) end;
 COS013:
-			set @pos, dialog(0, 1, 1, "ÀÌ°ÍÀº ¹é¿­ÀåÀÌ¶ó°í ÇÏ´Â ¼öµµÀÇ ¹ßÀüÇü ±â¼ú·Î, °­·ÂÇÑ ÆÄ±«·ÂÀ» °¡Áö°í ÀÖ½À´Ï´Ù.\\n\\n´Ù¸¸ Áö±ÝÀº ±â¼úÀ» ¾Ë¾ÒÀ»»Ó, ¼ö·ÃÀ» ÇÏÁö ¸øÇÏ¼ÌÀ¸´Ï ½ÇÀü¿¡¼­ »ç¿ëÇÏ½Ã±ä Èûµé°Ì´Ï´Ù.");
+			set @pos, dialog(0, 1, 1, "ì´ê²ƒì€ ë°±ì—´ìž¥ì´ë¼ê³  í•˜ëŠ” ìˆ˜ë„ì˜ ë°œì „í˜• ê¸°ìˆ ë¡œ, ê°•ë ¥í•œ íŒŒê´´ë ¥ì„ ê°€ì§€ê³  ìžˆìŠµë‹ˆë‹¤.\\n\\në‹¤ë§Œ ì§€ê¸ˆì€ ê¸°ìˆ ì„ ì•Œì•˜ì„ë¿, ìˆ˜ë ¨ì„ í•˜ì§€ ëª»í•˜ì…¨ìœ¼ë‹ˆ ì‹¤ì „ì—ì„œ ì‚¬ìš©í•˜ì‹œê¸´ íž˜ë“¤ê²ë‹ˆë‹¤.");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS012;
 COS014:
-			set @pos, dialog(0, 1, 1, "±×·³ ¶Ç ÀÎ¿¬ÀÌ ´êÀ¸¸é ¸¸³ª°ÚÁö¿ä. »ìÆì°¡½Ê½Ã¿À. ³ª¹«¾Æ¹ÌÅ¸ºÒ..");
+			set @pos, dialog(0, 1, 1, "ê·¸ëŸ¼ ë˜ ì¸ì—°ì´ ë‹¿ìœ¼ë©´ ë§Œë‚˜ê² ì§€ìš”. ì‚´íŽ´ê°€ì‹­ì‹œì˜¤. ë‚˜ë¬´ì•„ë¯¸íƒ€ë¶ˆ..");
 			if(@pos == 0) end;
 			else if(@pos == -1) goto COS013;
 
 			set $handmagic, 3;
-			addlegend @sd, 26, 7, 0, 1, "¼Ò¸²»çÀÇ ºñ±â¸¦ ¹è¿ü´Ù.";
-			delitem @sd, name2itemid("°í±¸·Áºñ´Ü"), 1;
-			message @sd, 3, "°í±¸·Áºñ´Ü ÁÖ¾ú½À´Ï´Ù";
-			if(checkspell(name2spellid("¹é¿­Àå")) == 52)
+			addlegend @sd, 26, 7, 0, 1, "ì†Œë¦¼ì‚¬ì˜ ë¹„ê¸°ë¥¼ ë°°ì› ë‹¤.";
+			delitem @sd, name2itemid("ê³ êµ¬ë ¤ë¹„ë‹¨"), 1;
+			message @sd, 3, "ê³ êµ¬ë ¤ë¹„ë‹¨ ì£¼ì—ˆìŠµë‹ˆë‹¤";
+			if(checkspell(name2spellid("ë°±ì—´ìž¥")) == 52)
 			{
-				addspell name2spellid("¹é¿­Àå");
+				addspell name2spellid("ë°±ì—´ìž¥");
 			}
 			end;
 		}
 	}
 }
 
-»ê¼Ò¼ÒÅÁº´»ç	{
+ì‚°ì†Œì†Œíƒ•ë³‘ì‚¬	{
 	set @rand, rand(1, 3);
 	if(@rand == 1)
 	{
-		set @pos, dialog(0, 0, 1, "¿©±ä ¾îÂ¾ÀÏÀÌ¿ä?");
+		set @pos, dialog(0, 0, 1, "ì—¬ê¸´ ì–´ì©ì¼ì´ìš”?");
 	}
 	else if(@rand == 2)
 	{
-		set @pos, dialog(0, 0, 1, "¿ì¸®¿Í °°ÀÌ »ê¼Ò¼ÒÅÁÀ» ÇÏ·¯ ¿À½Å°Ç°¡?");
+		set @pos, dialog(0, 0, 1, "ìš°ë¦¬ì™€ ê°™ì´ ì‚°ì†Œì†Œíƒ•ì„ í•˜ëŸ¬ ì˜¤ì‹ ê±´ê°€?");
 	}
 	else
 	{
-		set @pos, dialog(0, 0, 1, "¿¡Çð.. ³»°¡ »ê¼ÒµéÀ» ¸ù¶¥ ¼ÒÅÁÇØÁÖÁö!");
+		set @pos, dialog(0, 0, 1, "ì—í—´.. ë‚´ê°€ ì‚°ì†Œë“¤ì„ ëª½ë•… ì†Œíƒ•í•´ì£¼ì§€!");
 	}
 }
 
-»ê¼Ò¼ÒÅÁ´ëÀå	{
+ì‚°ì†Œì†Œíƒ•ëŒ€ìž¥	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($oxygen_clear == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¿ÜºÎ¿¡¼­ ¿À½ÅºÐÀÌ½Ê´Ï±î? ³²°æ Áö¿ªÀ» Áö³ª½Ç¶§ Á¶½ÉÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì™¸ë¶€ì—ì„œ ì˜¤ì‹ ë¶„ì´ì‹­ë‹ˆê¹Œ? ë‚¨ê²½ ì§€ì—­ì„ ì§€ë‚˜ì‹¤ë•Œ ì¡°ì‹¬í•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "ÇöÀç »ê¼Ò¶ó´Â ¿ä±« ¶§¹®¿¡ ¹é¼ºµéÀÌ ÇÇÇØ°¡ ÀÌ¸¸Àú¸¸ÀÌ ¾Æ´Ï¶óÇÏ¿© ¼ÒÅÁÀÛÀüÀ» À§ÇØ Ãâµ¿ÇÏ¿´½À´Ï´Ù.");
+		set @pos, dialog(0, 1, 1, "í˜„ìž¬ ì‚°ì†Œë¼ëŠ” ìš”ê´´ ë•Œë¬¸ì— ë°±ì„±ë“¤ì´ í”¼í•´ê°€ ì´ë§Œì €ë§Œì´ ì•„ë‹ˆë¼í•˜ì—¬ ì†Œíƒ•ìž‘ì „ì„ ìœ„í•´ ì¶œë™í•˜ì˜€ìŠµë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "ÇÏÁö¸¸ ¿ö³« »ê¼ÒÀÇ Á¾·ù¿Í ¼ö°¡ ¸¹°í ±×¿¡ ºñÇØ º´»çÀÇ ¼ö°¡ ÅÍ¹«´Ï¾øÀÌ Àû¾î ¾î·Á¿òÀÌ ¸¹½À´Ï´Ù.");
+		set @pos, dialog(0, 1, 1, "í•˜ì§€ë§Œ ì›Œë‚™ ì‚°ì†Œì˜ ì¢…ë¥˜ì™€ ìˆ˜ê°€ ë§Žê³  ê·¸ì— ë¹„í•´ ë³‘ì‚¬ì˜ ìˆ˜ê°€ í„°ë¬´ë‹ˆì—†ì´ ì ì–´ ì–´ë ¤ì›€ì´ ë§ŽìŠµë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 1, "»ê¼Ò¸¦ ¼ÒÅÁÇÏ´Âµ¥ ÈûÀ» ºô·ÁÁÖ½ÃÁö ¾Ê°Ú½À´Ï±î? µµ¿ÍÁÖ½Ã¸é º¸»ó±ÝÀ» µå¸®µµ·Ï ÇÏ°Ú½À´Ï´Ù.", "ÁÁ½À´Ï´Ù! Á¦ ÈûÀÌ µµ¿òÀÌ µÈ´Ù¸é ±â²¨ÀÌ..", "ÁË¼ÛÇÏÁö¸¸ °¥±æÀÌ ¸Ö´ä´Ï´Ù. ÀÌ¸¸.");
+		set @pos, list2(@list, 0, 1, "ì‚°ì†Œë¥¼ ì†Œíƒ•í•˜ëŠ”ë° íž˜ì„ ë¹Œë ¤ì£¼ì‹œì§€ ì•Šê² ìŠµë‹ˆê¹Œ? ë„ì™€ì£¼ì‹œë©´ ë³´ìƒê¸ˆì„ ë“œë¦¬ë„ë¡ í•˜ê² ìŠµë‹ˆë‹¤.", "ì¢‹ìŠµë‹ˆë‹¤! ì œ íž˜ì´ ë„ì›€ì´ ëœë‹¤ë©´ ê¸°êº¼ì´..", "ì£„ì†¡í•˜ì§€ë§Œ ê°ˆê¸¸ì´ ë©€ë‹µë‹ˆë‹¤. ì´ë§Œ.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS003;
 		else if(@list == 1)
 		{
-			set @pos, dialog(0, 0, 1, "¿ì¼± »ê¼ÒµéÀ» »ó´ëÇÏ½Ç ¼ö ÀÖ´ÂÁö ºÁ¾ß°Ú½À´Ï´Ù.");
+			set @pos, dialog(0, 0, 1, "ìš°ì„  ì‚°ì†Œë“¤ì„ ìƒëŒ€í•˜ì‹¤ ìˆ˜ ìžˆëŠ”ì§€ ë´ì•¼ê² ìŠµë‹ˆë‹¤.");
 			if(@pos == 0) end;
 
 			if(get_level(@sd) < 50)
 			{
-				set @pos, dialog(0, 0, 0, "¾ÆÁ÷ »ê¼ÒµéÀ» »ó´ëÇÏ½Ã±â¿£ ¹«¸®ÀÎ °Í °°½À´Ï´Ù. ¸¶À½¸¸Àº °í¸¿°Ô ¹Þ°Ú½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 0, "ì•„ì§ ì‚°ì†Œë“¤ì„ ìƒëŒ€í•˜ì‹œê¸°ì—” ë¬´ë¦¬ì¸ ê²ƒ ê°™ìŠµë‹ˆë‹¤. ë§ˆìŒë§Œì€ ê³ ë§™ê²Œ ë°›ê² ìŠµë‹ˆë‹¤.");
 				end;
 			}
 			else
 			{
 COS005:
-				set @pos, dialog(0, 0, 1, "ÁÁ½À´Ï´Ù! ÀÌÁ¤µµ¶ó¸é ÃæºÐÇÕ´Ï´Ù. »ê¼ÒµéÀº Á¾·ù¸¶´Ù »ÔÀ» °¡Áö°í ÀÖ½À´Ï´Ù. ÀÌ »ÔÀº ÁõÇ¥·Î ¸ð¾Æ¿À½Ã¸é ±×¿¡ µû¸¥ º¸»ó±ÝÀ» µå¸®°Ú½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, "ì¢‹ìŠµë‹ˆë‹¤! ì´ì •ë„ë¼ë©´ ì¶©ë¶„í•©ë‹ˆë‹¤. ì‚°ì†Œë“¤ì€ ì¢…ë¥˜ë§ˆë‹¤ ë¿”ì„ ê°€ì§€ê³  ìžˆìŠµë‹ˆë‹¤. ì´ ë¿”ì€ ì¦í‘œë¡œ ëª¨ì•„ì˜¤ì‹œë©´ ê·¸ì— ë”°ë¥¸ ë³´ìƒê¸ˆì„ ë“œë¦¬ê² ìŠµë‹ˆë‹¤.");
 				if(@pos == 0) end;
 COS006:
-				set @pos, dialog(0, 1, 1, "¿ì¼± ¾àÇÑ »ê¼ÒºÎÅÍ ½ÃÀÛÇÏµµ·Ï ÇÏÁÒ. ¿¬Ã»»ê¼Ò°¡ °¡Àå ¾àÇÕ´Ï´Ù. ¿¬Ã»»ê¼ÒÀÇ »ÔÀ» 50°³ ¸ð¾Æ¿Í ÁÖ½Ã±â ¹Ù¶ø´Ï´Ù.");
+				set @pos, dialog(0, 1, 1, "ìš°ì„  ì•½í•œ ì‚°ì†Œë¶€í„° ì‹œìž‘í•˜ë„ë¡ í•˜ì£ . ì—°ì²­ì‚°ì†Œê°€ ê°€ìž¥ ì•½í•©ë‹ˆë‹¤. ì—°ì²­ì‚°ì†Œì˜ ë¿”ì„ 50ê°œ ëª¨ì•„ì™€ ì£¼ì‹œê¸° ë°”ëžë‹ˆë‹¤.");
 				if(@pos == 0) end;
 				else if(@pos == -1) goto COS005;
 
 				set $oxygen_clear, 1;
-				addlegend @sd, 4, 7, 0, 1, "¿¬Ã»»ê¼ÒÀÇ »ÔÀ» 50°³ ¸ð¾Æ°¡ÀÚ.";
+				addlegend @sd, 4, 7, 0, 1, "ì—°ì²­ì‚°ì†Œì˜ ë¿”ì„ 50ê°œ ëª¨ì•„ê°€ìž.";
 				end;
 			}
 		}
 		else if(@list == 2)
 		{
-			set @pos, dialog(0, 0, 0, "±×·¯½Ã±º¿ä.. °¡½Ã´Â ±æ Á¶½ÉÈ÷ »ìÆì¼­ °¡¼¼¿ä.");
+			set @pos, dialog(0, 0, 0, "ê·¸ëŸ¬ì‹œêµ°ìš”.. ê°€ì‹œëŠ” ê¸¸ ì¡°ì‹¬ížˆ ì‚´íŽ´ì„œ ê°€ì„¸ìš”.");
 			end;
 		}
 		else end;
 	}
 	if($oxygen_clear == 1)
 	{
-		callfunc "OXYGENCLEAR", "¿¬Ã»»ê¼ÒÀÇ»Ô", 50, 3000, 2, "¹é»ê¼Ò";
-		addlegend @sd, 4, 7, 0, 1, "¹é»ê¼ÒÀÇ »ÔÀ» 50°³ ¸ð¾Æ°¡ÀÚ.";
+		callfunc "OXYGENCLEAR", "ì—°ì²­ì‚°ì†Œì˜ë¿”", 50, 3000, 2, "ë°±ì‚°ì†Œ";
+		addlegend @sd, 4, 7, 0, 1, "ë°±ì‚°ì†Œì˜ ë¿”ì„ 50ê°œ ëª¨ì•„ê°€ìž.";
 	}
 	if($oxygen_clear == 2)
 	{
-		callfunc "OXYGENCLEAR", "¹é»ê¼ÒÀÇ»Ô", 50, 5000, 3, "È²»ê¼Ò";
-		addlegend @sd, 4, 7, 0, 1, "È²»ê¼ÒÀÇ »ÔÀ» 50°³ ¸ð¾Æ°¡ÀÚ.";
+		callfunc "OXYGENCLEAR", "ë°±ì‚°ì†Œì˜ë¿”", 50, 5000, 3, "í™©ì‚°ì†Œ";
+		addlegend @sd, 4, 7, 0, 1, "í™©ì‚°ì†Œì˜ ë¿”ì„ 50ê°œ ëª¨ì•„ê°€ìž.";
 	}
 	if($oxygen_clear == 3)
 	{
-		callfunc "OXYGENCLEAR", "È²»ê¼ÒÀÇ»Ô", 30, 10000, 4, "Ã»»ê¼Ò±«";
-		addlegend @sd, 4, 7, 0, 1, "Ã»»ê¼Ò±«ÀÇ »ÔÀ» 50°³ ¸ð¾Æ°¡ÀÚ.";
+		callfunc "OXYGENCLEAR", "í™©ì‚°ì†Œì˜ë¿”", 30, 10000, 4, "ì²­ì‚°ì†Œê´´";
+		addlegend @sd, 4, 7, 0, 1, "ì²­ì‚°ì†Œê´´ì˜ ë¿”ì„ 50ê°œ ëª¨ì•„ê°€ìž.";
 	}
 	if($oxygen_clear == 4)
 	{
-		callfunc "OXYGENCLEAR", "Ã»»ê¼Ò±«ÀÇ»Ô", 30, 15000, 5, "Àû»ê¼Ò±«";
-		addlegend @sd, 4, 7, 0, 1, "Àû»ê¼Ò±«ÀÇ »ÔÀ» 30°³ ¸ð¾Æ°¡ÀÚ.";
+		callfunc "OXYGENCLEAR", "ì²­ì‚°ì†Œê´´ì˜ë¿”", 30, 15000, 5, "ì ì‚°ì†Œê´´";
+		addlegend @sd, 4, 7, 0, 1, "ì ì‚°ì†Œê´´ì˜ ë¿”ì„ 30ê°œ ëª¨ì•„ê°€ìž.";
 	}
 	if($oxygen_clear == 5)
 	{
-		callfunc "OXYGENCLEAR", "Àû»ê¼Ò±«ÀÇ»Ô", 30, 20000, 6, "³ì»ê¼Ò±«";
-		addlegend @sd, 4, 7, 0, 1, "³ì»ê¼Ò±«ÀÇ »ÔÀ» 30°³ ¸ð¾Æ°¡ÀÚ.";
+		callfunc "OXYGENCLEAR", "ì ì‚°ì†Œê´´ì˜ë¿”", 30, 20000, 6, "ë…¹ì‚°ì†Œê´´";
+		addlegend @sd, 4, 7, 0, 1, "ë…¹ì‚°ì†Œê´´ì˜ ë¿”ì„ 30ê°œ ëª¨ì•„ê°€ìž.";
 	}
 	if($oxygen_clear == 6)
 	{
-		if(countitem(name2itemid("³ì»ê¼Ò±«ÀÇ»Ô")) < 30)
+		if(countitem(name2itemid("ë…¹ì‚°ì†Œê´´ì˜ë¿”")) < 30)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ ³ì»ê¼Ò±«ÀÇ»Ô 30°³¸¦ ¸ð¾Æ¿ÀÁö ¸øÇÏ½Å °Í °°±º¿ä?");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ë…¹ì‚°ì†Œê´´ì˜ë¿” 30ê°œë¥¼ ëª¨ì•„ì˜¤ì§€ ëª»í•˜ì‹  ê²ƒ ê°™êµ°ìš”?");
 			end;
 		}
 COS007:
-		set @pos, dialog(0, 0, 1, "Á¤¸» °¨»çµå¸³´Ï´Ù. ¿©±â±îÁö µµ¿ÍÁÖ¼Å¼­ ÀúÈñ¿¡°Õ ³Ê¹«³ª Å« µµ¿òÀÌ µÇ¾ú´ä´Ï´Ù.");
+		set @pos, dialog(0, 0, 1, "ì •ë§ ê°ì‚¬ë“œë¦½ë‹ˆë‹¤. ì—¬ê¸°ê¹Œì§€ ë„ì™€ì£¼ì…”ì„œ ì €í¬ì—ê² ë„ˆë¬´ë‚˜ í° ë„ì›€ì´ ë˜ì—ˆë‹µë‹ˆë‹¤.");
 		if(@pos == 0) end;
 COS008:
-		set @pos, dialog(0, 1, 1, "»ó´çÈ÷ °­ÇÏ½ÅºÐ °°Àºµ¥ ÇÑ°¡Áö ´õ ºÎÅ¹µå·Áµµ µÉ±î¿ä. »ê¼ÒµéÀÇ ¿ìµÎ¸Ó¸®ÀÎ »ê¼Ò±«¿ÕÀº ÀúÈñ°¡ °Çµå¸± ¼ö°¡ ¾ø´ä´Ï´Ù.");
+		set @pos, dialog(0, 1, 1, "ìƒë‹¹ížˆ ê°•í•˜ì‹ ë¶„ ê°™ì€ë° í•œê°€ì§€ ë” ë¶€íƒë“œë ¤ë„ ë ê¹Œìš”. ì‚°ì†Œë“¤ì˜ ìš°ë‘ë¨¸ë¦¬ì¸ ì‚°ì†Œê´´ì™•ì€ ì €í¬ê°€ ê±´ë“œë¦´ ìˆ˜ê°€ ì—†ë‹µë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS007;
 COS009:
-		set @pos, list2(@list_2, 0, 1, "»ê¼Ò±«¿ÕÀ» Ã³¸®ÇØÁÖ½Ã°Ú½À´Ï±î?", "¾Ë°Ú½À´Ï´Ù. Á¦°¡ Ã³¸®ÇØº¸µµ·Ï ÇÏÁÒ.", "ÁË¼ÛÇÕ´Ï´Ù. ±×°Ç Àú¿¡°Ô ¹«¸®ÀÏµíÇÏ±º¿ä.");
+		set @pos, list2(@list_2, 0, 1, "ì‚°ì†Œê´´ì™•ì„ ì²˜ë¦¬í•´ì£¼ì‹œê² ìŠµë‹ˆê¹Œ?", "ì•Œê² ìŠµë‹ˆë‹¤. ì œê°€ ì²˜ë¦¬í•´ë³´ë„ë¡ í•˜ì£ .", "ì£„ì†¡í•©ë‹ˆë‹¤. ê·¸ê±´ ì €ì—ê²Œ ë¬´ë¦¬ì¼ë“¯í•˜êµ°ìš”.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS008;
 		else if(@list_2 == 1)
 		{
-			delitem @sd, name2itemid("³ì»ê¼Ò±«ÀÇ»Ô"), 30;
-			message @sd, 3, "³ì»ê¼Ò±«ÀÇ»Ô ÁÖ¾ú½À´Ï´Ù";
+			delitem @sd, name2itemid("ë…¹ì‚°ì†Œê´´ì˜ë¿”"), 30;
+			message @sd, 3, "ë…¹ì‚°ì†Œê´´ì˜ë¿” ì£¼ì—ˆìŠµë‹ˆë‹¤";
 			set_money @sd, get_money(@sd)+30000;
 			updatestatus @sd, 2;
 			set $oxygen_clear, 7;
-			addlegend @sd, 4, 7, 0, 1, "»ê¼Ò±«¿ÕÀÇ »ÔÀ» ±¸ÇÏÀÚ.";
-			set @pos, dialog(0, 0, 1, "»ê¼Ò±«¿ÕÀº ´Ù¸¥ »ê¼Òµé°ú´Â Â÷¿øÀÌ ´Ù¸¨´Ï´Ù. ´õ±¸³ª Àß ³ªÅ¸³ªÁö ¾Ê¾Æ Ã£±â°¡ ´õ Èûµé´ä´Ï´Ù.\\n\\n»ê¼Ò±«¿ÕÀÇ»ÔÀ» °¡Á®¿À½Ã¸é ±ÍÇÑ ¹°°ÇÀ» µå¸®µµ·Ï ÇÏÁÒ. ºÎµð Á¶½ÉÇÏ½Ã±â ¹Ù¶ø´Ï´Ù.");
+			addlegend @sd, 4, 7, 0, 1, "ì‚°ì†Œê´´ì™•ì˜ ë¿”ì„ êµ¬í•˜ìž.";
+			set @pos, dialog(0, 0, 1, "ì‚°ì†Œê´´ì™•ì€ ë‹¤ë¥¸ ì‚°ì†Œë“¤ê³¼ëŠ” ì°¨ì›ì´ ë‹¤ë¦…ë‹ˆë‹¤. ë”êµ¬ë‚˜ ìž˜ ë‚˜íƒ€ë‚˜ì§€ ì•Šì•„ ì°¾ê¸°ê°€ ë” íž˜ë“¤ë‹µë‹ˆë‹¤.\\n\\nì‚°ì†Œê´´ì™•ì˜ë¿”ì„ ê°€ì ¸ì˜¤ì‹œë©´ ê·€í•œ ë¬¼ê±´ì„ ë“œë¦¬ë„ë¡ í•˜ì£ . ë¶€ë”” ì¡°ì‹¬í•˜ì‹œê¸° ë°”ëžë‹ˆë‹¤.");
 			end;
 		}
 		else if(@list_2 == 2)
 		{
-			set @pos, dialog(0, 0, 0, "±×·¯½Ã´Ù¸é¾ß ÇÒ ¼ö ¾øÁÒ.");
+			set @pos, dialog(0, 0, 0, "ê·¸ëŸ¬ì‹œë‹¤ë©´ì•¼ í•  ìˆ˜ ì—†ì£ .");
 			end;
 		}
 		else end;
 	}
 	if($oxygen_clear == 7)
 	{
-		if(countitem(name2itemid("»ê¼Ò±«¿ÕÀÇ»Ô")) == 0)
+		if(countitem(name2itemid("ì‚°ì†Œê´´ì™•ì˜ë¿”")) == 0)
 		{
-			set @pos, dialog(0, 0, 0, "¾ÆÁ÷ »ê¼Ò±«¿ÕÀÇ»ÔÀ» ±¸ÇÏ½ÃÁö ¸øÇÏ¼Ì±º¿ä. ºÎµð Á¶½ÉÇÏ½Ã±æ ¹Ù¶ø´Ï´Ù.");
+			set @pos, dialog(0, 0, 0, "ì•„ì§ ì‚°ì†Œê´´ì™•ì˜ë¿”ì„ êµ¬í•˜ì‹œì§€ ëª»í•˜ì…¨êµ°ìš”. ë¶€ë”” ì¡°ì‹¬í•˜ì‹œê¸¸ ë°”ëžë‹ˆë‹¤.");
 			end;
 		}
 COS010:
-		set @pos, dialog(0, 0, 1, "Á¤¸» ´ë´ÜÇÏ±º¿ä. ¼³¸¶ Á¤¸» »ê¼Ò±«¿ÕÀ» Àâ¾Æ¿À½Ã¸®¶ó°í´Â. ÀÌ·Î½á Å« °ÆÁ¤À» ´ú°Ô µÇ¾ú±º¿ä.");
+		set @pos, dialog(0, 0, 1, "ì •ë§ ëŒ€ë‹¨í•˜êµ°ìš”. ì„¤ë§ˆ ì •ë§ ì‚°ì†Œê´´ì™•ì„ ìž¡ì•„ì˜¤ì‹œë¦¬ë¼ê³ ëŠ”. ì´ë¡œì¨ í° ê±±ì •ì„ ëœê²Œ ë˜ì—ˆêµ°ìš”.");
 		if(@pos == 0) end;
 COS011:
-		set @pos, dialog(0, 1, 1, "Á¤¸» °¨»çµå¸³´Ï´Ù. ±× º¸´äÀ¸·Î ÀÌ º¸°ËÀ» µå¸®ÁÒ. È²Á¦¿¡°Ô Æ¯º°È÷ ÇÏ»ç¹ÞÀº°ÍÀÎµ¥ Àú¿¡°Õ °úºÐÇÑ ¹°°ÇÀÎµí ÇÏ±º¿ä.");
+		set @pos, dialog(0, 1, 1, "ì •ë§ ê°ì‚¬ë“œë¦½ë‹ˆë‹¤. ê·¸ ë³´ë‹µìœ¼ë¡œ ì´ ë³´ê²€ì„ ë“œë¦¬ì£ . í™©ì œì—ê²Œ íŠ¹ë³„ížˆ í•˜ì‚¬ë°›ì€ê²ƒì¸ë° ì €ì—ê² ê³¼ë¶„í•œ ë¬¼ê±´ì¸ë“¯ í•˜êµ°ìš”.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS010;
 COS012:
-		set @pos, dialog(0, 1, 1, "ºÎµð ÁÁÀº °÷¿¡ ½áÁÖ½Ã±â ¹ß¹Ù´Ï´Ù. ±×·³ ¾È³çÈ÷.");
+		set @pos, dialog(0, 1, 1, "ë¶€ë”” ì¢‹ì€ ê³³ì— ì¨ì£¼ì‹œê¸° ë°œë°”ë‹ˆë‹¤. ê·¸ëŸ¼ ì•ˆë…•ížˆ.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS011;
 
 		set $oxygen_clear, 0;
-		delitem @sd, name2itemid("»ê¼Ò±«¿ÕÀÇ»Ô"), 1;
-		message @sd, 3, "»ê¼Ò±«¿ÕÀÇ»Ô ÁÖ¾ú½À´Ï´Ù";
-		additem @sd, name2itemid("Èæ¿µÆÐµµ"), 1;
-		addlegend @sd, 4, 7, 0, 1, "»ê¼Ò¼ÒÅÁ ÀÛÀüÀ» ¼º°øÀûÀ¸·Î ¼öÇàÇÏ¿´´Ù.";
+		delitem @sd, name2itemid("ì‚°ì†Œê´´ì™•ì˜ë¿”"), 1;
+		message @sd, 3, "ì‚°ì†Œê´´ì™•ì˜ë¿” ì£¼ì—ˆìŠµë‹ˆë‹¤";
+		additem @sd, name2itemid("í‘ì˜íŒ¨ë„"), 1;
+		addlegend @sd, 4, 7, 0, 1, "ì‚°ì†Œì†Œíƒ• ìž‘ì „ì„ ì„±ê³µì ìœ¼ë¡œ ìˆ˜í–‰í•˜ì˜€ë‹¤.";
 	}
 }
 
-//callfunc "OXYGENCLEAR", ÅÛ, °¹¼ö, º¸»ó±Ý, Äù¿Ï·á½Ãº¯¼ö¼³Á¤°ª, ´ÙÀ½Äù¸÷ÀÌ¸§;
+//callfunc "OXYGENCLEAR", í…œ, ê°¯ìˆ˜, ë³´ìƒê¸ˆ, í€˜ì™„ë£Œì‹œë³€ìˆ˜ì„¤ì •ê°’, ë‹¤ìŒí€˜ëª¹ì´ë¦„;
 FUNC_OXYGENCLEAR	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if(countitem(name2itemid(getarg(0))) < getarg(1))
 	{
-		set @pos, dialog(0, 0, 0, "¾ÆÁ÷ " + getarg(0) + " " + getarg(1) + "°³¸¦ ¸ð¾Æ¿ÀÁö ¸øÇÏ½Å °Í °°±º¿ä?");
+		set @pos, dialog(0, 0, 0, "ì•„ì§ " + getarg(0) + " " + getarg(1) + "ê°œë¥¼ ëª¨ì•„ì˜¤ì§€ ëª»í•˜ì‹  ê²ƒ ê°™êµ°ìš”?");
 		end;
 	}
 	else
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "Á¤¸» ¼ö°íÇÏ¼Ì½À´Ï´Ù. º¸»ó±Ý ¿©±âÀÖ½À´Ï´Ù. ´ÙÀ½Àº " + getarg(4) + "ÀÔ´Ï´Ù. " + getarg(4) + "ÀÇ»Ô " + getarg(1) + "°³¸¦ ¸ð¾Æ¿Í ÁÖ½Ê½Ã¿À.");
+		set @pos, dialog(0, 0, 1, "ì •ë§ ìˆ˜ê³ í•˜ì…¨ìŠµë‹ˆë‹¤. ë³´ìƒê¸ˆ ì—¬ê¸°ìžˆìŠµë‹ˆë‹¤. ë‹¤ìŒì€ " + getarg(4) + "ìž…ë‹ˆë‹¤. " + getarg(4) + "ì˜ë¿” " + getarg(1) + "ê°œë¥¼ ëª¨ì•„ì™€ ì£¼ì‹­ì‹œì˜¤.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "°¥¼ö·Ï º¸»ó±ÝÀÌ ³ô¾ÆÁö´Ï ºÎÅ¹µå¸³´Ï´Ù.");
+		set @pos, dialog(0, 1, 1, "ê°ˆìˆ˜ë¡ ë³´ìƒê¸ˆì´ ë†’ì•„ì§€ë‹ˆ ë¶€íƒë“œë¦½ë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 
@@ -1522,67 +1522,67 @@ COS002:
 		set_money @sd, get_money(@sd)+getarg(2);
 		updatestatus @sd, 2;
 		delitem @sd, name2itemid(getarg(0)), getarg(1);
-		message @sd, 3, getarg(0) + " ÁÖ¾ú½À´Ï´Ù";
+		message @sd, 3, getarg(0) + " ì£¼ì—ˆìŠµë‹ˆë‹¤";
 	}
 	return;
 }
 
-¼­ÃµÁÂ»ó	{
+ì„œì²œì¢Œìƒ	{
 	set @sd, mysd();
 	set @id, myid();
 
 	if($greatwall_repair == 0)
 	{
 COS001:
-		set @pos, dialog(0, 0, 1, "¸¶Ä§ Àß ¸¸³µ³×. ÀÚ³× ¸¸¸®Àå¼ºÀ» µ¹¾Æº¸¾Ò³ª? ¿äÁò ¸¸¸®Àå¼ºÀÇ °÷°÷ÀÌ ¹«³ÊÁ®³»·Á °ÆÁ¤ÀÌ º¸ÅëÀÌ ¾Æ´Ï¶ó³×.");
+		set @pos, dialog(0, 0, 1, "ë§ˆì¹¨ ìž˜ ë§Œë‚¬ë„¤. ìžë„¤ ë§Œë¦¬ìž¥ì„±ì„ ëŒì•„ë³´ì•˜ë‚˜? ìš”ì¦˜ ë§Œë¦¬ìž¥ì„±ì˜ ê³³ê³³ì´ ë¬´ë„ˆì ¸ë‚´ë ¤ ê±±ì •ì´ ë³´í†µì´ ì•„ë‹ˆë¼ë„¤.");
 		if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "¸¸¸®Àå¼ºÀ» ¼ö¸®ÇÏ´Âµ¥´Â °í±¸·ÁÀÇ º®µ¹¸¸Å­ ÁÁÀº°Ô ¾øÁö.");
+		set @pos, dialog(0, 1, 1, "ë§Œë¦¬ìž¥ì„±ì„ ìˆ˜ë¦¬í•˜ëŠ”ë°ëŠ” ê³ êµ¬ë ¤ì˜ ë²½ëŒë§Œí¼ ì¢‹ì€ê²Œ ì—†ì§€.");
 		if(@pos == 0) end;
 		else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, list2(@list, 0, 0, "ÀÚ³×°¡ ¸¸¸®Àå¼ºÀÇ ¹«³ÊÁ®³»¸°°÷À» °íÃÄÁÙ ¼ö ÀÖ°Ú³ª?", "¸¸¸®Àå¼ºÀÌ!! Á¦°¡ ²À °íÄ¡°Ú½À´Ï´Ù!!", "ÁË¼ÛÇÏÁö¸¸ Àú¿¡°Õ ±×·²¸¸ÇÑ ½Ã°£ÀÌ ¾ø½À´Ï´Ù.");
+		set @pos, list2(@list, 0, 0, "ìžë„¤ê°€ ë§Œë¦¬ìž¥ì„±ì˜ ë¬´ë„ˆì ¸ë‚´ë¦°ê³³ì„ ê³ ì³ì¤„ ìˆ˜ ìžˆê² ë‚˜?", "ë§Œë¦¬ìž¥ì„±ì´!! ì œê°€ ê¼­ ê³ ì¹˜ê² ìŠµë‹ˆë‹¤!!", "ì£„ì†¡í•˜ì§€ë§Œ ì €ì—ê² ê·¸ëŸ´ë§Œí•œ ì‹œê°„ì´ ì—†ìŠµë‹ˆë‹¤.");
 		if(@pos == 0) end;
 		else if(@list != 1) end;
 
 		set $greatwall_repair, 1;
-		spellaether @sd, name2spellid("¸¸¸®Àå¼º¼ö¸®"), 180;
-		addlegend @sd, 21, 7, 0, 1, "¸¸¸®Àå¼º ¼ö¸®¸¦ ºÎÅ¹¹Þ´Ù.";
-		set @pos, dialog(0, 0, 1, "¼ö¸®¿¡´Â ²À °í±¸·ÁÀÇ º®µ¹À» ½á¾ß¸¸ ÇÏ³×. º®µ¹Àº ±¹³»¼ºÀÇ ´ëÀå°£¿¡¼­ ÆÇ´Ù°í ÇÏ´õ±º. ¸¸¸®Àå¼ºÀ» µ¹¾Æ´Ù´Ï´Ù º¸¸é ¼ö¸®ÇØ¾ß ÇÒ°÷À» Ã£À»¼ö ÀÖÀ»°É¼¼. 10±ºµ¥ ÀÌ»ó °íÄ£´Ù¸é ÀûÀýÇÑ º¸»óÀ» ÇØÁÖ°Ú³×.");
+		spellaether @sd, name2spellid("ë§Œë¦¬ìž¥ì„±ìˆ˜ë¦¬"), 180;
+		addlegend @sd, 21, 7, 0, 1, "ë§Œë¦¬ìž¥ì„± ìˆ˜ë¦¬ë¥¼ ë¶€íƒë°›ë‹¤.";
+		set @pos, dialog(0, 0, 1, "ìˆ˜ë¦¬ì—ëŠ” ê¼­ ê³ êµ¬ë ¤ì˜ ë²½ëŒì„ ì¨ì•¼ë§Œ í•˜ë„¤. ë²½ëŒì€ êµ­ë‚´ì„±ì˜ ëŒ€ìž¥ê°„ì—ì„œ íŒë‹¤ê³  í•˜ë”êµ°. ë§Œë¦¬ìž¥ì„±ì„ ëŒì•„ë‹¤ë‹ˆë‹¤ ë³´ë©´ ìˆ˜ë¦¬í•´ì•¼ í• ê³³ì„ ì°¾ì„ìˆ˜ ìžˆì„ê±¸ì„¸. 10êµ°ë° ì´ìƒ ê³ ì¹œë‹¤ë©´ ì ì ˆí•œ ë³´ìƒì„ í•´ì£¼ê² ë„¤.");
 		end;
 	}
 	if($greatwall_repair == 1)
 	{
 		if($greatwall_repair_count < 10)
 		{
-			set @pos, dialog(0, 0, 0, "Á¶±Ý ´õ ¼ö¸®ÇØ¾ß ÇÒ °Í °°Àºµ¥?");
+			set @pos, dialog(0, 0, 0, "ì¡°ê¸ˆ ë” ìˆ˜ë¦¬í•´ì•¼ í•  ê²ƒ ê°™ì€ë°?");
 			end;
 		}
 		else
 		{
 			if($greatwall_repair_count >= 10 && $greatwall_repair_count <= 49)
 			{
-				setarray @item$[0], "±¹³»¼ººñ¼­", "Àå¾È¼ººñ¼­";
+				setarray @item$[0], "êµ­ë‚´ì„±ë¹„ì„œ", "ìž¥ì•ˆì„±ë¹„ì„œ";
 				setarray @value[0], 5, 5;
 			}
 			else if($greatwall_repair_count >= 50 && $greatwall_repair_count <= 99)
 			{
-				setarray @item$[0], "Åä²¤ÀÌº¯½Å½Ã¾à";
+				setarray @item$[0], "í† ê¹½ì´ë³€ì‹ ì‹œì•½";
 				setarray @value[0], 1;
 			}
 			else if($greatwall_repair_count >= 100 && $greatwall_repair_count <= 999)
 			{
-				setarray @item$[0], "Ã»ÀÇÅÂÀÚº¯½Å½Ã¾à";
+				setarray @item$[0], "ì²­ì˜íƒœìžë³€ì‹ ì‹œì•½";
 				setarray @value[0], 1;
 			}
 			else if($greatwall_repair_count >= 1000 && $greatwall_repair_count <= 9999)
 			{
-				setarray @item$[0], "È¸È£¹Ú°áÁ¤";
+				setarray @item$[0], "íšŒí˜¸ë°•ê²°ì •";
 				setarray @value[0], 1;
 			}
 			else if($greatwall_repair_count >= 10000)
 			{
-				setarray @item$[0], "ÃµÇ³¼±";
+				setarray @item$[0], "ì²œí’ì„ ";
 				setarray @value[0], 1;
 			}
 
@@ -1595,14 +1595,14 @@ COS003:
 			deletearray @value[0], getarraysize(@value);
 
 			set $greatwall_repair, 2;
-			addlegend @sd, 21, 7, 0, 1, "¸¸¸®Àå¼º ¼ö¸®¿¡ ¼º°øÇÏ´Ù.";
-			set @pos, dialog(0, 0, 1, "¿À~ ¼ö°íÇß³×!! ÀÚ ¿©±â ¹Þ°Ô³ª. ½Ã°£ÀÌ ÀÖ´Ù¸é ´õ ¼ö°íÇØ ÁÖ±æ ¹Ù¶ó°Ú³×. ¼ö°íÇÏ´Â ¸¸Å­ ´ñ°¡´Â ÁöºÒÇÒÅ×´Ï...");
+			addlegend @sd, 21, 7, 0, 1, "ë§Œë¦¬ìž¥ì„± ìˆ˜ë¦¬ì— ì„±ê³µí•˜ë‹¤.";
+			set @pos, dialog(0, 0, 1, "ì˜¤~ ìˆ˜ê³ í–ˆë„¤!! ìž ì—¬ê¸° ë°›ê²Œë‚˜. ì‹œê°„ì´ ìžˆë‹¤ë©´ ë” ìˆ˜ê³ í•´ ì£¼ê¸¸ ë°”ë¼ê² ë„¤. ìˆ˜ê³ í•˜ëŠ” ë§Œí¼ ëŒ“ê°€ëŠ” ì§€ë¶ˆí• í…Œë‹ˆ...");
 			end;
 		}
 	}
 	if($greatwall_repair == 2)
 	{
-		set @pos, dialog(0, 0, 1, "Àú¹ø¿£ Á¤¸» °í¸¶¿ü³×. ´ç½Å°ú °°ÀÌ ¸¸¸®Àå¼ºÀÇ ¼ö¸®¿¡ Èû½áÁÖ´Â »ç¶÷ÀÌ ¸¹¾Æ ¸¸¸®Àå¼ºÀÌ Á¡Â÷ ¿¾ ¸ð½ÀÀ» µÇÃ£°í ÀÖ³×.");
+		set @pos, dialog(0, 0, 1, "ì €ë²ˆì—” ì •ë§ ê³ ë§ˆì› ë„¤. ë‹¹ì‹ ê³¼ ê°™ì´ ë§Œë¦¬ìž¥ì„±ì˜ ìˆ˜ë¦¬ì— íž˜ì¨ì£¼ëŠ” ì‚¬ëžŒì´ ë§Žì•„ ë§Œë¦¬ìž¥ì„±ì´ ì ì°¨ ì˜› ëª¨ìŠµì„ ë˜ì°¾ê³  ìžˆë„¤.");
 		end;
 	}
 }

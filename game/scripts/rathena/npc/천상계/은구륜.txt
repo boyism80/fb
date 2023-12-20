@@ -1,4 +1,4 @@
-½Â±ŞÀü»ç	{
+ìŠ¹ê¸‰ì „ì‚¬	{
 	image 0, 50, 0;
 	set @sd, mysd();
 	set @id, myid();
@@ -8,23 +8,23 @@
 	switch(@myjoblv)
 	{
 	case 0:
-		set @jobname$, "Àü»ç";
+		set @jobname$, "ì „ì‚¬";
 		break;
 	case 1:
-		set @jobname$, "°Ë°´";
+		set @jobname$, "ê²€ê°";
 		break;
 	case 2:
-		set @jobname$, "°ËÁ¦";
+		set @jobname$, "ê²€ì œ";
 		break;
 	case 3:
-		set @jobname$, "°ËÈ²";
+		set @jobname$, "ê²€í™©";
 		break;
 	case 4:
-		set @jobname$, "°Ë¼º";
+		set @jobname$, "ê²€ì„±";
 		break;
 	}
 RESET:
-	set @pos, list2(@ret, 0, 0, "¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", @jobname$ + "·Î¼­ ½Â±ŞÀ» ¿øÇÕ´Ï´Ù", "±â¼úÀ» ¹è¿ï·¡¿ä", "3Â÷½Â±Ş ¿ÊÀ» ¿øÇÕ´Ï´Ù");
+	set @pos, list2(@ret, 0, 0, "ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", @jobname$ + "ë¡œì„œ ìŠ¹ê¸‰ì„ ì›í•©ë‹ˆë‹¤", "ê¸°ìˆ ì„ ë°°ìš¸ë˜ìš”", "3ì°¨ìŠ¹ê¸‰ ì˜·ì„ ì›í•©ë‹ˆë‹¤");
 	if(@pos == 0) { end; }
 	else if(@ret == 1)
 	{
@@ -35,16 +35,16 @@ RESET:
 
 			if(get_level(@sd) >= 99 && get_purehp(@sd) >= @hp[@myjoblv] && get_puremp(@sd) >= @mp[@myjoblv])
 			{
-				if(@myjoblv == 0) { setarray @needitem$[0], "ÆÈ±¥"; }
-				else if(@myjoblv == 1) { setarray @needitem$[0], "¼ö·æÀÇºñ´Ã","È­·æÀÇºñ´Ã"; }
-				else if(@myjoblv == 2) { setarray @needitem$[0], "Ãµ¼ºÇöÀÇÁõÇ¥"; }
-				else if(@myjoblv == 3) { setarray @needitem$[0],"¹İ°íÀÇ½ÉÀå"; }
+				if(@myjoblv == 0) { setarray @needitem$[0], "íŒ”ê´˜"; }
+				else if(@myjoblv == 1) { setarray @needitem$[0], "ìˆ˜ë£¡ì˜ë¹„ëŠ˜","í™”ë£¡ì˜ë¹„ëŠ˜"; }
+				else if(@myjoblv == 2) { setarray @needitem$[0], "ì²œì„±í˜„ì˜ì¦í‘œ"; }
+				else if(@myjoblv == 3) { setarray @needitem$[0],"ë°˜ê³ ì˜ì‹¬ì¥"; }
 
 				for(set @i, 0; @i < getarraysize(@needitem$); set @i, @i+1)
 				{
 					if(countitem(name2itemid(@needitem$[@i])) == 0)
 					{
-						set @pos, dialog(0,0,0, @needitem$[@i] + " (ÀÌ)°¡ ¾ø½À´Ï´Ù.");
+						set @pos, dialog(0,0,0, @needitem$[@i] + " (ì´)ê°€ ì—†ìŠµë‹ˆë‹¤.");
 						deletearray @needitem$[0], getarraysize(@needitem$);
 						deletearray @hp[0], getarraysize(@hp);
 						deletearray @mp[0], getarraysize(@mp);
@@ -60,14 +60,14 @@ RESET:
 
 					set_joblevel @sd, @myjoblv+1;
 
-					spellaether @sd, name2spellid("½Â±Şº¸»ó"), 1;
+					spellaether @sd, name2spellid("ìŠ¹ê¸‰ë³´ìƒ"), 1;
 
-					broadcast 4, "(( [" + get_name(@sd) + "]´ÔÀÌ " + get_jobname(@sd) + "À¸·Î ½Â±ŞÇÏ¿´½À´Ï´Ù. ÃàÇÏÇÕ´Ï´Ù! ))";
+					broadcast 4, "(( [" + get_name(@sd) + "]ë‹˜ì´ " + get_jobname(@sd) + "ìœ¼ë¡œ ìŠ¹ê¸‰í•˜ì˜€ìŠµë‹ˆë‹¤. ì¶•í•˜í•©ë‹ˆë‹¤! ))";
 				}
 			}
 			else
 			{
-				set @pos, dialog(0,0,0, "Á»´õ ¼ö·ÃÀ» ½×°í¿À¼¼¿ä.");
+				set @pos, dialog(0,0,0, "ì¢€ë” ìˆ˜ë ¨ì„ ìŒ“ê³ ì˜¤ì„¸ìš”.");
 			}
 			deletearray @needitem$[0], getarraysize(@needitem$);
 			deletearray @hp[0], getarraysize(@hp);
@@ -76,7 +76,7 @@ RESET:
 		}
 		else
 		{
-			set @pos, dialog(0, 0, 1, "´ç½ÅÀº ´õ ÀÌ»ó Á¦°¡ ¼ö·ÃÀ» µµ¿Íµå¸®Áö ¾Ê¾Æµµ µÉ ¸¸Å­ ¼ºÀåÇÏ¼Ì±º¿ä.");
+			set @pos, dialog(0, 0, 1, "ë‹¹ì‹ ì€ ë” ì´ìƒ ì œê°€ ìˆ˜ë ¨ì„ ë„ì™€ë“œë¦¬ì§€ ì•Šì•„ë„ ë  ë§Œí¼ ì„±ì¥í•˜ì…¨êµ°ìš”.");
 			end;
 		}
 	}
@@ -84,95 +84,95 @@ RESET:
 	{
 		if(@myjob == 1)
 		{
-			set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶»°Ô ¿À¼Ì³ª¿ä?", "1Â÷ ½Â±Ş±â¼ú", "2Â÷ ½Â±Ş±â¼ú", "3Â÷ ½Â±Ş±â¼ú", "4Â÷ ½Â±Ş±â¼ú");
+			set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–»ê²Œ ì˜¤ì…¨ë‚˜ìš”?", "1ì°¨ ìŠ¹ê¸‰ê¸°ìˆ ", "2ì°¨ ìŠ¹ê¸‰ê¸°ìˆ ", "3ì°¨ ìŠ¹ê¸‰ê¸°ìˆ ", "4ì°¨ ìŠ¹ê¸‰ê¸°ìˆ ");
 			if(@ret == 1 && @myjoblv >= 1)
 			{
-				setarray @magic$[0], "¹éÈ£Âü";
-				set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶² ±â¼úÀ» ¹è¿ï·¡¿ä?", @magic$[0]);
+				setarray @magic$[0], "ë°±í˜¸ì°¸";
+				set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–¤ ê¸°ìˆ ì„ ë°°ìš¸ë˜ìš”?", @magic$[0]);
 				if(@ret == 1)
 				{
-					set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "À» ¹è¿ì±â À§ÇØ¼± 5000¸¸ÀÇ °æÇèÄ¡°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+					set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "ì„ ë°°ìš°ê¸° ìœ„í•´ì„  5000ë§Œì˜ ê²½í—˜ì¹˜ê°€ í•„ìš”í•©ë‹ˆë‹¤.");
 					if(@pos == 0) { deletearray @magic$[0], getarraysize(@magic$); end; }
 
 					if(get_exp(@sd) < 0) { set @exp1, 2147483647; set @exp2, (get_exp(@sd)+@exp1); }
 					else { set @exp1, get_exp(@sd); set @exp2, 0; }
 					
-					if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "°æÇèÄ¡°¡ ¸ğÀÚ¶ø´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+					if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "ê²½í—˜ì¹˜ê°€ ëª¨ìëë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 					if(checkspell(name2spellid(@magic$[@ret-1])) == 52 )
 					{
 						set_exp @sd, ((@exp1-50000000)+@exp2);
 						addspell name2spellid(@magic$[@ret-1]);
-						set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "¸¶¹ıÀ» µå·È½À´Ï´Ù.");
+						set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "ë§ˆë²•ì„ ë“œë ¸ìŠµë‹ˆë‹¤.");
 						updatestatus @sd, 2;
 					}
-					else { set @pos, dialog(0, 0, 0, "ÀÌ¹Ì ¹è¿î ¸¶¹ıÀÔ´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+					else { set @pos, dialog(0, 0, 0, "ì´ë¯¸ ë°°ìš´ ë§ˆë²•ì…ë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				}
 				deletearray @magic$[0], getarraysize(@magic$);
 			}
 			if(@ret == 2 && @myjoblv >= 2)
 			{
-				setarray @magic$[0], "¾î°Ë¼ú", "Áø¹éÈ£·É";
-				set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶² ±â¼úÀ» ¹è¿ï·¡¿ä?", @magic$[0], @magic$[1]);
+				setarray @magic$[0], "ì–´ê²€ìˆ ", "ì§„ë°±í˜¸ë ¹";
+				set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–¤ ê¸°ìˆ ì„ ë°°ìš¸ë˜ìš”?", @magic$[0], @magic$[1]);
 				if(@ret == 0) { end; }
-				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "À» ¹è¿ì±â À§ÇØ¼± 5000¸¸ÀÇ °æÇèÄ¡°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "ì„ ë°°ìš°ê¸° ìœ„í•´ì„  5000ë§Œì˜ ê²½í—˜ì¹˜ê°€ í•„ìš”í•©ë‹ˆë‹¤.");
 				if(@pos == 0) { deletearray @magic$[0], getarraysize(@magic$); end; }
 
 				if(get_exp(@sd) < 0) { set @exp1, 2147483647; set @exp2, (get_exp(@sd)+@exp1); }
 				else { set @exp1, get_exp(@sd); set @exp2, 0; }
 					
-				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "°æÇèÄ¡°¡ ¸ğÀÚ¶ø´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "ê²½í—˜ì¹˜ê°€ ëª¨ìëë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				if(checkspell(name2spellid(@magic$[@ret-1])) == 52 )
 				{
 					set_exp @sd, ((@exp1-50000000)+@exp2);
 					addspell name2spellid(@magic$[@ret-1]);
-					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "¸¶¹ıÀ» µå·È½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "ë§ˆë²•ì„ ë“œë ¸ìŠµë‹ˆë‹¤.");
 					updatestatus @sd, 2;
 				}
-				else { set @pos, dialog(0, 0, 0, "ÀÌ¹Ì ¹è¿î ¸¶¹ıÀÔ´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				else { set @pos, dialog(0, 0, 0, "ì´ë¯¸ ë°°ìš´ ë§ˆë²•ì…ë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				deletearray @magic$[0], getarraysize(@magic$);
 			}
 			if(@ret == 3 && @myjoblv >= 3)
 			{
-				setarray @magic$[0], "ÃÊÈ¥ºñ¹«", "¼âÈ¥ºñ¹«", "Æ÷È¿°ËÈ²";
-				set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶² ±â¼úÀ» ¹è¿ï·¡¿ä?", @magic$[0], @magic$[1], @magic$[2]);
+				setarray @magic$[0], "ì´ˆí˜¼ë¹„ë¬´", "ì‡„í˜¼ë¹„ë¬´", "í¬íš¨ê²€í™©";
+				set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–¤ ê¸°ìˆ ì„ ë°°ìš¸ë˜ìš”?", @magic$[0], @magic$[1], @magic$[2]);
 				if(@ret == 0) { end; }
-				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "À» ¹è¿ì±â À§ÇØ¼± 5000¸¸ÀÇ °æÇèÄ¡°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "ì„ ë°°ìš°ê¸° ìœ„í•´ì„  5000ë§Œì˜ ê²½í—˜ì¹˜ê°€ í•„ìš”í•©ë‹ˆë‹¤.");
 				if(@pos == 0) { deletearray @magic$[0], getarraysize(@magic$); end; }
 
 				if(get_exp(@sd) < 0) { set @exp1, 2147483647; set @exp2, (get_exp(@sd)+@exp1); }
 				else { set @exp1, get_exp(@sd); set @exp2, 0; }
 					
-				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "°æÇèÄ¡°¡ ¸ğÀÚ¶ø´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "ê²½í—˜ì¹˜ê°€ ëª¨ìëë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				if(checkspell(name2spellid(@magic$[@ret-1])) == 52 )
 				{
 					set_exp @sd, ((@exp1-50000000)+@exp2);
 					addspell name2spellid(@magic$[@ret-1]);
-					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "¸¶¹ıÀ» µå·È½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "ë§ˆë²•ì„ ë“œë ¸ìŠµë‹ˆë‹¤.");
 					updatestatus @sd, 2;
 				}
-				else { set @pos, dialog(0, 0, 0, "ÀÌ¹Ì ¹è¿î ¸¶¹ıÀÔ´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				else { set @pos, dialog(0, 0, 0, "ì´ë¯¸ ë°°ìš´ ë§ˆë²•ì…ë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				deletearray @magic$[0], getarraysize(@magic$);
 			}
 			if(@ret == 4 && @myjoblv >= 4)
 			{
-				setarray @magic$[0], "Ç÷°Ì¸¸ÆÄ", "±Ø'¹éÈ£Âü", "¿î°øÃ¼½Ä";
-				set @ret, list1("¾È³çÇÏ¼¼¿ä. ¾î¶² ±â¼úÀ» ¹è¿ï·¡¿ä?", @magic$[0], @magic$[1], @magic$[2]);
+				setarray @magic$[0], "í˜ˆê²ë§ŒíŒŒ", "ê·¹'ë°±í˜¸ì°¸", "ìš´ê³µì²´ì‹";
+				set @ret, list1("ì•ˆë…•í•˜ì„¸ìš”. ì–´ë–¤ ê¸°ìˆ ì„ ë°°ìš¸ë˜ìš”?", @magic$[0], @magic$[1], @magic$[2]);
 				if(@ret == 0) { end; }
-				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "À» ¹è¿ì±â À§ÇØ¼± 5000¸¸ÀÇ °æÇèÄ¡°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+				set @pos, dialog(0, 0, 1, @magic$[@ret-1] + "ì„ ë°°ìš°ê¸° ìœ„í•´ì„  5000ë§Œì˜ ê²½í—˜ì¹˜ê°€ í•„ìš”í•©ë‹ˆë‹¤.");
 				if(@pos == 0) { deletearray @magic$[0], getarraysize(@magic$); end; }
 
 				if(get_exp(@sd) < 0) { set @exp1, 2147483647; set @exp2, (get_exp(@sd)+@exp1); }
 				else { set @exp1, get_exp(@sd); set @exp2, 0; }
 					
-				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "°æÇèÄ¡°¡ ¸ğÀÚ¶ø´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				if((@exp1-50000000) < 0) { set @pos, dialog(0, 0, 0, "ê²½í—˜ì¹˜ê°€ ëª¨ìëë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				if(checkspell(name2spellid(@magic$[@ret-1])) == 52 )
 				{
 					set_exp @sd, ((@exp1-50000000)+@exp2);
 					addspell name2spellid(@magic$[@ret-1]);
-					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "¸¶¹ıÀ» µå·È½À´Ï´Ù.");
+					set @pos, dialog(0, 0, 0, @magic$[@ret-1] + "ë§ˆë²•ì„ ë“œë ¸ìŠµë‹ˆë‹¤.");
 					updatestatus @sd, 2;
 				}
-				else { set @pos, dialog(0, 0, 0, "ÀÌ¹Ì ¹è¿î ¸¶¹ıÀÔ´Ï´Ù."); deletearray @magic$[0], getarraysize(@magic$); end; }
+				else { set @pos, dialog(0, 0, 0, "ì´ë¯¸ ë°°ìš´ ë§ˆë²•ì…ë‹ˆë‹¤."); deletearray @magic$[0], getarraysize(@magic$); end; }
 				deletearray @magic$[0], getarraysize(@magic$);
 			}
 			else
@@ -185,7 +185,7 @@ RESET:
 	{
 		if(@myjoblv < 3)
 		{
-			set @pos, dialog(0, 0, 1, "3Â÷ ½Â±ŞÀ» ÇÑ µÚ¿¡ ´Ù½Ã ¿À¼¼¿ä.");
+			set @pos, dialog(0, 0, 1, "3ì°¨ ìŠ¹ê¸‰ì„ í•œ ë’¤ì— ë‹¤ì‹œ ì˜¤ì„¸ìš”.");
 			if(@pos == 0) { end; }
 		}
 	}

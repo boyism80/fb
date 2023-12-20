@@ -1,5 +1,5 @@
-//=================¸ó½ºÅÍµå¶ø, ¸ó½ºÅÍ¸¶¹ı ºÎºĞ=================
-//callfunc "MONSTER_FRONT_ATTACK", ¸ó½ºÅÍid°ª, È®·üº¯¼ö, È®·ü, ¾×¼Ç, È¿°úÀ½, ÀÌÆåÆ®, ´ë¹ÌÁö, ´ë¹ÌÁöÅ¸ÀÔ, "¸¶¹ıÀÌ¸§", "¸ó½ºÅÍÇÒ¸»";
+//=================ëª¬ìŠ¤í„°ë“œë, ëª¬ìŠ¤í„°ë§ˆë²• ë¶€ë¶„=================
+//callfunc "MONSTER_FRONT_ATTACK", ëª¬ìŠ¤í„°idê°’, í™•ë¥ ë³€ìˆ˜, í™•ë¥ , ì•¡ì…˜, íš¨ê³¼ìŒ, ì´í™íŠ¸, ëŒ€ë¯¸ì§€, ëŒ€ë¯¸ì§€íƒ€ì…, "ë§ˆë²•ì´ë¦„", "ëª¬ìŠ¤í„°í• ë§";
 FUNC_MONSTER_FRONT_ATTACK	{
 	set @id, getarg(0);
 	set @rand, rand(1, getarg(1));
@@ -12,7 +12,7 @@ FUNC_MONSTER_FRONT_ATTACK	{
 	set @magic$, getarg(8);
 	set @say$, getarg(9);
 
-	if(mobspellaethered(@id, name2spellid("Àı¸Á")) == 1) { mobspellaether @id, name2spellid("Àı¸Á"), 1; }
+	if(mobspellaethered(@id, name2spellid("ì ˆë§")) == 1) { mobspellaether @id, name2spellid("ì ˆë§"), 1; }
 
 	set @target_id, obj_getmobfront();
 	if(@target_id > 0)
@@ -26,7 +26,7 @@ FUNC_MONSTER_FRONT_ATTACK	{
 			if(@effect >= 0) { effect @target_id, @effect; }
 
 			damage @id, @target_id, rand(150000, 250000), 2;
-			message @target_sd, 3, get_mobname(@id) + "(ÀÌ)°¡ " + @magic$ + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+			message @target_sd, 3, get_mobname(@id) + "(ì´)ê°€ " + @magic$ + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 
 			if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
 		}
@@ -34,7 +34,7 @@ FUNC_MONSTER_FRONT_ATTACK	{
 	return;
 }
 
-//callfunc "MONSTER_RANGE_ATTACK", ¸ó½ºÅÍid°ª, È®·üº¯¼ö, ½ÇÆĞÈ®·ü, ¾×¼Ç, È¿°úÀ½, ÀÌÆåÆ®, ´ë¹ÌÁö, ´ë¹ÌÁöÅ¸ÀÔ, "¸¶¹ıÀÌ¸§", ¹üÀ§, "¸ó½ºÅÍÇÒ¸»";
+//callfunc "MONSTER_RANGE_ATTACK", ëª¬ìŠ¤í„°idê°’, í™•ë¥ ë³€ìˆ˜, ì‹¤íŒ¨í™•ë¥ , ì•¡ì…˜, íš¨ê³¼ìŒ, ì´í™íŠ¸, ëŒ€ë¯¸ì§€, ëŒ€ë¯¸ì§€íƒ€ì…, "ë§ˆë²•ì´ë¦„", ë²”ìœ„, "ëª¬ìŠ¤í„°í• ë§";
 FUNC_MONSTER_RANGE_ATTACK	{
 	set @id, getarg(0);
 	set @rand, rand(1, getarg(1));
@@ -48,7 +48,7 @@ FUNC_MONSTER_RANGE_ATTACK	{
 	set @range, getarg(9);
 	set @say$, getarg(10);
 
-	if(mobspellaethered(@id, name2spellid("Àı¸Á")) == 1) { mobspellaether @id, name2spellid("Àı¸Á"), 1; }
+	if(mobspellaethered(@id, name2spellid("ì ˆë§")) == 1) { mobspellaether @id, name2spellid("ì ˆë§"), 1; }
 
 	if(@rand <= @rate) { end; }
 
@@ -78,7 +78,7 @@ FUNC_MONSTER_RANGE_ATTACK	{
 					if(@effect >= 0) { effect @target_id, @effect; }
 
 					damage @id, @target_id, @damage, @type;
-					message @target_sd, 3, get_mobname(@id) + "(ÀÌ)°¡ " + @magic$ + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+					message @target_sd, 3, get_mobname(@id) + "(ì´)ê°€ " + @magic$ + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 
 					if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
 				}
@@ -88,7 +88,7 @@ FUNC_MONSTER_RANGE_ATTACK	{
 	return;
 }
 
-//callfunc "MONSTER_ATTACK", ¸ó½ºÅÍid°ª, È®·üº¯¼ö, È®·ü, ¾×¼Ç, È¿°úÀ½, ÀÌÆåÆ®, ´ë¹ÌÁö, ´ë¹ÌÁöÅ¸ÀÔ, "¸¶¹ıÀÌ¸§", "¸ó½ºÅÍÇÒ¸»";
+//callfunc "MONSTER_ATTACK", ëª¬ìŠ¤í„°idê°’, í™•ë¥ ë³€ìˆ˜, í™•ë¥ , ì•¡ì…˜, íš¨ê³¼ìŒ, ì´í™íŠ¸, ëŒ€ë¯¸ì§€, ëŒ€ë¯¸ì§€íƒ€ì…, "ë§ˆë²•ì´ë¦„", "ëª¬ìŠ¤í„°í• ë§";
 FUNC_MONSTER_ATTACK	{
 	set @id, getarg(0);
 	set @rand, rand(1, getarg(1));
@@ -111,7 +111,7 @@ FUNC_MONSTER_ATTACK	{
 			if(@effect >= 0) { effect @target_id, @effect; }
 
 			damage @id, @target_id, @damage, @type;
-			message @target_sd, 3, get_mobname(@id) + "ÀÌ(°¡) " + @magic$ + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+			message @target_sd, 3, get_mobname(@id) + "ì´(ê°€) " + @magic$ + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 
 			if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
 		}
@@ -119,15 +119,15 @@ FUNC_MONSTER_ATTACK	{
 	return;
 }
 
-//targetÀÌ ¼º¹®ÀÌ¸é ¾ÈµÇ°ÔÇÏ´Â°ÅÀÓ (¸÷¸¸µÊ) ¸÷ÇÑÅ×¾ÈÇÏ¸é »à ¤²2
-//callfunc "BATTLE_DOOR_CHECK", targetÀÇ id°ª;
+//targetì´ ì„±ë¬¸ì´ë©´ ì•ˆë˜ê²Œí•˜ëŠ”ê±°ì„ (ëª¹ë§Œë¨) ëª¹í•œí…Œì•ˆí•˜ë©´ ì‚‘ ã…‚2
+//callfunc "BATTLE_DOOR_CHECK", targetì˜ idê°’;
 FUNC_BATTLE_DOOR_CHECK	{
 	set @target_id, getarg(0);
 	if(istype(@target_id) == 2)
 	{
 		set @mobname$, get_mobname(@target_id);
-		if(@mobname$ == "¼º¹®1" || @mobname$ == "¼º¹®2" || @mobname$ == "¼º¹®3" || @mobname$ == "¼º¹®4" ||
-		@mobname$ == "¼º¹®5" || @mobname$ == "¼º¹®6" || @mobname$ == "¼º¹®7" || @mobname$ == "¼º¹®8")
+		if(@mobname$ == "ì„±ë¬¸1" || @mobname$ == "ì„±ë¬¸2" || @mobname$ == "ì„±ë¬¸3" || @mobname$ == "ì„±ë¬¸4" ||
+		@mobname$ == "ì„±ë¬¸5" || @mobname$ == "ì„±ë¬¸6" || @mobname$ == "ì„±ë¬¸7" || @mobname$ == "ì„±ë¬¸8")
 		{
 			end;
 		}
@@ -135,12 +135,12 @@ FUNC_BATTLE_DOOR_CHECK	{
 	return;
 }
 
-//callfunc "DROPITEM", objid(), È®·üº¯¼ö, È®·ü, ÅÛ, °¹¼ö;
+//callfunc "DROPITEM", objid(), í™•ë¥ ë³€ìˆ˜, í™•ë¥ , í…œ, ê°¯ìˆ˜;
 FUNC_DROPITEM	{
 	if(rand(1, getarg(1)) <= getarg(2))
 	{
 		if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
-		else { announce 5, get_mobname(getarg(0)) + "¸÷ µå¶øÀÌ ¿À·ù´Ù!"; }
+		else { announce 5, get_mobname(getarg(0)) + "ëª¹ ë“œëì´ ì˜¤ë¥˜ë‹¤!"; }
 		end;
 	}
 	return;
@@ -150,12 +150,12 @@ FUNC_DROPITEM2	{
 	if(rand(1, getarg(1)) <= getarg(2))
 	{
 		if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
-		else { announce 5, get_mobname(getarg(0)) + "¸÷ µå¶øÀÌ ¿À·ù´Ù!"; }
+		else { announce 5, get_mobname(getarg(0)) + "ëª¹ ë“œëì´ ì˜¤ë¥˜ë‹¤!"; }
 	}
 	return;
 }
 
-//=================±âÅ¸ ¸ó½ºÅÍ ¼­¹ö¿¡ °ü·ÃµÈ°Å(Äù½ºÆ®°°Àº°Å)=================
+//=================ê¸°íƒ€ ëª¬ìŠ¤í„° ì„œë²„ì— ê´€ë ¨ëœê±°(í€˜ìŠ¤íŠ¸ê°™ì€ê±°)=================
 FUNC_ALLQUEST	{
 	callfunc "NAKRANG";
 	callfunc "PARTYEXP";
@@ -171,8 +171,8 @@ FUNC_NAKRANG	{
 
 	if($nakrang5 == 1)
 	{
-		if(@last == name2mobid("´Ù¶÷Áã") && $count_squirrel < 5) { set $count_squirrel, $count_squirrel+1; }
-		else if(@last == name2mobid("Åä³¢") && $count_rabbit < 5) { set $count_rabbit, $count_rabbit+1; }
+		if(@last == name2mobid("ë‹¤ëŒì¥") && $count_squirrel < 5) { set $count_squirrel, $count_squirrel+1; }
+		else if(@last == name2mobid("í† ë¼") && $count_rabbit < 5) { set $count_rabbit, $count_rabbit+1; }
 	}
 	return;
 }
@@ -227,7 +227,7 @@ FUNC_KINGQUEST	{
 	set @id, myid();
 	set @last, lastkillmobid(@sd);
 
-	if(@last == name2mobid("ÀÚÈ£"))
+	if(@last == name2mobid("ìí˜¸"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -236,16 +236,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÀÚÈ£";
+					runscript @target_sd, "ìí˜¸";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÀÚÈ£";
+			runscript @sd, "ìí˜¸";
 		}
 	}
-	else if(@last == name2mobid("Ä£ÀÚÈ£"))
+	else if(@last == name2mobid("ì¹œìí˜¸"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -254,16 +254,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Ä£ÀÚÈ£";
+					runscript @target_sd, "ì¹œìí˜¸";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Ä£ÀÚÈ£";
+			runscript @sd, "ì¹œìí˜¸";
 		}
 	}
-	else if(@last == name2mobid("±¸ÀÚÈ£"))
+	else if(@last == name2mobid("êµ¬ìí˜¸"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -272,16 +272,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "±¸ÀÚÈ£";
+					runscript @target_sd, "êµ¬ìí˜¸";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "±¸ÀÚÈ£";
+			runscript @sd, "êµ¬ìí˜¸";
 		}
 	}
-	else if(@last == name2mobid("°Å¹Ì"))
+	else if(@last == name2mobid("ê±°ë¯¸"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -290,16 +290,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "°Å¹Ì";
+					runscript @target_sd, "ê±°ë¯¸";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "°Å¹Ì";
+			runscript @sd, "ê±°ë¯¸";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -308,16 +308,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í";
+					runscript @target_sd, "ì‚¬ë§ˆê·€";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í";
+			runscript @sd, "ì‚¬ë§ˆê·€";
 		}
 	}
-	else if(@last == name2mobid("°Å¹Ì¶û"))
+	else if(@last == name2mobid("ê±°ë¯¸ë‘"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -326,16 +326,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "°Å¹Ì¶û";
+					runscript @target_sd, "ê±°ë¯¸ë‘";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "°Å¹Ì¶û";
+			runscript @sd, "ê±°ë¯¸ë‘";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í¶û"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€ë‘"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -344,16 +344,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í¶û";
+					runscript @target_sd, "ì‚¬ë§ˆê·€ë‘";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í¶û";
+			runscript @sd, "ì‚¬ë§ˆê·€ë‘";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -362,16 +362,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í";
+					runscript @target_sd, "ì‚¬ë§ˆê·€";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í";
+			runscript @sd, "ì‚¬ë§ˆê·€";
 		}
 	}
-	else if(@last == name2mobid("¼­Çö°Å¹Ì"))
+	else if(@last == name2mobid("ì„œí˜„ê±°ë¯¸"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -380,16 +380,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¼­Çö°Å¹Ì";
+					runscript @target_sd, "ì„œí˜„ê±°ë¯¸";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¼­Çö°Å¹Ì";
+			runscript @sd, "ì„œí˜„ê±°ë¯¸";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -398,16 +398,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í";
+					runscript @target_sd, "ì‚¬ë§ˆê·€";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í";
+			runscript @sd, "ì‚¬ë§ˆê·€";
 		}
 	}
-	else if(@last == name2mobid("°¡Àç"))
+	else if(@last == name2mobid("ê°€ì¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -416,16 +416,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "°¡Àç";
+					runscript @target_sd, "ê°€ì¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "°¡Àç";
+			runscript @sd, "ê°€ì¬";
 		}
 	}
-	else if(@last == name2mobid("Àü°¥"))
+	else if(@last == name2mobid("ì „ê°ˆ"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -434,16 +434,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Àü°¥";
+					runscript @target_sd, "ì „ê°ˆ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Àü°¥";
+			runscript @sd, "ì „ê°ˆ";
 		}
 	}
-	else if(@last == name2mobid("°¡ÀçÀå"))
+	else if(@last == name2mobid("ê°€ì¬ì¥"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -452,16 +452,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "°¡ÀçÀå";
+					runscript @target_sd, "ê°€ì¬ì¥";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "°¡ÀçÀå";
+			runscript @sd, "ê°€ì¬ì¥";
 		}
 	}
-	else if(@last == name2mobid("Àü°¥Àå"))
+	else if(@last == name2mobid("ì „ê°ˆì¥"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -470,16 +470,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Àü°¥Àå";
+					runscript @target_sd, "ì „ê°ˆì¥";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Àü°¥Àå";
+			runscript @sd, "ì „ê°ˆì¥";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -488,16 +488,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í";
+					runscript @target_sd, "ì‚¬ë§ˆê·€";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í";
+			runscript @sd, "ì‚¬ë§ˆê·€";
 		}
 	}
-	else if(@last == name2mobid("¼­Çö°¡Àç"))
+	else if(@last == name2mobid("ì„œí˜„ê°€ì¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -506,16 +506,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¼­Çö°¡Àç";
+					runscript @target_sd, "ì„œí˜„ê°€ì¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¼­Çö°¡Àç";
+			runscript @sd, "ì„œí˜„ê°€ì¬";
 		}
 	}
-	else if(@last == name2mobid("À¯·É"))
+	else if(@last == name2mobid("ìœ ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -524,16 +524,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "À¯·É";
+					runscript @target_sd, "ìœ ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "À¯·É";
+			runscript @sd, "ìœ ë ¹";
 		}
 	}
-	else if(@last == name2mobid("ÃÊ±ŞÀ¯·É"))
+	else if(@last == name2mobid("ì´ˆê¸‰ìœ ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -542,16 +542,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÃÊ±ŞÀ¯·É";
+					runscript @target_sd, "ì´ˆê¸‰ìœ ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÃÊ±ŞÀ¯·É";
+			runscript @sd, "ì´ˆê¸‰ìœ ë ¹";
 		}
 	}
-	else if(@last == name2mobid("Áß±ŞÀ¯·É"))
+	else if(@last == name2mobid("ì¤‘ê¸‰ìœ ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -560,16 +560,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Áß±ŞÀ¯·É";
+					runscript @target_sd, "ì¤‘ê¸‰ìœ ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Áß±ŞÀ¯·É";
+			runscript @sd, "ì¤‘ê¸‰ìœ ë ¹";
 		}
 	}
-	else if(@last == name2mobid("»ç¸¶±Í"))
+	else if(@last == name2mobid("ì‚¬ë§ˆê·€"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -578,16 +578,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "»ç¸¶±Í";
+					runscript @target_sd, "ì‚¬ë§ˆê·€";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "»ç¸¶±Í";
+			runscript @sd, "ì‚¬ë§ˆê·€";
 		}
 	}
-	else if(@last == name2mobid("°í±ŞÀ¯·É"))
+	else if(@last == name2mobid("ê³ ê¸‰ìœ ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -596,16 +596,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "°í±ŞÀ¯·É";
+					runscript @target_sd, "ê³ ê¸‰ìœ ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "°í±ŞÀ¯·É";
+			runscript @sd, "ê³ ê¸‰ìœ ë ¹";
 		}
 	}
-	else if(@last == name2mobid("ÀÚ·É"))
+	else if(@last == name2mobid("ìë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -614,16 +614,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÀÚ·É";
+					runscript @target_sd, "ìë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÀÚ·É";
+			runscript @sd, "ìë ¹";
 		}
 	}
-	else if(@last == name2mobid("ÁÖ·É"))
+	else if(@last == name2mobid("ì£¼ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -632,16 +632,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÁÖ·É";
+					runscript @target_sd, "ì£¼ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÁÖ·É";
+			runscript @sd, "ì£¼ë ¹";
 		}
 	}
-	else if(@last == name2mobid("Áö·É"))
+	else if(@last == name2mobid("ì§€ë ¹"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -650,16 +650,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Áö·É";
+					runscript @target_sd, "ì§€ë ¹";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Áö·É";
+			runscript @sd, "ì§€ë ¹";
 		}
 	}
-	else if(@last == name2mobid("ÇØ°ñ"))
+	else if(@last == name2mobid("í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -668,16 +668,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÇØ°ñ";
+					runscript @target_sd, "í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÇØ°ñ";
+			runscript @sd, "í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("Ä®µçÇØ°ñ"))
+	else if(@last == name2mobid("ì¹¼ë“ í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -686,16 +686,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Ä®µçÇØ°ñ";
+					runscript @target_sd, "ì¹¼ë“ í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Ä®µçÇØ°ñ";
+			runscript @sd, "ì¹¼ë“ í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("³¯½ÚÇØ°ñ"))
+	else if(@last == name2mobid("ë‚ ìŒ˜í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -704,16 +704,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "³¯½ÚÇØ°ñ";
+					runscript @target_sd, "ë‚ ìŒ˜í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "³¯½ÚÇØ°ñ";
+			runscript @sd, "ë‚ ìŒ˜í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÄèµµÇØ°ñ"))
+	else if(@last == name2mobid("ì¾Œë„í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -722,16 +722,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÄèµµÇØ°ñ";
+					runscript @target_sd, "ì¾Œë„í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÄèµµÇØ°ñ";
+			runscript @sd, "ì¾Œë„í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÈæÇØ°ñ"))
+	else if(@last == name2mobid("í‘í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -740,16 +740,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÈæÇØ°ñ";
+					runscript @target_sd, "í‘í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÈæÇØ°ñ";
+			runscript @sd, "í‘í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÀÚÇØ°ñ"))
+	else if(@last == name2mobid("ìí•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -758,16 +758,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÀÚÇØ°ñ";
+					runscript @target_sd, "ìí•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÀÚÇØ°ñ";
+			runscript @sd, "ìí•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÁÖÇØ°ñ"))
+	else if(@last == name2mobid("ì£¼í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -776,16 +776,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÁÖÇØ°ñ";
+					runscript @target_sd, "ì£¼í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÁÖÇØ°ñ";
+			runscript @sd, "ì£¼í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÁöÇØ°ñ"))
+	else if(@last == name2mobid("ì§€í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -794,16 +794,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÁöÇØ°ñ";
+					runscript @target_sd, "ì§€í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÁöÇØ°ñ";
+			runscript @sd, "ì§€í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("ÄèµµÇØ°ñ"))
+	else if(@last == name2mobid("ì¾Œë„í•´ê³¨"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -812,16 +812,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÄèµµÇØ°ñ";
+					runscript @target_sd, "ì¾Œë„í•´ê³¨";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÄèµµÇØ°ñ";
+			runscript @sd, "ì¾Œë„í•´ê³¨";
 		}
 	}
-	else if(@last == name2mobid("Ã³³à±Í½Å"))
+	else if(@last == name2mobid("ì²˜ë…€ê·€ì‹ "))
 	{
 		if(party(@sd) != 0)
 		{
@@ -830,16 +830,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Ã³³à±Í½Å";
+					runscript @target_sd, "ì²˜ë…€ê·€ì‹ ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Ã³³à±Í½Å";
+			runscript @sd, "ì²˜ë…€ê·€ì‹ ";
 		}
 	}
-	else if(@last == name2mobid("´Ş°¿±Í½Å"))
+	else if(@last == name2mobid("ë‹¬ê±€ê·€ì‹ "))
 	{
 		if(party(@sd) != 0)
 		{
@@ -848,16 +848,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "´Ş°¿±Í½Å";
+					runscript @target_sd, "ë‹¬ê±€ê·€ì‹ ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "´Ş°¿±Í½Å";
+			runscript @sd, "ë‹¬ê±€ê·€ì‹ ";
 		}
 	}
-	else if(@last == name2mobid("ºÒ±Í½Å"))
+	else if(@last == name2mobid("ë¶ˆê·€ì‹ "))
 	{
 		if(party(@sd) != 0)
 		{
@@ -866,16 +866,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ºÒ±Í½Å";
+					runscript @target_sd, "ë¶ˆê·€ì‹ ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ºÒ±Í½Å";
+			runscript @sd, "ë¶ˆê·€ì‹ ";
 		}
 	}
-	else if(@last == name2mobid("µ¶Ãæ"))
+	else if(@last == name2mobid("ë…ì¶©"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -884,16 +884,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "µ¶Ãæ";
+					runscript @target_sd, "ë…ì¶©";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "µ¶Ãæ";
+			runscript @sd, "ë…ì¶©";
 		}
 	}
-	else if(@last == name2mobid("¸ù´Ş±Í½Å"))
+	else if(@last == name2mobid("ëª½ë‹¬ê·€ì‹ "))
 	{
 		if(party(@sd) != 0)
 		{
@@ -902,16 +902,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¸ù´Ş±Í½Å";
+					runscript @target_sd, "ëª½ë‹¬ê·€ì‹ ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¸ù´Ş±Í½Å";
+			runscript @sd, "ëª½ë‹¬ê·€ì‹ ";
 		}
 	}
-	else if(@last == name2mobid("ºøÀÚ·ç±Í½Å"))
+	else if(@last == name2mobid("ë¹—ìë£¨ê·€ì‹ "))
 	{
 		if(party(@sd) != 0)
 		{
@@ -920,16 +920,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ºøÀÚ·ç±Í½Å";
+					runscript @target_sd, "ë¹—ìë£¨ê·€ì‹ ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ºøÀÚ·ç±Í½Å";
+			runscript @sd, "ë¹—ìë£¨ê·€ì‹ ";
 		}
 	}
-	else if(@last == name2mobid("¼±ºñ°Ë°´"))
+	else if(@last == name2mobid("ì„ ë¹„ê²€ê°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -938,16 +938,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¼±ºñ°Ë°´";
+					runscript @target_sd, "ì„ ë¹„ê²€ê°";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¼±ºñ°Ë°´";
+			runscript @sd, "ì„ ë¹„ê²€ê°";
 		}
 	}
-	else if(@last == name2mobid("¼±ºñÆò¹Î"))
+	else if(@last == name2mobid("ì„ ë¹„í‰ë¯¼"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -956,16 +956,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¼±ºñÆò¹Î";
+					runscript @target_sd, "ì„ ë¹„í‰ë¯¼";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¼±ºñÆò¹Î";
+			runscript @sd, "ì„ ë¹„í‰ë¯¼";
 		}
 	}
-	else if(@last == name2mobid("Èä³ëÆò¹Î"))
+	else if(@last == name2mobid("í‰ë…¸í‰ë¯¼"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -974,16 +974,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Èä³ëÆò¹Î";
+					runscript @target_sd, "í‰ë…¸í‰ë¯¼";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Èä³ëÆò¹Î";
+			runscript @sd, "í‰ë…¸í‰ë¯¼";
 		}
 	}
-	else if(@last == name2mobid("Èä³ëÀü»ç"))
+	else if(@last == name2mobid("í‰ë…¸ì „ì‚¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -992,16 +992,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Èä³ëÀü»ç";
+					runscript @target_sd, "í‰ë…¸ì „ì‚¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Èä³ëÀü»ç";
+			runscript @sd, "í‰ë…¸ì „ì‚¬";
 		}
 	}
-	else if(@last == name2mobid("Èä³ë¹«»ç"))
+	else if(@last == name2mobid("í‰ë…¸ë¬´ì‚¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1010,16 +1010,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Èä³ë¹«»ç";
+					runscript @target_sd, "í‰ë…¸ë¬´ì‚¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Èä³ë¹«»ç";
+			runscript @sd, "í‰ë…¸ë¬´ì‚¬";
 		}
 	}
-	else if(@last == name2mobid("³ì»ìÄéÀÌ"))
+	else if(@last == name2mobid("ë…¹ì‚´ì¾¡ì´"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1028,16 +1028,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "³ì»ìÄéÀÌ";
+					runscript @target_sd, "ë…¹ì‚´ì¾¡ì´";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "³ì»ìÄéÀÌ";
+			runscript @sd, "ë…¹ì‚´ì¾¡ì´";
 		}
 	}
-	else if(@last == name2mobid("Ç¥È²»ìÄéÀÌ"))
+	else if(@last == name2mobid("í‘œí™©ì‚´ì¾¡ì´"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1046,16 +1046,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Ç¥È²»ìÄéÀÌ";
+					runscript @target_sd, "í‘œí™©ì‚´ì¾¡ì´";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Ç¥È²»ìÄéÀÌ";
+			runscript @sd, "í‘œí™©ì‚´ì¾¡ì´";
 		}
 	}
-	else if(@last == name2mobid("¿Ü´«È²Ãµ±¸"))
+	else if(@last == name2mobid("ì™¸ëˆˆí™©ì²œêµ¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1064,16 +1064,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¿Ü´«È²Ãµ±¸";
+					runscript @target_sd, "ì™¸ëˆˆí™©ì²œêµ¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¿Ü´«È²Ãµ±¸";
+			runscript @sd, "ì™¸ëˆˆí™©ì²œêµ¬";
 		}
 	}
-	else if(@last == name2mobid("¿Ü´«ÀÚÃµ±¸"))
+	else if(@last == name2mobid("ì™¸ëˆˆìì²œêµ¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1082,16 +1082,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¿Ü´«ÀÚÃµ±¸";
+					runscript @target_sd, "ì™¸ëˆˆìì²œêµ¬";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¿Ü´«ÀÚÃµ±¸";
+			runscript @sd, "ì™¸ëˆˆìì²œêµ¬";
 		}
 	}
-	else if(@last == name2mobid("ÈæÇ÷ÈÄ"))
+	else if(@last == name2mobid("í‘í˜ˆí›„"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1100,16 +1100,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÈæÇ÷ÈÄ";
+					runscript @target_sd, "í‘í˜ˆí›„";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÈæÇ÷ÈÄ";
+			runscript @sd, "í‘í˜ˆí›„";
 		}
 	}
-	else if(@last == name2mobid("³ìÇ÷ÈÄ"))
+	else if(@last == name2mobid("ë…¹í˜ˆí›„"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1118,16 +1118,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "³ìÇ÷ÈÄ";
+					runscript @target_sd, "ë…¹í˜ˆí›„";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "³ìÇ÷ÈÄ";
+			runscript @sd, "ë…¹í˜ˆí›„";
 		}
 	}
-	else if(@last == name2mobid("Èæ¼±¹®ÈÄ"))
+	else if(@last == name2mobid("í‘ì„ ë¬¸í›„"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1136,16 +1136,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Èæ¼±¹®ÈÄ";
+					runscript @target_sd, "í‘ì„ ë¬¸í›„";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Èæ¼±¹®ÈÄ";
+			runscript @sd, "í‘ì„ ë¬¸í›„";
 		}
 	}
-	else if(@last == name2mobid("ÈíÇ÷°­½Ã"))
+	else if(@last == name2mobid("í¡í˜ˆê°•ì‹œ"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1154,16 +1154,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "ÈíÇ÷°­½Ã";
+					runscript @target_sd, "í¡í˜ˆê°•ì‹œ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "ÈíÇ÷°­½Ã";
+			runscript @sd, "í¡í˜ˆê°•ì‹œ";
 		}
 	}
-	else if(@last == name2mobid("¾Æ±â°­½Ã"))
+	else if(@last == name2mobid("ì•„ê¸°ê°•ì‹œ"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1172,16 +1172,16 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "¾Æ±â°­½Ã";
+					runscript @target_sd, "ì•„ê¸°ê°•ì‹œ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "¾Æ±â°­½Ã";
+			runscript @sd, "ì•„ê¸°ê°•ì‹œ";
 		}
 	}
-	else if(@last == name2mobid("Èæ¹ß°­½Ã"))
+	else if(@last == name2mobid("í‘ë°œê°•ì‹œ"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1190,13 +1190,13 @@ FUNC_KINGQUEST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					runscript @target_sd, "Èæ¹ß°­½Ã";
+					runscript @target_sd, "í‘ë°œê°•ì‹œ";
 				}
 			}
 		}
 		else
 		{
-			runscript @sd, "Èæ¹ß°­½Ã";
+			runscript @sd, "í‘ë°œê°•ì‹œ";
 		}
 	}
 	return;
@@ -1207,29 +1207,11 @@ FUNC_SERVERQEUST	{
 	set @id, myid();
 	set @last, lastkillmobid(@sd);
 
-	if(@last == name2mobid("¼º¹®1") || @last == name2mobid("¼º¹®2") || @last == name2mobid("¼º¹®3") || @last == name2mobid("¼º¹®4") || @last == name2mobid("¼º¹®5") || @last == name2mobid("¼º¹®6") || @last == name2mobid("¼º¹®7") || @last == name2mobid("¼º¹®8"))
+	if(@last == name2mobid("ì„±ë¬¸1") || @last == name2mobid("ì„±ë¬¸2") || @last == name2mobid("ì„±ë¬¸3") || @last == name2mobid("ì„±ë¬¸4") || @last == name2mobid("ì„±ë¬¸5") || @last == name2mobid("ì„±ë¬¸6") || @last == name2mobid("ì„±ë¬¸7") || @last == name2mobid("ì„±ë¬¸8"))
 	{
-		announce 5, "[¾Ë¸²] " + get_clanname(@sd) + " ¹®ÆÄÀÇ " + get_name(@sd) + "´ÔÀÌ ¼º¹®À» ¶Õ°í Áø°İÁßÀÔ´Ï´Ù.";
+		announce 5, "[ì•Œë¦¼] " + get_clanname(@sd) + " ë¬¸íŒŒì˜ " + get_name(@sd) + "ë‹˜ì´ ì„±ë¬¸ì„ ëš«ê³  ì§„ê²©ì¤‘ì…ë‹ˆë‹¤.";
 	}
-	else if(@last == name2mobid("º¹È«"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("º¹È«Àâ±â"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("º¹È«Àâ±â"), 3;
-		}
-	}
-	else if(@last == name2mobid("º¹¾îÀå±º"))
+	else if(@last == name2mobid("ë³µí™"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1238,16 +1220,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellcast @target_sd, name2spellid("ÅÂÀÚÀüÀ½¹®¼­");
+					spellaether @target_sd, name2spellid("ë³µí™ì¡ê¸°"), 3;
 				}
 			}
 		}
 		else
 		{
-			spellcast @sd, name2spellid("ÅÂÀÚÀüÀ½¹®¼­");
+			spellaether @sd, name2spellid("ë³µí™ì¡ê¸°"), 3;
 		}
 	}
-	else if(@last == name2mobid("°ÔÀå±º"))
+	else if(@last == name2mobid("ë³µì–´ì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1256,17 +1238,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("°ÔÀå±ºÆ÷¹Ú"), 3;
+					spellcast @target_sd, name2spellid("íƒœìì „ìŒë¬¸ì„œ");
 				}
 			}
-			spellaether @sd, name2spellid("°ÔÀå±ºÆ÷¹Ú"), 3;
 		}
 		else
 		{
-			spellaether @sd, name2spellid("°ÔÀå±ºÆ÷¹Ú"), 3;
+			spellcast @sd, name2spellid("íƒœìì „ìŒë¬¸ì„œ");
 		}
 	}
-	else if(@last == name2mobid("¹®¾îÀå±º"))
+	else if(@last == name2mobid("ê²Œì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1275,16 +1256,17 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("¹®¾îÀå±ºÆ÷¹Ú"), 3;
+					spellaether @target_sd, name2spellid("ê²Œì¥êµ°í¬ë°•"), 3;
 				}
 			}
+			spellaether @sd, name2spellid("ê²Œì¥êµ°í¬ë°•"), 3;
 		}
 		else
 		{
-			spellaether @sd, name2spellid("¹®¾îÀå±ºÆ÷¹Ú"), 3;
+			spellaether @sd, name2spellid("ê²Œì¥êµ°í¬ë°•"), 3;
 		}
 	}
-	else if(@last == name2mobid("ÇØ¸¶º´»ç"))
+	else if(@last == name2mobid("ë¬¸ì–´ì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1293,16 +1275,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellcast @target_sd, name2spellid("ÇØ¸¶º´»çÀâ±â");
+					spellaether @target_sd, name2spellid("ë¬¸ì–´ì¥êµ°í¬ë°•"), 3;
 				}
 			}
 		}
 		else
 		{
-			spellcast @sd, name2spellid("ÇØ¸¶º´»çÀâ±â");
+			spellaether @sd, name2spellid("ë¬¸ì–´ì¥êµ°í¬ë°•"), 3;
 		}
 	}
-	else if(@last == name2mobid("ÇØ¸¶Àå±º"))
+	else if(@last == name2mobid("í•´ë§ˆë³‘ì‚¬"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1311,16 +1293,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellcast @target_sd, name2spellid("ÇØ¸¶Àå±ºÀâ±â");
+					spellcast @target_sd, name2spellid("í•´ë§ˆë³‘ì‚¬ì¡ê¸°");
 				}
 			}
 		}
 		else
 		{
-			spellcast @sd, name2spellid("ÇØ¸¶Àå±ºÀâ±â");
+			spellcast @sd, name2spellid("í•´ë§ˆë³‘ì‚¬ì¡ê¸°");
 		}
 	}
-	else if(@last == name2mobid("ÀÎ¾îÀå±º"))
+	else if(@last == name2mobid("í•´ë§ˆì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1329,16 +1311,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("ÀÎ¾îÀå±ºÀâ±â"), 3;
+					spellcast @target_sd, name2spellid("í•´ë§ˆì¥êµ°ì¡ê¸°");
 				}
 			}
 		}
 		else
 		{
-			spellaether @sd, name2spellid("ÀÎ¾îÀå±ºÀâ±â"), 3;
+			spellcast @sd, name2spellid("í•´ë§ˆì¥êµ°ì¡ê¸°");
 		}
 	}
-	else if(@last == name2mobid("»ó¾îÀå±º"))
+	else if(@last == name2mobid("ì¸ì–´ì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1347,17 +1329,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("»ó¾îÀå±ºÀâ±â"), 3;
+					spellaether @target_sd, name2spellid("ì¸ì–´ì¥êµ°ì¡ê¸°"), 3;
 				}
 			}
-			spellaether @sd, name2spellid("»ó¾îÀå±ºÀâ±â"), 3;
 		}
 		else
 		{
-			spellaether @sd, name2spellid("»ó¾îÀå±ºÀâ±â"), 3;
+			spellaether @sd, name2spellid("ì¸ì–´ì¥êµ°ì¡ê¸°"), 3;
 		}
 	}
-	else if(@last == name2mobid("ÇØÆÄ¸®Àå±º"))
+	else if(@last == name2mobid("ìƒì–´ì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1366,16 +1347,17 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("ÇØÆÄ¸®Àå±ºÀâ±â"), 3;
+					spellaether @target_sd, name2spellid("ìƒì–´ì¥êµ°ì¡ê¸°"), 3;
 				}
 			}
+			spellaether @sd, name2spellid("ìƒì–´ì¥êµ°ì¡ê¸°"), 3;
 		}
 		else
 		{
-			spellaether @sd, name2spellid("ÇØÆÄ¸®Àå±ºÀâ±â"), 3;
+			spellaether @sd, name2spellid("ìƒì–´ì¥êµ°ì¡ê¸°"), 3;
 		}
 	}
-	else if(@last == name2mobid("ÇØÆÄ¸®¼öÇÏ") || @last == name2mobid("ÇØÆÄ¸®ºÎÇÏ"))
+	else if(@last == name2mobid("í•´íŒŒë¦¬ì¥êµ°"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1384,16 +1366,16 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellcast @target_sd, name2spellid("Àü·«¹®¼­");
+					spellaether @target_sd, name2spellid("í•´íŒŒë¦¬ì¥êµ°ì¡ê¸°"), 3;
 				}
 			}
 		}
 		else
 		{
-			spellcast @sd, name2spellid("Àü·«¹®¼­");
+			spellaether @sd, name2spellid("í•´íŒŒë¦¬ì¥êµ°ì¡ê¸°"), 3;
 		}
 	}
-	else if(@last == name2mobid("Ã»ÀÇÅÂÀÚ"))
+	else if(@last == name2mobid("í•´íŒŒë¦¬ìˆ˜í•˜") || @last == name2mobid("í•´íŒŒë¦¬ë¶€í•˜"))
 	{
 		if(party(@sd) != 0)
 		{
@@ -1402,363 +1384,381 @@ FUNC_SERVERQEUST	{
 				set @target_sd, party_member(@sd, @loop);
 				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
 				{
-					spellaether @target_sd, name2spellid("Ã»ÀÇÅÂÀÚÆ÷È¹"), 3;
+					spellcast @target_sd, name2spellid("ì „ëµë¬¸ì„œ");
 				}
 			}
 		}
 		else
 		{
-			spellaether @sd, name2spellid("Ã»ÀÇÅÂÀÚÆ÷È¹"), 3;
+			spellcast @sd, name2spellid("ì „ëµë¬¸ì„œ");
 		}
 	}
-	else if(@last == name2mobid("Åä²¤ÀÌ"))
+	else if(@last == name2mobid("ì²­ì˜íƒœì"))
+	{
+		if(party(@sd) != 0)
+		{
+			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+			{
+				set @target_sd, party_member(@sd, @loop);
+				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+				{
+					spellaether @target_sd, name2spellid("ì²­ì˜íƒœìí¬íš"), 3;
+				}
+			}
+		}
+		else
+		{
+			spellaether @sd, name2spellid("ì²­ì˜íƒœìí¬íš"), 3;
+		}
+	}
+	else if(@last == name2mobid("í† ê¹½ì´"))
 	{
 		if($rabbit_liver == 1)
 		{
-			spellaether @sd, name2spellid("Åä²¤ÀÌÆ÷È¹"), 3;
+			spellaether @sd, name2spellid("í† ê¹½ì´í¬íš"), 3;
 		}
 	}
 	return;
 }
 
-ÀÚÈ£	{
-	if(!strcmp($quest_100_name$, "ÀÚÈ£"))
+ìí˜¸	{
+	if(!strcmp($quest_100_name$, "ìí˜¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Ä£ÀÚÈ£	{
-	if(!strcmp($quest_100_name$, "Ä£ÀÚÈ£"))
+ì¹œìí˜¸	{
+	if(!strcmp($quest_100_name$, "ì¹œìí˜¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-±¸ÀÚÈ£	{
-	if(!strcmp($quest_100_name$, "±¸ÀÚÈ£"))
+êµ¬ìí˜¸	{
+	if(!strcmp($quest_100_name$, "êµ¬ìí˜¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-°Å¹Ì	{
-	if(!strcmp($quest_100_name$, "°Å¹Ì"))
+ê±°ë¯¸	{
+	if(!strcmp($quest_100_name$, "ê±°ë¯¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-»ç¸¶±Í	{
-	if(!strcmp($quest_100_name$, "»ç¸¶±Í"))
+ì‚¬ë§ˆê·€	{
+	if(!strcmp($quest_100_name$, "ì‚¬ë§ˆê·€"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-°Å¹Ì¶û	{
-	if(!strcmp($quest_100_name$, "°Å¹Ì¶û"))
+ê±°ë¯¸ë‘	{
+	if(!strcmp($quest_100_name$, "ê±°ë¯¸ë‘"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-»ç¸¶±Í¶û	{
-	if(!strcmp($quest_100_name$, "»ç¸¶±Í¶û"))
+ì‚¬ë§ˆê·€ë‘	{
+	if(!strcmp($quest_100_name$, "ì‚¬ë§ˆê·€ë‘"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-¼­Çö°Å¹Ì	{
-	if(!strcmp($quest_100_name$, "¼­Çö°Å¹Ì"))
+ì„œí˜„ê±°ë¯¸	{
+	if(!strcmp($quest_100_name$, "ì„œí˜„ê±°ë¯¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-°¡Àç	{
-	if(!strcmp($quest_100_name$, "°¡Àç"))
+ê°€ì¬	{
+	if(!strcmp($quest_100_name$, "ê°€ì¬"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Àü°¥	{
-	if(!strcmp($quest_100_name$, "Àü°¥"))
+ì „ê°ˆ	{
+	if(!strcmp($quest_100_name$, "ì „ê°ˆ"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-°¡ÀçÀå	{
-	if(!strcmp($quest_100_name$, "°¡ÀçÀå"))
+ê°€ì¬ì¥	{
+	if(!strcmp($quest_100_name$, "ê°€ì¬ì¥"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Àü°¥Àå	{
-	if(!strcmp($quest_100_name$, "Àü°¥Àå"))
+ì „ê°ˆì¥	{
+	if(!strcmp($quest_100_name$, "ì „ê°ˆì¥"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-¼­Çö°¡Àç	{
-	if(!strcmp($quest_100_name$, "¼­Çö°¡Àç"))
+ì„œí˜„ê°€ì¬	{
+	if(!strcmp($quest_100_name$, "ì„œí˜„ê°€ì¬"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-À¯·É	{
-	if(!strcmp($quest_100_name$, "À¯·É"))
+ìœ ë ¹	{
+	if(!strcmp($quest_100_name$, "ìœ ë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÃÊ±ŞÀ¯·É	{
-	if(!strcmp($quest_100_name$, "ÃÊ±ŞÀ¯·É"))
+ì´ˆê¸‰ìœ ë ¹	{
+	if(!strcmp($quest_100_name$, "ì´ˆê¸‰ìœ ë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Áß±ŞÀ¯·É	{
-	if(!strcmp($quest_100_name$, "Áß±ŞÀ¯·É"))
+ì¤‘ê¸‰ìœ ë ¹	{
+	if(!strcmp($quest_100_name$, "ì¤‘ê¸‰ìœ ë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-°í±ŞÀ¯·É	{
-	if(!strcmp($quest_100_name$, "°í±ŞÀ¯·É"))
+ê³ ê¸‰ìœ ë ¹	{
+	if(!strcmp($quest_100_name$, "ê³ ê¸‰ìœ ë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÀÚ·É	{
-	if(!strcmp($quest_100_name$, "ÀÚ·É"))
+ìë ¹	{
+	if(!strcmp($quest_100_name$, "ìë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÁÖ·É	{
-	if(!strcmp($quest_100_name$, "ÁÖ·É"))
+ì£¼ë ¹	{
+	if(!strcmp($quest_100_name$, "ì£¼ë ¹"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Áö·É	{
-	if(!strcmp($quest_100_name$, "Áö¹Ì"))
+ì§€ë ¹	{
+	if(!strcmp($quest_100_name$, "ì§€ë¯¸"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÇØ°ñ"))
+í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Ä®µçÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "Ä®µçÇØ°ñ"))
+ì¹¼ë“ í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ì¹¼ë“ í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-³¯½ÚÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "³¯½ÚÇØ°ñ"))
+ë‚ ìŒ˜í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ë‚ ìŒ˜í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÄèµµÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÄèµµÇØ°ñ"))
+ì¾Œë„í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ì¾Œë„í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÈæÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÈæÇØ°ñ"))
+í‘í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "í‘í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÀÚÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÀÚÇØ°ñ"))
+ìí•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ìí•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÁÖÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÁÖÇØ°ñ"))
+ì£¼í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ì£¼í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ÁöÇØ°ñ	{
-	if(!strcmp($quest_100_name$, "ÁöÇØ°ñ"))
+ì§€í•´ê³¨	{
+	if(!strcmp($quest_100_name$, "ì§€í•´ê³¨"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-Ã³³à±Í½Å	{
-	if(!strcmp($quest_100_name$, "Ã³³à±Í½Å"))
+ì²˜ë…€ê·€ì‹ 	{
+	if(!strcmp($quest_100_name$, "ì²˜ë…€ê·€ì‹ "))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-´Ş°¿±Í½Å	{
-	if(!strcmp($quest_100_name$, "´Ş°¿±Í½Å"))
+ë‹¬ê±€ê·€ì‹ 	{
+	if(!strcmp($quest_100_name$, "ë‹¬ê±€ê·€ì‹ "))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ºÒ±Í½Å	{
-	if(!strcmp($quest_100_name$, "ºÒ±Í½Å"))
+ë¶ˆê·€ì‹ 	{
+	if(!strcmp($quest_100_name$, "ë¶ˆê·€ì‹ "))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-µ¶Ãæ	{
-	if(!strcmp($quest_100_name$, "µ¶Ãæ"))
+ë…ì¶©	{
+	if(!strcmp($quest_100_name$, "ë…ì¶©"))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-¸ù´Ş±Í½Å	{
-	if(!strcmp($quest_100_name$, "¸ù´Ş±Í½Å"))
+ëª½ë‹¬ê·€ì‹ 	{
+	if(!strcmp($quest_100_name$, "ëª½ë‹¬ê·€ì‹ "))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-ºøÀÚ·ç±Í½Å	{
-	if(!strcmp($quest_100_name$, "ºøÀÚ·ç±Í½Å"))
+ë¹—ìë£¨ê·€ì‹ 	{
+	if(!strcmp($quest_100_name$, "ë¹—ìë£¨ê·€ì‹ "))
 	{
 		set $quest_100_count, $quest_100_count+1;
 	}
 }
 
-¼±ºñ°Ë°´	{
-	if(!strcmp($quest_100_name_2$, "¼±ºñ°Ë°´"))
+ì„ ë¹„ê²€ê°	{
+	if(!strcmp($quest_100_name_2$, "ì„ ë¹„ê²€ê°"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-¼±ºñÆò¹Î	{
-	if(!strcmp($quest_100_name_2$, "¼±ºñÆò¹Î"))
+ì„ ë¹„í‰ë¯¼	{
+	if(!strcmp($quest_100_name_2$, "ì„ ë¹„í‰ë¯¼"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Èä³ëÆò¹Î	{
-	if(!strcmp($quest_100_name_2$, "Èä³ëÆò¹Î"))
+í‰ë…¸í‰ë¯¼	{
+	if(!strcmp($quest_100_name_2$, "í‰ë…¸í‰ë¯¼"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Èä³ëÀü»ç	{
-	if(!strcmp($quest_100_name_2$, "Èä³ëÀü»ç"))
+í‰ë…¸ì „ì‚¬	{
+	if(!strcmp($quest_100_name_2$, "í‰ë…¸ì „ì‚¬"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Èä³ë¹«»ç	{
-	if(!strcmp($quest_100_name_2$, "Èä³ë¹«»ç"))
+í‰ë…¸ë¬´ì‚¬	{
+	if(!strcmp($quest_100_name_2$, "í‰ë…¸ë¬´ì‚¬"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-³ì»ìÄéÀÌ	{
-	if(!strcmp($quest_100_name_2$, "³ì»ìÄéÀÌ"))
+ë…¹ì‚´ì¾¡ì´	{
+	if(!strcmp($quest_100_name_2$, "ë…¹ì‚´ì¾¡ì´"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Ç¥È²»ìÄéÀÌ	{
-	if(!strcmp($quest_100_name_2$, "Ç¥È²»ìÄéÀÌ"))
+í‘œí™©ì‚´ì¾¡ì´	{
+	if(!strcmp($quest_100_name_2$, "í‘œí™©ì‚´ì¾¡ì´"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-¿Ü´«È²Ãµ±¸	{
-	if(!strcmp($quest_100_name_2$, "¿Ü´«È²Ãµ±¸"))
+ì™¸ëˆˆí™©ì²œêµ¬	{
+	if(!strcmp($quest_100_name_2$, "ì™¸ëˆˆí™©ì²œêµ¬"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-¿Ü´«ÀÚÃµ±¸	{
-	if(!strcmp($quest_100_name_2$, "¿Ü´«ÀÚÃµ±¸"))
+ì™¸ëˆˆìì²œêµ¬	{
+	if(!strcmp($quest_100_name_2$, "ì™¸ëˆˆìì²œêµ¬"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-ÈæÇ÷ÈÄ	{
-	if(!strcmp($quest_100_name_2$, "ÈæÇ÷ÈÄ"))
+í‘í˜ˆí›„	{
+	if(!strcmp($quest_100_name_2$, "í‘í˜ˆí›„"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-³ìÇ÷ÈÄ	{
-	if(!strcmp($quest_100_name_2$, "³ìÇ÷ÈÄ"))
+ë…¹í˜ˆí›„	{
+	if(!strcmp($quest_100_name_2$, "ë…¹í˜ˆí›„"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Èæ¼±¹®ÈÄ	{
-	if(!strcmp($quest_100_name_2$, "Èæ¼±¹®ÈÄ"))
+í‘ì„ ë¬¸í›„	{
+	if(!strcmp($quest_100_name_2$, "í‘ì„ ë¬¸í›„"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-ÈíÇ÷°­½Ã	{
-	if(!strcmp($quest_100_name_2$, "ÈíÇ÷°­½Ã"))
+í¡í˜ˆê°•ì‹œ	{
+	if(!strcmp($quest_100_name_2$, "í¡í˜ˆê°•ì‹œ"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-¾Æ±â°­½Ã	{
-	if(!strcmp($quest_100_name_2$, "¾Æ±â°­½Ã"))
+ì•„ê¸°ê°•ì‹œ	{
+	if(!strcmp($quest_100_name_2$, "ì•„ê¸°ê°•ì‹œ"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}
 }
 
-Èæ¹ß°­½Ã	{
-	if(!strcmp($quest_100_name_2$, "Èæ¹ß°­½Ã"))
+í‘ë°œê°•ì‹œ	{
+	if(!strcmp($quest_100_name_2$, "í‘ë°œê°•ì‹œ"))
 	{
 		set $quest_100_count_2, $quest_100_count_2+1;
 	}

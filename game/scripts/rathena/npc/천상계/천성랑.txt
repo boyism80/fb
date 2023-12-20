@@ -1,4 +1,4 @@
-Ãµ¼º¶û	{
+ì²œì„±ë‘	{
 	image 0, 50, 0;
 	set @sd, mysd();
 	set @id, myid();
@@ -7,12 +7,12 @@
 	if($fourclass == 7) { goto POS00000; }
 	else { set @pos, dialog(1, 0, 1, "..."); end; }
 POS00000:
-	if(get_job(@sd) == 1) { set @jobname$, "°Ë¼º"; }
-	else if(get_job(@sd) == 2) { set @jobname$, "ÅÂ¼º"; }
-	else if(get_job(@sd) == 3) { set @jobname$, "ÇöÀÚ"; }
-	else if(get_job(@sd) == 4) { set @jobname$, "Áø¼±"; }
+	if(get_job(@sd) == 1) { set @jobname$, "ê²€ì„±"; }
+	else if(get_job(@sd) == 2) { set @jobname$, "íƒœì„±"; }
+	else if(get_job(@sd) == 3) { set @jobname$, "í˜„ì"; }
+	else if(get_job(@sd) == 4) { set @jobname$, "ì§„ì„ "; }
 
-	set @pos, list2(@ret, 1, 0, "´ç½ÅÀº Áö±İ²¯ ¼ö¸¹Àº ¼ö·ÃÀ» °ÅÃÄ ÀÎ°£À¸·Î¼­ ¿À¸£±â\\nÈûµç °æÁö¿¡ µµ´ŞÇÏ¼Ì°í, ´õ¿íÀÌ ¼¼»óÀ» Á¾¸»·ÎºÎÅÍ\\nº¸È£ÇÏ´Â ¾÷ÀûÀ» ¼¼¿ì¼ÌÀ¸´Ï " + @jobname$ + "À¸·Î ºÒ¸®¿ì½Ã±â¿¡\\nºÎÁ·ÇÔÀÌ ¾ø½À´Ï´Ù.\\nÁö±İ ¹Ù·Î ½Â±ŞÀ» ¿øÇÏ½Ã³ª¿ä?", "¿¹", "¾Æ´¢");
+	set @pos, list2(@ret, 1, 0, "ë‹¹ì‹ ì€ ì§€ê¸ˆê» ìˆ˜ë§ì€ ìˆ˜ë ¨ì„ ê±°ì³ ì¸ê°„ìœ¼ë¡œì„œ ì˜¤ë¥´ê¸°\\ní˜ë“  ê²½ì§€ì— ë„ë‹¬í•˜ì…¨ê³ , ë”ìš±ì´ ì„¸ìƒì„ ì¢…ë§ë¡œë¶€í„°\\në³´í˜¸í•˜ëŠ” ì—…ì ì„ ì„¸ìš°ì…¨ìœ¼ë‹ˆ " + @jobname$ + "ìœ¼ë¡œ ë¶ˆë¦¬ìš°ì‹œê¸°ì—\\në¶€ì¡±í•¨ì´ ì—†ìŠµë‹ˆë‹¤.\\nì§€ê¸ˆ ë°”ë¡œ ìŠ¹ê¸‰ì„ ì›í•˜ì‹œë‚˜ìš”?", "ì˜ˆ", "ì•„ë‡¨");
 	if(@pos == 0) { end; }
 	else if(@ret == 1)
 	{
@@ -21,20 +21,20 @@ POS00000:
 
 		if(get_level(@sd) >= 99 && get_purehp(@sd) >= @hp[get_job(@sd)-1] && get_puremp(@sd) >= @mp[get_job(@sd)-1])
 		{
-			if(countitem(name2itemid("¹İ°íÀÇ½ÉÀå")) == 0)
+			if(countitem(name2itemid("ë°˜ê³ ì˜ì‹¬ì¥")) == 0)
 			{
-				set @pos, dialog(0, 0, 0, "¹İ°íÀÇ½ÉÀåÀÌ ¾ø½À´Ï´Ù.");
+				set @pos, dialog(0, 0, 0, "ë°˜ê³ ì˜ì‹¬ì¥ì´ ì—†ìŠµë‹ˆë‹¤.");
 			}
 			else
 			{
-				delitem @sd, name2itemid("¹İ°íÀÇ½ÉÀå"), 1;
-				message @sd, 3, "¹İ°íÀÇ½ÉÀå ÁÖ¾ú½À´Ï´Ù";
+				delitem @sd, name2itemid("ë°˜ê³ ì˜ì‹¬ì¥"), 1;
+				message @sd, 3, "ë°˜ê³ ì˜ì‹¬ì¥ ì£¼ì—ˆìŠµë‹ˆë‹¤";
 
 				set_joblevel @sd, @joblv+1;
 
-				spellaether @sd, name2spellid("½Â±Şº¸»ó"), 1;
+				spellaether @sd, name2spellid("ìŠ¹ê¸‰ë³´ìƒ"), 1;
 
-				broadcast 4, "(( [" + get_name(@sd) + "]´ÔÀÌ " + get_jobname(@sd) + "À¸·Î ½Â±ŞÇÏ¿´½À´Ï´Ù. ÃàÇÏÇÕ´Ï´Ù! ))";
+				broadcast 4, "(( [" + get_name(@sd) + "]ë‹˜ì´ " + get_jobname(@sd) + "ìœ¼ë¡œ ìŠ¹ê¸‰í•˜ì˜€ìŠµë‹ˆë‹¤. ì¶•í•˜í•©ë‹ˆë‹¤! ))";
 
 				set $fourclass, 8;
 			}
@@ -43,7 +43,7 @@ POS00000:
 		}
 		else
 		{
-			set @pos, dialog(0, 0, 0, "Á»´õ ¼ö·ÃÀ» ½×°í¿À¼¼¿ä.");
+			set @pos, dialog(0, 0, 0, "ì¢€ë” ìˆ˜ë ¨ì„ ìŒ“ê³ ì˜¤ì„¸ìš”.");
 			end;
 		}
 	}

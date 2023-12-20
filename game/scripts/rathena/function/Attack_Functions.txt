@@ -1,4 +1,4 @@
-//callfunc "MAGICATTACK", ¿ÉÁ§¾Æµğ, ¼¼¼Ç¾Æµğ, µ¥¹ÌÁö, Ã¼·Â°ª, ¸¶³ª°ª, ¸»ÇÏ±â, ÀÌÆåÆ®¹øÈ£, ¼Ò¸®¹øÈ£, ¾×¼ÇÅ¸ÀÔ;
+//callfunc "MAGICATTACK", ì˜µì ì•„ë””, ì„¸ì…˜ì•„ë””, ë°ë¯¸ì§€, ì²´ë ¥ê°’, ë§ˆë‚˜ê°’, ë§í•˜ê¸°, ì´í™íŠ¸ë²ˆí˜¸, ì†Œë¦¬ë²ˆí˜¸, ì•¡ì…˜íƒ€ì…;
 FUNC_MAGICATTACK	{
 	set @id, getarg(0);
 	set @sd, getarg(1);
@@ -28,10 +28,10 @@ FUNC_MAGICATTACK	{
 		{
 			set @r, rand(1, 10);
 			set @target_sd, id2sd(@target_id);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+			if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 			{
 				damage @target_id, @id, @damage, 3;
-				message @sd, 3, "¸¶¹ı º¸È£!!";
+				message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 				end;
 			}
 			damage @id, @target_id, @damage, 3;
@@ -44,7 +44,7 @@ FUNC_MAGICATTACK	{
 	return;
 }
 
-//callfunc "MAGICATTACK1", ¿ÉÁ§¾Æµğ, ¼¼¼Ç¾Æµğ, µ¥¹ÌÁö, Ã¼·Â°ª, ¸¶³ª°ª, ¸»ÇÏ±â, ÀÌÆåÆ®¹øÈ£, ¼Ò¸®¹øÈ£, ¾×¼ÇÅ¸ÀÔ;
+//callfunc "MAGICATTACK1", ì˜µì ì•„ë””, ì„¸ì…˜ì•„ë””, ë°ë¯¸ì§€, ì²´ë ¥ê°’, ë§ˆë‚˜ê°’, ë§í•˜ê¸°, ì´í™íŠ¸ë²ˆí˜¸, ì†Œë¦¬ë²ˆí˜¸, ì•¡ì…˜íƒ€ì…;
 FUNC_MAGICATTACK1	{
 	set @id, getarg(0);
 	set @sd, getarg(1);
@@ -91,11 +91,11 @@ FUNC_MAGICATTACK1	{
 		{
 			set @r, rand(1, 10);
 			set @target_sd, id2sd(@target_id);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+			if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 			{
 				callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
 				damage @target_id, @id, @damage, 3;
-				message @sd, 3, "¸¶¹ı º¸È£!!";
+				message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 				goto NEXT;
 			}
 			callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
@@ -124,11 +124,11 @@ NEXT:
 				{
 					set @r, rand(1, 10);
 					set @target_sd, id2sd(@target_id);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+					if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 					{
 						callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
 						damage @target_id, @id, @damage, 3;
-						message @sd, 3, "¸¶¹ı º¸È£!!";
+						message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 						goto NEXT1;
 					}
 					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
@@ -160,11 +160,11 @@ NEXT1:
 				{
 					set @r, rand(1, 10);
 					set @target_sd, id2sd(@target_id);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+					if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 					{
 						callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
 						damage @target_id, @id, @damage, 3;
-						message @sd, 3, "¸¶¹ı º¸È£!!";
+						message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 						goto NEXT2;
 					}
 					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
@@ -190,7 +190,7 @@ NEXT2:
 	return;
 }
 
-//callfunc "MAGICIANSPELL", ¿ÉÁ§¾Æµğ, ¼¼¼Ç¾Æµğ, »ç¿îµå, µ¥¹ÌÁö, ÀÌÆå¹øÈ£, ¸¶¹ıÀÌ¸§, ¸¶³ª;
+//callfunc "MAGICIANSPELL", ì˜µì ì•„ë””, ì„¸ì…˜ì•„ë””, ì‚¬ìš´ë“œ, ë°ë¯¸ì§€, ì´í™ë²ˆí˜¸, ë§ˆë²•ì´ë¦„, ë§ˆë‚˜;
 FUNC_MAGICIANSPELL	{
 	set @id, getarg(0);
 	set @sd, getarg(1);
@@ -211,36 +211,36 @@ FUNC_MAGICIANSPELL	{
 			if(ismapoption(@sd, 6) && (@target_id != @id))
 			{
 				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+				if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 				{
 					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
 					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "¸¶¹ı º¸È£!!";
+					message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 					goto NEXT;
 				}
 				if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
 				damage @id, @target_id, @damage, 0;
 				if(@target_sd != @sd)
 				{
-					message @target_sd, 3, get_name(@sd) + "´ÔÀÌ " + getarg(5) +"À»(¸¦) °¡ÇÕ´Ï´Ù.";
+					message @target_sd, 3, get_name(@sd) + "ë‹˜ì´ " + getarg(5) +"ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 				}
 			}
-			else { message @sd, 3, "°É¸®Áö ¾Ê½À´Ï´Ù."; end; }
+			else { message @sd, 3, "ê±¸ë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤."; end; }
 		}
 		else if(istype(@target_id) == 2)
 		{
 			if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
 			damage @id, @target_id, @damage, 0;
 		}
-		else { message @sd, 3, "°É¸®Áö ¾Ê½À´Ï´Ù."; end; }
+		else { message @sd, 3, "ê±¸ë¦¬ì§€ ì•ŠìŠµë‹ˆë‹¤."; end; }
 NEXT:
 		set_mp @sd, get_mp(@sd)-getarg(6);
-		message @sd, 3, getarg(5) + "À»(¸¦) ¿Ü¿ü½À´Ï´Ù.";
+		message @sd, 3, getarg(5) + "ì„(ë¥¼) ì™¸ì› ìŠµë‹ˆë‹¤.";
 	}
 	return;
 }
 
-//callfunc "MAGICIANCHOM", ¿ÉÁ§¾Æµğ, ¼¼¼Ç¾Æµğ, »ç¿îµå, µ¥¹ÌÁö, ÀÌÆå¹øÈ£, ¸¶¹ıÀÌ¸§, ¸¶³ª;
+//callfunc "MAGICIANCHOM", ì˜µì ì•„ë””, ì„¸ì…˜ì•„ë””, ì‚¬ìš´ë“œ, ë°ë¯¸ì§€, ì´í™ë²ˆí˜¸, ë§ˆë²•ì´ë¦„, ë§ˆë‚˜;
 FUNC_MAGICIANCHOM	{
 	set @id, getarg(0);
 	set @sd, getarg(1);
@@ -267,17 +267,17 @@ FUNC_MAGICIANCHOM	{
 			{
 				set @target_sd, id2sd(@target_id);
 				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("¹İÅº°ø")))
+				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("ë°˜íƒ„ê³µ")))
 				{
 					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
 					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "¸¶¹ı º¸È£!!";
+					message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 					goto NEXT;
 				}
 				effect @target_id, @effect;
 				damage @id, @target_id, @damage, 0;
 				sound @target_id, @sound;
-				message @target_sd, 3, get_name(@sd) + "´ÔÀÌ " + getarg(5) + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+				message @target_sd, 3, get_name(@sd) + "ë‹˜ì´ " + getarg(5) + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 			}
 			else if(istype(@target_id) == 2)
 			{
@@ -292,14 +292,14 @@ FUNC_MAGICIANCHOM	{
 		action @id, 6, 30, @sound;
 NEXT:
 		set_mp @sd, get_mp(@sd)-getarg(6);
-		message @sd, 3, getarg(5) + "À»(¸¦) ¿Ü¿ü½À´Ï´Ù.";
+		message @sd, 3, getarg(5) + "ì„(ë¥¼) ì™¸ì› ìŠµë‹ˆë‹¤.";
 	}
 	deletearray @target_x[0], getarraysize(@target_x);
 	deletearray @target_y[0], getarraysize(@target_y);
 	return;
 }
 
-//callfunc "TARGETMAGICIANCHOM", ¿ÉÁ§¾Æµğ, ¼¼¼Ç¾Æµğ, »ç¿îµå, µ¥¹ÌÁö, ÀÌÆå¹øÈ£, ¸¶¹ıÀÌ¸§, ¸¶³ª;
+//callfunc "TARGETMAGICIANCHOM", ì˜µì ì•„ë””, ì„¸ì…˜ì•„ë””, ì‚¬ìš´ë“œ, ë°ë¯¸ì§€, ì´í™ë²ˆí˜¸, ë§ˆë²•ì´ë¦„, ë§ˆë‚˜;
 FUNC_TARGETMAGICIANCHOM	{
 	set @id, getarg(0);
 	set @sd, getarg(1);
@@ -322,17 +322,17 @@ FUNC_TARGETMAGICIANCHOM	{
 		{
 			set @target_sd, id2sd(@script_target);
 			set @r, rand(1, 10);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+			if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 			{
 				callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
 				damage @script_target, @id, @damage, 0;
-				message @sd, 3, "¸¶¹ı º¸È£!!";
+				message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 				goto NEXT;
 			}
 			effect @script_target, @effect;
 			damage @id, @script_target, @damage, 0;
 			sound @script_target, @sound;
-			message @target_sd, 3, get_name(@sd) + "´ÔÀÌ " + getarg(5) + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+			message @target_sd, 3, get_name(@sd) + "ë‹˜ì´ " + getarg(5) + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 		}
 		else if(istype(@script_target) == 2)
 		{
@@ -354,17 +354,17 @@ NEXT:
 			{
 				set @target_sd, id2sd(@target_id);
 				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("¹İÅº°ø")))
+				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("ë°˜íƒ„ê³µ")))
 				{
 					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
 					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "¸¶¹ı º¸È£!!";
+					message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 					goto NEXT2;
 				}
 				effect @target_id, @effect;
 				damage @id, @target_id, @damage, 0;
 				sound @target_id, @sound;
-				message @target_sd, 3, get_name(@sd) + "´ÔÀÌ " + getarg(5) + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+				message @target_sd, 3, get_name(@sd) + "ë‹˜ì´ " + getarg(5) + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 			}
 			else if(istype(@target_id) == 2)
 			{
@@ -378,14 +378,14 @@ NEXT:
 	{
 		action @id, 6, 30, @sound;
 NEXT2:
-		message @sd, 3, getarg(5) + "À»(¸¦) ¿Ü¿ü½À´Ï´Ù.";
+		message @sd, 3, getarg(5) + "ì„(ë¥¼) ì™¸ì› ìŠµë‹ˆë‹¤.";
 	}
 	deletearray @target_x[0], getarraysize(@target_x);
 	deletearray @target_y[0], getarraysize(@target_y);
 	return;
 }
 
-//callfunc "ITEMEFFECTMAGIC", (0: ¿ø°Å¸®, 1: ±ÙÁ¢, 2: °İ, 3: ÇÊ»ì), È®·üº¯¼ö?, ÀÌÆåÆ®, È¿°úÀ½, µ¥¹ÌÁö1, µ¥¹ÌÁö2, "°İÀÌ¸§", È®·ü;
+//callfunc "ITEMEFFECTMAGIC", (0: ì›ê±°ë¦¬, 1: ê·¼ì ‘, 2: ê²©, 3: í•„ì‚´), í™•ë¥ ë³€ìˆ˜?, ì´í™íŠ¸, íš¨ê³¼ìŒ, ë°ë¯¸ì§€1, ë°ë¯¸ì§€2, "ê²©ì´ë¦„", í™•ë¥ ;
 FUNC_ITEMEFFECTMAGIC	{
 	set @sd, mysd();
 	set @id, myid();
@@ -405,13 +405,13 @@ FUNC_ITEMEFFECTMAGIC	{
 				if(ismapoption(@sd, 6))
 				{
 					set @r, rand(1, 10);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("¹İÅº°ø")))
+					if(@r <= 5 && spellaethered(@target_sd, name2spellid("ë°˜íƒ„ê³µ")))
 					{
 						callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
 						set_ac @target_sd, 1;
 						damage @target_id, @id, @damage, 2;
 						if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
-						message @sd, 3, "¸¶¹ı º¸È£!!";
+						message @sd, 3, "ë§ˆë²• ë³´í˜¸!!";
 						goto NEXT1;
 					}
 					effect @target_id, @effect;
@@ -421,7 +421,7 @@ FUNC_ITEMEFFECTMAGIC	{
 					set_ac @target_sd, 1;
 					damage @id, @target_id, @damage, @type;
 					if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
-					message @target_sd, 3, get_name(@sd) + "´Ô²²¼­ " + @name$ + "À»(¸¦) °¡ÇÕ´Ï´Ù.";
+					message @target_sd, 3, get_name(@sd) + "ë‹˜ê»˜ì„œ " + @name$ + "ì„(ë¥¼) ê°€í•©ë‹ˆë‹¤.";
 				}
 NEXT1:
 			}
