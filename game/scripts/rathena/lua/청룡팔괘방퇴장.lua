@@ -1,0 +1,6 @@
+{
+    set @sd, mysd();
+    set @id, myid();
+
+    warp @sd, name2mapid("청룡성입구"), rand(16, 17), 31;
+}

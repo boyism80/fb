@@ -1,440 +1,440 @@
 //callfunc "MAGICATTACK", 옵젝아디, 세션아디, 데미지, 체력값, 마나값, 말하기, 이펙트번호, 소리번호, 액션타입;
-FUNC_MAGICATTACK	{
-	set @id, getarg(0);
-	set @sd, getarg(1);
-	set @damage, getarg(2);
-	set @hp, getarg(3);
-	set @mp, getarg(4);
-	set @say$, getarg(5);
-	
-	if(@mp != 0) { callfunc "MANA_DELAY", @mp, 0, @sd; }
+FUNC_MAGICATTACK    {
+    set @id, getarg(0);
+    set @sd, getarg(1);
+    set @damage, getarg(2);
+    set @hp, getarg(3);
+    set @mp, getarg(4);
+    set @say$, getarg(5);
+    
+    if(@mp != 0) { callfunc "MANA_DELAY", @mp, 0, @sd; }
 
-	if($finalattack) { set @damage, @damage + (@damage/2); }
-	if($damageup) { set @damage, @damage*2; }
+    if($finalattack) { set @damage, @damage + (@damage/2); }
+    if($damageup) { set @damage, @damage*2; }
 
-	set @target_id, obj_getfront();
-	if(@target_id > 0)
-	{
-		if(@say$ != "-1") { say @id, 2, @say$; }
+    set @target_id, obj_getfront();
+    if(@target_id > 0)
+    {
+        if(@say$ != "-1") { say @id, 2, @say$; }
 
-		callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+        callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
 
-		if(istype(@target_id) == 2)
-		{
-			damage @id, @target_id, @damage, 3;
-			set_hp @sd, @hp;
-		}
-		else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
-		{
-			set @r, rand(1, 10);
-			set @target_sd, id2sd(@target_id);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-			{
-				damage @target_id, @id, @damage, 3;
-				message @sd, 3, "마법 보호!!";
-				end;
-			}
-			damage @id, @target_id, @damage, 3;
-			set_hp @sd, @hp;
-		}
-		action @id, getarg(8), 30, 0;
-		set_mp @sd, get_mp(@sd)-@mp; 
-		sound @id, getarg(7);
-	}
-	return;
+        if(istype(@target_id) == 2)
+        {
+            damage @id, @target_id, @damage, 3;
+            set_hp @sd, @hp;
+        }
+        else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
+        {
+            set @r, rand(1, 10);
+            set @target_sd, id2sd(@target_id);
+            if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+            {
+                damage @target_id, @id, @damage, 3;
+                message @sd, 3, "마법 보호!!";
+                end;
+            }
+            damage @id, @target_id, @damage, 3;
+            set_hp @sd, @hp;
+        }
+        action @id, getarg(8), 30, 0;
+        set_mp @sd, get_mp(@sd)-@mp; 
+        sound @id, getarg(7);
+    }
+    return;
 }
 
 //callfunc "MAGICATTACK1", 옵젝아디, 세션아디, 데미지, 체력값, 마나값, 말하기, 이펙트번호, 소리번호, 액션타입;
-FUNC_MAGICATTACK1	{
-	set @id, getarg(0);
-	set @sd, getarg(1);
-	set @damage, getarg(2);
-	set @hp, getarg(3);
-	set @mp, getarg(4);
-	set @say$, getarg(5);
-	set @play, 0;
-	
-	if(@mp != 0) { callfunc "MANA_DELAY", @mp, 0, @sd; }
+FUNC_MAGICATTACK1    {
+    set @id, getarg(0);
+    set @sd, getarg(1);
+    set @damage, getarg(2);
+    set @hp, getarg(3);
+    set @mp, getarg(4);
+    set @say$, getarg(5);
+    set @play, 0;
+    
+    if(@mp != 0) { callfunc "MANA_DELAY", @mp, 0, @sd; }
 
-	switch(get_side(@id))
-	{
-	case 0:
-		set @x, get_x(@id)-1;
-		set @y, get_y(@id)-2;
-		break;
-	case 1:
-		set @x, get_x(@id)+2;
-		set @y, get_y(@id)-1;
-		break;
-	case 2:
-		set @x, get_x(@id)-1;
-		set @y, get_y(@id)+2;
-		break;
-	case 3:
-		set @x, get_x(@id)-2;
-		set @y, get_y(@id)-1;
-		break;
-	}
-	
-	if($finalattack) { set @damage, @damage + (@damage/2); }
-	if($damageup) { set @damage, @damage*2; }
+    switch(get_side(@id))
+    {
+    case 0:
+        set @x, get_x(@id)-1;
+        set @y, get_y(@id)-2;
+        break;
+    case 1:
+        set @x, get_x(@id)+2;
+        set @y, get_y(@id)-1;
+        break;
+    case 2:
+        set @x, get_x(@id)-1;
+        set @y, get_y(@id)+2;
+        break;
+    case 3:
+        set @x, get_x(@id)-2;
+        set @y, get_y(@id)-1;
+        break;
+    }
+    
+    if($finalattack) { set @damage, @damage + (@damage/2); }
+    if($damageup) { set @damage, @damage*2; }
 
-	set @target_id, obj_getfront();
-	if(@target_id > 0)
-	{
-		if(istype(@target_id) == 2)
-		{
-			callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-			damage @id, @target_id, @damage, 3;
-		}
-		else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
-		{
-			set @r, rand(1, 10);
-			set @target_sd, id2sd(@target_id);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-			{
-				callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
-				damage @target_id, @id, @damage, 3;
-				message @sd, 3, "마법 보호!!";
-				goto NEXT;
-			}
-			callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-			damage @id, @target_id, @damage, 3;
-		}
+    set @target_id, obj_getfront();
+    if(@target_id > 0)
+    {
+        if(istype(@target_id) == 2)
+        {
+            callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+            damage @id, @target_id, @damage, 3;
+        }
+        else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
+        {
+            set @r, rand(1, 10);
+            set @target_sd, id2sd(@target_id);
+            if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+            {
+                callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
+                damage @target_id, @id, @damage, 3;
+                message @sd, 3, "마법 보호!!";
+                goto NEXT;
+            }
+            callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+            damage @id, @target_id, @damage, 3;
+        }
 NEXT:
-		set @play, @play+1;
-	}
-	for(set @i, 0; @i < 3; set @i, @i+1)
-	{
-		if(@side == 0 || @side == 2)
-		{
-			if((@x+@i >= mapwidth() || @x < 0) || (@y >= mapheight() || @y < 0 ))
-			{
-				continue;
-			}
-			set @target_id, obj_getxy(@x+@i, @y);
-			if(@target_id > 0)
-			{
-				if(istype(@target_id) == 2)
-				{
-					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-					damage @id, @target_id, @damage, 3;
-				}
-				else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
-				{
-					set @r, rand(1, 10);
-					set @target_sd, id2sd(@target_id);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-					{
-						callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
-						damage @target_id, @id, @damage, 3;
-						message @sd, 3, "마법 보호!!";
-						goto NEXT1;
-					}
-					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-					damage @id, @target_id, @damage, 3;
-				}
-				else
-				{
-					set_mp @sd, get_mp(@sd)-@mp;
-				}
+        set @play, @play+1;
+    }
+    for(set @i, 0; @i < 3; set @i, @i+1)
+    {
+        if(@side == 0 || @side == 2)
+        {
+            if((@x+@i >= mapwidth() || @x < 0) || (@y >= mapheight() || @y < 0 ))
+            {
+                continue;
+            }
+            set @target_id, obj_getxy(@x+@i, @y);
+            if(@target_id > 0)
+            {
+                if(istype(@target_id) == 2)
+                {
+                    callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+                    damage @id, @target_id, @damage, 3;
+                }
+                else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
+                {
+                    set @r, rand(1, 10);
+                    set @target_sd, id2sd(@target_id);
+                    if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+                    {
+                        callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
+                        damage @target_id, @id, @damage, 3;
+                        message @sd, 3, "마법 보호!!";
+                        goto NEXT1;
+                    }
+                    callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+                    damage @id, @target_id, @damage, 3;
+                }
+                else
+                {
+                    set_mp @sd, get_mp(@sd)-@mp;
+                }
 NEXT1:
-				set @play, @play+1;
-			}
-		}
-		else
-		{
-			if((@x >= mapwidth() || @x < 0) || (@y >= mapheight() || @y-@i < 0 ))
-			{
-				continue;
-			}
-			set @target_id, obj_getxy(@x, @y+@i);
-			if(@target_id > 0)
-			{
-				if(istype(@target_id) == 2)
-				{
-					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-					damage @id, @target_id, @damage, 3;
-				}
-				else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
-				{
-					set @r, rand(1, 10);
-					set @target_sd, id2sd(@target_id);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-					{
-						callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
-						damage @target_id, @id, @damage, 3;
-						message @sd, 3, "마법 보호!!";
-						goto NEXT2;
-					}
-					callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
-					damage @id, @target_id, @damage, 3;
-				}
-				else
-				{
-					set_mp @sd, get_mp(@sd)-@mp;
-				}
+                set @play, @play+1;
+            }
+        }
+        else
+        {
+            if((@x >= mapwidth() || @x < 0) || (@y >= mapheight() || @y-@i < 0 ))
+            {
+                continue;
+            }
+            set @target_id, obj_getxy(@x, @y+@i);
+            if(@target_id > 0)
+            {
+                if(istype(@target_id) == 2)
+                {
+                    callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+                    damage @id, @target_id, @damage, 3;
+                }
+                else if(istype(@target_id) == 1 && ismapoption(@sd, 6) == 1)
+                {
+                    set @r, rand(1, 10);
+                    set @target_sd, id2sd(@target_id);
+                    if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+                    {
+                        callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @id;
+                        damage @target_id, @id, @damage, 3;
+                        message @sd, 3, "마법 보호!!";
+                        goto NEXT2;
+                    }
+                    callfunc "BEGINFUNC", getarg(6), 0, 0, 0, 0, @target_id;
+                    damage @id, @target_id, @damage, 3;
+                }
+                else
+                {
+                    set_mp @sd, get_mp(@sd)-@mp;
+                }
 NEXT2:
-				set @play, @play+1;
-			}
-		}
-	}
-	if(@play > 0)
-	{
-		action @id, getarg(8), 30, 0;
-		sound @id, getarg(7);
-		say @id, 2, @say$;
-		set_hp @sd, @hp;
-		set_mp @sd, get_mp(@sd)-@mp;
-	}
-	return;
+                set @play, @play+1;
+            }
+        }
+    }
+    if(@play > 0)
+    {
+        action @id, getarg(8), 30, 0;
+        sound @id, getarg(7);
+        say @id, 2, @say$;
+        set_hp @sd, @hp;
+        set_mp @sd, get_mp(@sd)-@mp;
+    }
+    return;
 }
 
 //callfunc "MAGICIANSPELL", 옵젝아디, 세션아디, 사운드, 데미지, 이펙번호, 마법이름, 마나;
-FUNC_MAGICIANSPELL	{
-	set @id, getarg(0);
-	set @sd, getarg(1);
-	set @sound, getarg(2);
-	set @damage, getarg(3);
-	set @effect, getarg(4);
-	
-	if(getarg(6) != 0) { callfunc "MANA_DELAY", getarg(6), 0, @sd; }
-	
-	if($damageup) { set @damage, @damage*2; }
+FUNC_MAGICIANSPELL    {
+    set @id, getarg(0);
+    set @sd, getarg(1);
+    set @sound, getarg(2);
+    set @damage, getarg(3);
+    set @effect, getarg(4);
+    
+    if(getarg(6) != 0) { callfunc "MANA_DELAY", getarg(6), 0, @sd; }
+    
+    if($damageup) { set @damage, @damage*2; }
 
-	set @target_id, script_target(@sd);
-	if(@target_id > 0)
-	{		
-		if(istype(@target_id) == 1)
-		{
-			set @target_sd, id2sd(@target_id);
-			if(ismapoption(@sd, 6) && (@target_id != @id))
-			{
-				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-				{
-					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
-					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "마법 보호!!";
-					goto NEXT;
-				}
-				if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
-				damage @id, @target_id, @damage, 0;
-				if(@target_sd != @sd)
-				{
-					message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) +"을(를) 가합니다.";
-				}
-			}
-			else { message @sd, 3, "걸리지 않습니다."; end; }
-		}
-		else if(istype(@target_id) == 2)
-		{
-			if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
-			damage @id, @target_id, @damage, 0;
-		}
-		else { message @sd, 3, "걸리지 않습니다."; end; }
+    set @target_id, script_target(@sd);
+    if(@target_id > 0)
+    {        
+        if(istype(@target_id) == 1)
+        {
+            set @target_sd, id2sd(@target_id);
+            if(ismapoption(@sd, 6) && (@target_id != @id))
+            {
+                set @r, rand(1, 10);
+                if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+                {
+                    callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
+                    damage @target_id, @id, @damage, 0;
+                    message @sd, 3, "마법 보호!!";
+                    goto NEXT;
+                }
+                if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
+                damage @id, @target_id, @damage, 0;
+                if(@target_sd != @sd)
+                {
+                    message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) +"을(를) 가합니다.";
+                }
+            }
+            else { message @sd, 3, "걸리지 않습니다."; end; }
+        }
+        else if(istype(@target_id) == 2)
+        {
+            if(@target_id != @id) { callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @target_id; }
+            damage @id, @target_id, @damage, 0;
+        }
+        else { message @sd, 3, "걸리지 않습니다."; end; }
 NEXT:
-		set_mp @sd, get_mp(@sd)-getarg(6);
-		message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
-	}
-	return;
+        set_mp @sd, get_mp(@sd)-getarg(6);
+        message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
+    }
+    return;
 }
 
 //callfunc "MAGICIANCHOM", 옵젝아디, 세션아디, 사운드, 데미지, 이펙번호, 마법이름, 마나;
-FUNC_MAGICIANCHOM	{
-	set @id, getarg(0);
-	set @sd, getarg(1);
-	set @pk, ismapoption(@sd, 6);
-	set @x, get_x(@id);
-	set @y, get_y(@id);
-	set @sound, getarg(2);
-	set @damage, getarg(3);
-	set @effect, getarg(4);
-	
-	callfunc "MANA_DELAY", getarg(6), 0, @sd;
+FUNC_MAGICIANCHOM    {
+    set @id, getarg(0);
+    set @sd, getarg(1);
+    set @pk, ismapoption(@sd, 6);
+    set @x, get_x(@id);
+    set @y, get_y(@id);
+    set @sound, getarg(2);
+    set @damage, getarg(3);
+    set @effect, getarg(4);
+    
+    callfunc "MANA_DELAY", getarg(6), 0, @sd;
 
-	if($damageup) { set @damage, @damage*2; }
+    if($damageup) { set @damage, @damage*2; }
 
-	setarray @target_x[0], @x+1, @x  , @x-1, @x;
-	setarray @target_y[0], @y  , @y+1, @y  , @y-1;
+    setarray @target_x[0], @x+1, @x  , @x-1, @x;
+    setarray @target_y[0], @y  , @y+1, @y  , @y-1;
 
-	for(set @loop, 0; @loop < 4; set @loop, @loop+1)
-	{
-		set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
-		if(@target_id > 0)
-		{
-			if(istype(@target_id) == 1 && @pk)
-			{
-				set @target_sd, id2sd(@target_id);
-				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("반탄공")))
-				{
-					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
-					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "마법 보호!!";
-					goto NEXT;
-				}
-				effect @target_id, @effect;
-				damage @id, @target_id, @damage, 0;
-				sound @target_id, @sound;
-				message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
-			}
-			else if(istype(@target_id) == 2)
-			{
-				effect @target_id, @effect;
-				damage @id, @target_id, @damage, 0;
-			}
-		}
-		else { set @notarget, @notarget+1; }
-	}
-	if(@notarget != 4)
-	{
-		action @id, 6, 30, @sound;
+    for(set @loop, 0; @loop < 4; set @loop, @loop+1)
+    {
+        set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
+        if(@target_id > 0)
+        {
+            if(istype(@target_id) == 1 && @pk)
+            {
+                set @target_sd, id2sd(@target_id);
+                set @r, rand(1, 10);
+                if(@r <= 5 && spellaethered(@target1_sd, name2spellid("반탄공")))
+                {
+                    callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
+                    damage @target_id, @id, @damage, 0;
+                    message @sd, 3, "마법 보호!!";
+                    goto NEXT;
+                }
+                effect @target_id, @effect;
+                damage @id, @target_id, @damage, 0;
+                sound @target_id, @sound;
+                message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
+            }
+            else if(istype(@target_id) == 2)
+            {
+                effect @target_id, @effect;
+                damage @id, @target_id, @damage, 0;
+            }
+        }
+        else { set @notarget, @notarget+1; }
+    }
+    if(@notarget != 4)
+    {
+        action @id, 6, 30, @sound;
 NEXT:
-		set_mp @sd, get_mp(@sd)-getarg(6);
-		message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
-	}
-	deletearray @target_x[0], getarraysize(@target_x);
-	deletearray @target_y[0], getarraysize(@target_y);
-	return;
+        set_mp @sd, get_mp(@sd)-getarg(6);
+        message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
+    }
+    deletearray @target_x[0], getarraysize(@target_x);
+    deletearray @target_y[0], getarraysize(@target_y);
+    return;
 }
 
 //callfunc "TARGETMAGICIANCHOM", 옵젝아디, 세션아디, 사운드, 데미지, 이펙번호, 마법이름, 마나;
-FUNC_TARGETMAGICIANCHOM	{
-	set @id, getarg(0);
-	set @sd, getarg(1);
-	set @pk, ismapoption(@sd, 6);
-	set @script_target, script_target(@sd);
-	set @x, get_x(@script_target);
-	set @y, get_y(@script_target);
-	set @sound, getarg(2);
-	set @damage, getarg(3);
-	set @effect, getarg(4);
-	
-	callfunc "MANA_DELAY", getarg(6), 0, @sd;
-	set_mp @sd, get_mp(@sd)-getarg(6);
+FUNC_TARGETMAGICIANCHOM    {
+    set @id, getarg(0);
+    set @sd, getarg(1);
+    set @pk, ismapoption(@sd, 6);
+    set @script_target, script_target(@sd);
+    set @x, get_x(@script_target);
+    set @y, get_y(@script_target);
+    set @sound, getarg(2);
+    set @damage, getarg(3);
+    set @effect, getarg(4);
+    
+    callfunc "MANA_DELAY", getarg(6), 0, @sd;
+    set_mp @sd, get_mp(@sd)-getarg(6);
 
-	if($damageup) { set @damage, @damage*2; }
+    if($damageup) { set @damage, @damage*2; }
 
-	if(@script_target > 0 && @script_target != @id)
-	{
-		if(istype(@script_target) == 1 && @pk)
-		{
-			set @target_sd, id2sd(@script_target);
-			set @r, rand(1, 10);
-			if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-			{
-				callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
-				damage @script_target, @id, @damage, 0;
-				message @sd, 3, "마법 보호!!";
-				goto NEXT;
-			}
-			effect @script_target, @effect;
-			damage @id, @script_target, @damage, 0;
-			sound @script_target, @sound;
-			message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
-		}
-		else if(istype(@script_target) == 2)
-		{
-			effect @script_target, @effect;
-			damage @id, @script_target, @damage, 0;
-		}
-	}
-	else { set @notarget, @notarget+1; }
+    if(@script_target > 0 && @script_target != @id)
+    {
+        if(istype(@script_target) == 1 && @pk)
+        {
+            set @target_sd, id2sd(@script_target);
+            set @r, rand(1, 10);
+            if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+            {
+                callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
+                damage @script_target, @id, @damage, 0;
+                message @sd, 3, "마법 보호!!";
+                goto NEXT;
+            }
+            effect @script_target, @effect;
+            damage @id, @script_target, @damage, 0;
+            sound @script_target, @sound;
+            message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
+        }
+        else if(istype(@script_target) == 2)
+        {
+            effect @script_target, @effect;
+            damage @id, @script_target, @damage, 0;
+        }
+    }
+    else { set @notarget, @notarget+1; }
 NEXT:
-	setarray @target_x[0], @x+1, @x  , @x-1, @x;
-	setarray @target_y[0], @y  , @y+1, @y  , @y-1;
+    setarray @target_x[0], @x+1, @x  , @x-1, @x;
+    setarray @target_y[0], @y  , @y+1, @y  , @y-1;
 
-	for(set @loop, 0; @loop < 4; set @loop, @loop+1)
-	{
-		set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
-		if(@target_id > 0)
-		{
-			if(istype(@target_id) == 1 && @pk)
-			{
-				set @target_sd, id2sd(@target_id);
-				set @r, rand(1, 10);
-				if(@r <= 5 && spellaethered(@target1_sd, name2spellid("반탄공")))
-				{
-					callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
-					damage @target_id, @id, @damage, 0;
-					message @sd, 3, "마법 보호!!";
-					goto NEXT2;
-				}
-				effect @target_id, @effect;
-				damage @id, @target_id, @damage, 0;
-				sound @target_id, @sound;
-				message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
-			}
-			else if(istype(@target_id) == 2)
-			{
-				effect @target_id, @effect;
-				damage @id, @target_id, @damage, 0;
-			}
-		}
-		else { set @notarget, @notarget+1; }
-	}
-	if(@notarget != 4)
-	{
-		action @id, 6, 30, @sound;
+    for(set @loop, 0; @loop < 4; set @loop, @loop+1)
+    {
+        set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
+        if(@target_id > 0)
+        {
+            if(istype(@target_id) == 1 && @pk)
+            {
+                set @target_sd, id2sd(@target_id);
+                set @r, rand(1, 10);
+                if(@r <= 5 && spellaethered(@target1_sd, name2spellid("반탄공")))
+                {
+                    callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
+                    damage @target_id, @id, @damage, 0;
+                    message @sd, 3, "마법 보호!!";
+                    goto NEXT2;
+                }
+                effect @target_id, @effect;
+                damage @id, @target_id, @damage, 0;
+                sound @target_id, @sound;
+                message @target_sd, 3, get_name(@sd) + "님이 " + getarg(5) + "을(를) 가합니다.";
+            }
+            else if(istype(@target_id) == 2)
+            {
+                effect @target_id, @effect;
+                damage @id, @target_id, @damage, 0;
+            }
+        }
+        else { set @notarget, @notarget+1; }
+    }
+    if(@notarget != 4)
+    {
+        action @id, 6, 30, @sound;
 NEXT2:
-		message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
-	}
-	deletearray @target_x[0], getarraysize(@target_x);
-	deletearray @target_y[0], getarraysize(@target_y);
-	return;
+        message @sd, 3, getarg(5) + "을(를) 외웠습니다.";
+    }
+    deletearray @target_x[0], getarraysize(@target_x);
+    deletearray @target_y[0], getarraysize(@target_y);
+    return;
 }
 
 //callfunc "ITEMEFFECTMAGIC", (0: 원거리, 1: 근접, 2: 격, 3: 필살), 확률변수?, 이펙트, 효과음, 데미지1, 데미지2, "격이름", 확률;
-FUNC_ITEMEFFECTMAGIC	{
-	set @sd, mysd();
-	set @id, myid();
-	set @type, getarg(0);
-	set @effect, getarg(2);
-	set @sound, getarg(3);
-	set @damage, rand(getarg(4), getarg(5));
-	set @name$, getarg(6);
-	set @target_id, obj_getfront();
-	if(@target_id > 0)
-	{
-		if(rand(1, getarg(1)) <= getarg(7))
-		{
-			if(istype(@target_id) == 1)
-			{
-				set @target_sd, id2sd(@target_id);
-				if(ismapoption(@sd, 6))
-				{
-					set @r, rand(1, 10);
-					if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
-					{
-						callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
-						set_ac @target_sd, 1;
-						damage @target_id, @id, @damage, 2;
-						if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
-						message @sd, 3, "마법 보호!!";
-						goto NEXT1;
-					}
-					effect @target_id, @effect;
-					sound @id, @sound;
+FUNC_ITEMEFFECTMAGIC    {
+    set @sd, mysd();
+    set @id, myid();
+    set @type, getarg(0);
+    set @effect, getarg(2);
+    set @sound, getarg(3);
+    set @damage, rand(getarg(4), getarg(5));
+    set @name$, getarg(6);
+    set @target_id, obj_getfront();
+    if(@target_id > 0)
+    {
+        if(rand(1, getarg(1)) <= getarg(7))
+        {
+            if(istype(@target_id) == 1)
+            {
+                set @target_sd, id2sd(@target_id);
+                if(ismapoption(@sd, 6))
+                {
+                    set @r, rand(1, 10);
+                    if(@r <= 5 && spellaethered(@target_sd, name2spellid("반탄공")))
+                    {
+                        callfunc "BEGINFUNC", @effect, @sound, 0, 0, 6, @id;
+                        set_ac @target_sd, 1;
+                        damage @target_id, @id, @damage, 2;
+                        if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
+                        message @sd, 3, "마법 보호!!";
+                        goto NEXT1;
+                    }
+                    effect @target_id, @effect;
+                    sound @id, @sound;
 
-					set @save_ac, get_ac(@target_sd);
-					set_ac @target_sd, 1;
-					damage @id, @target_id, @damage, @type;
-					if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
-					message @target_sd, 3, get_name(@sd) + "님께서 " + @name$ + "을(를) 가합니다.";
-				}
+                    set @save_ac, get_ac(@target_sd);
+                    set_ac @target_sd, 1;
+                    damage @id, @target_id, @damage, @type;
+                    if(get_state(@target_sd) != 1 && get_hp(@target_sd) > 0) { set_ac @target_sd, @save_ac; }
+                    message @target_sd, 3, get_name(@sd) + "님께서 " + @name$ + "을(를) 가합니다.";
+                }
 NEXT1:
-			}
-			else if(istype(@target_id) == 2)
-			{
-				effect @target_id, @effect;
-				sound @id, @sound;
-				set @save_ac, get_mobac(@target_id);
-				set_mobac @target_id, 1;
-				damage @id, @target_id, @damage, @type;
-				set_mobac @target_id, @save_ac;	
-			}
-		}
-	}
-	return;
+            }
+            else if(istype(@target_id) == 2)
+            {
+                effect @target_id, @effect;
+                sound @id, @sound;
+                set @save_ac, get_mobac(@target_id);
+                set_mobac @target_id, 1;
+                damage @id, @target_id, @damage, @type;
+                set_mobac @target_id, @save_ac;    
+            }
+        }
+    }
+    return;
 }

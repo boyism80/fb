@@ -1,638 +1,638 @@
-말단선원	{
-	set @sd, mysd();
-	set @id, myid();
+말단선원    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($goose_egg == 0)
-	{
-		set @pos, list2(@list, 1, 0, "아이고~ 이거 큰일이네! 어떡하지? 엉엉 울고싶다 정말.", "무슨 일이세요?", "(그냥 지나친다)");
-		if(@pos == 0) end;
-		else if(@list != 1) end;
+    if($goose_egg == 0)
+    {
+        set @pos, list2(@list, 1, 0, "아이고~ 이거 큰일이네! 어떡하지? 엉엉 울고싶다 정말.", "무슨 일이세요?", "(그냥 지나친다)");
+        if(@pos == 0) end;
+        else if(@list != 1) end;
 COS001:
-		set @pos, dialog(1, 0, 1, "이 근방은 우리 대양선단의 주요 식량 채취 장소 인데요, 해물, 해초, 과일 등이 풍부한 반면 항상 사나운 두꺼비들과 일본게들이 득시글거려 매번 이렇게 고생이랍니다.");
-		if(@pos == 0) end;
+        set @pos, dialog(1, 0, 1, "이 근방은 우리 대양선단의 주요 식량 채취 장소 인데요, 해물, 해초, 과일 등이 풍부한 반면 항상 사나운 두꺼비들과 일본게들이 득시글거려 매번 이렇게 고생이랍니다.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, list2(@list_2, 1, 1, "아 글쎄.. 이번엔 제가 애써 모아놓은 기러기알들을 그놈들이 다 훔쳐갔지 뭡니까요! 흑흑. 그걸 어떻게 되찾는다.", "흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요.", "어쩔 수 없죠 뭐..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
-		else if(@list_2 != 1) end;
+        set @pos, list2(@list_2, 1, 1, "아 글쎄.. 이번엔 제가 애써 모아놓은 기러기알들을 그놈들이 다 훔쳐갔지 뭡니까요! 흑흑. 그걸 어떻게 되찾는다.", "흠. 그거라면.. 제가 그놈들을 해치우고 되찾아 드리지요.", "어쩔 수 없죠 뭐..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
+        else if(@list_2 != 1) end;
 COS003:
-		set $goose_egg, 1;
-		set @pos, dialog(0, 0, 0, "헛! 정말입니까? 꼭 좀 부탁드립니다.\\n알을 찾아오시면 개당 200전씩 사례하겠습니다.");
-		end;
-	}
-	else
-	{
-		set @pos, list2(@list_3, 0, 0, "기러기알은 찾아오셨나요?", "네", "아니오");
-		if(@pos == 0) end;
-		else if(@list_3 != 1) end;
+        set $goose_egg, 1;
+        set @pos, dialog(0, 0, 0, "헛! 정말입니까? 꼭 좀 부탁드립니다.\\n알을 찾아오시면 개당 200전씩 사례하겠습니다.");
+        end;
+    }
+    else
+    {
+        set @pos, list2(@list_3, 0, 0, "기러기알은 찾아오셨나요?", "네", "아니오");
+        if(@pos == 0) end;
+        else if(@list_3 != 1) end;
 
-		if(countitem(name2itemid("기러기알")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "기러기알 없습니다.");
-			end;
-		}
-		else
-		{
-			set @count, countitem(name2itemid("기러기알"));
-			delitem @sd, name2itemid("기러기알"), @count;
-			message @sd, 3, "기러기알 주었습니다";
-			set_money @sd, get_money(@sd)+(200*@count);
-			set @pos, dialog(0, 0, 1, "기러기알 " + @count + "개에 대한 대가로 " + (200*@count) + "전을 드렸습니다.");
-			end;
-		}
-	}
+        if(countitem(name2itemid("기러기알")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "기러기알 없습니다.");
+            end;
+        }
+        else
+        {
+            set @count, countitem(name2itemid("기러기알"));
+            delitem @sd, name2itemid("기러기알"), @count;
+            message @sd, 3, "기러기알 주었습니다";
+            set_money @sd, get_money(@sd)+(200*@count);
+            set @pos, dialog(0, 0, 1, "기러기알 " + @count + "개에 대한 대가로 " + (200*@count) + "전을 드렸습니다.");
+            end;
+        }
+    }
 }
 
-무두	{
-	set @sd, mysd();
-	set @id, myid();
-	set @ret, list1("안녕하세요. 어떻게 오셨나요?", "초혼술방법");
-	if(@ret == 1)
-	{
-		if($shark_weapon < 3)
-		{
-			set @pos, dialog(0, 0, 0, "자네는 아직 알 때가 아니군.");
-			end;
-		}
-		else
-		{
-			if($shark_weapon == 3)
-			{
+무두    {
+    set @sd, mysd();
+    set @id, myid();
+    set @ret, list1("안녕하세요. 어떻게 오셨나요?", "초혼술방법");
+    if(@ret == 1)
+    {
+        if($shark_weapon < 3)
+        {
+            set @pos, dialog(0, 0, 0, "자네는 아직 알 때가 아니군.");
+            end;
+        }
+        else
+        {
+            if($shark_weapon == 3)
+            {
 COS001:
-				set @pos, dialog(0, 0, 1, "상어장군을 저승에서 불러내고 싶다고?\\n\\n매우 어려운 일을 부탁하는구만.");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "상어장군을 저승에서 불러내고 싶다고?\\n\\n매우 어려운 일을 부탁하는구만.");
+                if(@pos == 0) end;
 COS002:
-				set @pos, dialog(0, 1, 1, "사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS001;
+                set @pos, dialog(0, 1, 1, "사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS001;
 COS003:
-				set @pos, dialog(0, 1, 1, "용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS002;
+                set @pos, dialog(0, 1, 1, "용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS002;
 
-				set $shark_weapon, 4;
-				addlegend @sd, 24, 7, 0, 11, "초혼술 방법을 알아보자.";
-				end;
-			}
-			if($shark_weapon >= 4 && $shark_weapon <= 9)
-			{
-				set @pos, dialog(0, 0, 0, "아직 용궁의정기를 다 모으지 못했나 보군..");
-				end;
-			}
-			if($shark_weapon == 10)
-			{
-				if(countitem(name2itemid("용궁의정기1")) == 0 || countitem(name2itemid("용궁의정기2")) == 0 || countitem(name2itemid("용궁의정기3")) == 0 || countitem(name2itemid("용궁의정기4")) == 0 || countitem(name2itemid("용궁의정기5")) == 0)
-				{
-					set @pos, dialog(0, 0, 0, "아직 용궁의정기를 다 모으지 못했나 보군..");
-					end;
-				}
-				else
-				{
+                set $shark_weapon, 4;
+                addlegend @sd, 24, 7, 0, 11, "초혼술 방법을 알아보자.";
+                end;
+            }
+            if($shark_weapon >= 4 && $shark_weapon <= 9)
+            {
+                set @pos, dialog(0, 0, 0, "아직 용궁의정기를 다 모으지 못했나 보군..");
+                end;
+            }
+            if($shark_weapon == 10)
+            {
+                if(countitem(name2itemid("용궁의정기1")) == 0 || countitem(name2itemid("용궁의정기2")) == 0 || countitem(name2itemid("용궁의정기3")) == 0 || countitem(name2itemid("용궁의정기4")) == 0 || countitem(name2itemid("용궁의정기5")) == 0)
+                {
+                    set @pos, dialog(0, 0, 0, "아직 용궁의정기를 다 모으지 못했나 보군..");
+                    end;
+                }
+                else
+                {
 COS004:
-					set @pos, dialog(0, 0, 1, "용궁의정기를 가져왔군.");
-					if(@pos == 0) end;
+                    set @pos, dialog(0, 0, 1, "용궁의정기를 가져왔군.");
+                    if(@pos == 0) end;
 COS005:
-					set @pos, dialog(0, 1, 1, "그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!");
-					if(@pos == 0) end;
-					else if(@pos == -1) goto COS004;
+                    set @pos, dialog(0, 1, 1, "그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!");
+                    if(@pos == 0) end;
+                    else if(@pos == -1) goto COS004;
 
-					set $shark_weapon, 11;
-					addlegend @sd, 24, 7, 0, 11, "무기제조법을 얻다.";
-					delitem @sd, name2itemid("용궁의정기1"), 1;
-					delitem @sd, name2itemid("용궁의정기2"), 1;
-					delitem @sd, name2itemid("용궁의정기3"), 1;
-					delitem @sd, name2itemid("용궁의정기4"), 1;
-					delitem @sd, name2itemid("용궁의정기5"), 1;
-					message @sd, 3, "용궁의정기1 주었습니다";
-					message @sd, 3, "용궁의정기2 주었습니다";
-					message @sd, 3, "용궁의정기3 주었습니다";
-					message @sd, 3, "용궁의정기4 주었습니다";
-					message @sd, 3, "용궁의정기5 주었습니다";
-					additem @sd, name2itemid("무기제조법"), 1;
+                    set $shark_weapon, 11;
+                    addlegend @sd, 24, 7, 0, 11, "무기제조법을 얻다.";
+                    delitem @sd, name2itemid("용궁의정기1"), 1;
+                    delitem @sd, name2itemid("용궁의정기2"), 1;
+                    delitem @sd, name2itemid("용궁의정기3"), 1;
+                    delitem @sd, name2itemid("용궁의정기4"), 1;
+                    delitem @sd, name2itemid("용궁의정기5"), 1;
+                    message @sd, 3, "용궁의정기1 주었습니다";
+                    message @sd, 3, "용궁의정기2 주었습니다";
+                    message @sd, 3, "용궁의정기3 주었습니다";
+                    message @sd, 3, "용궁의정기4 주었습니다";
+                    message @sd, 3, "용궁의정기5 주었습니다";
+                    additem @sd, name2itemid("무기제조법"), 1;
 
-					set @pos ,dialog(0, 0, 1, "상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.");
-					end;
-				}
-			}
-			else
-			{
-				set @pos, dialog(0, 0, 1, "......");
-				end;
-			}
-		}
-	}
-	else end;
+                    set @pos ,dialog(0, 0, 1, "상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.");
+                    end;
+                }
+            }
+            else
+            {
+                set @pos, dialog(0, 0, 1, "......");
+                end;
+            }
+        }
+    }
+    else end;
 } 
 
-고구려선원	{
-	set @sd, mysd();
-	set @id, myid();
+고구려선원    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($dragon_king == 10 && countitem(name2itemid("내통문서")) > 0)
-	{
+    if($dragon_king == 10 && countitem(name2itemid("내통문서")) > 0)
+    {
 COS001:
-		set @pos, list2(@list, 0, 0, "무슨 일인가?", "혹시 이 문서에 적힌", "내용을 알아볼 수 있는지요?");
-		if(@pos == 0) end;
-		else if(@list > 0 && @list <= 2)
-		{
+        set @pos, list2(@list, 0, 0, "무슨 일인가?", "혹시 이 문서에 적힌", "내용을 알아볼 수 있는지요?");
+        if(@pos == 0) end;
+        else if(@list > 0 && @list <= 2)
+        {
 COS002:
-			set @pos, dialog(0, 0, 1, "글쎄 한 번 보도록 하지\\n\\n...음......으음......");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "글쎄 한 번 보도록 하지\\n\\n...음......으음......");
+            if(@pos == 0) end;
 COS003:
-			set @pos, dialog(0, 1, 1, "내가 배를 타고 여기 저기를 많이 돌아봐서 아네만 이건 서방 언어일세.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS002;
+            set @pos, dialog(0, 1, 1, "내가 배를 타고 여기 저기를 많이 돌아봐서 아네만 이건 서방 언어일세.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS002;
 COS004:
-			set @pos, list2(@list_2, 0, 0, "우리 동방 언어와는 근본적으로 틀리지.", "그럼 이것을 알아보실 수 있는지요?");
-			if(@pos == 0) end;
-			else if(@list_2 != 1) end;
+            set @pos, list2(@list_2, 0, 0, "우리 동방 언어와는 근본적으로 틀리지.", "그럼 이것을 알아보실 수 있는지요?");
+            if(@pos == 0) end;
+            else if(@list_2 != 1) end;
 COS005:
-			set @pos, list2(@list_3, 0, 0, "하하..물론 가능하지...헌데...", "......");
-			if(@pos == 0) end;
-			else if(@list_3 != 1) end;
+            set @pos, list2(@list_3, 0, 0, "하하..물론 가능하지...헌데...", "......");
+            if(@pos == 0) end;
+            else if(@list_3 != 1) end;
 COS006:
-			set @pos, dialog(0, 0, 1, "허허..자네 내가 이것을 번역해 주는 대신 무엇인가 요구를 할 것 같아 잔뜩 긴장해 있구만,\\n하긴 무리도 아니지.. 요즘 세상에 공으로 되는 일이 거의 없으니 말일세.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "허허..자네 내가 이것을 번역해 주는 대신 무엇인가 요구를 할 것 같아 잔뜩 긴장해 있구만,\\n하긴 무리도 아니지.. 요즘 세상에 공으로 되는 일이 거의 없으니 말일세.");
+            if(@pos == 0) end;
 COS007:
-			set @pos, dialog(0, 1, 1, "하지만 난 틀려, 나는 한평생을 바다와 함께 살아온 바다 사나이라네.\\n나에게는 먹을 음식과 입을 옷만 있으면 그 이상은 필요 없다네.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS006;
+            set @pos, dialog(0, 1, 1, "하지만 난 틀려, 나는 한평생을 바다와 함께 살아온 바다 사나이라네.\\n나에게는 먹을 음식과 입을 옷만 있으면 그 이상은 필요 없다네.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS006;
 COS008:
-			set @pos, dialog(0, 1, 1, "이건 내가 조건 없이 번역을 해 주겠네. 그 문서를 이리 주게.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS007;
+            set @pos, dialog(0, 1, 1, "이건 내가 조건 없이 번역을 해 주겠네. 그 문서를 이리 주게.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS007;
 COS009:
-			set @pos, list2(@list_4, 0, 0, " ", "정말 고맙습니다.", "일본에 자주 왔다갔다 하는데,", "항상 말이 없어 매우 무뚝뚝하고", "무서우신 분인 줄 알았는데", "참 친절하신 분이시군요.");
-			if(@pos == 0) end;
-			else if(@list_4 > 0 && @list_4 <= 5)
-			{
-				delitem @sd, name2itemid("내통문서"), 1;
-				message @sd, 3, "내통문서 주었습니다";
-				additem @sd, name2itemid("번역된내통문서"), 1;
-				addlegend @sd, 19, 7, 0, 1, "번역된내통문서를 얻다.";
-				set @pos, dialog(0, 0, 0, "하하.. 앞으로 자주 인사하세나.");
-				end;
-			}
-			else end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 0, "안녕하신가? 여행이란 참 즐거운 일이지.");
-		end;
-	}
+            set @pos, list2(@list_4, 0, 0, " ", "정말 고맙습니다.", "일본에 자주 왔다갔다 하는데,", "항상 말이 없어 매우 무뚝뚝하고", "무서우신 분인 줄 알았는데", "참 친절하신 분이시군요.");
+            if(@pos == 0) end;
+            else if(@list_4 > 0 && @list_4 <= 5)
+            {
+                delitem @sd, name2itemid("내통문서"), 1;
+                message @sd, 3, "내통문서 주었습니다";
+                additem @sd, name2itemid("번역된내통문서"), 1;
+                addlegend @sd, 19, 7, 0, 1, "번역된내통문서를 얻다.";
+                set @pos, dialog(0, 0, 0, "하하.. 앞으로 자주 인사하세나.");
+                end;
+            }
+            else end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 0, "안녕하신가? 여행이란 참 즐거운 일이지.");
+        end;
+    }
 }
 
-고구려왕	{
-	image 0, 497, 4;
-	set @sd, mysd();
-	set @id, myid();
-	set @kingname$, "고구려왕";
-	if(get_level(@sd) < 56)
-	{
-		set @pos, dialog(0, 0, 0, "감히 여기가 어디라고!");
-		end;
-	}
-	else if(get_nation(@sd) != 1)
-	{
-		set @pos, dialog(0, 0, 0, "여기는 고구려왕이 계시는 곳입니다.");
-		end;
-	}
-	else if($quest_100_2 != 1)
-	{
-		if(get_level(@sd) >= 56)
-		{
+고구려왕    {
+    image 0, 497, 4;
+    set @sd, mysd();
+    set @id, myid();
+    set @kingname$, "고구려왕";
+    if(get_level(@sd) < 56)
+    {
+        set @pos, dialog(0, 0, 0, "감히 여기가 어디라고!");
+        end;
+    }
+    else if(get_nation(@sd) != 1)
+    {
+        set @pos, dialog(0, 0, 0, "여기는 고구려왕이 계시는 곳입니다.");
+        end;
+    }
+    else if($quest_100_2 != 1)
+    {
+        if(get_level(@sd) >= 56)
+        {
 START0:
-			set @pos, dialog (0, 0, 1, "무례하게 폐하께 직접!\ 폐하께 전할 말씀은 나를 통해서 하시오!");
-			if(@pos == 0) end;
+            set @pos, dialog (0, 0, 1, "무례하게 폐하께 직접!\ 폐하께 전할 말씀은 나를 통해서 하시오!");
+            if(@pos == 0) end;
 START1:
-			set @pos, dialog (0, 1, 1, "폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto START0;
+            set @pos, dialog (0, 1, 1, "폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto START0;
 
-			set @list1, list2(@list, 0, 1, "그래도 임무를 받으시려오?", "네, 받겠습니다.", "무서워서 안되겠어요.");
-			if(@list1 == 0) end;
-			else if(@list1 == -1) goto START1;
-			if(@list == 1)
-			{
-				if(get_level(@sd) >= 56 && get_level(@sd) < 70)
-				{
-					set @rand_quest, rand(0, 7);
-					if(@rand_quest == 0) { set $quest_100_name$, "자호"; set $quest_100_exp, 250000; }
-					else if(@rand_quest == 1) { set $quest_100_name$, "친자호"; set $quest_100_exp, 350000; }
-					else if(@rand_quest == 2) { set $quest_100_name$, "구자호"; set $quest_100_exp, 380000; }
-					else if(@rand_quest == 3) { set $quest_100_name$, "사마귀"; set $quest_100_exp, 550000; }
-					else if(@rand_quest == 4) { set $quest_100_name$, "거미"; set $quest_100_exp, 850000; }
-					else if(@rand_quest == 5) { set $quest_100_name$, "사마귀랑"; set $quest_100_exp, 950000; }
-					else if(@rand_quest == 6) { set $quest_100_name$, "거미랑"; set $quest_100_exp, 600000; }
-					else if(@rand_quest == 7) { set $quest_100_name$, "서현거미"; set $quest_100_exp, 3000000; }
-					
-				}
-				else if(get_level(@sd) >= 70 && get_level(@sd) < 90)
-				{
-					set @rand_quest, rand(0, 6);
-					if(@rand_quest == 0) { set $quest_100_name$, "해골"; set $quest_100_exp, 1300000; }
-					else if(@rand_quest == 1) { set $quest_100_name$, "칼든해골"; set $quest_100_exp, 1480000; }
-					else if(@rand_quest == 2) { set $quest_100_name$, "날쌘해골"; set $quest_100_exp, 1300000; }
-					else if(@rand_quest == 3) { set $quest_100_name$, "쾌도해골"; set $quest_100_exp, 1660000; }
-					else if(@rand_quest == 4) { set $quest_100_name$, "자해골"; set $quest_100_exp, 2000000; }
-					else if(@rand_quest == 5) { set $quest_100_name$, "주해골"; set $quest_100_exp, 2000000; }
-					else if(@rand_quest == 6) { set $quest_100_name$, "지해골"; set $quest_100_exp, 2000000; }
-				}
-				else if(get_level(@sd) >= 90)
-				{
-					set @rand_quest, rand(0, 2);
-					if(@rand_quest == 0) { set $quest_100_name$, "몽달귀신"; set $quest_100_exp, 4500000; }
-					else if(@rand_quest == 1) { set $quest_100_name$, "독충"; set $quest_100_exp, 4500000; }
-					else if(@rand_quest == 2) { set $quest_100_name$, "빗자루귀신"; set $quest_100_exp, 5000000; }
-				}
-				set @pos, dialog (0, 0, 1, "어명이오! "+ $quest_100_name$ +"을 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!");
-				if(@pos == 0) end;
+            set @list1, list2(@list, 0, 1, "그래도 임무를 받으시려오?", "네, 받겠습니다.", "무서워서 안되겠어요.");
+            if(@list1 == 0) end;
+            else if(@list1 == -1) goto START1;
+            if(@list == 1)
+            {
+                if(get_level(@sd) >= 56 && get_level(@sd) < 70)
+                {
+                    set @rand_quest, rand(0, 7);
+                    if(@rand_quest == 0) { set $quest_100_name$, "자호"; set $quest_100_exp, 250000; }
+                    else if(@rand_quest == 1) { set $quest_100_name$, "친자호"; set $quest_100_exp, 350000; }
+                    else if(@rand_quest == 2) { set $quest_100_name$, "구자호"; set $quest_100_exp, 380000; }
+                    else if(@rand_quest == 3) { set $quest_100_name$, "사마귀"; set $quest_100_exp, 550000; }
+                    else if(@rand_quest == 4) { set $quest_100_name$, "거미"; set $quest_100_exp, 850000; }
+                    else if(@rand_quest == 5) { set $quest_100_name$, "사마귀랑"; set $quest_100_exp, 950000; }
+                    else if(@rand_quest == 6) { set $quest_100_name$, "거미랑"; set $quest_100_exp, 600000; }
+                    else if(@rand_quest == 7) { set $quest_100_name$, "서현거미"; set $quest_100_exp, 3000000; }
+                    
+                }
+                else if(get_level(@sd) >= 70 && get_level(@sd) < 90)
+                {
+                    set @rand_quest, rand(0, 6);
+                    if(@rand_quest == 0) { set $quest_100_name$, "해골"; set $quest_100_exp, 1300000; }
+                    else if(@rand_quest == 1) { set $quest_100_name$, "칼든해골"; set $quest_100_exp, 1480000; }
+                    else if(@rand_quest == 2) { set $quest_100_name$, "날쌘해골"; set $quest_100_exp, 1300000; }
+                    else if(@rand_quest == 3) { set $quest_100_name$, "쾌도해골"; set $quest_100_exp, 1660000; }
+                    else if(@rand_quest == 4) { set $quest_100_name$, "자해골"; set $quest_100_exp, 2000000; }
+                    else if(@rand_quest == 5) { set $quest_100_name$, "주해골"; set $quest_100_exp, 2000000; }
+                    else if(@rand_quest == 6) { set $quest_100_name$, "지해골"; set $quest_100_exp, 2000000; }
+                }
+                else if(get_level(@sd) >= 90)
+                {
+                    set @rand_quest, rand(0, 2);
+                    if(@rand_quest == 0) { set $quest_100_name$, "몽달귀신"; set $quest_100_exp, 4500000; }
+                    else if(@rand_quest == 1) { set $quest_100_name$, "독충"; set $quest_100_exp, 4500000; }
+                    else if(@rand_quest == 2) { set $quest_100_name$, "빗자루귀신"; set $quest_100_exp, 5000000; }
+                }
+                set @pos, dialog (0, 0, 1, "어명이오! "+ $quest_100_name$ +"을 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!");
+                if(@pos == 0) end;
 
-				set $quest_100_2, 1;
-				set $quest_100_count, 0;
-				addlegend @sd, 8, 6, 0, 17, @kingname$ + "에게 " + $quest_100_name$ + "을 잡는 임무를 받음";
-				end;
-			}
-		}
-	}
-	else if($quest_100_2 == 1)
-	{
-		set @my_exp, get_exp(@sd);
-		if($quest_100_count == 0)
-		{
-			set @pos, dialog(0, 0, 1, "감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라! ");
-			if(@pos == 0) end;
+                set $quest_100_2, 1;
+                set $quest_100_count, 0;
+                addlegend @sd, 8, 6, 0, 17, @kingname$ + "에게 " + $quest_100_name$ + "을 잡는 임무를 받음";
+                end;
+            }
+        }
+    }
+    else if($quest_100_2 == 1)
+    {
+        set @my_exp, get_exp(@sd);
+        if($quest_100_count == 0)
+        {
+            set @pos, dialog(0, 0, 1, "감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라! ");
+            if(@pos == 0) end;
 
-			if(spellaethered(@sd, name2spellid("왕의저주")) == 0)
-			{
-				spellaether @sd, name2spellid("왕의저주"), 430;
-				set_ac @sd, get_ac(@sd)+40;
-				effect @id, 13;
-				sound @id, 69;
-			}
+            if(spellaethered(@sd, name2spellid("왕의저주")) == 0)
+            {
+                spellaether @sd, name2spellid("왕의저주"), 430;
+                set_ac @sd, get_ac(@sd)+40;
+                effect @id, 13;
+                sound @id, 69;
+            }
 
-			dellegend @sd, 8;
-			set $quest_100_2, 0; 
-			set $quest_100_count, 0;
-			set $quest_100_name$, "";
-			set $quest_100_exp, 0;
-			set @pos, dialog(0, 0, 0, "이 형벌로 너의 임무가 지워졌으니, 다시 임무를 받을 수 있을 것이다.");
-			end;
-		}
-		else
-		{
-			set @cal_exp, @my_exp+($quest_100_exp*#server_exprate);
-			if(@my_exp < -2147483648 && @my_exp <= -1) 
-			{ 
-				if(@cal_exp > -1)
-				{
-					set @pos, dialog(0, 0, 0, "경험치를 팔고 오게");
-					end;
-				}
-			}
-			set @pos, dialog(0, 0, 1, "어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 " + ($quest_100_exp*#server_exprate) + " 을 하사하십니다.");
-			if(@pos == 0) end;
+            dellegend @sd, 8;
+            set $quest_100_2, 0; 
+            set $quest_100_count, 0;
+            set $quest_100_name$, "";
+            set $quest_100_exp, 0;
+            set @pos, dialog(0, 0, 0, "이 형벌로 너의 임무가 지워졌으니, 다시 임무를 받을 수 있을 것이다.");
+            end;
+        }
+        else
+        {
+            set @cal_exp, @my_exp+($quest_100_exp*#server_exprate);
+            if(@my_exp < -2147483648 && @my_exp <= -1) 
+            { 
+                if(@cal_exp > -1)
+                {
+                    set @pos, dialog(0, 0, 0, "경험치를 팔고 오게");
+                    end;
+                }
+            }
+            set @pos, dialog(0, 0, 1, "어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 " + ($quest_100_exp*#server_exprate) + " 을 하사하십니다.");
+            if(@pos == 0) end;
 
-			dellegend @sd, 8;
-			set $quest_100_2, 0;
-			set $quest_100_count, 0;
-			set @giveexp, $quest_100_exp;
-			giveexp @sd, @giveexp;
-			end;
-		}
-	}
-	else { end; }
+            dellegend @sd, 8;
+            set $quest_100_2, 0;
+            set $quest_100_count, 0;
+            set @giveexp, $quest_100_exp;
+            giveexp @sd, @giveexp;
+            end;
+        }
+    }
+    else { end; }
 }
 
-고구려무도가	{
-	set @sd, mysd();
-	set @id, myid();
+고구려무도가    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($handmagic == 0)
-	{
+    if($handmagic == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "난 고구려의 무도가요. 얼마전부터 중국의 소림사에 대해 관심을 가지게 됐소. 정말 아무도 그 위치나 규모에 대해서 아는 사람이 없었소.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "난 고구려의 무도가요. 얼마전부터 중국의 소림사에 대해 관심을 가지게 됐소. 정말 아무도 그 위치나 규모에 대해서 아는 사람이 없었소.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "내 얼마전에 듣기로는 만리장성 부근에 출중한 무술 기량을 가진 사람들이 보인다 하던데. 그들은 모두 승려차림이었다하오.\\n\\n그들의 절기를 꼭 한번 실제로 보고 배우고싶은데 마땅한 기회가 없구려.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "내 얼마전에 듣기로는 만리장성 부근에 출중한 무술 기량을 가진 사람들이 보인다 하던데. 그들은 모두 승려차림이었다하오.\\n\\n그들의 절기를 꼭 한번 실제로 보고 배우고싶은데 마땅한 기회가 없구려.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, list2(@list, 0, 0, "당신이 날 대신해 중국 만리장성에가서 그들에게 절기를 익혀와 보여주지 않겠소?", "중국가는길이니 그렇게하겠소.", "난 무술에 별로 관심이 없소.");
-		if(@pos == 0) end;
-		else if(@list != 1) end;
+        set @pos, list2(@list, 0, 0, "당신이 날 대신해 중국 만리장성에가서 그들에게 절기를 익혀와 보여주지 않겠소?", "중국가는길이니 그렇게하겠소.", "난 무술에 별로 관심이 없소.");
+        if(@pos == 0) end;
+        else if(@list != 1) end;
 
-		set $handmagic, 1;
-		addlegend @sd, 26, 7, 0, 1, "고구려무도가의 부탁을 들어주자.";
-		set @pos, dialog(0, 0, 0, "고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.");
-		end;
-	}
-	else
-	{
-		if($handmagic_check == 0)
-		{
-			if(checkspell(name2spellid("백열장")) == 52)
-			{
-				set @pos, dialog(0, 0, 0, "아직 소림사의 절기를 배워오지 못하신 것 같군요.");
-				end;
-			}
-			else
-			{
+        set $handmagic, 1;
+        addlegend @sd, 26, 7, 0, 1, "고구려무도가의 부탁을 들어주자.";
+        set @pos, dialog(0, 0, 0, "고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.");
+        end;
+    }
+    else
+    {
+        if($handmagic_check == 0)
+        {
+            if(checkspell(name2spellid("백열장")) == 52)
+            {
+                set @pos, dialog(0, 0, 0, "아직 소림사의 절기를 배워오지 못하신 것 같군요.");
+                end;
+            }
+            else
+            {
 COS004:
-				set @pos, dialog(0, 0, 1, "그래.. 소림사의 절기는 배워오셨소? 오오.. 그 절기의 이름을 백열장이라고 하는군..");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "그래.. 소림사의 절기는 배워오셨소? 오오.. 그 절기의 이름을 백열장이라고 하는군..");
+                if(@pos == 0) end;
 COS005:
-				set @pos, dialog(0, 1, 1, "음.. 그렇군. 대충 기술은 이해했소. 나도 무도가라 한번 보면 대략적인 형태는 이해할수 있다오. 이후엔 수련을 해서 더 높은 경지로 갈 수 있도록 해야겠지.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS004;
+                set @pos, dialog(0, 1, 1, "음.. 그렇군. 대충 기술은 이해했소. 나도 무도가라 한번 보면 대략적인 형태는 이해할수 있다오. 이후엔 수련을 해서 더 높은 경지로 갈 수 있도록 해야겠지.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS004;
 COS006:
-				set @pos, dialog(0, 1, 1, "이거 고마워서.. 내 뭐라도 줘야할 터인데.. 그렇지. 나의 사부님이 전해주신 손목보호대를 드리지. 뭐 아주 간단한 손목보호대라 다른건 없고, 단단한거 하난 알아주는 물건이오.\\n\\n그럼 고맙소.. 잘 돌아가시게..");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS005;
+                set @pos, dialog(0, 1, 1, "이거 고마워서.. 내 뭐라도 줘야할 터인데.. 그렇지. 나의 사부님이 전해주신 손목보호대를 드리지. 뭐 아주 간단한 손목보호대라 다른건 없고, 단단한거 하난 알아주는 물건이오.\\n\\n그럼 고맙소.. 잘 돌아가시게..");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS005;
 
-				set $handmagic_check, 1;
-				additem @sd, name2itemid("청동손목보호대"), 1;
-				end;
-			}
-		}
-		else
-		{
-			set @pos, dialog(0, 0, 1, "정말 고맙소. 당신 덕분에 나도 소림사의 절기를 더욱더 배워지고 싶구만.");
-			end;
-		}
-	}
+                set $handmagic_check, 1;
+                additem @sd, name2itemid("청동손목보호대"), 1;
+                end;
+            }
+        }
+        else
+        {
+            set @pos, dialog(0, 0, 1, "정말 고맙소. 당신 덕분에 나도 소림사의 절기를 더욱더 배워지고 싶구만.");
+            end;
+        }
+    }
 }
 
-주례사	{
-	set @sd, mysd();
-	set @id, myid();
+주례사    {
+    set @sd, mysd();
+    set @id, myid();
 
-	image 0, 4, 4;
+    image 0, 4, 4;
 COS001:
-	set @list, list1("안녕하세요. 어떻게 오셨나요?", "결혼을 하려고 왔습니다", "이혼을 하려고 왔습니다");
-	if(@list == 1)
-	{
-		if(get_level(@sd) < 21)
-		{
-			set @pos, dialog(0, 0, 0, "레벨 21이상만 결혼할 수 있습니다.");
-			end;
-		}
-		else
-		{
-			set @nt, callfunc("Server_Nowtime");
-			if($marry_time > @nt) { set @pos, dialog(0, 0, 0, "" + ($marry_time-@nt) + "초 후에 다시 결혼이 가능하십니다."); end; }
-			else
-			{
-				if($marry_check != 0)
-				{
-					set @pos, dialog(0, 0, 0, "이미 결혼을 하셨습니다.");
-					end;
-				}
-				else
-				{
-					if(get_gender(@sd) == 1)
-					{
-						set @pos, dialog(0, 0, 0, "결혼은 남자만이 신청하실 수 있습니다.");
-						end;
-					}
-					else
-					{
-						set @pos, input2(@marry$, 0, 6, "결혼하실 이름을 입력해 주십시오.", "나와 결혼할 상대의 이름은:", "입니다.");
-						if(@pos == 0) end;
-						else if(@pos == -1) goto COS001;
+    set @list, list1("안녕하세요. 어떻게 오셨나요?", "결혼을 하려고 왔습니다", "이혼을 하려고 왔습니다");
+    if(@list == 1)
+    {
+        if(get_level(@sd) < 21)
+        {
+            set @pos, dialog(0, 0, 0, "레벨 21이상만 결혼할 수 있습니다.");
+            end;
+        }
+        else
+        {
+            set @nt, callfunc("Server_Nowtime");
+            if($marry_time > @nt) { set @pos, dialog(0, 0, 0, "" + ($marry_time-@nt) + "초 후에 다시 결혼이 가능하십니다."); end; }
+            else
+            {
+                if($marry_check != 0)
+                {
+                    set @pos, dialog(0, 0, 0, "이미 결혼을 하셨습니다.");
+                    end;
+                }
+                else
+                {
+                    if(get_gender(@sd) == 1)
+                    {
+                        set @pos, dialog(0, 0, 0, "결혼은 남자만이 신청하실 수 있습니다.");
+                        end;
+                    }
+                    else
+                    {
+                        set @pos, input2(@marry$, 0, 6, "결혼하실 이름을 입력해 주십시오.", "나와 결혼할 상대의 이름은:", "입니다.");
+                        if(@pos == 0) end;
+                        else if(@pos == -1) goto COS001;
 
-						set @target_id, name2id(@marry$);
-						set @target_sd, name2sd(@marry$);
-						if(@target_sd > 0)
-						{
-							set @choice, list1("정말 " + @marry$ + "님과 결혼하시겠습니까?", "예", "아뇨");
-							if(@choice == 1)
-							{
-								if(get_x(@id) == 12 && get_y(@id) == 8 && get_x(@target_id) == 18 && get_y(@target_id) == 8)
-								{
-									if(@target_sd <= 0) end;
-	
-									if(get_level(@target_sd) < 21)
-									{
-										set @pos, dialog(0, 0, 0, "결혼할 상대의 레벨이 21이상이여야 합니다.");
-										end;
-									}
-									if(get_gender(@sd) == get_gender(@target_sd))
-									{
-										set @pos, dialog(0, 0, 0, "같은 성별끼리는 결혼할 수 없습니다.");
-										end;
-									}
-	
-									set #marry_check_success, 0;
-									spellaether @target_sd, name2spellid("결혼체크"), 1;
-									sleep(1000);
-									if(#marry_check_success == 1)
-									{
-										set @pos, dialog(0, 0, 0, "이미 결혼한 상대와는 결혼을 할 수 없습니다.");
-										end;
-									}
-									else
-										{
-										set @pos, dialog(0, 0, 1, @marry$ + "님께 결혼 동의문을 보냈습니다. 잠시만 기다려 주세요.");
-										if(@pos == 0) end;
+                        set @target_id, name2id(@marry$);
+                        set @target_sd, name2sd(@marry$);
+                        if(@target_sd > 0)
+                        {
+                            set @choice, list1("정말 " + @marry$ + "님과 결혼하시겠습니까?", "예", "아뇨");
+                            if(@choice == 1)
+                            {
+                                if(get_x(@id) == 12 && get_y(@id) == 8 && get_x(@target_id) == 18 && get_y(@target_id) == 8)
+                                {
+                                    if(@target_sd <= 0) end;
+    
+                                    if(get_level(@target_sd) < 21)
+                                    {
+                                        set @pos, dialog(0, 0, 0, "결혼할 상대의 레벨이 21이상이여야 합니다.");
+                                        end;
+                                    }
+                                    if(get_gender(@sd) == get_gender(@target_sd))
+                                    {
+                                        set @pos, dialog(0, 0, 0, "같은 성별끼리는 결혼할 수 없습니다.");
+                                        end;
+                                    }
+    
+                                    set #marry_check_success, 0;
+                                    spellaether @target_sd, name2spellid("결혼체크"), 1;
+                                    sleep(1000);
+                                    if(#marry_check_success == 1)
+                                    {
+                                        set @pos, dialog(0, 0, 0, "이미 결혼한 상대와는 결혼을 할 수 없습니다.");
+                                        end;
+                                    }
+                                    else
+                                        {
+                                        set @pos, dialog(0, 0, 1, @marry$ + "님께 결혼 동의문을 보냈습니다. 잠시만 기다려 주세요.");
+                                        if(@pos == 0) end;
 
-										if(@target_sd <= 0) end;
-	
-										set #marry_session_2, @sd;
-										runscript @target_sd, "결혼동의문";
-										end;
-									}
-								}
-								else
-								{
-									set @pos, dialog(0, 0, 0, "신랑은 왼쪽, 신부는 오른쪽 알맞은 위치에 서 주세요.");
-									end;
-								}
-							}
-						}
-						else
-						{
-							set @pos, dialog(0, 0, 0, @marry$ + "님은 바람의나라에 없습니다.");
-							end;
-						}
-					}
-				}
-			}
-		}
-	}
-	else if(@list == 2)
-	{
-		if($marry_check != 1)
-		{
-			set @pos, dialog(0, 0, 0, "결혼을 한 사람만이 이혼을 할 수 있습니다");
-			end;	
-		}
-		else
-		{
-			set @list, list1("정말 배우자 " + $marry_name$ + "님과 이혼하시겠습니까?", "예", "아뇨");
-			if(@list == 1)
-			{
-				set @honey$, $marry_name$;
-				set @target_id, name2id(@honey$);
-				set @target_sd, name2sd(@honey$);
-				if(@target_sd > 0)
-				{
-					if(get_name(@target_sd) == get_name(@target_sd))
-					{
-						if(get_x(@id) == 12 && get_y(@id) == 8 && get_x(@target_id) == 18 && get_y(@target_id) == 8)
-						{
-							set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님께 이혼동의문을 보냈습니다. 승낙을 할시 이혼이 성사됩니다.");
-							if(@pos == 0) end;
+                                        if(@target_sd <= 0) end;
+    
+                                        set #marry_session_2, @sd;
+                                        runscript @target_sd, "결혼동의문";
+                                        end;
+                                    }
+                                }
+                                else
+                                {
+                                    set @pos, dialog(0, 0, 0, "신랑은 왼쪽, 신부는 오른쪽 알맞은 위치에 서 주세요.");
+                                    end;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            set @pos, dialog(0, 0, 0, @marry$ + "님은 바람의나라에 없습니다.");
+                            end;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else if(@list == 2)
+    {
+        if($marry_check != 1)
+        {
+            set @pos, dialog(0, 0, 0, "결혼을 한 사람만이 이혼을 할 수 있습니다");
+            end;    
+        }
+        else
+        {
+            set @list, list1("정말 배우자 " + $marry_name$ + "님과 이혼하시겠습니까?", "예", "아뇨");
+            if(@list == 1)
+            {
+                set @honey$, $marry_name$;
+                set @target_id, name2id(@honey$);
+                set @target_sd, name2sd(@honey$);
+                if(@target_sd > 0)
+                {
+                    if(get_name(@target_sd) == get_name(@target_sd))
+                    {
+                        if(get_x(@id) == 12 && get_y(@id) == 8 && get_x(@target_id) == 18 && get_y(@target_id) == 8)
+                        {
+                            set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님께 이혼동의문을 보냈습니다. 승낙을 할시 이혼이 성사됩니다.");
+                            if(@pos == 0) end;
 
-							if(@target_sd <= 0) end;
+                            if(@target_sd <= 0) end;
 
-							set #marry_session, @sd;
-							runscript @target_sd, "이혼동의문";
-							end;
-						}
-						else
-						{
-							set @pos, dialog(0, 0, 0, "이혼하시려는 두 분은 알맞은 위치에 서 주세요. 이혼을 신청하시는 분이 왼쪽에 서야 합니다.");
-							end;
-						}
-					}
-					else
-					{
-						set @pos, dialog(0, 0, 0, "자신과 결혼한 배우자만이 이혼할 수 있습니다");
-						end;
-					}
-				}
-				else
-				{
-					set @pos, dialog(0, 0, 0, $marry_name$ + "님은 바람의나라에 없습니다.");
-					end;
-				}
-			}
-		}
-	}
+                            set #marry_session, @sd;
+                            runscript @target_sd, "이혼동의문";
+                            end;
+                        }
+                        else
+                        {
+                            set @pos, dialog(0, 0, 0, "이혼하시려는 두 분은 알맞은 위치에 서 주세요. 이혼을 신청하시는 분이 왼쪽에 서야 합니다.");
+                            end;
+                        }
+                    }
+                    else
+                    {
+                        set @pos, dialog(0, 0, 0, "자신과 결혼한 배우자만이 이혼할 수 있습니다");
+                        end;
+                    }
+                }
+                else
+                {
+                    set @pos, dialog(0, 0, 0, $marry_name$ + "님은 바람의나라에 없습니다.");
+                    end;
+                }
+            }
+        }
+    }
 }
 
-결혼동의문	{
-	set @sd, mysd();
-	set @id, myid();
-	set @marry_session_2, #marry_session_2;
-	set @target_sd, @marry_session_2;
-	set @list, list1("신랑 " + get_name(@target_sd) + "님께서 신부 " + get_name(@sd) + "님과 결혼하시길 원합니다. 결혼하시겠습니까?", "예, 결혼합니다.", "아니요, 결혼하지 않습니다.");
-	if(@list == 1)
-	{
-		set @pos, dialog(0, 0, 1, "결혼이 성립되었습니다.");
-		if(@pos == 0) end;
+결혼동의문    {
+    set @sd, mysd();
+    set @id, myid();
+    set @marry_session_2, #marry_session_2;
+    set @target_sd, @marry_session_2;
+    set @list, list1("신랑 " + get_name(@target_sd) + "님께서 신부 " + get_name(@sd) + "님과 결혼하시길 원합니다. 결혼하시겠습니까?", "예, 결혼합니다.", "아니요, 결혼하지 않습니다.");
+    if(@list == 1)
+    {
+        set @pos, dialog(0, 0, 1, "결혼이 성립되었습니다.");
+        if(@pos == 0) end;
 
-		if(@target_sd <= 0) end;
+        if(@target_sd <= 0) end;
 
-		announce 5, "♥ " + get_name(@target_sd) + "님과 " + get_name(@sd) + "님께서 결혼하셨습니다. 모두 축하해주세요.";
+        announce 5, "♥ " + get_name(@target_sd) + "님과 " + get_name(@sd) + "님께서 결혼하셨습니다. 모두 축하해주세요.";
 
-		set $marry_check, 1;
-		set $marry_name$, get_name(@target_sd);
-		set #marry_session_2, @sd;
+        set $marry_check, 1;
+        set $marry_name$, get_name(@target_sd);
+        set #marry_session_2, @sd;
 
-		additem @sd, name2itemid("잔치떡"), 50;
-		if(countitem(name2itemid("사랑호출기")) == 0) { additem @sd, name2itemid("사랑호출기"), 1; }
+        additem @sd, name2itemid("잔치떡"), 50;
+        if(countitem(name2itemid("사랑호출기")) == 0) { additem @sd, name2itemid("사랑호출기"), 1; }
 
-		addlegend @sd, 33, 14, 0, 2, "유부녀(배우자 : " + $marry_name$ + ")";
+        addlegend @sd, 33, 14, 0, 2, "유부녀(배우자 : " + $marry_name$ + ")";
 
-		runscript @target_sd, "결혼성사";
-	}
-	else if(@list == 2)
-	{
-		set @pos, dialog(0, 0, 1, "결혼을 거절하셨습니다.");
-		if(@pos == 0) end;
+        runscript @target_sd, "결혼성사";
+    }
+    else if(@list == 2)
+    {
+        set @pos, dialog(0, 0, 1, "결혼을 거절하셨습니다.");
+        if(@pos == 0) end;
 
-		if(@target_sd <= 0) end;
+        if(@target_sd <= 0) end;
 
-		set #marry_session_2, @sd;
-		runscript @target_sd, "결혼거절";
-	}
+        set #marry_session_2, @sd;
+        runscript @target_sd, "결혼거절";
+    }
 }
 
-결혼성사	{
-	set @sd, mysd();
-	set @id, myid();
-	set @target_sd, #marry_session_2;
-	set $marry_check, 1;
-	set $marry_name$, get_name(@target_sd);
+결혼성사    {
+    set @sd, mysd();
+    set @id, myid();
+    set @target_sd, #marry_session_2;
+    set $marry_check, 1;
+    set $marry_name$, get_name(@target_sd);
 
-	additem @sd, name2itemid("잔치떡"), 50;
-	if(countitem(name2itemid("사랑호출기")) == 0) { additem @sd, name2itemid("사랑호출기"), 1; }
+    additem @sd, name2itemid("잔치떡"), 50;
+    if(countitem(name2itemid("사랑호출기")) == 0) { additem @sd, name2itemid("사랑호출기"), 1; }
 
-	addlegend @sd, 33, 14, 0, 2, "유부남(배우자 : " + $marry_name$ + ")";
+    addlegend @sd, 33, 14, 0, 2, "유부남(배우자 : " + $marry_name$ + ")";
 
-	set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님과 결혼하였습니다. 축하드립니다.");
+    set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님과 결혼하였습니다. 축하드립니다.");
 }
 
-결혼거절	{
-	set @sd, mysd();
-	set @id, myid();
-	set @target_sd, #marry_session_2;
-	set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님이 " + get_name(@sd) + "님과의 결혼을 거절하셨습니다.");
+결혼거절    {
+    set @sd, mysd();
+    set @id, myid();
+    set @target_sd, #marry_session_2;
+    set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님이 " + get_name(@sd) + "님과의 결혼을 거절하셨습니다.");
 }
 
-이혼동의문	{
-	set @sd, mysd();
-	set @id, myid();
-	set @marry_session, #marry_session;
-	set @target_sd, @marry_session;
-	set @list, list1(get_name(@target_sd) + "님께서 " + get_name(@sd) + "님과 이혼하시길 원합니다. 이혼하시겠습니까?", "예, 동의합니다.", "아니요, 거절합니다.");
-	if(@list == 1)
-	{
-		set @pos, dialog(0, 0, 1, "이혼이 성립되었습니다.");
-		if(@pos == 0) end;
+이혼동의문    {
+    set @sd, mysd();
+    set @id, myid();
+    set @marry_session, #marry_session;
+    set @target_sd, @marry_session;
+    set @list, list1(get_name(@target_sd) + "님께서 " + get_name(@sd) + "님과 이혼하시길 원합니다. 이혼하시겠습니까?", "예, 동의합니다.", "아니요, 거절합니다.");
+    if(@list == 1)
+    {
+        set @pos, dialog(0, 0, 1, "이혼이 성립되었습니다.");
+        if(@pos == 0) end;
 
-		if(@target_sd <= 0) end;
+        if(@target_sd <= 0) end;
 
-		announce 5, "★ " + get_name(@sd) + "님과 " + get_name(@target_sd) + "님이 이혼하셨습니다.";
+        announce 5, "★ " + get_name(@sd) + "님과 " + get_name(@target_sd) + "님이 이혼하셨습니다.";
 
-		set $marry_check, 0;
-		set $marry_name$, "";
-		set $divorce, $divorce+1;
-		set #marry_session, @sd;
+        set $marry_check, 0;
+        set $marry_name$, "";
+        set $divorce, $divorce+1;
+        set #marry_session, @sd;
 
-		dellegend @sd, 33;
-		addlegend @sd, 34, 14, 0, 5, "생에 " + $divorce + "번 이혼을 하다.";
+        dellegend @sd, 33;
+        addlegend @sd, 34, 14, 0, 5, "생에 " + $divorce + "번 이혼을 하다.";
 
-		set @nt, callfunc("Server_Nowtime");
-		set $marry_time, @nt+604800;
+        set @nt, callfunc("Server_Nowtime");
+        set $marry_time, @nt+604800;
 
-		runscript @target_sd, "이혼성사";
-	}
-	else if(@list == 2)
-	{
-		set @pos, dialog(0, 0, 1, "이혼을 거절하셨습니다.");
-		if(@pos == 0) end;
+        runscript @target_sd, "이혼성사";
+    }
+    else if(@list == 2)
+    {
+        set @pos, dialog(0, 0, 1, "이혼을 거절하셨습니다.");
+        if(@pos == 0) end;
 
-		if(@target_sd <= 0) end;
+        if(@target_sd <= 0) end;
 
-		set #marry_session, @sd;
-		runscript @target_sd, "이혼거절";
-	}
+        set #marry_session, @sd;
+        runscript @target_sd, "이혼거절";
+    }
 }
 
-이혼성사	{
-	set @sd, mysd();
-	set @id, myid();
-	set @target_sd, #marry_session;
-	set $marry_check, 0;
-	set $marry_name$, "";
-	set $divorce, $divorce+1;
+이혼성사    {
+    set @sd, mysd();
+    set @id, myid();
+    set @target_sd, #marry_session;
+    set $marry_check, 0;
+    set $marry_name$, "";
+    set $divorce, $divorce+1;
 
-	dellegend @sd, 33;
-	addlegend @sd, 34, 14, 0, 5, "생에 " + $divorce + "번 이혼을 하다.";
+    dellegend @sd, 33;
+    addlegend @sd, 34, 14, 0, 5, "생에 " + $divorce + "번 이혼을 하다.";
 
-	set @nt, callfunc("Server_Nowtime");
-	set $marry_time, @nt+604800;
+    set @nt, callfunc("Server_Nowtime");
+    set $marry_time, @nt+604800;
 
-	set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님과 이혼하였습니다. 다음엔 좀 더 신중히 결혼을 하시길 바랍니다.");
+    set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님과 이혼하였습니다. 다음엔 좀 더 신중히 결혼을 하시길 바랍니다.");
 }
 
-이혼거절	{
-	set @sd, mysd();
-	set @id, myid();
-	set @target_sd, #marry_session;
-	set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님이 " + get_name(@sd) + "님과의 이혼을 거절하셨습니다.");
+이혼거절    {
+    set @sd, mysd();
+    set @id, myid();
+    set @target_sd, #marry_session;
+    set @pos, dialog(0, 0, 1, get_name(@target_sd) + "님이 " + get_name(@sd) + "님과의 이혼을 거절하셨습니다.");
 }

@@ -1,323 +1,323 @@
-폭12지입장	{
-	image 0, 87, 3;
-	set @sd, mysd();
-	set @id, myid();
-	set @ret, list1("안녕하세요. 어떻게 오셨나요?", "PK12지입장", "신부여성입장");
-	if(@ret == 1)
-	{
+폭12지입장    {
+    image 0, 87, 3;
+    set @sd, mysd();
+    set @id, myid();
+    set @ret, list1("안녕하세요. 어떻게 오셨나요?", "PK12지입장", "신부여성입장");
+    if(@ret == 1)
+    {
 POS000:
-		set @pos, dialog(0, 0, 1, "그래, 여길 들어가고 싶단 말이지?");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "그래, 여길 들어가고 싶단 말이지?");
+        if(@pos == 0) end;
 POS001:
-		set @pos, dialog(0, 1, 1, "이 안은 아주 위험하다네...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto POS000;
+        set @pos, dialog(0, 1, 1, "이 안은 아주 위험하다네...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto POS000;
 POS002:
-		set @pos, dialog(0, 1, 1, "폭탄으로 죽을 수도 있고, 사용자들끼리도 서로 죽일 수 있다네...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto POS001;
+        set @pos, dialog(0, 1, 1, "폭탄으로 죽을 수도 있고, 사용자들끼리도 서로 죽일 수 있다네...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto POS001;
 POS003:
-		set @pos, dialog(0, 1, 1, "이 안에서 죽어서 아이템이나 경험치를 잃어버린 것은 자네가 책임져야 하네...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto POS002;
-		set @pos, list2(@ret, 0, 1, "아주 위험한 곳인데, 그래도 들어가길 원하는가?", "네. 들어가길 원합니다.", "아니오. 다시 생각하니 겁나는군요.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto POS003;
-		if(@ret == 1)
-		{
+        set @pos, dialog(0, 1, 1, "이 안에서 죽어서 아이템이나 경험치를 잃어버린 것은 자네가 책임져야 하네...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto POS002;
+        set @pos, list2(@ret, 0, 1, "아주 위험한 곳인데, 그래도 들어가길 원하는가?", "네. 들어가길 원합니다.", "아니오. 다시 생각하니 겁나는군요.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto POS003;
+        if(@ret == 1)
+        {
 POS0000:
-			set @pos, dialog(0, 0, 1, "각오가 대단한가보군... 마지막으로 묻겟네...");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "각오가 대단한가보군... 마지막으로 묻겟네...");
+            if(@pos == 0) end;
 POS0001:
-			set @pos, dialog(0, 1, 1, "이 안에서 서로 죽이거나 죽어서 생긴 모든 문제는 자네 책임일세...");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto POS0000;
+            set @pos, dialog(0, 1, 1, "이 안에서 서로 죽이거나 죽어서 생긴 모든 문제는 자네 책임일세...");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto POS0000;
 POS0002:
-			set @pos, dialog(0, 1, 1, "죽어서 아이템이나 경험치를 잃은 것도 모두 자네 책임이고 복구는 안된다네...");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto POS0001;
-			set @pos, list2(@ret, 0, 1, "여기에 동의하는가?", "네. 모두 동의합니다.", "아니오. 다시 생각하니 겁나는군요.");
-			if(@pos == 0) end;
-			if(@ret == 1)
-			{
-				set @pos, dialog(0, 0, 1, "그럼, 행운을 비네... 조심하게..");
-				if(@pos == 0) end;
+            set @pos, dialog(0, 1, 1, "죽어서 아이템이나 경험치를 잃은 것도 모두 자네 책임이고 복구는 안된다네...");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto POS0001;
+            set @pos, list2(@ret, 0, 1, "여기에 동의하는가?", "네. 모두 동의합니다.", "아니오. 다시 생각하니 겁나는군요.");
+            if(@pos == 0) end;
+            if(@ret == 1)
+            {
+                set @pos, dialog(0, 0, 1, "그럼, 행운을 비네... 조심하게..");
+                if(@pos == 0) end;
 
-				warp @sd, 1948, 25+rand(1, 10), 12+rand(1, 5);
-			}
-			else if(@ret == 2) goto POS0;
-		}
-		else if(@ret == 2)
-		{
-			set @pos, dialog(0, 0, 0, "잘 생각 했네. 잘가게...");
-			end;
-		}
-		else end;
-	}
-	else if(@ret == 2)
-	{
+                warp @sd, 1948, 25+rand(1, 10), 12+rand(1, 5);
+            }
+            else if(@ret == 2) goto POS0;
+        }
+        else if(@ret == 2)
+        {
+            set @pos, dialog(0, 0, 0, "잘 생각 했네. 잘가게...");
+            end;
+        }
+        else end;
+    }
+    else if(@ret == 2)
+    {
 COS000:
-		set @pos, dialog(0, 0, 1, "그래, 무슨일이지?");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "그래, 무슨일이지?");
+        if(@pos == 0) end;
 COS001:
-		set @pos, dialog(0, 1, 1, "신부여성으로 가고 싶다고?");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS000;
+        set @pos, dialog(0, 1, 1, "신부여성으로 가고 싶다고?");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS000;
 COS002:
-		set @pos, dialog(0, 1, 1, "신부여성은 참 좋은곳이지..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "신부여성은 참 좋은곳이지..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "신부여성에서는 많은 곳을 여행할 수 있다네..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
-		set @pos, list2(@ret, 0, 1, "정말 신부여성으로 가겠는가?", "네. 보내주세요.", "아니오. 가기싫어요.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS003;
-		if(@ret == 1)
-		{
+        set @pos, dialog(0, 1, 1, "신부여성에서는 많은 곳을 여행할 수 있다네..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
+        set @pos, list2(@ret, 0, 1, "정말 신부여성으로 가겠는가?", "네. 보내주세요.", "아니오. 가기싫어요.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS003;
+        if(@ret == 1)
+        {
 COS0000:
-			set @pos, dialog(0, 0, 1, "정말로 신부여성으로 가겠는가?");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "정말로 신부여성으로 가겠는가?");
+            if(@pos == 0) end;
 COS0001:
-			set @pos, dialog(0, 1, 1, "이 안에서 길을 잃어도 모든 책임은 자네것이네..");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS0000;
+            set @pos, dialog(0, 1, 1, "이 안에서 길을 잃어도 모든 책임은 자네것이네..");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS0000;
 COS0002:
-			set @pos, dialog(0, 1, 1, "정말로 가길 원한다면 보내주도록 하겠네");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS0001;
-			set @pos, list2(@ret, 0, 1, "정말로 가겠는가?", "네. 꼭 가고싶어요.", "아니오. 다시 생각해볼게요.");
-			if(@pos == 0) end;
-			if(@ret == 1)
-			{
-				set @pos, dialog(0, 0, 1, "그럼, 행운을 비네...");
-				if(@pos == 0) end;
+            set @pos, dialog(0, 1, 1, "정말로 가길 원한다면 보내주도록 하겠네");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS0001;
+            set @pos, list2(@ret, 0, 1, "정말로 가겠는가?", "네. 꼭 가고싶어요.", "아니오. 다시 생각해볼게요.");
+            if(@pos == 0) end;
+            if(@ret == 1)
+            {
+                set @pos, dialog(0, 0, 1, "그럼, 행운을 비네...");
+                if(@pos == 0) end;
 
-				set @rand, rand(1, 3);
-				if(@rand == 1) { set @y, 5; }
-				else if(@rand == 2) { set @y, 8; }
-				else { set @y, 11; }
+                set @rand, rand(1, 3);
+                if(@rand == 1) { set @y, 5; }
+                else if(@rand == 2) { set @y, 8; }
+                else { set @y, 11; }
 
-				warp @sd, rand(15205, 15206), rand(3, 4), @y;
-			}
-			else if(@ret == 2) goto COS0;
-		}
-		else if(@ret == 2)
-		{
-			set @pos, dialog(0, 0, 0, "잘 생각 했네. 잘가게...");
-			end;
-		}
-		else end;
-	}
-	else end;
+                warp @sd, rand(15205, 15206), rand(3, 4), @y;
+            }
+            else if(@ret == 2) goto COS0;
+        }
+        else if(@ret == 2)
+        {
+            set @pos, dialog(0, 0, 0, "잘 생각 했네. 잘가게...");
+            end;
+        }
+        else end;
+    }
+    else end;
 }
 
-용노인	{
-	set @sd, mysd();
-	set @id, myid();
+용노인    {
+    set @sd, mysd();
+    set @id, myid();
 
 POS000:
-	set @pos, dialog(0, 0, 1, "용왕의 방으로 이동하기 위해서는, 어금니 4개가 필요하네.");
-	if(@pos == 0) end;
+    set @pos, dialog(0, 0, 1, "용왕의 방으로 이동하기 위해서는, 어금니 4개가 필요하네.");
+    if(@pos == 0) end;
 POS001:
-	set @pos, dialog(0, 1, 1, "어금니의 이름들은 각각 알고 왔겠지?");
-	if(@pos == -1) goto POS000;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "어금니의 이름들은 각각 알고 왔겠지?");
+    if(@pos == -1) goto POS000;
+    else if(@pos == 0) end;
 POS002:
-	set @pos, list2(@list, 0, 0, "지금 준비되어 있나?\\n참고로 그룹원이 있으면 같이 이동된다네.", "네", "아니요");
-	if(@pos == 0) end;
-	else if(@list == 1)
-	{
-		set @pos, list2(@list, 0, 0, "어디로 이동하겠는가?", "용왕용마의 방", "용왕용천의 방", "용왕용랑의 방", "용왕용겸의 방");
-		if(@pos == 0) { end; }
-		else if(@list == 1) { set @warp_id, 666; goto MAP; }
-		else if(@list == 2) { set @warp_id, 667; goto MAP; }
-		else if(@list == 3) { set @warp_id, 668; goto MAP; }
-		else if(@list == 4) { set @warp_id, 669; goto MAP; }
-	}
-	else end;
-	end;
+    set @pos, list2(@list, 0, 0, "지금 준비되어 있나?\\n참고로 그룹원이 있으면 같이 이동된다네.", "네", "아니요");
+    if(@pos == 0) end;
+    else if(@list == 1)
+    {
+        set @pos, list2(@list, 0, 0, "어디로 이동하겠는가?", "용왕용마의 방", "용왕용천의 방", "용왕용랑의 방", "용왕용겸의 방");
+        if(@pos == 0) { end; }
+        else if(@list == 1) { set @warp_id, 666; goto MAP; }
+        else if(@list == 2) { set @warp_id, 667; goto MAP; }
+        else if(@list == 3) { set @warp_id, 668; goto MAP; }
+        else if(@list == 4) { set @warp_id, 669; goto MAP; }
+    }
+    else end;
+    end;
 MAP:
-	if(countitem(name2itemid("묵룡의어금니")) < 1 || countitem(name2itemid("감룡의어금니")) < 1 || countitem(name2itemid("진룡의어금니")) < 1 ||  countitem(name2itemid("흑룡의어금니")) < 1)
-	{
-		set @pos, dialog(0, 0, 1, "아직 어금니가 준비되지 않았는데?");
-		end;
-	}
-	else
-	{
-		delitem @sd, name2itemid("묵룡의어금니"), 1;
-		delitem @sd, name2itemid("감룡의어금니"), 1;
-		delitem @sd, name2itemid("흑룡의어금니"), 1;
-		delitem @sd, name2itemid("진룡의어금니"), 1;
-		message @sd, 3, "묵룡의어금니 주었습니다";
-		message @sd, 3, "감룡의어금니 주었습니다";
-		message @sd, 3, "흑룡의어금니 주었습니다";
-		message @sd, 3, "진룡의어금니 주었습니다";
+    if(countitem(name2itemid("묵룡의어금니")) < 1 || countitem(name2itemid("감룡의어금니")) < 1 || countitem(name2itemid("진룡의어금니")) < 1 ||  countitem(name2itemid("흑룡의어금니")) < 1)
+    {
+        set @pos, dialog(0, 0, 1, "아직 어금니가 준비되지 않았는데?");
+        end;
+    }
+    else
+    {
+        delitem @sd, name2itemid("묵룡의어금니"), 1;
+        delitem @sd, name2itemid("감룡의어금니"), 1;
+        delitem @sd, name2itemid("흑룡의어금니"), 1;
+        delitem @sd, name2itemid("진룡의어금니"), 1;
+        message @sd, 3, "묵룡의어금니 주었습니다";
+        message @sd, 3, "감룡의어금니 주었습니다";
+        message @sd, 3, "흑룡의어금니 주었습니다";
+        message @sd, 3, "진룡의어금니 주었습니다";
 
-		if(@warp_id == 666) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1115; }
-		else if(@warp_id == 667) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1116; }
-		else if(@warp_id == 668) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1114; }
-		else if(@warp_id == 669) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1113; }
+        if(@warp_id == 666) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1115; }
+        else if(@warp_id == 667) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1116; }
+        else if(@warp_id == 668) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1114; }
+        else if(@warp_id == 669) { mobspawn @warp_id, rand(5, 19), rand(5, 19), rand(0, 3), 1113; }
 
-		if(party(@sd) == 0)
-		{
-			warp @sd, @warp_id, rand(11, 14), rand(22, 24);
-			message @sd, 0, "용왕의방으로 이동하였습니다.";
-			message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
-			end;
-		}
-		else
-		{
-			for(set @i, 0; @i < partymax(); set @i, @i+1)
-			{
-				set @target_sd, party_member(@sd, @i);
-				if(@target_sd > 0)
-				{
-					if(get_mapid(@sd) == get_mapid(@target_sd))
-					{
-						if(@target_sd != @sd)
-						{
-							warp @target_sd, @warp_id, rand(11, 14), rand(22, 24);
-							message @target_sd, 8, get_name(@sd) + "님에 의해 용왕의 방으로 이동하였습니다.";
-							message @target_sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
-						}
-					}
-				}
-			}
-			set @pos, dialog(0, 0, 0, "용왕의방으로 그룹원과 함께 이동하였습니다.");
-			warp @sd, @warp_id, rand(11, 14), rand(22, 24);
-			message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
-			end;
-		}
-	}
+        if(party(@sd) == 0)
+        {
+            warp @sd, @warp_id, rand(11, 14), rand(22, 24);
+            message @sd, 0, "용왕의방으로 이동하였습니다.";
+            message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
+            end;
+        }
+        else
+        {
+            for(set @i, 0; @i < partymax(); set @i, @i+1)
+            {
+                set @target_sd, party_member(@sd, @i);
+                if(@target_sd > 0)
+                {
+                    if(get_mapid(@sd) == get_mapid(@target_sd))
+                    {
+                        if(@target_sd != @sd)
+                        {
+                            warp @target_sd, @warp_id, rand(11, 14), rand(22, 24);
+                            message @target_sd, 8, get_name(@sd) + "님에 의해 용왕의 방으로 이동하였습니다.";
+                            message @target_sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
+                        }
+                    }
+                }
+            }
+            set @pos, dialog(0, 0, 0, "용왕의방으로 그룹원과 함께 이동하였습니다.");
+            warp @sd, @warp_id, rand(11, 14), rand(22, 24);
+            message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
+            end;
+        }
+    }
 }
 
-수선도사	{
-	set @sd, mysd();
-	set @id, myid();
+수선도사    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($repairascetic == 0)
-	{
+    if($repairascetic == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "난 천선도사와 죽마고우인 수선도사라네. 이 친구가 압록강의 절경을 혼자보기 너무 아깝다며 날 데려오지 뭔가.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "난 천선도사와 죽마고우인 수선도사라네. 이 친구가 압록강의 절경을 혼자보기 너무 아깝다며 날 데려오지 뭔가.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "근데 와서 보니 걱정이 태산이라네. 이 친구는 아무것도 모르고 그저 아름답다고만 하지만 지금 압록강은 정상이 아니지.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "근데 와서 보니 걱정이 태산이라네. 이 친구는 아무것도 모르고 그저 아름답다고만 하지만 지금 압록강은 정상이 아니지.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "속에서부터 썩어들어가고 있는데 이게 다 악어녀석들 때문이라네. 번식력이 뛰어나 갑자기 늘어가는 악어의 배설물 때문에...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "속에서부터 썩어들어가고 있는데 이게 다 악어녀석들 때문이라네. 번식력이 뛰어나 갑자기 늘어가는 악어의 배설물 때문에...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, dialog(0, 1, 1, "그래서 자네에게 부탁을 하나 하고 싶네만. 악어 녀석들의 피를 구해와 주는 것이지. 그것으로 강을 정화시킬 방법을 찾을수 있을걸세.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS003;
+        set @pos, dialog(0, 1, 1, "그래서 자네에게 부탁을 하나 하고 싶네만. 악어 녀석들의 피를 구해와 주는 것이지. 그것으로 강을 정화시킬 방법을 찾을수 있을걸세.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS003;
 COS005:
-		set @pos, list2(@list, 0, 1, "내 부탁을 들어주겠나?", "악어를 잡기만 하면 됩니까? 최선을 다하겠습니다.", "저에겐 무리겠군요. 죄송합니다.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS004;
-		else if(@list == 1)
-		{
+        set @pos, list2(@list, 0, 1, "내 부탁을 들어주겠나?", "악어를 잡기만 하면 됩니까? 최선을 다하겠습니다.", "저에겐 무리겠군요. 죄송합니다.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS004;
+        else if(@list == 1)
+        {
 COS006:
-			set @pos, dialog(0, 0, 1, "그럼 일단 자네가 악어와 맞설 능력이 충분한지 살펴보겠네.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "그럼 일단 자네가 악어와 맞설 능력이 충분한지 살펴보겠네.");
+            if(@pos == 0) end;
 COS007:
-			if(get_level(@sd) < 70)
-			{
-				set @pos, dialog(0, 0, 1, "자네는 아직 악어와 맞설 능력이 충분하지 않군.. 다음에 부탁하도록 하지.");
-				end;
-			}
-			else
-			{
-				set $repairascetic, 1;
-				addlegend @sd, 25, 7, 0, 8, "악어의피 3병을 구하자.";
+            if(get_level(@sd) < 70)
+            {
+                set @pos, dialog(0, 0, 1, "자네는 아직 악어와 맞설 능력이 충분하지 않군.. 다음에 부탁하도록 하지.");
+                end;
+            }
+            else
+            {
+                set $repairascetic, 1;
+                addlegend @sd, 25, 7, 0, 8, "악어의피 3병을 구하자.";
 COS008:
-				set @pos, dialog(0, 0, 1, "좋네. 자네라면 믿고 부탁해도 되겠군. 악어들을 잡다보면 오염이 덜된 악어들이 있다네.");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "좋네. 자네라면 믿고 부탁해도 되겠군. 악어들을 잡다보면 오염이 덜된 악어들이 있다네.");
+                if(@pos == 0) end;
 COS009:
-				set @pos, dialog(0, 1, 1, "이녀석들의 순수한 피를모아 조사를 해보면 더러워진 압록강을 깨끗히 정화시킬수 있는 약을 만들수 있지.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS008;
+                set @pos, dialog(0, 1, 1, "이녀석들의 순수한 피를모아 조사를 해보면 더러워진 압록강을 깨끗히 정화시킬수 있는 약을 만들수 있지.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS008;
 COS010:
-				set @pos, dialog(0, 1, 1, "다만 순수한 피여야만 하기 때문에 쉽지가 않을걸세. 포기하지 말고 나에게 악어의피 3병을 구해와주게.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS009;
+                set @pos, dialog(0, 1, 1, "다만 순수한 피여야만 하기 때문에 쉽지가 않을걸세. 포기하지 말고 나에게 악어의피 3병을 구해와주게.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS009;
 
-				set @pos, dialog(0, 1, 1, "그럼 행운을 비네. 너무 늦장을 부리면 다시 깨끗해지기 힘들수도있으니 서둘러주게.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS010;
-			}
-		}
-		else if(@list == 2)
-		{
-			set @pos, dialog(0, 0, 1, "다시 한번 생각해보게. 머지않아 이 압록강이 푸른빛을 잃게 될지도 모르네. 정말 큰일이군.");
-			end;
-		}
-	}
-	if($repairascetic == 1)
-	{
-		if(countitem(name2itemid("악어의피")) < 3)
-		{
+                set @pos, dialog(0, 1, 1, "그럼 행운을 비네. 너무 늦장을 부리면 다시 깨끗해지기 힘들수도있으니 서둘러주게.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS010;
+            }
+        }
+        else if(@list == 2)
+        {
+            set @pos, dialog(0, 0, 1, "다시 한번 생각해보게. 머지않아 이 압록강이 푸른빛을 잃게 될지도 모르네. 정말 큰일이군.");
+            end;
+        }
+    }
+    if($repairascetic == 1)
+    {
+        if(countitem(name2itemid("악어의피")) < 3)
+        {
 COS011:
-			set @pos, dialog(0, 0, 1, "아직 악어의피를 다 구하지 못했군. 쉽진 않을걸세. 요즘 변종된 악어가많아 순수한 피를 찾기 힘들게야.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "아직 악어의피를 다 구하지 못했군. 쉽진 않을걸세. 요즘 변종된 악어가많아 순수한 피를 찾기 힘들게야.");
+            if(@pos == 0) end;
 COS012:
-			set @pos, dialog(0, 1, 1, "조금만 더 힘을 내주게");
-			if(@pos == -1) goto COS011;
-			end;
-		}
-		else
-		{
-			set @pos, dialog(0, 0, 1, "오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 1, 1, "조금만 더 힘을 내주게");
+            if(@pos == -1) goto COS011;
+            end;
+        }
+        else
+        {
+            set @pos, dialog(0, 0, 1, "오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.");
+            if(@pos == 0) end;
 
-			set $repairascetic, 2;
-			for(set @loop, 0; @loop < 3; set @loop, @loop+1)
-			{
-				delitem @sd, name2itemid("악어의피"), 1;
-			}
-			message @sd, 3, "악어의피 주었습니다";
-			additem @sd, name2itemid("수선도사의머리띠"), 1;
-			addlegend @sd, 25, 6, 0, 8, "수선도사의 부탁을 들어주었다.";
-			end;
-		}
-	}
-	if($repairascetic == 2)
-	{
-		set @pos, dialog(0, 0, 1, "저번엔 고마웠네. 덕분에 정화된 깨끗한 압록강을 다시볼수있어 기쁘네.");
-		end;
-	}
+            set $repairascetic, 2;
+            for(set @loop, 0; @loop < 3; set @loop, @loop+1)
+            {
+                delitem @sd, name2itemid("악어의피"), 1;
+            }
+            message @sd, 3, "악어의피 주었습니다";
+            additem @sd, name2itemid("수선도사의머리띠"), 1;
+            addlegend @sd, 25, 6, 0, 8, "수선도사의 부탁을 들어주었다.";
+            end;
+        }
+    }
+    if($repairascetic == 2)
+    {
+        set @pos, dialog(0, 0, 1, "저번엔 고마웠네. 덕분에 정화된 깨끗한 압록강을 다시볼수있어 기쁘네.");
+        end;
+    }
 }
 
-천선도사	{
-	set @sd, mysd();
-	set @id, myid();
+천선도사    {
+    set @sd, mysd();
+    set @id, myid();
 COS001:
-	set @pos, dialog(0, 0, 1, "압록강은 언제봐도 아름답지않나? 정말 자연의 위대함이란...");
-	if(@pos == 0) end;
+    set @pos, dialog(0, 0, 1, "압록강은 언제봐도 아름답지않나? 정말 자연의 위대함이란...");
+    if(@pos == 0) end;
 COS002:
-	set @pos, dialog(0, 1, 1, "그중에도 물은 정말 신비롭지.");
-	if(@pos == -1) goto COS001;
+    set @pos, dialog(0, 1, 1, "그중에도 물은 정말 신비롭지.");
+    if(@pos == -1) goto COS001;
 }
 
-방송쿠폰	{
-	set @sd, mysd();
-	set @id, myid();
-	set @pos, dialog(0, 0, 1, "전 서버에 방송을 하시려구요?");
-	if(@pos == 0) end;
+방송쿠폰    {
+    set @sd, mysd();
+    set @id, myid();
+    set @pos, dialog(0, 0, 1, "전 서버에 방송을 하시려구요?");
+    if(@pos == 0) end;
 
-	if(countitem(name2itemid("방송쿠폰")) == 0)
-	{
-		set @pos, dialog(0, 0, 0, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.");
-		end;
-	}
+    if(countitem(name2itemid("방송쿠폰")) == 0)
+    {
+        set @pos, dialog(0, 0, 0, "방송쿠폰을 가지고 계셔야 방송을 하실 수 있어요.");
+        end;
+    }
 
-	set @pos, input2(@broadcast$, 0, 35, "방송하실 말을 적어주세요.", "방송할 말은", "입니다");
-	if(@pos == 0) end;
+    set @pos, input2(@broadcast$, 0, 35, "방송하실 말을 적어주세요.", "방송할 말은", "입니다");
+    if(@pos == 0) end;
 
-	delitem @sd, name2itemid("방송쿠폰"), 1;
-	message @sd, 3, "방송쿠폰 주었습니다";
-	broadcast 5, "###[" + get_name(@sd) + "]>>" + @broadcast$;
+    delitem @sd, name2itemid("방송쿠폰"), 1;
+    message @sd, 3, "방송쿠폰 주었습니다";
+    broadcast 5, "###[" + get_name(@sd) + "]>>" + @broadcast$;
 }

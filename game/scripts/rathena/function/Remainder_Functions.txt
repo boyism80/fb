@@ -1,391 +1,391 @@
 //##################################################################################//
 //callfunc "BIRTHDAY";
-FUNC_BIRTHDAY	{
-	image 0, 4, 4;
-	set @sd, mysd();
-	set @id, myid();
-	set_birth @sd, -2;
+FUNC_BIRTHDAY    {
+    image 0, 4, 4;
+    set @sd, mysd();
+    set @id, myid();
+    set_birth @sd, -2;
 POS0001:
-	set @pos, dialog(0, 0, 1, "대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.");
-	if(@pos == 0) end;
+    set @pos, dialog(0, 0, 1, "대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.");
+    if(@pos == 0) end;
 POS0002:
-	set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.");
-	if(@pos == -1) goto POS0001;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.");
+    if(@pos == -1) goto POS0001;
+    else if(@pos == 0) end;
 
 POS0003:
-	set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)");
-	if(@pos == -1) goto POS0002;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)");
+    if(@pos == -1) goto POS0002;
+    else if(@pos == 0) end;
 
 POS0004:
-	set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.");
-	if(@pos == -1) goto POS0003;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.");
+    if(@pos == -1) goto POS0003;
+    else if(@pos == 0) end;
 
 POS0005:
-	set @pos, dialog(0, 1, 1, "이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.");
-	if(@pos == -1) goto POS0004;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.");
+    if(@pos == -1) goto POS0004;
+    else if(@pos == 0) end;
 
 POS0006:
-	set @pos, dialog(0, 1, 1, "또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.");
-	if(@pos == -1) goto POS0005;
-	else if(@pos == 0) end;
+    set @pos, dialog(0, 1, 1, "또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.");
+    if(@pos == -1) goto POS0005;
+    else if(@pos == 0) end;
 
 POS0007:
-	set @pos, input2(@birth, 0, 6, "자신의 생년월일을 입력해 주세요.", "저의 생년월일은", "입니다.");
-	if(@pos == 0) goto POS0007;
+    set @pos, input2(@birth, 0, 6, "자신의 생년월일을 입력해 주세요.", "저의 생년월일은", "입니다.");
+    if(@pos == 0) goto POS0007;
 
-	if(@birth <= 0)
-	{
+    if(@birth <= 0)
+    {
 POS0008:
-		set @pos, dialog(0, 1, 1, "두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.");
-		goto POS0007;
-	}
+        set @pos, dialog(0, 1, 1, "두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.");
+        goto POS0007;
+    }
 
-	set @ret, menu("당신의 생년월일이 " + @birth + "가 맞습니까?", "예", "아니오");
-	if(@ret == 1)
-	{
-		set_birth @sd, @birth;
-	}
-	else
-	{
-		goto POS0008;
-	}
-	return;
+    set @ret, menu("당신의 생년월일이 " + @birth + "가 맞습니까?", "예", "아니오");
+    if(@ret == 1)
+    {
+        set_birth @sd, @birth;
+    }
+    else
+    {
+        goto POS0008;
+    }
+    return;
 }
 
 //##################################################################################//
 
 //callfunc "MANA_DELAY", MP, 마법번호, 섹션아디;
-FUNC_MANA_DELAY	{
-	set @sd, mysd();
-	set @id, myid();
+FUNC_MANA_DELAY    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if(getarg(0) != 0)
-	{
-		if(get_mp(@sd) < getarg(0))
-		{
-			message @sd, 3, "마력이 부족합니다.";
-			end;
-		}
-	}
-	
-	if(getarg(1) != 0)
-	{
-		if(spellaethered(getarg(2), getarg(1)) == 1)
-		{
-			message @sd, 3, "이미 걸려있습니다.";
-			end;
-		}
-	}
-	return;
+    if(getarg(0) != 0)
+    {
+        if(get_mp(@sd) < getarg(0))
+        {
+            message @sd, 3, "마력이 부족합니다.";
+            end;
+        }
+    }
+    
+    if(getarg(1) != 0)
+    {
+        if(spellaethered(getarg(2), getarg(1)) == 1)
+        {
+            message @sd, 3, "이미 걸려있습니다.";
+            end;
+        }
+    }
+    return;
 }
 
 //callfunc "BEGINFUNC", 이펙트번호, 소리번호, 마법번호, 딜레이, 액션타입, 이펙옵젝아디;
-FUNC_BEGINFUNC	{
-	set @sd, mysd();
-	set @id, myid();
+FUNC_BEGINFUNC    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if(getarg(4) != 0) { set @four, getarg(4); }
-	else { set @four, 6; }
+    if(getarg(4) != 0) { set @four, getarg(4); }
+    else { set @four, 6; }
 
-	if(getarg(0) != 0)
-	{
-		if(getarg(5) != 0) { set @smyid, getarg(5); }
-		else { set @smyid, @id; }
+    if(getarg(0) != 0)
+    {
+        if(getarg(5) != 0) { set @smyid, getarg(5); }
+        else { set @smyid, @id; }
 
-		effect @smyid, getarg(0);
-	}
+        effect @smyid, getarg(0);
+    }
 
-	if(getarg(1) != 0)
-	{
-		action @id, @four, 30, 0;
-		sound @id, getarg(1);
-	}
+    if(getarg(1) != 0)
+    {
+        action @id, @four, 30, 0;
+        sound @id, getarg(1);
+    }
 
-	if(getarg(2) != 0)
-	{
-		spellaether @sd, getarg(2), getarg(3);
-	}
-	return;
+    if(getarg(2) != 0)
+    {
+        spellaether @sd, getarg(2), getarg(3);
+    }
+    return;
 }
 
 //callfunc "SWORDDAMAGE", 데미지확률, 마법번호, 딜레이, MP;
-FUNC_SWORDDAMAGE	{
-	set @sd, mysd();
-	set @id, myid();
+FUNC_SWORDDAMAGE    {
+    set @sd, mysd();
+    set @id, myid();
 
-	set @input$, script_input(@sd);
-	set @weapon$, get_equipitem_name(@sd, 0);
+    set @input$, script_input(@sd);
+    set @weapon$, get_equipitem_name(@sd, 0);
 
-	set @drate, getarg(0);
-	set @spell_id, getarg(1);
-	set @spell_delay, getarg(2);
-	set @getmp, getarg(3);
+    set @drate, getarg(0);
+    set @spell_id, getarg(1);
+    set @spell_delay, getarg(2);
+    set @getmp, getarg(3);
 
-	set @min_l, get_l_mindam(@sd); // 공격데미지L 최소값
-	set @max_l, get_l_maxdam(@sd); // 공격데미지L 최대값
-	set @min_s, get_s_mindam(@sd); // 공격데미지S 최소값
-	set @max_s, get_s_maxdam(@sd); // 공격데미지S 최대값
-	
-	callfunc "MANA_DELAY", @getmp, 0, @sd;
-	if(!strcmp(@weapon$, @input$))
-	{
-		set $damrate, (@drate-1);
-		callfunc "MANA_DELAY", 0, @spell_id, @sd;
-		message @sd, 3, @weapon$+"이/가 푸른 빛으로 빛납니다.";
-		callfunc "BEGINFUNC", 0, 0, @spell_id, @spell_delay, 6, 0;
+    set @min_l, get_l_mindam(@sd); // 공격데미지L 최소값
+    set @max_l, get_l_maxdam(@sd); // 공격데미지L 최대값
+    set @min_s, get_s_mindam(@sd); // 공격데미지S 최소값
+    set @max_s, get_s_maxdam(@sd); // 공격데미지S 최대값
+    
+    callfunc "MANA_DELAY", @getmp, 0, @sd;
+    if(!strcmp(@weapon$, @input$))
+    {
+        set $damrate, (@drate-1);
+        callfunc "MANA_DELAY", 0, @spell_id, @sd;
+        message @sd, 3, @weapon$+"이/가 푸른 빛으로 빛납니다.";
+        callfunc "BEGINFUNC", 0, 0, @spell_id, @spell_delay, 6, 0;
 
-		set_damrate @sd, get_damrate(@sd)+$damrate;
-	}
-	else
-	{
-		message @sd, 3, "마법이 실패했습니다.";
-	}
-	set_mp @sd, get_mp(@sd)-@getmp;
-	return;
+        set_damrate @sd, get_damrate(@sd)+$damrate;
+    }
+    else
+    {
+        message @sd, 3, "마법이 실패했습니다.";
+    }
+    set_mp @sd, get_mp(@sd)-@getmp;
+    return;
 }
 
 //callfunc "MYHEALMAGIC", 감소할 마나, 채워질 체력, 이펙트, 사운드, 마법이름;
-FUNC_MYHEALMAGIC	{
-	set @id, myid();
-	set @sd, mysd();
-	
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
-	
-	if(get_maxhp(@sd) < get_hp(@sd)+getarg(1)) { set_hp @sd, get_maxhp(@sd); showgage @id; }
-	else { set_hp @sd, get_hp(@sd)+getarg(1); showgage @id; }
-	
-	set_mp @sd, get_mp(@sd)-getarg(0);
-	callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, 0;
-	message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-	return;
+FUNC_MYHEALMAGIC    {
+    set @id, myid();
+    set @sd, mysd();
+    
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
+    
+    if(get_maxhp(@sd) < get_hp(@sd)+getarg(1)) { set_hp @sd, get_maxhp(@sd); showgage @id; }
+    else { set_hp @sd, get_hp(@sd)+getarg(1); showgage @id; }
+    
+    set_mp @sd, get_mp(@sd)-getarg(0);
+    callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, 0;
+    message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    return;
 }
 
 //callfunc "TARGETHEALMAGIC", 감소할 마나, 채워질 체력, 이펙트, 사운드, 마법이름;
-FUNC_TARGETHEALMAGIC	{
-	set @id, myid();
-	set @sd, mysd();
-	set @hp, getarg(1);
-	set @target_id, script_target(@sd);
-	
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
+FUNC_TARGETHEALMAGIC    {
+    set @id, myid();
+    set @sd, mysd();
+    set @hp, getarg(1);
+    set @target_id, script_target(@sd);
+    
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
 
-	if(istype(@target_id) != 1)
-	{
-		message @sd, 3, "걸리지 않습니다.";
-		end;
-	}
+    if(istype(@target_id) != 1)
+    {
+        message @sd, 3, "걸리지 않습니다.";
+        end;
+    }
 
-	set @target_sd, id2sd(@target_id);
+    set @target_sd, id2sd(@target_id);
 
-	if(get_state(@target_sd) == 1)
-	{
-		message @sd, 3, "걸리지 않습니다.";
-		end;
-	}
-	
-	if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
-	else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
-	
-	set_mp @sd, get_mp(@sd)-getarg(0);
-	callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
-	message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-	if( @id != @target_id )
-	{
-		message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
-	}
-	return;
+    if(get_state(@target_sd) == 1)
+    {
+        message @sd, 3, "걸리지 않습니다.";
+        end;
+    }
+    
+    if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
+    else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
+    
+    set_mp @sd, get_mp(@sd)-getarg(0);
+    callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
+    message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    if( @id != @target_id )
+    {
+        message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
+    }
+    return;
 }
 
 //callfunc "TARGETHEALMAGIC1", 감소할 마나, 채워질 체력, 이펙트, 사운드, 마법이름;
-FUNC_TARGETHEALMAGIC1	{
-	set @id, myid();
-	set @sd, mysd();
-	set @hp, getarg(1);
-	set @target_id, script_target(@sd);
-	
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
+FUNC_TARGETHEALMAGIC1    {
+    set @id, myid();
+    set @sd, mysd();
+    set @hp, getarg(1);
+    set @target_id, script_target(@sd);
+    
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
 
-	if(istype(@target_id) == 1)
-	{
-		set @target_sd, id2sd(@target_id);
+    if(istype(@target_id) == 1)
+    {
+        set @target_sd, id2sd(@target_id);
 
-		if(get_state(@target_sd) == 1)
-		{
-			message @sd, 3, "걸리지 않습니다.";
-			end;
-		}
-	
-		if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
-		else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
-	
-		set_mp @sd, get_mp(@sd)-getarg(0);
-		callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
-		message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-		if(@id != @target_id)
-		{
-			message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
-		}
-	}
- 	if(istype(@target_id) == 2)
-	{
-		if( (get_mobhp(@target_id)+@hp) > get_mobmaxhp(@target_id) ) { set_mobhp @target_id, get_mobmaxhp(@target_id); showgage @target_id; }
-		else { set_mobhp @target_id, get_mobhp(@target_id)+@hp; showgage @target_id; }
-	
-		set_mp @sd, get_mp(@sd)-getarg(0);
-		callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
-		message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-	}
-	else
-	{
-		message @sd, 3, "걸리지 않습니다.";
-		end;
-	}
+        if(get_state(@target_sd) == 1)
+        {
+            message @sd, 3, "걸리지 않습니다.";
+            end;
+        }
+    
+        if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
+        else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
+    
+        set_mp @sd, get_mp(@sd)-getarg(0);
+        callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
+        message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+        if(@id != @target_id)
+        {
+            message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
+        }
+    }
+     if(istype(@target_id) == 2)
+    {
+        if( (get_mobhp(@target_id)+@hp) > get_mobmaxhp(@target_id) ) { set_mobhp @target_id, get_mobmaxhp(@target_id); showgage @target_id; }
+        else { set_mobhp @target_id, get_mobhp(@target_id)+@hp; showgage @target_id; }
+    
+        set_mp @sd, get_mp(@sd)-getarg(0);
+        callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
+        message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    }
+    else
+    {
+        message @sd, 3, "걸리지 않습니다.";
+        end;
+    }
 
-	return;
+    return;
 }
 
 //callfunc "CHOMHEALMAGIC", 감소할 마나, 채워질 체력, 이펙트, 사운드, 마법이름;
-FUNC_CHOMHEALMAGIC	{
-	set @id, myid();
-	set @sd, mysd();
-	set @hp, getarg(1);
+FUNC_CHOMHEALMAGIC    {
+    set @id, myid();
+    set @sd, mysd();
+    set @hp, getarg(1);
 
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
 
-	if(party(@sd) != 0)
-	{
-		for(set @i, 0; @i < partymax(); set @i, @i+1)
-		{
-			set @target_sd, party_member(@sd, @i);
-			if(@target_sd > 0) { set @member_count, @member_count+1; }
-		}
-		set @count, 0;
-		for(set @i, 0; @i < partymax(); set @i, @i+1)
-		{
-			set @target_sd, party_member(@sd, @i);
-			if(@target_sd > 0)
-			{
-				if(get_state(@target_sd) != 1 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					set @hp, (@hp*(@member_count-@count))/@member_count;
-					set @target_id, sd2id(@target_sd);
-					if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
-					else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
-					callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
-					if(@id != @target_id)
-					{
-						message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
-					}
-					set @count, @count+1;
-				}
-			}
-		}
-	}
-	message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-	set_mp @sd, get_mp(@sd)-getarg(0);
-	return;
+    if(party(@sd) != 0)
+    {
+        for(set @i, 0; @i < partymax(); set @i, @i+1)
+        {
+            set @target_sd, party_member(@sd, @i);
+            if(@target_sd > 0) { set @member_count, @member_count+1; }
+        }
+        set @count, 0;
+        for(set @i, 0; @i < partymax(); set @i, @i+1)
+        {
+            set @target_sd, party_member(@sd, @i);
+            if(@target_sd > 0)
+            {
+                if(get_state(@target_sd) != 1 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    set @hp, (@hp*(@member_count-@count))/@member_count;
+                    set @target_id, sd2id(@target_sd);
+                    if( (get_hp(@target_sd)+@hp) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
+                    else { set_hp @target_sd, get_hp(@target_sd)+@hp; showgage @target_id; }
+                    callfunc "BEGINFUNC", getarg(2), getarg(3), 0, 0, 6, @target_id;
+                    if(@id != @target_id)
+                    {
+                        message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
+                    }
+                    set @count, @count+1;
+                }
+            }
+        }
+    }
+    message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    set_mp @sd, get_mp(@sd)-getarg(0);
+    return;
 }
 
 //callfunc "TARGETHEALMAGICCHOM", 감소할 마나, 채워질 체력, 이펙트, 사운드, 마법이름;
-FUNC_TARGETHEALMAGICCHOM	{
-	set @id, myid();
-	set @sd, mysd();
-	set @x, get_x(@target_id);
-	set @y, get_y(@target_id);
-	set @target_id, script_target(@sd);
-	
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
+FUNC_TARGETHEALMAGICCHOM    {
+    set @id, myid();
+    set @sd, mysd();
+    set @x, get_x(@target_id);
+    set @y, get_y(@target_id);
+    set @target_id, script_target(@sd);
+    
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
 
-	if(istype(@target_id) != 1)
-	{
-		message @sd, 3, "걸리지 않습니다.";
-		end;
-	}
+    if(istype(@target_id) != 1)
+    {
+        message @sd, 3, "걸리지 않습니다.";
+        end;
+    }
 
-	setarray @target_x[0], @x+1, @x  , @x-1, @x;
-	setarray @target_y[0], @y  , @y+1, @y  , @y-1;
+    setarray @target_x[0], @x+1, @x  , @x-1, @x;
+    setarray @target_y[0], @y  , @y+1, @y  , @y-1;
 
-	for(set @loop, 0; @loop < 4; set @loop, @loop+1)
-	{
-		set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
-		if(@target_id > 0)
-		{
-			if(istype(@target_id) == 1)
-			{
-				set @target_sd, id2sd(@target_id);
-				if(get_state(@target_sd) != 1)
-				{
-					if( (get_hp(@target_sd)+getarg(1)) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
-					else { set_hp @target_sd, get_hp(@target_sd)+getarg(1); showgage @target_id; }
-					callfunc "BEGINFUNC", getarg(2), 0, 0, 0, 0, @target_id;
-					if(@id != @target_id)
-					{
-						message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
-					}
-				}
-			}
-			else
-			{
-				set @notarget, @notarget+1;
-			}
-		}
-	}
+    for(set @loop, 0; @loop < 4; set @loop, @loop+1)
+    {
+        set @target_id, obj_getxy(@target_x[@loop], @target_y[@loop]);
+        if(@target_id > 0)
+        {
+            if(istype(@target_id) == 1)
+            {
+                set @target_sd, id2sd(@target_id);
+                if(get_state(@target_sd) != 1)
+                {
+                    if( (get_hp(@target_sd)+getarg(1)) > get_maxhp(@target_sd) ) { set_hp @target_sd, get_maxhp(@target_sd); showgage @target_id; }
+                    else { set_hp @target_sd, get_hp(@target_sd)+getarg(1); showgage @target_id; }
+                    callfunc "BEGINFUNC", getarg(2), 0, 0, 0, 0, @target_id;
+                    if(@id != @target_id)
+                    {
+                        message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
+                    }
+                }
+            }
+            else
+            {
+                set @notarget, @notarget+1;
+            }
+        }
+    }
 
-	if(@notarget < 4)
-	{
-		callfunc "BEGINFUNC", 0, getarg(3), 0, 0, 6, @id;
-	}
-	
-	set_mp @sd, get_mp(@sd)-getarg(0);
-	message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    if(@notarget < 4)
+    {
+        callfunc "BEGINFUNC", 0, getarg(3), 0, 0, 6, @id;
+    }
+    
+    set_mp @sd, get_mp(@sd)-getarg(0);
+    message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
 
-	deletearray @target_x[0], getarraysize(@target_x);
-	deletearray @target_y[0], getarraysize(@target_y);
-	return;
+    deletearray @target_x[0], getarraysize(@target_x);
+    deletearray @target_y[0], getarraysize(@target_y);
+    return;
 }
 
 //callfunc "LIMITHEAL", 마법번호;
-FUNC_LIMITHEAL	{
-	set @sd, mysd();
-	set @id, myid();
-	set @delay, spelldelaycount(@sd, getarg(0));
-	return @delay;
+FUNC_LIMITHEAL    {
+    set @sd, mysd();
+    set @id, myid();
+    set @delay, spelldelaycount(@sd, getarg(0));
+    return @delay;
 }
 
 //callfunc "UNMAGIC", 마나, 이펙트, 사운드, 종료할마법번호, 마법이름;
-FUNC_UNMAGIC	{
-	set @sd, mysd();
-	set @id, myid();
-	set @target_id, script_target(@sd);
-	set @target_sd, id2sd(@target_id);
-	
-	callfunc "MANA_DELAY", getarg(0), 0, @sd;
-	
-	set_mp @sd, get_mp(@sd)- getarg(0);
-	callfunc "BEGINFUNC", getarg(1), getarg(2), 0, 0, 6, @target_id;
-	spelluncast @target_sd, getarg(3);
-	message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
-	if( @sd != @target_sd )
-	{
-		message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
-	}
-	return;
+FUNC_UNMAGIC    {
+    set @sd, mysd();
+    set @id, myid();
+    set @target_id, script_target(@sd);
+    set @target_sd, id2sd(@target_id);
+    
+    callfunc "MANA_DELAY", getarg(0), 0, @sd;
+    
+    set_mp @sd, get_mp(@sd)- getarg(0);
+    callfunc "BEGINFUNC", getarg(1), getarg(2), 0, 0, 6, @target_id;
+    spelluncast @target_sd, getarg(3);
+    message @sd, 3, getarg(4) + "을(를) 외웠습니다.";
+    if( @sd != @target_sd )
+    {
+        message @target_sd, 3, get_name(@sd) + "님이 " + getarg(4) + "을(를) 외워주셨습니다.";
+    }
+    return;
 }
 
-FUNC_maxtomincalc	{
-	if( getarg(0) > getarg(1) )
-	{
-		return getarg(0)-getarg(1);
-	}
-	else 
-	{
-		return getarg(1)-getarg(0);
-	}
-	return;
+FUNC_maxtomincalc    {
+    if( getarg(0) > getarg(1) )
+    {
+        return getarg(0)-getarg(1);
+    }
+    else 
+    {
+        return getarg(1)-getarg(0);
+    }
+    return;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -394,322 +394,322 @@ FUNC_maxtomincalc	{
 //-----------------------------------------------------------------------------------------------
 
 //callfunc "NODESPAIR", 타입, 번호;
-FUNC_NODESPAIR	{
-	if(getarg(0) == 1)
-	{ // 절망
-		if(getarg(1) == name2mobid("복홍") || getarg(1) == name2mobid("게장군") ||
-		  getarg(1) == name2mobid("문어장군") || getarg(1) == name2mobid("해마장군") ||
-		  getarg(1) == name2mobid("인어장군") || getarg(1) == name2mobid("상어장군") ||
-		  getarg(1) == name2mobid("해파리장군") || getarg(1) == name2mobid("날수괴") ||
-		  getarg(1) == name2mobid("청의태자") || getarg(1) == name2mobid("적호왕") ||
-		  getarg(1) == name2mobid("진백호왕") || getarg(1) == name2mobid("감룡") ||
-		  getarg(1) == name2mobid("묵룡") || getarg(1) == name2mobid("흑룡") ||
-		  getarg(1) == name2mobid("진룡") || getarg(1) == name2mobid("용겸") ||
-		  getarg(1) == name2mobid("용랑") || getarg(1) == name2mobid("용마") ||
-		  getarg(1) == name2mobid("용천") || getarg(1) == name2mobid("용왕용겸") ||
-		  getarg(1) == name2mobid("용왕용랑") || getarg(1) == name2mobid("용왕용마") ||
-		  getarg(1) == name2mobid("용왕용천") || getarg(1) == name2mobid("폭염왕") ||
-		  getarg(1) == name2mobid("진여왕지주") || getarg(1) == name2mobid("독사여왕") ||
-		  getarg(1) == name2mobid("만월늑대인간") || getarg(1) == name2mobid("유성지") ||
-		  getarg(1) == name2mobid("파괴왕") || getarg(1) == name2mobid("해골왕") ||
-		  getarg(1) == name2mobid("선비대장군") || getarg(1) == name2mobid("흉노전사") ||
-		  getarg(1) == name2mobid("흉노무사") || getarg(1) == name2mobid("선우") ||
-		  getarg(1) == name2mobid("선중") || getarg(1) == name2mobid("선백") ||
-		  getarg(1) == name2mobid("선궁") || getarg(1) == name2mobid("선계") ||
-		  getarg(1) == name2mobid("반고") || getarg(1) == name2mobid("순제") ||
-		  getarg(1) == name2mobid("요제") || getarg(1) == name2mobid("제곡") ||
-		  getarg(1) == name2mobid("전욱") || getarg(1) == name2mobid("소호") ||
-		  getarg(1) == name2mobid("선비대도둑") || getarg(1) == name2mobid("변태") ||
-		  getarg(1) == name2mobid("폭염귀") || getarg(1) == name2mobid("풍석") ||
-		  getarg(1) == name2mobid("신수용겸") || getarg(1) == name2mobid("신수용랑") ||
-		  getarg(1) == name2mobid("신수용마") || getarg(1) == name2mobid("신수용천") ||
-		  getarg(1) == name2mobid("황금자호") || getarg(1) == name2mobid("북천황") ||
-		  getarg(1) == name2mobid("수룡") || getarg(1) == name2mobid("화룡") ||
-		  getarg(1) == name2mobid("암흑왕") || getarg(1) == name2mobid("운랑") ||
-		  getarg(1) == name2mobid("풍석") || getarg(1) == name2mobid("수렴귀") ||
-		  getarg(1) == name2mobid("도삭산암흑왕") || getarg(1) == name2mobid("도삭산풍석") ||
-		  getarg(1) == name2mobid("도삭산청의태자") || getarg(1) == name2mobid("도삭산파괴왕") ||
-		  getarg(1) == name2mobid("도삭산화룡") || getarg(1) == name2mobid("도삭산수룡") ||
-		  getarg(1) == name2mobid("도삭산선우") || getarg(1) == name2mobid("도삭산북천황") ||
-		  getarg(1) == name2mobid("도삭산길림장군") || getarg(1) == name2mobid("도삭산해골왕") ||
-		  getarg(1) == name2mobid("산신대왕") || getarg(1) == name2mobid("뇌신왕") ||
-		  getarg(1) == name2mobid("뇌신'태") || getarg(1) == name2mobid("뇌신'자") ||
-		  getarg(1) == name2mobid("뇌신'황") || getarg(1) == name2mobid("괴성왕") ||
-		  getarg(1) == name2mobid("동괴성") || getarg(1) == name2mobid("괴성'녹") ||
-		  getarg(1) == name2mobid("괴성'청") || getarg(1) == name2mobid("진왕천리마") ||
-		  getarg(1) == name2mobid("비영천리마") || getarg(1) == name2mobid("현왕무슈후슈") ||
-		  getarg(1) == name2mobid("염유왕") || getarg(1) == name2mobid("장안성여왕인어") ||
-		  getarg(1) == name2mobid("외눈황천신") || getarg(1) == name2mobid("타락산타") ||
-		  getarg(1) == name2mobid("겁살파수꾼") || getarg(1) == name2mobid("겁살파수") ||
-		  getarg(1) == name2mobid("겁살수") || getarg(1) == name2mobid("해마장군") ||
-		  getarg(1) == name2mobid("도적산타") || getarg(1) == name2mobid("대장군의망령") ||
-		  getarg(1) == name2mobid("일본밀정두목") || getarg(1) == name2mobid("인형술사") ||
-		  getarg(1) == name2mobid("지력의뱀") || getarg(1) == name2mobid("민첩의뱀") ||
-		  getarg(1) == name2mobid("마력의뱀") || getarg(1) == name2mobid("체력의뱀") ||
-		  getarg(1) == name2mobid("공격의뱀") || getarg(1) == name2mobid("명중의뱀") ||
-		  getarg(1) == name2mobid("방어의뱀") || getarg(1) == name2mobid("지력의돼지") ||
-		  getarg(1) == name2mobid("민첩의돼지") || getarg(1) == name2mobid("힘의돼지") ||
-		  getarg(1) == name2mobid("마력의돼지") || getarg(1) == name2mobid("체력의돼지") ||
-		  getarg(1) == name2mobid("공격의돼지") || getarg(1) == name2mobid("명중의돼지") ||
-		  getarg(1) == name2mobid("방어의돼지") || getarg(1) == name2mobid("용왕다람쥐") ||
-		  getarg(1) == name2mobid("최강다람쥐") || getarg(1) == name2mobid("무적다람쥐") ||
-		  getarg(1) == name2mobid("행운의다람쥐") || getarg(1) == name2mobid("부자다람쥐") ||
-		  getarg(1) == name2mobid("문지기다람쥐") || getarg(1) == name2mobid("고대다람쥐") ||
-		  getarg(1) == name2mobid("날쌘다람쥐") || getarg(1) == name2mobid("지력의다람쥐") ||
-		  getarg(1) == name2mobid("민첩의다람쥐") || getarg(1) == name2mobid("힘의다람쥐") ||
-		  getarg(1) == name2mobid("마력의다람쥐") || getarg(1) == name2mobid("체력의다람쥐") ||
-		  getarg(1) == name2mobid("공격의다람쥐") || getarg(1) == name2mobid("명중의다람쥐") ||
-		  getarg(1) == name2mobid("방어의다람쥐") )
-		{
-			return 1;
-		}
-	}
-	else
-	{
-		return 0;
-	}
-	return 0;
+FUNC_NODESPAIR    {
+    if(getarg(0) == 1)
+    { // 절망
+        if(getarg(1) == name2mobid("복홍") || getarg(1) == name2mobid("게장군") ||
+          getarg(1) == name2mobid("문어장군") || getarg(1) == name2mobid("해마장군") ||
+          getarg(1) == name2mobid("인어장군") || getarg(1) == name2mobid("상어장군") ||
+          getarg(1) == name2mobid("해파리장군") || getarg(1) == name2mobid("날수괴") ||
+          getarg(1) == name2mobid("청의태자") || getarg(1) == name2mobid("적호왕") ||
+          getarg(1) == name2mobid("진백호왕") || getarg(1) == name2mobid("감룡") ||
+          getarg(1) == name2mobid("묵룡") || getarg(1) == name2mobid("흑룡") ||
+          getarg(1) == name2mobid("진룡") || getarg(1) == name2mobid("용겸") ||
+          getarg(1) == name2mobid("용랑") || getarg(1) == name2mobid("용마") ||
+          getarg(1) == name2mobid("용천") || getarg(1) == name2mobid("용왕용겸") ||
+          getarg(1) == name2mobid("용왕용랑") || getarg(1) == name2mobid("용왕용마") ||
+          getarg(1) == name2mobid("용왕용천") || getarg(1) == name2mobid("폭염왕") ||
+          getarg(1) == name2mobid("진여왕지주") || getarg(1) == name2mobid("독사여왕") ||
+          getarg(1) == name2mobid("만월늑대인간") || getarg(1) == name2mobid("유성지") ||
+          getarg(1) == name2mobid("파괴왕") || getarg(1) == name2mobid("해골왕") ||
+          getarg(1) == name2mobid("선비대장군") || getarg(1) == name2mobid("흉노전사") ||
+          getarg(1) == name2mobid("흉노무사") || getarg(1) == name2mobid("선우") ||
+          getarg(1) == name2mobid("선중") || getarg(1) == name2mobid("선백") ||
+          getarg(1) == name2mobid("선궁") || getarg(1) == name2mobid("선계") ||
+          getarg(1) == name2mobid("반고") || getarg(1) == name2mobid("순제") ||
+          getarg(1) == name2mobid("요제") || getarg(1) == name2mobid("제곡") ||
+          getarg(1) == name2mobid("전욱") || getarg(1) == name2mobid("소호") ||
+          getarg(1) == name2mobid("선비대도둑") || getarg(1) == name2mobid("변태") ||
+          getarg(1) == name2mobid("폭염귀") || getarg(1) == name2mobid("풍석") ||
+          getarg(1) == name2mobid("신수용겸") || getarg(1) == name2mobid("신수용랑") ||
+          getarg(1) == name2mobid("신수용마") || getarg(1) == name2mobid("신수용천") ||
+          getarg(1) == name2mobid("황금자호") || getarg(1) == name2mobid("북천황") ||
+          getarg(1) == name2mobid("수룡") || getarg(1) == name2mobid("화룡") ||
+          getarg(1) == name2mobid("암흑왕") || getarg(1) == name2mobid("운랑") ||
+          getarg(1) == name2mobid("풍석") || getarg(1) == name2mobid("수렴귀") ||
+          getarg(1) == name2mobid("도삭산암흑왕") || getarg(1) == name2mobid("도삭산풍석") ||
+          getarg(1) == name2mobid("도삭산청의태자") || getarg(1) == name2mobid("도삭산파괴왕") ||
+          getarg(1) == name2mobid("도삭산화룡") || getarg(1) == name2mobid("도삭산수룡") ||
+          getarg(1) == name2mobid("도삭산선우") || getarg(1) == name2mobid("도삭산북천황") ||
+          getarg(1) == name2mobid("도삭산길림장군") || getarg(1) == name2mobid("도삭산해골왕") ||
+          getarg(1) == name2mobid("산신대왕") || getarg(1) == name2mobid("뇌신왕") ||
+          getarg(1) == name2mobid("뇌신'태") || getarg(1) == name2mobid("뇌신'자") ||
+          getarg(1) == name2mobid("뇌신'황") || getarg(1) == name2mobid("괴성왕") ||
+          getarg(1) == name2mobid("동괴성") || getarg(1) == name2mobid("괴성'녹") ||
+          getarg(1) == name2mobid("괴성'청") || getarg(1) == name2mobid("진왕천리마") ||
+          getarg(1) == name2mobid("비영천리마") || getarg(1) == name2mobid("현왕무슈후슈") ||
+          getarg(1) == name2mobid("염유왕") || getarg(1) == name2mobid("장안성여왕인어") ||
+          getarg(1) == name2mobid("외눈황천신") || getarg(1) == name2mobid("타락산타") ||
+          getarg(1) == name2mobid("겁살파수꾼") || getarg(1) == name2mobid("겁살파수") ||
+          getarg(1) == name2mobid("겁살수") || getarg(1) == name2mobid("해마장군") ||
+          getarg(1) == name2mobid("도적산타") || getarg(1) == name2mobid("대장군의망령") ||
+          getarg(1) == name2mobid("일본밀정두목") || getarg(1) == name2mobid("인형술사") ||
+          getarg(1) == name2mobid("지력의뱀") || getarg(1) == name2mobid("민첩의뱀") ||
+          getarg(1) == name2mobid("마력의뱀") || getarg(1) == name2mobid("체력의뱀") ||
+          getarg(1) == name2mobid("공격의뱀") || getarg(1) == name2mobid("명중의뱀") ||
+          getarg(1) == name2mobid("방어의뱀") || getarg(1) == name2mobid("지력의돼지") ||
+          getarg(1) == name2mobid("민첩의돼지") || getarg(1) == name2mobid("힘의돼지") ||
+          getarg(1) == name2mobid("마력의돼지") || getarg(1) == name2mobid("체력의돼지") ||
+          getarg(1) == name2mobid("공격의돼지") || getarg(1) == name2mobid("명중의돼지") ||
+          getarg(1) == name2mobid("방어의돼지") || getarg(1) == name2mobid("용왕다람쥐") ||
+          getarg(1) == name2mobid("최강다람쥐") || getarg(1) == name2mobid("무적다람쥐") ||
+          getarg(1) == name2mobid("행운의다람쥐") || getarg(1) == name2mobid("부자다람쥐") ||
+          getarg(1) == name2mobid("문지기다람쥐") || getarg(1) == name2mobid("고대다람쥐") ||
+          getarg(1) == name2mobid("날쌘다람쥐") || getarg(1) == name2mobid("지력의다람쥐") ||
+          getarg(1) == name2mobid("민첩의다람쥐") || getarg(1) == name2mobid("힘의다람쥐") ||
+          getarg(1) == name2mobid("마력의다람쥐") || getarg(1) == name2mobid("체력의다람쥐") ||
+          getarg(1) == name2mobid("공격의다람쥐") || getarg(1) == name2mobid("명중의다람쥐") ||
+          getarg(1) == name2mobid("방어의다람쥐") )
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        return 0;
+    }
+    return 0;
 }
 
 //callfunc "NOCURSE", @target_id, 타입;
-FUNC_NOCURSE	{
-	set @target_id, getarg(0);
-	set @type, getarg(1);
-	if(@type == 0)
-	{
-		callfunc "MANA_DELAY", 0, name2spellid("용의제일주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제이주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제삼주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제사주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제오주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제육주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제칠주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제팔주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제구주"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제일노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제이노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제삼노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제사노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제오노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제육노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제칠노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제팔노"), id2sd(@target_id);
-		callfunc "MANA_DELAY", 0, name2spellid("용의제구노"), id2sd(@target_id);
-	}
-	else if(@type == 1)
-	{
-		set @target_sd, id2sd(@target_id);
-		if(spellaethered(@target_sd, name2spellid("용의제일노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제이노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제삼노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제사노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제오노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제육노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제칠노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제팔노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제구노")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제일주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제이주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제삼주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제사주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제오주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제육주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제칠주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제팔주")) == 1 ||
-		   spellaethered(@target_sd, name2spellid("용의제구주")) == 1)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if(@type == 2)
-	{
-		if(mobspellaethered(@target_id, name2spellid("용의제일노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제이노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제삼노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제사노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제오노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제육노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제칠노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제팔노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제구노")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제일주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제이주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제삼주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제사주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제오주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제육주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제칠주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제팔주")) == 1 ||
-		   mobspellaethered(@target_id, name2spellid("용의제구주")) == 1)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	return;
+FUNC_NOCURSE    {
+    set @target_id, getarg(0);
+    set @type, getarg(1);
+    if(@type == 0)
+    {
+        callfunc "MANA_DELAY", 0, name2spellid("용의제일주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제이주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제삼주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제사주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제오주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제육주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제칠주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제팔주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제구주"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제일노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제이노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제삼노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제사노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제오노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제육노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제칠노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제팔노"), id2sd(@target_id);
+        callfunc "MANA_DELAY", 0, name2spellid("용의제구노"), id2sd(@target_id);
+    }
+    else if(@type == 1)
+    {
+        set @target_sd, id2sd(@target_id);
+        if(spellaethered(@target_sd, name2spellid("용의제일노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제이노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제삼노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제사노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제오노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제육노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제칠노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제팔노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제구노")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제일주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제이주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제삼주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제사주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제오주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제육주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제칠주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제팔주")) == 1 ||
+           spellaethered(@target_sd, name2spellid("용의제구주")) == 1)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else if(@type == 2)
+    {
+        if(mobspellaethered(@target_id, name2spellid("용의제일노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제이노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제삼노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제사노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제오노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제육노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제칠노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제팔노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제구노")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제일주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제이주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제삼주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제사주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제오주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제육주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제칠주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제팔주")) == 1 ||
+           mobspellaethered(@target_id, name2spellid("용의제구주")) == 1)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    return;
 }
 
 //callfunc "Item_Transform", 변신이미지번호, 이펙, 사운드;
-FUNC_Item_Transform	{
-	set @sd, mysd();
-	set @id, myid();
+FUNC_Item_Transform    {
+    set @sd, mysd();
+    set @id, myid();
 
-	spelluncast @sd, name2spellid("변신시약");
-	spelluncast @sd, name2spellid("금수");
-	spelluncast @sd, name2spellid("경수");
-	spelluncast @sd, name2spellid("야수");
-	spelluncast @sd, name2spellid("맹수");
-	spelluncast @sd, name2spellid("투명");
+    spelluncast @sd, name2spellid("변신시약");
+    spelluncast @sd, name2spellid("금수");
+    spelluncast @sd, name2spellid("경수");
+    spelluncast @sd, name2spellid("야수");
+    spelluncast @sd, name2spellid("맹수");
+    spelluncast @sd, name2spellid("투명");
 
-	spellcast @sd, name2spellid("변신시약");
+    spellcast @sd, name2spellid("변신시약");
 
-	set_disguiselook @sd, getarg(0);
-	set_state @sd, 4;
-	updatelookpc @sd, 1;
+    set_disguiselook @sd, getarg(0);
+    set_state @sd, 4;
+    updatelookpc @sd, 1;
 
-	effect @id, getarg(1);
-	sound @id, getarg(2);
+    effect @id, getarg(1);
+    sound @id, getarg(2);
 
-	return;
+    return;
 }
 
-@변신시약	{
-	set @sd, mysd();
-	set @id, myid();
+@변신시약    {
+    set @sd, mysd();
+    set @id, myid();
 
-	spellaether @sd, name2spellid("변신시약"), 300;
+    spellaether @sd, name2spellid("변신시약"), 300;
 }
 
-@변신시약해제	{
-	set @sd, mysd();
-	set @id, myid();
+@변신시약해제    {
+    set @sd, mysd();
+    set @id, myid();
 
-	set_state @sd, 0;
-	updatelookpc @sd, 1;
-	message @sd, 3, "변신시약 해제.";
+    set_state @sd, 0;
+    updatelookpc @sd, 1;
+    message @sd, 3, "변신시약 해제.";
 }
 
-FUNC_JAPAN_WARP	{
-	set @sd, mysd();
-	set @id, myid();
-	image 0, 0, 0;
-	if(get_level(@sd) >= 99)
-	{
-		set @pos, list2(@ret, 0, 0, "비밀통로로 가겠는가?", "아니오, 그냥 다음방으로 가겠습니다.", "네, 비밀통로로 보내주십시오.");
-		if(@pos == 0) { end; }
-		if(@ret == 1)
-		{
-			warp @sd, 2178, 4, 3;
-		}
-		else if(@ret == 2)
-		{
-			set @pos, list2(@ret, 0, 0, "어디로 가겠는가?", "백향의방으로 가겠습니다.", "문려의방으로 가겠습니다.", "닌자의방으로 가겠습니다.", "선녀의방으로 가겠습니다.",	"아니오, 잠시후에...");
-			if(@pos == 0) { end; }
-			if(@ret == 1)
-			{
-				if(get_money(@sd) < 100000) { set @pos, dialog(0, 0, 0, 100000-get_money(@sd) + "원이 부족합니다."); end; }
-				set_money @sd, get_money(@sd)-100000;
-				updatestatus @sd, 2;
-				warp @sd, 2122, 5, 2;
-			}
-			else if(@ret == 2)
-			{
-				if(get_money(@sd) < 80000) { set @pos, dialog(0, 0, 0, 80000-get_money(@sd) + "원이 부족합니다."); end; }
-				set_money @sd, get_money(@sd)-80000;
-				updatestatus @sd, 2;
-				warp @sd, 2198, 14, 38;
-			}
-			else if(@ret == 3)
-			{
-				if(get_money(@sd) < 60000) { set @pos, dialog(0, 0, 0, 60000-get_money(@sd) + "원이 부족합니다."); end; }
-				set_money @sd, get_money(@sd)-60000;
-				updatestatus @sd, 2;
-				warp @sd, 2138, 3, 2;
-			}
-			else if(@ret == 4)
-			{
-				if(get_money(@sd) < 40000) { set @pos, dialog(0, 0, 0, 40000-get_money(@sd) + "원이 부족합니다."); end; }
-				set_money @sd, get_money(@sd)-40000;
-				updatestatus @sd, 2;
-				warp @sd, 2147, 13, 2;
-			}
-		}
-	}
-	else
-	{
-		warp @sd, 2178, 4, 3;
-	}
-	return;
+FUNC_JAPAN_WARP    {
+    set @sd, mysd();
+    set @id, myid();
+    image 0, 0, 0;
+    if(get_level(@sd) >= 99)
+    {
+        set @pos, list2(@ret, 0, 0, "비밀통로로 가겠는가?", "아니오, 그냥 다음방으로 가겠습니다.", "네, 비밀통로로 보내주십시오.");
+        if(@pos == 0) { end; }
+        if(@ret == 1)
+        {
+            warp @sd, 2178, 4, 3;
+        }
+        else if(@ret == 2)
+        {
+            set @pos, list2(@ret, 0, 0, "어디로 가겠는가?", "백향의방으로 가겠습니다.", "문려의방으로 가겠습니다.", "닌자의방으로 가겠습니다.", "선녀의방으로 가겠습니다.",    "아니오, 잠시후에...");
+            if(@pos == 0) { end; }
+            if(@ret == 1)
+            {
+                if(get_money(@sd) < 100000) { set @pos, dialog(0, 0, 0, 100000-get_money(@sd) + "원이 부족합니다."); end; }
+                set_money @sd, get_money(@sd)-100000;
+                updatestatus @sd, 2;
+                warp @sd, 2122, 5, 2;
+            }
+            else if(@ret == 2)
+            {
+                if(get_money(@sd) < 80000) { set @pos, dialog(0, 0, 0, 80000-get_money(@sd) + "원이 부족합니다."); end; }
+                set_money @sd, get_money(@sd)-80000;
+                updatestatus @sd, 2;
+                warp @sd, 2198, 14, 38;
+            }
+            else if(@ret == 3)
+            {
+                if(get_money(@sd) < 60000) { set @pos, dialog(0, 0, 0, 60000-get_money(@sd) + "원이 부족합니다."); end; }
+                set_money @sd, get_money(@sd)-60000;
+                updatestatus @sd, 2;
+                warp @sd, 2138, 3, 2;
+            }
+            else if(@ret == 4)
+            {
+                if(get_money(@sd) < 40000) { set @pos, dialog(0, 0, 0, 40000-get_money(@sd) + "원이 부족합니다."); end; }
+                set_money @sd, get_money(@sd)-40000;
+                updatestatus @sd, 2;
+                warp @sd, 2147, 13, 2;
+            }
+        }
+    }
+    else
+    {
+        warp @sd, 2178, 4, 3;
+    }
+    return;
 }
 
 //callfunc "FOURCLASS_WARP", 계정변수, 맵번호, x좌표, y좌표, "몬스터이름", "이or가";
-FUNC_FOURCLASS_WARP	{
-	set @sd, mysd();
-	set @id, myid();
-	image 0, 0, 0;
-	if($fourclass != getarg(0)) end;
-	set @pos, list2(@ret, 0, 0, "이 곳은 " + getarg(4) + "" + getarg(5) + " 머무는 곳, 함께 온 동료가 있으면 같이 들여보내주겠다.\\n동료가 있느냐?", "네. 있습니다.", "아니오, 없습니다.");
-	if(@pos == 0) { end; }
-	else if(@ret == 1)
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @i, 0; @i < partymax(); set @i, @i+1)
-			{
-				set @target_sd, party_member(@sd, @i);
-				if(@target_sd > 0)
-				{
-					if(get_mapid(@sd) == get_mapid(@target_sd))
-					{
-						message @target_sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
-						message @target_sd, 0, "해당 맵에서 나갈시 퀘스트 진행자와 다시 와야 합니다.";
-						warp @target_sd, getarg(1), getarg(2), getarg(3);
-					}
-				}
-			}
-		}
-		else
-		{
-			set @pos, dialog(0, 0, 1, "동료가 없는 것 같은데?");
-			end;
-		}
-	}
-	else if(@ret == 2)
-	{
-		message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
-		message @sd, 0, "해당 맵에서 나갈시 퀘스트 진행자와 다시 와야 합니다.";
-		warp @sd, getarg(1), getarg(2), getarg(3);
-	}
-	return;
+FUNC_FOURCLASS_WARP    {
+    set @sd, mysd();
+    set @id, myid();
+    image 0, 0, 0;
+    if($fourclass != getarg(0)) end;
+    set @pos, list2(@ret, 0, 0, "이 곳은 " + getarg(4) + "" + getarg(5) + " 머무는 곳, 함께 온 동료가 있으면 같이 들여보내주겠다.\\n동료가 있느냐?", "네. 있습니다.", "아니오, 없습니다.");
+    if(@pos == 0) { end; }
+    else if(@ret == 1)
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @i, 0; @i < partymax(); set @i, @i+1)
+            {
+                set @target_sd, party_member(@sd, @i);
+                if(@target_sd > 0)
+                {
+                    if(get_mapid(@sd) == get_mapid(@target_sd))
+                    {
+                        message @target_sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
+                        message @target_sd, 0, "해당 맵에서 나갈시 퀘스트 진행자와 다시 와야 합니다.";
+                        warp @target_sd, getarg(1), getarg(2), getarg(3);
+                    }
+                }
+            }
+        }
+        else
+        {
+            set @pos, dialog(0, 0, 1, "동료가 없는 것 같은데?");
+            end;
+        }
+    }
+    else if(@ret == 2)
+    {
+        message @sd, 0, "해당 맵에서 로그아웃시 자동귀환 됩니다.";
+        message @sd, 0, "해당 맵에서 나갈시 퀘스트 진행자와 다시 와야 합니다.";
+        warp @sd, getarg(1), getarg(2), getarg(3);
+    }
+    return;
 }
 
-FUNC_DESTROY_ITEM	{
-	set @sd, mysd();
-	set @id, myid();
+FUNC_DESTROY_ITEM    {
+    set @sd, mysd();
+    set @id, myid();
 
-	set @pos, dialog(0, 0, 1, "아이템을 파괴하기 위해선 파괴할 아이템을 지금 가지고 계셔야 하며, 금전 1000전이 소비됩니다.");
-	if(@pos == 0) end;
+    set @pos, dialog(0, 0, 1, "아이템을 파괴하기 위해선 파괴할 아이템을 지금 가지고 계셔야 하며, 금전 1000전이 소비됩니다.");
+    if(@pos == 0) end;
 
-	input1 @txt$, "어떤 아이템을 파괴하시렵니까?";
-	if(countitem(name2itemid(@txt$)) > 0)
-	{
-		if(get_money(@sd) < 1000) { set @pos, dialog(0, 0, 0, "금전이 부족합니다."); end; }
-		else
-		{
-			delitem @sd, name2itemid(@txt$), 1;
-			set_money @sd, get_money(@sd)-1000;
-			updatestatus @sd, 2;
-			set @pos, dialog(0, 0, 1, "파괴 되었습니다.");
-			end;
-		}
-	}
-	else { set @pos, dialog(0, 0, 1, "아이템이 존재하지 않습니다."); end; }
-	return;
+    input1 @txt$, "어떤 아이템을 파괴하시렵니까?";
+    if(countitem(name2itemid(@txt$)) > 0)
+    {
+        if(get_money(@sd) < 1000) { set @pos, dialog(0, 0, 0, "금전이 부족합니다."); end; }
+        else
+        {
+            delitem @sd, name2itemid(@txt$), 1;
+            set_money @sd, get_money(@sd)-1000;
+            updatestatus @sd, 2;
+            set @pos, dialog(0, 0, 1, "파괴 되었습니다.");
+            end;
+        }
+    }
+    else { set @pos, dialog(0, 0, 1, "아이템이 존재하지 않습니다."); end; }
+    return;
 }

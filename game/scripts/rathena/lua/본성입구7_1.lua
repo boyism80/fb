@@ -1,0 +1,3 @@
+{
+    callfunc "JAPAN_WARP";
+}

@@ -1,852 +1,852 @@
 //도삭산100층
-도재영	{
-	set @sd, mysd();
-	set @id, myid();
+도재영    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($jang_general == 2 && countitem(name2itemid("노비문서")) > 0)
-	{
-		set @pos, list2(@list, 0, 0, "음... 뉘신지요? 제게 무슨 볼일이라도?", "상해에서 물건을 전해달라는 부탁을 받고 왔습니다.", "아무 것도 아닙니다.");
-		if(@pos == 1 && @list == 1)
-		{
-			set @pos, list2(@list_2, 0, 0, "아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?", "예, 실은...");
-			if(@pos == 1 && @list_2 == 1)
-			{
+    if($jang_general == 2 && countitem(name2itemid("노비문서")) > 0)
+    {
+        set @pos, list2(@list, 0, 0, "음... 뉘신지요? 제게 무슨 볼일이라도?", "상해에서 물건을 전해달라는 부탁을 받고 왔습니다.", "아무 것도 아닙니다.");
+        if(@pos == 1 && @list == 1)
+        {
+            set @pos, list2(@list_2, 0, 0, "아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?", "예, 실은...");
+            if(@pos == 1 && @list_2 == 1)
+            {
 POS001:
-				set @pos, dialog(0, 0, 1, "예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\\n\\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\\n\\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?");
+                if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "뭐라고 해야 할까... 참 대견스럽군요. 그가 어느날 갑자기 어려운 사람들을 돕고 싶다며 풀어달라고 할 때에는 반신반의했었지요.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto POS001;
+                set @pos, dialog(0, 1, 1, "뭐라고 해야 할까... 참 대견스럽군요. 그가 어느날 갑자기 어려운 사람들을 돕고 싶다며 풀어달라고 할 때에는 반신반의했었지요.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto POS001;
 
-				set @pos, list2(@list_3, 0, 0, "지금 보니 그 때 황비연을 저희 집안 노비 신세에서 풀어준 것이 잘한 일이었다는 생각이 드는군요.", ".....");
-				if(@pos == 1 && @list_3 == 1)
-				{
+                set @pos, list2(@list_3, 0, 0, "지금 보니 그 때 황비연을 저희 집안 노비 신세에서 풀어준 것이 잘한 일이었다는 생각이 드는군요.", ".....");
+                if(@pos == 1 && @list_3 == 1)
+                {
 POS002:
-					set @pos, dialog(0, 0, 1, "이 보패를 그에게 전해주십시오. 이 문서를 제게 전해달라고 부탁했다는 그 사람이 아마 황비연 본인일 겁니다.");
-					if(@pos == 0) end;
+                    set @pos, dialog(0, 0, 1, "이 보패를 그에게 전해주십시오. 이 문서를 제게 전해달라고 부탁했다는 그 사람이 아마 황비연 본인일 겁니다.");
+                    if(@pos == 0) end;
 
-					set @pos, dialog(0, 1, 1, "아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\\n\\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...");
-					if(@pos == 0) end;
-					else if(@pos == -1) goto POS002;
+                    set @pos, dialog(0, 1, 1, "아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\\n\\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...");
+                    if(@pos == 0) end;
+                    else if(@pos == -1) goto POS002;
 
-					set $jang_general, 3;
+                    set $jang_general, 3;
 
-					delitem @sd, name2itemid("노비문서"), 1;
-					message @sd, 3, "노비문서 주었습니다";
-					additem @sd, name2itemid("보패"), 1;
-					addlegend @sd, 39, 7, 0, 2, "보패를 가지고 다시 상해주민에게 가보자.";
-					end;
-				}			
-			}
-		}
-	}
-	else
-	{
-		if($dojaeyoung == 0)
-		{
+                    delitem @sd, name2itemid("노비문서"), 1;
+                    message @sd, 3, "노비문서 주었습니다";
+                    additem @sd, name2itemid("보패"), 1;
+                    addlegend @sd, 39, 7, 0, 2, "보패를 가지고 다시 상해주민에게 가보자.";
+                    end;
+                }            
+            }
+        }
+    }
+    else
+    {
+        if($dojaeyoung == 0)
+        {
 COS001:
-			set @pos, dialog(0, 0, 1, "안녕하세요 " + get_name(@sd) + "님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "안녕하세요 " + get_name(@sd) + "님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.");
+            if(@pos == 0) end;
 COS002:
-			set @pos, dialog(0, 1, 1, "아무래도 이런 마법이 걸린 곳에서 보통 사람이 사는것은 무리인지, 저희 아버지도 요즘 건강이 안좋으시죠.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS001;
+            set @pos, dialog(0, 1, 1, "아무래도 이런 마법이 걸린 곳에서 보통 사람이 사는것은 무리인지, 저희 아버지도 요즘 건강이 안좋으시죠.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS001;
 COS003:
-			set @pos, list2(@list, 0, 1, "의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...", "제가 구해드리겠습니다.", "그렇군요..");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS002;
-			else if(@list == 1)
-			{
-				set $dojaeyoung, 1;
-				addlegend @sd, 9, 7, 0, 1, "도재영의 부탁을 들어주자!";
+            set @pos, list2(@list, 0, 1, "의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...", "제가 구해드리겠습니다.", "그렇군요..");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS002;
+            else if(@list == 1)
+            {
+                set $dojaeyoung, 1;
+                addlegend @sd, 9, 7, 0, 1, "도재영의 부탁을 들어주자!";
 COS004:
-				set @pos, dialog(0, 0, 1, "아.. 정말 감사합니다. " + get_name(@sd) + "님은 마음도 넓으신 분이시군요.");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "아.. 정말 감사합니다. " + get_name(@sd) + "님은 마음도 넓으신 분이시군요.");
+                if(@pos == 0) end;
 COS005:
-				set @pos, dialog(0, 1, 1, "도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\\n\\n그럼 잘 부탁드리겠습니다! 감사합니다!");
-				if(@pos == -1) goto COS0004;
-				end;
-			}
-			else if(@list == 2)	
-			{
-				set @pos, dialog(0, 0, 0, "그렇죠..이 약초들을 어떻게 구하면 좋으련지..");
-				end;
-			}
-			else end;
-		}
-		if($dojaeyoung == 1)
-		{
-			if(countitem(name2itemid("약초가지")) == 0 || countitem(name2itemid("약초잎사귀")) < 5)
-			{
-				set @pos, dialog(0, 0, 0, "아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.");
-				end;
-			}
-			else
-			{
-				set @pos, dialog(0, 0, 1, "약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 1, 1, "도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\\n\\n그럼 잘 부탁드리겠습니다! 감사합니다!");
+                if(@pos == -1) goto COS0004;
+                end;
+            }
+            else if(@list == 2)    
+            {
+                set @pos, dialog(0, 0, 0, "그렇죠..이 약초들을 어떻게 구하면 좋으련지..");
+                end;
+            }
+            else end;
+        }
+        if($dojaeyoung == 1)
+        {
+            if(countitem(name2itemid("약초가지")) == 0 || countitem(name2itemid("약초잎사귀")) < 5)
+            {
+                set @pos, dialog(0, 0, 0, "아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.");
+                end;
+            }
+            else
+            {
+                set @pos, dialog(0, 0, 1, "약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!");
+                if(@pos == 0) end;
 
-				set $dojaeyoung, 2;
-				delitem @sd, name2itemid("약초가지"), 1;
-				delitem @sd, name2itemid("약초잎사귀"), 5;
-				message @sd, 3, "약초가지 주었습니다";
-				message @sd, 3, "약초잎사귀 주었습니다";
-				additem @sd, name2itemid("강철의구두"), 1;
-				addlegend @sd, 9, 7, 0, 1, "도삭산 100층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..");
-				end;
-			}
-		}
-		else
-		{
-			set @pos, dialog(0, 0, 1, "저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.");
-			end;
-		}
-	}
+                set $dojaeyoung, 2;
+                delitem @sd, name2itemid("약초가지"), 1;
+                delitem @sd, name2itemid("약초잎사귀"), 5;
+                message @sd, 3, "약초가지 주었습니다";
+                message @sd, 3, "약초잎사귀 주었습니다";
+                additem @sd, name2itemid("강철의구두"), 1;
+                addlegend @sd, 9, 7, 0, 1, "도삭산 100층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..");
+                end;
+            }
+        }
+        else
+        {
+            set @pos, dialog(0, 0, 1, "저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.");
+            end;
+        }
+    }
 }
 
 //도삭산200층
-도성연	{
-	set @sd, mysd();
-	set @id, myid();
+도성연    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($dojaeyoung < 2)
-	{
+    if($dojaeyoung < 2)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "쿨럭..쿨럭..");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "쿨럭..쿨럭..");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 0, "(안색이 별로 좋지 않다.)");
-		if(@pos == -1) goto COS001;
-		end;
-	}
-	if($dojaeyoung == 2)
-	{
+        set @pos, dialog(0, 1, 0, "(안색이 별로 좋지 않다.)");
+        if(@pos == -1) goto COS001;
+        end;
+    }
+    if($dojaeyoung == 2)
+    {
 COS003:
-		set @pos, dialog(0, 0, 1, "오.. " + get_name(@sd) + "씨 아닌가. 아들놈에게 약초를 구해셨다고 하더군요. 덕분에 내가 이렇게 건강을 되찾았소. 고맙구려.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "오.. " + get_name(@sd) + "씨 아닌가. 아들놈에게 약초를 구해셨다고 하더군요. 덕분에 내가 이렇게 건강을 되찾았소. 고맙구려.");
+        if(@pos == 0) end;
 COS004:
-		set @pos, dialog(0, 1, 1, "그나저나 말이지, 내 아들놈이 약초를 구해준게 기특해서 내가 선물을 하나 주려고 하는데 말이야, 아아 물론 구하기는 " + get_name(@sd) + "씨가 구했지만서도, 아들놈도 고생을 했다고.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS003;
+        set @pos, dialog(0, 1, 1, "그나저나 말이지, 내 아들놈이 약초를 구해준게 기특해서 내가 선물을 하나 주려고 하는데 말이야, 아아 물론 구하기는 " + get_name(@sd) + "씨가 구했지만서도, 아들놈도 고생을 했다고.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS003;
 COS005:
-		set @pos, dialog(0, 1, 1, "예전에 도삭산을 지나가는데 인어들이 방울을 가지고 있는게 보이던데, 인어의방울이라고 하면 집에 걸어두기만 해도 흉한 것들이 집에 접근을 못한다고 하거든");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS004;
+        set @pos, dialog(0, 1, 1, "예전에 도삭산을 지나가는데 인어들이 방울을 가지고 있는게 보이던데, 인어의방울이라고 하면 집에 걸어두기만 해도 흉한 것들이 집에 접근을 못한다고 하거든");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS004;
 COS006:
-		set @pos, dialog(0, 1, 1, "내가 건강이 나빠진것도 도삭산의 흉한 기운 때문인듯 한데, 아들놈한테 방울 하나쯤 주고 싶구만.\\n\\n내 직접 가진 못하고, 어떻게든 구했으면 좋겠는데...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS005;
+        set @pos, dialog(0, 1, 1, "내가 건강이 나빠진것도 도삭산의 흉한 기운 때문인듯 한데, 아들놈한테 방울 하나쯤 주고 싶구만.\\n\\n내 직접 가진 못하고, 어떻게든 구했으면 좋겠는데...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS005;
 COS007:
-		set @pos, list2(@list, 0, 0, get_name(@sd) + "씨가 하나 구해주시지 않겠소?", "제가 구해드리겠습니다.", "저는 좀 바빠서..");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $dojaeyoung, 3;
-			addlegend @sd, 10, 7, 0, 1, "도성연의 부탁을 들어주자!";
+        set @pos, list2(@list, 0, 0, get_name(@sd) + "씨가 하나 구해주시지 않겠소?", "제가 구해드리겠습니다.", "저는 좀 바빠서..");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $dojaeyoung, 3;
+            addlegend @sd, 10, 7, 0, 1, "도성연의 부탁을 들어주자!";
 COS008:
-			set @pos, dialog(0, 0, 1, "오오. 고맙소. 인어의방울..은 도삭산고양이인어가 가지고 있지 않을까? 고양이목에 방울달기라는 말도 있지 않소? 하하하. 농담이지만 말이지.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "오오. 고맙소. 인어의방울..은 도삭산고양이인어가 가지고 있지 않을까? 고양이목에 방울달기라는 말도 있지 않소? 하하하. 농담이지만 말이지.");
+            if(@pos == 0) end;
 COS009:
-			set @pos, dialog(0, 1, 1, "뫼롱씨는 내 생명의 은인이니 292층으로 가는 지름길로 보내주지.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS008;
+            set @pos, dialog(0, 1, 1, "뫼롱씨는 내 생명의 은인이니 292층으로 가는 지름길로 보내주지.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS008;
 COS010:
-			set @pos, list2(@list_2, 0, 0, "지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
-			if(@pos == 0) end;
-			else if(@list_2 == 1)
-			{
-				warp @sd, name2mapid("도삭산292층"), 16, 37;
-				end;
-			}
-			else end;
-		}
-		else if(@list == 2)
-		{
-			set @pos, dialog(0, 0, 0, "허허.. 바쁘시다면 할 수 없군요.");
-			end;
-		}
-		else end;
-	}
-	if($dojaeyoung == 3)
-	{
-		if(countitem(name2itemid("인어의방울")) == 0)
-		{
-			set @pos, list2(@list_3, 0, 0, "아직 인어의방울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
-			if(@pos == 0) end;
-			else if(@list_3 == 1)
-			{
-				warp @sd, name2mapid("도삭산292층"), 16, 37;
-				end;
-			}
-			else end;
-		}
-		else
-		{
+            set @pos, list2(@list_2, 0, 0, "지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
+            if(@pos == 0) end;
+            else if(@list_2 == 1)
+            {
+                warp @sd, name2mapid("도삭산292층"), 16, 37;
+                end;
+            }
+            else end;
+        }
+        else if(@list == 2)
+        {
+            set @pos, dialog(0, 0, 0, "허허.. 바쁘시다면 할 수 없군요.");
+            end;
+        }
+        else end;
+    }
+    if($dojaeyoung == 3)
+    {
+        if(countitem(name2itemid("인어의방울")) == 0)
+        {
+            set @pos, list2(@list_3, 0, 0, "아직 인어의방울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
+            if(@pos == 0) end;
+            else if(@list_3 == 1)
+            {
+                warp @sd, name2mapid("도삭산292층"), 16, 37;
+                end;
+            }
+            else end;
+        }
+        else
+        {
 COS011:
-			set @pos, dialog(0, 0, 1, "오.. 이것이 인어의방울이군. 고맙소고맙소.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "오.. 이것이 인어의방울이군. 고맙소고맙소.");
+            if(@pos == 0) end;
 COS012:
-			set @pos, dialog(0, 1, 1, "그런데 이거 정말 미안한 얘긴데.. 내 딸이 이 얘길 듣더니, 왜 오빠한테만 선물을 주냐고 칭얼대는거야. 자기도 인어의거울을 가지고 싶다나?");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS011;
+            set @pos, dialog(0, 1, 1, "그런데 이거 정말 미안한 얘긴데.. 내 딸이 이 얘길 듣더니, 왜 오빠한테만 선물을 주냐고 칭얼대는거야. 자기도 인어의거울을 가지고 싶다나?");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS011;
 COS013:
-			set @pos, dialog(0, 1, 1, "인어의거울은 보면볼수록 얼굴이 예뻐진다는 얘기가 있는데, 그걸 어디서 주워들었는지 원참...");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS012;
+            set @pos, dialog(0, 1, 1, "인어의거울은 보면볼수록 얼굴이 예뻐진다는 얘기가 있는데, 그걸 어디서 주워들었는지 원참...");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS012;
 COS014:
-			set @pos, list2(@list_4, 0, 0, get_name(@sd) + "씨, 인어의거울도 좀 구해다 주실수 없겠소?", "네, 구하는 김에 거울도 구하지요.", "갑자기 바쁜 일이 생겨서...");
-			if(@pos == 0) end;
-			else if(@list_4 == 1)
-			{
-				set $dojaeyoung, 4;
-				delitem @sd, name2itemid("인어의방울"), 1;
-				message @sd, 3, "인어의방울 주었습니다";
+            set @pos, list2(@list_4, 0, 0, get_name(@sd) + "씨, 인어의거울도 좀 구해다 주실수 없겠소?", "네, 구하는 김에 거울도 구하지요.", "갑자기 바쁜 일이 생겨서...");
+            if(@pos == 0) end;
+            else if(@list_4 == 1)
+            {
+                set $dojaeyoung, 4;
+                delitem @sd, name2itemid("인어의방울"), 1;
+                message @sd, 3, "인어의방울 주었습니다";
 COS015:
-				set @pos, dialog(0, 0, 1, "정말 고맙소. 인어의거울은.. 도삭산이쁘니인어가 가지고 있으려나? 하하하");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "정말 고맙소. 인어의거울은.. 도삭산이쁘니인어가 가지고 있으려나? 하하하");
+                if(@pos == 0) end;
 COS016:
-				set @pos, list2(@list_5, 0, 0, "지금 지름길로 292층에 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
-				if(@pos == 0) end;
-				else if(@list_5 == 1)
-				{
-					warp @sd, name2mapid("도삭산292층"), 16, 37;
-					end;
-				}
-				else end;
-			}
-			else if(@list_4 == 2)
-			{
-				set @pos, dialog(0, 0, 0, "그런가? 흐음..딸이 하도 칭얼대서 말이지..");
-				end;
-			}
-			else end;
-		}
-	}
-	if($dojaeyoung == 4)
-	{
-		if(countitem(name2itemid("인어의거울")) == 0)
-		{
-			set @pos, list2(@list_6, 0, 0, "아직 인어의거울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
-			if(@pos == 0) end;
-			else if(@list_6 == 1)
-			{
-				warp @sd, name2mapid("도삭산292층"), 16, 37;
-				end;
-			}
-		}
-		else
-		{
+                set @pos, list2(@list_5, 0, 0, "지금 지름길로 292층에 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
+                if(@pos == 0) end;
+                else if(@list_5 == 1)
+                {
+                    warp @sd, name2mapid("도삭산292층"), 16, 37;
+                    end;
+                }
+                else end;
+            }
+            else if(@list_4 == 2)
+            {
+                set @pos, dialog(0, 0, 0, "그런가? 흐음..딸이 하도 칭얼대서 말이지..");
+                end;
+            }
+            else end;
+        }
+    }
+    if($dojaeyoung == 4)
+    {
+        if(countitem(name2itemid("인어의거울")) == 0)
+        {
+            set @pos, list2(@list_6, 0, 0, "아직 인어의거울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?", "네, 보내주십시오.", "나중에 가겠습니다.");
+            if(@pos == 0) end;
+            else if(@list_6 == 1)
+            {
+                warp @sd, name2mapid("도삭산292층"), 16, 37;
+                end;
+            }
+        }
+        else
+        {
 COS017:
-			set @pos, dialog(0, 0, 1, "오,, 이것이 인어의거울이군! 고맙소!! 정말 고맙소!");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "오,, 이것이 인어의거울이군! 고맙소!! 정말 고맙소!");
+            if(@pos == 0) end;
 COS018:
-			set @pos, dialog(0, 1, 1, "이걸 어떻게 사례하나.. 그렇지. 우리 집안에 내려오는 목걸이를 하나 드리지.\\n\\n'봉마의목걸이'라고 해서.. 마귀를 봉인하여 담았다고 하는 옥으로 만든것이란느데.. 정말인지는 모르겠소.");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS017;
+            set @pos, dialog(0, 1, 1, "이걸 어떻게 사례하나.. 그렇지. 우리 집안에 내려오는 목걸이를 하나 드리지.\\n\\n'봉마의목걸이'라고 해서.. 마귀를 봉인하여 담았다고 하는 옥으로 만든것이란느데.. 정말인지는 모르겠소.");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS017;
 COS019:
-			set $dojaeyoung, 5;
-			delitem @sd, name2itemid("인어의거울"), 1;
-			message @sd, 3, "인어의거울 주었습니다";
-			additem @sd, name2itemid("봉마의목걸이"), 1;
-			addlegend @sd, 10, 7, 0, 1, "도삭산 200층 퀘스트 완료";
-			set @pos, dialog(0, 0, 1, "뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오..\\n\\n그럼 건강하시오!");
-			end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, get_name(@sd) + "씨군, 요세 잘 지내나? 당신 덕분에 감사한일이 정말 많소.");
-		end;
-	}
+            set $dojaeyoung, 5;
+            delitem @sd, name2itemid("인어의거울"), 1;
+            message @sd, 3, "인어의거울 주었습니다";
+            additem @sd, name2itemid("봉마의목걸이"), 1;
+            addlegend @sd, 10, 7, 0, 1, "도삭산 200층 퀘스트 완료";
+            set @pos, dialog(0, 0, 1, "뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오..\\n\\n그럼 건강하시오!");
+            end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, get_name(@sd) + "씨군, 요세 잘 지내나? 당신 덕분에 감사한일이 정말 많소.");
+        end;
+    }
 }
 
 //도삭산300층
-도주영	{
-	set @sd, mysd();
-	set @id, myid();
+도주영    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($dojaeyoung < 5)
-	{
-		set @pos, dialog(0, 0, 0, "더 예뻐질 방법이 없을까?");
-		end;
-	}
-	if($dojaeyoung == 5)
-	{
+    if($dojaeyoung < 5)
+    {
+        set @pos, dialog(0, 0, 0, "더 예뻐질 방법이 없을까?");
+        end;
+    }
+    if($dojaeyoung == 5)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "앗! " + get_name(@sd) + "님 이시군요! 저희 아버지께서 저에게 인어의거울을 주셨는데, 잘 받았습니다.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "앗! " + get_name(@sd) + "님 이시군요! 저희 아버지께서 저에게 인어의거울을 주셨는데, 잘 받았습니다.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "이곳 도삭산은 외로운 곳이랍니다. 사람들도 그리 많이 오가지 않고.. 그래서 저는 400층까지의 길을 만리향 꽃으로 가득찬 길로 만들겠다는 생각을 하게 되었죠.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "이곳 도삭산은 외로운 곳이랍니다. 사람들도 그리 많이 오가지 않고.. 그래서 저는 400층까지의 길을 만리향 꽃으로 가득찬 길로 만들겠다는 생각을 하게 되었죠.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "하지만 얼마전에 정성들여 모으던 만리향 씨앗들을 해파리 괴물들에게 빼앗기고 말았어요.\\n\\n그래서 말인데 제 부탁을 좀 들어주세요. 해파리 괴물들에게 제 만리향 씨앗을 빼앗아 400층까지 가는길 곳곳에 심어 주시면 됩니다.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "하지만 얼마전에 정성들여 모으던 만리향 씨앗들을 해파리 괴물들에게 빼앗기고 말았어요.\\n\\n그래서 말인데 제 부탁을 좀 들어주세요. 해파리 괴물들에게 제 만리향 씨앗을 빼앗아 400층까지 가는길 곳곳에 심어 주시면 됩니다.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, dialog(0, 1, 1, "걸어다니시다 보면 씨앗을 심기에 좋은 장소가 보이실꺼에요.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS003;
+        set @pos, dialog(0, 1, 1, "걸어다니시다 보면 씨앗을 심기에 좋은 장소가 보이실꺼에요.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS003;
 COS005:
-		set @pos, list2(@list, 0, 0, "제 부탁 들어주실거죠??", "그런 부탁이라면 기꺼이~!", "죄송하지만 저에겐 그럴만한 시간이 없습니다.");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $dojaeyoung, 6;
-			spellaether @sd, name2spellid("만리향씨앗"), 180;
-			addlegend @sd, 11, 7, 0, 1, "도주영의 부탁을 들어주자!";
-			set @pos, dialog(0, 0, 1, "씨앗은 해파리 괴물들을 처치하면 얻을 수 있을거에요. 부디 제 부탁을 들어주시길. 그럼 몸조심하세요....");
-			end;
-		}
-		else end;
-	}
-	if($dojaeyoung == 6) 
-	{
-		if($ssiat_count >= 1 && $ssiat_count <= 9)
-		{
-			set @pos, dialog(0, 0, 1, "정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.");
-			end;
-		}
-		if($ssiat_count >= 10 && $ssiat_count <= 49)
-		{
-			if($ssiat_item_1 == 0)
-			{
-				set $ssiat_item_1, 1;
-				additem @sd, name2itemid("동인각"), 1;
-				addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
-			}
-		}
-		if($ssiat_count == 50 && $ssiat_count <= 99)
-		{
-			if($ssiat_item_2 == 0)
-			{
-				set $ssiat_item_2, 1;
-				additem @sd, name2itemid("청옥의목걸이"), 1;
-				addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
-			}
-		}
-		if($ssiat_count == 100 && $ssiat_count <= 199)
-		{
-			if($ssiat_item_3 == 0)
-			{
-				set $ssiat_item_3, 1;
-				additem @sd, name2itemid("은인각"), 1;
-				addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
-			}
-		}
-		if($ssiat_count == 200 && $ssiat_count <= 999)
-		{
-			if($ssiat_item_4 == 0)
-			{
-				set $ssiat_item_4, 1;
-				additem @sd, name2itemid("봉마의귀걸이"), 1;
-				addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
-			}
-		}
-		if($ssiat_count == 1000)
-		{
-			if($ssiat_item_5 == 0)
-			{
-				set $ssiat_item_5, 1;
-				set $dojaeyoung, 7;
-				additem @sd, name2itemid("적막의목걸이"), 1;
-				addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
-			}
-		}
-		set @pos, dialog(0, 0, 0, "아직 많이 심지 못하셨군요..");
-		end;
-	}
-	if($dojaeyoung == 7)
-	{
-		set @pos, dialog(0, 0, 1, "저번엔 정말 감사했어요. 덕분에 도삭산이 많이 보기가 좋아졌어요.");
-		end;
-	}
+        set @pos, list2(@list, 0, 0, "제 부탁 들어주실거죠??", "그런 부탁이라면 기꺼이~!", "죄송하지만 저에겐 그럴만한 시간이 없습니다.");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $dojaeyoung, 6;
+            spellaether @sd, name2spellid("만리향씨앗"), 180;
+            addlegend @sd, 11, 7, 0, 1, "도주영의 부탁을 들어주자!";
+            set @pos, dialog(0, 0, 1, "씨앗은 해파리 괴물들을 처치하면 얻을 수 있을거에요. 부디 제 부탁을 들어주시길. 그럼 몸조심하세요....");
+            end;
+        }
+        else end;
+    }
+    if($dojaeyoung == 6) 
+    {
+        if($ssiat_count >= 1 && $ssiat_count <= 9)
+        {
+            set @pos, dialog(0, 0, 1, "정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.");
+            end;
+        }
+        if($ssiat_count >= 10 && $ssiat_count <= 49)
+        {
+            if($ssiat_item_1 == 0)
+            {
+                set $ssiat_item_1, 1;
+                additem @sd, name2itemid("동인각"), 1;
+                addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
+            }
+        }
+        if($ssiat_count == 50 && $ssiat_count <= 99)
+        {
+            if($ssiat_item_2 == 0)
+            {
+                set $ssiat_item_2, 1;
+                additem @sd, name2itemid("청옥의목걸이"), 1;
+                addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
+            }
+        }
+        if($ssiat_count == 100 && $ssiat_count <= 199)
+        {
+            if($ssiat_item_3 == 0)
+            {
+                set $ssiat_item_3, 1;
+                additem @sd, name2itemid("은인각"), 1;
+                addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
+            }
+        }
+        if($ssiat_count == 200 && $ssiat_count <= 999)
+        {
+            if($ssiat_item_4 == 0)
+            {
+                set $ssiat_item_4, 1;
+                additem @sd, name2itemid("봉마의귀걸이"), 1;
+                addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
+            }
+        }
+        if($ssiat_count == 1000)
+        {
+            if($ssiat_item_5 == 0)
+            {
+                set $ssiat_item_5, 1;
+                set $dojaeyoung, 7;
+                additem @sd, name2itemid("적막의목걸이"), 1;
+                addlegend @sd, 11, 7, 0, 1, "도삭산 300층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, "흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..");
+            }
+        }
+        set @pos, dialog(0, 0, 0, "아직 많이 심지 못하셨군요..");
+        end;
+    }
+    if($dojaeyoung == 7)
+    {
+        set @pos, dialog(0, 0, 1, "저번엔 정말 감사했어요. 덕분에 도삭산이 많이 보기가 좋아졌어요.");
+        end;
+    }
 }
 
 //도삭산400층
-도태연	{
-	set @sd, mysd();
-	set @id, myid();
+도태연    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($dotaeyeon == 0)
-	{
+    if($dotaeyeon == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "안녕하시오~ 도삭산코뿔소말이오. 그놈 이빨과 발톱, 뿔 정말 단단하게 생기지 않았소?");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "안녕하시오~ 도삭산코뿔소말이오. 그놈 이빨과 발톱, 뿔 정말 단단하게 생기지 않았소?");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "코뿔소의 이빨,발톱,뿔은 무기나 갑옷을 만드는데 정말 좋은 재료가 되지. 그중에서도 도삭산코뿔소는 내가 지금까지 본 것들중에서 제일이더군.\\n\\n그래서 요즘 도삭산코뿔소를 사냥하고 있는데 놈들이 워낙 사나워서 사냥이 매우 위험하다오.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "코뿔소의 이빨,발톱,뿔은 무기나 갑옷을 만드는데 정말 좋은 재료가 되지. 그중에서도 도삭산코뿔소는 내가 지금까지 본 것들중에서 제일이더군.\\n\\n그래서 요즘 도삭산코뿔소를 사냥하고 있는데 놈들이 워낙 사나워서 사냥이 매우 위험하다오.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "어떻소 도삭산코뿔소를 사냥해서 이빨,발톱,뿔을 내게 구해다 주지 않겠소? 물론 그냥 가져다 달라는것은 아니니 걱정 마시오. 내 좋은 물건 하나 주도록하지!");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "어떻소 도삭산코뿔소를 사냥해서 이빨,발톱,뿔을 내게 구해다 주지 않겠소? 물론 그냥 가져다 달라는것은 아니니 걱정 마시오. 내 좋은 물건 하나 주도록하지!");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 0, "내 제안이 어떻소?", "좋습니다. 맘에 드는군요.", "죄송하지만 전 갈길이 바빠서..");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $dotaeyeon, 1;
-			addlegend @sd, 12, 7, 0, 1, "도태연의 부탁을 들어주자!";
-			set @pos, dialog(0, 0, 1, "다시 한번 말하지만 도삭산코뿔소의 발톱,이빨,뿔 모두 구해다 줘야하오~\\n\\n하나라도 빠지면 내 선물을 줄 수 없으니 명심하게나. 그럼 몸조심하구려. 놈들이 정말 사납거든.");
-			end;
-		}
-		else end;
-	}
-	if($dotaeyeon == 1)
-	{
+        set @pos, list2(@list, 0, 0, "내 제안이 어떻소?", "좋습니다. 맘에 드는군요.", "죄송하지만 전 갈길이 바빠서..");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $dotaeyeon, 1;
+            addlegend @sd, 12, 7, 0, 1, "도태연의 부탁을 들어주자!";
+            set @pos, dialog(0, 0, 1, "다시 한번 말하지만 도삭산코뿔소의 발톱,이빨,뿔 모두 구해다 줘야하오~\\n\\n하나라도 빠지면 내 선물을 줄 수 없으니 명심하게나. 그럼 몸조심하구려. 놈들이 정말 사납거든.");
+            end;
+        }
+        else end;
+    }
+    if($dotaeyeon == 1)
+    {
 COS005:
-		set @pos, dialog(0, 0, 1, "어디보자~ 코뿔소 사냥은 많이 했소? 발톱,이빨,뿔 다 가지고 왔는지 봅시다.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "어디보자~ 코뿔소 사냥은 많이 했소? 발톱,이빨,뿔 다 가지고 왔는지 봅시다.");
+        if(@pos == 0) end;
 COS006:
-		if(countitem(name2itemid("도삭산코뿔소발톱")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "아직 발톱을 구하지 못한 모양이군..");
-			end;
-		}
-		set @pos, dialog(0, 1, 1, "발톱은 있고~ 역시 튼튼해본인다니깐. 이빨은?");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS005;
+        if(countitem(name2itemid("도삭산코뿔소발톱")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "아직 발톱을 구하지 못한 모양이군..");
+            end;
+        }
+        set @pos, dialog(0, 1, 1, "발톱은 있고~ 역시 튼튼해본인다니깐. 이빨은?");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS005;
 COS007:
-		if(countitem(name2itemid("도삭산코뿔소이빨")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "아직 이빨을 구하지 못한 모양이군..");
-			end;
-		}
-		set @pos, dialog(0, 1, 1, "이빨도 구했고, 뿔은 구하기 쉽지 않을텐데 가져왔소?");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS006;
+        if(countitem(name2itemid("도삭산코뿔소이빨")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "아직 이빨을 구하지 못한 모양이군..");
+            end;
+        }
+        set @pos, dialog(0, 1, 1, "이빨도 구했고, 뿔은 구하기 쉽지 않을텐데 가져왔소?");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS006;
 COS008:
-		if(countitem(name2itemid("도삭산코뿔소뿔")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "아직 뿔을 구하지 못한 모양이군..");
-			end;
-		}
-		set @pos, dialog(0, 1, 1, "오! 세가지 다 구해왔구려. 역시 내가 사람보는 눈은 정확하다니깐. 허허~\\n\\n그러면 내가 다 가져가겠소.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS007;
+        if(countitem(name2itemid("도삭산코뿔소뿔")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "아직 뿔을 구하지 못한 모양이군..");
+            end;
+        }
+        set @pos, dialog(0, 1, 1, "오! 세가지 다 구해왔구려. 역시 내가 사람보는 눈은 정확하다니깐. 허허~\\n\\n그러면 내가 다 가져가겠소.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS007;
 COS009:
-		set $dotaeyeon, 2;
-		delitem @sd, name2itemid("도삭산코뿔소발톱"), 1;
-		delitem @sd, name2itemid("도삭산코뿔소이빨"), 1;
-		delitem @sd, name2itemid("도삭산코뿔소뿔"), 1;
-		message @sd, 3, "도삭산코뿔소발톱 주었습니다";
-		message @sd, 3, "도삭산코뿔소이빨 주었습니다";
-		message @sd, 3, "도삭산코뿔소뿔 주었습니다";
-		additem @sd, name2itemid("도삭산황금봉"), 1;
-		addlegend @sd, 12, 7, 0, 1, "도삭산 400층 퀘스트 완료";
-		set @pos, dialog(0, 0, 1, "자 여기 내가 주는 선물이오. 도삭산의 비밀에 관련된 것 같은데.. 언젠가 쓸 일이 있을 것이오.");
-		end;
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, "안녕하신가? 덕분에 아무 훌륭한 무기와 방어구를 제작했다네. 나중에 한번 구경 오시게나.");
-		end;
-	}
+        set $dotaeyeon, 2;
+        delitem @sd, name2itemid("도삭산코뿔소발톱"), 1;
+        delitem @sd, name2itemid("도삭산코뿔소이빨"), 1;
+        delitem @sd, name2itemid("도삭산코뿔소뿔"), 1;
+        message @sd, 3, "도삭산코뿔소발톱 주었습니다";
+        message @sd, 3, "도삭산코뿔소이빨 주었습니다";
+        message @sd, 3, "도삭산코뿔소뿔 주었습니다";
+        additem @sd, name2itemid("도삭산황금봉"), 1;
+        addlegend @sd, 12, 7, 0, 1, "도삭산 400층 퀘스트 완료";
+        set @pos, dialog(0, 0, 1, "자 여기 내가 주는 선물이오. 도삭산의 비밀에 관련된 것 같은데.. 언젠가 쓸 일이 있을 것이오.");
+        end;
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, "안녕하신가? 덕분에 아무 훌륭한 무기와 방어구를 제작했다네. 나중에 한번 구경 오시게나.");
+        end;
+    }
 }
 
 //도삭산500층
-하문주	{
-	set @pos, dialog(0, 0, 1, "나 놀러가고 싶어~ 집에만 있기는 너무 답답하단 말야. 나가놀꺼야!\\n\\n살쾡이나 악어따위 하나도 안무서워! 아앙~");
+하문주    {
+    set @pos, dialog(0, 0, 1, "나 놀러가고 싶어~ 집에만 있기는 너무 답답하단 말야. 나가놀꺼야!\\n\\n살쾡이나 악어따위 하나도 안무서워! 아앙~");
 }
 
-황만령	{
-	set @sd, mysd();
-	set @id, myid();
+황만령    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($dotaeyeon < 2)
-	{
-		set @pos, dialog(0, 0, 0, "에구구... 손녀딸이 자꾸 나가 논다는데 위험에서 큰일이야..");
-		end;
-	}
-	if($dotaeyeon == 2)
-	{
+    if($dotaeyeon < 2)
+    {
+        set @pos, dialog(0, 0, 0, "에구구... 손녀딸이 자꾸 나가 논다는데 위험에서 큰일이야..");
+        end;
+    }
+    if($dotaeyeon == 2)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, get_name(@sd) + "씨 아닌가, 400층의 아들이 코뿔소의 뿔등을 얻었다고 굉장히 좋아하더구만.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, get_name(@sd) + "씨 아닌가, 400층의 아들이 코뿔소의 뿔등을 얻었다고 굉장히 좋아하더구만.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "그런데 이 근처에 갑자기 사나운 동물들이 늘어나고 있어. 내 손녀는 자꾸 나가 놀겠다고 조르는데..\\n\\n얼마전부터 살쾡이와 악어가 늘어나기 시작해서 이제는 아예 집으로 들어오기도 할 정도란 말이지.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "그런데 이 근처에 갑자기 사나운 동물들이 늘어나고 있어. 내 손녀는 자꾸 나가 놀겠다고 조르는데..\\n\\n얼마전부터 살쾡이와 악어가 늘어나기 시작해서 이제는 아예 집으로 들어오기도 할 정도란 말이지.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "어른들도 함부로 대들지 못하는터라 다들 집에서 꼼짝못하고 있다우\\n\\n원래 도삭산 동물들은 온순해서 사람에게 해를 끼치는건 생각도 못했는데 왜 갑자기 이러는 건지..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "어른들도 함부로 대들지 못하는터라 다들 집에서 꼼짝못하고 있다우\\n\\n원래 도삭산 동물들은 온순해서 사람에게 해를 끼치는건 생각도 못했는데 왜 갑자기 이러는 건지..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 0, "우리를 좀 도와주시게, 코뿔소를 그렇게 쉽게 잡았으니 살쾡이와 악어를 내쫓을 수 있지 않을까?", "그러죠. 제가 처리하겠습니다!!", "저보다 나은 적임자가 분명 있을겁니다.");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $dotaeyeon, 3;
-			addlegend @sd, 13, 7, 0, 1, "황만령의 부탁을 들어주자!";
+        set @pos, list2(@list, 0, 0, "우리를 좀 도와주시게, 코뿔소를 그렇게 쉽게 잡았으니 살쾡이와 악어를 내쫓을 수 있지 않을까?", "그러죠. 제가 처리하겠습니다!!", "저보다 나은 적임자가 분명 있을겁니다.");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $dotaeyeon, 3;
+            addlegend @sd, 13, 7, 0, 1, "황만령의 부탁을 들어주자!";
 COS005:
-			set @pos, dialog(0, 0, 1, "정말 고맙네.. 살쾡이와 악어는 가죽이 질겨서 쓸곳이 참 많단 말야. 살쾡이와 악어를 처치하고 올때 가죽도 좀 가져다 줄 수 있겠나?");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "정말 고맙네.. 살쾡이와 악어는 가죽이 질겨서 쓸곳이 참 많단 말야. 살쾡이와 악어를 처치하고 올때 가죽도 좀 가져다 줄 수 있겠나?");
+            if(@pos == 0) end;
 COS006:
-			set @pos, dialog(0, 1, 1, "도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.\\n\\n살쾡이와 악어는 무리를 지어서 공격해오니 조심하게!");
-			if(@pos == -1) goto COS005;
-			end;
-		}
-		else if(@list == 2)
-		{
-			set @pos, dialog(0, 0, 0, "그런가? 그럼 좀 더 기다려봐야겠군..");
-			end;
-		}
-		else end;
-	}
-	if($dotaeyeon == 3)
-	{
-		if(countitem(name2itemid("도삭산살쾡이가죽")) < 300 || countitem(name2itemid("도삭산악어비늘")) < 200)
-		{
-			set @pos, dialog(0, 0, 0, "아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.");
-			end;
-		}
-		else
-		{
+            set @pos, dialog(0, 1, 1, "도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.\\n\\n살쾡이와 악어는 무리를 지어서 공격해오니 조심하게!");
+            if(@pos == -1) goto COS005;
+            end;
+        }
+        else if(@list == 2)
+        {
+            set @pos, dialog(0, 0, 0, "그런가? 그럼 좀 더 기다려봐야겠군..");
+            end;
+        }
+        else end;
+    }
+    if($dotaeyeon == 3)
+    {
+        if(countitem(name2itemid("도삭산살쾡이가죽")) < 300 || countitem(name2itemid("도삭산악어비늘")) < 200)
+        {
+            set @pos, dialog(0, 0, 0, "아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.");
+            end;
+        }
+        else
+        {
 COS007:
-			set @pos, dialog(0, 0, 1, "오~ 정말 대단하이. 이렇게나 많이. 다친곳은 없나? 그러면 다 가져가겠네.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "오~ 정말 대단하이. 이렇게나 많이. 다친곳은 없나? 그러면 다 가져가겠네.");
+            if(@pos == 0) end;
 COS008:
-			set $dotaeyeon, 4;
-			delitem @sd, name2itemid("도삭산살쾡이가죽"), 300;
-			delitem @sd, name2itemid("도삭산악어비늘"), 200;
-			message @sd, 3, "도삭산살쾡이가죽 주었습니다";
-			message @sd, 3, "도삭산악어비늘 주었습니다";
-			additem @sd, name2itemid("수정의귀걸이"), 1;
-			addlegend @sd, 13, 7, 0, 1, "도삭산 500층 퀘스트 완료";
-			set @pos, dialog(0, 0, 1, "자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!");
-			end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, "저번에 날 도와줘서 고마우이. 가죽은 아주 유용하게 사용하고 있다네.");
-		end;
-	}
+            set $dotaeyeon, 4;
+            delitem @sd, name2itemid("도삭산살쾡이가죽"), 300;
+            delitem @sd, name2itemid("도삭산악어비늘"), 200;
+            message @sd, 3, "도삭산살쾡이가죽 주었습니다";
+            message @sd, 3, "도삭산악어비늘 주었습니다";
+            additem @sd, name2itemid("수정의귀걸이"), 1;
+            addlegend @sd, 13, 7, 0, 1, "도삭산 500층 퀘스트 완료";
+            set @pos, dialog(0, 0, 1, "자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!");
+            end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, "저번에 날 도와줘서 고마우이. 가죽은 아주 유용하게 사용하고 있다네.");
+        end;
+    }
 }
 
 //도삭산600층
-우가풍	{
-	set @sd, mysd();
-	set @id, myid();
+우가풍    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($woogapung == 0)
-	{
+    if($woogapung == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "내 호롱불이..내 호롱불..");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "내 호롱불이..내 호롱불..");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "내 소중한 호롱불을 도삭산문비 녀석이 훔쳐갔다네. 그 호롱불은 어머니가 물려주신 유일한 물건이지, 어느새 그것없이는 잠을 이룰 수가 없게 되었다네.\\n\\n아늑한 호롱불빛이 따뜻한 어머니의 손길처럼 느껴져서...");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "내 소중한 호롱불을 도삭산문비 녀석이 훔쳐갔다네. 그 호롱불은 어머니가 물려주신 유일한 물건이지, 어느새 그것없이는 잠을 이룰 수가 없게 되었다네.\\n\\n아늑한 호롱불빛이 따뜻한 어머니의 손길처럼 느껴져서...");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "신기한것은 그런 무리가 얼마전까진 없었는데 요즘들어 생겨나서는 말썽을 부린다는 점이지. 원래 도삭산은 살기좋은 곳이었는데.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "신기한것은 그런 무리가 얼마전까진 없었는데 요즘들어 생겨나서는 말썽을 부린다는 점이지. 원래 도삭산은 살기좋은 곳이었는데.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 0, "부탁이네. 호롱불을 찾아다 줄 수 없겠나? 나에겐 정말 소중한 물건이라네.", "알겠습니다. 제가 찾아다드리죠.", "호롱불은 얼마든지 많은데...");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $woogapung, 1;
-			addlegend @sd, 14, 7, 0, 1, "우가풍의 부탁을 들어주자!";
+        set @pos, list2(@list, 0, 0, "부탁이네. 호롱불을 찾아다 줄 수 없겠나? 나에겐 정말 소중한 물건이라네.", "알겠습니다. 제가 찾아다드리죠.", "호롱불은 얼마든지 많은데...");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $woogapung, 1;
+            addlegend @sd, 14, 7, 0, 1, "우가풍의 부탁을 들어주자!";
 COS005:
-			set @pos, dialog(0, 0, 1, "정말 고맙네. 그 마음만으로도. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.\\n\\n호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "정말 고맙네. 그 마음만으로도. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.\\n\\n호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.");
+            if(@pos == 0) end;
 COS006:
-			set @pos, dialog(0, 1, 1, "꼭 그 못된 놈을 잡아서 호롱불을 찾아주게. 휴우.. 자네밖에 믿을 사람이 없네. 그럼..");
-			if(@pos == -1) goto COS005;
-			end;
-		}
-		else if(@list == 2)
-		{
-			set @pos, dialog(0, 0, 0, "그렇지만.. 그게 잘 안된다네..");
-			end;
-		}
-		else end;
-	}
-	if($woogapung == 1)
-	{
-		if(countitem(name2itemid("어머니의호롱불")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지. 호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.");
-			end;
-		}
-		else
-		{
-			set $woogapung, 2;
-			delitem @sd, name2itemid("어머니의호롱불"), 1;
-			message @sd, 3, "어머니의호롱불 주었습니다";
-			additem @sd, name2itemid("수정해골"), 1;
-			addlegend @sd, 14, 7, 0, 1, "도삭산 600층 퀘스트 완료";
+            set @pos, dialog(0, 1, 1, "꼭 그 못된 놈을 잡아서 호롱불을 찾아주게. 휴우.. 자네밖에 믿을 사람이 없네. 그럼..");
+            if(@pos == -1) goto COS005;
+            end;
+        }
+        else if(@list == 2)
+        {
+            set @pos, dialog(0, 0, 0, "그렇지만.. 그게 잘 안된다네..");
+            end;
+        }
+        else end;
+    }
+    if($woogapung == 1)
+    {
+        if(countitem(name2itemid("어머니의호롱불")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지. 호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.");
+            end;
+        }
+        else
+        {
+            set $woogapung, 2;
+            delitem @sd, name2itemid("어머니의호롱불"), 1;
+            message @sd, 3, "어머니의호롱불 주었습니다";
+            additem @sd, name2itemid("수정해골"), 1;
+            addlegend @sd, 14, 7, 0, 1, "도삭산 600층 퀘스트 완료";
 COS007:
-			set @pos, dialog(0, 0, 1, "이..이것은... 맞네! 어머니의 호롱불이 맞아! 정말 어떻게 감사의 말을 해야할지. 감사히 받겠소.\\n\\n대단하구려. 그녀석을 잡다니. 잠깐잠깐 이럴때가 아니지. 내 꼭 주고 싶은것이 있었는데.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "이..이것은... 맞네! 어머니의 호롱불이 맞아! 정말 어떻게 감사의 말을 해야할지. 감사히 받겠소.\\n\\n대단하구려. 그녀석을 잡다니. 잠깐잠깐 이럴때가 아니지. 내 꼭 주고 싶은것이 있었는데.");
+            if(@pos == 0) end;
 COS008:
-			set @pos, dialog(0, 1, 1, "얼마전에 도삭산 여행을 다니다가 주운것인데 상당히 희귀한것이라네. 도삭산의 비밀에 관계된 것이 아닐까 하는데..");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS007;
+            set @pos, dialog(0, 1, 1, "얼마전에 도삭산 여행을 다니다가 주운것인데 상당히 희귀한것이라네. 도삭산의 비밀에 관계된 것이 아닐까 하는데..");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS007;
 COS009:
-			set @pos, dialog(0, 1, 1, "자네덕분에 오늘부터 잠을 편안히 잘 수 있겠군. 고마워~");
-			if(@pos == -1) goto COS008;
-			end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, get_name(@sd) + "씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.");
-		end;
-	}
+            set @pos, dialog(0, 1, 1, "자네덕분에 오늘부터 잠을 편안히 잘 수 있겠군. 고마워~");
+            if(@pos == -1) goto COS008;
+            end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, get_name(@sd) + "씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.");
+        end;
+    }
 }
 
 //도삭산700층
-하태현	{
-	set @sd, mysd();
-	set @id, myid();
+하태현    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($hataehyun == 0)
-	{
+    if($hataehyun == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "조금더 올라가시다보면 도삭산선비족, 도삭산흉노족이 있답니다. 그녀석들은 포악하고 성격은 나쁘지만 여러가지 신기한것들을 가지고 있죠.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "조금더 올라가시다보면 도삭산선비족, 도삭산흉노족이 있답니다. 그녀석들은 포악하고 성격은 나쁘지만 여러가지 신기한것들을 가지고 있죠.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "그중에 가면종류가 신기한것이 많죠. 각종 나무가면과 또 철이나 다른 금속으로 만든 가면도 있다더군요.\\n\\n제가 그런 물건에 관심이 많아서 부탁드립니다만 나무가면 50개를 모아다 주실수 없으신가요? 50개면 종류별로 다 모을 수 있을것 같아서..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "그중에 가면종류가 신기한것이 많죠. 각종 나무가면과 또 철이나 다른 금속으로 만든 가면도 있다더군요.\\n\\n제가 그런 물건에 관심이 많아서 부탁드립니다만 나무가면 50개를 모아다 주실수 없으신가요? 50개면 종류별로 다 모을 수 있을것 같아서..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, list2(@list, 0, 0, "부탁드려요. 워낙 포악해서 저는 근처도 갈 용기가 없네요. 들어주실거죠?", "그런일이라면 맡겨만 주세요.", "가면이라. 전 그런것에 관심이 없어서요.");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $hataehyun, 1;
-			addlegend @sd, 15, 7, 0, 1, "하태현의 부탁을 들어주자!";
-			set @pos, dialog(0, 0, 1, "그럼 전 " + get_name(@sd) + "님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.");
-			end;
-		}
-		else if(@list == 2)
-		{
-			set @pos, dialog(0, 0, 0, "그러시군요.. 안타깝네요..");
-			end;
-		}
-		else end;
-	}
-	if($hataehyun == 1)
-	{
-		if(countitem(name2itemid("나무가면")) < 50)
-		{
-			set @pos, dialog(0, 0, 0, "아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~");
-			end;
-		}
-		else
-		{
+        set @pos, list2(@list, 0, 0, "부탁드려요. 워낙 포악해서 저는 근처도 갈 용기가 없네요. 들어주실거죠?", "그런일이라면 맡겨만 주세요.", "가면이라. 전 그런것에 관심이 없어서요.");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $hataehyun, 1;
+            addlegend @sd, 15, 7, 0, 1, "하태현의 부탁을 들어주자!";
+            set @pos, dialog(0, 0, 1, "그럼 전 " + get_name(@sd) + "님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.");
+            end;
+        }
+        else if(@list == 2)
+        {
+            set @pos, dialog(0, 0, 0, "그러시군요.. 안타깝네요..");
+            end;
+        }
+        else end;
+    }
+    if($hataehyun == 1)
+    {
+        if(countitem(name2itemid("나무가면")) < 50)
+        {
+            set @pos, dialog(0, 0, 0, "아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~");
+            end;
+        }
+        else
+        {
 COS005:
-			set @pos, dialog(0, 0, 1, "우와. 역시 정말 멋진 가면들. 정말 감사해요. 제가 가져가도록 하죠.");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "우와. 역시 정말 멋진 가면들. 정말 감사해요. 제가 가져가도록 하죠.");
+            if(@pos == 0) end;
 COS006:
-			set @pos, dialog(0, 1, 1, "고마움에 표시로 드리는 선물입니다. 투구인데요 님에게 맞는 투구를 고르세요..");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS005;
+            set @pos, dialog(0, 1, 1, "고마움에 표시로 드리는 선물입니다. 투구인데요 님에게 맞는 투구를 고르세요..");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS005;
 COS007:
-			set @pos, list2(@list_2, 0, 0, "어떤 투구를 드릴까요?", "진비투구를 주십시오.", "경비투구를 주십시오.", "법비모를 주십시오.", "격비모를 주십시오.", "어떤 투구들이 있는지 알려주십시오.");
-			if(@pos == 0) end;
-			else if(@list_2 > 0 && @list_2 <= 4)
-			{
-				set $hataehyun, 2;
-				setarray @item$[1], "진비투구", "경비투구", "법비모", "격비모";
-				setarray @jobs$[1], "전사", "도적", "주술사", "도사";
-				setarray @image[1], 2103, 2105, 2108, 2227;
-				image 1, @image[@list_2], 0;
-				delitem @sd, name2itemid("나무가면"), 50;
-				message @sd, 3, "나무가면 주었습니다";
-				additem @sd, name2itemid(@item$[@list_2]), 1;
-				addlegend @sd, 15, 7, 0, 1, "도삭산 700층 퀘스트 완료";
-				set @pos, dialog(0, 0, 1, @item$[@list_2] + "는 " + @jobs$[@list_2] + "분들을 위한 투구입니다.");
-				deletearray @item$[1], getarraysize(@item$);
-				deletearray @jobs$[1], getarraysize(@jobs$);
-				deletearray @image[1], getarraysize(@image);
-				image 0, 541, 0;
-				set @pos, dialog(0, 0, 1, "혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\\n\\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~");
-				end;
-			}
-			else if(@list_2 == 5)
-			{
+            set @pos, list2(@list_2, 0, 0, "어떤 투구를 드릴까요?", "진비투구를 주십시오.", "경비투구를 주십시오.", "법비모를 주십시오.", "격비모를 주십시오.", "어떤 투구들이 있는지 알려주십시오.");
+            if(@pos == 0) end;
+            else if(@list_2 > 0 && @list_2 <= 4)
+            {
+                set $hataehyun, 2;
+                setarray @item$[1], "진비투구", "경비투구", "법비모", "격비모";
+                setarray @jobs$[1], "전사", "도적", "주술사", "도사";
+                setarray @image[1], 2103, 2105, 2108, 2227;
+                image 1, @image[@list_2], 0;
+                delitem @sd, name2itemid("나무가면"), 50;
+                message @sd, 3, "나무가면 주었습니다";
+                additem @sd, name2itemid(@item$[@list_2]), 1;
+                addlegend @sd, 15, 7, 0, 1, "도삭산 700층 퀘스트 완료";
+                set @pos, dialog(0, 0, 1, @item$[@list_2] + "는 " + @jobs$[@list_2] + "분들을 위한 투구입니다.");
+                deletearray @item$[1], getarraysize(@item$);
+                deletearray @jobs$[1], getarraysize(@jobs$);
+                deletearray @image[1], getarraysize(@image);
+                image 0, 541, 0;
+                set @pos, dialog(0, 0, 1, "혹시 아실지 모르겠지만 도삭산선비족,도삭산흉노족의 가면을 이용하면 더 좋은 투구를 만드실 수 있을거에요.\\n\\n저도 자세한 방법은 모르지만요. 하여튼 너무나 감사해요. 다음에 꼭 다시 들러주세요~");
+                end;
+            }
+            else if(@list_2 == 5)
+            {
 COS008:
-				image 1, 2103, 0;
-				set @pos, dialog(0, 0, 1, "진비투구는 전사를 위한 투구입니다.");
-				if(@pos == 0) end;
+                image 1, 2103, 0;
+                set @pos, dialog(0, 0, 1, "진비투구는 전사를 위한 투구입니다.");
+                if(@pos == 0) end;
 COS009:
-				image 1, 2105, 0;
-				set @pos, dialog(0, 1, 1, "경비투구는 도적을 위한 투구입니다.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS008;
+                image 1, 2105, 0;
+                set @pos, dialog(0, 1, 1, "경비투구는 도적을 위한 투구입니다.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS008;
 COS010:
-				image 1, 2108, 0;
-				set @pos, dialog(0, 1, 1, "법비모는 도적을 위한 투구입니다.");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS009;
+                image 1, 2108, 0;
+                set @pos, dialog(0, 1, 1, "법비모는 도적을 위한 투구입니다.");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS009;
 COS011:
-				image 1, 2227, 0;
-				set @pos, dialog(0, 1, 0, "격비모는 도적을 위한 투구입니다.");
-				if(@pos == -1) goto COS010;
-				end;
-			}
-			else end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, "저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.");
-		end;
-	}
+                image 1, 2227, 0;
+                set @pos, dialog(0, 1, 0, "격비모는 도적을 위한 투구입니다.");
+                if(@pos == -1) goto COS010;
+                end;
+            }
+            else end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, "저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.");
+        end;
+    }
 }
 
 //도삭산800층
-마석주	{
-	set @sd, mysd();
-	set @id, myid();
+마석주    {
+    set @sd, mysd();
+    set @id, myid();
 
-	if($mountain_god_clothes == 0)
-	{
+    if($mountain_god_clothes == 0)
+    {
 COS001:
-		set @pos, dialog(0, 0, 1, "안녕하세요~ 도삭산 800층까지 오시다니.. 수고 많으셨겠습니다.\\n\\n800층 까지도 물론 힘들게 오셨겠지만, 801층 부터는 완전히 다른 세계가 펼쳐진답니다.");
-		if(@pos == 0) end;
+        set @pos, dialog(0, 0, 1, "안녕하세요~ 도삭산 800층까지 오시다니.. 수고 많으셨겠습니다.\\n\\n800층 까지도 물론 힘들게 오셨겠지만, 801층 부터는 완전히 다른 세계가 펼쳐진답니다.");
+        if(@pos == 0) end;
 COS002:
-		set @pos, dialog(0, 1, 1, "가보시면 아시리라 생각합니다만, 원래부터 도삭산에 살고 있던 '산신'이라는 인간도 동물도 아닌 생물이 살고 있지요.\\n\\n신선수행을 하던 인간이 산신이 되었다는 얘기가 있는데, 사실인지는 알 수 없지요..");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS001;
+        set @pos, dialog(0, 1, 1, "가보시면 아시리라 생각합니다만, 원래부터 도삭산에 살고 있던 '산신'이라는 인간도 동물도 아닌 생물이 살고 있지요.\\n\\n신선수행을 하던 인간이 산신이 되었다는 얘기가 있는데, 사실인지는 알 수 없지요..");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS001;
 COS003:
-		set @pos, dialog(0, 1, 1, "이들 산신은 인간이었을때 가지고 있던 소지품을 어떤곳에 묻어서 버린다고 하는데, 신선수행을 하던 사람들이었으니 귀중품들이 많이 있을겁니다.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS002;
+        set @pos, dialog(0, 1, 1, "이들 산신은 인간이었을때 가지고 있던 소지품을 어떤곳에 묻어서 버린다고 하는데, 신선수행을 하던 사람들이었으니 귀중품들이 많이 있을겁니다.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS002;
 COS004:
-		set @pos, dialog(0, 1, 1, "도삭산 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데, 그때 도망치느라 가져오질 못했습니다.");
-		if(@pos == 0) end;
-		else if(@pos == -1) goto COS003;
+        set @pos, dialog(0, 1, 1, "도삭산 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데, 그때 도망치느라 가져오질 못했습니다.");
+        if(@pos == 0) end;
+        else if(@pos == -1) goto COS003;
 COS005:
-		set @pos, list2(@list, 0, 0, "한번 구하러 가보시지요?", "네, 찾아가봐야 겠군요.", "갈길이 바빠서..");
-		if(@pos == 0) end;
-		else if(@list == 1)
-		{
-			set $mountain_god_clothes, 1;
-			spellaether @sd, name2spellid("산신의보물지도"), 180;
-			addlegend @sd, 41, 7, 0, 25, "산신의보물지도를 찾자";
-			set @pos, dialog(0, 0, 1, "그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!");
-			end;
-		}
-		else end;
-	}
-	if($mountain_god_clothes == 1)
-	{
-		if(countitem(name2itemid("산신의비단")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "아직 보물을 찾기 못하신 것 같군요. 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데...");
-			end;
-		}
-		else
-		{
-			set @pos, dialog(0, 0, 1, "오오! 이것은 산신의비단이 아닙니까! 이걸 저에게 맡기시면 제가 멋진 옷을 만들어드리겠습니다!");
-			if(@pos == 0) end;
+        set @pos, list2(@list, 0, 0, "한번 구하러 가보시지요?", "네, 찾아가봐야 겠군요.", "갈길이 바빠서..");
+        if(@pos == 0) end;
+        else if(@list == 1)
+        {
+            set $mountain_god_clothes, 1;
+            spellaether @sd, name2spellid("산신의보물지도"), 180;
+            addlegend @sd, 41, 7, 0, 25, "산신의보물지도를 찾자";
+            set @pos, dialog(0, 0, 1, "그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!");
+            end;
+        }
+        else end;
+    }
+    if($mountain_god_clothes == 1)
+    {
+        if(countitem(name2itemid("산신의비단")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "아직 보물을 찾기 못하신 것 같군요. 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데...");
+            end;
+        }
+        else
+        {
+            set @pos, dialog(0, 0, 1, "오오! 이것은 산신의비단이 아닙니까! 이걸 저에게 맡기시면 제가 멋진 옷을 만들어드리겠습니다!");
+            if(@pos == 0) end;
 
-			set @pos, list2(@list, 0, 0, "저에게 맡기시는 것이 어떠실지?", "네 그럼 부탁합니다.", "안됩니다 어떻게 구한건데.");
-			if(@pos == 1 && @list == 1)
-			{
+            set @pos, list2(@list, 0, 0, "저에게 맡기시는 것이 어떠실지?", "네 그럼 부탁합니다.", "안됩니다 어떻게 구한건데.");
+            if(@pos == 1 && @list == 1)
+            {
 COS006:
-				set @pos, dialog(0, 0, 1, "크.. 이런 옷감을 내 손으로 만지게 되다니.. 영광입니다 영광..");
-				if(@pos == 0) end;
+                set @pos, dialog(0, 0, 1, "크.. 이런 옷감을 내 손으로 만지게 되다니.. 영광입니다 영광..");
+                if(@pos == 0) end;
 
-				set @pos, dialog(0, 1, 1, "그런데 이 옷감.. 너무 튼튼해서 보통 바늘로는 꿰멜수가 없겠는데요.. 아무래도 산신들이 이 옷감을 다룰때 쓰는 바늘이 있을 것 같은데..\\n\\n산신들이 사용하는 바늘이 있어야 옷을 만들 수 있겠습니다..");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS006;
+                set @pos, dialog(0, 1, 1, "그런데 이 옷감.. 너무 튼튼해서 보통 바늘로는 꿰멜수가 없겠는데요.. 아무래도 산신들이 이 옷감을 다룰때 쓰는 바늘이 있을 것 같은데..\\n\\n산신들이 사용하는 바늘이 있어야 옷을 만들 수 있겠습니다..");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS006;
 
-				delitem @sd, name2itemid("산신의비단"), 1;
-				message @sd, 3, "산신의비단 주었습니다";
+                delitem @sd, name2itemid("산신의비단"), 1;
+                message @sd, 3, "산신의비단 주었습니다";
 
-				set $mountain_god_clothes, 2;
-				addlegend @sd, 41, 7, 0, 25, "산신의바늘을 구해 마석주에게 가져다주자.";
-				end;
-			}
-			else end;
-			end;
-		}
-	}
-	if($mountain_god_clothes == 2)
-	{
-		if(countitem(name2itemid("산신의바늘")) == 0)
-		{
-			set @pos, dialog(0, 0, 0, "산신의바늘을 아직 구하지 못하신거 같은데요?");
-			end;
-		}
-		else
-		{
+                set $mountain_god_clothes, 2;
+                addlegend @sd, 41, 7, 0, 25, "산신의바늘을 구해 마석주에게 가져다주자.";
+                end;
+            }
+            else end;
+            end;
+        }
+    }
+    if($mountain_god_clothes == 2)
+    {
+        if(countitem(name2itemid("산신의바늘")) == 0)
+        {
+            set @pos, dialog(0, 0, 0, "산신의바늘을 아직 구하지 못하신거 같은데요?");
+            end;
+        }
+        else
+        {
 COS007:
-			set @pos, dialog(0, 0, 1, "이것은... 바늘이 아니라 새털처럼 보이는데.. 어디 한번..");
-			if(@pos == 0) end;
+            set @pos, dialog(0, 0, 1, "이것은... 바늘이 아니라 새털처럼 보이는데.. 어디 한번..");
+            if(@pos == 0) end;
 COS008:
-			set @pos, dialog(0, 1, 1, "아니! 이것은 마법이 걸린 깃털인가 봅니다. 어째서 이런 튼튼한 옷감이 이런 부드러운 것에 구멍이 나는 것인지...");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS007;
+            set @pos, dialog(0, 1, 1, "아니! 이것은 마법이 걸린 깃털인가 봅니다. 어째서 이런 튼튼한 옷감이 이런 부드러운 것에 구멍이 나는 것인지...");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS007;
 
-			set @pos, dialog(0, 1, 1, "자.. 그럼 어디한번 옷을 만들어볼까요.. 아. 그런데 어떤 옷을 만들어드리지요?");
-			if(@pos == 0) end;
-			else if(@pos == -1) goto COS008;
+            set @pos, dialog(0, 1, 1, "자.. 그럼 어디한번 옷을 만들어볼까요.. 아. 그런데 어떤 옷을 만들어드리지요?");
+            if(@pos == 0) end;
+            else if(@pos == -1) goto COS008;
 
-			set @pos, list2(@list, 0, 0, "어떤 옷을 만들어드릴까요?", "산신의천수를 만들어주십시오", "산신의정화를 만들어주십시오", "산신의인풍을 만들어주십시오", "산신의비설을 만들어주십시오", "산신의수령을 만들어주십시오", "산신의정령을 만들어주십시오", "산신의인령을 만들어주십시오", "산신의비령을 만들어주십시오");
-			if(@pos == 1 && @list > 0)
-			{
-				setarray @item$[0], "산신의천수", "산신의정화", "산신의인풍", "산신의비설", "산신의수령", "산신의정령", "산신의인령", "산신의비령";
-				setarray @information$[0], "는", "는", "은", "은", "은", "은", "은", "은";
-				setarray @image[0], 2171, 2167, 2173, 2169, 2172, 2168, 2174, 2170;
-				setarray @job$[0], "전사", "도적", "주술사", "도사", "전사", "도적", "주술사", "도사";
-				setarray @gender$[0], "남자", "남자", "남자", "남자", "여자", "여자", "여자", "여자", "여자";
+            set @pos, list2(@list, 0, 0, "어떤 옷을 만들어드릴까요?", "산신의천수를 만들어주십시오", "산신의정화를 만들어주십시오", "산신의인풍을 만들어주십시오", "산신의비설을 만들어주십시오", "산신의수령을 만들어주십시오", "산신의정령을 만들어주십시오", "산신의인령을 만들어주십시오", "산신의비령을 만들어주십시오");
+            if(@pos == 1 && @list > 0)
+            {
+                setarray @item$[0], "산신의천수", "산신의정화", "산신의인풍", "산신의비설", "산신의수령", "산신의정령", "산신의인령", "산신의비령";
+                setarray @information$[0], "는", "는", "은", "은", "은", "은", "은", "은";
+                setarray @image[0], 2171, 2167, 2173, 2169, 2172, 2168, 2174, 2170;
+                setarray @job$[0], "전사", "도적", "주술사", "도사", "전사", "도적", "주술사", "도사";
+                setarray @gender$[0], "남자", "남자", "남자", "남자", "여자", "여자", "여자", "여자", "여자";
 
-				set @val, @list-1;
-				set @add$, @item$[@val];
-				set @image_2, @image[@val];
-				set @jobname$, @job$[@val];
-				set @information_2$, @information$[@val];
-				set @gender_2$, @gender$[@val];
+                set @val, @list-1;
+                set @add$, @item$[@val];
+                set @image_2, @image[@val];
+                set @jobname$, @job$[@val];
+                set @information_2$, @information$[@val];
+                set @gender_2$, @gender$[@val];
 
-				deletearray @item$[0], getarraysize(@item$);
-				deletearray @image[0], getarraysize(@image);
-				deletearray @job$[0], getarraysize(@job$);
-				deletearray @information$[0], getarraysize(@information$);
-				deletearray @gender$[0], getarraysize(@gender$);
+                deletearray @item$[0], getarraysize(@item$);
+                deletearray @image[0], getarraysize(@image);
+                deletearray @job$[0], getarraysize(@job$);
+                deletearray @information$[0], getarraysize(@information$);
+                deletearray @gender$[0], getarraysize(@gender$);
 COS009:
-				image 1, @image_2, 0;
-				set @pos, dialog(0, 0, 1, @add$ + @information_2$ + " " + @gender_2$ + " " + @jobname$ + "들을 위한 옷입니다.");
-				if(@pos == 0) end;
+                image 1, @image_2, 0;
+                set @pos, dialog(0, 0, 1, @add$ + @information_2$ + " " + @gender_2$ + " " + @jobname$ + "들을 위한 옷입니다.");
+                if(@pos == 0) end;
 COS010:
-				image 0, 548, 0;
-				set @pos, dialog(0, 1, 1, "자.. 그럼.. ...... ...... ..........");
-				if(@pos == 0) end;
-				else if(@pos == -1) goto COS009;
+                image 0, 548, 0;
+                set @pos, dialog(0, 1, 1, "자.. 그럼.. ...... ...... ..........");
+                if(@pos == 0) end;
+                else if(@pos == -1) goto COS009;
 
-				delitem @sd, name2itemid("산신의바늘"), 1;
-				message @sd, 3, "산신의바늘 주었습니다";
-				additem @sd, name2itemid(@add$), 1;
-				set $mountain_god_clothes, 3;
-				addlegend @sd, 41, 6, 0, 25, "산신의옷을 만들다!";
-				set @pos, dialog(0, 0, 1, "여기 있습니다! 멋진 옷을 만들게 되어 정말 기쁘군요!");
-				end;
-			}
-			else end;
-			end;
-		}
-	}
-	else
-	{
-		set @pos, dialog(0, 0, 1, "제가 만들어 드린 산신의옷은 잘 사용하고 계신가요?");
-		end;
-	}
+                delitem @sd, name2itemid("산신의바늘"), 1;
+                message @sd, 3, "산신의바늘 주었습니다";
+                additem @sd, name2itemid(@add$), 1;
+                set $mountain_god_clothes, 3;
+                addlegend @sd, 41, 6, 0, 25, "산신의옷을 만들다!";
+                set @pos, dialog(0, 0, 1, "여기 있습니다! 멋진 옷을 만들게 되어 정말 기쁘군요!");
+                end;
+            }
+            else end;
+            end;
+        }
+    }
+    else
+    {
+        set @pos, dialog(0, 0, 1, "제가 만들어 드린 산신의옷은 잘 사용하고 계신가요?");
+        end;
+    }
 }

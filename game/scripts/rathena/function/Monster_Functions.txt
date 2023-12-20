@@ -1,1765 +1,1765 @@
 //=================몬스터드랍, 몬스터마법 부분=================
 //callfunc "MONSTER_FRONT_ATTACK", 몬스터id값, 확률변수, 확률, 액션, 효과음, 이펙트, 대미지, 대미지타입, "마법이름", "몬스터할말";
-FUNC_MONSTER_FRONT_ATTACK	{
-	set @id, getarg(0);
-	set @rand, rand(1, getarg(1));
-	set @rate, getarg(2);
-	set @action, getarg(3);
-	set @sound, getarg(4);
-	set @effect, getarg(5);
-	set @damage, getarg(6);
-	set @type, getarg(7);
-	set @magic$, getarg(8);
-	set @say$, getarg(9);
+FUNC_MONSTER_FRONT_ATTACK    {
+    set @id, getarg(0);
+    set @rand, rand(1, getarg(1));
+    set @rate, getarg(2);
+    set @action, getarg(3);
+    set @sound, getarg(4);
+    set @effect, getarg(5);
+    set @damage, getarg(6);
+    set @type, getarg(7);
+    set @magic$, getarg(8);
+    set @say$, getarg(9);
 
-	if(mobspellaethered(@id, name2spellid("절망")) == 1) { mobspellaether @id, name2spellid("절망"), 1; }
+    if(mobspellaethered(@id, name2spellid("절망")) == 1) { mobspellaether @id, name2spellid("절망"), 1; }
 
-	set @target_id, obj_getmobfront();
-	if(@target_id > 0)
-	{
-		if(istype(@target_id) == 1)
-		{
-			set @target_sd, id2sd(@target_id);
+    set @target_id, obj_getmobfront();
+    if(@target_id > 0)
+    {
+        if(istype(@target_id) == 1)
+        {
+            set @target_sd, id2sd(@target_id);
 
-			if(@action >= 0) { action @id, @action, 30, 0; }
-			if(@sound >= 0) { sound @target_id, @sound; }
-			if(@effect >= 0) { effect @target_id, @effect; }
+            if(@action >= 0) { action @id, @action, 30, 0; }
+            if(@sound >= 0) { sound @target_id, @sound; }
+            if(@effect >= 0) { effect @target_id, @effect; }
 
-			damage @id, @target_id, rand(150000, 250000), 2;
-			message @target_sd, 3, get_mobname(@id) + "(이)가 " + @magic$ + "을(를) 가합니다.";
+            damage @id, @target_id, rand(150000, 250000), 2;
+            message @target_sd, 3, get_mobname(@id) + "(이)가 " + @magic$ + "을(를) 가합니다.";
 
-			if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
-		}
-	}
-	return;
+            if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
+        }
+    }
+    return;
 }
 
 //callfunc "MONSTER_RANGE_ATTACK", 몬스터id값, 확률변수, 실패확률, 액션, 효과음, 이펙트, 대미지, 대미지타입, "마법이름", 범위, "몬스터할말";
-FUNC_MONSTER_RANGE_ATTACK	{
-	set @id, getarg(0);
-	set @rand, rand(1, getarg(1));
-	set @rate, getarg(2);
-	set @action, getarg(3);
-	set @sound, getarg(4);
-	set @effect, getarg(5);
-	set @damage, getarg(6);
-	set @type, getarg(7);
-	set @magic$, getarg(8);
-	set @range, getarg(9);
-	set @say$, getarg(10);
+FUNC_MONSTER_RANGE_ATTACK    {
+    set @id, getarg(0);
+    set @rand, rand(1, getarg(1));
+    set @rate, getarg(2);
+    set @action, getarg(3);
+    set @sound, getarg(4);
+    set @effect, getarg(5);
+    set @damage, getarg(6);
+    set @type, getarg(7);
+    set @magic$, getarg(8);
+    set @range, getarg(9);
+    set @say$, getarg(10);
 
-	if(mobspellaethered(@id, name2spellid("절망")) == 1) { mobspellaether @id, name2spellid("절망"), 1; }
+    if(mobspellaethered(@id, name2spellid("절망")) == 1) { mobspellaether @id, name2spellid("절망"), 1; }
 
-	if(@rand <= @rate) { end; }
+    if(@rand <= @rate) { end; }
 
-	set @x1, get_x(@id)-@range;
-	set @x2, get_x(@id)+@range;
-	set @y1, get_y(@id)-@range;
-	set @y2, get_y(@id)+@range;
+    set @x1, get_x(@id)-@range;
+    set @x2, get_x(@id)+@range;
+    set @y1, get_y(@id)-@range;
+    set @y2, get_y(@id)+@range;
 
-	if(@x1 < 0) { set @x1, 0; }
-	if(@x2 > mapwidth()-1) { set @x2, mapwidth()-1; }
-	if(@y1 < 0) { set @y1, 0; }
-	if(@y2 > mapheight()-1) { set @y2, mapheight()-1; }
+    if(@x1 < 0) { set @x1, 0; }
+    if(@x2 > mapwidth()-1) { set @x2, mapwidth()-1; }
+    if(@y1 < 0) { set @y1, 0; }
+    if(@y2 > mapheight()-1) { set @y2, mapheight()-1; }
 
-	for(set @i, @x1; @i <= @x2; set @i, @i+1)
-	{
-		for(set @j, @y1; @j <= @y2; set @j, @j+1)
-		{
-			set @target_id, obj_getxy(@i, @j);
-			if(@target_id > 0)
-			{
-				if(istype(@target_id) == 1)
-				{
-					set @target_sd, id2sd(@target_id);
+    for(set @i, @x1; @i <= @x2; set @i, @i+1)
+    {
+        for(set @j, @y1; @j <= @y2; set @j, @j+1)
+        {
+            set @target_id, obj_getxy(@i, @j);
+            if(@target_id > 0)
+            {
+                if(istype(@target_id) == 1)
+                {
+                    set @target_sd, id2sd(@target_id);
 
-					if(@action >= 0) { action @id, @action, 30, 0; }
-					if(@sound >= 0) { sound @target_id, @sound; }
-					if(@effect >= 0) { effect @target_id, @effect; }
+                    if(@action >= 0) { action @id, @action, 30, 0; }
+                    if(@sound >= 0) { sound @target_id, @sound; }
+                    if(@effect >= 0) { effect @target_id, @effect; }
 
-					damage @id, @target_id, @damage, @type;
-					message @target_sd, 3, get_mobname(@id) + "(이)가 " + @magic$ + "을(를) 가합니다.";
+                    damage @id, @target_id, @damage, @type;
+                    message @target_sd, 3, get_mobname(@id) + "(이)가 " + @magic$ + "을(를) 가합니다.";
 
-					if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
-				}
-			}
-		}
-	}
-	return;
+                    if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
+                }
+            }
+        }
+    }
+    return;
 }
 
 //callfunc "MONSTER_ATTACK", 몬스터id값, 확률변수, 확률, 액션, 효과음, 이펙트, 대미지, 대미지타입, "마법이름", "몬스터할말";
-FUNC_MONSTER_ATTACK	{
-	set @id, getarg(0);
-	set @rand, rand(1, getarg(1));
-	set @rate, getarg(2);
-	set @action, getarg(3);
-	set @sound, getarg(4);
-	set @effect, getarg(5);
-	set @damage, getarg(6);
-	set @type, getarg(7);
-	set @magic$, getarg(8);
-	set @say$, getarg(9);
-	set @target_id, get_mobtarget(@id);
-	set @target_sd, id2sd(@target_id);
-	if(@target_sd > 0)
-	{
-		if(@rand <= @rate)
-		{
-			if(@action >= 0) { action @id, @action, 30, 0; }
-			if(@sound >= 0) { sound @target_id, @sound; }
-			if(@effect >= 0) { effect @target_id, @effect; }
+FUNC_MONSTER_ATTACK    {
+    set @id, getarg(0);
+    set @rand, rand(1, getarg(1));
+    set @rate, getarg(2);
+    set @action, getarg(3);
+    set @sound, getarg(4);
+    set @effect, getarg(5);
+    set @damage, getarg(6);
+    set @type, getarg(7);
+    set @magic$, getarg(8);
+    set @say$, getarg(9);
+    set @target_id, get_mobtarget(@id);
+    set @target_sd, id2sd(@target_id);
+    if(@target_sd > 0)
+    {
+        if(@rand <= @rate)
+        {
+            if(@action >= 0) { action @id, @action, 30, 0; }
+            if(@sound >= 0) { sound @target_id, @sound; }
+            if(@effect >= 0) { effect @target_id, @effect; }
 
-			damage @id, @target_id, @damage, @type;
-			message @target_sd, 3, get_mobname(@id) + "이(가) " + @magic$ + "을(를) 가합니다.";
+            damage @id, @target_id, @damage, @type;
+            message @target_sd, 3, get_mobname(@id) + "이(가) " + @magic$ + "을(를) 가합니다.";
 
-			if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
-		}
-	}
-	return;
+            if(@say$ != "-1") { say @id, 0, get_mobname(@id) + ": " + @say$; }
+        }
+    }
+    return;
 }
 
 //target이 성문이면 안되게하는거임 (몹만됨) 몹한테안하면 삑 ㅂ2
 //callfunc "BATTLE_DOOR_CHECK", target의 id값;
-FUNC_BATTLE_DOOR_CHECK	{
-	set @target_id, getarg(0);
-	if(istype(@target_id) == 2)
-	{
-		set @mobname$, get_mobname(@target_id);
-		if(@mobname$ == "성문1" || @mobname$ == "성문2" || @mobname$ == "성문3" || @mobname$ == "성문4" ||
-		@mobname$ == "성문5" || @mobname$ == "성문6" || @mobname$ == "성문7" || @mobname$ == "성문8")
-		{
-			end;
-		}
-	}
-	return;
+FUNC_BATTLE_DOOR_CHECK    {
+    set @target_id, getarg(0);
+    if(istype(@target_id) == 2)
+    {
+        set @mobname$, get_mobname(@target_id);
+        if(@mobname$ == "성문1" || @mobname$ == "성문2" || @mobname$ == "성문3" || @mobname$ == "성문4" ||
+        @mobname$ == "성문5" || @mobname$ == "성문6" || @mobname$ == "성문7" || @mobname$ == "성문8")
+        {
+            end;
+        }
+    }
+    return;
 }
 
 //callfunc "DROPITEM", objid(), 확률변수, 확률, 템, 갯수;
-FUNC_DROPITEM	{
-	if(rand(1, getarg(1)) <= getarg(2))
-	{
-		if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
-		else { announce 5, get_mobname(getarg(0)) + "몹 드랍이 오류다!"; }
-		end;
-	}
-	return;
+FUNC_DROPITEM    {
+    if(rand(1, getarg(1)) <= getarg(2))
+    {
+        if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
+        else { announce 5, get_mobname(getarg(0)) + "몹 드랍이 오류다!"; }
+        end;
+    }
+    return;
 }
 
-FUNC_DROPITEM2	{
-	if(rand(1, getarg(1)) <= getarg(2))
-	{
-		if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
-		else { announce 5, get_mobname(getarg(0)) + "몹 드랍이 오류다!"; }
-	}
-	return;
+FUNC_DROPITEM2    {
+    if(rand(1, getarg(1)) <= getarg(2))
+    {
+        if(getarg(3) > 0) { dropitem get_mobx(getarg(0)), get_moby(getarg(0)), getarg(3), getarg(4); }
+        else { announce 5, get_mobname(getarg(0)) + "몹 드랍이 오류다!"; }
+    }
+    return;
 }
 
 //=================기타 몬스터 서버에 관련된거(퀘스트같은거)=================
-FUNC_ALLQUEST	{
-	callfunc "NAKRANG";
-	callfunc "PARTYEXP";
-	callfunc "KINGQUEST";
-	callfunc "SERVERQEUST";
-	return;
+FUNC_ALLQUEST    {
+    callfunc "NAKRANG";
+    callfunc "PARTYEXP";
+    callfunc "KINGQUEST";
+    callfunc "SERVERQEUST";
+    return;
 }
 
-FUNC_NAKRANG	{
-	set @sd, mysd();
-	set @id, myid();
-	set @last, lastkillmobid(@sd);
+FUNC_NAKRANG    {
+    set @sd, mysd();
+    set @id, myid();
+    set @last, lastkillmobid(@sd);
 
-	if($nakrang5 == 1)
-	{
-		if(@last == name2mobid("다람쥐") && $count_squirrel < 5) { set $count_squirrel, $count_squirrel+1; }
-		else if(@last == name2mobid("토끼") && $count_rabbit < 5) { set $count_rabbit, $count_rabbit+1; }
-	}
-	return;
+    if($nakrang5 == 1)
+    {
+        if(@last == name2mobid("다람쥐") && $count_squirrel < 5) { set $count_squirrel, $count_squirrel+1; }
+        else if(@last == name2mobid("토끼") && $count_rabbit < 5) { set $count_rabbit, $count_rabbit+1; }
+    }
+    return;
 }
 
-FUNC_PARTYEXP	{
-	set @sd, mysd();
-	set @id, myid();
-	set @bonus, 0;
-	set @minus, 0;
+FUNC_PARTYEXP    {
+    set @sd, mysd();
+    set @id, myid();
+    set @bonus, 0;
+    set @minus, 0;
 
-	if(party(@sd) != 0)
-	{
-		for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-		{
-			set @target_sd, party_member(@sd, @loop);
-			if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-			{
-				if(get_job(@target_sd) == 4) { set @bonus, @bonus+1; }
+    if(party(@sd) != 0)
+    {
+        for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+        {
+            set @target_sd, party_member(@sd, @loop);
+            if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+            {
+                if(get_job(@target_sd) == 4) { set @bonus, @bonus+1; }
 
-				if(get_level(@sd)+30 < get_level(@target_sd)) { set @minus, @minus+1; }
-				else if(get_level(@sd) < get_level(@target_sd)-30) { set @minus, @minus+1; }
+                if(get_level(@sd)+30 < get_level(@target_sd)) { set @minus, @minus+1; }
+                else if(get_level(@sd) < get_level(@target_sd)-30) { set @minus, @minus+1; }
 
-				if(get_joblevel(@sd) == get_joblevel(@sd)+2) { set @minus, @minus+1; }
-				else if(get_joblevel(@sd) == get_joblevel(@sd)+3) { set @minus, @minus+1; }
-				else if(get_joblevel(@sd) == get_joblevel(@sd)+4) { set @minus, @minus+1; }
-				else if(get_joblevel(@sd) == get_joblevel(@sd)-2) { set @minus, @minus+1; }
-				else if(get_joblevel(@sd) == get_joblevel(@sd)-3) { set @minus, @minus+1; }
-				else if(get_joblevel(@sd) == get_joblevel(@sd)-4) { set @minus, @minus+1; }
-			}
-		}
-		for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-		{
-			set @target_sd, party_member(@sd, @loop);
-			if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-			{
-				if(@bonus > 0 && @minus == 0) { set @count, 4; }
-				else { set @count, 0; }
+                if(get_joblevel(@sd) == get_joblevel(@sd)+2) { set @minus, @minus+1; }
+                else if(get_joblevel(@sd) == get_joblevel(@sd)+3) { set @minus, @minus+1; }
+                else if(get_joblevel(@sd) == get_joblevel(@sd)+4) { set @minus, @minus+1; }
+                else if(get_joblevel(@sd) == get_joblevel(@sd)-2) { set @minus, @minus+1; }
+                else if(get_joblevel(@sd) == get_joblevel(@sd)-3) { set @minus, @minus+1; }
+                else if(get_joblevel(@sd) == get_joblevel(@sd)-4) { set @minus, @minus+1; }
+            }
+        }
+        for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+        {
+            set @target_sd, party_member(@sd, @loop);
+            if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+            {
+                if(@bonus > 0 && @minus == 0) { set @count, 4; }
+                else { set @count, 0; }
 
-				set_userexpevent @target_sd, @count;
-			}
-		}
-	}
-	else
-	{
-		set_userexpevent @sd, 0;
-	}
-	return;
+                set_userexpevent @target_sd, @count;
+            }
+        }
+    }
+    else
+    {
+        set_userexpevent @sd, 0;
+    }
+    return;
 }
 
-FUNC_KINGQUEST	{
-	set @sd, mysd();
-	set @id, myid();
-	set @last, lastkillmobid(@sd);
+FUNC_KINGQUEST    {
+    set @sd, mysd();
+    set @id, myid();
+    set @last, lastkillmobid(@sd);
 
-	if(@last == name2mobid("자호"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "자호";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "자호";
-		}
-	}
-	else if(@last == name2mobid("친자호"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "친자호";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "친자호";
-		}
-	}
-	else if(@last == name2mobid("구자호"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "구자호";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "구자호";
-		}
-	}
-	else if(@last == name2mobid("거미"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "거미";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "거미";
-		}
-	}
-	else if(@last == name2mobid("사마귀"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀";
-		}
-	}
-	else if(@last == name2mobid("거미랑"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "거미랑";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "거미랑";
-		}
-	}
-	else if(@last == name2mobid("사마귀랑"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀랑";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀랑";
-		}
-	}
-	else if(@last == name2mobid("사마귀"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀";
-		}
-	}
-	else if(@last == name2mobid("서현거미"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "서현거미";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "서현거미";
-		}
-	}
-	else if(@last == name2mobid("사마귀"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀";
-		}
-	}
-	else if(@last == name2mobid("가재"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "가재";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "가재";
-		}
-	}
-	else if(@last == name2mobid("전갈"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "전갈";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "전갈";
-		}
-	}
-	else if(@last == name2mobid("가재장"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "가재장";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "가재장";
-		}
-	}
-	else if(@last == name2mobid("전갈장"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "전갈장";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "전갈장";
-		}
-	}
-	else if(@last == name2mobid("사마귀"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀";
-		}
-	}
-	else if(@last == name2mobid("서현가재"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "서현가재";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "서현가재";
-		}
-	}
-	else if(@last == name2mobid("유령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "유령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "유령";
-		}
-	}
-	else if(@last == name2mobid("초급유령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "초급유령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "초급유령";
-		}
-	}
-	else if(@last == name2mobid("중급유령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "중급유령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "중급유령";
-		}
-	}
-	else if(@last == name2mobid("사마귀"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "사마귀";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "사마귀";
-		}
-	}
-	else if(@last == name2mobid("고급유령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "고급유령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "고급유령";
-		}
-	}
-	else if(@last == name2mobid("자령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "자령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "자령";
-		}
-	}
-	else if(@last == name2mobid("주령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "주령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "주령";
-		}
-	}
-	else if(@last == name2mobid("지령"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "지령";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "지령";
-		}
-	}
-	else if(@last == name2mobid("해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "해골";
-		}
-	}
-	else if(@last == name2mobid("칼든해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "칼든해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "칼든해골";
-		}
-	}
-	else if(@last == name2mobid("날쌘해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "날쌘해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "날쌘해골";
-		}
-	}
-	else if(@last == name2mobid("쾌도해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "쾌도해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "쾌도해골";
-		}
-	}
-	else if(@last == name2mobid("흑해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흑해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흑해골";
-		}
-	}
-	else if(@last == name2mobid("자해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "자해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "자해골";
-		}
-	}
-	else if(@last == name2mobid("주해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "주해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "주해골";
-		}
-	}
-	else if(@last == name2mobid("지해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "지해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "지해골";
-		}
-	}
-	else if(@last == name2mobid("쾌도해골"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "쾌도해골";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "쾌도해골";
-		}
-	}
-	else if(@last == name2mobid("처녀귀신"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "처녀귀신";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "처녀귀신";
-		}
-	}
-	else if(@last == name2mobid("달걀귀신"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "달걀귀신";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "달걀귀신";
-		}
-	}
-	else if(@last == name2mobid("불귀신"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "불귀신";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "불귀신";
-		}
-	}
-	else if(@last == name2mobid("독충"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "독충";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "독충";
-		}
-	}
-	else if(@last == name2mobid("몽달귀신"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "몽달귀신";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "몽달귀신";
-		}
-	}
-	else if(@last == name2mobid("빗자루귀신"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "빗자루귀신";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "빗자루귀신";
-		}
-	}
-	else if(@last == name2mobid("선비검객"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "선비검객";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "선비검객";
-		}
-	}
-	else if(@last == name2mobid("선비평민"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "선비평민";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "선비평민";
-		}
-	}
-	else if(@last == name2mobid("흉노평민"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흉노평민";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흉노평민";
-		}
-	}
-	else if(@last == name2mobid("흉노전사"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흉노전사";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흉노전사";
-		}
-	}
-	else if(@last == name2mobid("흉노무사"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흉노무사";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흉노무사";
-		}
-	}
-	else if(@last == name2mobid("녹살쾡이"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "녹살쾡이";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "녹살쾡이";
-		}
-	}
-	else if(@last == name2mobid("표황살쾡이"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "표황살쾡이";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "표황살쾡이";
-		}
-	}
-	else if(@last == name2mobid("외눈황천구"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "외눈황천구";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "외눈황천구";
-		}
-	}
-	else if(@last == name2mobid("외눈자천구"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "외눈자천구";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "외눈자천구";
-		}
-	}
-	else if(@last == name2mobid("흑혈후"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흑혈후";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흑혈후";
-		}
-	}
-	else if(@last == name2mobid("녹혈후"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "녹혈후";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "녹혈후";
-		}
-	}
-	else if(@last == name2mobid("흑선문후"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흑선문후";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흑선문후";
-		}
-	}
-	else if(@last == name2mobid("흡혈강시"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흡혈강시";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흡혈강시";
-		}
-	}
-	else if(@last == name2mobid("아기강시"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "아기강시";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "아기강시";
-		}
-	}
-	else if(@last == name2mobid("흑발강시"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					runscript @target_sd, "흑발강시";
-				}
-			}
-		}
-		else
-		{
-			runscript @sd, "흑발강시";
-		}
-	}
-	return;
+    if(@last == name2mobid("자호"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "자호";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "자호";
+        }
+    }
+    else if(@last == name2mobid("친자호"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "친자호";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "친자호";
+        }
+    }
+    else if(@last == name2mobid("구자호"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "구자호";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "구자호";
+        }
+    }
+    else if(@last == name2mobid("거미"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "거미";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "거미";
+        }
+    }
+    else if(@last == name2mobid("사마귀"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀";
+        }
+    }
+    else if(@last == name2mobid("거미랑"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "거미랑";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "거미랑";
+        }
+    }
+    else if(@last == name2mobid("사마귀랑"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀랑";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀랑";
+        }
+    }
+    else if(@last == name2mobid("사마귀"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀";
+        }
+    }
+    else if(@last == name2mobid("서현거미"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "서현거미";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "서현거미";
+        }
+    }
+    else if(@last == name2mobid("사마귀"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀";
+        }
+    }
+    else if(@last == name2mobid("가재"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "가재";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "가재";
+        }
+    }
+    else if(@last == name2mobid("전갈"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "전갈";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "전갈";
+        }
+    }
+    else if(@last == name2mobid("가재장"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "가재장";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "가재장";
+        }
+    }
+    else if(@last == name2mobid("전갈장"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "전갈장";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "전갈장";
+        }
+    }
+    else if(@last == name2mobid("사마귀"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀";
+        }
+    }
+    else if(@last == name2mobid("서현가재"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "서현가재";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "서현가재";
+        }
+    }
+    else if(@last == name2mobid("유령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "유령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "유령";
+        }
+    }
+    else if(@last == name2mobid("초급유령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "초급유령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "초급유령";
+        }
+    }
+    else if(@last == name2mobid("중급유령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "중급유령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "중급유령";
+        }
+    }
+    else if(@last == name2mobid("사마귀"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "사마귀";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "사마귀";
+        }
+    }
+    else if(@last == name2mobid("고급유령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "고급유령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "고급유령";
+        }
+    }
+    else if(@last == name2mobid("자령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "자령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "자령";
+        }
+    }
+    else if(@last == name2mobid("주령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "주령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "주령";
+        }
+    }
+    else if(@last == name2mobid("지령"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "지령";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "지령";
+        }
+    }
+    else if(@last == name2mobid("해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "해골";
+        }
+    }
+    else if(@last == name2mobid("칼든해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "칼든해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "칼든해골";
+        }
+    }
+    else if(@last == name2mobid("날쌘해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "날쌘해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "날쌘해골";
+        }
+    }
+    else if(@last == name2mobid("쾌도해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "쾌도해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "쾌도해골";
+        }
+    }
+    else if(@last == name2mobid("흑해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흑해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흑해골";
+        }
+    }
+    else if(@last == name2mobid("자해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "자해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "자해골";
+        }
+    }
+    else if(@last == name2mobid("주해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "주해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "주해골";
+        }
+    }
+    else if(@last == name2mobid("지해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "지해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "지해골";
+        }
+    }
+    else if(@last == name2mobid("쾌도해골"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "쾌도해골";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "쾌도해골";
+        }
+    }
+    else if(@last == name2mobid("처녀귀신"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "처녀귀신";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "처녀귀신";
+        }
+    }
+    else if(@last == name2mobid("달걀귀신"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "달걀귀신";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "달걀귀신";
+        }
+    }
+    else if(@last == name2mobid("불귀신"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "불귀신";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "불귀신";
+        }
+    }
+    else if(@last == name2mobid("독충"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "독충";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "독충";
+        }
+    }
+    else if(@last == name2mobid("몽달귀신"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "몽달귀신";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "몽달귀신";
+        }
+    }
+    else if(@last == name2mobid("빗자루귀신"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "빗자루귀신";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "빗자루귀신";
+        }
+    }
+    else if(@last == name2mobid("선비검객"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "선비검객";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "선비검객";
+        }
+    }
+    else if(@last == name2mobid("선비평민"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "선비평민";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "선비평민";
+        }
+    }
+    else if(@last == name2mobid("흉노평민"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흉노평민";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흉노평민";
+        }
+    }
+    else if(@last == name2mobid("흉노전사"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흉노전사";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흉노전사";
+        }
+    }
+    else if(@last == name2mobid("흉노무사"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흉노무사";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흉노무사";
+        }
+    }
+    else if(@last == name2mobid("녹살쾡이"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "녹살쾡이";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "녹살쾡이";
+        }
+    }
+    else if(@last == name2mobid("표황살쾡이"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "표황살쾡이";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "표황살쾡이";
+        }
+    }
+    else if(@last == name2mobid("외눈황천구"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "외눈황천구";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "외눈황천구";
+        }
+    }
+    else if(@last == name2mobid("외눈자천구"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "외눈자천구";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "외눈자천구";
+        }
+    }
+    else if(@last == name2mobid("흑혈후"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흑혈후";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흑혈후";
+        }
+    }
+    else if(@last == name2mobid("녹혈후"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "녹혈후";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "녹혈후";
+        }
+    }
+    else if(@last == name2mobid("흑선문후"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흑선문후";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흑선문후";
+        }
+    }
+    else if(@last == name2mobid("흡혈강시"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흡혈강시";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흡혈강시";
+        }
+    }
+    else if(@last == name2mobid("아기강시"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "아기강시";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "아기강시";
+        }
+    }
+    else if(@last == name2mobid("흑발강시"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    runscript @target_sd, "흑발강시";
+                }
+            }
+        }
+        else
+        {
+            runscript @sd, "흑발강시";
+        }
+    }
+    return;
 }
-		
-FUNC_SERVERQEUST	{
-	set @sd, mysd();
-	set @id, myid();
-	set @last, lastkillmobid(@sd);
+        
+FUNC_SERVERQEUST    {
+    set @sd, mysd();
+    set @id, myid();
+    set @last, lastkillmobid(@sd);
 
-	if(@last == name2mobid("성문1") || @last == name2mobid("성문2") || @last == name2mobid("성문3") || @last == name2mobid("성문4") || @last == name2mobid("성문5") || @last == name2mobid("성문6") || @last == name2mobid("성문7") || @last == name2mobid("성문8"))
-	{
-		announce 5, "[알림] " + get_clanname(@sd) + " 문파의 " + get_name(@sd) + "님이 성문을 뚫고 진격중입니다.";
-	}
-	else if(@last == name2mobid("복홍"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("복홍잡기"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("복홍잡기"), 3;
-		}
-	}
-	else if(@last == name2mobid("복어장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellcast @target_sd, name2spellid("태자전음문서");
-				}
-			}
-		}
-		else
-		{
-			spellcast @sd, name2spellid("태자전음문서");
-		}
-	}
-	else if(@last == name2mobid("게장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("게장군포박"), 3;
-				}
-			}
-			spellaether @sd, name2spellid("게장군포박"), 3;
-		}
-		else
-		{
-			spellaether @sd, name2spellid("게장군포박"), 3;
-		}
-	}
-	else if(@last == name2mobid("문어장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("문어장군포박"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("문어장군포박"), 3;
-		}
-	}
-	else if(@last == name2mobid("해마병사"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellcast @target_sd, name2spellid("해마병사잡기");
-				}
-			}
-		}
-		else
-		{
-			spellcast @sd, name2spellid("해마병사잡기");
-		}
-	}
-	else if(@last == name2mobid("해마장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellcast @target_sd, name2spellid("해마장군잡기");
-				}
-			}
-		}
-		else
-		{
-			spellcast @sd, name2spellid("해마장군잡기");
-		}
-	}
-	else if(@last == name2mobid("인어장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("인어장군잡기"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("인어장군잡기"), 3;
-		}
-	}
-	else if(@last == name2mobid("상어장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("상어장군잡기"), 3;
-				}
-			}
-			spellaether @sd, name2spellid("상어장군잡기"), 3;
-		}
-		else
-		{
-			spellaether @sd, name2spellid("상어장군잡기"), 3;
-		}
-	}
-	else if(@last == name2mobid("해파리장군"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("해파리장군잡기"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("해파리장군잡기"), 3;
-		}
-	}
-	else if(@last == name2mobid("해파리수하") || @last == name2mobid("해파리부하"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellcast @target_sd, name2spellid("전략문서");
-				}
-			}
-		}
-		else
-		{
-			spellcast @sd, name2spellid("전략문서");
-		}
-	}
-	else if(@last == name2mobid("청의태자"))
-	{
-		if(party(@sd) != 0)
-		{
-			for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
-			{
-				set @target_sd, party_member(@sd, @loop);
-				if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
-				{
-					spellaether @target_sd, name2spellid("청의태자포획"), 3;
-				}
-			}
-		}
-		else
-		{
-			spellaether @sd, name2spellid("청의태자포획"), 3;
-		}
-	}
-	else if(@last == name2mobid("토깽이"))
-	{
-		if($rabbit_liver == 1)
-		{
-			spellaether @sd, name2spellid("토깽이포획"), 3;
-		}
-	}
-	return;
-}
-
-자호	{
-	if(!strcmp($quest_100_name$, "자호"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+    if(@last == name2mobid("성문1") || @last == name2mobid("성문2") || @last == name2mobid("성문3") || @last == name2mobid("성문4") || @last == name2mobid("성문5") || @last == name2mobid("성문6") || @last == name2mobid("성문7") || @last == name2mobid("성문8"))
+    {
+        announce 5, "[알림] " + get_clanname(@sd) + " 문파의 " + get_name(@sd) + "님이 성문을 뚫고 진격중입니다.";
+    }
+    else if(@last == name2mobid("복홍"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("복홍잡기"), 3;
+                }
+            }
+        }
+        else
+        {
+            spellaether @sd, name2spellid("복홍잡기"), 3;
+        }
+    }
+    else if(@last == name2mobid("복어장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellcast @target_sd, name2spellid("태자전음문서");
+                }
+            }
+        }
+        else
+        {
+            spellcast @sd, name2spellid("태자전음문서");
+        }
+    }
+    else if(@last == name2mobid("게장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("게장군포박"), 3;
+                }
+            }
+            spellaether @sd, name2spellid("게장군포박"), 3;
+        }
+        else
+        {
+            spellaether @sd, name2spellid("게장군포박"), 3;
+        }
+    }
+    else if(@last == name2mobid("문어장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("문어장군포박"), 3;
+                }
+            }
+        }
+        else
+        {
+            spellaether @sd, name2spellid("문어장군포박"), 3;
+        }
+    }
+    else if(@last == name2mobid("해마병사"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellcast @target_sd, name2spellid("해마병사잡기");
+                }
+            }
+        }
+        else
+        {
+            spellcast @sd, name2spellid("해마병사잡기");
+        }
+    }
+    else if(@last == name2mobid("해마장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellcast @target_sd, name2spellid("해마장군잡기");
+                }
+            }
+        }
+        else
+        {
+            spellcast @sd, name2spellid("해마장군잡기");
+        }
+    }
+    else if(@last == name2mobid("인어장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("인어장군잡기"), 3;
+                }
+            }
+        }
+        else
+        {
+            spellaether @sd, name2spellid("인어장군잡기"), 3;
+        }
+    }
+    else if(@last == name2mobid("상어장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("상어장군잡기"), 3;
+                }
+            }
+            spellaether @sd, name2spellid("상어장군잡기"), 3;
+        }
+        else
+        {
+            spellaether @sd, name2spellid("상어장군잡기"), 3;
+        }
+    }
+    else if(@last == name2mobid("해파리장군"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("해파리장군잡기"), 3;
+                }
+            }
+        }
+        else
+        {
+            spellaether @sd, name2spellid("해파리장군잡기"), 3;
+        }
+    }
+    else if(@last == name2mobid("해파리수하") || @last == name2mobid("해파리부하"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellcast @target_sd, name2spellid("전략문서");
+                }
+            }
+        }
+        else
+        {
+            spellcast @sd, name2spellid("전략문서");
+        }
+    }
+    else if(@last == name2mobid("청의태자"))
+    {
+        if(party(@sd) != 0)
+        {
+            for(set @loop, 0; @loop < partymax(); set @loop, @loop+1)
+            {
+                set @target_sd, party_member(@sd, @loop);
+                if(@target_sd > 0 && get_mapid(@sd) == get_mapid(@target_sd))
+                {
+                    spellaether @target_sd, name2spellid("청의태자포획"), 3;
+                }
+            }
+        }
+        else
+        {
+            spellaether @sd, name2spellid("청의태자포획"), 3;
+        }
+    }
+    else if(@last == name2mobid("토깽이"))
+    {
+        if($rabbit_liver == 1)
+        {
+            spellaether @sd, name2spellid("토깽이포획"), 3;
+        }
+    }
+    return;
 }
 
-친자호	{
-	if(!strcmp($quest_100_name$, "친자호"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+자호    {
+    if(!strcmp($quest_100_name$, "자호"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-구자호	{
-	if(!strcmp($quest_100_name$, "구자호"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+친자호    {
+    if(!strcmp($quest_100_name$, "친자호"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-거미	{
-	if(!strcmp($quest_100_name$, "거미"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+구자호    {
+    if(!strcmp($quest_100_name$, "구자호"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-사마귀	{
-	if(!strcmp($quest_100_name$, "사마귀"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+거미    {
+    if(!strcmp($quest_100_name$, "거미"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-거미랑	{
-	if(!strcmp($quest_100_name$, "거미랑"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+사마귀    {
+    if(!strcmp($quest_100_name$, "사마귀"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-사마귀랑	{
-	if(!strcmp($quest_100_name$, "사마귀랑"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+거미랑    {
+    if(!strcmp($quest_100_name$, "거미랑"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-서현거미	{
-	if(!strcmp($quest_100_name$, "서현거미"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+사마귀랑    {
+    if(!strcmp($quest_100_name$, "사마귀랑"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-가재	{
-	if(!strcmp($quest_100_name$, "가재"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+서현거미    {
+    if(!strcmp($quest_100_name$, "서현거미"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-전갈	{
-	if(!strcmp($quest_100_name$, "전갈"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+가재    {
+    if(!strcmp($quest_100_name$, "가재"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-가재장	{
-	if(!strcmp($quest_100_name$, "가재장"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+전갈    {
+    if(!strcmp($quest_100_name$, "전갈"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-전갈장	{
-	if(!strcmp($quest_100_name$, "전갈장"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+가재장    {
+    if(!strcmp($quest_100_name$, "가재장"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-서현가재	{
-	if(!strcmp($quest_100_name$, "서현가재"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+전갈장    {
+    if(!strcmp($quest_100_name$, "전갈장"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-유령	{
-	if(!strcmp($quest_100_name$, "유령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+서현가재    {
+    if(!strcmp($quest_100_name$, "서현가재"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-초급유령	{
-	if(!strcmp($quest_100_name$, "초급유령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+유령    {
+    if(!strcmp($quest_100_name$, "유령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-중급유령	{
-	if(!strcmp($quest_100_name$, "중급유령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+초급유령    {
+    if(!strcmp($quest_100_name$, "초급유령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-고급유령	{
-	if(!strcmp($quest_100_name$, "고급유령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+중급유령    {
+    if(!strcmp($quest_100_name$, "중급유령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-자령	{
-	if(!strcmp($quest_100_name$, "자령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+고급유령    {
+    if(!strcmp($quest_100_name$, "고급유령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-주령	{
-	if(!strcmp($quest_100_name$, "주령"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+자령    {
+    if(!strcmp($quest_100_name$, "자령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-지령	{
-	if(!strcmp($quest_100_name$, "지미"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+주령    {
+    if(!strcmp($quest_100_name$, "주령"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-해골	{
-	if(!strcmp($quest_100_name$, "해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+지령    {
+    if(!strcmp($quest_100_name$, "지미"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-칼든해골	{
-	if(!strcmp($quest_100_name$, "칼든해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+해골    {
+    if(!strcmp($quest_100_name$, "해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-날쌘해골	{
-	if(!strcmp($quest_100_name$, "날쌘해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+칼든해골    {
+    if(!strcmp($quest_100_name$, "칼든해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-쾌도해골	{
-	if(!strcmp($quest_100_name$, "쾌도해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+날쌘해골    {
+    if(!strcmp($quest_100_name$, "날쌘해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-흑해골	{
-	if(!strcmp($quest_100_name$, "흑해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+쾌도해골    {
+    if(!strcmp($quest_100_name$, "쾌도해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-자해골	{
-	if(!strcmp($quest_100_name$, "자해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+흑해골    {
+    if(!strcmp($quest_100_name$, "흑해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-주해골	{
-	if(!strcmp($quest_100_name$, "주해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+자해골    {
+    if(!strcmp($quest_100_name$, "자해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-지해골	{
-	if(!strcmp($quest_100_name$, "지해골"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+주해골    {
+    if(!strcmp($quest_100_name$, "주해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-처녀귀신	{
-	if(!strcmp($quest_100_name$, "처녀귀신"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+지해골    {
+    if(!strcmp($quest_100_name$, "지해골"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-달걀귀신	{
-	if(!strcmp($quest_100_name$, "달걀귀신"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+처녀귀신    {
+    if(!strcmp($quest_100_name$, "처녀귀신"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-불귀신	{
-	if(!strcmp($quest_100_name$, "불귀신"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+달걀귀신    {
+    if(!strcmp($quest_100_name$, "달걀귀신"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-독충	{
-	if(!strcmp($quest_100_name$, "독충"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+불귀신    {
+    if(!strcmp($quest_100_name$, "불귀신"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-몽달귀신	{
-	if(!strcmp($quest_100_name$, "몽달귀신"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+독충    {
+    if(!strcmp($quest_100_name$, "독충"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-빗자루귀신	{
-	if(!strcmp($quest_100_name$, "빗자루귀신"))
-	{
-		set $quest_100_count, $quest_100_count+1;
-	}
+몽달귀신    {
+    if(!strcmp($quest_100_name$, "몽달귀신"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-선비검객	{
-	if(!strcmp($quest_100_name_2$, "선비검객"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+빗자루귀신    {
+    if(!strcmp($quest_100_name$, "빗자루귀신"))
+    {
+        set $quest_100_count, $quest_100_count+1;
+    }
 }
 
-선비평민	{
-	if(!strcmp($quest_100_name_2$, "선비평민"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+선비검객    {
+    if(!strcmp($quest_100_name_2$, "선비검객"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흉노평민	{
-	if(!strcmp($quest_100_name_2$, "흉노평민"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+선비평민    {
+    if(!strcmp($quest_100_name_2$, "선비평민"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흉노전사	{
-	if(!strcmp($quest_100_name_2$, "흉노전사"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흉노평민    {
+    if(!strcmp($quest_100_name_2$, "흉노평민"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흉노무사	{
-	if(!strcmp($quest_100_name_2$, "흉노무사"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흉노전사    {
+    if(!strcmp($quest_100_name_2$, "흉노전사"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-녹살쾡이	{
-	if(!strcmp($quest_100_name_2$, "녹살쾡이"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흉노무사    {
+    if(!strcmp($quest_100_name_2$, "흉노무사"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-표황살쾡이	{
-	if(!strcmp($quest_100_name_2$, "표황살쾡이"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+녹살쾡이    {
+    if(!strcmp($quest_100_name_2$, "녹살쾡이"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-외눈황천구	{
-	if(!strcmp($quest_100_name_2$, "외눈황천구"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+표황살쾡이    {
+    if(!strcmp($quest_100_name_2$, "표황살쾡이"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-외눈자천구	{
-	if(!strcmp($quest_100_name_2$, "외눈자천구"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+외눈황천구    {
+    if(!strcmp($quest_100_name_2$, "외눈황천구"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흑혈후	{
-	if(!strcmp($quest_100_name_2$, "흑혈후"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+외눈자천구    {
+    if(!strcmp($quest_100_name_2$, "외눈자천구"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-녹혈후	{
-	if(!strcmp($quest_100_name_2$, "녹혈후"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흑혈후    {
+    if(!strcmp($quest_100_name_2$, "흑혈후"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흑선문후	{
-	if(!strcmp($quest_100_name_2$, "흑선문후"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+녹혈후    {
+    if(!strcmp($quest_100_name_2$, "녹혈후"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흡혈강시	{
-	if(!strcmp($quest_100_name_2$, "흡혈강시"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흑선문후    {
+    if(!strcmp($quest_100_name_2$, "흑선문후"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-아기강시	{
-	if(!strcmp($quest_100_name_2$, "아기강시"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+흡혈강시    {
+    if(!strcmp($quest_100_name_2$, "흡혈강시"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
 
-흑발강시	{
-	if(!strcmp($quest_100_name_2$, "흑발강시"))
-	{
-		set $quest_100_count_2, $quest_100_count_2+1;
-	}
+아기강시    {
+    if(!strcmp($quest_100_name_2$, "아기강시"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
+}
+
+흑발강시    {
+    if(!strcmp($quest_100_name_2$, "흑발강시"))
+    {
+        set $quest_100_count_2, $quest_100_count_2+1;
+    }
 }
