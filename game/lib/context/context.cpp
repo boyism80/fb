@@ -42,16 +42,16 @@ IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
-{"input_dialog",        fb::game::npc::model::builtin_input_dialog},
-{"menu_dialog",         fb::game::npc::model::builtin_menu_dialog},
-{"item_dialog",         fb::game::npc::model::builtin_item_dialog},
+{"input",               fb::game::npc::model::builtin_input},
+{"menu",                fb::game::npc::model::builtin_menu},
+{"item",                fb::game::npc::model::builtin_item},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"__eq",                fb::game::object::builtin_eq},
-{"input_dialog",        fb::game::npc::builtin_input_dialog},
-{"menu_dialog",         fb::game::npc::builtin_menu_dialog},
-{"item_dialog",         fb::game::npc::builtin_item_dialog},
+{"input",               fb::game::npc::builtin_input},
+{"menu",                fb::game::npc::builtin_menu},
+{"item",                fb::game::npc::builtin_item},
 END_LUA_EXTENSION
 
 

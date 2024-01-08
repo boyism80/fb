@@ -22,9 +22,9 @@ public:
     npc*                        make(fb::game::context& context);
 
 public:
-    static int                  builtin_input_dialog(lua_State* lua);
-    static int                  builtin_menu_dialog(lua_State* lua);
-    static int                  builtin_item_dialog(lua_State* lua);
+    static int                  builtin_input(lua_State* lua);
+    static int                  builtin_menu(lua_State* lua);
+    static int                  builtin_item(lua_State* lua);
 };
 
 class npc::model : public object::model
@@ -55,9 +55,9 @@ public:
     object::types               type() const { return object::types::NPC; }
 
 public:
-    static int                  builtin_input_dialog(lua_State* lua);
-    static int                  builtin_menu_dialog(lua_State* lua);
-    static int                  builtin_item_dialog(lua_State* lua);
+    static int                  builtin_input(lua_State* lua);
+    static int                  builtin_menu(lua_State* lua);
+    static int                  builtin_item(lua_State* lua);
 };
 
 

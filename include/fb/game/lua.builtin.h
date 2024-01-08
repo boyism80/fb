@@ -41,7 +41,7 @@ int builtin_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_menu_dialog(lua_State* lua)
+int builtin_menu(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -72,7 +72,7 @@ int builtin_menu_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_item_dialog(lua_State* lua)
+int builtin_item(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -107,7 +107,7 @@ int builtin_item_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_input_dialog(lua_State* lua)
+int builtin_input(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)

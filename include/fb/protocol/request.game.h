@@ -4,6 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <fb/game/mmo.h>
 #include <fb/game/trade.h>
+#include <fb/game/dialog.h>
 #include <optional>
 
 using namespace fb::game;

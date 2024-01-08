@@ -187,6 +187,7 @@
     <ClCompile Include="lib\context\command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />
     <ClCompile Include="lib\context\handler.cpp" />
+    <ClCompile Include="lib\dialog.cpp" />
     <ClCompile Include="lib\door.cpp" />
     <ClCompile Include="lib\group.cpp" />
     <ClCompile Include="lib\item\armor.cpp" />
