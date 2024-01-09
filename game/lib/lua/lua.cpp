@@ -150,6 +150,12 @@ context& context::push(const void* value)
     return *this;
 }
 
+context& context::pop(int offset)
+{
+    lua_pop(this->_ctx, offset);
+    return *this;
+}
+
 const std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
@@ -218,7 +224,16 @@ int context::state() const
 void context::release()
 {
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    main->release(*this);
+    switch(this->_state)
+    {
+    case LUA_OK:
+        main->release(*this);
+        break;
+
+    default:
+        main->revoke(*this);
+        break;
+    }
 }
 
 bool context::pending() const

@@ -89,7 +89,7 @@ int builtin_item(lua_State* lua)
 
     auto message = thread->tostring(3);
 
-    auto items = std::map<item::model*, std::optional<uint32_t>>();
+    auto items = std::vector<std::pair<item::model*, std::optional<uint32_t>>>();
     thread->pushnil();
     while (thread->next(4))
     {
@@ -124,7 +124,8 @@ int builtin_item(lua_State* lua)
         if (item == nullptr)
             continue;
 
-        items.insert({ item, price });
+        items.push_back({ item, price });
+        thread->pop(1);
     }
 
     session->dialog.show(*npc, message, items);
@@ -150,10 +151,10 @@ int builtin_sale(lua_State* lua)
     // auto message = "무엇을 사시게요?";
     auto message = "제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.";
 
-    std::map<item::model*, std::optional<uint32_t>> items;
-    items.insert({ fb::game::model::items.name2item("막걸리"), 100 });
-    items.insert({ fb::game::model::items.name2item("동동주"), 100 });
-    items.insert({ fb::game::model::items.name2item("도토리"), 100 });
+    auto items = std::vector<std::pair<item::model*, std::optional<uint32_t>>>();
+    items.push_back({ fb::game::model::items.name2item("막걸리"), 100 });
+    items.push_back({ fb::game::model::items.name2item("동동주"), 100 });
+    items.push_back({ fb::game::model::items.name2item("도토리"), 100 });
     session->dialog.show(*npc, message, items, fb::game::dialog::interaction::SALE);
     return thread->yield(1);
 }

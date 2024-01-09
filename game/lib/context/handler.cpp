@@ -308,7 +308,7 @@ void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, 
     this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::map<item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::item(npc, pairs, message, 0xFFFF, interaction), scope::SELF);
 }

@@ -97,6 +97,7 @@ public:
     context&                    pushobject(const luable* object);
     context&                    pushobject(const luable& object);
     context&                    push(const void* value);
+    context&                    pop(int offset);
 
     template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
     context&                    pushinteger(T value)

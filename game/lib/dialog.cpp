@@ -71,7 +71,7 @@ fb::game::dialog& fb::game::dialog::from(const char* format, ...)
     auto buffer = fstring_c(format, &args);
     va_end(args);
 
-    luaL_dofile(*this->_thread, buffer.c_str());
+    this->_thread->from(buffer.c_str());
     return *this;
 }
 
@@ -85,7 +85,7 @@ fb::game::dialog& fb::game::dialog::func(const char* format, ...)
     auto buffer = fstring_c(format, &args);
     va_end(args);
 
-    lua_getglobal(*this->_thread, buffer.c_str());
+    this->_thread->func(buffer.c_str());
     return *this;
 }
 
@@ -140,13 +140,13 @@ void fb::game::dialog::show(const npc& npc, const std::string& message, const st
     return this->show(*npc.based<fb::game::npc>(), message, item_slots, interaction);
 }
 
-void fb::game::dialog::show(const npc::model& npc, const std::string& message, const std::map<item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction)
+void fb::game::dialog::show(const npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
     listener->on_dialog(this->_owner, npc, message, pairs, interaction);
 }
 
-void fb::game::dialog::show(const npc& npc, const std::string& message, const std::map<item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction)
+void fb::game::dialog::show(const npc& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction)
 {
     this->show(*npc.based<fb::game::npc>(), message, pairs, interaction);
 }

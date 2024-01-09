@@ -143,7 +143,7 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
-    using item_price_pairs = std::map<fb::game::item::model*, std::optional<uint32_t>>;
+    using item_price_pairs = std::vector<std::pair<fb::game::item::model*, std::optional<uint32_t>>>;
 
 public:
     const fb::game::npc::model&                 npc;

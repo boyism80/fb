@@ -20,8 +20,9 @@ public:
         INPUT_EX            = 0x02,
         MENU                = 0x04,
         SLOT                = 0x05,
-        SALE                = 0x06,
-        BUY                 = 0x07,
+        ITEM                = 0x06,
+        SALE                = 0x07,
+        BUY                 = 0x08,
     };
 
 public:
@@ -30,7 +31,7 @@ public:
         virtual void        on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::map<item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) = 0;
     };
@@ -66,8 +67,8 @@ public:
     void                    show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU);
     void                    show(const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);
     void                    show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);
-    void                    show(const npc::model& npc, const std::string& message, const std::map<fb::game::item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);
-    void                    show(const npc& npc, const std::string& message, const std::map<fb::game::item::model*, std::optional<uint32_t>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);
+    void                    show(const npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM);
+    void                    show(const npc& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM);
     void                    input(const npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);
     void                    input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);
     void                    input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX);

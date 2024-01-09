@@ -343,6 +343,12 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
             .fn = std::bind(&context::handle_command_randmap, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
+
+    this->bind_command("엔피씨생성", command
+        {
+            .fn = std::bind(&context::handle_command_npc, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 fb::game::context::~context()
@@ -1715,6 +1721,12 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     case dialog::interaction::SALE:
     {
         // session->dialog.pushstring(request.name).resume(1);
+        break;
+    }
+
+    case dialog::interaction::ITEM:
+    {
+        session->dialog.pushstring(request.name).resume(1);
         break;
     }
 
