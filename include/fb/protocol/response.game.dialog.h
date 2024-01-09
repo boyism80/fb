@@ -6,10 +6,12 @@
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace dialog {
 
+
+
 class common : public fb::protocol::base::header
 {
 public:
-    const fb::game::object::model&     object;
+    const fb::game::object::model&      object;
     const std::string                   message;
     const bool                          button_prev;
     const bool                          button_next;
@@ -48,7 +50,7 @@ public:
 class menu : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&        npc;
+    const fb::game::npc::model&         npc;
     const std::vector<std::string>      menus;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
@@ -100,7 +102,7 @@ public:
 class slot : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&        npc;
+    const fb::game::npc::model&         npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
@@ -141,18 +143,21 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&                npc;
-    const std::vector<fb::game::item::model*>& items;
+    using item_price_pairs = std::map<fb::game::item::model*, std::optional<uint32_t>>;
+
+public:
+    const fb::game::npc::model&                 npc;
+    const item_price_pairs&                     items;
     const std::string                           message;
     const uint16_t                              pursuit;
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::model& npc, const std::vector<fb::game::item::model*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : fb::protocol::base::header(0x2F),
+    item(const fb::game::npc::model& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SALE) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
     { }
 
-    item(const fb::game::npc& npc, const std::vector<fb::game::item::model*>& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SELL) : 
+    item(const fb::game::npc& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SALE) :
         item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     { }
 
@@ -174,13 +179,11 @@ public:
             .write_u16(this->pursuit)
             .write_u16((uint16_t)this->items.size());
 
-        for(int i = 0; i < this->items.size(); i++)
+        for (auto& [item, price] : this->items)
         {
-            const auto          item = this->items[i];
-
             out_stream.write_u16(item->look)
                 .write_u8(item->color)
-                .write_u32(item->price)
+                .write_u32(price.has_value() ? price.value() : item->price)
                 .write(item->name)
                 .write(item->desc);
         }
@@ -193,7 +196,7 @@ public:
 class input : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&        npc;
+    const fb::game::npc::model&         npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
@@ -229,7 +232,7 @@ public:
 class input_ext : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&        npc;
+    const fb::game::npc::model&         npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const std::string                   top, bottom;

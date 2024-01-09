@@ -20,6 +20,11 @@ int fb::game::npc::model::builtin_item(lua_State* lua)
     return ::builtin_item<fb::game::npc::model>(lua);
 }
 
+int fb::game::npc::model::builtin_sale(lua_State* lua)
+{
+    return ::builtin_sale<fb::game::npc::model>(lua);
+}
+
 fb::game::npc::npc(fb::game::context& context, const fb::game::npc::model* model) : 
     fb::game::object(context, model, fb::game::object::config())
 { }
@@ -44,4 +49,9 @@ int fb::game::npc::builtin_menu(lua_State* lua)
 int fb::game::npc::builtin_item(lua_State* lua)
 {
     return ::builtin_item<npc>(lua);
+}
+
+int fb::game::npc::builtin_sale(lua_State* lua)
+{
+    return ::builtin_sale<npc>(lua);
 }

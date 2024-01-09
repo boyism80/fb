@@ -66,11 +66,11 @@ public:
 
 private:
     static fb::game::item::model*          create(uint32_t id, const Json::Value& data);
-    static fb::game::item::conditions       to_condition(const Json::Value& data);
-    static fb::game::item::penalties        to_penalty(const std::string& penalty);
+    static fb::game::item::conditions      to_condition(const Json::Value& data);
+    static fb::game::item::penalties       to_penalty(const std::string& penalty);
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::item::model*                 name2item(const std::string& name);
@@ -96,8 +96,8 @@ public:
     ~npc();
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::npc::model*                  name2npc(const std::string& name);
@@ -123,13 +123,13 @@ public:
     ~mob();
 
 private:
-    static fb::game::mob::sizes             to_size(const std::string& size);
-    static fb::game::mob::offensive_type    to_offensive(const std::string& offensive);
+    static fb::game::mob::sizes            to_size(const std::string& size);
+    static fb::game::mob::offensive_type   to_offensive(const std::string& offensive);
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::mob::model*                  name2mob(const std::string& name);

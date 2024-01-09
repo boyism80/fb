@@ -45,6 +45,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"input",               fb::game::npc::model::builtin_input},
 {"menu",                fb::game::npc::model::builtin_menu},
 {"item",                fb::game::npc::model::builtin_item},
+{"sale",                fb::game::npc::model::builtin_sale},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -52,6 +53,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"input",               fb::game::npc::builtin_input},
 {"menu",                fb::game::npc::builtin_menu},
 {"item",                fb::game::npc::builtin_item},
+{"sale",                fb::game::npc::builtin_sale},
 END_LUA_EXTENSION
 
 
@@ -1710,9 +1712,9 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
         break;
     }
 
-    case dialog::interaction::SELL:
+    case dialog::interaction::SALE:
     {
-        session->dialog.pushstring(request.name).resume(1);
+        // session->dialog.pushstring(request.name).resume(1);
         break;
     }
 

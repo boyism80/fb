@@ -129,6 +129,7 @@ public:
     int                         rawlen(int offset_t) { return (int)lua_rawlen(*this, offset_t); }
     void                        remove(int offset) { lua_remove(*this, offset); }
     void                        new_table() { lua_newtable(*this); }
+    bool                        next(int offset) { return lua_next(*this, offset) != 0; };
 
 public:
     int                         argc();

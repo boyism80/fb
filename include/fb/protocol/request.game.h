@@ -545,7 +545,7 @@ public:
             break;
         }
 
-        case fb::game::dialog::interaction::SELL:
+        case fb::game::dialog::interaction::SALE:
         {
             auto unknown = in_stream.read_u32();
             this->pursuit = in_stream.read_u16();
