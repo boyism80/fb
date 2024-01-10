@@ -153,11 +153,11 @@ public:
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::model& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SALE) : fb::protocol::base::header(0x2F),
+    item(const fb::game::npc::model& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
     { }
 
-    item(const fb::game::npc& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SALE) :
+    item(const fb::game::npc& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) :
         item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     { }
 

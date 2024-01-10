@@ -105,6 +105,7 @@ END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"make",                fb::game::item::model::builtin_make},
+{"attr",                fb::game::item::model::builtin_attr},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
@@ -166,14 +167,16 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_class<item::model, object::model>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
-    lua::bind_function("seed",      builtin_seed);
-    lua::bind_function("sleep",     builtin_sleep);
-    lua::bind_function("name2mob",  builtin_name2mob);
-    lua::bind_function("name2item", builtin_name2item);
-    lua::bind_function("name2npc",  builtin_name2npc);
-    lua::bind_function("name2map",  builtin_name2map);
-    lua::bind_function("timer",     builtin_timer);
-    lua::bind_function("weather",   builtin_weather);
+    lua::bind_function("seed",              builtin_seed);
+    lua::bind_function("sleep",             builtin_sleep);
+    lua::bind_function("name2mob",          builtin_name2mob);
+    lua::bind_function("name2item",         builtin_name2item);
+    lua::bind_function("name2npc",          builtin_name2npc);
+    lua::bind_function("name2map",          builtin_name2map);
+    lua::bind_function("pursuit_sale",      builtin_pursuit_sale);
+    lua::bind_function("pursuit_purchase",  builtin_pursuit_purchase);
+    lua::bind_function("timer",             builtin_timer);
+    lua::bind_function("weather",           builtin_weather);
 
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
@@ -1678,56 +1681,41 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     if (session->inited() == false)
         co_return true;
 
+    auto ctx = session->dialog.current();
+    if(ctx == nullptr)
+        co_return true;
+
     switch(request.interaction)
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
-        ctx->pushinteger(request.action).resume(1);
+        ctx->pushinteger(request.action);
+        session->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
-        ctx->pushstring(request.message).resume(1);
+        ctx->pushstring(request.message);
+        session->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::INPUT_EX:
     {
         if(request.action == 0x02) // OK button
-        {
-            auto ctx = session->dialog.current();
-            if(ctx == nullptr)
-                break;
             ctx->pushstring(request.message);
-        }
         else
-        {
-            auto ctx = session->dialog.current();
-            if(ctx == nullptr)
-                break;
             ctx->pushinteger(request.action);
-        }
 
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
         ctx->resume(1);
         break;
     }
 
     case dialog::interaction::MENU:
     {
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
-        ctx->pushinteger(request.index).resume(1);
+        ctx->pushinteger(request.index);
+        session->dialog.resume(1);
         break;
     }
 
@@ -1736,21 +1724,10 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
         break;
     }
 
-    case dialog::interaction::SALE:
-    {
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
-        ctx->pushstring(request.name).resume(1);
-        break;
-    }
-
     case dialog::interaction::ITEM:
     {
-        auto ctx = session->dialog.current();
-        if(ctx == nullptr)
-            break;
-        ctx->pushstring(request.name).resume(1);
+        ctx->pushstring(request.name);
+        session->dialog.resume(1);
         break;
     }
 

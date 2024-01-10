@@ -22,10 +22,6 @@ public:
         MENU,
         SLOT,
         ITEM,
-        SALE,
-        SALE_MENU,
-        PURCHASE,
-        PURCHASE_MENU,
     };
 
 public:

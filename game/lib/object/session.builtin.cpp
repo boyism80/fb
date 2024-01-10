@@ -252,7 +252,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     if(item == nullptr)
         thread->pushnil();
     else
-        item->to_lua(lua);
+        thread->pushobject(item);
 
     return 1;
 }
@@ -274,7 +274,7 @@ int fb::game::session::builtin_items(lua_State* lua)
         if(session->items[i] == nullptr)
             continue;
 
-        session->items[i]->to_lua(lua);
+        thread->pushobject(session->items[i]);
         lua_rawseti(lua, -2, i+1);
     }
 
@@ -296,7 +296,7 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
 
     auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1);
     if(dropped != nullptr)
-        dropped->to_lua(lua);
+        thread->pushobject(dropped);
     else
         thread->pushnil();
 
@@ -330,7 +330,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
         auto context = thread->env<fb::game::context>("context");
         auto item = model->make(*context);
         auto slot = session->items.add(item);
-        item->to_lua(lua);
+        thread->pushobject(item);
 
         context->send(*session, fb::protocol::game::response::item::update(*session, slot), context::scope::SELF);
     }
@@ -540,7 +540,7 @@ int fb::game::session::builtin_group(lua_State* lua)
     if(group == nullptr)
         thread->pushnil();
     else
-        group->to_lua(lua);
+        thread->pushobject(group);
 
     return 1;
 }

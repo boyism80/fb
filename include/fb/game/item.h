@@ -231,6 +231,7 @@ public:
 
 public:
     static int                               builtin_make(lua_State* lua);
+    static int                               builtin_attr(lua_State* lua);
 
 };
 

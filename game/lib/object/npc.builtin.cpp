@@ -4,15 +4,7 @@
 
 int __builtin_sale(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc, uint16_t pursuit)
 {
-    // auto pairs = fb::game::model::sale[pursuit];
-    // if(pairs == nullptr)
-    //     return 0;
-
-    // auto message = "제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.";
-    // session->dialog.show(*npc, message, pairs, pursuit, fb::game::dialog::interaction::SALE);
-    // return thread->yield(1);
-    
-    session->dialog.from("scripts/npc/sale.lua")
+    session->dialog.from("scripts/common/npc.lua")
                    .func("sale")
                    .pushobject(session)
                    .pushobject(npc)

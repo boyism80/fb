@@ -545,14 +545,6 @@ public:
             break;
         }
 
-        case fb::game::dialog::interaction::SALE:
-        {
-            auto unknown = in_stream.read_u32();
-            this->pursuit = in_stream.read_u16();
-            this->name = in_stream.readstr_u8();
-            break;
-        }
-
         case fb::game::dialog::interaction::ITEM:
         {
             auto unknown = in_stream.read_u32();

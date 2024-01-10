@@ -427,7 +427,7 @@ int fb::game::map::builtin_objects(lua_State* lua)
 
     for(int i = 0; i < objects.size(); i++)
     {
-        map->objects[i]->to_lua(lua);
+        thread->pushobject(map->objects[i]);
         lua_rawseti(lua, -2, i+1);
     }
 
@@ -537,7 +537,7 @@ int fb::game::map::builtin_door(lua_State* lua)
     if(door == nullptr)
         thread->pushnil();
     else
-        door->to_lua(lua);
+        thread->pushobject(door);
 
     return 1;
 }
@@ -558,7 +558,7 @@ int fb::game::map::builtin_doors(lua_State* lua)
     auto i = 0;
     for(const auto& door : map->doors)
     {
-        door->to_lua(lua);
+        thread->pushobject(*door);
         lua_rawseti(lua, -2, i+1);
     }
     

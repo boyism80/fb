@@ -250,6 +250,7 @@ main::main() : context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
+    this->load_file("scripts/common/npc.lua");
     this->load_file("scripts/common/door.lua");
     this->load_file("scripts/common/pickup.lua");
     this->load_file("scripts/common/attack.lua");
@@ -386,33 +387,33 @@ main::main() : context(::luaL_newstate())
 
 
     lua_pushinteger(*this, fb::game::item::attrs::NONE);
-    lua_setglobal(*this, "NONE");
+    lua_setglobal(*this, "ITEM_ATTR_NONE");
     lua_pushinteger(*this, fb::game::item::attrs::CONSUME);
-    lua_setglobal(*this, "CONSUME");
+    lua_setglobal(*this, "ITEM_ATTR_CONSUME");
     lua_pushinteger(*this, fb::game::item::attrs::BUNDLE);
-    lua_setglobal(*this, "BUNDLE");
+    lua_setglobal(*this, "ITEM_ATTR_BUNDLE");
     lua_pushinteger(*this, fb::game::item::attrs::SCRIPT);
-    lua_setglobal(*this, "SCRIPT");
+    lua_setglobal(*this, "ITEM_ATTR_SCRIPT");
     lua_pushinteger(*this, fb::game::item::attrs::CASH);
-    lua_setglobal(*this, "CASH");
+    lua_setglobal(*this, "ITEM_ATTR_CASH");
     lua_pushinteger(*this, fb::game::item::attrs::PACK);
-    lua_setglobal(*this, "PACK");
+    lua_setglobal(*this, "ITEM_ATTR_PACK");
     lua_pushinteger(*this, fb::game::item::attrs::EQUIPMENT);
-    lua_setglobal(*this, "EQUIPMENT");
+    lua_setglobal(*this, "ITEM_ATTR_EQUIPMENT");
     lua_pushinteger(*this, fb::game::item::attrs::WEAPON);
-    lua_setglobal(*this, "WEAPON");
+    lua_setglobal(*this, "ITEM_ATTR_WEAPON");
     lua_pushinteger(*this, fb::game::item::attrs::ARMOR);
-    lua_setglobal(*this, "ARMOR");
+    lua_setglobal(*this, "ITEM_ATTR_ARMOR");
     lua_pushinteger(*this, fb::game::item::attrs::SHIELD);
-    lua_setglobal(*this, "SHIELD");
+    lua_setglobal(*this, "ITEM_ATTR_SHIELD");
     lua_pushinteger(*this, fb::game::item::attrs::HELMET);
-    lua_setglobal(*this, "HELMET");
+    lua_setglobal(*this, "ITEM_ATTR_HELMET");
     lua_pushinteger(*this, fb::game::item::attrs::RING);
-    lua_setglobal(*this, "RING");
+    lua_setglobal(*this, "ITEM_ATTR_RING");
     lua_pushinteger(*this, fb::game::item::attrs::AUXILIARY);
-    lua_setglobal(*this, "AUXILIARY");
+    lua_setglobal(*this, "ITEM_ATTR_AUXILIARY");
     lua_pushinteger(*this, fb::game::item::attrs::ARROW);
-    lua_setglobal(*this, "ARROW");
+    lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
 
     lua_pushinteger(*this, fb::game::equipment::position::LEFT);

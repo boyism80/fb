@@ -48,8 +48,21 @@ int fb::game::item::model::builtin_make(lua_State* lua)
     }
 
     context->send(*object, fb::protocol::game::response::object::show(*object), fb::game::context::scope::PIVOT);
+    thread->pushobject(object);
+    return 1;
+}
 
-    object->to_lua(lua);
+int fb::game::item::model::builtin_attr(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto context = thread->env<fb::game::context>("context");
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    auto flag = (fb::game::item::attrs)thread->tointeger(2);
+
+    thread->pushboolean(model->attr(flag));
     return 1;
 }
 
