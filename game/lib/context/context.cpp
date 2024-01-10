@@ -1682,13 +1682,19 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        session->dialog.pushinteger(request.action).resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->pushinteger(request.action).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        session->dialog.pushstring(request.message).resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->pushstring(request.message).resume(1);
         break;
     }
 
@@ -1696,20 +1702,32 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     {
         if(request.action == 0x02) // OK button
         {
-            session->dialog.pushstring(request.message);
+            auto ctx = session->dialog.current();
+            if(ctx == nullptr)
+                break;
+            ctx->pushstring(request.message);
         }
         else
         {
-            session->dialog.pushinteger(request.action);
+            auto ctx = session->dialog.current();
+            if(ctx == nullptr)
+                break;
+            ctx->pushinteger(request.action);
         }
 
-        session->dialog.resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->resume(1);
         break;
     }
 
     case dialog::interaction::MENU:
     {
-        session->dialog.pushinteger(request.index).resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->pushinteger(request.index).resume(1);
         break;
     }
 
@@ -1720,13 +1738,19 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
 
     case dialog::interaction::SALE:
     {
-        // session->dialog.pushstring(request.name).resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->pushstring(request.name).resume(1);
         break;
     }
 
     case dialog::interaction::ITEM:
     {
-        session->dialog.pushstring(request.name).resume(1);
+        auto ctx = session->dialog.current();
+        if(ctx == nullptr)
+            break;
+        ctx->pushstring(request.name).resume(1);
         break;
     }
 
