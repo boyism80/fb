@@ -612,11 +612,11 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
         path, 
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
-            uint32_t            id      = std::stoi(key.asString());
-            auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
-            uint16_t            look    = data["look"].asInt() + 0x7FFF;
-            uint8_t             color   = data["color"].asInt();
-            auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
+            uint32_t            id        = std::stoi(key.asString());
+            auto                name      = CP949(data["name"].asString(), PLATFORM::Windows);
+            uint16_t            look      = data["look"].asInt() + 0x7FFF;
+            uint8_t             color     = data["color"].asInt();
+            auto                script    = CP949(data["script"].asString(), PLATFORM::Windows);
 
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
             {
@@ -641,7 +641,7 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                         },
                         script
                     });
-                std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
+                fb::game::container::base_npc::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);
             }
         },

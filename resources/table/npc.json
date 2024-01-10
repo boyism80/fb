@@ -3,18 +3,14 @@
         "name": "낙랑",
         "look": 4,
         "color": 4,
-        "script": "scripts/npc/낙랑.lua",
-        "sale": {
-            "판매목록1": 0,
-            "판매목록2": 1,
-        },
-        "purchase": 0
+        "script": "scripts/npc/낙랑.lua"
     },
     "1": {
         "name": "비도",
         "look": 3,
         "color": 1,
-        "script": null
+        "script": null,
+        "sale": 0
     },
     "2": {
         "name": "랑구륜",

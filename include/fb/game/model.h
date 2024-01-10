@@ -79,17 +79,18 @@ public:
     fb::game::item::model*                 operator [] (uint16_t id);
 };
 
-class npc : private std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>
+using base_npc = std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>;
+class npc : private base_npc
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::begin;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::end;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::cbegin;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::cend;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::size;
+    using base_npc::begin;
+    using base_npc::end;
+    using base_npc::cbegin;
+    using base_npc::cend;
+    using base_npc::size;
 
 public:
     npc();

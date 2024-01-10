@@ -3,7 +3,7 @@
 #include <fb/game/session.h>
 #include <fb/game/mob.h>
 #include <fb/game/context.h>
-#include <fb/game/lua.builtin.h>
+#include <fb/game/built_in.h>
 
 int fb::game::object::model::builtin_name(lua_State* lua)
 {

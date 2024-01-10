@@ -60,7 +60,7 @@ int builtin_menu(lua_State* lua)
 
     // Read menu list
     auto size = thread->rawlen(4);
-    std::vector<std::string> menus;
+    auto menus = std::vector<std::string>();
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(4, i+1);
@@ -129,33 +129,6 @@ int builtin_item(lua_State* lua)
     }
 
     session->dialog.show(*npc, message, items);
-    return thread->yield(1);
-}
-
-template <typename T>
-int builtin_sale(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc = thread->touserdata<T>(1);
-    if(npc == nullptr)
-        return 0;
-
-    auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
-        return 0;
-
-    // auto message = "무엇을 사시게요?";
-    auto message = "제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.";
-
-    auto items = std::vector<std::pair<item::model*, std::optional<uint32_t>>>();
-    items.push_back({ fb::game::model::items.name2item("막걸리"), 100 });
-    items.push_back({ fb::game::model::items.name2item("동동주"), 100 });
-    items.push_back({ fb::game::model::items.name2item("도토리"), 100 });
-    session->dialog.show(*npc, message, items, fb::game::dialog::interaction::SALE);
     return thread->yield(1);
 }
 

@@ -34,12 +34,15 @@ public:
     LUA_PROTOTYPE
 
 public:
+    using pursuits = std::vector<std::pair<std::string, uint16_t>>;
+
+public:
     interface listener;
 
     struct config : public fb::game::object::model::config
     {
     public:
-        std::string     script;
+        std::string             script;
     };
 
 public:
