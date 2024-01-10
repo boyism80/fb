@@ -33,6 +33,8 @@ namespace fb { namespace game { namespace message {
         static constexpr const char* WARP_LOADED = " * [%0.2lf%%] 워프 정보를 읽었습니다. (%s)";
         static constexpr const char* ITEM_LOADED = " * [%0.2lf%%] 아이템 정보를 읽었습니다. (%s)";
         static constexpr const char* ITEM_MIX_LOADED = " * [%0.2lf%%] 조합 정보를 읽었습니다. (%s)";
+        static constexpr const char* SALE_LOADED = " * [%0.2lf%%] 판매 정보를 읽었습니다. (%s)";
+        static constexpr const char* PURCHASE_LOADED = " * [%0.2lf%%] 구매 정보를 읽었습니다. (%s)";
         static constexpr const char* NPC_LOADED = " * [%0.2lf%%] NPC 정보를 읽었습니다. (%s)";
         static constexpr const char* MOB_LOADED = " * [%0.2lf%%] 몹 정보를 읽었습니다. (%s)";
         static constexpr const char* DROP_LOADED = " * [%0.2lf%%] 드롭 정보를 읽었습니다. (%s)";
@@ -47,6 +49,8 @@ namespace fb { namespace game { namespace message {
         static constexpr const char* WARP_ALL_LOADED = " * [100%%] 총 %d개의 워프 정보를 읽었습니다.";
         static constexpr const char* ITEM_ALL_LOADED = " * [100%%] 총 %d개의 아이템 정보를 읽었습니다.";
         static constexpr const char* ITEM_MIX_ALL_LOADED = " * [100%%] 총 %d개의 조합 정보를 읽었습니다.";
+        static constexpr const char* SALE_ALL_LOADED = " * [100%%] 총 %d개의 판매 정보를 읽었습니다.";
+        static constexpr const char* PURCHASE_ALL_LOADED = " * [100%%] 총 %d개의 구매 정보를 읽었습니다.";
         static constexpr const char* NPC_ALL_LOADED = " * [100%%] 총 %d개의 NPC 정보를 읽었습니다.";
         static constexpr const char* MOB_ALL_LOADED = " * [100%%] 총 %d개의 몹 정보를 읽었습니다.";
         static constexpr const char* DROP_ALL_LOADED = " * [100%%] 총 %d개의 드롭 정보를 읽었습니다.";

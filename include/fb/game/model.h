@@ -282,6 +282,28 @@ public:
     fb::game::board::section*               operator [] (uint32_t index);
 };
 
+
+using pursuit_pair = std::vector<std::pair<fb::game::item::model*, std::optional<uint32_t>>>;
+using base_pursuit = std::map<uint16_t, pursuit_pair>;
+class pursuit : private base_pursuit
+{
+public:
+    pursuit() = default;
+    ~pursuit() = default;
+
+public:
+    using base_pursuit::begin;
+    using base_pursuit::end;
+    using base_pursuit::cbegin;
+    using base_pursuit::cend;
+    using base_pursuit::size;
+    using base_pursuit::contains;
+
+public:
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    pursuit_pair*                           operator [] (uint16_t index);
+};
+
 }
 
 class session;
@@ -300,6 +322,8 @@ public:
     static fb::game::container::mix         mixes;
     static fb::game::container::door        doors;
     static fb::game::container::board       boards;
+    static fb::game::container::pursuit     sale;
+    static fb::game::container::pursuit     purchase;
 
 private:
     model();

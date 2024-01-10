@@ -47,6 +47,8 @@
         "npc spawn": "table.dev/npc.spawn.json",
         "spell": "table.dev/spell.json",
         "warp": "table.dev/warp.json",
-        "board": "table.dev/board.json"
+        "board": "table.dev/board.json",
+        "sale": "table.dev/sale.json",
+        "purchase": "table.dev/purchase.json"
     }
 }

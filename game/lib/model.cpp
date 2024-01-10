@@ -48,6 +48,8 @@ fb::game::container::cls     fb::game::model::classes;
 fb::game::container::mix     fb::game::model::mixes;
 fb::game::container::door    fb::game::model::doors;
 fb::game::container::board   fb::game::model::boards;
+fb::game::container::pursuit fb::game::model::sale;
+fb::game::container::pursuit fb::game::model::purchase;
 
 fb::game::model::model()
 { }
@@ -1333,8 +1335,96 @@ bool fb::game::container::board::load(const std::string& path, fb::table::handle
 
 fb::game::board::section* fb::game::container::board::operator [] (uint32_t index)
 {
-    if(std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains(index) == false)
+    if (std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains(index) == false)
         return nullptr;
 
     return std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::operator[](index).get();
+}
+
+bool fb::game::container::pursuit::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+{
+    auto                        count   = fb::table::load
+    (
+        path, 
+        [&] (Json::Value& key, Json::Value& data, double percentage)
+        {
+             auto                id      = std::stoi(key.asCString());
+             auto                dset    = pursuit_pair();
+             if (data.isObject())
+             {
+                 for (auto& k : data.getMemberNames())
+                 {
+                     k = CP949(k, PLATFORM::Windows);
+                     auto item = fb::game::model::items.name2item(k);
+                     if (item == nullptr)
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid item name (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     auto price = std::optional<uint32_t>{};
+
+                     if (data[k].isNull())
+                     {
+                     }
+                     else if(data[k].isNumeric())
+                     {
+                         price = data[k].asUInt();
+                     }
+                     else
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid price type (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     dset.push_back({ item, price });
+                 }
+
+                 fb::game::container::base_pursuit::insert({id, dset});
+                 callback(std::to_string(id), percentage);
+             }
+             else if (data.isArray())
+             {
+                 for (auto& e : data)
+                 {
+                     auto k = CP949(e.asString(), PLATFORM::Windows);
+                     auto item = fb::game::model::items.name2item(k);
+                     if (item == nullptr)
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid item name (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     auto price = std::optional<uint32_t>{};
+                     dset.push_back({ item, price });
+                 }
+                 fb::game::container::base_pursuit::insert({ id, dset });
+                 callback(std::to_string(id), percentage);
+             }
+             else
+             {
+                 throw std::runtime_error("invalid pursuit type");
+             }
+        },
+        [&] (Json::Value& key, Json::Value& data, const std::string& e)
+        {
+            auto                id      = key.asInt();
+            error(std::to_string(id), e);
+        },
+        false
+    );
+
+    complete(count);
+    return true;
+}
+
+fb::game::container::pursuit_pair* fb::game::container::pursuit::operator [] (uint16_t index)
+{
+    if(fb::game::container::base_pursuit::contains(index) == false)
+        return nullptr;
+
+    return &fb::game::container::base_pursuit::operator[](index);
 }
