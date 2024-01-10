@@ -128,6 +128,8 @@ public:
     virtual item*                           split(uint16_t count = 1);
     virtual void                            merge(fb::game::item& item);
 
+public:
+    static int                              builtin_count(lua_State* lua);
 };
 
 
@@ -232,7 +234,7 @@ public:
 public:
     static int                               builtin_make(lua_State* lua);
     static int                               builtin_attr(lua_State* lua);
-
+    static int                               builtin_capacity(lua_State* lua);
 };
 
 

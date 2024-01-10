@@ -19,6 +19,19 @@ fb::game::item::model::model(const fb::game::item::model::config& config) :
 fb::game::item::model::~model()
 { }
 
+fb::game::item::attrs fb::game::item::model::attr() const
+{
+    auto                    attr = attrs::NONE;
+    if(this->capacity > 1)
+        attr = attrs((uint32_t)attr | (uint32_t)attrs::BUNDLE);
+    return attr;
+}
+
+bool fb::game::item::model::attr(fb::game::item::attrs flag) const
+{
+    return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
+}
+
 int fb::game::item::model::builtin_make(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -66,17 +79,17 @@ int fb::game::item::model::builtin_attr(lua_State* lua)
     return 1;
 }
 
-fb::game::item::attrs fb::game::item::model::attr() const
+int fb::game::item::model::builtin_capacity(lua_State* lua)
 {
-    auto                    attr = attrs::NONE;
-    if(this->capacity > 1)
-        attr = attrs((uint32_t)attr | (uint32_t)attrs::BUNDLE);
-    return attr;
-}
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto context = thread->env<fb::game::context>("context");
+    auto model = thread->touserdata<fb::game::item::model>(1);
 
-bool fb::game::item::model::attr(fb::game::item::attrs flag) const
-{
-    return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
+    thread->pushinteger(model->capacity);
+    return 1;
 }
 
 
@@ -240,4 +253,17 @@ void fb::game::item::merge(fb::game::item& item)
 
     if(remain > 0 && this->_count == model->capacity)
         listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+}
+
+int fb::game::item::builtin_count(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto context = thread->env<fb::game::context>("context");
+    auto item = thread->touserdata<fb::game::item>(1);
+
+    thread->pushinteger(item->count());
+    return 1;
 }

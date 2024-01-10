@@ -55,6 +55,7 @@ public:
     lua::context&           func(const char* format, ...);
     lua::context*           current();
     void                    resume(int argc);
+    void                    release();
 
 public:
     void                    show(const object::model& object, const std::string& message, bool button_prev = false, bool button_next = true, interaction interaction = interaction::NORMAL);

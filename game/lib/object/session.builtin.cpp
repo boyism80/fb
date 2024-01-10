@@ -315,7 +315,8 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(session == nullptr || context->exists(*session) == false)
         return 0;
     auto name = thread->tostring(2);
-    auto store = argc < 3 ? true : thread->toboolean(3);
+    auto count = argc < 3 ? 1 : thread->tointeger(3);
+    auto store = argc < 4 ? true : thread->toboolean(4);
 
     if(store == false)
         return object::builtin_mkitem(lua);
@@ -328,9 +329,15 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = model->make(*context);
+        auto item = model->make(*context, count);
         auto slot = session->items.add(item);
-        thread->pushobject(item);
+        if(slot == 0xFF)
+        {
+            thread->pushnil();
+            return 1;
+        }
+
+        thread->pushobject(session->items[slot]);
 
         context->send(*session, fb::protocol::game::response::item::update(*session, slot), context::scope::SELF);
     }

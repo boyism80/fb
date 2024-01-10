@@ -106,9 +106,11 @@ END_LUA_EXTENSION
 IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"make",                fb::game::item::model::builtin_make},
 {"attr",                fb::game::item::model::builtin_attr},
+{"capacity",            fb::game::item::model::builtin_capacity},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+{"count",               fb::game::item::builtin_count},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
@@ -882,6 +884,8 @@ void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::n
     if(model->script.empty())
         return;
 
+    session.dialog.release();
+
     session.dialog
         .from(model->script.c_str())
         .func("on_interact")
@@ -1238,24 +1242,33 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
         co_return true;
     }
 
-    auto map = session->map();
-    auto you = map->objects[request.fd];
-    if(you == nullptr)
-        co_return true;
-
-    switch(you->type())
+    auto thread = session->dialog.current();
+    if(request.fd == 1 && thread != nullptr)
     {
-    case fb::game::object::types::SESSION:
-        this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
-        break;
+        thread->pushnil();
+        session->dialog.resume(1);
+    }
+    else
+    {
+        auto map = session->map();
+        auto you = map->objects[request.fd];
+        if(you == nullptr)
+            co_return true;
 
-    case fb::game::object::types::MOB:
-        this->handle_click_mob(*session, static_cast<mob&>(*you));
-        break;
+        switch(you->type())
+        {
+        case fb::game::object::types::SESSION:
+            this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
+            break;
 
-    case fb::game::object::types::NPC:
-        this->handle_click_npc(*session, static_cast<npc&>(*you));
-        break;
+        case fb::game::object::types::MOB:
+            this->handle_click_mob(*session, static_cast<mob&>(*you));
+            break;
+
+        case fb::game::object::types::NPC:
+            this->handle_click_npc(*session, static_cast<npc&>(*you));
+            break;
+        }
     }
 
     co_return true;

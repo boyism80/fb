@@ -77,6 +77,19 @@ void fb::game::dialog::resume(int argc)
     }
 }
 
+void fb::game::dialog::release()
+{
+    while(true)
+    {
+        auto ctx = this->current();
+        if(ctx == nullptr)
+            break;
+
+        ctx->release();
+        this->_scripts.pop();
+    }
+}
+
 void fb::game::dialog::show(const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
