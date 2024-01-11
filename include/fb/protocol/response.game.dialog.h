@@ -143,21 +143,18 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
-    using item_price_pairs = std::vector<std::pair<fb::game::item::model*, std::optional<uint32_t>>>;
-
-public:
     const fb::game::npc::model&                 npc;
-    const item_price_pairs&                     items;
+    const fb::game::dialog::item_pairs&         items;
     const std::string                           message;
     const uint16_t                              pursuit;
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::model& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) : fb::protocol::base::header(0x2F),
+    item(const fb::game::npc::model& npc, const fb::game::dialog::item_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
     { }
 
-    item(const fb::game::npc& npc, const item_price_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) :
+    item(const fb::game::npc& npc, const fb::game::dialog::item_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) :
         item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     { }
 
@@ -179,11 +176,11 @@ public:
             .write_u16(this->pursuit)
             .write_u16((uint16_t)this->items.size());
 
-        for (auto& [item, price] : this->items)
+        for (auto& [item, value] : this->items)
         {
             out_stream.write_u16(item->look)
                 .write_u8(item->color)
-                .write_u32(price.has_value() ? price.value() : item->price)
+                .write_u32(value)
                 .write(item->name)
                 .write(item->desc);
         }

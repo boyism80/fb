@@ -17,6 +17,10 @@ public:
     class inactive_error;
 
 public:
+    using item_pair = std::pair<item::model*, uint32_t>;
+    using item_pairs = std::vector<item_pair>;
+
+public:
     enum class interaction : uint8_t
     {
         NORMAL,
@@ -33,7 +37,7 @@ public:
         virtual void        on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, interaction interaction = interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, interaction interaction = interaction::NORMAL) = 0;
         virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::NORMAL) = 0;
     };
@@ -78,8 +82,8 @@ public:
     void                    show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::MENU);
     void                    show(const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::SLOT);
     void                    show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::SLOT);
-    void                    show(const npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
-    void                    show(const npc& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
+    void                    show(const npc::model& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
+    void                    show(const npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
     void                    input(const npc::model& npc, const std::string& message, interaction interaction = interaction::INPUT);
     void                    input(const npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
     void                    input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);

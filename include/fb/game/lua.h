@@ -126,6 +126,7 @@ public:
     bool                        is_obj(int offset) { return lua_isuserdata(*this, offset); }
     bool                        is_table(int offset) { return lua_istable(*this, offset); }
     bool                        is_num(int offset) { return lua_isnumber(*this, offset); }
+    bool                        is_nil(int offset) { return lua_isnil(*this, offset); }
 
     int                         rawgeti(int offset_t, int offset_e) { return lua_rawgeti(*this, offset_t, offset_e); }
     void                        rawseti(int offset_t, int offset_e) { lua_rawseti(*this, offset_t, offset_e); }

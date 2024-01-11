@@ -89,12 +89,12 @@ int builtin_item(lua_State* lua)
 
     auto message = thread->tostring(3);
 
-    auto items = std::vector<std::pair<item::model*, std::optional<uint32_t>>>();
+    auto items = fb::game::dialog::item_pairs();
     thread->pushnil();
     while (thread->next(4))
     {
         auto item = static_cast<fb::game::item::model*>(nullptr);
-        auto price = std::optional<uint32_t>{};
+        auto price = (uint32_t)0;
 
         if (thread->is_num(-2))
         {
@@ -114,7 +114,8 @@ int builtin_item(lua_State* lua)
         else if (thread->is_str(-2))
         {
             item = fb::game::model::items.name2item(thread->tostring(-2));
-            price = thread->tointeger(-1);
+            if (thread->is_num(-1))
+                price = thread->tointeger(-1);
         }
         else
         {

@@ -139,7 +139,7 @@ int fb::game::context::builtin_pursuit_purchase(lua_State* lua)
     {
         for(auto& [k, v] : *purchase)
         {
-            auto price = v.has_value() ? v.value() : k->price;
+            auto price = v.has_value() ? v.value() : (k->price / 2);
 
             thread->pushstring(k->name);
             thread->pushinteger(price);

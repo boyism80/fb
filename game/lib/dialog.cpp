@@ -213,13 +213,13 @@ void fb::game::dialog::show(const npc& npc, const std::string& message, const st
     return this->show(*npc.based<fb::game::npc>(), message, item_slots, interaction);
 }
 
-void fb::game::dialog::show(const npc::model& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+void fb::game::dialog::show(const npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
     listener->on_dialog(this->_owner, npc, message, pairs, pursuit, interaction);
 }
 
-void fb::game::dialog::show(const npc& npc, const std::string& message, const std::vector<std::pair<item::model*, std::optional<uint32_t>>>& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+void fb::game::dialog::show(const npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
 {
     this->show(*npc.based<fb::game::npc>(), message, pairs, pursuit, interaction);
 }
