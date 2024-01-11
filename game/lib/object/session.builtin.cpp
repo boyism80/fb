@@ -338,8 +338,6 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
         }
 
         thread->pushobject(session->items[slot]);
-
-        context->send(*session, fb::protocol::game::response::item::update(*session, slot), context::scope::SELF);
     }
 
     return 1;

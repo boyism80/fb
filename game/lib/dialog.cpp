@@ -66,10 +66,9 @@ fb::game::dialog& fb::game::dialog::resume(int argc)
 
     auto prev = ctx;
     auto current = this->current();
-    auto return_size = 0;
+    auto return_size = lua_gettop(*ctx);
     if(current != nullptr)
     {
-        return_size = lua_gettop(*prev) - 2;
         for(int i = 0; i < return_size; i++)
         {
             auto index = i - return_size;
