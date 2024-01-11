@@ -92,6 +92,7 @@ public:
                                 
     context&                    pushstring(const std::string& value);
     context&                    pushinteger(lua_Integer value);
+    context&                    pushnumber(lua_Integer value);
     context&                    pushnil();
     context&                    pushboolean(bool value);
     context&                    pushobject(const luable* object);
@@ -110,6 +111,7 @@ public:
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
     int                         tointeger(int offset) { return (int)lua_tointeger(*this, offset); }
+    lua_Integer                 tonumber(int offset) { return lua_tonumber(*this, offset); }
     int                         arg_integer(int offset) { return tointeger(offset); }
     int                         ret_integer(int offset) { return tointeger(-offset); }
     
@@ -134,7 +136,7 @@ public:
 
 public:
     int                         argc();
-    bool                        resume(int argc);
+    bool                        resume(int argc, bool auto_release = true);
     int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();

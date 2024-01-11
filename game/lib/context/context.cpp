@@ -1242,11 +1242,9 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
         co_return true;
     }
 
-    auto thread = session->dialog.current();
-    if(request.fd == 1 && thread != nullptr)
+    if(request.fd == 1 && session->dialog.active())
     {
-        thread->pushnil();
-        session->dialog.resume(1);
+        session->dialog.pushnil().resume(1);
     }
     else
     {
@@ -1694,41 +1692,37 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     if (session->inited() == false)
         co_return true;
 
-    auto ctx = session->dialog.current();
-    if(ctx == nullptr)
+    if(session->dialog.active() == false)
         co_return true;
 
     switch(request.interaction)
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        ctx->pushinteger(request.action);
-        session->dialog.resume(1);
+        session->dialog.pushinteger(request.action).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        ctx->pushstring(request.message);
-        session->dialog.resume(1);
+        session->dialog.pushstring(request.message).resume(1);
         break;
     }
 
     case dialog::interaction::INPUT_EX:
     {
         if(request.action == 0x02) // OK button
-            ctx->pushstring(request.message);
+            session->dialog.pushstring(request.message);
         else
-            ctx->pushinteger(request.action);
+            session->dialog.pushinteger(request.action);
 
-        ctx->resume(1);
+        session->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::MENU:
     {
-        ctx->pushinteger(request.index);
-        session->dialog.resume(1);
+        session->dialog.pushinteger(request.index).resume(1);
         break;
     }
 
@@ -1739,8 +1733,7 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
 
     case dialog::interaction::ITEM:
     {
-        ctx->pushstring(request.name);
-        session->dialog.resume(1);
+        session->dialog.pushstring(request.name).resume(1);
         break;
     }
 

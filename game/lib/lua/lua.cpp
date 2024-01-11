@@ -80,14 +80,17 @@ context& context::from(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto buffer = fstring_c(fmt, &args);
+    auto fname = fstring_c(fmt, &args);
     va_end(args);
 
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    if(main->_bytecodes.contains(buffer) == false)
+    if(main->_bytecodes.contains(fname) == false)
+    {
+        fb::logger::fatal("cannot find script %s", fname.c_str());
         return *this;
+    }
 
-    auto& bytes = main->_bytecodes[buffer];
+    auto& bytes = main->_bytecodes[fname];
     if(luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 
@@ -101,10 +104,10 @@ context& context::func(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto buffer = fstring_c(fmt, &args);
+    auto fname = fstring_c(fmt, &args);
     va_end(args);
 
-    lua_getglobal(*this, buffer.c_str());
+    lua_getglobal(*this, fname.c_str());
     return *this;
 }
 
@@ -115,6 +118,12 @@ context& context::pushstring(const std::string& value)
 }
 
 context& context::pushinteger(lua_Integer value)
+{
+    lua_pushinteger(this->_ctx, value);
+    return *this;
+}
+
+context& context::pushnumber(lua_Integer value)
 {
     lua_pushinteger(this->_ctx, value);
     return *this;
@@ -175,7 +184,7 @@ int context::argc()
     return lua_gettop(this->_ctx);
 }
 
-bool context::resume(int argc)
+bool context::resume(int argc, bool auto_release)
 {
     if (this->owner == nullptr)
         throw std::runtime_error("this context is not lua thread");
@@ -211,7 +220,8 @@ bool context::resume(int argc)
         return false;
 
     default:
-        main->release(*this);
+        if(auto_release)
+            main->release(*this);
         return true;
     }
 }

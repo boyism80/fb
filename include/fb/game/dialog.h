@@ -14,6 +14,9 @@ class session;
 class dialog
 {
 public:
+    class inactive_error;
+
+public:
     enum class interaction : uint8_t
     {
         NORMAL,
@@ -50,12 +53,23 @@ public:
     dialog(session& owner);
     ~dialog();
 
+private:
+    lua::context*           current() const;
+
 public:
-    lua::context&           from(const char* format, ...);
-    lua::context&           func(const char* format, ...);
-    lua::context*           current();
-    void                    resume(int argc);
-    void                    release();
+    dialog&                 from(const char* format, ...);
+    dialog&                 func(const char* format, ...);
+    dialog&                 resume(int argc);
+    dialog&                 release();
+    bool                    active() const;
+
+public:
+    dialog&                 pushstring(const std::string& value);
+    dialog&                 pushinteger(lua_Integer value);
+    dialog&                 pushnil();
+    dialog&                 pushboolean(bool value);
+    dialog&                 pushobject(const lua::luable* object);
+    dialog&                 pushobject(const lua::luable& object);
 
 public:
     void                    show(const object::model& object, const std::string& message, bool button_prev = false, bool button_next = true, interaction interaction = interaction::NORMAL);
@@ -70,6 +84,15 @@ public:
     void                    input(const npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
     void                    input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);
     void                    input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);
+};
+
+
+class dialog::inactive_error : public std::runtime_error
+{
+public:
+    inactive_error() : runtime_error("current lua context is empty")
+    {}
+    ~inactive_error() = default;
 };
 
 } }

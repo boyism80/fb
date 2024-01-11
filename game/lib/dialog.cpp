@@ -6,9 +6,19 @@ fb::game::dialog::dialog(fb::game::session& owner) :
 { }
 
 fb::game::dialog::~dialog()
-{ }
+{
+    this->release();
+}
 
-fb::game::lua::context& fb::game::dialog::from(const char* format, ...)
+fb::game::lua::context* fb::game::dialog::current() const
+{
+    if(this->_scripts.size() == 0)
+        return nullptr;
+
+    return this->_scripts.top();
+}
+
+fb::game::dialog& fb::game::dialog::from(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -18,14 +28,14 @@ fb::game::lua::context& fb::game::dialog::from(const char* format, ...)
     auto ctx = fb::game::lua::get();
     ctx->from(buffer.c_str());
     this->_scripts.push(ctx);
-    return *ctx;
+    return *this;
 }
 
-fb::game::lua::context& fb::game::dialog::func(const char* format, ...)
+fb::game::dialog& fb::game::dialog::func(const char* format, ...)
 {
     auto ctx = this->current();
     if(ctx == nullptr)
-        throw std::runtime_error("current lua context is empty");
+        throw inactive_error();
 
     va_list args;
     va_start(args, format);
@@ -33,51 +43,62 @@ fb::game::lua::context& fb::game::dialog::func(const char* format, ...)
     va_end(args);
 
     ctx->func(buffer.c_str());
-    return *ctx;
+    return *this;
 }
 
-fb::game::lua::context* fb::game::dialog::current()
-{
-    if(this->_scripts.size() == 0)
-        return nullptr;
-
-    return this->_scripts.top();
-}
-
-void fb::game::dialog::resume(int argc)
+fb::game::dialog& fb::game::dialog::resume(int argc)
 {
     auto ctx = this->current();
     if(ctx == nullptr)
-        return;
+        return *this;
 
-    auto success = ctx->resume(argc);
+    ctx->resume(argc, false);
     switch(ctx->state())
     {
         case LUA_YIELD:
         case LUA_PENDING:
-            return;
+            return *this;
 
         default:
             this->_scripts.pop();
             break;
     }
 
-    while(true)
+    auto prev = ctx;
+    auto current = this->current();
+    auto return_size = 0;
+    if(current != nullptr)
     {
-        auto next = this->current();
-        if(next == nullptr)
-            break;
+        return_size = lua_gettop(*prev) - 2;
+        for(int i = 0; i < return_size; i++)
+        {
+            auto index = i - return_size;
+            switch(lua_type(*prev, index))
+            {
+                case LUA_TNUMBER:
+                    current->pushnumber(prev->tonumber(index));
+                    break;
 
-        next->resume(0);
-        auto state = next->state();
-        if(state == LUA_YIELD || state == LUA_PENDING)
-            break;
+                case LUA_TSTRING:
+                    current->pushstring(prev->tostring(index));
+                    break;
 
-        this->_scripts.pop();
+                case LUA_TNIL:
+                    current->pushnil();
+                    break;
+
+                case LUA_TBOOLEAN:
+                    current->pushboolean(prev->toboolean(index));
+                    break;
+            }
+        }
     }
+
+    prev->release();
+    return this->resume(return_size);
 }
 
-void fb::game::dialog::release()
+fb::game::dialog& fb::game::dialog::release()
 {
     while(true)
     {
@@ -88,7 +109,76 @@ void fb::game::dialog::release()
         ctx->release();
         this->_scripts.pop();
     }
+
+    return *this;
 }
+
+bool fb::game::dialog::active() const
+{
+    auto ctx = this->current();
+    return ctx != nullptr;
+}
+
+fb::game::dialog& fb::game::dialog::pushstring(const std::string& value)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushstring(value);
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::pushinteger(lua_Integer value)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushinteger(value);
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::pushnil()
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushnil();
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::pushboolean(bool value)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushboolean(value);
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable* object)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushobject(object);
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable& object)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->pushobject(object);
+    return *this;
+}
+
 
 void fb::game::dialog::show(const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
