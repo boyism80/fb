@@ -45,7 +45,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"input",               fb::game::npc::model::builtin_input},
 {"menu",                fb::game::npc::model::builtin_menu},
 {"item",                fb::game::npc::model::builtin_item},
-{"sale",                fb::game::npc::model::builtin_sale},
+{"sell",                fb::game::npc::model::builtin_sell},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -53,7 +53,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"input",               fb::game::npc::builtin_input},
 {"menu",                fb::game::npc::builtin_menu},
 {"item",                fb::game::npc::builtin_item},
-{"sale",                fb::game::npc::builtin_sale},
+{"sell",                fb::game::npc::builtin_sell},
 END_LUA_EXTENSION
 
 
@@ -175,8 +175,8 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_function("name2item",         builtin_name2item);
     lua::bind_function("name2npc",          builtin_name2npc);
     lua::bind_function("name2map",          builtin_name2map);
-    lua::bind_function("pursuit_sale",      builtin_pursuit_sale);
-    lua::bind_function("pursuit_purchase",  builtin_pursuit_purchase);
+    lua::bind_function("pursuit_sell",      builtin_pursuit_sell);
+    lua::bind_function("pursuit_buy",       builtin_pursuit_buy);
     lua::bind_function("timer",             builtin_timer);
     lua::bind_function("weather",           builtin_weather);
 

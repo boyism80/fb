@@ -55,7 +55,7 @@
         "spell": "table/spell.json",
         "warp": "table/warp.json",
         "board": "table.dev/board.json",
-        "sale": "table.dev/sale.json",
-        "purchase": "table.dev/purchase.json"
+        "sell": "table.dev/sell.json",
+        "buy": "table.dev/buy.json"
     }
 }

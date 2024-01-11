@@ -48,8 +48,8 @@ fb::game::container::cls     fb::game::model::classes;
 fb::game::container::mix     fb::game::model::mixes;
 fb::game::container::door    fb::game::model::doors;
 fb::game::container::board   fb::game::model::boards;
-fb::game::container::pursuit fb::game::model::sale;
-fb::game::container::pursuit fb::game::model::purchase;
+fb::game::container::pursuit fb::game::model::sell;
+fb::game::container::pursuit fb::game::model::buy;
 
 fb::game::model::model()
 { }

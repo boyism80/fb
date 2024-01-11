@@ -9,8 +9,7 @@
         "name": "비도",
         "look": 3,
         "color": 1,
-        "script": null,
-        "sale": 0
+        "script": null
     },
     "2": {
         "name": "랑구륜",

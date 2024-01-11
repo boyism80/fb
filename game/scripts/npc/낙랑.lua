@@ -7,7 +7,7 @@ function on_interact(me, npc)
 
 	if selected == 0 then
 		local pursuit = 1
-		if npc:sale(me, pursuit) == DIALOG_RESULT_NEXT then
+		if npc:sell(me, pursuit) == DIALOG_RESULT_NEXT then
 			goto ROUTINE_1
 		end
 	end

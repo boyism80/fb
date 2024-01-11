@@ -25,7 +25,7 @@ public:
     static int                  builtin_input(lua_State* lua);
     static int                  builtin_menu(lua_State* lua);
     static int                  builtin_item(lua_State* lua);
-    static int                  builtin_sale(lua_State* lua);
+    static int                  builtin_sell(lua_State* lua);
 };
 
 class npc::model : public object::model
@@ -62,7 +62,7 @@ public:
     static int                  builtin_input(lua_State* lua);
     static int                  builtin_menu(lua_State* lua);
     static int                  builtin_item(lua_State* lua);
-    static int                  builtin_sale(lua_State* lua);
+    static int                  builtin_sell(lua_State* lua);
 };
 
 

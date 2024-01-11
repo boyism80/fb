@@ -100,7 +100,7 @@ int fb::game::context::builtin_name2item(lua_State* lua)
     return 1;
 }
 
-int fb::game::context::builtin_pursuit_sale(lua_State* lua)
+int fb::game::context::builtin_pursuit_sell(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -108,11 +108,11 @@ int fb::game::context::builtin_pursuit_sale(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    auto sale = fb::game::model::sale[pursuit];
+    auto sell = fb::game::model::sell[pursuit];
     thread->new_table();
-    if(sale != nullptr)
+    if(sell != nullptr)
     {
-        for(auto& [k, v] : *sale)
+        for(auto& [k, v] : *sell)
         {
             auto price = v.has_value() ? v.value() : k->price;
 
@@ -125,7 +125,7 @@ int fb::game::context::builtin_pursuit_sale(lua_State* lua)
     return 1;
 }
 
-int fb::game::context::builtin_pursuit_purchase(lua_State* lua)
+int fb::game::context::builtin_pursuit_buy(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -133,11 +133,11 @@ int fb::game::context::builtin_pursuit_purchase(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    auto purchase = fb::game::model::purchase[pursuit];
+    auto buy = fb::game::model::buy[pursuit];
     thread->new_table();
-    if(purchase != nullptr)
+    if(buy != nullptr)
     {
-        for(auto& [k, v] : *purchase)
+        for(auto& [k, v] : *buy)
         {
             auto price = v.has_value() ? v.value() : (k->price / 2);
 

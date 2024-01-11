@@ -189,13 +189,13 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::model::sale.load
+    if(fb::game::model::sell.load
     (
-        config["table"]["sale"].asString(),
+        config["table"]["sell"].asString(),
         [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::SALE_LOADED, percentage, name.c_str());
+             .puts(fb::game::message::assets::SELL_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -205,7 +205,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::SALE_ALL_LOADED, count);
+             .puts(fb::game::message::assets::SELL_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -213,13 +213,13 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
-    if(fb::game::model::purchase.load
+    if(fb::game::model::buy.load
     (
-        config["table"]["purchase"].asString(),
+        config["table"]["buy"].asString(),
         [&] (const auto& name, auto percentage)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::PURCHASE_LOADED, percentage, name.c_str());
+             .puts(fb::game::message::assets::BUY_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -229,7 +229,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         [&] (uint32_t count)
         {
             c.cursor(0, pivot)
-             .puts(fb::game::message::assets::PURCHASE_ALL_LOADED, count);
+             .puts(fb::game::message::assets::BUY_ALL_LOADED, count);
         }) == false)
     {
         return false;

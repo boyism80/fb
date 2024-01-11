@@ -2,10 +2,10 @@
 #include <fb/game/context.h>
 #include <fb/game/built_in.h>
 
-int __builtin_sale(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc, uint16_t pursuit)
+int __builtin_sell(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc, uint16_t pursuit)
 {
     session->dialog.from("scripts/common/npc.lua")
-                   .func("sale")
+                   .func("sell")
                    .pushobject(session)
                    .pushobject(npc)
                    .pushinteger(pursuit)
@@ -31,7 +31,7 @@ int fb::game::npc::model::builtin_item(lua_State* lua)
     return ::builtin_item<fb::game::npc::model>(lua);
 }
 
-int fb::game::npc::model::builtin_sale(lua_State* lua)
+int fb::game::npc::model::builtin_sell(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if (thread == nullptr)
@@ -48,7 +48,7 @@ int fb::game::npc::model::builtin_sale(lua_State* lua)
 
     auto pursuit = (uint16_t)thread->tointeger(3);
 
-    return __builtin_sale(thread, session, npc, pursuit);
+    return __builtin_sell(thread, session, npc, pursuit);
 }
 
 fb::game::npc::npc(fb::game::context& context, const fb::game::npc::model* model) : 
@@ -77,7 +77,7 @@ int fb::game::npc::builtin_item(lua_State* lua)
     return ::builtin_item<npc>(lua);
 }
 
-int fb::game::npc::builtin_sale(lua_State* lua)
+int fb::game::npc::builtin_sell(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if (thread == nullptr)
@@ -95,5 +95,5 @@ int fb::game::npc::builtin_sale(lua_State* lua)
     auto npc = obj->based<fb::game::npc::model>();
 
     auto pursuit = (uint16_t)thread->tointeger(3);
-    return __builtin_sale(thread, session, npc, pursuit);
+    return __builtin_sell(thread, session, npc, pursuit);
 }

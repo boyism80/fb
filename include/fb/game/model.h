@@ -323,8 +323,8 @@ public:
     static fb::game::container::mix         mixes;
     static fb::game::container::door        doors;
     static fb::game::container::board       boards;
-    static fb::game::container::pursuit     sale;
-    static fb::game::container::pursuit     purchase;
+    static fb::game::container::pursuit     sell;
+    static fb::game::container::pursuit     buy;
 
 private:
     model();
