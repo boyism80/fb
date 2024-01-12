@@ -27,6 +27,8 @@ public:
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_slot(lua_State* lua);
     static int                  builtin_sell(lua_State* lua);
+    static int                  builtin_repair(lua_State* lua);
+    static int                  builtin_repair_all(lua_State* lua);
 };
 
 class npc::model : public object::model
@@ -65,6 +67,8 @@ public:
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_slot(lua_State* lua);
     static int                  builtin_sell(lua_State* lua);
+    static int                  builtin_repair(lua_State* lua);
+    static int                  builtin_repair_all(lua_State* lua);
 };
 
 

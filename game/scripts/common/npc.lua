@@ -48,7 +48,8 @@ end
 function repairable_slots(me)
 	local items = me:items()
 	local slots = {}
-	for slot, item in ipair(items) do
+
+	for slot, item in ipairs(items) do
 		local model = item:model()
 		if model:attr(ITEM_ATTR_EQUIPMENT) then
 			local current = item:durability()
@@ -69,11 +70,32 @@ function repair(me, npc)
 	end
 
 	local slots = {}
-	for slot, item in pair(slots) do
+	for slot, item in ipairs(items) do
 		table.insert(slots, slot)
 	end
 
-	return npc:slot(me, '무엇을 고치시겠습니까?', slots)
+	local selected = npc:slot(me, '무엇을 고치시겠습니까?', slots)
+	if selected == nil then
+		return DIALOG_RESULT_NEXT
+	end
+
+	local item = items[selected]
+	local model = item:model()
+	local price = model:durability() - item:durability()
+
+	local selected = npc:menu(me, string.format('수리 비용으로 %d전이 필요합니다. 정말 수리하시겠습니까?', price), {'네', '아니오'})
+	if selected == 0 then
+		local money = me:money()
+		if price > money then
+			return npc:dialog(me, '돈이 모자랍니다.', false, true)
+		else
+			me:money(money - price)
+			item:durability(model:durability())
+			return DIALOG_RESULT_NEXT
+		end
+	else
+		return DIALOG_RESULT_NEXT
+	end
 end
 
 
@@ -85,21 +107,20 @@ function repair_all(me, npc)
 
 	local slots = {}
 	local price = 0
-	for slot, item in pair(items) do
+	for slot, item in ipairs(items) do
 		local model = item:model()
 		local current = item:durability()
 		local max = model:durability()
 		price = price + (max - current)
 	end
 
-	local selected = npc:dialog(me, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
+	local selected = npc:menu(me, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
 	if selected == 0 then
 		local money = me:money()
 		if money < price then
 			return npc:dialog(me, '돈이 모자랍니다.')
 		else
-			for _, slot in ipair(slots) do
-				local item = items[slot]
+			for slot, item in ipairs(items) do
 				local model = item:model()
 				item:durability(model:durability())
 			end

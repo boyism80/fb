@@ -276,7 +276,7 @@ int fb::game::session::builtin_items(lua_State* lua)
 
         thread->pushinteger(i + 1);
         thread->pushobject(session->items[i]);
-        lua_settable(lua, -2);
+        lua_settable(lua, -3);
     }
 
     return 1;

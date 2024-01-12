@@ -13,6 +13,26 @@ int __builtin_sell(fb::game::lua::context* thread, fb::game::session* session, c
     return thread->yield(1);
 }
 
+int __builtin_repair(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("repair")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
+int __builtin_repair_all(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("repair_all")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
 int fb::game::npc::model::builtin_input(lua_State* lua)
 {
     // Ex) npc::input(session, "message")
@@ -54,6 +74,42 @@ int fb::game::npc::model::builtin_sell(lua_State* lua)
     auto pursuit = (uint16_t)thread->tointeger(3);
 
     return __builtin_sell(thread, session, npc, pursuit);
+}
+
+int fb::game::npc::model::builtin_repair(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_repair(thread, session, npc);
+}
+
+int fb::game::npc::model::builtin_repair_all(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_repair_all(thread, session, npc);
 }
 
 fb::game::npc::npc(fb::game::context& context, const fb::game::npc::model* model) : 
@@ -106,4 +162,42 @@ int fb::game::npc::builtin_sell(lua_State* lua)
 
     auto pursuit = (uint16_t)thread->tointeger(3);
     return __builtin_sell(thread, session, npc, pursuit);
+}
+
+int fb::game::npc::builtin_repair(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_repair(thread, session, npc);
+}
+
+int fb::game::npc::builtin_repair_all(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_repair_all(thread, session, npc);
 }

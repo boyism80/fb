@@ -47,6 +47,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"item",                fb::game::npc::model::builtin_item},
 {"slot",                fb::game::npc::model::builtin_slot},
 {"sell",                fb::game::npc::model::builtin_sell},
+{"repair",              fb::game::npc::model::builtin_repair},
+{"repair_all",          fb::game::npc::model::builtin_repair_all},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -56,6 +58,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"item",                fb::game::npc::builtin_item},
 {"slot",                fb::game::npc::builtin_slot},
 {"sell",                fb::game::npc::builtin_sell},
+{"repair",              fb::game::npc::builtin_repair},
+{"repair_all",          fb::game::npc::builtin_repair_all},
 END_LUA_EXTENSION
 
 
@@ -1734,6 +1738,7 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
 
     case dialog::interaction::SLOT:
     {
+        session->dialog.pushinteger(request.index).resume(1);
         break;
     }
 
