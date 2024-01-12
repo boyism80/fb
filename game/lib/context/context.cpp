@@ -491,17 +491,15 @@ std::string fb::game::context::elapsed_message(const daotk::mysql::datetime& dat
 
 fb::game::session* fb::game::context::find(const std::string& name)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (const auto& pair)
-        {
-            return pair.second->data()->name() == name;
-        });
+    auto socket = this->sockets.find([&name] (auto& socket)
+    {
+        return socket.data()->name() == name;
+    });
 
-    if(i == this->sockets.end())
+    if(socket == nullptr)
         return nullptr;
 
-    return i->second->data();
+    return socket->data();
 }
 
 bool fb::game::context::exists(const fb::game::object& object) const
@@ -748,12 +746,10 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::WORLD:
     {
-        MUTEX_GUARD(this->sockets.mutex);
-        for(const auto& [key, value] : this->sockets)
+        this->sockets.each([&fn, encrypt] (auto& socket)
         {
-            auto session = value->data();
-            session->send(*fn(*session).get(), encrypt);
-        }
+            socket.send(*fn(*socket.data()).get(), encrypt);
+        });
     } break;
 
     }
@@ -761,25 +757,23 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
 void fb::game::context::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(const auto& [key, value] : this->sockets)
+    this->sockets.each([&response, &map, encrypt] (auto& socket)
     {
-        auto session = value->data();
+        auto session = socket.data();
         if(session->map() != &map)
-            continue;
+            return;
 
-        session->send(response, encrypt);
-    }
+        socket.send(response, encrypt);
+    });
 }
 
 void fb::game::context::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(const auto& [key, value] : this->sockets)
+    this->sockets.each([&response, encrypt] (auto& socket)
     {
-        auto session = value->data();
+        auto session = socket.data();
         session->send(response, encrypt);
-    }
+    });
 }
 
 void fb::game::context::save(fb::game::session& session)
@@ -796,20 +790,13 @@ fb::task<void> fb::game::context::save(fb::game::session& session, std::function
     sql.push_back(query::make_update_spell(session));
     sql.push_back(query::make_delete_spell(session));
 
-    auto fd = session.fd();
     try
     {
-        auto socket = this->sockets[fd];
-        if (socket == nullptr)
-            co_return;
-
         co_await this->_db.co_exec(session.id(), sql);
-        if(this->sockets.contains(fd))
-            fn(session);
     }
     catch(std::exception& e)
     {
-
+        fb::logger::fatal(e.what());
     }
 }
 
@@ -820,12 +807,11 @@ void fb::game::context::save()
 
 void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(auto& socket : this->sockets)
+    this->sockets.each([this, &fn] (auto& socket)
     {
-        auto session = socket.second.get()->data();
+        auto session = socket.data();
         this->save(*session, fn);
-    }
+    });
 }
 
 fb::awaitable<void> fb::game::context::co_save(fb::game::session& session)
@@ -1469,12 +1455,12 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
 
 fb::task<bool> fb::game::context::handle_user_list(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::user_list& request)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    auto session = socket.data();
-    if (session->inited() == false)
-        co_return true;
+    // MUTEX_GUARD(this->sockets.mutex);
+    // auto session = socket.data();
+    // if (session->inited() == false)
+    //     co_return true;
 
-    this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
+    // this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
     co_return true;
 }
 

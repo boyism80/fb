@@ -64,7 +64,7 @@ class acceptor;
 template <template<class> class S, class T>
 class socket_container : private std::map<uint32_t, std::unique_ptr<S<T>>>
 {
-public:
+private:
     std::mutex              mutex;
 
 public:
@@ -88,6 +88,8 @@ private:
 
 public:
     bool                    contains(uint32_t fd);
+    void                    each(const std::function<void(S<T>&)> fn);
+    S<T>*                   find(const std::function<bool(S<T>&)> fn);
 
 public:
     S<T>*                   operator [] (uint32_t fd);

@@ -346,6 +346,29 @@ bool fb::base::socket_container<S, T>::contains(uint32_t fd)
 }
 
 template <template<class> class S, class T>
+void fb::base::socket_container<S, T>::each(const std::function<void(S<T>&)> fn)
+{
+    auto __gd = std::lock_guard(this->mutex);
+    for(auto& [fd, socket] : *this)
+    {
+        fn(*socket);
+    }
+}
+
+template <template<class> class S, class T>
+S<T>* fb::base::socket_container<S, T>::find(const std::function<bool(S<T>&)> fn)
+{
+    auto __gd = std::lock_guard(this->mutex);
+    for(auto& [fd, socket] : *this)
+    {
+        if(fn(*socket))
+            return socket.get();
+    }
+
+    return nullptr;
+}
+
+template <template<class> class S, class T>
 bool fb::base::socket_container<S, T>::empty()
 {
     auto __gd = std::lock_guard(this->mutex);
