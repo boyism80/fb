@@ -112,12 +112,21 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
     thread->new_table();
     if(sell != nullptr)
     {
-        for(auto& [k, v] : *sell)
+        for (int i = 0, size = sell->size(); i < size; i++)
         {
+            auto& [k, v] = sell->at(i);
             auto price = v.has_value() ? v.value() : k->price;
+            thread->pushinteger(i);
+            thread->new_table();
+            {
+                thread->pushinteger(1);
+                thread->pushobject(k);
+                lua_settable(*thread, -3);
 
-            thread->pushstring(k->name);
-            thread->pushinteger(price);
+                thread->pushinteger(2);
+                thread->pushinteger(price);
+                lua_settable(*thread, -3);
+            }
             lua_settable(*thread, -3);
         }
     }

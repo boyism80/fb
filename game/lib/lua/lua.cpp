@@ -581,11 +581,7 @@ context& main::release(context& ctx)
     if(ctx.state() != LUA_OK)
         throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
-    auto top = lua_gettop(ctx);
-    for(int i = 0; i < top; i++)
-    {
-        lua_pop(ctx, i - top);
-    }
+    lua_pop(ctx, -1);
 
     auto key = (lua_State*)ctx;
     this->idle.insert(std::make_pair(key, std::move(this->busy[key])));

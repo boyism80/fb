@@ -93,34 +93,37 @@ int builtin_item(lua_State* lua)
     thread->pushnil();
     while (thread->next(4))
     {
+        // auto i = thread->tointeger(-2);
         auto item = static_cast<fb::game::item::model*>(nullptr);
-        auto price = (uint32_t)0;
+        auto price = uint32_t(0);
 
-        if (thread->is_num(-2))
-        {
-            if (thread->is_obj(-1))
+        { // get 1st field
+            thread->pushinteger(1);
+            lua_gettable(*thread, -2);
+            switch(lua_type(*thread, -1))
             {
-                item = thread->touserdata<item::model>(-1);
+                case LUA_TSTRING:
+                    item = fb::game::model::items.name2item(thread->tostring(-1));
+                    break;
+
+                case LUA_TUSERDATA:
+                    item = thread->touserdata<fb::game::item::model>(-1);
+                    break;
             }
-            else if (thread->is_str(-1))
+            thread->pop(1);
+        }
+
+        { // get 2nd field
+            thread->pushinteger(2);
+            lua_gettable(*thread, -2);
+            switch(lua_type(*thread, -1))
             {
-                item = fb::game::model::items.name2item(thread->tostring(-1));
-            }
-            else
-            {
-                
+                case LUA_TNUMBER:
+                    price = thread->tointeger(-1);
+                    break;
             }
         }
-        else if (thread->is_str(-2))
-        {
-            item = fb::game::model::items.name2item(thread->tostring(-2));
-            if (thread->is_num(-1))
-                price = thread->tointeger(-1);
-        }
-        else
-        {
-            
-        }
+        thread->pop(1);
 
         if (item == nullptr)
             continue;
