@@ -45,6 +45,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"input",               fb::game::npc::model::builtin_input},
 {"menu",                fb::game::npc::model::builtin_menu},
 {"item",                fb::game::npc::model::builtin_item},
+{"slot",                fb::game::npc::model::builtin_slot},
 {"sell",                fb::game::npc::model::builtin_sell},
 END_LUA_EXTENSION
 
@@ -53,6 +54,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"input",               fb::game::npc::builtin_input},
 {"menu",                fb::game::npc::builtin_menu},
 {"item",                fb::game::npc::builtin_item},
+{"slot",                fb::game::npc::builtin_slot},
 {"sell",                fb::game::npc::builtin_sell},
 END_LUA_EXTENSION
 
@@ -107,10 +109,13 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"make",                fb::game::item::model::builtin_make},
 {"attr",                fb::game::item::model::builtin_attr},
 {"capacity",            fb::game::item::model::builtin_capacity},
+{"durability",          fb::game::item::model::builtin_durability},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+{"model",               fb::game::item::builtin_model},
 {"count",               fb::game::item::builtin_count},
+{"durability",          fb::game::item::builtin_durability},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
@@ -606,7 +611,8 @@ void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::se
             return true;
 
         item->count(count.value());
-        item->durability(durability);
+        if (durability.has_value())
+            item->durability(durability.value());
 
         if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
             session.items.add(*item, index);

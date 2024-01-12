@@ -60,6 +60,7 @@ int fb::game::item::model::builtin_make(lua_State* lua)
         object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
     }
 
+    // TODO: 제거해도 되는지 확인
     context->send(*object, fb::protocol::game::response::object::show(*object), fb::game::context::scope::PIVOT);
     thread->pushobject(object);
     return 1;
@@ -71,7 +72,6 @@ int fb::game::item::model::builtin_attr(lua_State* lua)
     if(thread == nullptr)
         return 0;
     
-    auto context = thread->env<fb::game::context>("context");
     auto model = thread->touserdata<fb::game::item::model>(1);
     auto flag = (fb::game::item::attrs)thread->tointeger(2);
 
@@ -85,10 +85,33 @@ int fb::game::item::model::builtin_capacity(lua_State* lua)
     if(thread == nullptr)
         return 0;
     
-    auto context = thread->env<fb::game::context>("context");
     auto model = thread->touserdata<fb::game::item::model>(1);
-
     thread->pushinteger(model->capacity);
+    return 1;
+}
+
+int fb::game::item::model::builtin_durability(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    auto durability = uint16_t(0);
+    if(model->attr(fb::game::item::attrs::PACK))
+    {
+        durability = static_cast<fb::game::pack::model*>(model)->durability;
+    }
+    else if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        durability = static_cast<fb::game::equipment::model*>(model)->durability;
+    }
+    else
+    {
+        durability = 0;
+    }
+
+    thread->pushinteger(durability);
     return 1;
 }
 
@@ -133,7 +156,7 @@ std::optional<uint16_t> fb::game::item::durability() const
     return std::nullopt;
 }
 
-void fb::game::item::durability(std::optional<uint16_t> value)
+void fb::game::item::durability(uint16_t value)
 { }
 
 
@@ -255,15 +278,52 @@ void fb::game::item::merge(fb::game::item& item)
         listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
 }
 
+int fb::game::item::builtin_model(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto item = thread->touserdata<fb::game::item>(1);
+    auto model = item->based<fb::game::item>();
+
+    thread->pushobject(model);
+    return 1;
+}
+
 int fb::game::item::builtin_count(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
     
-    auto context = thread->env<fb::game::context>("context");
     auto item = thread->touserdata<fb::game::item>(1);
-
     thread->pushinteger(item->count());
     return 1;
+}
+
+int fb::game::item::builtin_durability(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto argc = thread->argc();
+    auto item = thread->touserdata<fb::game::item>(1);
+
+    if(argc > 1)
+    {
+        auto value = thread->tointeger(2);
+        item->durability(value);
+        return 0;
+    }
+    else
+    {
+        auto durability = item->durability();
+        if(durability.has_value())
+            thread->pushinteger(durability.value());
+        else
+            thread->pushnil();
+        return 1;
+    }
 }

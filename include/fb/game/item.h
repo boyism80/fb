@@ -104,7 +104,7 @@ public:
     virtual const std::string               name_styled() const;
     virtual const std::string               name_trade() const;
     virtual std::optional<uint16_t>         durability() const;
-    virtual void                            durability(std::optional<uint16_t> value);
+    virtual void                            durability(uint16_t value);
 
 
 
@@ -129,7 +129,9 @@ public:
     virtual void                            merge(fb::game::item& item);
 
 public:
+    static int                              builtin_model(lua_State* lua);
     static int                              builtin_count(lua_State* lua);
+    static int                              builtin_durability(lua_State* lua);
 };
 
 
@@ -204,26 +206,26 @@ public:
     LUA_PROTOTYPE
 
 public:
-    const uint32_t                           id;
-    const uint32_t                           price;
-    const fb::game::item::conditions         condition;
-    const penalties                          penalty;
-    const uint16_t                           capacity;
-    const fb::game::item::trade              trade;
-    const fb::game::item::storage            storage;
-    const std::string                        desc;
-    const std::string                        active_script;
+    const uint32_t                          id;
+    const uint32_t                          price;
+    const fb::game::item::conditions        condition;
+    const penalties                         penalty;
+    const uint16_t                          capacity;
+    const fb::game::item::trade             trade;
+    const fb::game::item::storage           storage;
+    const std::string                       desc;
+    const std::string                       active_script;
 
 public:
     model(const fb::game::item::model::config& config);
     virtual ~model();
 
 public:
-    fb::game::object::types                  type() const override { return object::types::ITEM; }
+    fb::game::object::types                 type() const override { return object::types::ITEM; }
 
 public:
-    virtual fb::game::item::attrs            attr() const;
-    bool                                     attr(fb::game::item::attrs flag) const;
+    virtual fb::game::item::attrs           attr() const;
+    bool                                    attr(fb::game::item::attrs flag) const;
 
 public:
     virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const
@@ -232,9 +234,10 @@ public:
     }
 
 public:
-    static int                               builtin_make(lua_State* lua);
-    static int                               builtin_attr(lua_State* lua);
-    static int                               builtin_capacity(lua_State* lua);
+    static int                              builtin_make(lua_State* lua);
+    static int                              builtin_attr(lua_State* lua);
+    static int                              builtin_capacity(lua_State* lua);
+    static int                              builtin_durability(lua_State* lua);
 };
 
 
@@ -329,7 +332,7 @@ public:
 
 public:
     std::optional<uint16_t>             durability() const;
-    void                                durability(std::optional<uint16_t> value);
+    void                                durability(uint16_t value);
 
 public:
     const std::string                   name_styled() const final;
@@ -404,7 +407,7 @@ public:
 
 public:
     std::optional<uint16_t>             durability() const;
-    void                                durability(std::optional<uint16_t> value);
+    void                                durability(uint16_t value);
 
 
 protected:

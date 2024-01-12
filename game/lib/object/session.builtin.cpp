@@ -274,8 +274,9 @@ int fb::game::session::builtin_items(lua_State* lua)
         if(session->items[i] == nullptr)
             continue;
 
+        thread->pushinteger(i + 1);
         thread->pushobject(session->items[i]);
-        lua_rawseti(lua, -2, i+1);
+        lua_settable(lua, -2);
     }
 
     return 1;

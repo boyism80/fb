@@ -260,6 +260,7 @@ main::main() : context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
+    this->load_file("scripts/script.lua");
     this->load_file("scripts/common/npc.lua");
     this->load_file("scripts/common/door.lua");
     this->load_file("scripts/common/pickup.lua");

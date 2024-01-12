@@ -137,6 +137,37 @@ int builtin_item(lua_State* lua)
 }
 
 template <typename T>
+int builtin_slot(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<T>(1);
+    if(npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto message = thread->tostring(3);
+    auto slots = std::vector<uint8_t>();
+    auto size = lua_rawlen(*thread, 4);
+    for(int i = 0; i < size; i++)
+    {
+        thread->pushinteger(i+1);
+        lua_gettable(*thread, 4);
+        slots.push_back(thread->tointeger(-1));
+        thread->pop(1);
+    }
+
+    session->dialog.show(*npc, message, slots);
+    return thread->yield(1);
+}
+
+template <typename T>
 int builtin_input(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);

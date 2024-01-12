@@ -31,6 +31,11 @@ int fb::game::npc::model::builtin_item(lua_State* lua)
     return ::builtin_item<fb::game::npc::model>(lua);
 }
 
+int fb::game::npc::model::builtin_slot(lua_State* lua)
+{
+    return ::builtin_slot<fb::game::npc::model>(lua);
+}
+
 int fb::game::npc::model::builtin_sell(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -75,6 +80,11 @@ int fb::game::npc::builtin_menu(lua_State* lua)
 int fb::game::npc::builtin_item(lua_State* lua)
 {
     return ::builtin_item<npc>(lua);
+}
+
+int fb::game::npc::builtin_slot(lua_State* lua)
+{
+    return ::builtin_slot<npc>(lua);
 }
 
 int fb::game::npc::builtin_sell(lua_State* lua)
