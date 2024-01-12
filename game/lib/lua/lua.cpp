@@ -83,6 +83,9 @@ context& context::from(const char* fmt, ...)
     auto fname = fstring_c(fmt, &args);
     va_end(args);
 
+#if defined DEBUG || defined _DEBUG
+    luaL_dofile(*this, fname.c_str());
+#else
     auto main = static_cast<fb::game::lua::main*>(this->owner);
     if(main->_bytecodes.contains(fname) == false)
     {
@@ -96,6 +99,7 @@ context& context::from(const char* fmt, ...)
 
     if(lua_pcall(*this, 0, LUA_MULTRET, 0))
         return *this;
+#endif
 
     return *this;
 }
