@@ -16,28 +16,28 @@ int __builtin_sell(fb::game::lua::context* thread, fb::game::session* session, c
     }
     else if(npc->sell.size() > 1)
     {
-        thread->new_table();
+        dialog.new_table();
         auto i = 1;
         for (auto& [menu, pursuit] : npc->sell)
         {
-            thread->pushinteger(i);
-            thread->new_table();
+            dialog.pushinteger(i);
+            dialog.new_table();
             {
-                thread->pushinteger(1);
-                thread->pushstring(menu);
-                lua_settable(*thread, -3);
+                dialog.pushinteger(1);
+                dialog.pushstring(menu);
+                dialog.set_table();
 
-                thread->pushinteger(2);
-                thread->pushinteger(pursuit);
-                lua_settable(*thread, -3);
+                dialog.pushinteger(2);
+                dialog.pushinteger(pursuit);
+                dialog.set_table();
             }
-            lua_settable(*thread, -3);
+            dialog.set_table();
             i++;
         }
     }
     else
     {
-        thread->pushnil();
+        dialog.pushnil();
     }
 
     dialog.resume(3);

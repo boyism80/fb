@@ -210,6 +210,7 @@ public:
     static int                              builtin_attr(lua_State* lua);
     static int                              builtin_capacity(lua_State* lua);
     static int                              builtin_durability(lua_State* lua);
+    static int                              builtin_price(lua_State* lua);
     static int                              builtin_repair_price(lua_State* lua);
     static int                              builtin_rename_price(lua_State* lua);
     static int                              builtin_store_price(lua_State* lua);

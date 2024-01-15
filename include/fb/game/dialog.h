@@ -68,6 +68,8 @@ public:
     bool                    active() const;
 
 public:
+    dialog&                 new_table();
+    dialog&                 set_table();
     dialog&                 pushstring(const std::string& value);
     dialog&                 pushinteger(lua_Integer value);
     dialog&                 pushnil();

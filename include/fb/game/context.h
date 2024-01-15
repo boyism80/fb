@@ -276,6 +276,8 @@ public:
     static int              builtin_name2item(lua_State* lua);
     static int              builtin_pursuit_sell(lua_State* lua);
     static int              builtin_pursuit_buy(lua_State* lua);
+    static int              builtin_sell_price(lua_State* lua);
+    static int              builtin_buy_price(lua_State* lua);
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);
 };

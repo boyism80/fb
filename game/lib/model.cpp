@@ -1424,9 +1424,9 @@ bool fb::game::container::pursuit::load(const std::string& path, fb::table::hand
              auto                dset    = pursuit_pair();
              if (data.isObject())
              {
-                 for (auto& k : data.getMemberNames())
+                 for(auto i = data.begin(); i != data.end(); i++)
                  {
-                     k = CP949(k, PLATFORM::Windows);
+                     auto k = CP949(i.key().asString(), PLATFORM::Windows);
                      auto item = fb::game::model::items.name2item(k);
                      if (item == nullptr)
                      {
@@ -1435,14 +1435,13 @@ bool fb::game::container::pursuit::load(const std::string& path, fb::table::hand
                          throw std::runtime_error(sstream.str());
                      }
 
-                     auto price = std::optional<uint32_t>{};
-
-                     if (data[k].isNull())
+                     auto price = std::optional<uint32_t>();
+                     if((*i).isNull())
                      {
                      }
-                     else if(data[k].isNumeric())
+                     else if((*i).isNumeric())
                      {
-                         price = data[k].asUInt();
+                         price = (*i).asUInt();
                      }
                      else
                      {

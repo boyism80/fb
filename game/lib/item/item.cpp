@@ -90,6 +90,17 @@ int fb::game::item::model::builtin_capacity(lua_State* lua)
     return 1;
 }
 
+int fb::game::item::model::builtin_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    thread->pushinteger(model->price);
+    return 1;
+}
+
 int fb::game::item::model::builtin_durability(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -124,15 +135,15 @@ int fb::game::item::model::builtin_repair_price(lua_State* lua)
     auto model = thread->touserdata<fb::game::item::model>(1);
     if(model->attr(fb::game::item::attrs::EQUIPMENT))
     {
-        thread->pushnil();
+        auto repair_price = static_cast<fb::game::equipment::model*>(model)->repair;
+        if(repair_price.has_value())
+            thread->pushnumber(repair_price.value());
+        else
+            thread->pushnil();
     }
     else
     {
-        auto repair_price = static_cast<fb::game::equipment::model*>(model)->repair;
-        if(repair_price.has_value())
-            thread->pushnil();
-        else
-            thread->pushnumber(repair_price.value());
+        thread->pushnil();
     }
 
     return 1;
@@ -147,15 +158,15 @@ int fb::game::item::model::builtin_rename_price(lua_State* lua)
     auto model = thread->touserdata<fb::game::item::model>(1);
     if(model->attr(fb::game::item::attrs::EQUIPMENT))
     {
-        thread->pushnil();
+        auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
+        if(rename_price.has_value())
+            thread->pushinteger(rename_price.value());
+        else
+            thread->pushnil();
     }
     else
     {
-        auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
-        if(rename_price.has_value())
-            thread->pushnil();
-        else
-            thread->pushinteger(rename_price.value());
+        thread->pushnil();
     }
 
     return 1;
@@ -168,19 +179,14 @@ int fb::game::item::model::builtin_store_price(lua_State* lua)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    if(model->storage.has_value())
     {
-        thread->pushnil();
+        thread->pushinteger(model->storage.value());
     }
     else
     {
-        auto store_price = static_cast<fb::game::equipment::model*>(model)->storage;
-        if(store_price.has_value())
-            thread->pushnil();
-        else
-            thread->pushinteger(store_price.value());
+        thread->pushnil();
     }
-
     return 1;
 }
 

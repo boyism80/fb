@@ -9,14 +9,19 @@ function sell(me, npc, pursuit)
 			local m, p = table.unpack(pair)
 			table.insert(menu, m)
 		end
-
-		local selected = npc:menu(me, '무엇을 사시겠어요?' menu)
+::ROUTINE0::
+		local selected = npc:menu(me, '무엇을 사시겠어요?', menu)
 		if selected == nil then
-			return DIALOG_RESULT_NEXT
+			goto ROUTINE0
 		end
 
 		local m, p = table.unpack(pursuit[selected+1])
-		return sell(me, npc, p)
+		local action = sell(me, npc, p)
+		if action == DIALOG_RESULT_NEXT then
+			goto ROUTINE0
+		end
+
+		return action
 	end
 
 	local list = pursuit_sell(pursuit)
@@ -26,9 +31,10 @@ function sell(me, npc, pursuit)
 		return DIALOG_RESULT_NEXT
 	end
 
-	local item = name2item(selected)
 	local count = 1
-	if item:attr(ITEM_ATTR_BUNDLE) then
+	local item = name2item(selected)
+	local is_bundle = item:attr(ITEM_ATTR_BUNDLE)
+	if is_bundle then
 		count = npc:input(me, '몇개나 사시겠어요?')
 		if count == nil then
 			goto ROUTINE1
@@ -40,7 +46,13 @@ function sell(me, npc, pursuit)
 		end
 	end
 
-	local price = list[selected] * count
+	local price = sell_price(pursuit, selected)
+	if price == nil then
+		return npc:dialog(me, '알 수 없는 에러')
+	else
+		price = price * count
+	end
+
 	local money = me:money()
 	if price > money then
 		return npc:dialog(me, '돈이 모자랍니다.', false, true)
@@ -52,7 +64,7 @@ function sell(me, npc, pursuit)
 		exist_count = exist:count()
 	end
 
-	if exist_count + count > item:capacity() then
+	if is_bundle and exist_count + count > item:capacity() then
 		return npc:dialog(me, '더 이상 가질 수 없습니다.', false, true)
 	end
 	
@@ -64,6 +76,8 @@ function sell(me, npc, pursuit)
 		return npc:dialog(me, message, false, true)
 	end
 end
+
+
 
 function repairable_slots(me)
 	local items = me:items()
@@ -82,6 +96,8 @@ function repairable_slots(me)
 
 	return slots
 end
+
+
 
 function repair(me, npc)
 	local items = repairable_slots(me)
@@ -103,20 +119,26 @@ function repair(me, npc)
 	local model = item:model()
 	local price = math.floor(model:repair_price() * (model:durability() - item:durability()))
 
-	local selected = npc:menu(me, string.format('수리 비용으로 %d전이 필요합니다. 정말 수리하시겠습니까?', price), {'네', '아니오'})
-	if selected == 0 then
-		local money = me:money()
-		if price > money then
-			return npc:dialog(me, '돈이 모자랍니다.', false, true)
+	if price < 10 then
+		item:durability(model:durability())
+		return npc:dialog(me, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
+	else
+		local selected = npc:menu(me, string.format('수리 비용으로 %d전이 필요합니다. 정말 수리하시겠습니까?', price), {'네', '아니오'})
+		if selected == 0 then
+			local money = me:money()
+			if price > money then
+				return npc:dialog(me, '돈이 모자랍니다.', false, true)
+			else
+				me:money(money - price)
+				item:durability(model:durability())
+				return DIALOG_RESULT_NEXT
+			end
 		else
-			me:money(money - price)
-			item:durability(model:durability())
 			return DIALOG_RESULT_NEXT
 		end
-	else
-		return DIALOG_RESULT_NEXT
 	end
 end
+
 
 
 function repair_all(me, npc)
@@ -135,21 +157,29 @@ function repair_all(me, npc)
 	end
 	price = math.floor(price)
 
-	local selected = npc:menu(me, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
-	if selected == 0 then
-		local money = me:money()
-		if money < price then
-			return npc:dialog(me, '돈이 모자랍니다.')
-		else
-			for slot, item in ipairs(items) do
-				local model = item:model()
-				item:durability(model:durability())
-			end
-
-			me:money(money - price)
-			return npc:dialog(me, '모두 고쳤습니다.')
+	if price < 10 then
+		for slot, item in ipairs(items) do
+			local model = item:model()
+			item:durability(model:durability())
 		end
+		return npc:dialog(me, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
 	else
-		return DIALOG_RESULT_NEXT
+		local selected = npc:menu(me, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
+		if selected == 0 then
+			local money = me:money()
+			if money < price then
+				return npc:dialog(me, '돈이 모자랍니다.')
+			else
+				for slot, item in ipairs(items) do
+					local model = item:model()
+					item:durability(model:durability())
+				end
+
+				me:money(money - price)
+				return npc:dialog(me, '모두 고쳤습니다.')
+			end
+		else
+			return DIALOG_RESULT_NEXT
+		end
 	end
 end

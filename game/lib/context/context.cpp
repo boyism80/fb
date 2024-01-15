@@ -114,6 +114,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"attr",                fb::game::item::model::builtin_attr},
 {"capacity",            fb::game::item::model::builtin_capacity},
 {"durability",          fb::game::item::model::builtin_durability},
+{"price",               fb::game::item::model::builtin_price},
 {"repair_price",        fb::game::item::model::builtin_repair_price},
 {"rename_price",        fb::game::item::model::builtin_rename_price},
 {"store_price",         fb::game::item::model::builtin_store_price},
@@ -174,7 +175,7 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_class<map, lua::luable>();
     lua::bind_class<door, lua::luable>();
     lua::bind_class<group, lua::luable>();
-    lua::bind_class<object::model, lua::luable>();     lua::bind_class<object, lua::luable>();
+    lua::bind_class<object::model, lua::luable>();    lua::bind_class<object, lua::luable>();
     lua::bind_class<life::model, object::model>();    lua::bind_class<life, object>();
     lua::bind_class<mob::model, life::model>();       lua::bind_class<mob, life>();
     lua::bind_class<npc::model, object::model>();     lua::bind_class<npc, object>();
@@ -189,6 +190,8 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_function("name2map",          builtin_name2map);
     lua::bind_function("pursuit_sell",      builtin_pursuit_sell);
     lua::bind_function("pursuit_buy",       builtin_pursuit_buy);
+    lua::bind_function("sell_price",        builtin_sell_price);
+    lua::bind_function("buy_price",         builtin_buy_price);
     lua::bind_function("timer",             builtin_timer);
     lua::bind_function("weather",           builtin_weather);
 

@@ -59,9 +59,13 @@ fb::game::dialog& fb::game::dialog::resume(int argc)
         case LUA_PENDING:
             return *this;
 
-        default:
+        case LUA_OK:
             this->_scripts.pop();
             break;
+
+        default:
+            this->_scripts.pop();
+            return *this;
     }
 
     auto prev = ctx;
@@ -116,6 +120,26 @@ bool fb::game::dialog::active() const
 {
     auto ctx = this->current();
     return ctx != nullptr;
+}
+
+fb::game::dialog& fb::game::dialog::new_table()
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    ctx->new_table();
+    return *this;
+}
+
+fb::game::dialog& fb::game::dialog::set_table()
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    lua_settable(*ctx, -3);
+    return *this;
 }
 
 fb::game::dialog& fb::game::dialog::pushstring(const std::string& value)
