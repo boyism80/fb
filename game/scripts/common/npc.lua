@@ -51,7 +51,7 @@ function repairable_slots(me)
 
 	for slot, item in ipairs(items) do
 		local model = item:model()
-		if model:attr(ITEM_ATTR_EQUIPMENT) then
+		if model:attr(ITEM_ATTR_EQUIPMENT) and model:repair_price() ~= nil then
 			local current = item:durability()
 			local max = model:durability()
 			if current < max then
@@ -81,7 +81,7 @@ function repair(me, npc)
 
 	local item = items[selected]
 	local model = item:model()
-	local price = model:durability() - item:durability()
+	local price = math.floor(model:repair_price() * (model:durability() - item:durability()))
 
 	local selected = npc:menu(me, string.format('수리 비용으로 %d전이 필요합니다. 정말 수리하시겠습니까?', price), {'네', '아니오'})
 	if selected == 0 then
@@ -111,8 +111,9 @@ function repair_all(me, npc)
 		local model = item:model()
 		local current = item:durability()
 		local max = model:durability()
-		price = price + (max - current)
+		price = price + (model:repair_price() * (max - current))
 	end
+	price = math.floor(price)
 
 	local selected = npc:menu(me, string.format('모두 고치는데 %d전이 필요합니다. 고치시겠습니까?', price), {'네', '아니오'})
 	if selected == 0 then

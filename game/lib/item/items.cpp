@@ -544,7 +544,7 @@ bool fb::game::items::throws(uint8_t index)
             return false;
 
         auto                    model = item->based<fb::game::item>();
-        if(model->trade.enabled == false)
+        if(model->trade == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = this->_owner.map();

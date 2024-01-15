@@ -114,6 +114,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"attr",                fb::game::item::model::builtin_attr},
 {"capacity",            fb::game::item::model::builtin_capacity},
 {"durability",          fb::game::item::model::builtin_durability},
+{"repair_price",        fb::game::item::model::builtin_repair_price},
+{"rename_price",        fb::game::item::model::builtin_rename_price},
+{"store_price",         fb::game::item::model::builtin_store_price},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")

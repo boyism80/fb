@@ -115,6 +115,75 @@ int fb::game::item::model::builtin_durability(lua_State* lua)
     return 1;
 }
 
+int fb::game::item::model::builtin_repair_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        thread->pushnil();
+    }
+    else
+    {
+        auto repair_price = static_cast<fb::game::equipment::model*>(model)->repair;
+        if(repair_price.has_value())
+            thread->pushnil();
+        else
+            thread->pushnumber(repair_price.value());
+    }
+
+    return 1;
+}
+
+int fb::game::item::model::builtin_rename_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        thread->pushnil();
+    }
+    else
+    {
+        auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
+        if(rename_price.has_value())
+            thread->pushnil();
+        else
+            thread->pushinteger(rename_price.value());
+    }
+
+    return 1;
+}
+
+int fb::game::item::model::builtin_store_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        thread->pushnil();
+    }
+    else
+    {
+        auto store_price = static_cast<fb::game::equipment::model*>(model)->storage;
+        if(store_price.has_value())
+            thread->pushnil();
+        else
+            thread->pushinteger(store_price.value());
+    }
+
+    return 1;
+}
+
 
 
 
@@ -243,7 +312,7 @@ bool fb::game::item::active()
 fb::game::item* fb::game::item::split(uint16_t count)
 {
     auto model = this->based<fb::game::item>();
-    if(model->trade.enabled == false)
+    if(model->trade == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     if(this->attr(item::attrs::BUNDLE) && this->_count > count)

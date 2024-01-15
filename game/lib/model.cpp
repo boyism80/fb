@@ -290,8 +290,8 @@ fb::game::item::model* fb::game::container::item::create(uint32_t id, const Json
         /* condition     */ to_condition(data),
         /* penalty       */ to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)),
         /* capacity      */ std::max(uint16_t(1), (uint16_t)data["capacity"].asInt()),
-        /* trade         */ fb::game::item::trade(data["trade"]["enabled"].asBool()),
-        /* storage       */ fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt()),
+        /* trade         */ data["trade"].asBool(),
+        /* storage       */ data["storage"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(data["storage"].asUInt()),
         /* desc          */ CP949(data["desc"].asString(), PLATFORM::Windows),
         /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
     };
@@ -333,8 +333,8 @@ fb::game::item::model* fb::game::container::item::create(uint32_t id, const Json
         config,
         /* dress          */ (uint16_t)option["look"].asInt(),
         /* durability     */ (uint16_t)option["durability"].asInt(),
-        /* repair         */ fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble()),
-        /* rename         */ fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt()),
+        /* repair         */ option["repair"].isNull() ? std::optional<double>() : std::optional<double>(option["repair"].asDouble()),
+        /* rename         */ option["rename"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(option["repair"].asUInt()),
         /* dress_script   */ CP949(data["script"]["dress"].asString(), PLATFORM::Windows),
         /* undress_script */ CP949(data["script"]["undress"].asString(), PLATFORM::Windows),
         /* hit            */ (uint8_t)option["hit"].asInt(),

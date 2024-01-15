@@ -129,7 +129,7 @@ context& context::pushinteger(lua_Integer value)
 
 context& context::pushnumber(lua_Integer value)
 {
-    lua_pushinteger(this->_ctx, value);
+    lua_pushnumber(this->_ctx, value);
     return *this;
 }
 

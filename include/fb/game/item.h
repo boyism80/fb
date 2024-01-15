@@ -28,8 +28,6 @@ public:
     class model;
 
 public:
-    struct trade;
-    struct storage;
     struct conditions;
 
 public:
@@ -144,32 +142,6 @@ interface item::listener : public virtual fb::game::object::listener
     virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
 };
 
-struct item::trade
-{
-public:
-    friend class item;
-
-public:
-    const bool                              enabled = false;
-
-public:
-    trade() = default;
-    explicit trade(bool enabled) : enabled(enabled) { }
-};
-
-struct item::storage
-{
-public:
-    friend class item;
-
-public:
-    const bool                              enabled = false;
-    const uint32_t                          price   = 0;
-
-public:
-    storage() = default;
-    storage(bool enabled, uint32_t price) : enabled(enabled), price(price) { }
-};
 
 struct fb::game::item::conditions
 {
@@ -194,8 +166,8 @@ public:
         fb::game::item::conditions          condition;
         fb::game::item::penalties           penalty     = fb::game::item::penalties::NONE;
         uint16_t                            capacity    = 0;
-        fb::game::item::trade               trade;
-        fb::game::item::storage             storage;
+        bool                                trade;
+        std::optional<uint32_t>             storage;
         std::string                         desc;
         std::string                         active_script;
     };
@@ -211,8 +183,8 @@ public:
     const fb::game::item::conditions        condition;
     const penalties                         penalty;
     const uint16_t                          capacity;
-    const fb::game::item::trade             trade;
-    const fb::game::item::storage           storage;
+    const bool                              trade;
+    const std::optional<uint32_t>           storage;
     const std::string                       desc;
     const std::string                       active_script;
 
@@ -238,6 +210,9 @@ public:
     static int                              builtin_attr(lua_State* lua);
     static int                              builtin_capacity(lua_State* lua);
     static int                              builtin_durability(lua_State* lua);
+    static int                              builtin_repair_price(lua_State* lua);
+    static int                              builtin_rename_price(lua_State* lua);
+    static int                              builtin_store_price(lua_State* lua);
 };
 
 
@@ -386,10 +361,6 @@ public:
     class model;
 
 public:
-    struct repair;
-    struct rename;
-
-public:
     DECLARE_EXCEPTION(not_equipment_exception, "입을 수 없는 물건입니다.")
     
 protected:
@@ -427,46 +398,6 @@ interface equipment::listener : public virtual fb::game::item::listener
     virtual void on_equipment_off(session& me, equipment::slot slot, uint8_t index) = 0;
 };
 
-struct equipment::repair
-{
-public:
-    friend class equipment;
-
-private:
-    bool                                _enabled = false;
-    float                               _price   = 0.0f;
-
-public:
-    repair(bool enabled = true, float price = 0) : _enabled(enabled), _price(price) { }
-
-public:
-    bool                                enabled() const { return this->_enabled; }
-    void                                enabled(bool value) { this->_enabled = value; }
-
-    float                               price() const { return this->_price; }
-    void                                price(float value) { this->_price = value; }
-};
-
-struct equipment::rename
-{
-public:
-    friend class equipment;
-
-private:
-    bool                                _enabled = false;
-    uint32_t                            _price   = 0;
-
-public:
-    rename(bool enabled = true, uint32_t price = 0) : _enabled(enabled), _price(price) { }
-
-public:
-    bool                                enabled() const { return this->_enabled; }
-    void                                enabled(bool value) { this->_enabled = value; }
-
-    uint32_t                            price() const { return this->_price; }
-    void                                price(uint32_t value) { this->_price = value; }
-};
-
 class equipment::model : public fb::game::item::model
 {
 public:
@@ -475,8 +406,8 @@ public:
     public:
         uint16_t                            dress = 0;
         uint16_t                            durability = 0;
-        fb::game::equipment::repair         repair;
-        fb::game::equipment::rename         rename;
+        std::optional<double>               repair;
+        std::optional<uint32_t>             rename;
         std::string                         dress_script;
         std::string                         undress_script;
         uint8_t                             hit = 0;
@@ -499,8 +430,8 @@ public:
 public:
     const uint16_t                      dress;
     const uint16_t                      durability;
-    const fb::game::equipment::repair   repair;
-    const fb::game::equipment::rename   rename;
+    const std::optional<double>         repair;
+    const std::optional<uint32_t>       rename;
     const std::string                   dress_script, undress_script;
 
     const uint8_t                       hit, damage;
