@@ -67,19 +67,6 @@ bool enum_in(T src, T value)
 
 namespace fb { namespace game {
 
-namespace dialog
-{
-    enum class interaction : uint8_t
-    {
-        NORMAL              = 0x00,
-        INPUT               = 0x01,
-        INPUT_EX            = 0x02,
-        MENU                = 0x04,
-        SLOT                = 0x05,
-        SELL                = 0x06,
-    };
-}
-
 namespace timer
 {
     enum class type : uint8_t

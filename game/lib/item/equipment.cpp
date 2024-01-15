@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
@@ -128,9 +129,10 @@ std::optional<uint16_t> fb::game::equipment::durability() const
     return this->_durability;
 }
 
-void fb::game::equipment::durability(std::optional<uint16_t> value)
+void fb::game::equipment::durability(uint16_t value)
 {
-    this->_durability = value.value_or(0);
+    auto model = this->based<fb::game::equipment>();
+    this->_durability = std::max(uint16_t(0), std::min(model->durability, value));
 }
 
 std::string fb::game::equipment::mid_message() const

@@ -92,11 +92,13 @@ public:
                                 
     context&                    pushstring(const std::string& value);
     context&                    pushinteger(lua_Integer value);
+    context&                    pushnumber(lua_Integer value);
     context&                    pushnil();
     context&                    pushboolean(bool value);
     context&                    pushobject(const luable* object);
     context&                    pushobject(const luable& object);
     context&                    push(const void* value);
+    context&                    pop(int offset);
 
     template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
     context&                    pushinteger(T value)
@@ -109,6 +111,7 @@ public:
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
     int                         tointeger(int offset) { return (int)lua_tointeger(*this, offset); }
+    lua_Integer                 tonumber(int offset) { return lua_tonumber(*this, offset); }
     int                         arg_integer(int offset) { return tointeger(offset); }
     int                         ret_integer(int offset) { return tointeger(-offset); }
     
@@ -123,16 +126,18 @@ public:
     bool                        is_obj(int offset) { return lua_isuserdata(*this, offset); }
     bool                        is_table(int offset) { return lua_istable(*this, offset); }
     bool                        is_num(int offset) { return lua_isnumber(*this, offset); }
+    bool                        is_nil(int offset) { return lua_isnil(*this, offset); }
 
     int                         rawgeti(int offset_t, int offset_e) { return lua_rawgeti(*this, offset_t, offset_e); }
     void                        rawseti(int offset_t, int offset_e) { lua_rawseti(*this, offset_t, offset_e); }
     int                         rawlen(int offset_t) { return (int)lua_rawlen(*this, offset_t); }
     void                        remove(int offset) { lua_remove(*this, offset); }
     void                        new_table() { lua_newtable(*this); }
+    bool                        next(int offset) { return lua_next(*this, offset) != 0; };
 
 public:
     int                         argc();
-    bool                        resume(int argc);
+    bool                        resume(int argc, bool auto_release = true);
     int                         yield(int retc) { return lua_yield(*this, retc); }
     int                         state() const;
     void                        release();

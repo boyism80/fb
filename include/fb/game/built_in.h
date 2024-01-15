@@ -41,7 +41,7 @@ int builtin_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_menu_dialog(lua_State* lua)
+int builtin_menu(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -60,7 +60,7 @@ int builtin_menu_dialog(lua_State* lua)
 
     // Read menu list
     auto size = thread->rawlen(4);
-    std::vector<std::string> menus;
+    auto menus = std::vector<std::string>();
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(4, i+1);
@@ -72,7 +72,7 @@ int builtin_menu_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_item_dialog(lua_State* lua)
+int builtin_item(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
@@ -89,17 +89,47 @@ int builtin_item_dialog(lua_State* lua)
 
     auto message = thread->tostring(3);
 
-    // Read menu list
-    auto size = thread->rawlen(4);
-    std::vector<item::model*> items;
-    for(int i = 0; i < size; i++)
+    auto items = fb::game::dialog::item_pairs();
+    thread->pushnil();
+    while (thread->next(4))
     {
-        thread->rawgeti(4, i+1);
-        auto core = thread->touserdata<item::model>(-1);
-        if(core == nullptr)
+        // auto i = thread->tointeger(-2);
+        auto item = static_cast<fb::game::item::model*>(nullptr);
+        auto price = uint32_t(0);
+
+        { // get 1st field
+            thread->pushinteger(1);
+            lua_gettable(*thread, -2);
+            switch(lua_type(*thread, -1))
+            {
+                case LUA_TSTRING:
+                    item = fb::game::model::items.name2item(thread->tostring(-1));
+                    break;
+
+                case LUA_TUSERDATA:
+                    item = thread->touserdata<fb::game::item::model>(-1);
+                    break;
+            }
+            thread->pop(1);
+        }
+
+        { // get 2nd field
+            thread->pushinteger(2);
+            lua_gettable(*thread, -2);
+            switch(lua_type(*thread, -1))
+            {
+                case LUA_TNUMBER:
+                    price = thread->tointeger(-1);
+                    break;
+            }
+        }
+        thread->pop(1);
+
+        if (item == nullptr)
             continue;
 
-        items.push_back(core);
+        items.push_back({ item, price });
+        thread->pop(1);
     }
 
     session->dialog.show(*npc, message, items);
@@ -107,7 +137,38 @@ int builtin_item_dialog(lua_State* lua)
 }
 
 template <typename T>
-int builtin_input_dialog(lua_State* lua)
+int builtin_slot(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<T>(1);
+    if(npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if(session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto message = thread->tostring(3);
+    auto slots = std::vector<uint8_t>();
+    auto size = lua_rawlen(*thread, 4);
+    for(int i = 0; i < size; i++)
+    {
+        thread->pushinteger(i+1);
+        lua_gettable(*thread, 4);
+        slots.push_back(thread->tointeger(-1));
+        thread->pop(1);
+    }
+
+    session->dialog.show(*npc, message, slots);
+    return thread->yield(1);
+}
+
+template <typename T>
+int builtin_input(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)

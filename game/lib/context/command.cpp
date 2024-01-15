@@ -247,7 +247,7 @@ fb::task<bool> fb::game::context::handle_command_world(fb::game::session& sessio
 fb::task<bool> fb::game::context::handle_command_script(fb::game::session& session, Json::Value& parameters)
 {
     session.dialog
-        .from("scripts/test.lua")
+        .from("scripts/script.lua")
         .func("func")
         .pushobject(session)
         .resume(1);
@@ -371,5 +371,25 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     auto y = map->height() > 0 ? std::rand() % map->height() : 0;
 
     co_await session.co_map(map, fb::game::point16_t(x, y));
+    co_return true;
+}
+
+fb::task<bool> fb::game::context::handle_command_npc(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        co_return false;
+
+    if(parameters[0].isString() == false)
+        co_return false;
+
+    auto name = parameters[0].asString();
+
+    auto model = fb::game::model::npcs.name2npc(name);
+    if(model == nullptr)
+        co_return false;
+
+    auto npc = model->make<fb::game::npc>(*this);
+    npc->direction(session.direction());
+    npc->map(session.map(), session.position());
     co_return true;
 }

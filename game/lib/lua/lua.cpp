@@ -80,19 +80,26 @@ context& context::from(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto buffer = fstring_c(fmt, &args);
+    auto fname = fstring_c(fmt, &args);
     va_end(args);
 
+#if defined DEBUG || defined _DEBUG
+    luaL_dofile(*this, fname.c_str());
+#else
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    if(main->_bytecodes.contains(buffer) == false)
+    if(main->_bytecodes.contains(fname) == false)
+    {
+        fb::logger::fatal("cannot find script %s", fname.c_str());
         return *this;
+    }
 
-    auto& bytes = main->_bytecodes[buffer];
+    auto& bytes = main->_bytecodes[fname];
     if(luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 
     if(lua_pcall(*this, 0, LUA_MULTRET, 0))
         return *this;
+#endif
 
     return *this;
 }
@@ -101,10 +108,10 @@ context& context::func(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto buffer = fstring_c(fmt, &args);
+    auto fname = fstring_c(fmt, &args);
     va_end(args);
 
-    lua_getglobal(*this, buffer.c_str());
+    lua_getglobal(*this, fname.c_str());
     return *this;
 }
 
@@ -117,6 +124,12 @@ context& context::pushstring(const std::string& value)
 context& context::pushinteger(lua_Integer value)
 {
     lua_pushinteger(this->_ctx, value);
+    return *this;
+}
+
+context& context::pushnumber(lua_Integer value)
+{
+    lua_pushnumber(this->_ctx, value);
     return *this;
 }
 
@@ -150,6 +163,12 @@ context& context::push(const void* value)
     return *this;
 }
 
+context& context::pop(int offset)
+{
+    lua_pop(this->_ctx, offset);
+    return *this;
+}
+
 const std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
@@ -169,7 +188,7 @@ int context::argc()
     return lua_gettop(this->_ctx);
 }
 
-bool context::resume(int argc)
+bool context::resume(int argc, bool auto_release)
 {
     if (this->owner == nullptr)
         throw std::runtime_error("this context is not lua thread");
@@ -205,7 +224,8 @@ bool context::resume(int argc)
         return false;
 
     default:
-        main->release(*this);
+        if(auto_release)
+            main->release(*this);
         return true;
     }
 }
@@ -218,7 +238,16 @@ int context::state() const
 void context::release()
 {
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    main->release(*this);
+    switch(this->_state)
+    {
+    case LUA_OK:
+        main->release(*this);
+        break;
+
+    default:
+        main->revoke(*this);
+        break;
+    }
 }
 
 bool context::pending() const
@@ -235,6 +264,8 @@ main::main() : context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
+    this->load_file("scripts/script.lua");
+    this->load_file("scripts/common/npc.lua");
     this->load_file("scripts/common/door.lua");
     this->load_file("scripts/common/pickup.lua");
     this->load_file("scripts/common/attack.lua");
@@ -371,33 +402,33 @@ main::main() : context(::luaL_newstate())
 
 
     lua_pushinteger(*this, fb::game::item::attrs::NONE);
-    lua_setglobal(*this, "NONE");
+    lua_setglobal(*this, "ITEM_ATTR_NONE");
     lua_pushinteger(*this, fb::game::item::attrs::CONSUME);
-    lua_setglobal(*this, "CONSUME");
+    lua_setglobal(*this, "ITEM_ATTR_CONSUME");
     lua_pushinteger(*this, fb::game::item::attrs::BUNDLE);
-    lua_setglobal(*this, "BUNDLE");
+    lua_setglobal(*this, "ITEM_ATTR_BUNDLE");
     lua_pushinteger(*this, fb::game::item::attrs::SCRIPT);
-    lua_setglobal(*this, "SCRIPT");
+    lua_setglobal(*this, "ITEM_ATTR_SCRIPT");
     lua_pushinteger(*this, fb::game::item::attrs::CASH);
-    lua_setglobal(*this, "CASH");
+    lua_setglobal(*this, "ITEM_ATTR_CASH");
     lua_pushinteger(*this, fb::game::item::attrs::PACK);
-    lua_setglobal(*this, "PACK");
+    lua_setglobal(*this, "ITEM_ATTR_PACK");
     lua_pushinteger(*this, fb::game::item::attrs::EQUIPMENT);
-    lua_setglobal(*this, "EQUIPMENT");
+    lua_setglobal(*this, "ITEM_ATTR_EQUIPMENT");
     lua_pushinteger(*this, fb::game::item::attrs::WEAPON);
-    lua_setglobal(*this, "WEAPON");
+    lua_setglobal(*this, "ITEM_ATTR_WEAPON");
     lua_pushinteger(*this, fb::game::item::attrs::ARMOR);
-    lua_setglobal(*this, "ARMOR");
+    lua_setglobal(*this, "ITEM_ATTR_ARMOR");
     lua_pushinteger(*this, fb::game::item::attrs::SHIELD);
-    lua_setglobal(*this, "SHIELD");
+    lua_setglobal(*this, "ITEM_ATTR_SHIELD");
     lua_pushinteger(*this, fb::game::item::attrs::HELMET);
-    lua_setglobal(*this, "HELMET");
+    lua_setglobal(*this, "ITEM_ATTR_HELMET");
     lua_pushinteger(*this, fb::game::item::attrs::RING);
-    lua_setglobal(*this, "RING");
+    lua_setglobal(*this, "ITEM_ATTR_RING");
     lua_pushinteger(*this, fb::game::item::attrs::AUXILIARY);
-    lua_setglobal(*this, "AUXILIARY");
+    lua_setglobal(*this, "ITEM_ATTR_AUXILIARY");
     lua_pushinteger(*this, fb::game::item::attrs::ARROW);
-    lua_setglobal(*this, "ARROW");
+    lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
 
     lua_pushinteger(*this, fb::game::equipment::position::LEFT);
@@ -551,6 +582,11 @@ context& main::release(context& ctx)
 
     if(this->idle.contains(ctx))
         return ctx;
+
+    if(ctx.state() != LUA_OK)
+        throw std::runtime_error("lua ctx's current state is not LUA_OK");
+
+    lua_pop(ctx, -1);
 
     auto key = (lua_State*)ctx;
     this->idle.insert(std::make_pair(key, std::move(this->busy[key])));

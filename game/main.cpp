@@ -189,6 +189,54 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
+    if(fb::game::model::sell.load
+    (
+        config["table"]["sell"].asString(),
+        [&] (const auto& name, auto percentage)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::SELL_LOADED, percentage, name.c_str());
+        }, 
+        [&] (const auto& name, const auto& error)
+        {
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
+        }, 
+        [&] (uint32_t count)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::SELL_ALL_LOADED, count);
+        }) == false)
+    {
+        return false;
+    }
+
+    pivot += (stack + 1);
+    stack = 0;
+    if(fb::game::model::buy.load
+    (
+        config["table"]["buy"].asString(),
+        [&] (const auto& name, auto percentage)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::BUY_LOADED, percentage, name.c_str());
+        }, 
+        [&] (const auto& name, const auto& error)
+        {
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
+        }, 
+        [&] (uint32_t count)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::BUY_ALL_LOADED, count);
+        }) == false)
+    {
+        return false;
+    }
+
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::model::npcs.load
     (
         config["table"]["npc"].asString(),

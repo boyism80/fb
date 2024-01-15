@@ -182,6 +182,7 @@ public:
     fb::task<bool>          handle_command_save(fb::game::session& session, Json::Value& parameters);
     fb::task<bool>          handle_command_mapobj(fb::game::session& session, Json::Value& parameters);
     fb::task<bool>          handle_command_randmap(fb::game::session& session, Json::Value& parameters);
+    fb::task<bool>          handle_command_npc(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object
@@ -262,7 +263,7 @@ public:
     void                    on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<item::model*>& cores, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
 
@@ -273,6 +274,10 @@ public:
     static int              builtin_name2npc(lua_State* lua);
     static int              builtin_name2map(lua_State* lua);
     static int              builtin_name2item(lua_State* lua);
+    static int              builtin_pursuit_sell(lua_State* lua);
+    static int              builtin_pursuit_buy(lua_State* lua);
+    static int              builtin_sell_price(lua_State* lua);
+    static int              builtin_buy_price(lua_State* lua);
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);
 };

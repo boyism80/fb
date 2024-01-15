@@ -130,6 +130,40 @@ std::string UTF8(const std::string& cp949, PLATFORM p)
     }
 }
 
+std::wstring W(const std::string& m)
+{
+#ifdef _WIN32
+    auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), nullptr, 0) + 1;
+    auto wide = new wchar_t[wide_size];
+    memset(wide, 0, wide_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), wide, wide_size);
+
+    auto dst = std::wstring(wide);
+    delete[] wide;
+    return dst;
+#else
+    std::wstring_convert<std::codecvt_utf8<wchar_t>>() conv;
+    return conv.from_bytes(m);
+#endif
+}
+
+std::string M(const std::wstring& w)
+{
+#ifdef _WIN32
+    auto mbs_size = WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    auto mbs = new char[mbs_size];
+    memset(mbs, 0, mbs_size);
+    WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, mbs, mbs_size, nullptr, nullptr);
+    
+    auto dst = std::string(mbs);
+    delete[] mbs;
+    return dst;
+#else
+    std::wstring_convert<std::codecvt_utf8<wchar_t>>() conv;
+    return conv.to_bytes(w);
+#endif
+}
+
 std::string fstring_c(const std::string& fmt, va_list* args)
 {
     va_list clone;

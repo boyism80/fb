@@ -3,7 +3,7 @@
 #include <fb/game/session.h>
 #include <fb/game/mob.h>
 #include <fb/game/context.h>
-#include <fb/game/lua.builtin.h>
+#include <fb/game/built_in.h>
 
 int fb::game::object::model::builtin_name(lua_State* lua)
 {
@@ -76,7 +76,7 @@ int fb::game::object::builtin_core(lua_State* lua)
         return 0;
     
     auto model = object->based();
-    model->to_lua(lua);
+    thread->pushobject(model);
     return 1;
 }
 
@@ -452,7 +452,7 @@ int fb::game::object::builtin_map(lua_State* lua)
             if(map == nullptr)
                 thread->pushnil();
             else
-                map->to_lua(lua);
+                thread->pushobject(map);
             return 1;
         }
 
@@ -529,7 +529,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
         auto context = thread->env<fb::game::context>("context");
         auto item = model->make(*context);
         item->map(object->_map, object->_position);
-        item->to_lua(lua);
+        thread->pushobject(item);
         
         context->send(*item, fb::protocol::game::response::object::show(*item), context::scope::PIVOT);
     }
@@ -556,7 +556,7 @@ int fb::game::object::builtin_showings(lua_State* lua)
 
     for(int i = 0; i < objects.size(); i++)
     {
-        objects[i]->to_lua(lua);
+        thread->pushobject(objects[i]);
         thread->rawseti(-2, uint64_t(i+1));
     }
 
@@ -582,7 +582,7 @@ int fb::game::object::builtin_showns(lua_State* lua)
 
     for(int i = 0; i < objects.size(); i++)
     {
-        objects[i]->to_lua(lua);
+        thread->pushobject(objects[i]);
         thread->rawseti(-2, uint64_t(i+1));
     }
 
@@ -606,7 +606,7 @@ int fb::game::object::builtin_front(lua_State* lua)
     if(front == nullptr)
         thread->pushnil();
     else
-        front->to_lua(lua);
+        thread->pushobject(front);
 
     return 1;
 }

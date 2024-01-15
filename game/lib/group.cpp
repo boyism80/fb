@@ -87,7 +87,7 @@ int fb::game::group::builtin_members(lua_State* lua)
     thread->new_table();
     for(int i = 0; i < group->_members.size(); i++)
     {
-        group->_members[i]->to_lua(lua);
+        thread->pushobject(group->_members[i]);
         thread->rawseti(-2, i+1);
     }
 
@@ -104,6 +104,6 @@ int fb::game::group::builtin_leader(lua_State* lua)
     if(group == nullptr)
         return 0;
     
-    group->_leader->to_lua(lua);
+    thread->pushobject(group->_leader);
     return 1;
 }

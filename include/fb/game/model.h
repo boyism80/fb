@@ -66,11 +66,11 @@ public:
 
 private:
     static fb::game::item::model*          create(uint32_t id, const Json::Value& data);
-    static fb::game::item::conditions       to_condition(const Json::Value& data);
-    static fb::game::item::penalties        to_penalty(const std::string& penalty);
+    static fb::game::item::conditions      to_condition(const Json::Value& data);
+    static fb::game::item::penalties       to_penalty(const std::string& penalty);
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::item::model*                 name2item(const std::string& name);
@@ -79,25 +79,26 @@ public:
     fb::game::item::model*                 operator [] (uint16_t id);
 };
 
-class npc : private std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>
+using base_npc = std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>;
+class npc : private base_npc
 {
 private:
     friend class fb::game::table;
 
 public:
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::begin;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::end;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::cbegin;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::cend;
-    using std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::size;
+    using base_npc::begin;
+    using base_npc::end;
+    using base_npc::cbegin;
+    using base_npc::cend;
+    using base_npc::size;
 
 public:
     npc();
     ~npc();
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::npc::model*                  name2npc(const std::string& name);
@@ -123,13 +124,13 @@ public:
     ~mob();
 
 private:
-    static fb::game::mob::sizes             to_size(const std::string& size);
-    static fb::game::mob::offensive_type    to_offensive(const std::string& offensive);
+    static fb::game::mob::sizes            to_size(const std::string& size);
+    static fb::game::mob::offensive_type   to_offensive(const std::string& offensive);
 
 public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-    bool                                    load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_drops(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    bool                                   load_spawn(const std::string& path, fb::game::context& context, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
 
 public:
     fb::game::mob::model*                  name2mob(const std::string& name);
@@ -282,6 +283,28 @@ public:
     fb::game::board::section*               operator [] (uint32_t index);
 };
 
+
+using pursuit_pair = std::vector<std::pair<fb::game::item::model*, std::optional<uint32_t>>>;
+using base_pursuit = std::map<uint16_t, pursuit_pair>;
+class pursuit : private base_pursuit
+{
+public:
+    pursuit() = default;
+    ~pursuit() = default;
+
+public:
+    using base_pursuit::begin;
+    using base_pursuit::end;
+    using base_pursuit::cbegin;
+    using base_pursuit::cend;
+    using base_pursuit::size;
+    using base_pursuit::contains;
+
+public:
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+    pursuit_pair*                           operator [] (uint16_t index);
+};
+
 }
 
 class session;
@@ -300,6 +323,8 @@ public:
     static fb::game::container::mix         mixes;
     static fb::game::container::door        doors;
     static fb::game::container::board       boards;
+    static fb::game::container::pursuit     sell;
+    static fb::game::container::pursuit     buy;
 
 private:
     model();

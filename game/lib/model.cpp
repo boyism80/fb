@@ -48,6 +48,8 @@ fb::game::container::cls     fb::game::model::classes;
 fb::game::container::mix     fb::game::model::mixes;
 fb::game::container::door    fb::game::model::doors;
 fb::game::container::board   fb::game::model::boards;
+fb::game::container::pursuit fb::game::model::sell;
+fb::game::container::pursuit fb::game::model::buy;
 
 fb::game::model::model()
 { }
@@ -288,8 +290,8 @@ fb::game::item::model* fb::game::container::item::create(uint32_t id, const Json
         /* condition     */ to_condition(data),
         /* penalty       */ to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)),
         /* capacity      */ std::max(uint16_t(1), (uint16_t)data["capacity"].asInt()),
-        /* trade         */ fb::game::item::trade(data["trade"]["enabled"].asBool()),
-        /* storage       */ fb::game::item::storage(data["storage"]["enabled"].asBool(), data["storage"]["price"].asInt()),
+        /* trade         */ data["trade"].asBool(),
+        /* storage       */ data["storage"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(data["storage"].asUInt()),
         /* desc          */ CP949(data["desc"].asString(), PLATFORM::Windows),
         /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
     };
@@ -331,8 +333,8 @@ fb::game::item::model* fb::game::container::item::create(uint32_t id, const Json
         config,
         /* dress          */ (uint16_t)option["look"].asInt(),
         /* durability     */ (uint16_t)option["durability"].asInt(),
-        /* repair         */ fb::game::equipment::repair(option["repair"]["enabled"].asBool(), option["repair"]["price"].asDouble()),
-        /* rename         */ fb::game::equipment::rename(option["rename"]["enabled"].asBool(), option["rename"]["price"].asInt()),
+        /* repair         */ option["repair"].isNull() ? std::optional<double>() : std::optional<double>(option["repair"].asDouble()),
+        /* rename         */ option["rename"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(option["repair"].asUInt()),
         /* dress_script   */ CP949(data["script"]["dress"].asString(), PLATFORM::Windows),
         /* undress_script */ CP949(data["script"]["undress"].asString(), PLATFORM::Windows),
         /* hit            */ (uint8_t)option["hit"].asInt(),
@@ -610,11 +612,81 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
         path, 
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
-            uint32_t            id      = std::stoi(key.asString());
-            auto                name    = CP949(data["name"].asString(), PLATFORM::Windows);
-            uint16_t            look    = data["look"].asInt() + 0x7FFF;
-            uint8_t             color   = data["color"].asInt();
-            auto                script  = CP949(data["script"].asString(), PLATFORM::Windows);
+            uint32_t            id        = std::stoi(key.asString());
+            auto                name      = CP949(data["name"].asString(), PLATFORM::Windows);
+            uint16_t            look      = data["look"].asInt() + 0x7FFF;
+            uint8_t             color     = data["color"].asInt();
+            auto                script    = CP949(data["script"].asString(), PLATFORM::Windows);
+            auto                sells     = std::map<std::string, uint16_t>();
+            auto                buys      = std::map<std::string, uint16_t>();
+
+            if (data.isMember("sell"))
+            {
+                auto& sell = data["sell"];
+                if (sell.isNumeric())
+                {
+                    auto k = "";
+                    auto v = sell.asUInt();
+                    sells.insert({ k, v });
+                }
+                else if (sell.isObject())
+                {
+                    for (auto i = sell.begin(); i != sell.end(); i++)
+                    {
+                        auto k = CP949(i.key().asString(), PLATFORM::Windows);
+                        auto v = (*i).asUInt();
+
+                        sells.insert({ k, v });
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("invalid sell data type");
+                }
+            }
+            for (auto& [k, v] : sells)
+            {
+                if (fb::game::model::sell.contains(v) == false)
+                {
+                    auto sstream = std::stringstream();
+                    sstream << v << " : sell에 정의되지 않았습니다.";
+                    throw std::runtime_error(sstream.str());
+                }
+            }
+
+            if (data.isMember("buy"))
+            {
+                auto& buy = data["buy"];
+                if (buy.isNumeric())
+                {
+                    auto k = "";
+                    auto v = buy.asUInt();
+                    buys.insert({ k, v });
+                }
+                else if (buy.isObject())
+                {
+                    for (auto i = buy.begin(); i != buy.end(); i++)
+                    {
+                        auto k = CP949(i.key().asString(), PLATFORM::Windows);
+                        auto v = (*i).asUInt();
+
+                        buys.insert({ k, v });
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("invalid buy data type");
+                }
+            }
+            for (auto& [k, v] : buys)
+            {
+                if (fb::game::model::buy.contains(v) == false)
+                {
+                    auto sstream = std::stringstream();
+                    sstream << v << " : buy에 정의되지 않았습니다.";
+                    throw std::runtime_error(sstream.str());
+                }
+            }
 
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
             {
@@ -637,9 +709,11 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                             .look = look,
                             .color = color,
                         },
-                        script
+                        script,
+                        sells,
+                        buys
                     });
-                std::map<uint16_t, std::unique_ptr<fb::game::npc::model>>::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
+                fb::game::container::base_npc::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);
             }
         },
@@ -1333,8 +1407,95 @@ bool fb::game::container::board::load(const std::string& path, fb::table::handle
 
 fb::game::board::section* fb::game::container::board::operator [] (uint32_t index)
 {
-    if(std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains(index) == false)
+    if (std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::contains(index) == false)
         return nullptr;
 
     return std::map<uint32_t, std::unique_ptr<fb::game::board::section>>::operator[](index).get();
+}
+
+bool fb::game::container::pursuit::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
+{
+    auto                        count   = fb::table::load
+    (
+        path, 
+        [&] (Json::Value& key, Json::Value& data, double percentage)
+        {
+             auto                id      = std::stoi(key.asCString());
+             auto                dset    = pursuit_pair();
+             if (data.isObject())
+             {
+                 for(auto i = data.begin(); i != data.end(); i++)
+                 {
+                     auto k = CP949(i.key().asString(), PLATFORM::Windows);
+                     auto item = fb::game::model::items.name2item(k);
+                     if (item == nullptr)
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid item name (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     auto price = std::optional<uint32_t>();
+                     if((*i).isNull())
+                     {
+                     }
+                     else if((*i).isNumeric())
+                     {
+                         price = (*i).asUInt();
+                     }
+                     else
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid price type (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     dset.push_back({ item, price });
+                 }
+
+                 fb::game::container::base_pursuit::insert({id, dset});
+                 callback(std::to_string(id), percentage);
+             }
+             else if (data.isArray())
+             {
+                 for (auto& e : data)
+                 {
+                     auto k = CP949(e.asString(), PLATFORM::Windows);
+                     auto item = fb::game::model::items.name2item(k);
+                     if (item == nullptr)
+                     {
+                         auto sstream = std::stringstream();
+                         sstream << "invalid item name (" << k << ")";
+                         throw std::runtime_error(sstream.str());
+                     }
+
+                     auto price = std::optional<uint32_t>{};
+                     dset.push_back({ item, price });
+                 }
+                 fb::game::container::base_pursuit::insert({ id, dset });
+                 callback(std::to_string(id), percentage);
+             }
+             else
+             {
+                 throw std::runtime_error("invalid pursuit type");
+             }
+        },
+        [&] (Json::Value& key, Json::Value& data, const std::string& e)
+        {
+            auto                id      = key.asInt();
+            error(std::to_string(id), e);
+        },
+        false
+    );
+
+    complete(count);
+    return true;
+}
+
+fb::game::container::pursuit_pair* fb::game::container::pursuit::operator [] (uint16_t index)
+{
+    if(fb::game::container::base_pursuit::contains(index) == false)
+        return nullptr;
+
+    return &fb::game::container::base_pursuit::operator[](index);
 }

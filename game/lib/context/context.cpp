@@ -42,16 +42,24 @@ IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
-{"input_dialog",        fb::game::npc::model::builtin_input_dialog},
-{"menu_dialog",         fb::game::npc::model::builtin_menu_dialog},
-{"item_dialog",         fb::game::npc::model::builtin_item_dialog},
+{"input",               fb::game::npc::model::builtin_input},
+{"menu",                fb::game::npc::model::builtin_menu},
+{"item",                fb::game::npc::model::builtin_item},
+{"slot",                fb::game::npc::model::builtin_slot},
+{"sell",                fb::game::npc::model::builtin_sell},
+{"repair",              fb::game::npc::model::builtin_repair},
+{"repair_all",          fb::game::npc::model::builtin_repair_all},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"__eq",                fb::game::object::builtin_eq},
-{"input_dialog",        fb::game::npc::builtin_input_dialog},
-{"menu_dialog",         fb::game::npc::builtin_menu_dialog},
-{"item_dialog",         fb::game::npc::builtin_item_dialog},
+{"input",               fb::game::npc::builtin_input},
+{"menu",                fb::game::npc::builtin_menu},
+{"item",                fb::game::npc::builtin_item},
+{"slot",                fb::game::npc::builtin_slot},
+{"sell",                fb::game::npc::builtin_sell},
+{"repair",              fb::game::npc::builtin_repair},
+{"repair_all",          fb::game::npc::builtin_repair_all},
 END_LUA_EXTENSION
 
 
@@ -103,9 +111,19 @@ END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"make",                fb::game::item::model::builtin_make},
+{"attr",                fb::game::item::model::builtin_attr},
+{"capacity",            fb::game::item::model::builtin_capacity},
+{"durability",          fb::game::item::model::builtin_durability},
+{"price",               fb::game::item::model::builtin_price},
+{"repair_price",        fb::game::item::model::builtin_repair_price},
+{"rename_price",        fb::game::item::model::builtin_rename_price},
+{"store_price",         fb::game::item::model::builtin_store_price},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+{"model",               fb::game::item::builtin_model},
+{"count",               fb::game::item::builtin_count},
+{"durability",          fb::game::item::builtin_durability},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
@@ -157,21 +175,25 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_class<map, lua::luable>();
     lua::bind_class<door, lua::luable>();
     lua::bind_class<group, lua::luable>();
-    lua::bind_class<object::model, lua::luable>();     lua::bind_class<object, lua::luable>();
+    lua::bind_class<object::model, lua::luable>();    lua::bind_class<object, lua::luable>();
     lua::bind_class<life::model, object::model>();    lua::bind_class<life, object>();
     lua::bind_class<mob::model, life::model>();       lua::bind_class<mob, life>();
     lua::bind_class<npc::model, object::model>();     lua::bind_class<npc, object>();
     lua::bind_class<item::model, object::model>();    lua::bind_class<item, object>();
     lua::bind_class<fb::game::session, life>();
 
-    lua::bind_function("seed",      builtin_seed);
-    lua::bind_function("sleep",     builtin_sleep);
-    lua::bind_function("name2mob",  builtin_name2mob);
-    lua::bind_function("name2item", builtin_name2item);
-    lua::bind_function("name2npc",  builtin_name2npc);
-    lua::bind_function("name2map",  builtin_name2map);
-    lua::bind_function("timer",     builtin_timer);
-    lua::bind_function("weather",   builtin_weather);
+    lua::bind_function("seed",              builtin_seed);
+    lua::bind_function("sleep",             builtin_sleep);
+    lua::bind_function("name2mob",          builtin_name2mob);
+    lua::bind_function("name2item",         builtin_name2item);
+    lua::bind_function("name2npc",          builtin_name2npc);
+    lua::bind_function("name2map",          builtin_name2map);
+    lua::bind_function("pursuit_sell",      builtin_pursuit_sell);
+    lua::bind_function("pursuit_buy",       builtin_pursuit_buy);
+    lua::bind_function("sell_price",        builtin_sell_price);
+    lua::bind_function("buy_price",         builtin_buy_price);
+    lua::bind_function("timer",             builtin_timer);
+    lua::bind_function("weather",           builtin_weather);
 
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
@@ -341,6 +363,12 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
             .fn = std::bind(&context::handle_command_randmap, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
+
+    this->bind_command("엔피씨생성", command
+        {
+            .fn = std::bind(&context::handle_command_npc, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 fb::game::context::~context()
@@ -469,17 +497,15 @@ std::string fb::game::context::elapsed_message(const daotk::mysql::datetime& dat
 
 fb::game::session* fb::game::context::find(const std::string& name)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    auto i = std::find_if(this->sockets.begin(), this->sockets.end(), 
-        [&name] (const auto& pair)
-        {
-            return pair.second->data()->name() == name;
-        });
+    auto socket = this->sockets.find([&name] (auto& socket)
+    {
+        return socket.data()->name() == name;
+    });
 
-    if(i == this->sockets.end())
+    if(socket == nullptr)
         return nullptr;
 
-    return i->second->data();
+    return socket->data();
 }
 
 bool fb::game::context::exists(const fb::game::object& object) const
@@ -593,7 +619,8 @@ void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::se
             return true;
 
         item->count(count.value());
-        item->durability(durability);
+        if (durability.has_value())
+            item->durability(durability.value());
 
         if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
             session.items.add(*item, index);
@@ -725,12 +752,10 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::WORLD:
     {
-        MUTEX_GUARD(this->sockets.mutex);
-        for(const auto& [key, value] : this->sockets)
+        this->sockets.each([&fn, encrypt] (auto& socket)
         {
-            auto session = value->data();
-            session->send(*fn(*session).get(), encrypt);
-        }
+            socket.send(*fn(*socket.data()).get(), encrypt);
+        });
     } break;
 
     }
@@ -738,25 +763,23 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
 void fb::game::context::send(const fb::protocol::base::header& response, const fb::game::map& map, bool encrypt)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(const auto& [key, value] : this->sockets)
+    this->sockets.each([&response, &map, encrypt] (auto& socket)
     {
-        auto session = value->data();
+        auto session = socket.data();
         if(session->map() != &map)
-            continue;
+            return;
 
-        session->send(response, encrypt);
-    }
+        socket.send(response, encrypt);
+    });
 }
 
 void fb::game::context::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(const auto& [key, value] : this->sockets)
+    this->sockets.each([&response, encrypt] (auto& socket)
     {
-        auto session = value->data();
+        auto session = socket.data();
         session->send(response, encrypt);
-    }
+    });
 }
 
 void fb::game::context::save(fb::game::session& session)
@@ -773,20 +796,13 @@ fb::task<void> fb::game::context::save(fb::game::session& session, std::function
     sql.push_back(query::make_update_spell(session));
     sql.push_back(query::make_delete_spell(session));
 
-    auto fd = session.fd();
     try
     {
-        auto socket = this->sockets[fd];
-        if (socket == nullptr)
-            co_return;
-
         co_await this->_db.co_exec(session.id(), sql);
-        if(this->sockets.contains(fd))
-            fn(session);
     }
     catch(std::exception& e)
     {
-
+        fb::logger::fatal(e.what());
     }
 }
 
@@ -797,12 +813,11 @@ void fb::game::context::save()
 
 void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    for(auto& socket : this->sockets)
+    this->sockets.each([this, &fn] (auto& socket)
     {
-        auto session = socket.second.get()->data();
+        auto session = socket.data();
         this->save(*session, fn);
-    }
+    });
 }
 
 fb::awaitable<void> fb::game::context::co_save(fb::game::session& session)
@@ -870,6 +885,8 @@ void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::n
     auto model = npc.based<fb::game::npc>();
     if(model->script.empty())
         return;
+
+    session.dialog.release();
 
     session.dialog
         .from(model->script.c_str())
@@ -1227,24 +1244,31 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
         co_return true;
     }
 
-    auto map = session->map();
-    auto you = map->objects[request.fd];
-    if(you == nullptr)
-        co_return true;
-
-    switch(you->type())
+    if(request.fd == 1 && session->dialog.active())
     {
-    case fb::game::object::types::SESSION:
-        this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
-        break;
+        session->dialog.pushnil().resume(1);
+    }
+    else
+    {
+        auto map = session->map();
+        auto you = map->objects[request.fd];
+        if(you == nullptr)
+            co_return true;
 
-    case fb::game::object::types::MOB:
-        this->handle_click_mob(*session, static_cast<mob&>(*you));
-        break;
+        switch(you->type())
+        {
+        case fb::game::object::types::SESSION:
+            this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
+            break;
 
-    case fb::game::object::types::NPC:
-        this->handle_click_npc(*session, static_cast<npc&>(*you));
-        break;
+        case fb::game::object::types::MOB:
+            this->handle_click_mob(*session, static_cast<mob&>(*you));
+            break;
+
+        case fb::game::object::types::NPC:
+            this->handle_click_npc(*session, static_cast<npc&>(*you));
+            break;
+        }
     }
 
     co_return true;
@@ -1437,12 +1461,12 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
 
 fb::task<bool> fb::game::context::handle_user_list(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::user_list& request)
 {
-    MUTEX_GUARD(this->sockets.mutex);
-    auto session = socket.data();
-    if (session->inited() == false)
-        co_return true;
+    // MUTEX_GUARD(this->sockets.mutex);
+    // auto session = socket.data();
+    // if (session->inited() == false)
+    //     co_return true;
 
-    this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
+    // this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
     co_return true;
 }
 
@@ -1463,11 +1487,25 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             co_return true;
     }
     
-    std::stringstream sstream;
-    if(request.shout)
+    auto sstream = std::stringstream();
+    auto npcs = std::vector<fb::game::npc*>();
+    if (request.shout)
+    {
+        for (auto& [fd, obj] : session->map()->objects)
+        {
+            if (obj->is(fb::game::object::types::NPC))
+                npcs.push_back(static_cast<fb::game::npc*>(obj));
+        }
         sstream << session->name() << "! " << request.message;
+    }
     else
+    {
+        for (auto npc : session->showings(fb::game::object::types::NPC))
+        {
+            npcs.push_back(static_cast<fb::game::npc*>(npc));
+        }
         sstream << session->name() << ": " << request.message;
+    }
 
     this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? chat::type::SHOUT : chat::type::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     co_return true;
@@ -1670,6 +1708,9 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     if (session->inited() == false)
         co_return true;
 
+    if(session->dialog.active() == false)
+        co_return true;
+
     switch(request.interaction)
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
@@ -1687,13 +1728,9 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
     case dialog::interaction::INPUT_EX:
     {
         if(request.action == 0x02) // OK button
-        {
             session->dialog.pushstring(request.message);
-        }
         else
-        {
             session->dialog.pushinteger(request.action);
-        }
 
         session->dialog.resume(1);
         break;
@@ -1707,10 +1744,11 @@ fb::task<bool> fb::game::context::handle_dialog(fb::socket<fb::game::session>& s
 
     case dialog::interaction::SLOT:
     {
+        session->dialog.pushinteger(request.index).resume(1);
         break;
     }
 
-    case dialog::interaction::SELL:
+    case dialog::interaction::ITEM:
     {
         session->dialog.pushstring(request.name).resume(1);
         break;

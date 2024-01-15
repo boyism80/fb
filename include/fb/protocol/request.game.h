@@ -4,6 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <fb/game/mmo.h>
 #include <fb/game/trade.h>
+#include <fb/game/dialog.h>
 #include <optional>
 
 using namespace fb::game;
@@ -544,11 +545,19 @@ public:
             break;
         }
 
-        case fb::game::dialog::interaction::SELL:
+        case fb::game::dialog::interaction::ITEM:
         {
             auto unknown = in_stream.read_u32();
             this->pursuit = in_stream.read_u16();
             this->name = in_stream.readstr_u8();
+            break;
+        }
+
+        case fb::game::dialog::interaction::SLOT:
+        {
+            auto unknown = in_stream.read_u32();
+            this->pursuit = in_stream.read_u16();
+            this->index = in_stream.read_u8();
             break;
         }
         }

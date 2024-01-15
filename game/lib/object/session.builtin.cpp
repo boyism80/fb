@@ -252,7 +252,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     if(item == nullptr)
         thread->pushnil();
     else
-        item->to_lua(lua);
+        thread->pushobject(item);
 
     return 1;
 }
@@ -268,14 +268,15 @@ int fb::game::session::builtin_items(lua_State* lua)
     if(session == nullptr || context->exists(*session) == false)
         return 0;
 
-    lua_newtable(lua);
+    thread->new_table();
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(session->items[i] == nullptr)
             continue;
 
-        session->items[i]->to_lua(lua);
-        lua_rawseti(lua, -2, i+1);
+        thread->pushinteger(i + 1);
+        thread->pushobject(session->items[i]);
+        lua_settable(lua, -3);
     }
 
     return 1;
@@ -296,7 +297,7 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
 
     auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1);
     if(dropped != nullptr)
-        dropped->to_lua(lua);
+        thread->pushobject(dropped);
     else
         thread->pushnil();
 
@@ -315,7 +316,8 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(session == nullptr || context->exists(*session) == false)
         return 0;
     auto name = thread->tostring(2);
-    auto store = argc < 3 ? true : thread->toboolean(3);
+    auto count = argc < 3 ? 1 : thread->tointeger(3);
+    auto store = argc < 4 ? true : thread->toboolean(4);
 
     if(store == false)
         return object::builtin_mkitem(lua);
@@ -328,11 +330,15 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     else
     {
         auto context = thread->env<fb::game::context>("context");
-        auto item = model->make(*context);
+        auto item = model->make(*context, count);
         auto slot = session->items.add(item);
-        item->to_lua(lua);
+        if(slot == 0xFF)
+        {
+            thread->pushnil();
+            return 1;
+        }
 
-        context->send(*session, fb::protocol::game::response::item::update(*session, slot), context::scope::SELF);
+        thread->pushobject(session->items[slot]);
     }
 
     return 1;
@@ -540,7 +546,7 @@ int fb::game::session::builtin_group(lua_State* lua)
     if(group == nullptr)
         thread->pushnil();
     else
-        group->to_lua(lua);
+        thread->pushobject(group);
 
     return 1;
 }

@@ -76,7 +76,7 @@ CREATE TABLE `item` (
   `owner` int(10) unsigned NOT NULL,
   `index` smallint(6) NOT NULL,
   `slot` smallint(6) NOT NULL,
-  `master` int(10) unsigned DEFAULT NULL,
+  `model` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`owner`,`index`,`slot`),
@@ -475,4 +475,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-11-07 23:09:57
+-- Dump completed on 2024-01-13  2:09:00

@@ -19,6 +19,19 @@ fb::game::item::model::model(const fb::game::item::model::config& config) :
 fb::game::item::model::~model()
 { }
 
+fb::game::item::attrs fb::game::item::model::attr() const
+{
+    auto                    attr = attrs::NONE;
+    if(this->capacity > 1)
+        attr = attrs((uint32_t)attr | (uint32_t)attrs::BUNDLE);
+    return attr;
+}
+
+bool fb::game::item::model::attr(fb::game::item::attrs flag) const
+{
+    return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
+}
+
 int fb::game::item::model::builtin_make(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -47,23 +60,134 @@ int fb::game::item::model::builtin_make(lua_State* lua)
         object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
     }
 
+    // TODO: 제거해도 되는지 확인
     context->send(*object, fb::protocol::game::response::object::show(*object), fb::game::context::scope::PIVOT);
-
-    object->to_lua(lua);
+    thread->pushobject(object);
     return 1;
 }
 
-fb::game::item::attrs fb::game::item::model::attr() const
+int fb::game::item::model::builtin_attr(lua_State* lua)
 {
-    auto                    attr = attrs::NONE;
-    if(this->capacity > 1)
-        attr = attrs((uint32_t)attr | (uint32_t)attrs::BUNDLE);
-    return attr;
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    auto flag = (fb::game::item::attrs)thread->tointeger(2);
+
+    thread->pushboolean(model->attr(flag));
+    return 1;
 }
 
-bool fb::game::item::model::attr(fb::game::item::attrs flag) const
+int fb::game::item::model::builtin_capacity(lua_State* lua)
 {
-    return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    thread->pushinteger(model->capacity);
+    return 1;
+}
+
+int fb::game::item::model::builtin_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    thread->pushinteger(model->price);
+    return 1;
+}
+
+int fb::game::item::model::builtin_durability(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    auto durability = uint16_t(0);
+    if(model->attr(fb::game::item::attrs::PACK))
+    {
+        durability = static_cast<fb::game::pack::model*>(model)->durability;
+    }
+    else if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        durability = static_cast<fb::game::equipment::model*>(model)->durability;
+    }
+    else
+    {
+        durability = 0;
+    }
+
+    thread->pushinteger(durability);
+    return 1;
+}
+
+int fb::game::item::model::builtin_repair_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        auto repair_price = static_cast<fb::game::equipment::model*>(model)->repair;
+        if(repair_price.has_value())
+            thread->pushnumber(repair_price.value());
+        else
+            thread->pushnil();
+    }
+    else
+    {
+        thread->pushnil();
+    }
+
+    return 1;
+}
+
+int fb::game::item::model::builtin_rename_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    {
+        auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
+        if(rename_price.has_value())
+            thread->pushinteger(rename_price.value());
+        else
+            thread->pushnil();
+    }
+    else
+    {
+        thread->pushnil();
+    }
+
+    return 1;
+}
+
+int fb::game::item::model::builtin_store_price(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto model = thread->touserdata<fb::game::item::model>(1);
+    if(model->storage.has_value())
+    {
+        thread->pushinteger(model->storage.value());
+    }
+    else
+    {
+        thread->pushnil();
+    }
+    return 1;
 }
 
 
@@ -107,7 +231,7 @@ std::optional<uint16_t> fb::game::item::durability() const
     return std::nullopt;
 }
 
-void fb::game::item::durability(std::optional<uint16_t> value)
+void fb::game::item::durability(uint16_t value)
 { }
 
 
@@ -194,7 +318,7 @@ bool fb::game::item::active()
 fb::game::item* fb::game::item::split(uint16_t count)
 {
     auto model = this->based<fb::game::item>();
-    if(model->trade.enabled == false)
+    if(model->trade == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
     if(this->attr(item::attrs::BUNDLE) && this->_count > count)
@@ -227,4 +351,54 @@ void fb::game::item::merge(fb::game::item& item)
 
     if(remain > 0 && this->_count == model->capacity)
         listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+}
+
+int fb::game::item::builtin_model(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto item = thread->touserdata<fb::game::item>(1);
+    auto model = item->based<fb::game::item>();
+
+    thread->pushobject(model);
+    return 1;
+}
+
+int fb::game::item::builtin_count(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto item = thread->touserdata<fb::game::item>(1);
+    thread->pushinteger(item->count());
+    return 1;
+}
+
+int fb::game::item::builtin_durability(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto argc = thread->argc();
+    auto item = thread->touserdata<fb::game::item>(1);
+
+    if(argc > 1)
+    {
+        auto value = thread->tointeger(2);
+        item->durability(value);
+        return 0;
+    }
+    else
+    {
+        auto durability = item->durability();
+        if(durability.has_value())
+            thread->pushinteger(durability.value());
+        else
+            thread->pushnil();
+        return 1;
+    }
 }

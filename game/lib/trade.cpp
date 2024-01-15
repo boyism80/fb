@@ -119,7 +119,7 @@ bool fb::game::trade::up(fb::game::item& item)
         if(this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
-        if(model->trade.enabled == false)
+        if(model->trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
         if(enum_in(item.attr(), fb::game::item::attrs::BUNDLE) && item.count() > 1)
@@ -197,7 +197,7 @@ bool fb::game::trade::count(uint16_t count)
             throw std::runtime_error(message::trade::NOT_SELECTED);
 
         auto model = _selected->based<fb::game::item>();
-        if(model->trade.enabled == false)
+        if(model->trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
         if(this->_selected->count() < count)

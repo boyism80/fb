@@ -224,7 +224,7 @@ int fb::game::life::builtin_spell(lua_State* lua)
     
     auto index = (int)thread->tointeger(2);
 
-    life->spells[index]->to_lua(lua);
+    thread->pushobject(life->spells[index]);
     return 1;
 }
 
