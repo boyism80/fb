@@ -1,4 +1,24 @@
 function sell(me, npc, pursuit)
+	if pursuit == nil then
+		return DIALOG_RESULT_QUIT
+	end
+
+	if type(pursuit) == 'table' then
+		local menu = {}
+		for i, pair in pairs(pursuit) do
+			local m, p = table.unpack(pair)
+			table.insert(menu, m)
+		end
+
+		local selected = npc:menu(me, '무엇을 사시겠어요?' menu)
+		if selected == nil then
+			return DIALOG_RESULT_NEXT
+		end
+
+		local m, p = table.unpack(pursuit[selected+1])
+		return sell(me, npc, p)
+	end
+
 	local list = pursuit_sell(pursuit)
 ::ROUTINE1::
 	local selected = npc:item(me, '제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', list)

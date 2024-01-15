@@ -45,11 +45,13 @@ public:
     struct config : public fb::game::object::model::config
     {
     public:
-        std::string             script;
+        std::string                         script;
+        std::map<std::string, uint16_t>     sell, buy;
     };
 
 public:
-    std::string                 script;
+    const std::string                       script;
+    const std::map<std::string, uint16_t>   sell, buy;
 
 public:
     friend class npc;

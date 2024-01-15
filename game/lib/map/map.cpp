@@ -422,7 +422,7 @@ int fb::game::map::builtin_objects(lua_State* lua)
         return 0;
     
 
-    lua_newtable(lua);
+    thread->new_table();
     const auto& objects = map->objects;
 
     for(int i = 0; i < objects.size(); i++)
@@ -553,7 +553,7 @@ int fb::game::map::builtin_doors(lua_State* lua)
         return 0;
     
 
-    lua_newtable(lua);
+    thread->new_table();
 
     auto i = 0;
     for(const auto& door : map->doors)

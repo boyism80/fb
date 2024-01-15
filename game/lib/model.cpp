@@ -617,6 +617,76 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
             uint16_t            look      = data["look"].asInt() + 0x7FFF;
             uint8_t             color     = data["color"].asInt();
             auto                script    = CP949(data["script"].asString(), PLATFORM::Windows);
+            auto                sells     = std::map<std::string, uint16_t>();
+            auto                buys      = std::map<std::string, uint16_t>();
+
+            if (data.isMember("sell"))
+            {
+                auto& sell = data["sell"];
+                if (sell.isNumeric())
+                {
+                    auto k = "";
+                    auto v = sell.asUInt();
+                    sells.insert({ k, v });
+                }
+                else if (sell.isObject())
+                {
+                    for (auto i = sell.begin(); i != sell.end(); i++)
+                    {
+                        auto k = CP949(i.key().asString(), PLATFORM::Windows);
+                        auto v = (*i).asUInt();
+
+                        sells.insert({ k, v });
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("invalid sell data type");
+                }
+            }
+            for (auto& [k, v] : sells)
+            {
+                if (fb::game::model::sell.contains(v) == false)
+                {
+                    auto sstream = std::stringstream();
+                    sstream << v << " : sell에 정의되지 않았습니다.";
+                    throw std::runtime_error(sstream.str());
+                }
+            }
+
+            if (data.isMember("buy"))
+            {
+                auto& buy = data["buy"];
+                if (buy.isNumeric())
+                {
+                    auto k = "";
+                    auto v = buy.asUInt();
+                    buys.insert({ k, v });
+                }
+                else if (buy.isObject())
+                {
+                    for (auto i = buy.begin(); i != buy.end(); i++)
+                    {
+                        auto k = CP949(i.key().asString(), PLATFORM::Windows);
+                        auto v = (*i).asUInt();
+
+                        buys.insert({ k, v });
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("invalid buy data type");
+                }
+            }
+            for (auto& [k, v] : buys)
+            {
+                if (fb::game::model::buy.contains(v) == false)
+                {
+                    auto sstream = std::stringstream();
+                    sstream << v << " : buy에 정의되지 않았습니다.";
+                    throw std::runtime_error(sstream.str());
+                }
+            }
 
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
             {
@@ -639,7 +709,9 @@ bool fb::game::container::npc::load(const std::string& path, fb::table::handle_c
                             .look = look,
                             .color = color,
                         },
-                        script
+                        script,
+                        sells,
+                        buys
                     });
                 fb::game::container::base_npc::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);

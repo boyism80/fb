@@ -1484,11 +1484,25 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             co_return true;
     }
     
-    std::stringstream sstream;
-    if(request.shout)
+    auto sstream = std::stringstream();
+    auto npcs = std::vector<fb::game::npc*>();
+    if (request.shout)
+    {
+        for (auto& [fd, obj] : session->map()->objects)
+        {
+            if (obj->is(fb::game::object::types::NPC))
+                npcs.push_back(static_cast<fb::game::npc*>(obj));
+        }
         sstream << session->name() << "! " << request.message;
+    }
     else
+    {
+        for (auto npc : session->showings(fb::game::object::types::NPC))
+        {
+            npcs.push_back(static_cast<fb::game::npc*>(npc));
+        }
         sstream << session->name() << ": " << request.message;
+    }
 
     this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? chat::type::SHOUT : chat::type::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     co_return true;

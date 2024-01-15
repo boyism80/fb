@@ -268,7 +268,7 @@ int fb::game::session::builtin_items(lua_State* lua)
     if(session == nullptr || context->exists(*session) == false)
         return 0;
 
-    lua_newtable(lua);
+    thread->new_table();
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         if(session->items[i] == nullptr)
