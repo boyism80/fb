@@ -248,6 +248,12 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
+const std::string& fb::game::item::name() const
+{
+    auto model = this->based<fb::game::item>();
+    return model->name;
+}
+
 uint16_t fb::game::item::fill(uint16_t count)
 {
     // 추가하고 남은 갯수 리턴

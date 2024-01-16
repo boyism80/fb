@@ -1,13 +1,13 @@
 function buy(me, npc, pursuit)
     local purchase_list = {}
     if type(pursuit) == 'number' then
-        for i, pair in ipairs(pursuit_buy(pursuit)) do
+        for i, pair in pairs(pursuit_buy(pursuit)) do
             local item, price = table.unpack(pair)
             purchase_list[item:name()] = price
         end
     elseif type(pursuit) == 'table' then
         for m, p in pairs(pursuit) do
-            for i, pair in ipairs(pursuit_buy(p)) do
+            for i, pair in pairs(pursuit_buy(p)) do
                 local item, price = table.unpack(pair)
                 purchase_list[item:name()] = price
             end
@@ -18,10 +18,13 @@ function buy(me, npc, pursuit)
 
     local slots = {}
     local items = {}
-    for slot, item in ipairs(me:items()) do
-        if purchase_list[item:name()] ~= nil then
+    local my_items = me:items()
+    for slot, item in pairs(my_items) do
+        local model = item:model()
+        local name = model:name()
+        if purchase_list[model:name()] ~= nil then
             table.insert(slots, slot)
-            items[slot] = item
+            items[slot] = model
         end
     end
 
@@ -55,7 +58,7 @@ function buy(me, npc, pursuit)
     end
     if npc:menu(me, message, {'네', '아니오'}) == 0 then
         me:money(me:money() + price)
-        me:rmitem(slot, count)
+        me:rmitem(slot, count, ITEM_DELETE_ATTR_SELL)
     end
     return DIALOG_RESULT_NEXT
 end
@@ -150,16 +153,22 @@ end
 function repairable_slots(me)
     local items = me:items()
     local slots = {}
+    local count = 0
 
-    for slot, item in ipairs(items) do
+    for slot, item in pairs(items) do
         local model = item:model()
         if model:attr(ITEM_ATTR_EQUIPMENT) and model:repair_price() ~= nil then
             local current = item:durability()
             local max = model:durability()
             if current < max then
                 slots[slot] = item
+                count = count + 1
             end
         end
+    end
+
+    if count == 0 then
+        return nil
     end
 
     return slots
@@ -169,12 +178,12 @@ end
 
 function repair(me, npc)
     local items = repairable_slots(me)
-    if #items == 0 then
+    if items == nil then
         return npc:dialog(me, '고칠 물건이 없는데요', false, true)
     end
 
     local slots = {}
-    for slot, item in ipairs(items) do
+    for slot, item in pairs(items) do
         table.insert(slots, slot)
     end
 
@@ -210,12 +219,12 @@ end
 
 function repair_all(me, npc)
     local items = repairable_slots(me)
-    if #items == 0 then
+    if items == nil then
         return npc:dialog(me, '고칠 물건이 없는데요', false, true)
     end
 
     local price = 0
-    for slot, item in ipairs(items) do
+    for slot, item in pairs(items) do
         local model = item:model()
         local current = item:durability()
         local max = model:durability()
@@ -224,7 +233,7 @@ function repair_all(me, npc)
     price = math.floor(price)
 
     if price < 10 then
-        for slot, item in ipairs(items) do
+        for slot, item in pairs(items) do
             local model = item:model()
             item:durability(model:durability())
         end
@@ -236,7 +245,7 @@ function repair_all(me, npc)
             if money < price then
                 return npc:dialog(me, '돈이 모자랍니다.')
             else
-                for slot, item in ipairs(items) do
+                for slot, item in pairs(items) do
                     local model = item:model()
                     item:durability(model:durability())
                 end

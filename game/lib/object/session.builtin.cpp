@@ -359,6 +359,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             return 0;
         auto index = uint8_t(0);
         auto count = argc < 3 ? 1 : (int)thread->tointeger(3);
+        auto delete_attr = argc < 4 ? item::delete_attr::REMOVED : (item::delete_attr)thread->tointeger(4);
 
         if(lua_isuserdata(lua, 2))
         {
@@ -392,7 +393,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
 
 
-        auto dropped = session->items.remove(index, 1, item::delete_attr::REMOVED);
+        auto dropped = session->items.remove(index, 1, delete_attr);
         if(dropped != nullptr)
             dropped->destroy();
     }

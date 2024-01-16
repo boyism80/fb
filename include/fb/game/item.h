@@ -107,6 +107,7 @@ public:
 
 
 public:
+    const std::string&                      name() const override;
     uint16_t                                fill(uint16_t count);
     uint16_t                                reduce(uint16_t count);
     uint16_t                                free_space() const;
