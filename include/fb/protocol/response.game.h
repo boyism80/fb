@@ -68,16 +68,15 @@ public:
 
 class user_list : public fb::protocol::base::header
 {
-    
 private:
     using container = fb::base::socket_container<fb::socket, fb::game::session>;
 
 public:
     const fb::game::session&                me;
-    const container&                        sockets;
+    container&                              sockets;
 
 public:
-    user_list(const fb::game::session& me, const container& sockets) : fb::protocol::base::header(0x36),
+    user_list(const fb::game::session& me, container& sockets) : fb::protocol::base::header(0x36),
         me(me), sockets(sockets)
     { }
 
@@ -89,17 +88,16 @@ public:
                   .write_u16((uint16_t)sockets.size())
                   .write_u8(0x00);
 
-        // TODO: 스레드 문제 있음
-        for(auto& [key, value] : this->sockets)
+        this->sockets.each([this, &out_stream] (auto& socket)
         {
-            auto user = value->data();
+            auto user = socket.data();
             auto& name = user->name();
 
             out_stream.write_u8(0x10 * static_cast<int>(user->nation()))
                       .write_u8(0x10 * static_cast<int>(user->promotion()))
                       .write_u8((&this->me == user) ? 0x88 : 0x0F)
                       .write(name, false);
-        }
+        });
     }
 };
 

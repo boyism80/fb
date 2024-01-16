@@ -1464,12 +1464,11 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
 
 fb::task<bool> fb::game::context::handle_user_list(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::user_list& request)
 {
-    // MUTEX_GUARD(this->sockets.mutex);
-    // auto session = socket.data();
-    // if (session->inited() == false)
-    //     co_return true;
+    auto session = socket.data();
+    if (session->inited() == false)
+        co_return true;
 
-    // this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
+    this->send(*session, fb::protocol::game::response::user_list(*session, this->sockets), scope::SELF);
     co_return true;
 }
 
