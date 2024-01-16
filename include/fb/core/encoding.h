@@ -30,5 +30,7 @@ std::wstring                W(const std::string& m);
 std::string                 M(const std::wstring& w);
 
 std::string                 fstring_c(const std::string& fmt, va_list* args);
+std::string                 name_with(const std::string& name);
+std::string                 name_with(const std::string& name, const std::pair<std::string, std::string>& postfix);
 
 #endif

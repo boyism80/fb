@@ -196,6 +196,7 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_function("buy_price",         builtin_buy_price);
     lua::bind_function("timer",             builtin_timer);
     lua::bind_function("weather",           builtin_weather);
+    lua::bind_function("name_with",         builtin_name_with);
 
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러

@@ -250,3 +250,25 @@ int fb::game::context::builtin_weather(lua_State* lua)
     context->send(fb::protocol::game::response::weather(weather::type(value)));
     return 0;
 }
+
+int fb::game::context::builtin_name_with(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto name = thread->tostring(1);
+    
+    if(argc < 3)
+    {
+        thread->pushstring(name_with(name));
+    }
+    else
+    {
+        auto first = thread->tostring(2);
+        auto second = thread->tostring(3);
+        thread->pushstring(name_with(name, { first, second }));
+    }
+    return 1;
+}

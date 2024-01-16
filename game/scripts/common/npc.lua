@@ -46,7 +46,14 @@ function buy(me, npc, pursuit)
         end
     end
     price = price * count
-    if npc:menu(me, string.format('%s %d개를 %d에 파시겠습니까?', item:name(), count, price), {'네', '아니오'}) == 0 then
+
+    local message = nil
+    if count > 1 then
+        message = string.format('%s %d개를 %d에 파시겠습니까?', item:name(), count, price)
+    else
+        message = string.format('%s %d에 파시겠습니까?', name_with(item:name()), price)
+    end
+    if npc:menu(me, message, {'네', '아니오'}) == 0 then
         me:money(me:money() + price)
         me:rmitem(slot, count)
     end
@@ -128,7 +135,12 @@ function sell(me, npc, pursuit)
         return npc:dialog(me, '공간이 부족합니다.', false, true)
     else
         me:money(money - price)
-        local message = string.format('%s %d개를 %d전에 팔았습니다.', selected, count, price)
+        local message = nil
+        if count > 1 then
+            message = string.format('%s %d개를 %d전에 팔았습니다.', selected, count, price)
+        else
+            message = string.format('%s %d전에 팔았습니다.', name_with(selected), price)
+        end
         return npc:dialog(me, message, false, true)
     end
 end

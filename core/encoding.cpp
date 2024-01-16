@@ -185,3 +185,21 @@ std::string fstring_c(const std::string& fmt, va_list* args)
 
     return result;
 }
+
+std::string name_with(const std::string& name)
+{
+    return name_with(name, {"을", "를"});
+}
+
+std::string name_with(const std::string& name, const std::pair<std::string, std::string>& postfix)
+{
+    auto wide = W(name);
+    auto last = wide.at(wide.size() - 1);
+    if (last < 0xAC00 || last > 0xD7A3)
+        return name;
+
+    if ((last - 0xAC00) % 28 > 0)
+        return name + postfix.first;
+    else
+        return name + postfix.second;
+}
