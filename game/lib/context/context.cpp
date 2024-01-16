@@ -47,6 +47,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"item",                fb::game::npc::model::builtin_item},
 {"slot",                fb::game::npc::model::builtin_slot},
 {"sell",                fb::game::npc::model::builtin_sell},
+{"buy",                 fb::game::npc::model::builtin_buy},
 {"repair",              fb::game::npc::model::builtin_repair},
 {"repair_all",          fb::game::npc::model::builtin_repair_all},
 END_LUA_EXTENSION
@@ -58,6 +59,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"item",                fb::game::npc::builtin_item},
 {"slot",                fb::game::npc::builtin_slot},
 {"sell",                fb::game::npc::builtin_sell},
+{"buy",                 fb::game::npc::builtin_buy},
 {"repair",              fb::game::npc::builtin_repair},
 {"repair_all",          fb::game::npc::builtin_repair_all},
 END_LUA_EXTENSION

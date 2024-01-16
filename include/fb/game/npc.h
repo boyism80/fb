@@ -27,6 +27,7 @@ public:
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_slot(lua_State* lua);
     static int                  builtin_sell(lua_State* lua);
+    static int                  builtin_buy(lua_State* lua);
     static int                  builtin_repair(lua_State* lua);
     static int                  builtin_repair_all(lua_State* lua);
 };
@@ -69,6 +70,7 @@ public:
     static int                  builtin_item(lua_State* lua);
     static int                  builtin_slot(lua_State* lua);
     static int                  builtin_sell(lua_State* lua);
+    static int                  builtin_buy(lua_State* lua);
     static int                  builtin_repair(lua_State* lua);
     static int                  builtin_repair_all(lua_State* lua);
 };
