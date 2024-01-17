@@ -359,7 +359,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             return 0;
         auto index = uint8_t(0);
         auto count = argc < 3 ? 1 : (int)thread->tointeger(3);
-        auto delete_attr = argc < 4 ? item::delete_attr::REMOVED : (item::delete_attr)thread->tointeger(4);
+        auto delete_attr = argc < 4 ? fb::game::item::DELETE_TYPE::REMOVED : (fb::game::item::DELETE_TYPE)thread->tointeger(4);
 
         if(lua_isuserdata(lua, 2))
         {
@@ -421,7 +421,7 @@ int fb::game::session::builtin_state(lua_State* lua)
     }
     else
     {
-        auto value = fb::game::state(thread->tointeger(2));
+        auto value = fb::game::STATE_TYPE(thread->tointeger(2));
         session->state(value);
         return 0;
     }
@@ -495,7 +495,7 @@ int fb::game::session::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
             context->send(*session, fb::protocol::game::response::session::id(*session), context::scope::SELF);
-            context->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), context::scope::SELF);
+            context->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX), context::scope::SELF);
             thread->pushboolean(true);
         }
     }
@@ -526,7 +526,7 @@ int fb::game::session::builtin_level(lua_State* lua)
         session->level(level);
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), context::scope::SELF);
+        context->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX), context::scope::SELF);
         return 0;
     }
 }
@@ -561,11 +561,11 @@ int fb::game::session::builtin_assert(lua_State* lua)
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     auto size = thread->rawlen(2);
-    std::vector<fb::game::state> values;
+    std::vector<fb::game::STATE_TYPE> values;
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(2, i+1);
-        values.push_back((fb::game::state)thread->tointeger(-1));
+        values.push_back((fb::game::STATE_TYPE)thread->tointeger(-1));
     }
 
     try

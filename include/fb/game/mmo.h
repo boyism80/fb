@@ -67,62 +67,47 @@ bool enum_in(T src, T value)
 
 namespace fb { namespace game {
 
-namespace timer
+enum class TIMER_TYPE : uint8_t
 {
-    enum class type : uint8_t
-    {
-        INCREASE            = 0x01,
-        DECREASE            = 0x02,
-    };
-}
+    INCREASE            = 0x01,
+    DECREASE            = 0x02,
+};
 
-namespace weather
+enum class WEATHER_TYPE : uint8_t
 {
-    enum class type : uint8_t
-    {
-        NORMAL              = 0x00,
-        RAIN                = 0x01,
-        SNOW                = 0x02,
-        BIRD                = 0x03,
-    };
-}
+    NORMAL              = 0x00,
+    RAIN                = 0x01,
+    SNOW                = 0x02,
+    BIRD                = 0x03,
+};
 
-namespace chat
+enum class CHAT_TYPE : uint8_t
 {
-    enum class type : uint8_t
-    {
-        NORMAL              = 0x00,
-        SHOUT               = 0x01,
-        BLUE                = 0x02,
-        LIGHT_BLUE          = 0x03,
-    };
-}
+    NORMAL              = 0x00,
+    SHOUT               = 0x01,
+    BLUE                = 0x02,
+    LIGHT_BLUE          = 0x03,
+};
 
-namespace swap
+enum class SWAP_TYPE : uint8_t
 {
-    enum class type : uint8_t
-    {
-        ITEM                = 0x00,
-        SPELL               = 0x01,
-    };
-}
+    ITEM                = 0x00,
+    SPELL               = 0x01,
+};
 
-namespace message
+enum class MESSAGE_TYPE : uint8_t
 {
-    enum class type : uint8_t
-    {
-        NOTIFY              = 0x00,
-        BLUE                = 0x01,
-        STATE               = 0x03,
-        SHOUT               = 0x04,
-        WORLD               = 0x05,
-        POPUP               = 0x08,
-        YELLOW              = 0x0B,
-        BROWN               = 0x0C,
-    };
-}
+    NOTIFY              = 0x00,
+    BLUE                = 0x01,
+    STATE               = 0x03,
+    SHOUT               = 0x04,
+    WORLD               = 0x05,
+    POPUP               = 0x08,
+    YELLOW              = 0x0B,
+    BROWN               = 0x0C,
+};
 
-enum class options : uint8_t
+enum class OPTION : uint8_t
 {
     RIDE                    = 0x00,
     WHISPER                 = 0x01,
@@ -138,30 +123,27 @@ enum class options : uint8_t
     PK                      = 0x0B,
 };
 
-namespace sound
+enum class SOUND_TYPE : uint16_t
 {
-    enum class type : uint16_t
-    {
-        SWING               = 0x014B,
-        EAT                 = 0x0006,
-        EQUIPMENT_OFF       = 0x019A,
-        EQUIPMENT_ON        = 0x019B,
-        DAMAGE              = 0x015D,
-    };
-}
-
-enum class duration : uint8_t
-{
-    DURATION_FAST           = 0x0F,
-    DURATION_EAT            = 0x27,
-    DURATION_ATTACK         = 0x14,
-    DURATION_PICKUP         = 0x32,
-    DURATION_EMOTION        = 0x4E,
-    DURATION_SPELL          = 0x20,
-    DURATION_THROW          = 0x28,
+    SWING               = 0x014B,
+    EAT                 = 0x0006,
+    EQUIPMENT_OFF       = 0x019A,
+    EQUIPMENT_ON        = 0x019B,
+    DAMAGE              = 0x015D,
 };
 
-enum class state_level : uint8_t
+enum class DURATION : uint8_t
+{
+    FAST           = 0x0F,
+    EAT            = 0x27,
+    ATTACK         = 0x14,
+    PICKUP         = 0x32,
+    EMOTION        = 0x4E,
+    SPELL          = 0x20,
+    THROW          = 0x28,
+};
+
+enum class STATE_LEVEL : uint8_t
 {
     BASED = 0x40, HP_MP = 0x20, EXP_MONEY = 0x10, CONDITION = 0x08,
     LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION,

@@ -286,148 +286,148 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "OBJECT");
 
 
-    lua_pushinteger(*this, fb::game::nation::GOGURYEO);
+    lua_pushinteger(*this, fb::game::NATION_TYPE::GOGURYEO);
     lua_setglobal(*this, "NATION_GOGURYEO");
-    lua_pushinteger(*this, fb::game::nation::BUYEO);
+    lua_pushinteger(*this, fb::game::NATION_TYPE::BUYEO);
     lua_setglobal(*this, "NATION_BUYEO");
 
 
-    lua_pushinteger(*this, fb::game::creature::PHOENIX);
+    lua_pushinteger(*this, fb::game::CREATURE_TYPE::PHOENIX);
     lua_setglobal(*this, "CREATURE_PHOENIX");
-    lua_pushinteger(*this, fb::game::creature::TIGER);
+    lua_pushinteger(*this, fb::game::CREATURE_TYPE::TIGER);
     lua_setglobal(*this, "CREATURE_TIGER");
-    lua_pushinteger(*this, fb::game::creature::TURTLE);
+    lua_pushinteger(*this, fb::game::CREATURE_TYPE::TURTLE);
     lua_setglobal(*this, "CREATURE_TURTLE");
-    lua_pushinteger(*this, fb::game::creature::DRAGON);
+    lua_pushinteger(*this, fb::game::CREATURE_TYPE::DRAGON);
     lua_setglobal(*this, "CREATURE_DRAGON");
 
 
-    lua_pushinteger(*this, fb::game::direction::TOP);
+    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::TOP);
     lua_setglobal(*this, "DIRECTION_TOP");
-    lua_pushinteger(*this, fb::game::direction::RIGHT);
+    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::RIGHT);
     lua_setglobal(*this, "DIRECTION_RIGHT");
-    lua_pushinteger(*this, fb::game::direction::BOTTOM);
+    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::BOTTOM);
     lua_setglobal(*this, "DIRECTION_BOTTOM");
-    lua_pushinteger(*this, fb::game::direction::LEFT);
+    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::LEFT);
     lua_setglobal(*this, "DIRECTION_LEFT");
 
 
-    lua_pushinteger(*this, fb::game::condition::NONE);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::NONE);
     lua_setglobal(*this, "CONDITION_NONE");
-    lua_pushinteger(*this, fb::game::condition::MOVE);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::MOVE);
     lua_setglobal(*this, "CONDITION_MOVE");
-    lua_pushinteger(*this, fb::game::condition::SIGHT);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::SIGHT);
     lua_setglobal(*this, "CONDITION_SIGHT");
-    lua_pushinteger(*this, fb::game::condition::HEAR);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::HEAR);
     lua_setglobal(*this, "CONDITION_HEAR");
-    lua_pushinteger(*this, fb::game::condition::ORAL);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::ORAL);
     lua_setglobal(*this, "CONDITION_ORAL");
-    lua_pushinteger(*this, fb::game::condition::MAP);
+    lua_pushinteger(*this, fb::game::CONDITION_TYPE::MAP);
     lua_setglobal(*this, "CONDITION_MAP");
 
 
-    lua_pushinteger(*this, fb::game::sex::MAN);
+    lua_pushinteger(*this, fb::game::SEX_TYPE::MAN);
     lua_setglobal(*this, "SEX_MAN");
-    lua_pushinteger(*this, fb::game::sex::WOMAN);
+    lua_pushinteger(*this, fb::game::SEX_TYPE::WOMAN);
     lua_setglobal(*this, "SEX_WOMAN");
-    lua_pushinteger(*this, fb::game::sex::BOTH);
+    lua_pushinteger(*this, fb::game::SEX_TYPE::BOTH);
     lua_setglobal(*this, "SEX_BOTH");
 
-    lua_pushinteger(*this, fb::game::action::ATTACK);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::ATTACK);
     lua_setglobal(*this, "ACTION_ATTACK");
-    lua_pushinteger(*this, fb::game::action::ARROW);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::ARROW);
     lua_setglobal(*this, "ACTION_ARROW");
-    lua_pushinteger(*this, fb::game::action::EMOTION);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::EMOTION);
     lua_setglobal(*this, "ACTION_EMOTION");
-    lua_pushinteger(*this, fb::game::action::PICKUP);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::PICKUP);
     lua_setglobal(*this, "ACTION_PICKUP");
-    lua_pushinteger(*this, fb::game::action::PICKUP_SILENT);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::PICKUP_SILENT);
     lua_setglobal(*this, "ACTION_PICKUP_SILENT");
-    lua_pushinteger(*this, fb::game::action::CAST_SPELL);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::CAST_SPELL);
     lua_setglobal(*this, "ACTION_CAST_SPELL");
-    lua_pushinteger(*this, fb::game::action::EAT);
+    lua_pushinteger(*this, fb::game::ACTION_TYPE::EAT);
     lua_setglobal(*this, "ACTION_EAT");
 
 
-    lua_pushinteger(*this, fb::game::state::NORMAL);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::NORMAL);
     lua_setglobal(*this, "STATE_NORMAL");
-    lua_pushinteger(*this, fb::game::state::GHOST);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::GHOST);
     lua_setglobal(*this, "STATE_GHOST");
-    lua_pushinteger(*this, fb::game::state::TRANSLUCENCY);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::TRANSLUCENCY);
     lua_setglobal(*this, "STATE_TRANSLUCENCY");
-    lua_pushinteger(*this, fb::game::state::RIDING);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::RIDING);
     lua_setglobal(*this, "STATE_RIDING");
-    lua_pushinteger(*this, fb::game::state::DISGUISE);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::DISGUISE);
     lua_setglobal(*this, "STATE_DISGUISE");
-    lua_pushinteger(*this, fb::game::state::HALF_CLOACK);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::HALF_CLOACK);
     lua_setglobal(*this, "STATE_HALF_CLOACK");
-    lua_pushinteger(*this, fb::game::state::CLOACK);
+    lua_pushinteger(*this, fb::game::STATE_TYPE::CLOACK);
     lua_setglobal(*this, "STATE_CLOACK");
 
 
-    lua_pushinteger(*this, fb::game::item::penalties::NONE);
+    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::NONE);
     lua_setglobal(*this, "ITEM_PENALTY_NONE");
-    lua_pushinteger(*this, fb::game::item::penalties::DROP);
+    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::DROP);
     lua_setglobal(*this, "ITEM_PENALTY_DROP");
-    lua_pushinteger(*this, fb::game::item::penalties::DESTRUCTION);
+    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::DESTRUCTION);
     lua_setglobal(*this, "ITEM_PENALTY_DESTRUCTION");
 
 
-    lua_pushinteger(*this, fb::game::item::delete_attr::REMOVED);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::REMOVED);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_REMOVED");
-    lua_pushinteger(*this, fb::game::item::delete_attr::DROP);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DROP);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DROP");
-    lua_pushinteger(*this, fb::game::item::delete_attr::EAT);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::EAT);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_EAT");
-    lua_pushinteger(*this, fb::game::item::delete_attr::SMOKE);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SMOKE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SMOKE");
-    lua_pushinteger(*this, fb::game::item::delete_attr::THROW);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::THROW);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_THROW");
-    lua_pushinteger(*this, fb::game::item::delete_attr::SHOOT);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SHOOT);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SHOOT");
-    lua_pushinteger(*this, fb::game::item::delete_attr::REDUCE);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::REDUCE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_REDUCE");
-    lua_pushinteger(*this, fb::game::item::delete_attr::STICK);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::STICK);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_STICK");
-    lua_pushinteger(*this, fb::game::item::delete_attr::DECAY);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DECAY);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DECAY");
-    lua_pushinteger(*this, fb::game::item::delete_attr::GIVE);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::GIVE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_GIVE");
-    lua_pushinteger(*this, fb::game::item::delete_attr::SELL);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SELL);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SELL");
-    lua_pushinteger(*this, fb::game::item::delete_attr::NONE);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::NONE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_NONE");
-    lua_pushinteger(*this, fb::game::item::delete_attr::DESTROY);
+    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DESTROY);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DESTROY");
 
 
-    lua_pushinteger(*this, fb::game::item::attrs::NONE);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::NONE);
     lua_setglobal(*this, "ITEM_ATTR_NONE");
-    lua_pushinteger(*this, fb::game::item::attrs::CONSUME);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::CONSUME);
     lua_setglobal(*this, "ITEM_ATTR_CONSUME");
-    lua_pushinteger(*this, fb::game::item::attrs::BUNDLE);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::BUNDLE);
     lua_setglobal(*this, "ITEM_ATTR_BUNDLE");
-    lua_pushinteger(*this, fb::game::item::attrs::SCRIPT);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::SCRIPT);
     lua_setglobal(*this, "ITEM_ATTR_SCRIPT");
-    lua_pushinteger(*this, fb::game::item::attrs::CASH);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::CASH);
     lua_setglobal(*this, "ITEM_ATTR_CASH");
-    lua_pushinteger(*this, fb::game::item::attrs::PACK);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::PACK);
     lua_setglobal(*this, "ITEM_ATTR_PACK");
-    lua_pushinteger(*this, fb::game::item::attrs::EQUIPMENT);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::EQUIPMENT);
     lua_setglobal(*this, "ITEM_ATTR_EQUIPMENT");
-    lua_pushinteger(*this, fb::game::item::attrs::WEAPON);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::WEAPON);
     lua_setglobal(*this, "ITEM_ATTR_WEAPON");
-    lua_pushinteger(*this, fb::game::item::attrs::ARMOR);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::ARMOR);
     lua_setglobal(*this, "ITEM_ATTR_ARMOR");
-    lua_pushinteger(*this, fb::game::item::attrs::SHIELD);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::SHIELD);
     lua_setglobal(*this, "ITEM_ATTR_SHIELD");
-    lua_pushinteger(*this, fb::game::item::attrs::HELMET);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::HELMET);
     lua_setglobal(*this, "ITEM_ATTR_HELMET");
-    lua_pushinteger(*this, fb::game::item::attrs::RING);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::RING);
     lua_setglobal(*this, "ITEM_ATTR_RING");
-    lua_pushinteger(*this, fb::game::item::attrs::AUXILIARY);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::AUXILIARY);
     lua_setglobal(*this, "ITEM_ATTR_AUXILIARY");
-    lua_pushinteger(*this, fb::game::item::attrs::ARROW);
+    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::ARROW);
     lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
 
@@ -485,15 +485,15 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, fb::game::mob::sizes::LARGE);
     lua_setglobal(*this, "MOB_SIZE_LARGE");
 
-    lua_pushinteger(*this, fb::game::sound::type::SWING);
+    lua_pushinteger(*this, fb::game::SOUND_TYPE::SWING);
     lua_setglobal(*this, "SOUND_SWING");
-    lua_pushinteger(*this, fb::game::sound::type::EAT);
+    lua_pushinteger(*this, fb::game::SOUND_TYPE::EAT);
     lua_setglobal(*this, "SOUND_EAT");
-    lua_pushinteger(*this, fb::game::sound::type::EQUIPMENT_OFF);
+    lua_pushinteger(*this, fb::game::SOUND_TYPE::EQUIPMENT_OFF);
     lua_setglobal(*this, "SOUND_EQUIPMENT_OFF");
-    lua_pushinteger(*this, fb::game::sound::type::EQUIPMENT_ON);
+    lua_pushinteger(*this, fb::game::SOUND_TYPE::EQUIPMENT_ON);
     lua_setglobal(*this, "SOUND_EQUIPMENT_ON");
-    lua_pushinteger(*this, fb::game::sound::type::DAMAGE);
+    lua_pushinteger(*this, fb::game::SOUND_TYPE::DAMAGE);
     lua_setglobal(*this, "SOUND_DAMAGE");
 
     lua_pushinteger(*this, 0);

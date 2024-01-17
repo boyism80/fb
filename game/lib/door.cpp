@@ -192,9 +192,9 @@ fb::game::door* fb::game::doors::find(const point16_t position)
 fb::game::door* fb::game::doors::find(const fb::game::session& session)
 {
     auto direction = session.direction();
-    if(direction == fb::game::direction::LEFT || direction == fb::game::direction::RIGHT)
+    if(direction == fb::game::DIRECTION_TYPE::LEFT || direction == fb::game::DIRECTION_TYPE::RIGHT)
         return nullptr;
 
-    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::direction::TOP ? -1 : 1));
+    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::DIRECTION_TYPE::TOP ? -1 : 1));
     return this->find(forward);
 }

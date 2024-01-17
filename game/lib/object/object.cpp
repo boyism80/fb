@@ -195,7 +195,7 @@ bool fb::game::object::move()
     return this->move(this->_direction);
 }
 
-bool fb::game::object::move(fb::game::direction direction)
+bool fb::game::object::move(fb::game::DIRECTION_TYPE direction)
 {
     if(this->_map == nullptr)
         return false;
@@ -203,19 +203,19 @@ bool fb::game::object::move(fb::game::direction direction)
     auto after = this->_position;
     switch(direction)
     {
-    case fb::game::direction::TOP:
+    case fb::game::DIRECTION_TYPE::TOP:
         after.y--;
         break;
 
-    case fb::game::direction::BOTTOM:
+    case fb::game::DIRECTION_TYPE::BOTTOM:
         after.y++;
         break;
 
-    case fb::game::direction::LEFT:
+    case fb::game::DIRECTION_TYPE::LEFT:
         after.x--;
         break;
 
-    case fb::game::direction::RIGHT:
+    case fb::game::DIRECTION_TYPE::RIGHT:
         after.x++;
         break;
     }
@@ -238,7 +238,7 @@ const fb::game::point16_t fb::game::object::position_forward() const
     return this->position_forward(this->_direction);
 }
 
-const fb::game::point16_t fb::game::object::position_forward(fb::game::direction direction) const
+const fb::game::point16_t fb::game::object::position_forward(fb::game::DIRECTION_TYPE direction) const
 {
     auto current = point16_t(this->_position);
     auto forward = point16_t(current);
@@ -286,17 +286,17 @@ bool fb::game::object::y(uint16_t value)
     return this->position(this->_position.x, value);
 }
 
-fb::game::direction fb::game::object::direction() const
+fb::game::DIRECTION_TYPE fb::game::object::direction() const
 {
     return this->_direction;
 }
 
-bool fb::game::object::direction(fb::game::direction value)
+bool fb::game::object::direction(fb::game::DIRECTION_TYPE value)
 {
-    if(value != fb::game::direction::LEFT && 
-       value != fb::game::direction::TOP && 
-       value != fb::game::direction::RIGHT && 
-       value != fb::game::direction::BOTTOM)
+    if(value != fb::game::DIRECTION_TYPE::LEFT && 
+       value != fb::game::DIRECTION_TYPE::TOP && 
+       value != fb::game::DIRECTION_TYPE::RIGHT && 
+       value != fb::game::DIRECTION_TYPE::BOTTOM)
         return false;
 
     if(this->_direction == value)
@@ -519,7 +519,7 @@ bool fb::game::object::map(fb::game::map* map)
     return this->map(map, point16_t(0, 0));
 }
 
-fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game::object::types type) const
+fb::game::object* fb::game::object::side(fb::game::DIRECTION_TYPE direction, fb::game::object::types type) const
 {
     fb::game::map* map = this->_map;
     if(map == nullptr)
@@ -529,19 +529,19 @@ fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game
     point16_t front = this->position();
     switch(direction)
     {
-    case fb::game::direction::TOP:
+    case fb::game::DIRECTION_TYPE::TOP:
         front.y--;
         break;
 
-    case fb::game::direction::BOTTOM:
+    case fb::game::DIRECTION_TYPE::BOTTOM:
         front.y++;
         break;
 
-    case fb::game::direction::LEFT:
+    case fb::game::DIRECTION_TYPE::LEFT:
         front.x--;
         break;
 
-    case fb::game::direction::RIGHT:
+    case fb::game::DIRECTION_TYPE::RIGHT:
         front.x++;
         break;
     }
@@ -563,7 +563,7 @@ fb::game::object* fb::game::object::side(fb::game::direction direction, fb::game
         *found : nullptr;
 }
 
-std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direction, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::object::sides(fb::game::DIRECTION_TYPE direction, fb::game::object::types type) const
 {
     auto result = std::vector<fb::game::object*>();
     try
@@ -575,19 +575,19 @@ std::vector<fb::game::object*> fb::game::object::sides(fb::game::direction direc
         auto front = this->position();
         switch(direction)
         {
-        case fb::game::direction::TOP:
+        case fb::game::DIRECTION_TYPE::TOP:
             front.y--;
             break;
 
-        case fb::game::direction::BOTTOM:
+        case fb::game::DIRECTION_TYPE::BOTTOM:
             front.y++;
             break;
 
-        case fb::game::direction::LEFT:
+        case fb::game::DIRECTION_TYPE::LEFT:
             front.x--;
             break;
 
-        case fb::game::direction::RIGHT:
+        case fb::game::DIRECTION_TYPE::RIGHT:
             front.x++;
             break;
         }

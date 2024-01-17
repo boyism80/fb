@@ -56,9 +56,9 @@ fb::game::cash::model::model(const fb::game::item::model::config& config) : fb::
 fb::game::cash::model::~model()
 { }
 
-fb::game::item::attrs fb::game::cash::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::cash::model::attr() const
 {
-    return item::attrs::CASH;
+    return item::ATTRIBUTE::CASH;
 }
 
 

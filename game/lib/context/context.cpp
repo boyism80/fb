@@ -579,16 +579,16 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     session.id(id);
     session.admin(admin);
     session.color(color);
-    session.direction(fb::game::direction(direction));
+    session.direction(fb::game::DIRECTION_TYPE(direction));
     session.look(look);
     session.money(money);
-    session.sex(fb::game::sex(sex));
+    session.sex(fb::game::SEX_TYPE(sex));
     session.base_hp(base_hp);
     session.hp(hp);
     session.base_mp(base_mp);
     session.mp(mp);
     session.experience(exp);
-    session.state(fb::game::state(state));
+    session.state(fb::game::STATE_TYPE(state));
     session.armor_color(armor_color);
 
     if(disguise.has_value())
@@ -880,7 +880,7 @@ const fb::thread* fb::game::context::current_thread() const
 // TODO : 클릭도 인터페이스로
 void fb::game::context::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
 {
-    this->send(session, fb::protocol::game::response::session::message(mob.name(), message::type::STATE), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
@@ -903,7 +903,7 @@ fb::task<bool> fb::game::context::handle_in_message(fb::internal::socket<>& sock
 {
     auto to = this->find(response.to);
     if(to != nullptr)
-        this->send(*to, fb::protocol::game::response::message(response.contents, (fb::game::message::type)response.type), scope::SELF);
+        this->send(*to, fb::protocol::game::response::message(response.contents, (fb::game::MESSAGE_TYPE)response.type), scope::SELF);
 
     co_return true;
 }
@@ -968,16 +968,16 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
         this->_internal->send(fb::protocol::internal::request::login(name, map));
         this->send(*session, fb::protocol::game::response::init(), scope::SELF);
         this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
-        this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MIN), scope::SELF);
+        this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);
         
         if(from == fb::protocol::internal::services::LOGIN)
         {
             auto msg = this->elapsed_message(last_login);
             if(msg.empty() == false)
-                this->send(*session, fb::protocol::game::response::message(msg, message::type::STATE), scope::SELF);
+                this->send(*session, fb::protocol::game::response::message(msg, MESSAGE_TYPE::STATE), scope::SELF);
         }
 
-        this->send(*session, fb::protocol::game::response::session::state(*session, state_level::LEVEL_MAX), scope::SELF);
+        this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
         this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
         this->fetch_gear(results[1], *session);
@@ -1097,7 +1097,7 @@ fb::task<bool> fb::game::context::handle_emotion(fb::socket<fb::game::session>& 
     if (session->inited() == false)
         co_return true;
 
-    session->action(action(static_cast<int>(action::EMOTION) + request.value), duration::DURATION_EMOTION);
+    session->action(ACTION_TYPE(static_cast<int>(ACTION_TYPE::EMOTION) + request.value), DURATION::EMOTION);
     co_return true;
 }
 
@@ -1190,7 +1190,7 @@ fb::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::session
             static_cast<fb::game::item*>(*i)->name_styled() : 
             (*i)->name();
         
-        this->send(*session, fb::protocol::game::response::message(message, message::type::STATE), scope::SELF);
+        this->send(*session, fb::protocol::game::response::message(message, MESSAGE_TYPE::STATE), scope::SELF);
     }
     
     co_return true;
@@ -1215,11 +1215,11 @@ fb::task<bool> fb::game::context::handle_option_changed(fb::socket<fb::game::ses
     if (session->inited() == false)
         co_return true;
 
-    auto option = options(request.option);
+    auto option = OPTION(request.option);
 
-    if(option == options::RIDE)
+    if(option == OPTION::RIDE)
     {
-        if(session->state() == state::RIDING)
+        if(session->state() == STATE_TYPE::RIDING)
             session->unride();
         else
             session->ride();
@@ -1391,12 +1391,12 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             throw std::runtime_error(fb::game::message::group::CANNOT_FIND_TARGET);
         }
 
-        if(me->option(options::GROUP) == false)
+        if(me->option(OPTION::GROUP) == false)
         {
             throw std::runtime_error(fb::game::message::group::DISABLED_MINE);
         }
 
-        if(you->option(options::GROUP) == false)
+        if(you->option(OPTION::GROUP) == false)
         {
             throw std::runtime_error(fb::game::message::group::DISABLED_TARGET);
         }
@@ -1416,11 +1416,11 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             mine->enter(*you);
 
             sstream << me->name() << fb::game::message::group::JOINED;
-            this->send(*me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(*me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
 
             sstream.str("");
             sstream << request.name << fb::game::message::group::JOINED;
-            this->send(*me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(*me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
         }
         else // 기존 그룹에 초대하기
         {
@@ -1439,7 +1439,7 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             if(mine == your)
             {
                 sstream << request.name << fb::game::message::group::LEFT;
-                this->send(*me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::GROUP);
+                this->send(*me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
                 mine->leave(*you);
                 co_return true;
             }
@@ -1450,13 +1450,13 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             }
             
             sstream << request.name << fb::game::message::group::JOINED;
-            this->send(*me, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::GROUP);
-            this->send(leader, fb::protocol::game::response::message(sstream.str(), message::type::STATE), scope::GROUP);
+            this->send(*me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
+            this->send(leader, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
         }
     }
     catch(std::exception& e)
     {
-        this->send(*me, fb::protocol::game::response::message(e.what(), message::type::STATE), scope::GROUP);
+        this->send(*me, fb::protocol::game::response::message(e.what(), MESSAGE_TYPE::STATE), scope::GROUP);
     }
 
     co_return true;
@@ -1509,7 +1509,7 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
         sstream << session->name() << ": " << request.message;
     }
 
-    this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? chat::type::SHOUT : chat::type::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
+    this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL), request.shout ? scope::MAP : scope::PIVOT);
     co_return true;
 }
 
@@ -1685,13 +1685,13 @@ fb::task<bool> fb::game::context::handle_swap(fb::socket<fb::game::session>& soc
 
     switch(request.type)
     {
-    case swap::type::SPELL:
+    case SWAP_TYPE::SPELL:
     {
         session->spells.swap(request.src-1, request.dst-1);
         break;
     }
 
-    case swap::type::ITEM:
+    case SWAP_TYPE::ITEM:
     {
         session->items.swap(request.src-1, request.dst-1);
         break;
@@ -1852,14 +1852,14 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
         else
             sstream << response.to << "님은 바람의나라에 없습니다.";
 
-        session->send(fb::protocol::game::response::message(sstream.str(), fb::game::message::type::NOTIFY));
+        session->send(fb::protocol::game::response::message(sstream.str(), fb::game::MESSAGE_TYPE::NOTIFY));
     }
     catch(std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        session->send(fb::protocol::game::response::message("서버 오류", fb::game::message::type::NOTIFY));
+        session->send(fb::protocol::game::response::message("서버 오류", fb::game::MESSAGE_TYPE::NOTIFY));
     }
     co_return true;
 }

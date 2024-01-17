@@ -6,9 +6,9 @@ fb::game::bow::model::model(const fb::game::equipment::model::config& config) : 
 fb::game::bow::model::~model()
 { }
 
-fb::game::item::attrs fb::game::bow::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::bow::model::attr() const
 {
-    return item::attrs::ARROW;
+    return item::ATTRIBUTE::ARROW;
 }
 
 

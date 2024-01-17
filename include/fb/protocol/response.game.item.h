@@ -123,11 +123,11 @@ public:
 class remove : public fb::protocol::base::header
 {
 public:
-    const fb::game::item::delete_attr types;
-    const uint32_t          index;
-    const uint16_t          count;
+    const fb::game::item::DELETE_TYPE   types;
+    const uint32_t                      index;
+    const uint16_t                      count;
 public:
-    remove(fb::game::item::delete_attr types, uint32_t index, uint16_t count = 0) : fb::protocol::base::header(0x10),
+    remove(fb::game::item::DELETE_TYPE types, uint32_t index, uint16_t count = 0) : fb::protocol::base::header(0x10),
         types(types), index(index), count(count)
     { }
 public:

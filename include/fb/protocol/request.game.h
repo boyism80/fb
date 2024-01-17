@@ -96,9 +96,9 @@ class direction : public fb::protocol::base::header
 {
 public:
 #ifndef BOT
-    fb::game::direction         value;
+    fb::game::DIRECTION_TYPE         value;
 #else
-    const fb::game::direction   value;
+    const fb::game::DIRECTION_TYPE   value;
 #endif
 
 public:
@@ -106,7 +106,7 @@ public:
     direction() : fb::protocol::base::header(0x11)
     { }
 #else
-    direction(fb::game::direction value) : fb::protocol::base::header(0x11), value(value)
+    direction(fb::game::DIRECTION_TYPE value) : fb::protocol::base::header(0x11), value(value)
     { }
 #endif
 
@@ -120,7 +120,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->value = fb::game::direction(in_stream.read_u8());
+        this->value = fb::game::DIRECTION_TYPE(in_stream.read_u8());
     }
 #endif
 };
@@ -139,9 +139,9 @@ public:
 class move : public fb::protocol::base::header
 {
 public:
-    fb::game::direction     direction;
-    uint8_t                 sequence;
-    point16_t               position;
+    fb::game::DIRECTION_TYPE direction;
+    uint8_t                  sequence;
+    point16_t                position;
 
 protected:
     move(int id) : fb::protocol::base::header(id)
@@ -152,7 +152,7 @@ public:
     move() : fb::protocol::base::header(0x32)
     { }
 #else
-    move(fb::game::direction direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
+    move(fb::game::DIRECTION_TYPE direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
         direction(direction), sequence(sequence), position(position)
     { }
 #endif
@@ -170,7 +170,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->direction = fb::game::direction(in_stream.read_u8());
+        this->direction = fb::game::DIRECTION_TYPE(in_stream.read_u8());
         this->sequence = in_stream.read_u8();
         this->position.x = in_stream.read_u16();
         this->position.y = in_stream.read_u16();
@@ -325,7 +325,7 @@ public:
 class change_option : public fb::protocol::base::header
 {
 public:
-    fb::game::options       option;
+    fb::game::OPTION        option;
 
 public:
     change_option() : fb::protocol::base::header(0x1B)
@@ -334,7 +334,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->option = fb::game::options(in_stream.read_u8());
+        this->option = fb::game::OPTION(in_stream.read_u8());
     }
 };
 
@@ -473,7 +473,7 @@ public:
 class swap : public fb::protocol::base::header
 {
 public:
-    fb::game::swap::type    type;
+    fb::game::SWAP_TYPE     type;
     uint8_t                 src;
     uint8_t                 dst;
 
@@ -484,7 +484,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->type = fb::game::swap::type(in_stream.read_u8());
+        this->type = fb::game::SWAP_TYPE(in_stream.read_u8());
         this->src = in_stream.read_u8();
         this->dst = in_stream.read_u8();
     }

@@ -175,7 +175,7 @@ bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
     if((now - this->_dead_time) / 1000 < this->_respawn_time)
         return false;
 
-    this->direction(fb::game::direction(std::rand() % 4));
+    this->direction(fb::game::DIRECTION_TYPE(std::rand() % 4));
     this->hp_up(this->base_hp());
 
     while(true)
@@ -259,11 +259,11 @@ fb::game::life* fb::game::mob::find_target()
 //    return static_cast<const model*>(this->_model)->items();
 //}
 
-bool fb::game::mob::near_target(fb::game::direction& out) const
+bool fb::game::mob::near_target(fb::game::DIRECTION_TYPE& out) const
 {
     for(int i = 0; i < 4; i++)
     {
-        auto                direction = fb::game::direction(i);
+        auto                direction = fb::game::DIRECTION_TYPE(i);
         if(this->side(direction, fb::game::object::types::SESSION) != this->_target)
             continue;
 
@@ -283,10 +283,10 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
-        auto direction = fb::game::direction::BOTTOM;
+        auto direction = fb::game::DIRECTION_TYPE::BOTTOM;
         if(this->fix() == nullptr)
         {
-            this->move(fb::game::direction(std::rand() % 4));
+            this->move(fb::game::DIRECTION_TYPE(std::rand() % 4));
         }
         else if(this->near_target(direction))
         {
@@ -298,17 +298,17 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             auto                    x_axis = bool(std::rand()%2);
             if(x_axis)
             {
-                if(this->_position.x > this->_target->x() && this->move(direction::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(direction::RIGHT))  throw nullptr;
-                if(this->_position.y > this->_target->y() && this->move(direction::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(direction::BOTTOM)) throw nullptr;
+                if(this->_position.x > this->_target->x() && this->move(fb::game::DIRECTION_TYPE::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(fb::game::DIRECTION_TYPE::RIGHT))  throw nullptr;
+                if(this->_position.y > this->_target->y() && this->move(fb::game::DIRECTION_TYPE::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(fb::game::DIRECTION_TYPE::BOTTOM)) throw nullptr;
             }
             else
             {
-                if(this->_position.y > this->_target->y() && this->move(direction::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(direction::BOTTOM)) throw nullptr;
-                if(this->_position.x > this->_target->x() && this->move(direction::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(direction::RIGHT))  throw nullptr;
+                if(this->_position.y > this->_target->y() && this->move(fb::game::DIRECTION_TYPE::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(fb::game::DIRECTION_TYPE::BOTTOM)) throw nullptr;
+                if(this->_position.x > this->_target->x() && this->move(fb::game::DIRECTION_TYPE::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(fb::game::DIRECTION_TYPE::RIGHT))  throw nullptr;
             }
 
 
@@ -316,7 +316,7 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             auto                    random_direction = std::rand() % 4;
             for(int i = 0; i < 4; i++)
             {
-                if(this->move(fb::game::direction((random_direction + i) % 4)))
+                if(this->move(fb::game::DIRECTION_TYPE((random_direction + i) % 4)))
                     throw nullptr;
             }
         }

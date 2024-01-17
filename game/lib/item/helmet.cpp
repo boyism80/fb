@@ -6,9 +6,9 @@ fb::game::helmet::model::model(const fb::game::equipment::model::config& config)
 fb::game::helmet::model::~model()
 { }
 
-fb::game::item::attrs fb::game::helmet::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::helmet::model::attr() const
 {
-    return item::attrs::HELMET;
+    return item::ATTRIBUTE::HELMET;
 }
 
 

@@ -49,6 +49,7 @@
         "warp": "table.dev/warp.json",
         "board": "table.dev/board.json",
         "sell": "table.dev/sell.json",
-        "buy": "table.dev/buy.json"
+        "buy": "table.dev/buy.json",
+        "regex": "table.dev/regex.json"
     }
 }

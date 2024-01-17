@@ -234,7 +234,7 @@ int fb::game::context::builtin_timer(lua_State* lua)
     auto value = (uint32_t)thread->tointeger(1);
     auto decrease = thread->toboolean(2);
 
-    context->send(fb::protocol::game::response::timer(value, decrease ? timer::type::DECREASE : timer::type::INCREASE));
+    context->send(fb::protocol::game::response::timer(value, decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE));
     return 0;
 }
 
@@ -247,7 +247,7 @@ int fb::game::context::builtin_weather(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto value = (uint32_t)thread->tointeger(1);
 
-    context->send(fb::protocol::game::response::weather(weather::type(value)));
+    context->send(fb::protocol::game::response::weather(WEATHER_TYPE(value)));
     return 0;
 }
 

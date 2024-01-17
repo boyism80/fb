@@ -76,7 +76,7 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
         }
 
         auto index = this->add(item);
-        listener->on_updated(this->_owner, state_level::LEVEL_MAX);
+        listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
         listener->on_show(this->_owner, false);
         listener->on_equipment_off(this->_owner, slot, index);
         
@@ -115,7 +115,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             continue;
 
         auto exists = (fb::game::item*)nullptr;
-        if(item->attr(item::attrs::BUNDLE))
+        if(item->attr(item::ATTRIBUTE::BUNDLE))
         {
             auto exists = this->find(*item->based<fb::game::item>());
             if(exists == nullptr)
@@ -183,7 +183,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
 
     try
     {
-        this->_owner.assert_state({state::RIDING, state::GHOST});
+        this->_owner.assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
 
         auto                    item = this->at(index);
         if(item == nullptr)
@@ -457,13 +457,13 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 
     try
     {
-        owner.assert_state({state::RIDING, state::GHOST});
+        owner.assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
 
-        auto                    dropped = this->remove(index, count, item::delete_attr::DROP);
+        auto                    dropped = this->remove(index, count, fb::game::item::DELETE_TYPE::DROP);
         if(dropped != nullptr)
         {
             dropped->map(owner.map(), owner.position());
-            owner.action(action::PICKUP, duration::DURATION_PICKUP);
+            owner.action(ACTION_TYPE::PICKUP, DURATION::PICKUP);
         }
 
         return dropped;
@@ -486,7 +486,7 @@ void fb::game::items::pickup(bool boost)
         if(map == nullptr)
             return;
 
-        owner.action(action::PICKUP, duration::DURATION_PICKUP);
+        owner.action(ACTION_TYPE::PICKUP, DURATION::PICKUP);
 
 
         std::string         message;
@@ -497,7 +497,7 @@ void fb::game::items::pickup(bool boost)
         {
             auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);
-            if(below->attr(fb::game::item::attrs::CASH))
+            if(below->attr(fb::game::item::ATTRIBUTE::CASH))
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = owner.money_add(cash->chunk());
@@ -505,7 +505,7 @@ void fb::game::items::pickup(bool boost)
 
                 if(remain != 0)
                     listener->on_notify(this->_owner, message::money::FULL);
-                listener->on_updated(owner, state_level::LEVEL_MIN);
+                listener->on_updated(owner, STATE_LEVEL::LEVEL_MIN);
             }
             else
             {
@@ -551,7 +551,7 @@ bool fb::game::items::throws(uint8_t index)
         if(map == nullptr)
             throw std::exception();
 
-        auto                    dropped = this->remove(index, 1, item::delete_attr::THROW);
+        auto                    dropped = this->remove(index, 1, fb::game::item::DELETE_TYPE::THROW);
         auto                    position = this->_owner.position();
         for(int i = 0; i < 7; i++)
         {
@@ -575,7 +575,7 @@ bool fb::game::items::throws(uint8_t index)
     }
 }
 
-fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, fb::game::item::DELETE_TYPE attr)
 {
     auto&                   owner = static_cast<fb::game::session&>(this->owner());
     auto                    item = this->at(index);
@@ -603,7 +603,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, item::del
     return splitted;
 }
 
-fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, item::delete_attr attr)
+fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, fb::game::item::DELETE_TYPE attr)
 {
     auto index = this->index(item);
     if(index == 0xFF)

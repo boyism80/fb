@@ -169,7 +169,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
     
     auto sound = thread->tointeger(2);
 
-    context->send(*object, fb::protocol::game::response::object::sound(*object, sound::type(sound)), context::scope::PIVOT);
+    context->send(*object, fb::protocol::game::response::object::sound(*object, SOUND_TYPE(sound)), context::scope::PIVOT);
     thread->pushinteger(-1);
     return 1;
 }
@@ -261,7 +261,7 @@ int fb::game::object::builtin_direction(lua_State* lua)
     }
     else
     {
-        auto direction = fb::game::direction(thread->tointeger(2));
+        auto direction = fb::game::DIRECTION_TYPE(thread->tointeger(2));
         object->direction(direction);
 
         auto context = thread->env<fb::game::context>("context");
@@ -283,13 +283,13 @@ int fb::game::object::builtin_chat(lua_State* lua)
         return 0;
     
     auto message = thread->tostring(2);
-    auto type = argc < 3 ? chat::type::NORMAL : chat::type(thread->tointeger(3));
+    auto type = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
     auto decorate = argc < 4 ? true : thread->toboolean(4);
 
     std::stringstream sstream;
     if(decorate)
     {
-        if(type == chat::type::SHOUT)
+        if(type == CHAT_TYPE::SHOUT)
             sstream << object->name() << "! " << message;
         else
             sstream << object->name() << ": " << message;
@@ -316,10 +316,10 @@ int fb::game::object::builtin_message(lua_State* lua)
         return 0;
     
     auto message = thread->tostring(2);
-    auto type = argc < 3 ? static_cast<int>(fb::game::message::type::STATE) : thread->tointeger(3);
+    auto type = argc < 3 ? static_cast<int>(fb::game::MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
     if(object->type() == object::types::SESSION)
-        context->send(*object, fb::protocol::game::response::message(message, fb::game::message::type(type)), context::scope::SELF);
+        context->send(*object, fb::protocol::game::response::message(message, fb::game::MESSAGE_TYPE(type)), context::scope::SELF);
 
     return 0;
 }

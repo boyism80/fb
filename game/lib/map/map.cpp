@@ -96,7 +96,7 @@ fb::game::object* fb::game::objects::operator[](uint32_t seq) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::options option, fb::game::map::effects effect, uint32_t group, const void* data, size_t size) :
+fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::OPTION option, fb::game::map::EFFECT effect, uint32_t group, const void* data, size_t size) :
     _id(id),
     _parent(parent),
     _bgm(bgm),
@@ -199,12 +199,12 @@ bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
     return true;
 }
 
-fb::game::map::effects fb::game::map::effect() const
+fb::game::map::EFFECT fb::game::map::effect() const
 {
     return this->_effect;
 }
 
-fb::game::map::options fb::game::map::option() const
+fb::game::map::OPTION fb::game::map::option() const
 {
     return this->_option;
 }
@@ -262,25 +262,25 @@ bool fb::game::map::movable(const point16_t position) const
     return true;
 }
 
-bool fb::game::map::movable(const fb::game::object& object, fb::game::direction direction) const
+bool fb::game::map::movable(const fb::game::object& object, fb::game::DIRECTION_TYPE direction) const
 {
     point16_t               position = object.position();
 
     switch(direction)
     {
-    case direction::BOTTOM:
+    case fb::game::DIRECTION_TYPE::BOTTOM:
         position.y++;
         break;
 
-    case direction::TOP:
+    case fb::game::DIRECTION_TYPE::TOP:
         position.y--;
         break;
 
-    case direction::LEFT:
+    case fb::game::DIRECTION_TYPE::LEFT:
         position.x--;
         break;
 
-    case direction::RIGHT:
+    case fb::game::DIRECTION_TYPE::RIGHT:
         position.x++;
         break;
     }

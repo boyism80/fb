@@ -6,9 +6,9 @@ fb::game::ring::model::model(const fb::game::equipment::model::config& config) :
 fb::game::ring::model::~model()
 { }
 
-fb::game::item::attrs fb::game::ring::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::ring::model::attr() const
 {
-    return item::attrs::RING;
+    return item::ATTRIBUTE::RING;
 }
 
 

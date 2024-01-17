@@ -3,13 +3,13 @@
 
 namespace fb { namespace game {
 
-enum class nation    : uint8_t { GOGURYEO = 0x01, BUYEO = 0x02 };
-enum class creature  : uint8_t { PHOENIX = 0x00, TIGER = 0x01, TURTLE = 0x02, DRAGON = 0x03 };
-enum class direction : uint8_t { TOP = 0x00, RIGHT = 0x01, BOTTOM = 0x02, LEFT = 0x03 };
-enum class condition : uint8_t { NONE = 0x00, MOVE = 0x01, SIGHT = 0x02, HEAR = 0x04, ORAL = 0x08, MAP = 0x10 };
-enum class sex       : uint8_t { MAN = 0x00, WOMAN = 0x01, BOTH = 0x02};
-enum class action    : uint8_t { ATTACK = 0x01, ARROW = 0x03, EMOTION = 0x0B, PICKUP = 0x04, PICKUP_SILENT = 0x05, CAST_SPELL = 0x06, EAT = 0x08, };
-enum class state     : uint8_t { NORMAL = 0x00, GHOST = 0x01, TRANSLUCENCY = 0x02, RIDING = 0x03, DISGUISE = 0x04, HALF_CLOACK = 0x05, CLOACK = 0x06, };
+enum class NATION_TYPE    : uint8_t { GOGURYEO = 0x01, BUYEO = 0x02 };
+enum class CREATURE_TYPE  : uint8_t { PHOENIX = 0x00, TIGER = 0x01, TURTLE = 0x02, DRAGON = 0x03 };
+enum class DIRECTION_TYPE : uint8_t { TOP = 0x00, RIGHT = 0x01, BOTTOM = 0x02, LEFT = 0x03 };
+enum class CONDITION_TYPE : uint8_t { NONE = 0x00, MOVE = 0x01, SIGHT = 0x02, HEAR = 0x04, ORAL = 0x08, MAP = 0x10 };
+enum class SEX_TYPE       : uint8_t { MAN = 0x00, WOMAN = 0x01, BOTH = 0x02};
+enum class ACTION_TYPE    : uint8_t { ATTACK = 0x01, ARROW = 0x03, EMOTION = 0x0B, PICKUP = 0x04, PICKUP_SILENT = 0x05, CAST_SPELL = 0x06, EAT = 0x08, };
+enum class STATE_TYPE     : uint8_t { NORMAL = 0x00, GHOST = 0x01, TRANSLUCENCY = 0x02, RIDING = 0x03, DISGUISE = 0x04, HALF_CLOACK = 0x05, CLOACK = 0x06, };
 
 struct point8_t
 {
@@ -51,23 +51,23 @@ public:
     point16_t(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
 
 public:
-    struct point16_t& move(direction direction, uint16_t step = 1)
+    struct point16_t& move(DIRECTION_TYPE direction, uint16_t step = 1)
     {
         switch(direction)
         {
-        case fb::game::direction::TOP:
+        case fb::game::DIRECTION_TYPE::TOP:
             this->y -= step;
             break;
 
-        case fb::game::direction::BOTTOM:
+        case fb::game::DIRECTION_TYPE::BOTTOM:
             this->y += step;
             break;
 
-        case fb::game::direction::LEFT:
+        case fb::game::DIRECTION_TYPE::LEFT:
             this->x -= step;
             break;
 
-        case fb::game::direction::RIGHT:
+        case fb::game::DIRECTION_TYPE::RIGHT:
             this->x += step;
             break;
         }
@@ -75,80 +75,80 @@ public:
         return *this;
     }
 
-    struct point16_t& forward(direction direction, uint16_t step = 1)
+    struct point16_t& forward(DIRECTION_TYPE direction, uint16_t step = 1)
     {
         return this->move(direction, step);
     }
 
-    struct point16_t& backward(direction direction, uint16_t step = 1)
+    struct point16_t& backward(DIRECTION_TYPE direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
         {
-        case fb::game::direction::TOP:
-            newdir = fb::game::direction::BOTTOM;
+        case fb::game::DIRECTION_TYPE::TOP:
+            newdir = fb::game::DIRECTION_TYPE::BOTTOM;
             break;
 
-        case fb::game::direction::BOTTOM:
-            newdir = fb::game::direction::TOP;
+        case fb::game::DIRECTION_TYPE::BOTTOM:
+            newdir = fb::game::DIRECTION_TYPE::TOP;
             break;
 
-        case fb::game::direction::LEFT:
-            newdir = fb::game::direction::RIGHT;
+        case fb::game::DIRECTION_TYPE::LEFT:
+            newdir = fb::game::DIRECTION_TYPE::RIGHT;
             break;
 
-        case fb::game::direction::RIGHT:
-            newdir = fb::game::direction::LEFT;
+        case fb::game::DIRECTION_TYPE::RIGHT:
+            newdir = fb::game::DIRECTION_TYPE::LEFT;
             break;
         }
 
         return this->move(newdir, step);
     }
 
-    struct point16_t& left(direction direction, uint16_t step = 1)
+    struct point16_t& left(DIRECTION_TYPE direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
         {
-        case fb::game::direction::TOP:
-            newdir = fb::game::direction::LEFT;
+        case fb::game::DIRECTION_TYPE::TOP:
+            newdir = fb::game::DIRECTION_TYPE::LEFT;
             break;
 
-        case fb::game::direction::BOTTOM:
-            newdir = fb::game::direction::RIGHT;
+        case fb::game::DIRECTION_TYPE::BOTTOM:
+            newdir = fb::game::DIRECTION_TYPE::RIGHT;
             break;
 
-        case fb::game::direction::LEFT:
-            newdir = fb::game::direction::BOTTOM;
+        case fb::game::DIRECTION_TYPE::LEFT:
+            newdir = fb::game::DIRECTION_TYPE::BOTTOM;
             break;
 
-        case fb::game::direction::RIGHT:
-            newdir = fb::game::direction::TOP;
+        case fb::game::DIRECTION_TYPE::RIGHT:
+            newdir = fb::game::DIRECTION_TYPE::TOP;
             break;
         }
 
         return this->move(newdir, step);
     }
 
-    struct point16_t& right(direction direction, uint16_t step = 1)
+    struct point16_t& right(DIRECTION_TYPE direction, uint16_t step = 1)
     {
         auto newdir = direction;
         switch(direction)
         {
-        case fb::game::direction::TOP:
-            newdir = fb::game::direction::RIGHT;
+        case fb::game::DIRECTION_TYPE::TOP:
+            newdir = fb::game::DIRECTION_TYPE::RIGHT;
             break;
 
-        case fb::game::direction::BOTTOM:
-            newdir = fb::game::direction::LEFT;
+        case fb::game::DIRECTION_TYPE::BOTTOM:
+            newdir = fb::game::DIRECTION_TYPE::LEFT;
             break;
 
-        case fb::game::direction::LEFT:
-            newdir = fb::game::direction::TOP;
+        case fb::game::DIRECTION_TYPE::LEFT:
+            newdir = fb::game::DIRECTION_TYPE::TOP;
             break;
 
-        case fb::game::direction::RIGHT:
-            newdir = fb::game::direction::BOTTOM;
+        case fb::game::DIRECTION_TYPE::RIGHT:
+            newdir = fb::game::DIRECTION_TYPE::BOTTOM;
             break;
         }
 

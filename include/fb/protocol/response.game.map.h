@@ -61,7 +61,7 @@ public:
     {
         base::header::serialize(out_stream);
 
-        if(this->map.effect() == fb::game::map::effects::NONE)
+        if(this->map.effect() == fb::game::map::EFFECT::NONE)
             out_stream.write_u8(0x00);
         else
             out_stream.write_u8(0x04).write_u8(this->map.effect());
@@ -156,7 +156,7 @@ public:
         out_stream.write_u16(this->map.id()) // id
                   .write_u16(this->map.width()) // width
                   .write_u16(this->map.height()) // height
-                  .write_u8(enum_in(this->map.option(), fb::game::map::options::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
+                  .write_u8(enum_in(this->map.option(), fb::game::map::OPTION::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
                   .write(this->map.name(), true);
     }
 #else

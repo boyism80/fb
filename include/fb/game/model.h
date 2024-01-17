@@ -7,6 +7,7 @@
 #include <fb/game/map.h>
 #include <fb/game/board.h>
 #include <fb/core/table.h>
+#include <boost/xpressive/xpressive.hpp>
 
 namespace fb { namespace game {
 
@@ -27,12 +28,12 @@ public:
     using std::map<uint16_t, std::unique_ptr<fb::game::map>>::size;
 
 public:
-    map();
-    ~map();
+    map() = default;
+    ~map() = default;
 
 private:
-    static fb::game::map::effects           to_effect(const std::string& effect);
-    static fb::game::map::options           to_option(const Json::Value& data);
+    static fb::game::map::EFFECT            to_effect(const std::string& effect);
+    static fb::game::map::OPTION            to_option(const Json::Value& data);
     static bool                             load_data(uint16_t id, std::vector<char>& buffer);
     static bool                             load_blocks(uint16_t id, Json::Value& buffer);
 
@@ -61,13 +62,13 @@ public:
     using std::map<uint16_t, std::unique_ptr<fb::game::item::model>>::size;
 
 public:
-    item();
-    ~item();
+    item() = default;
+    ~item() = default;
 
 private:
-    static fb::game::item::model*          create(uint32_t id, const Json::Value& data);
-    static fb::game::item::conditions      to_condition(const Json::Value& data);
-    static fb::game::item::penalties       to_penalty(const std::string& penalty);
+    static fb::game::item::model*               create(uint32_t id, const Json::Value& data);
+    static fb::game::item::conditions           to_condition(const Json::Value& data);
+    static fb::game::item::DEATH_PENALTY_TYPE   to_penalty(const std::string& penalty);
 
 public:
     bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -93,8 +94,8 @@ public:
     using base_npc::size;
 
 public:
-    npc();
-    ~npc();
+    npc() = default;
+    ~npc() = default;
 
 public:
     bool                                   load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -120,8 +121,8 @@ public:
     using std::map<uint16_t, std::unique_ptr<fb::game::mob::model>>::size;
 
 public:
-    mob();
-    ~mob();
+    mob() = default;
+    ~mob() = default;
 
 private:
     static fb::game::mob::sizes            to_size(const std::string& size);
@@ -152,8 +153,8 @@ public:
     using std::map<uint16_t, std::unique_ptr<fb::game::spell>>::size;
 
 public:
-    spell();
-    ~spell();
+    spell() = default;
+    ~spell() = default;
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -178,8 +179,8 @@ public:
     using std::vector<std::unique_ptr<fb::game::class_data>>::size;
 
 public:
-    cls();
-    ~cls();
+    cls() = default;
+    ~cls() = default;
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -206,8 +207,8 @@ public:
     using std::vector<std::unique_ptr<fb::game::itemmix>>::size;
 
 public:
-    mix();
-    ~mix();
+    mix() = default;
+    ~mix() = default;
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -232,8 +233,8 @@ public:
     using std::vector<std::unique_ptr<fb::game::door::model>>::size;
 
 public:
-    door();
-    ~door();
+    door() = default;
+    ~door() = default;
 
 public:
     bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
@@ -245,8 +246,8 @@ public:
 class worlds : private std::vector<std::unique_ptr<fb::game::wm::world>>
 {
 public:
-    worlds();
-    ~worlds();
+    worlds() = default;
+    ~worlds() = default;
 
 public:
     using std::vector<std::unique_ptr<fb::game::wm::world>>::begin;
@@ -305,6 +306,38 @@ public:
     pursuit_pair*                           operator [] (uint16_t index);
 };
 
+class regex
+{
+public:
+    enum class TYPE
+    {
+        SELL = 0, BUY = 1
+    };
+
+private:
+    using iterator = std::map<TYPE, boost::xpressive::sregex>::iterator;
+    using const_iterator = std::map<TYPE, boost::xpressive::sregex>::const_iterator;
+
+private:
+    std::map<TYPE, boost::xpressive::sregex> _regexs;
+
+public:
+    regex() = default;
+    ~regex() = default;
+
+public:
+    iterator                                begin();
+    iterator                                end();
+    const_iterator                          cbegin() const;
+    const_iterator                          cend() const;
+    size_t                                  size() const;
+    bool                                    contains(TYPE k) const;
+    boost::xpressive::sregex&               operator [] (TYPE k);
+
+public:
+    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
+};
+
 }
 
 class session;
@@ -325,6 +358,7 @@ public:
     static fb::game::container::board       boards;
     static fb::game::container::pursuit     sell;
     static fb::game::container::pursuit     buy;
+    static fb::game::container::regex       regex;
 
 private:
     model();

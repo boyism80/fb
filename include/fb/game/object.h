@@ -31,7 +31,7 @@ public:
     public:
         uint32_t            id          = 0xFFFFFFFF;
         const point16_t     position    = fb::game::point16_t();
-        fb::game::direction direction   = fb::game::direction::BOTTOM;
+        fb::game::DIRECTION_TYPE direction   = fb::game::DIRECTION_TYPE::BOTTOM;
         fb::game::map*      map         = nullptr;
     };
 
@@ -64,7 +64,7 @@ protected:
     bool                                _map_lock   = false;
 
     point16_t                           _position   = point16_t(0, 0);
-    fb::game::direction                 _direction  = fb::game::direction::BOTTOM;
+    fb::game::DIRECTION_TYPE                 _direction  = fb::game::DIRECTION_TYPE::BOTTOM;
     fb::game::map*                      _map        = nullptr;
 
 public:
@@ -105,11 +105,11 @@ public:
 
     const point16_t&                    position() const;
     const point16_t                     position_forward() const;
-    const point16_t                     position_forward(fb::game::direction direction) const;
+    const point16_t                     position_forward(fb::game::DIRECTION_TYPE direction) const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
-    bool                                move(fb::game::direction direction);
+    bool                                move(fb::game::DIRECTION_TYPE direction);
 
     uint16_t                            x() const;
     bool                                x(uint16_t value);
@@ -117,8 +117,8 @@ public:
     uint16_t                            y() const;
     bool                                y(uint16_t value);
 
-    fb::game::direction                 direction() const;
-    bool                                direction(fb::game::direction value);
+    fb::game::DIRECTION_TYPE                 direction() const;
+    bool                                direction(fb::game::DIRECTION_TYPE value);
 
     virtual fb::awaitable<bool>         co_map(fb::game::map* map, const point16_t& position);
     virtual fb::awaitable<bool>         co_map(fb::game::map* map);
@@ -132,8 +132,8 @@ public:
     bool                                sight(const point16_t& position) const;
     bool                                sight(const fb::game::object& object) const;
 
-    object*                             side(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                sides(fb::game::direction direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    object*                             side(fb::game::DIRECTION_TYPE direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                sides(fb::game::DIRECTION_TYPE direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     object*                             forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
     std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
 

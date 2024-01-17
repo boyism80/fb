@@ -44,6 +44,30 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     pivot += (stack + 1);
     stack = 0;
+    if(fb::game::model::regex.load
+    (
+        config["table"]["regex"].asString(),
+        [&] (const auto& name, auto percentage)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::REGEX_LOADED, percentage, name.c_str());
+        }, 
+        [&] (const auto& name, const auto& error)
+        {
+            c.cursor(0, pivot + (++stack))
+             .puts("    - %s (%s)", error.c_str(), name.c_str());
+        }, 
+        [&] (uint32_t count)
+        {
+            c.cursor(0, pivot)
+             .puts(fb::game::message::assets::REGEX_ALL_LOADED, count);
+        }) == false)
+    {
+        return false;
+    }
+
+    pivot += (stack + 1);
+    stack = 0;
     if(fb::game::model::maps.load
     (
         config["table"]["map"].asString(),

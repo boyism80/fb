@@ -7,11 +7,11 @@ fb::game::consume::model::model(const fb::game::item::model::config& config) : f
 fb::game::consume::model::~model()
 { }
 
-fb::game::item::attrs fb::game::consume::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::consume::model::attr() const
 {
-    item::attrs attr = item::attrs::CONSUME;
+    item::ATTRIBUTE attr = item::ATTRIBUTE::CONSUME;
     if(this->capacity > 1)
-        attr = item::attrs(attr | item::attrs::BUNDLE);
+        attr = item::ATTRIBUTE(attr | item::ATTRIBUTE::BUNDLE);
 
     return attr;
 }
@@ -37,9 +37,9 @@ bool fb::game::consume::active()
     
     auto listener = this->_owner->get_listener<fb::game::session>();
     listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
-    listener->on_action(*this->_owner, fb::game::action::EAT, fb::game::duration::DURATION_EAT, static_cast<uint8_t>(fb::game::sound::type::EAT));
+    listener->on_action(*this->_owner, fb::game::ACTION_TYPE::EAT, fb::game::DURATION::EAT, static_cast<uint8_t>(fb::game::SOUND_TYPE::EAT));
 
     if(this->empty())
-        this->_owner->items.remove(*this, -1, item::delete_attr::EAT);
+        this->_owner->items.remove(*this, -1, DELETE_TYPE::EAT);
     return true;
 }

@@ -90,7 +90,7 @@ void fb::game::session::on_hold()
 void fb::game::session::on_update()
 {
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_updated(*this, fb::game::state_level::LEVEL_MIDDLE);
+    listener->on_updated(*this, fb::game::STATE_LEVEL::LEVEL_MIDDLE);
 }
 
 uint32_t fb::game::session::on_calculate_damage(bool critical) const
@@ -176,7 +176,7 @@ void fb::game::session::on_die(fb::game::object* from)
 {
     fb::game::life::on_die(from);
 
-    this->state(state::GHOST);
+    this->state(STATE_TYPE::GHOST);
 
     auto listener = this->get_listener<fb::game::session>();
     listener->on_die(*this, from);
@@ -228,7 +228,7 @@ void fb::game::session::attack()
 
     try
     {
-        this->assert_state({state::RIDING, state::GHOST});
+        this->assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
         fb::game::life::attack();
     }
     catch(std::exception& e)
@@ -237,13 +237,13 @@ void fb::game::session::attack()
     }
 }
 
-void fb::game::session::action(fb::game::action action, fb::game::duration duration, uint8_t sound)
+void fb::game::session::action(fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound)
 {
     auto listener = this->get_listener<fb::game::session>();
 
     try
     {
-        this->assert_state({state::GHOST, state::RIDING});
+        this->assert_state({STATE_TYPE::GHOST, STATE_TYPE::RIDING});
         listener->on_action(*this, action, duration, sound);
     }
     catch(std::exception& e)
@@ -317,8 +317,8 @@ void fb::game::session::disguise(uint16_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_disguise = value;
-    this->state(state::DISGUISE);
-    listener->on_updated(*this, state_level::LEVEL_MAX);
+    this->state(STATE_TYPE::DISGUISE);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
 }
 
 void fb::game::session::undisguise()
@@ -326,10 +326,10 @@ void fb::game::session::undisguise()
     auto listener = this->get_listener<fb::game::session>();
 
     this->_disguise = std::nullopt;
-    if(this->state() == fb::game::state::DISGUISE)
-        this->state(state::NORMAL);
+    if(this->state() == fb::game::STATE_TYPE::DISGUISE)
+        this->state(STATE_TYPE::NORMAL);
 
-    listener->on_updated(*this, state_level::LEVEL_MAX);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
 }
 
 uint32_t fb::game::session::defensive_physical() const
@@ -384,32 +384,32 @@ uint32_t fb::game::session::base_mp() const
     return this->_base_mp;
 }
 
-fb::game::nation fb::game::session::nation() const
+fb::game::NATION_TYPE fb::game::session::nation() const
 {
     return this->_nation;
 }
 
-bool fb::game::session::nation(fb::game::nation value)
+bool fb::game::session::nation(fb::game::NATION_TYPE value)
 {
-    if(value != fb::game::nation::GOGURYEO &&
-       value != fb::game::nation::BUYEO)
+    if(value != fb::game::NATION_TYPE::GOGURYEO &&
+       value != fb::game::NATION_TYPE::BUYEO)
         return false;
 
     this->_nation = value;
     return true;
 }
 
-fb::game::creature fb::game::session::creature() const
+fb::game::CREATURE_TYPE fb::game::session::creature() const
 {
     return this->_creature;
 }
 
-bool fb::game::session::creature(fb::game::creature value)
+bool fb::game::session::creature(fb::game::CREATURE_TYPE value)
 {
-    if(value != fb::game::creature::DRAGON  &&
-       value != fb::game::creature::PHOENIX &&
-       value != fb::game::creature::TIGER   &&
-       value != fb::game::creature::TURTLE)
+    if(value != fb::game::CREATURE_TYPE::DRAGON  &&
+       value != fb::game::CREATURE_TYPE::PHOENIX &&
+       value != fb::game::CREATURE_TYPE::TIGER   &&
+       value != fb::game::CREATURE_TYPE::TURTLE)
         return false;
 
     this->_creature = value;
@@ -426,7 +426,7 @@ void fb::game::session::level(uint8_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_level = value;
-    listener->on_updated(*this, state_level::LEVEL_MAX);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
 }
 
 bool fb::game::session::level_up()
@@ -461,22 +461,22 @@ bool fb::game::session::max_level() const
     return this->_level >= 99;
 }
 
-fb::game::sex fb::game::session::sex() const
+fb::game::SEX_TYPE fb::game::session::sex() const
 {
     return this->_sex;
 }
 
-void fb::game::session::sex(fb::game::sex value)
+void fb::game::session::sex(fb::game::SEX_TYPE value)
 {
     this->_sex = value;
 }
 
-fb::game::state fb::game::session::state() const
+fb::game::STATE_TYPE fb::game::session::state() const
 {
     return this->_state;
 }
 
-void fb::game::session::state(fb::game::state value)
+void fb::game::session::state(fb::game::STATE_TYPE value)
 {
     if(this->_state == value)
         return;
@@ -565,7 +565,7 @@ void fb::game::session::experience(uint32_t value)
     this->_experience = value;
 
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
 }
 
 uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
@@ -683,7 +683,7 @@ void fb::game::session::money(uint32_t value)
     auto listener = this->get_listener<fb::game::session>();
 
     this->_money = value;
-    listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
     listener->on_money_changed(*this, value);
 }
 
@@ -729,7 +729,7 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         if(value == 0)
             return 0;
 
-        this->assert_state({state::RIDING, state::GHOST});
+        this->assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
 
 
         auto lack = this->money_reduce(value);
@@ -737,7 +737,7 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         auto cash = new fb::game::cash(this->context, value);
         cash->map(this->_map, this->_position);
 
-        this->action(action::PICKUP, duration::DURATION_PICKUP);
+        this->action(ACTION_TYPE::PICKUP, DURATION::PICKUP);
         listener->on_notify(*this, message::money::DROP);
 
         return lack;
@@ -779,7 +779,7 @@ void fb::game::session::regenerative(uint8_t value)
     this->_regenerative = value;
 }
 
-bool fb::game::session::option(options key) const
+bool fb::game::session::option(OPTION key) const
 {
     if(static_cast<int>(key) > 0x1B)
         return false;
@@ -787,7 +787,7 @@ bool fb::game::session::option(options key) const
     return this->_options[static_cast<int>(key)];
 }
 
-void fb::game::session::option(options key, bool value)
+void fb::game::session::option(OPTION key, bool value)
 {
     if(static_cast<int>(key) > 0x1B)
         return;
@@ -796,13 +796,13 @@ void fb::game::session::option(options key, bool value)
         return;
 
     auto listener = this->get_listener<fb::game::session>();
-    listener->on_updated(*this, state_level::LEVEL_MIN);
+    listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
     listener->on_option(*this, key, value);
 
     this->_options[static_cast<int>(key)] = value;
 }
 
-bool fb::game::session::option_toggle(options key)
+bool fb::game::session::option_toggle(OPTION key)
 {
     if(static_cast<int>(key) > 0x1B)
         return false;
@@ -831,20 +831,20 @@ fb::game::clan* fb::game::session::clan() const
     return this->_clan;
 }
 
-void fb::game::session::assert_state(fb::game::state value) const
+void fb::game::session::assert_state(fb::game::STATE_TYPE value) const
 {
-    static const auto pairs = std::map<fb::game::state, const std::runtime_error>
+    static const auto pairs = std::map<fb::game::STATE_TYPE, const std::runtime_error>
     {
-        {state::GHOST, ghost_exception()},
-        {state::RIDING, ridding_exception()},
-        {state::DISGUISE, disguise_exception()}
+        {STATE_TYPE::GHOST, ghost_exception()},
+        {STATE_TYPE::RIDING, ridding_exception()},
+        {STATE_TYPE::DISGUISE, disguise_exception()}
     };
 
     if(this->_state == value)
         throw pairs.at(value);
 }
 
-void fb::game::session::assert_state(const std::vector<fb::game::state>& values) const
+void fb::game::session::assert_state(const std::vector<fb::game::STATE_TYPE>& values) const
 {
     for(auto value : values)
         this->assert_state(value);
@@ -855,7 +855,7 @@ bool fb::game::session::move(const point16_t& before)
     return this->move(this->_direction, before);
 }
 
-bool fb::game::session::move(fb::game::direction direction, const point16_t& before)
+bool fb::game::session::move(fb::game::DIRECTION_TYPE direction, const point16_t& before)
 {
     auto listener = this->get_listener<fb::game::session>();
 
@@ -881,9 +881,9 @@ void fb::game::session::ride(fb::game::mob& horse)
 
     try
     {
-        this->assert_state({state::GHOST, state::DISGUISE});
+        this->assert_state({STATE_TYPE::GHOST, STATE_TYPE::DISGUISE});
 
-        if(this->state() == fb::game::state::RIDING)
+        if(this->state() == fb::game::STATE_TYPE::RIDING)
             throw std::runtime_error(message::ride::ALREADY_RIDE);
 
         if(horse.based<fb::game::mob>() != fb::game::model::mobs.name2mob("말"))
@@ -893,7 +893,7 @@ void fb::game::session::ride(fb::game::mob& horse)
             throw std::runtime_error(message::error::UNKNOWN);
 
         horse.map(nullptr);
-        this->state(state::RIDING);
+        this->state(STATE_TYPE::RIDING);
         horse.kill();
         horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
         listener->on_notify(*this, message::ride::ON);
@@ -910,7 +910,7 @@ void fb::game::session::ride()
 
     try
     {
-        this->assert_state({state::GHOST, state::DISGUISE});
+        this->assert_state({STATE_TYPE::GHOST, STATE_TYPE::DISGUISE});
 
         auto front = this->forward(object::types::MOB);
         if(front == nullptr)
@@ -930,15 +930,15 @@ void fb::game::session::unride()
 
     try
     {
-        this->assert_state({state::GHOST, state::DISGUISE});
-        if(this->state() != fb::game::state::RIDING)
+        this->assert_state({STATE_TYPE::GHOST, STATE_TYPE::DISGUISE});
+        if(this->state() != fb::game::STATE_TYPE::RIDING)
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto model = fb::game::model::mobs.name2mob("말");
         auto horse = this->context.make<fb::game::mob>(model, fb::game::mob::config { .alive = true });
         horse->map(this->_map, this->position_forward());
         
-        this->state(state::NORMAL);
+        this->state(STATE_TYPE::NORMAL);
         listener->on_notify(*this, message::ride::OFF);
     }
     catch(std::exception& e)
@@ -949,7 +949,7 @@ void fb::game::session::unride()
 
 bool fb::game::session::alive() const
 {
-    return this->_state != state::GHOST;
+    return this->_state != STATE_TYPE::GHOST;
 }
 
 void fb::game::session::refresh_map()

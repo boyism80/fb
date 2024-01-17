@@ -13,17 +13,17 @@ class direction : public fb::protocol::base::header
 public:
 #ifndef BOT
     const uint32_t              sequence;
-    const fb::game::direction   value;
+    const fb::game::DIRECTION_TYPE   value;
 #else
     uint32_t                    sequence;
-    fb::game::direction         value;
+    fb::game::DIRECTION_TYPE         value;
 #endif
 
 public:
 #ifndef BOT
     direction(const fb::game::object& object) : direction(object.sequence(), object.direction())
     { }
-    direction(uint32_t sequence, fb::game::direction value) : fb::protocol::base::header(0x11),
+    direction(uint32_t sequence, fb::game::DIRECTION_TYPE value) : fb::protocol::base::header(0x11),
         sequence(sequence), value(value)
     { }
 #else
@@ -44,7 +44,7 @@ public:
     void deserialize(fb::istream& in_stream)
     {
         this->sequence  = in_stream.read_u32();
-        this->value     = (fb::game::direction)in_stream.read_u8();
+        this->value     = (fb::game::DIRECTION_TYPE)in_stream.read_u8();
     }
 #endif
 };
@@ -134,11 +134,11 @@ class chat : public fb::protocol::base::header
 {
 public:
     const fb::game::object&     me;
-    const fb::game::chat::type  type;
+    const fb::game::CHAT_TYPE   type;
     const std::string           message;
 
 public:
-    chat(const fb::game::object& me, const fb::game::chat::type type, const std::string message) : fb::protocol::base::header(0x0D),
+    chat(const fb::game::object& me, const fb::game::CHAT_TYPE type, const std::string message) : fb::protocol::base::header(0x0D),
         me(me), type(type), message(message)
     { }
 
@@ -158,18 +158,18 @@ public:
 #ifndef BOT
     const uint32_t              id;
     const point16_t             position;
-    const fb::game::direction   direction;
+    const fb::game::DIRECTION_TYPE   direction;
 #else
     uint32_t                    id;
     point16_t                   position;
-    fb::game::direction         direction;
+    fb::game::DIRECTION_TYPE         direction;
 #endif
 
 public:
 #ifndef BOT
     move(const fb::game::object& object, const point16_t& position) : move(object.sequence(), object.direction(), position)
     { }
-    move(const uint32_t id, fb::game::direction direction, const point16_t& position) : fb::protocol::base::header(0x0C),
+    move(const uint32_t id, fb::game::DIRECTION_TYPE direction, const point16_t& position) : fb::protocol::base::header(0x0C),
         id(id), direction(direction), position(position)
     { }
 #else
@@ -194,7 +194,7 @@ public:
         this->id         = in_stream.read_u32();
         this->position.x = in_stream.read_u16();
         this->position.y = in_stream.read_u16();
-        this->direction  = (fb::game::direction)in_stream.read_u8();
+        this->direction  = (fb::game::DIRECTION_TYPE)in_stream.read_u8();
     }
 #endif
 };
@@ -203,10 +203,10 @@ class sound : public fb::protocol::base::header
 {
 public:
     const fb::game::object&         me;
-    const fb::game::sound::type     value;
+    const fb::game::SOUND_TYPE      value;
 
 public:
-    sound(const fb::game::object& me, fb::game::sound::type value) : fb::protocol::base::header(0x19),
+    sound(const fb::game::object& me, fb::game::SOUND_TYPE value) : fb::protocol::base::header(0x19),
         me(me), value(value)
     { }
 

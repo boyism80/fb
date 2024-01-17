@@ -11,9 +11,9 @@ fb::game::weapon::model::model(const fb::game::weapon::model::config& config) :
 fb::game::weapon::model::~model()
 { }
 
-fb::game::item::attrs fb::game::weapon::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::weapon::model::attr() const
 {
-    return item::attrs::WEAPON;
+    return item::ATTRIBUTE::WEAPON;
 }
 
 fb::game::weapon::types fb::game::weapon::model::weapon_type() const

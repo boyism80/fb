@@ -9,9 +9,9 @@ fb::game::pack::model::model(const fb::game::item::model::config& config) : fb::
 fb::game::pack::model::~model()
 { }
 
-fb::game::item::attrs fb::game::pack::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::pack::model::attr() const
 {
-    return item::attrs::PACK;
+    return item::ATTRIBUTE::PACK;
 }
 
 fb::game::pack::pack(fb::game::context& context, const fb::game::pack::model* model) : 
@@ -61,7 +61,7 @@ bool fb::game::pack::active()
     listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if(this->empty())
-        this->_owner->items.remove(*this, 0xFF, item::delete_attr::REDUCE);
+        this->_owner->items.remove(*this, 0xFF, DELETE_TYPE::REDUCE);
 
     return true;
 }

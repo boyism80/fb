@@ -6,9 +6,9 @@ fb::game::auxiliary::model::model(const fb::game::equipment::model::config& conf
 fb::game::auxiliary::model::~model()
 { }
 
-fb::game::item::attrs fb::game::auxiliary::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::auxiliary::model::attr() const
 {
-    return item::attrs::AUXILIARY;
+    return item::ATTRIBUTE::AUXILIARY;
 }
 
 

@@ -160,7 +160,7 @@ public:
     LUA_PROTOTYPE
 
 public:
-    enum class options : uint8_t 
+    enum class OPTION : uint8_t 
     { 
         NO_OPTION                   = 0x00,
         BUILD_IN                    = 0x01,
@@ -171,7 +171,7 @@ public:
         ENABLE_PK                   = 0x20,
         DISABLE_DIE_PENALTY         = 0x30 
     };
-    enum class effects : uint8_t 
+    enum class EFFECT : uint8_t 
     { 
         NONE                        = 0x00,
         FIRE                        = 0x01,
@@ -198,8 +198,8 @@ private:
     size16_t                        _size     = size16_t(0, 0);
     unique_tiles                    _tiles    = nullptr;
     std::string                     _name;
-    options                         _option   = options::NO_OPTION;
-    effects                         _effect   = effects::NONE;
+    OPTION                          _option   = OPTION::NO_OPTION;
+    EFFECT                          _effect   = EFFECT::NONE;
     uint8_t                         _bgm      = 0;
     unique_warps                    _warps;
     unique_sector                   _sectors;
@@ -211,7 +211,7 @@ public:
     const bool                      active;
 
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, options option, effects effect, uint32_t group, const void* data, size_t size);
+    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, OPTION option, EFFECT effect, uint32_t group, const void* data, size_t size);
     ~map();
 
 public:
@@ -220,8 +220,8 @@ public:
     const std::string&              name() const;
     bool                            blocked(uint16_t x, uint16_t y) const;
     bool                            block(uint16_t x, uint16_t y, bool option);
-    effects                         effect() const;
-    options                         option() const;
+    EFFECT                          effect() const;
+    OPTION                          option() const;
     uint16_t                        width() const;
     uint16_t                        height() const;
     size16_t                        size() const;
@@ -230,7 +230,7 @@ public:
 
     bool                            existable(const point16_t position) const;
     bool                            movable(const point16_t position) const;
-    bool                            movable(const fb::game::object& object, fb::game::direction direction) const;
+    bool                            movable(const fb::game::object& object, fb::game::DIRECTION_TYPE direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
     void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition);

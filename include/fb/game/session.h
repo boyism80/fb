@@ -90,10 +90,10 @@ private:
     uint8_t                     _hit             = 0; // 명중수정
     uint8_t                     _regenerative    = 0; // 재생력
 
-    fb::game::nation            _nation          = nation::GOGURYEO;
-    fb::game::creature          _creature        = creature::DRAGON;
-    fb::game::sex               _sex             = fb::game::sex::BOTH;
-    fb::game::state             _state           = state::NORMAL;
+    fb::game::NATION_TYPE       _nation          = NATION_TYPE::GOGURYEO;
+    fb::game::CREATURE_TYPE     _creature        = CREATURE_TYPE::DRAGON;
+    fb::game::SEX_TYPE               _sex             = fb::game::SEX_TYPE::BOTH;
+    fb::game::STATE_TYPE        _state           = STATE_TYPE::NORMAL;
     uint8_t                     _level           = 1;
     uint8_t                     _class           = 0;
     uint8_t                     _promotion       = 0;
@@ -154,7 +154,7 @@ public:
     bool                        transferring() const;
 
     void                        attack();
-    void                        action(fb::game::action action, fb::game::duration duration, uint8_t sound = 0x00);
+    void                        action(fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound = 0x00);
 
     const std::string&          name() const final;
     void                        name(const std::string& value);
@@ -188,22 +188,22 @@ public:
     uint32_t                    base_hp() const;
     uint32_t                    base_mp() const;
 
-    fb::game::nation            nation() const;
-    bool                        nation(fb::game::nation value);
+    fb::game::NATION_TYPE            nation() const;
+    bool                        nation(fb::game::NATION_TYPE value);
 
-    fb::game::creature          creature() const;
-    bool                        creature(fb::game::creature value);
+    fb::game::CREATURE_TYPE          creature() const;
+    bool                        creature(fb::game::CREATURE_TYPE value);
 
     uint8_t                     level() const;
     void                        level(uint8_t value);
     bool                        level_up();
     bool                        max_level() const;
 
-    fb::game::sex               sex() const;
-    void                        sex(fb::game::sex value);
+    fb::game::SEX_TYPE               sex() const;
+    void                        sex(fb::game::SEX_TYPE value);
 
-    fb::game::state             state() const;
-    void                        state(fb::game::state value);
+    fb::game::STATE_TYPE        state() const;
+    void                        state(fb::game::STATE_TYPE value);
 
     uint8_t                     cls() const;
     void                        cls(uint8_t value);
@@ -245,9 +245,9 @@ public:
     uint32_t                    regenerative() const;
     void                        regenerative(uint8_t value);
 
-    bool                        option(options key) const;
-    void                        option(options key, bool value);
-    bool                        option_toggle(options key);
+    bool                        option(OPTION key) const;
+    void                        option(OPTION key, bool value);
+    bool                        option_toggle(OPTION key);
 
     const std::string&          title() const;
     void                        title(const std::string& value);
@@ -255,11 +255,11 @@ public:
     fb::game::group*            group() const;
     fb::game::clan*             clan() const;
 
-    void                        assert_state(fb::game::state value) const;
-    void                        assert_state(const std::vector<fb::game::state>& values) const;
+    void                        assert_state(fb::game::STATE_TYPE value) const;
+    void                        assert_state(const std::vector<fb::game::STATE_TYPE>& values) const;
 
     bool                        move(const point16_t& before);
-    bool                        move(fb::game::direction direction, const point16_t& before);
+    bool                        move(fb::game::DIRECTION_TYPE direction, const point16_t& before);
 
     void                        ride(fb::game::mob& horse);
     void                        ride();
@@ -305,11 +305,11 @@ public:
     virtual void                on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                on_hold(session& me) = 0;
     virtual void                on_die(session& me, object* you) = 0;
-    virtual void                on_action(session& me, fb::game::action action, duration duration, uint8_t sound) = 0;
-    virtual void                on_updated(session& me, state_level level = state_level::LEVEL_MIN) = 0;
+    virtual void                on_action(session& me, fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound) = 0;
+    virtual void                on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
     virtual void                on_money_changed(session& me, uint32_t value) = 0;
-    virtual void                on_notify(session& me, const std::string& message, message::type type = message::type::STATE) = 0;
-    virtual void                on_option(session& me, fb::game::options option, bool enabled) = 0;
+    virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
+    virtual void                on_option(session& me, fb::game::OPTION option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
     virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable = nullptr) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;

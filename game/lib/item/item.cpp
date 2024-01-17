@@ -19,15 +19,15 @@ fb::game::item::model::model(const fb::game::item::model::config& config) :
 fb::game::item::model::~model()
 { }
 
-fb::game::item::attrs fb::game::item::model::attr() const
+fb::game::item::ATTRIBUTE fb::game::item::model::attr() const
 {
-    auto                    attr = attrs::NONE;
+    auto                    attr = ATTRIBUTE::NONE;
     if(this->capacity > 1)
-        attr = attrs((uint32_t)attr | (uint32_t)attrs::BUNDLE);
+        attr = ATTRIBUTE((uint32_t)attr | (uint32_t)ATTRIBUTE::BUNDLE);
     return attr;
 }
 
-bool fb::game::item::model::attr(fb::game::item::attrs flag) const
+bool fb::game::item::model::attr(fb::game::item::ATTRIBUTE flag) const
 {
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
@@ -73,7 +73,7 @@ int fb::game::item::model::builtin_attr(lua_State* lua)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    auto flag = (fb::game::item::attrs)thread->tointeger(2);
+    auto flag = (fb::game::item::ATTRIBUTE)thread->tointeger(2);
 
     thread->pushboolean(model->attr(flag));
     return 1;
@@ -109,11 +109,11 @@ int fb::game::item::model::builtin_durability(lua_State* lua)
     
     auto model = thread->touserdata<fb::game::item::model>(1);
     auto durability = uint16_t(0);
-    if(model->attr(fb::game::item::attrs::PACK))
+    if(model->attr(fb::game::item::ATTRIBUTE::PACK))
     {
         durability = static_cast<fb::game::pack::model*>(model)->durability;
     }
-    else if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    else if(model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT))
     {
         durability = static_cast<fb::game::equipment::model*>(model)->durability;
     }
@@ -133,7 +133,7 @@ int fb::game::item::model::builtin_repair_price(lua_State* lua)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    if(model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT))
     {
         auto repair_price = static_cast<fb::game::equipment::model*>(model)->repair;
         if(repair_price.has_value())
@@ -156,7 +156,7 @@ int fb::game::item::model::builtin_rename_price(lua_State* lua)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    if(model->attr(fb::game::item::attrs::EQUIPMENT))
+    if(model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT))
     {
         auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
         if(rename_price.has_value())
@@ -215,7 +215,7 @@ const std::string fb::game::item::name_styled() const
     std::stringstream       sstream;
     sstream << this->name();
 
-    if(this->attr(item::attrs::BUNDLE) && this->_count > 1)
+    if(this->attr(item::ATTRIBUTE::BUNDLE) && this->_count > 1)
         sstream << ' ' << this->_count << "개";
 
     return sstream.str();
@@ -293,12 +293,12 @@ bool fb::game::item::empty() const
     return this->_count == 0;
 }
 
-fb::game::item::attrs fb::game::item::attr() const
+fb::game::item::ATTRIBUTE fb::game::item::attr() const
 {
     return static_cast<const model*>(this->_model)->attr();
 }
 
-bool fb::game::item::attr(fb::game::item::attrs flag) const
+bool fb::game::item::attr(fb::game::item::ATTRIBUTE flag) const
 {
     return static_cast<const model*>(this->_model)->attr(flag);
 }
@@ -327,7 +327,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
     if(model->trade == false)
         throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
-    if(this->attr(item::attrs::BUNDLE) && this->_count > count)
+    if(this->attr(item::ATTRIBUTE::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
         return this->based<fb::game::item>()->make(this->context, count);
@@ -340,7 +340,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
 
 void fb::game::item::merge(fb::game::item& item)
 {
-    if(this->attr(fb::game::item::attrs::BUNDLE) == false)
+    if(this->attr(fb::game::item::ATTRIBUTE::BUNDLE) == false)
         return;
 
     if(this->based() != item.based())

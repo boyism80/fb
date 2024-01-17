@@ -37,12 +37,12 @@ bool fb::game::trade::begin(session& you)
             return false;
         }
 
-        if(this->_owner.option(options::TRADE) == false)
+        if(this->_owner.option(OPTION::TRADE) == false)
         {
             throw std::runtime_error(message::trade::REFUSED_BY_ME);
         }
 
-        if(you.option(options::TRADE) == false)
+        if(you.option(OPTION::TRADE) == false)
         {
             // 상대방이 교환 거부중
             std::stringstream sstream;
@@ -87,7 +87,7 @@ bool fb::game::trade::begin(session& you)
     }
     catch(std::exception& e)
     {
-        listener->on_notify(this->_owner, e.what(), message::type::STATE);
+        listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
         return false;
     }
 }
@@ -122,7 +122,7 @@ bool fb::game::trade::up(fb::game::item& item)
         if(model->trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
-        if(enum_in(item.attr(), fb::game::item::attrs::BUNDLE) && item.count() > 1)
+        if(enum_in(item.attr(), fb::game::item::ATTRIBUTE::BUNDLE) && item.count() > 1)
         {
             // 묶음 단위의 아이템 형식 거래 시도
             this->_selected = &item;
@@ -144,7 +144,7 @@ bool fb::game::trade::up(fb::game::item& item)
     }
     catch(std::exception& e)
     {
-        listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
         return false;
     }
 }
@@ -173,7 +173,7 @@ bool fb::game::trade::up(uint8_t money)
     }
     catch(std::exception& e)
     {
-                listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+                listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
 
         return false;
     }
@@ -214,7 +214,7 @@ bool fb::game::trade::count(uint16_t count)
     }
     catch(std::exception& e)
     {
-        listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
         return false;
     }
 }
@@ -239,14 +239,14 @@ bool fb::game::trade::cancel()
     }
     catch(std::exception& e)
     {
-        listener->on_notify(this->_owner, e.what(), message::type::POPUP);
+        listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
         return false;
     }
 }
 
 uint8_t fb::game::trade::add(fb::game::item& item)
 {
-    if(enum_in(item.attr(), item::attrs::BUNDLE))
+    if(enum_in(item.attr(), item::ATTRIBUTE::BUNDLE))
     {
         auto exists = this->find(item);
         if(exists != 0xFF)
@@ -294,7 +294,7 @@ bool fb::game::trade::flushable() const
         if(item == nullptr)
             continue;
 
-        if(enum_in(item->attr(), item::attrs::BUNDLE) == false)
+        if(enum_in(item->attr(), item::ATTRIBUTE::BUNDLE) == false)
             continue;
 
         auto index = this->find(*item);
@@ -353,7 +353,7 @@ bool fb::game::trade::lock()
     }
     catch(std::exception& e)
     {
-        listener->on_notify(this->_owner, e.what(), message::type::STATE);
+        listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
         return false;
     }
 }

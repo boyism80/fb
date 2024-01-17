@@ -31,9 +31,9 @@ public:
     struct conditions;
 
 public:
-    enum class penalties { NONE, DROP, DESTRUCTION };
+    enum class DEATH_PENALTY_TYPE { NONE, DROP, DESTRUCTION };
 
-    enum class delete_attr : uint8_t
+    enum class DELETE_TYPE : uint8_t
     {
         REMOVED     = 0x00,
         DROP        = 0x01,
@@ -50,7 +50,7 @@ public:
         DESTROY     = 0x0D,
     };
 
-    enum class attrs : uint32_t
+    enum class ATTRIBUTE : uint32_t
     {
         NONE        = 0x00000000,
         CONSUME     = 0x00000001,
@@ -116,8 +116,8 @@ public:
     virtual bool                            empty() const;
 
 public:
-    attrs                                   attr() const;
-    bool                                    attr(fb::game::item::attrs flag) const;
+    ATTRIBUTE                               attr() const;
+    bool                                    attr(fb::game::item::ATTRIBUTE flag) const;
     fb::game::session*                      owner() const;
     void                                    owner(fb::game::session* owner);
 
@@ -136,7 +136,7 @@ public:
 
 interface item::listener : public virtual fb::game::object::listener
 {
-    virtual void on_item_remove(session& me, uint8_t index, item::delete_attr attr = item::delete_attr::NONE) = 0;
+    virtual void on_item_remove(session& me, uint8_t index, DELETE_TYPE attr = DELETE_TYPE::NONE) = 0;
     virtual void on_item_update(session& me, uint8_t index) = 0;
     virtual void on_item_swap(session& me, uint8_t src, uint8_t dst) = 0;
     virtual void on_item_active(session& me, item& item) = 0;
@@ -153,7 +153,7 @@ public:
     const uint8_t                           intelligence    = 0;
     const uint8_t                           cls             = 0;
     const uint8_t                           promotion       = 0;
-    const fb::game::sex                     sex             = fb::game::sex::BOTH;
+    const fb::game::SEX_TYPE                sex             = fb::game::SEX_TYPE::BOTH;
 };
 
 class item::model : public fb::game::object::model
@@ -165,7 +165,7 @@ public:
         uint32_t                            id          = 0;
         uint32_t                            price       = 0;
         fb::game::item::conditions          condition;
-        fb::game::item::penalties           penalty     = fb::game::item::penalties::NONE;
+        fb::game::item::DEATH_PENALTY_TYPE  penalty     = fb::game::item::DEATH_PENALTY_TYPE::NONE;
         uint16_t                            capacity    = 0;
         bool                                trade;
         std::optional<uint32_t>             storage;
@@ -182,7 +182,7 @@ public:
     const uint32_t                          id;
     const uint32_t                          price;
     const fb::game::item::conditions        condition;
-    const penalties                         penalty;
+    const DEATH_PENALTY_TYPE                penalty;
     const uint16_t                          capacity;
     const bool                              trade;
     const std::optional<uint32_t>           storage;
@@ -197,8 +197,8 @@ public:
     fb::game::object::types                 type() const override { return object::types::ITEM; }
 
 public:
-    virtual fb::game::item::attrs           attr() const;
-    bool                                    attr(fb::game::item::attrs flag) const;
+    virtual fb::game::item::ATTRIBUTE           attr() const;
+    bool                                    attr(fb::game::item::ATTRIBUTE flag) const;
 
 public:
     virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const
@@ -257,7 +257,7 @@ public:
         return new fb::game::cash(context, count);
     }
 
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -290,7 +290,7 @@ public:
     {
         return new fb::game::consume(context, this, count);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -334,7 +334,7 @@ public:
     {
         return new fb::game::pack(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -449,7 +449,7 @@ public:
     ~model();
 
 public:
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -512,7 +512,7 @@ public:
     {
         return new fb::game::weapon(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
     fb::game::weapon::types             weapon_type() const;
 
 };
@@ -541,7 +541,7 @@ public:
     {
         return new fb::game::armor(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -568,7 +568,7 @@ public:
     {
         return new fb::game::helmet(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -595,7 +595,7 @@ public:
     {
         return new fb::game::shield(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -622,7 +622,7 @@ public:
     {
         return new fb::game::ring(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -649,7 +649,7 @@ public:
     {
         return new fb::game::auxiliary(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -676,7 +676,7 @@ public:
     {
         return new fb::game::bow(context, this);
     }
-    virtual fb::game::item::attrs       attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
 };
 
 
@@ -739,8 +739,8 @@ public:
     void                                pickup(bool boost);
     bool                                throws(uint8_t index);
 
-    fb::game::item*                     remove(uint8_t index, uint16_t count = 1, item::delete_attr attr = item::delete_attr::NONE);
-    fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::delete_attr attr = item::delete_attr::NONE);
+    fb::game::item*                     remove(uint8_t index, uint16_t count = 1, item::DELETE_TYPE attr = item::DELETE_TYPE::NONE);
+    fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::DELETE_TYPE attr = item::DELETE_TYPE::NONE);
 
     std::map<equipment::slot, item*>    equipments() const;
     

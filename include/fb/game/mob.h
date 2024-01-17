@@ -56,7 +56,7 @@ public:
 
 private:
     fb::game::life*                         find_target();
-    bool                                    near_target(fb::game::direction& out) const;
+    bool                                    near_target(fb::game::DIRECTION_TYPE& out) const;
 
 public:
     bool                                    action();

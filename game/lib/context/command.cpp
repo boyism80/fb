@@ -37,7 +37,7 @@ fb::task<bool> fb::game::context::handle_command_sound(fb::game::session& sessio
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::object::sound(session, fb::game::sound::type(value)), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::object::sound(session, fb::game::SOUND_TYPE(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -50,7 +50,7 @@ fb::task<bool> fb::game::context::handle_command_action(fb::game::session& sessi
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::session::action(session, fb::game::action(value), duration::DURATION_SPELL), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::session::action(session, fb::game::ACTION_TYPE(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -63,7 +63,7 @@ fb::task<bool> fb::game::context::handle_command_weather(fb::game::session& sess
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::weather(weather::type(value)), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::weather(WEATHER_TYPE(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -121,8 +121,8 @@ fb::task<bool> fb::game::context::handle_command_disguise(fb::game::session& ses
 
     session.disguise(mob->look);
     this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::session::action(session, action::CAST_SPELL, duration::DURATION_SPELL), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::object::sound(session, sound::type(0x0019)), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::session::action(session, ACTION_TYPE::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::object::sound(session, SOUND_TYPE(0x0019)), scope::PIVOT);
     co_return true;
 }
 
@@ -167,7 +167,7 @@ fb::task<bool> fb::game::context::handle_command_class(fb::game::session& sessio
     session.cls(cls);
     session.promotion(promotion);
     this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
-    this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -181,7 +181,7 @@ fb::task<bool> fb::game::context::handle_command_level(fb::game::session& sessio
 
     auto level = parameters[0].asInt();
     session.level(level);
-    this->send(session, fb::protocol::game::response::session::state(session, state_level::LEVEL_MAX), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
