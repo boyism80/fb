@@ -650,6 +650,67 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
     });
 }
 
+bool fb::game::context::chat_sell(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto npc_sell = std::vector<fb::game::object*>();
+    std::copy_if
+    (
+        npcs.begin(), npcs.end(), std::back_inserter(npc_sell), 
+        [](auto npc)
+        {
+            auto model = npc->based<fb::game::npc>();
+            return model->sell.size() > 0;
+        }
+    );
+
+    if (npc_sell.size() == 0)
+        return false;
+
+    
+    auto& regex = fb::game::model::regex[container::regex::TYPE::SELL];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    auto name = what["name"].str();
+    auto model = fb::game::model::items.name2item(name);
+    if (model == nullptr)
+    {
+        for(auto& npc : npc_sell)
+        {
+            // npc chat
+        }
+    }
+    else
+    {
+        auto count = 0;
+        if (what["count"].matched)
+            count = std::stoi(what["count"].str());
+        else if (what["all"].matched)
+            count = -1;
+        else
+            count = 1;
+
+        if (model->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        {
+            auto item = session.items.find(name);
+            if(item == nullptr)
+            {}
+            else
+            {
+                if(count == -1)
+                    count = item->count();
+            }
+        }
+        else
+        {
+            // get all item slots and sell to npc
+        }
+    }
+
+    return true;
+}
+
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
     return new fb::game::session(socket, *this);
@@ -1507,6 +1568,11 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             npcs.push_back(static_cast<fb::game::npc*>(npc));
         }
         sstream << session->name() << ": " << request.message;
+    }
+
+    if (npcs.size() > 0)
+    {
+        this->chat_sell(*session, request.message, npcs);
     }
 
     this->send(*session, fb::protocol::game::response::chat(*session, sstream.str(), request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL), request.shout ? scope::MAP : scope::PIVOT);

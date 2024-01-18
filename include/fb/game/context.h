@@ -58,6 +58,7 @@ private:
     bool                    fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer);
     void                    fetch_gear(daotk::mysql::result& db_result, fb::game::session& session);
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
+    bool                    chat_sell(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 private:
     fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable);
