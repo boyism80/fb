@@ -5,13 +5,6 @@ function buy(me, npc, pursuit)
             local item, price = table.unpack(pair)
             purchase_list[item:name()] = price
         end
-    elseif type(pursuit) == 'table' then
-        for m, p in pairs(pursuit) do
-            for i, pair in pairs(pursuit_buy(p)) do
-                local item, price = table.unpack(pair)
-                purchase_list[item:name()] = price
-            end
-        end
     else
         return npc:dialog(me, '알 수 없는 에러')
     end

@@ -710,6 +710,7 @@ public:
     uint8_t                             inactive(equipment::slot slot);
     uint8_t                             index(const fb::game::item::model* item) const;
     uint8_t                             index(const fb::game::item& item) const;
+    std::vector<uint8_t>                index_all(const fb::game::item::model* item) const;
 
     fb::game::equipment*                wear(fb::game::equipment::slot slot, fb::game::equipment* item);
 

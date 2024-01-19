@@ -603,7 +603,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
             uint8_t             color     = data["color"].asInt();
             auto                script    = CP949(data["script"].asString(), PLATFORM::Windows);
             auto                sells     = std::map<std::string, uint16_t>();
-            auto                buys      = std::map<std::string, uint16_t>();
+            auto                buy       = std::optional<uint16_t>();
 
             if (data.isMember("sell"))
             {
@@ -641,36 +641,24 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
 
             if (data.isMember("buy"))
             {
-                auto& buy = data["buy"];
-                if (buy.isNumeric())
+                if (data["buy"].isNumeric())
                 {
-                    auto k = "";
-                    auto v = buy.asUInt();
-                    buys.insert({ k, v });
+                    buy = data["buy"].asInt();
                 }
-                else if (buy.isObject())
+                else if (data["buy"].isNull())
                 {
-                    for (auto i = buy.begin(); i != buy.end(); i++)
-                    {
-                        auto k = CP949(i.key().asString(), PLATFORM::Windows);
-                        auto v = (*i).asUInt();
-
-                        buys.insert({ k, v });
-                    }
                 }
                 else
                 {
                     throw std::runtime_error("invalid buy data type");
                 }
             }
-            for (auto& [k, v] : buys)
+            
+            if (buy.has_value() && fb::game::model::buy.contains(buy.value()) == false)
             {
-                if (fb::game::model::buy.contains(v) == false)
-                {
-                    auto sstream = std::stringstream();
-                    sstream << v << " : buy에 정의되지 않았습니다.";
-                    throw std::runtime_error(sstream.str());
-                }
+                auto sstream = std::stringstream();
+                sstream << buy.value() << " : buy에 정의되지 않았습니다.";
+                throw std::runtime_error(sstream.str());
             }
 
             assert_script(script, "function\\s+(on_interact)\\(\\w+,\\s*\\w+\\)", "on_interact", [](const auto& script) 
@@ -696,7 +684,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
                         },
                         script,
                         sells,
-                        buys
+                        buy
                     });
                 base_npc::insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);

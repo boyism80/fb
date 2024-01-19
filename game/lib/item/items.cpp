@@ -240,6 +240,23 @@ uint8_t fb::game::items::index(const fb::game::item& item) const
     return 0xFF;
 }
 
+std::vector<uint8_t> fb::game::items::index_all(const fb::game::item::model* item) const
+{
+    auto result = std::vector<uint8_t>();
+    for(int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto now = this->at(i);
+
+        if(now == nullptr)
+            continue;
+
+        if(now->based<fb::game::item>() == item)
+            result.push_back(i);
+    }
+
+    return result;
+}
+
 fb::game::equipment* fb::game::items::wear(fb::game::equipment::slot slot, fb::game::equipment* item)
 {
     switch(slot) // equipment::slot

@@ -652,18 +652,18 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
 
 bool fb::game::context::chat_sell(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto npc_sell = std::vector<fb::game::object*>();
+    auto npc_buy = std::vector<fb::game::object*>();
     std::copy_if
     (
-        npcs.begin(), npcs.end(), std::back_inserter(npc_sell), 
+        npcs.begin(), npcs.end(), std::back_inserter(npc_buy), 
         [](auto npc)
         {
             auto model = npc->based<fb::game::npc>();
-            return model->sell.size() > 0;
+            return model->buy.has_value();
         }
     );
 
-    if (npc_sell.size() == 0)
+    if (npc_buy.size() == 0)
         return false;
 
     
@@ -676,36 +676,99 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
     auto model = fb::game::model::items.name2item(name);
     if (model == nullptr)
     {
-        for(auto& npc : npc_sell)
+        // 아이템 이름이 이상함
+        for(auto& npc : npc_buy)
         {
             // npc chat
         }
+        return false;
+    }
+    
+    auto count = uint16_t(0);
+    if (what["count"].matched)
+    {
+        count = std::stoi(what["count"].str());
+        if (count <= 0)
+            return false;
+    }
+    else if (what["all"].matched)
+    {
+        count = -1;
     }
     else
     {
-        auto count = 0;
-        if (what["count"].matched)
-            count = std::stoi(what["count"].str());
-        else if (what["all"].matched)
-            count = -1;
-        else
-            count = 1;
+        count = 1;
+    }
+
+    auto slots = session.items.index_all(model);
+    if(slots.size() == 0)
+    {
+        // 없는 물건을 팔려고 함
+        return false;
+    }
+    
+    auto sold = false;
+    for(auto& npc : npc_buy)
+    {
+        auto npc_model = npc->based<fb::game::npc>();
+        auto buy_list = fb::game::model::buy[npc_model->buy.value()];
+        auto i = std::find_if(buy_list->begin(), buy_list->end(), [model](const auto& pair)
+        {
+            auto& [m, p] = pair;
+            return m == model;
+        });
+
+        if (i == buy_list->end())
+        {
+            // 그런 물건은 안 팝니다.
+            continue;
+        }
+
+        if (sold)
+        {
+            // 이미 앞에서 어떤 npc가 다 샀음
+            continue;
+        }
+
+        auto& [m, p] = *i;
+        auto price = p.has_value() ? p.value() : (m->price / 2);
 
         if (model->attr(fb::game::item::ATTRIBUTE::BUNDLE))
         {
-            auto item = session.items.find(name);
-            if(item == nullptr)
-            {}
+            auto item = session.items.at(slots[0]);
+            if (count == -1)
+                count = item->count();
+
+            if (count > item->count())
+            {
+                // 가진것보다 많이 팔려고함
+            }
             else
             {
-                if(count == -1)
-                    count = item->count();
+                session.items.remove(slots[0], count, fb::game::item::DELETE_TYPE::SELL);
+                session.money_add(price * count);
+                // npc chat : 뭐 몇개를 얼마에 팔았습니다.
             }
         }
         else
         {
-            // get all item slots and sell to npc
+            if (count == -1)
+                count = slots.size();
+
+            auto sell_count = 0;
+            for (auto slot : slots)
+            {
+                if (sell_count > count)
+                    break;
+
+                session.items.remove(slot, 1, fb::game::item::DELETE_TYPE::SELL);
+                sell_count++;
+            }
+            session.money_add(price * sell_count);
+            // npc chat : 뭐 몇개를 얼마에 팔았습니다.
         }
+
+        sold = true;
     }
 
     return true;

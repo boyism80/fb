@@ -51,31 +51,9 @@ int __builtin_buy(fb::game::lua::context* thread, fb::game::session* session, co
                    .pushobject(session)
                    .pushobject(npc);
 
-    if (npc->buy.size() == 1 && npc->buy.contains(""))
+    if (npc->buy.has_value())
     {
-        auto pursuit = npc->buy.at("");
-        dialog.pushinteger(pursuit);
-    }
-    else if(npc->buy.size() > 1)
-    {
-        dialog.new_table();
-        auto i = 1;
-        for (auto& [menu, pursuit] : npc->buy)
-        {
-            dialog.pushinteger(i);
-            dialog.new_table();
-            {
-                dialog.pushinteger(1);
-                dialog.pushstring(menu);
-                dialog.set_table();
-
-                dialog.pushinteger(2);
-                dialog.pushinteger(pursuit);
-                dialog.set_table();
-            }
-            dialog.set_table();
-            i++;
-        }
+        dialog.pushinteger(npc->buy.value());
     }
     else
     {

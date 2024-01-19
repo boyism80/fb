@@ -47,12 +47,14 @@ public:
     {
     public:
         std::string                         script;
-        std::map<std::string, uint16_t>     sell, buy;
+        std::map<std::string, uint16_t>     sell;
+        std::optional<uint16_t>             buy;
     };
 
 public:
     const std::string                       script;
-    const std::map<std::string, uint16_t>   sell, buy;
+    const std::map<std::string, uint16_t>   sell;
+    const std::optional<uint16_t>           buy;
 
 public:
     friend class npc;
