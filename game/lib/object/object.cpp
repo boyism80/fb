@@ -93,6 +93,12 @@ void fb::game::object::destroy()
     this->context.destroy(*this);
 }
 
+void fb::game::object::chat(const std::string& message, bool shout)
+{
+    if(this->_listener != nullptr)
+        this->_listener->on_chat(*this, message, shout);
+}
+
 const fb::game::point16_t& fb::game::object::position() const
 {
     return this->_position;

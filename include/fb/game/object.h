@@ -102,7 +102,7 @@ public:
     virtual uint8_t                     color() const;
     virtual object::types               type() const;
 
-
+    void                                chat(const std::string& message, bool shout = false);
     const point16_t&                    position() const;
     const point16_t                     position_forward() const;
     const point16_t                     position_forward(fb::game::DIRECTION_TYPE direction) const;
@@ -192,6 +192,7 @@ public:
 
 interface object::listener
 {
+    virtual void                        on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
     virtual void                        on_direction(fb::game::object& me) = 0;
     virtual void                        on_show(fb::game::object& me, bool light) = 0;
     virtual void                        on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;

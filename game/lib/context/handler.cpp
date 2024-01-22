@@ -13,6 +13,21 @@ void fb::game::context::on_destroy(fb::game::object& me)
     
 }
 
+void fb::game::context::on_chat(fb::game::object& me, const std::string& message, bool shout)
+{
+    auto sstream = std::stringstream();
+    if (shout)
+    {
+        sstream << me.name() << "! " << message;
+    }
+    else
+    {
+        sstream << me.name() << ": " << message;
+    }
+
+    this->send(me, fb::protocol::game::response::chat(me, sstream.str(), shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL), shout ? scope::MAP : scope::PIVOT);
+}
+
 void fb::game::context::on_direction(fb::game::object& me)
 {
     this->send(me, fb::protocol::game::response::object::direction(me), scope::PIVOT, true);

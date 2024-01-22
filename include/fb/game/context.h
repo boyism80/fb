@@ -10,6 +10,7 @@
 #include <sstream>
 #include <ctime>
 #include <unordered_set>
+#include <format>
 #include <fb/core/db.h>
 #include <fb/core/acceptor.h>
 #include <fb/game/session.h>
@@ -189,6 +190,7 @@ public:
     // listener : object
     void                    on_create(fb::game::object& me) final;
     void                    on_destroy(fb::game::object& me) final;
+    void                    on_chat(fb::game::object& me, const std::string& message, bool shout) final;
     void                    on_direction(fb::game::object& me) final;
     void                    on_show(fb::game::object& me, bool light) final;
     void                    on_show(fb::game::object& me, fb::game::object& you, bool light) final;
