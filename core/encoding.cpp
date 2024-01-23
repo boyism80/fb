@@ -142,7 +142,7 @@ std::wstring W(const std::string& m)
     delete[] wide;
     return dst;
 #else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>>() conv;
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     return conv.from_bytes(m);
 #endif
 }
@@ -159,7 +159,7 @@ std::string M(const std::wstring& w)
     delete[] mbs;
     return dst;
 #else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>>() conv;
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     return conv.to_bytes(w);
 #endif
 }

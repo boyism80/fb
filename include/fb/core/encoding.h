@@ -4,7 +4,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#include <locale.h>
+#include <locale>
 #include <iconv.h>
 #include <codecvt>
 #endif
