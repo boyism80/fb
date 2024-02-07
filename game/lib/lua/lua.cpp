@@ -80,7 +80,7 @@ context& context::from(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto fname = fstring_c(fmt, &args);
+    auto fname = fb::format(fmt, &args);
     va_end(args);
 
 #if defined DEBUG || defined _DEBUG
@@ -108,7 +108,7 @@ context& context::func(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    auto fname = fstring_c(fmt, &args);
+    auto fname = fb::format(fmt, &args);
     va_end(args);
 
     lua_getglobal(*this, fname.c_str());

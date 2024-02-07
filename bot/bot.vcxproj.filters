@@ -49,5 +49,8 @@
     <ClCompile Include="lib\bot.login.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\format.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

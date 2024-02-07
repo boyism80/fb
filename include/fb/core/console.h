@@ -15,6 +15,7 @@ bool SetConsoleIcon(int id);
 #include <optional>
 #include <memory>
 #include <mutex>
+#include <fb/core/format.h>
 #include <fb/core/encoding.h>
 
 namespace fb {
@@ -42,9 +43,6 @@ public:
 public:
     console& operator = (console&) = delete;
     console& operator = (const console&) = delete;
-
-private:
-    std::string             format(const std::string& f, va_list* args);
 
 public:
     fb::console&            put(const char* format, ...);

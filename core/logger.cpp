@@ -42,7 +42,7 @@ fb::logger& fb::logger::debug(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    auto message = fstring_c(format, &args);
+    auto message = fb::format(format, &args);
     va_end(args);
 
     auto& c = fb::console::get();
@@ -59,7 +59,7 @@ fb::logger& fb::logger::info(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    auto message = fstring_c(format, &args);
+    auto message = fb::format(format, &args);
     va_end(args);
 
     auto& c = fb::console::get();
@@ -76,7 +76,7 @@ fb::logger& fb::logger::warn(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    auto message = fstring_c(format, &args);
+    auto message = fb::format(format, &args);
     va_end(args);
 
     auto& c = fb::console::get();
@@ -93,7 +93,7 @@ fb::logger& fb::logger::fatal(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    auto message = fstring_c(format, &args);
+    auto message = fb::format(format, &args);
     va_end(args);
 
     auto& c = fb::console::get();

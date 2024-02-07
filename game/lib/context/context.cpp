@@ -752,9 +752,9 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
                 session.money_add(price * count.value());
 
                 if(count == 1)
-                    npc->chat(std::format("{} {}전에 샀습니다.", name_with(name), price));
+                    npc->chat(fb::format("%s %d전에 샀습니다.", name_with(name).c_str(), price));
                 else
-                    npc->chat(std::format("{} {}개를 {}전에 샀습니다.", name, count, price * count.value()));
+                    npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", name, count, price * count.value()));
             }
         }
         else
@@ -779,9 +779,9 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
             }
             session.money_add(price * sell_count);
             if(sell_count == 1)
-                npc->chat(std::format("{} {}전에 샀습니다.", name_with(name), price * sell_count));
+                npc->chat(fb::format("%s %d전에 샀습니다.", name_with(name).c_str(), price * sell_count));
             else
-                npc->chat(std::format("{} {}개를 {}전에 샀습니다.", name, sell_count, price * sell_count));
+                npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", name, sell_count, price * sell_count));
         }
 
         sold = true;

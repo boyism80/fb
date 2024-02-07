@@ -10,7 +10,7 @@
 #include <sstream>
 #include <ctime>
 #include <unordered_set>
-#include <format>
+#include <fb/core/format.h>
 #include <fb/core/db.h>
 #include <fb/core/acceptor.h>
 #include <fb/game/session.h>

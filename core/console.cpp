@@ -71,7 +71,7 @@ fb::console& fb::console::put(const char* fmt, ...)
     va_list                 args;
 
     va_start(args, fmt);
-    auto                    combined = fstring_c(fmt, &args);
+    auto                    combined = fb::format(fmt, &args);
     va_end(args);
 
     uint16_t                x, y;
@@ -95,7 +95,7 @@ fb::console& fb::console::puts(const char* fmt, ...)
 
     va_list                 args;
     va_start(args, fmt);
-    auto                    combined = fstring_c(fmt, &args);
+    auto                    combined = fb::format(fmt, &args);
     va_end(args);
 
     uint16_t                x, y;

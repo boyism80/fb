@@ -12,6 +12,7 @@
 #include <fb/core/logger.h>
 #include <fb/core/coroutine.h>
 #include <fb/core/acceptor.h>
+#include <fb/core/format.h>
 
 namespace fb { namespace db {
 
@@ -193,7 +194,7 @@ public:
     {
         va_list args;
         va_start(args, format);
-        auto sql = fstring_c(format, &args);
+        auto sql = fb::format(format, &args);
         va_end(args);
 
         return this->co_exec(id, sql);
@@ -202,7 +203,7 @@ public:
     {
         va_list args;
         va_start(args, format);
-        auto sql = fstring_c(format, &args);
+        auto sql = fb::format(format, &args);
         va_end(args);
 
         return this->co_exec(-1, sql);

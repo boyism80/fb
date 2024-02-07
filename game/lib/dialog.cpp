@@ -22,7 +22,7 @@ fb::game::dialog& fb::game::dialog::from(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    auto buffer = fstring_c(format, &args);
+    auto buffer = fb::format(format, &args);
     va_end(args);
 
     auto ctx = fb::game::lua::get();
@@ -39,7 +39,7 @@ fb::game::dialog& fb::game::dialog::func(const char* format, ...)
 
     va_list args;
     va_start(args, format);
-    auto buffer = fstring_c(format, &args);
+    auto buffer = fb::format(format, &args);
     va_end(args);
 
     ctx->func(buffer.c_str());

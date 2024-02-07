@@ -68,5 +68,8 @@
     <ClCompile Include="..\core\logger.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\format.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -274,7 +274,7 @@ void fb::db::base_context::exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
-    auto sql = fstring_c(format, &args);
+    auto sql = fb::format(format, &args);
     va_end(args);
 
     this->exec(id, sql);
@@ -284,7 +284,7 @@ result_type fb::db::base_context::co_exec_f(uint32_t id, const std::string& form
 {
     va_list args;
     va_start(args, format);
-    auto sql = fstring_c(format, &args);
+    auto sql = fb::format(format, &args);
     va_end(args);
     
     return this->co_exec(id, sql);
