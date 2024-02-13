@@ -217,6 +217,7 @@
     <ClCompile Include="lib\object\object.cpp" />
     <ClCompile Include="lib\object\session.builtin.cpp" />
     <ClCompile Include="lib\object\session.cpp" />
+    <ClCompile Include="lib\regex.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\query_game.cpp" />
     <ClCompile Include="lib\model.cpp" />

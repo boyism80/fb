@@ -666,37 +666,16 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
     if (npc_buy.size() == 0)
         return false;
 
-    
-    auto& regex = fb::game::model::regex[container::regex::TYPE::SELL];
-    auto what = boost::xpressive::smatch();
-    if (boost::xpressive::regex_search(message, what, regex) == false)
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    auto count = std::optional<uint16_t>();
+    if (fb::game::regex::match_sell_message(message, model, count) == false)
         return false;
 
-    auto name = what["name"].str();
-    auto model = fb::game::model::items.name2item(name);
     if (model == nullptr)
     {
         for(auto& npc : npc_buy)
-        {
             npc->chat("뭘 팔아?");
-        }
         return false;
-    }
-    
-    auto count = std::optional<uint16_t>();
-    if (what["count"].matched)
-    {
-        count = std::stoi(what["count"].str());
-        if (count <= 0)
-            return false;
-    }
-    else if (what["all"].matched)
-    {
-        
-    }
-    else
-    {
-        count = 1;
     }
 
     auto slots = session.items.index_all(model);
@@ -752,9 +731,9 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
                 session.money_add(price * count.value());
 
                 if(count == 1)
-                    npc->chat(fb::format("%s %d전에 샀습니다.", name_with(name).c_str(), price));
+                    npc->chat(fb::format("%s %d전에 샀습니다.", name_with(model->name).c_str(), price));
                 else
-                    npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", name, count, price * count.value()));
+                    npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", model->name, count, price * count.value()));
             }
         }
         else
@@ -779,9 +758,9 @@ bool fb::game::context::chat_sell(fb::game::session& session, const std::string&
             }
             session.money_add(price * sell_count);
             if(sell_count == 1)
-                npc->chat(fb::format("%s %d전에 샀습니다.", name_with(name).c_str(), price * sell_count));
+                npc->chat(fb::format("%s %d전에 샀습니다.", name_with(model->name).c_str(), price * sell_count));
             else
-                npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", name, sell_count, price * sell_count));
+                npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", model->name, sell_count, price * sell_count));
         }
 
         sold = true;

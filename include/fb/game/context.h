@@ -17,6 +17,7 @@
 #include <fb/game/group.h>
 #include <fb/game/listener.h>
 #include <fb/game/query.h>
+#include <fb/game/regex.h>
 #include <fb/protocol/game.h>
 #include <fb/protocol/internal.h>
 
@@ -60,6 +61,7 @@ private:
     void                    fetch_gear(daotk::mysql::result& db_result, fb::game::session& session);
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
     bool                    chat_sell(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                    parse_sell_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count) const;
 
 private:
     fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable);
