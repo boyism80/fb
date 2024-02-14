@@ -60,8 +60,6 @@ int fb::game::item::model::builtin_make(lua_State* lua)
         object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
     }
 
-    // TODO: 제거해도 되는지 확인
-    context->send(*object, fb::protocol::game::response::object::show(*object), fb::game::context::scope::PIVOT);
     thread->pushobject(object);
     return 1;
 }
