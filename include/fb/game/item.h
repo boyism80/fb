@@ -197,7 +197,7 @@ public:
     fb::game::object::types                 type() const override { return object::types::ITEM; }
 
 public:
-    virtual fb::game::item::ATTRIBUTE           attr() const;
+    virtual fb::game::item::ATTRIBUTE       attr() const;
     bool                                    attr(fb::game::item::ATTRIBUTE flag) const;
 
 public:

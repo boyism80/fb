@@ -26,3 +26,26 @@ bool fb::game::regex::match_sell_message(const std::string& message, fb::game::i
     }
     return true;
 }
+
+bool fb::game::regex::match_buy_message(const std::string& message, fb::game::item::model*& item, uint16_t& count)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::BUY];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    auto name = what["name"].str();
+    item = fb::game::model::items.name2item(name);
+
+    if (what["count"].matched)
+    {
+        count = std::stoi(what["count"].str());
+        if (count <= 0)
+            return false;
+    }
+    else
+    {
+        count = 1;
+    }
+    return true;
+}
