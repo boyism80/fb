@@ -83,7 +83,7 @@ fb::game::map* container::map::operator[](uint16_t id) const
 fb::game::npc::model* container::npc::name2npc(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::npc::model>>& pair)
+        [&name](auto& pair)
         {
             return pair.second->name == name;
         });
@@ -99,7 +99,7 @@ fb::game::npc::model* container::npc::operator[](uint16_t id)
 fb::game::mob::model* container::mob::name2mob(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::mob::model>>& pair)
+        [&name](auto& pair)
         {
             return pair.second->name == name;
         });
@@ -116,7 +116,7 @@ fb::game::mob::model* container::mob::operator[](uint16_t id)
 fb::game::item::model* container::item::name2item(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::item::model>>& pair)
+        [&name](auto& pair)
         {
             return pair.second->name == name;
         });
@@ -132,7 +132,7 @@ fb::game::item::model* container::item::operator[](uint16_t id)
 fb::game::spell* container::spell::name2spell(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
-        [&name](std::pair<const uint16_t, std::unique_ptr<fb::game::spell>>& pair)
+        [&name](auto& pair)
         {
             return pair.second->name == name;
         });
