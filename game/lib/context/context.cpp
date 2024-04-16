@@ -655,8 +655,8 @@ bool fb::game::context::inline_sell(fb::game::session& session, const std::strin
     auto npc_buy = std::vector<fb::game::object*>();
     std::copy_if
     (
-        npcs.begin(), npcs.end(), std::back_inserter(npc_buy), 
-        [](auto npc)
+        npcs.cbegin(), npcs.cend(), std::back_inserter(npc_buy), 
+        [](fb::game::object* npc)
         {
             auto model = npc->based<fb::game::npc>();
             return model->buy.has_value();
@@ -774,8 +774,8 @@ bool fb::game::context::inline_buy(fb::game::session& session, const std::string
     auto npc_sell = std::vector<fb::game::object*>();
     std::copy_if
     (
-        npcs.begin(), npcs.end(), std::back_inserter(npc_sell), 
-        [](auto npc)
+        npcs.cbegin(), npcs.cend(), std::back_inserter(npc_sell), 
+        [](fb::game::object* npc)
         {
             auto model = npc->based<fb::game::npc>();
             return model->buy.has_value();

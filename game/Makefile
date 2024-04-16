@@ -168,9 +168,9 @@ $(BUILD)/object_builtin.o: ./lib/object/object.builtin.cpp
 $(BUILD)/session.o: ./lib/object/session.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/session.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session.o
-$(BUILD)/dialog.o: ./lib/object/dialog.cpp
+$(BUILD)/dialog.o: ./lib/dialog.cpp
 	mkdir -p $(BUILD)
-	$(CXX) $(STD) -c ./lib/object/dialog.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/dialog.o
+	$(CXX) $(STD) -c ./lib/dialog.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/dialog.o
 $(BUILD)/session_builtin.o: ./lib/object/session.builtin.cpp
 	mkdir -p $(BUILD)
 	$(CXX) $(STD) -c ./lib/object/session.builtin.cpp $(INC) $(LIB_DIRS) $(LIBS) -o $(BUILD)/session_builtin.o
