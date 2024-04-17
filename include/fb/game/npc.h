@@ -2,8 +2,14 @@
 #define __NPC_H__
 
 #include <fb/game/object.h>
+#include <fb/game/item.h>
+#include <fb/core/encoding.h>
+#include <fb/core/format.h>
+#include <optional>
 
 namespace fb { namespace game {
+
+class session;
 
 class npc : public object
 {
@@ -20,6 +26,8 @@ public:
 
 public:
     npc*                        make(fb::game::context& context);
+    bool                        buy(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count, bool bought);
+    bool                        sell(fb::game::session& session, fb::game::item::model* item, uint16_t count, bool sold);
 
 public:
     static int                  builtin_input(lua_State* lua);
@@ -65,6 +73,10 @@ public:
 
 public:
     object::types               type() const { return object::types::NPC; }
+
+public:
+    bool                        contains_sell(const fb::game::item::model& item, uint32_t& price) const;
+    bool                        contains_buy(const fb::game::item::model& item, uint32_t& price) const;
 
 public:
     static int                  builtin_input(lua_State* lua);

@@ -14,6 +14,7 @@
 #include <fb/game/trade.h>
 #include <fb/game/mob.h>
 #include <fb/game/dialog.h>
+#include <fb/game/npc.h>
 
 namespace fb { namespace game {
 
@@ -266,6 +267,9 @@ public:
     void                        unride();
     bool                        alive() const;
     void                        refresh_map();
+
+    bool                        sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     static int                  builtin_look(lua_State* lua);

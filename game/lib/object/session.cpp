@@ -1,6 +1,7 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
 #include <fb/game/model.h>
+#include <fb/game/regex.h>
 
 using namespace fb::game;
 
@@ -959,6 +960,38 @@ void fb::game::session::refresh_map()
 
     auto listener = this->get_listener<fb::game::session>();
     listener->on_map_changed(*this, this->_map, this->_map);
+}
+
+bool fb::game::session::sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    auto count = std::optional<uint16_t>();
+    if (fb::game::regex::match_sell_message(message, model, count) == false)
+        return false;
+
+    auto bought = false;
+    for (auto npc : npcs)
+    {
+        bought = npc->buy(*this, model, count, bought);
+    }
+
+    return bought;
+}
+
+bool fb::game::session::buy(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    auto count = uint16_t(0);
+    if (fb::game::regex::match_buy_message(message, model, count) == false)
+        return false;
+
+    auto sold = false;
+    for (auto npc : npcs)
+    {
+        sold = npc->sell(*this, model, count, sold);
+    }
+
+    return sold;
 }
 
 fb::game::session::container::container()

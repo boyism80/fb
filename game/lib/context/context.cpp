@@ -650,209 +650,6 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
     });
 }
 
-bool fb::game::context::inline_sell(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs)
-{
-    auto npc_buy = std::vector<fb::game::object*>();
-    std::copy_if
-    (
-        npcs.cbegin(), npcs.cend(), std::back_inserter(npc_buy), 
-        [](fb::game::object* npc)
-        {
-            auto model = npc->based<fb::game::npc>();
-            return model->buy.has_value();
-        }
-    );
-
-    if (npc_buy.size() == 0)
-        return false;
-
-    auto model = static_cast<fb::game::item::model*>(nullptr);
-    auto count = std::optional<uint16_t>();
-    if (fb::game::regex::match_sell_message(message, model, count) == false)
-        return false;
-
-    if (model == nullptr)
-    {
-        for(auto& npc : npc_buy)
-            npc->chat("뭘 팔아?");
-        return false;
-    }
-
-    auto slots = session.items.index_all(model);
-    if(slots.size() == 0)
-    {
-        for(auto& npc : npc_buy)
-        {
-            npc->chat("가지고 있지도 않으면서...");
-        }
-        return false;
-    }
-    
-    auto sold = false;
-    for(auto& npc : npc_buy)
-    {
-        auto npc_model = npc->based<fb::game::npc>();
-        auto buy_list = fb::game::model::buy[npc_model->buy.value()];
-        auto i = std::find_if(buy_list->begin(), buy_list->end(), [model](const auto& pair)
-        {
-            auto& [m, p] = pair;
-            return m == model;
-        });
-
-        if (i == buy_list->end())
-        {
-            npc->chat("그런 물건은 안 삽니다.");
-            continue;
-        }
-
-        if (sold)
-            continue;
-
-        auto& [m, p] = *i;
-        auto price = p.has_value() ? p.value() : (m->price / 2);
-
-        if (model->attr(fb::game::item::ATTRIBUTE::BUNDLE))
-        {
-            auto item = session.items.at(slots[0]);
-            if (count.has_value() == false)
-                count = item->count();
-
-            if(count <= 0)
-            {
-                npc->chat("뭐래는거야..");
-            }
-            else if (count > item->count())
-            {
-                npc->chat("갯수가 모자라는데요?");
-            }
-            else
-            {
-                session.items.remove(slots[0], count.value(), fb::game::item::DELETE_TYPE::SELL);
-                session.money_add(price * count.value());
-
-                if(count == 1)
-                    npc->chat(fb::format("%s %d전에 샀습니다.", name_with(model->name).c_str(), price));
-                else
-                    npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", model->name, count, price * count.value()));
-            }
-        }
-        else
-        {
-            if (count.has_value() == false)
-                count = slots.size();
-
-            if(count <= 0)
-            {
-                npc->chat("뭐래는거야..");
-                continue;
-            }
-
-            auto sell_count = 0;
-            for (auto slot : slots)
-            {
-                session.items.remove(slot, 1, fb::game::item::DELETE_TYPE::SELL);
-                sell_count++;
-
-                if (sell_count >= count.value())
-                    break;
-            }
-            session.money_add(price * sell_count);
-            if(sell_count == 1)
-                npc->chat(fb::format("%s %d전에 샀습니다.", name_with(model->name).c_str(), price * sell_count));
-            else
-                npc->chat(fb::format("%s %d개를 %d전에 샀습니다.", model->name, sell_count, price * sell_count));
-        }
-
-        sold = true;
-    }
-
-    return true;
-}
-
-bool fb::game::context::inline_buy(fb::game::session& session, const std::string& message, const std::vector<fb::game::npc*>& npcs)
-{
-    auto npc_sell = std::vector<fb::game::object*>();
-    std::copy_if
-    (
-        npcs.cbegin(), npcs.cend(), std::back_inserter(npc_sell), 
-        [](fb::game::object* npc)
-        {
-            auto model = npc->based<fb::game::npc>();
-            return model->buy.has_value();
-        }
-    );
-
-    if (npc_sell.size() == 0)
-        return false;
-
-    auto model = static_cast<fb::game::item::model*>(nullptr);
-    auto count = uint16_t(0);
-    if (fb::game::regex::match_buy_message(message, model, count) == false)
-        return false;
-
-    if (model == nullptr)
-    {
-        for(auto& npc : npc_sell)
-            npc->chat("뭘 사?");
-        return false;
-    }
-
-    auto sold = false;
-    for(auto& npc : npc_sell)
-    {
-        auto npc_model = npc->based<fb::game::npc>();
-        auto buy_list = fb::game::model::buy[npc_model->buy.value()];
-        auto i = std::find_if(buy_list->begin(), buy_list->end(), [model](const auto& pair)
-        {
-            auto& [m, p] = pair;
-            return m == model;
-        });
-
-        if (i == buy_list->end())
-        {
-            npc->chat("그런 물건은 안 팝니다.");
-            continue;
-        }
-
-        if (sold)
-            continue;
-
-        auto& [m, p] = *i;
-        auto price = p.has_value() ? p.value() : (m->price / 2);
-        auto exist = session.items.find(*model);
-        auto exist_count = exist != nullptr ? exist->count() : 0;
-
-        if (count <= 0)
-        {
-            npc->chat("뭐래는거야..");
-        }
-        else if (count > model->capacity)
-        {
-            npc->chat("그렇게나 많이요?");
-        }
-        else if(exist_count + count > model->capacity)
-        {
-            npc->chat("더 이상 가질 수 없습니다.");
-        }
-        else if (session.items.free() == false)
-        {
-            npc->chat("더 이상 가질 수 없습니다.");
-        }
-        else
-        {
-            session.items.add(model->make(*this, count));
-            if (count == 1)
-                npc->chat(fb::format("%s %d전에 팔았습니다.", name_with(model->name).c_str(), price));
-            else
-                npc->chat(fb::format("%s %d개를 %d전에 팔았습니다.", model->name, count, price * count));
-        }
-
-        sold = true;
-    }
-
-    return true;
-}
-
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
     return new fb::game::session(socket, *this);
@@ -1692,6 +1489,8 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             co_return true;
     }
     
+    session->chat(request.message, request.shout);
+
     auto npcs = std::vector<fb::game::npc*>();
     if (request.shout)
     {
@@ -1708,14 +1507,9 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             npcs.push_back(static_cast<fb::game::npc*>(npc));
         }
     }
-
     if (npcs.size() > 0)
-    {
-        this->inline_sell(*session, request.message, npcs) || 
-        this->inline_buy(*session, request.message, npcs);
-    }
-
-    session->chat(request.message, request.shout);
+        session->sell(request.message, npcs) || session->buy(request.message, npcs);
+    
     co_return true;
 }
 

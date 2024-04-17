@@ -179,17 +179,6 @@ int fb::game::npc::model::builtin_repair_all(lua_State* lua)
     return __builtin_repair_all(thread, session, npc);
 }
 
-fb::game::npc::npc(fb::game::context& context, const fb::game::npc::model* model) : 
-    fb::game::object(context, model, fb::game::object::config())
-{ }
-
-fb::game::npc::npc(const npc& right) :
-    object(right)
-{ }
-
-fb::game::npc::~npc()
-{ }
-
 int fb::game::npc::builtin_input(lua_State* lua)
 {
     return ::builtin_input<npc>(lua);

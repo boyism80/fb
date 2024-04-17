@@ -18,7 +18,7 @@ bool fb::game::regex::match_sell_message(const std::string& message, fb::game::i
     }
     else if (what["all"].matched)
     {
-        
+        count.reset();
     }
     else
     {
