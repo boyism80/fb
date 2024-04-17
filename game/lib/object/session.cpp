@@ -972,7 +972,8 @@ bool fb::game::session::sell(const std::string& message, const std::vector<fb::g
     auto bought = false;
     for (auto npc : npcs)
     {
-        bought = npc->buy(*this, model, count, bought);
+        if (npc->buy(*this, model, count, bought))
+            bought = true;
     }
 
     return bought;
@@ -988,7 +989,8 @@ bool fb::game::session::buy(const std::string& message, const std::vector<fb::ga
     auto sold = false;
     for (auto npc : npcs)
     {
-        sold = npc->sell(*this, model, count, sold);
+        if (npc->sell(*this, model, count, sold))
+            sold = true;
     }
 
     return sold;
