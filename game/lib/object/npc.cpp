@@ -55,7 +55,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
                 if(count == 1)
                     this->chat(fb::format("%s %d전에 샀습니다.", name_with(item_model->name).c_str(), price));
                 else
-                    this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name, count, price * count.value()));
+                    this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), count, price * count.value()));
             }
         }
         else
@@ -79,7 +79,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
             if(sell_count == 1)
                 this->chat(fb::format("%s %d전에 샀습니다.", name_with(item_model->name).c_str(), price * sell_count));
             else
-                this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name, sell_count, price * sell_count));
+                this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), sell_count, price * sell_count));
         }
 
         return true;
@@ -121,7 +121,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
         {
             throw std::runtime_error("그렇게나 많이요?");
         }
-        else if(exist_count + count > item_model->capacity)
+        else if(item_model->attr(fb::game::item::ATTRIBUTE::BUNDLE) && exist_count + count > item_model->capacity)
         {
             throw std::runtime_error("더 이상 가질 수 없습니다.");
         }
@@ -140,7 +140,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
             if (count == 1)
                 this->chat(fb::format("%s %d전에 팔았습니다.", name_with(item_model->name).c_str(), price));
             else
-                this->chat(fb::format("%s %d개를 %d전에 팔았습니다.", item_model->name, count, price));
+                this->chat(fb::format("%s %d개를 %d전에 팔았습니다.", item_model->name.c_str(), count, price));
         }
         return true;
     }
