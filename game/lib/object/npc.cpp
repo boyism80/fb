@@ -159,6 +159,9 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
         if (model->sell.size() == 0)
             return false;
 
+        if (model->repair == false)
+            return false;
+
         auto equipments = std::vector<fb::game::equipment*>();
         if (all)
         {
@@ -264,7 +267,8 @@ fb::game::npc::model::model(const fb::game::npc::model::config& config) :
     fb::game::object::model(config),
     script(config.script),
     sell(config.sell),
-    buy(config.buy)
+    buy(config.buy),
+    repair(config.repair)
 { }
 
 fb::game::npc::model::~model()
