@@ -28,6 +28,7 @@ public:
     npc*                        make(fb::game::context& context);
     bool                        buy(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count, bool bought);
     bool                        sell(fb::game::session& session, fb::game::item::model* item, uint16_t count, bool sold);
+    bool                        repair(fb::game::session& session, fb::game::item::model* item, bool all, bool done);
 
 public:
     static int                  builtin_input(lua_State* lua);

@@ -270,6 +270,7 @@ public:
 
     bool                        sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     static int                  builtin_look(lua_State* lua);

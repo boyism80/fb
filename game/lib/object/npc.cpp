@@ -151,6 +151,115 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
     }
 }
 
+bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* item_model, bool all, bool done)
+{
+    try
+    {
+        auto model = this->based<fb::game::npc>();
+        if (model->sell.size() == 0)
+            return false;
+
+        auto equipments = std::vector<fb::game::equipment*>();
+        if (all)
+        {
+            for (auto& [parts, equipment] : session.items.equipments())
+            {
+                if (equipment == nullptr)
+                    continue;
+
+                equipments.push_back(static_cast<fb::game::equipment*>(equipment));
+            }
+
+            for (auto i = 0; i < fb::game::CONTAINER_CAPACITY; i++)
+            {
+                auto item = session.items[i];
+                if (item == nullptr)
+                    continue;
+
+                if (item->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+                    continue;
+
+                auto equipment_model = static_cast<fb::game::equipment::model*>(item_model);
+                if (equipment_model->repair.has_value() == false)
+                    continue;
+
+                auto equipment = static_cast<fb::game::equipment*>(item);
+                if (equipment->durability() >= equipment_model->durability)
+                    continue;
+
+                equipments.push_back(equipment);
+            }
+        }
+        else
+        {
+            if (item_model == nullptr) // 정의되지 않은 아이템
+                throw std::runtime_error("뭘 고쳐줘?");
+
+            if(item_model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+                throw std::runtime_error("뭘 고쳐줘?");
+
+            auto item = session.items.find(*item_model);
+            if (item == nullptr)
+            {
+                for (auto& [parts, equipment] : session.items.equipments())
+                {
+                    if (equipment->based() == item_model)
+                        item = equipment;
+                }
+            }
+            if (item == nullptr)
+                throw std::runtime_error("가지고 있지 않은데요");
+
+            auto equipment_model = static_cast<fb::game::equipment::model*>(item_model);
+            if(equipment_model->repair.has_value() == false)
+                throw std::runtime_error(fb::format("%s 고칠 수 없습니다.", name_with(item_model->name).c_str()));
+
+            auto equipment = static_cast<fb::game::equipment*>(item);
+            if (equipment->durability() >= equipment_model->durability)
+                throw std::runtime_error("이미 고쳐져 있습니다.");
+
+            equipments.push_back(equipment);
+        }
+
+
+        if (equipments.size() == 0)
+            throw std::runtime_error("고칠 물건이 없습니다.");
+
+        auto price = 0;
+        for (auto equipment : equipments)
+        {
+            auto equipment_model = equipment->based<fb::game::equipment>();
+            price += (uint32_t)(equipment_model->repair.value() * (equipment_model->durability - equipment->durability().value()));
+        }
+
+        if (session.money() < price)
+            throw std::runtime_error("돈이 부족합니다.");
+
+        session.money_reduce(price);
+        for (auto equipment : equipments)
+        {
+            auto equipment_model = equipment->based<fb::game::equipment>();
+            equipment->durability(equipment_model->durability);
+        }
+
+        if (price == 0)
+        {
+            this->chat("거의 새거라 그냥 고쳐드렸습니다.");
+        }
+        else
+        {
+            this->chat("고치는데 %d전이 들었습니다.", price);
+        }
+
+        return true;
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
+}
+
 fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
     fb::game::object::model(config),
     script(config.script),

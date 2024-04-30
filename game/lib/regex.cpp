@@ -49,3 +49,23 @@ bool fb::game::regex::match_buy_message(const std::string& message, fb::game::it
     }
     return true;
 }
+
+bool fb::game::regex::match_repair_message(const std::string& message, fb::game::item::model*& item, bool& all)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::REPAIR];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    all = what["all"].matched;
+    if (all)
+    {
+        item = nullptr;
+    }
+    else
+    {
+        item = fb::game::model::items.name2item(what["name"].str());
+    }
+
+    return true;
+}
