@@ -12,10 +12,10 @@ session::session(fb::socket<fb::game::session>& socket, fb::game::context& conte
     inline_interaction_funcs.push_back(std::bind(&session::sell,            this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::buy,             this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::repair,          this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::deposit,         this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::withdraw,        this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::leave_item,      this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::checkout_item,   this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::deposit_money,   this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::withdraw_money,  this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::deposit_item,    this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::withdraw_item,   this, std::placeholders::_1, std::placeholders::_2));
 }
 
 session::~session()
@@ -758,6 +758,49 @@ uint32_t fb::game::session::money_drop(uint32_t value)
     }
 }
 
+uint32_t fb::game::session::deposited_money() const
+{
+    return this->_deposited_money;
+}
+
+void fb::game::session::deposited_money(uint32_t value)
+{
+    this->_deposited_money = value;
+}
+
+uint32_t fb::game::session::deposited_money_add(uint32_t value)
+{
+    uint32_t capacity = 0xFFFFFFFF - this->_deposited_money;
+    uint32_t lack = 0;
+    if (value > capacity)
+    {
+        this->deposited_money(this->_deposited_money + capacity);
+        lack = value - capacity;
+    }
+    else
+    {
+        this->deposited_money(this->_deposited_money + value);
+    }
+
+    return lack;
+}
+
+uint32_t fb::game::session::deposited_money_reduce(uint32_t value)
+{
+    uint32_t lack = 0;
+    if (this->_deposited_money < value)
+    {
+        lack = value - this->_deposited_money;
+        this->deposited_money(0);
+    }
+    else
+    {
+        this->deposited_money(this->_deposited_money - value);
+    }
+
+    return lack;
+}
+
 uint32_t fb::game::session::damage() const
 {
     return this->_damage;
@@ -1021,10 +1064,10 @@ bool fb::game::session::repair(const std::string& message, const std::vector<fb:
     return done;
 }
 
-bool fb::game::session::deposit(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+bool fb::game::session::deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
-    if (fb::game::regex::match_deposit_message(message, money) == false)
+    if (fb::game::regex::match_deposit_money_message(message, money) == false)
         return false;
 
     auto done = false;
@@ -1037,10 +1080,10 @@ bool fb::game::session::deposit(const std::string& message, const std::vector<fb
     return done;
 }
 
-bool fb::game::session::withdraw(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+bool fb::game::session::withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
-    if (fb::game::regex::match_withdraw_message(message, money) == false)
+    if (fb::game::regex::match_withdraw_money_message(message, money) == false)
         return false;
 
     auto done = false;
@@ -1053,11 +1096,11 @@ bool fb::game::session::withdraw(const std::string& message, const std::vector<f
     return done;
 }
 
-bool fb::game::session::leave_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+bool fb::game::session::deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto model = static_cast<fb::game::item::model*>(nullptr);
     auto count = std::optional<uint16_t>(0);
-    if (fb::game::regex::match_leave_item_message(message, model, count) == false)
+    if (fb::game::regex::match_deposit_item_message(message, model, count) == false)
         return false;
 
     auto done = false;
@@ -1070,11 +1113,11 @@ bool fb::game::session::leave_item(const std::string& message, const std::vector
     return true;
 }
 
-bool fb::game::session::checkout_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+bool fb::game::session::withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto model = static_cast<fb::game::item::model*>(nullptr);
     auto count = std::optional<uint16_t>(0);
-    if (fb::game::regex::match_checkout_item_message(message, model, count) == false)
+    if (fb::game::regex::match_withdraw_item_message(message, model, count) == false)
         return false;
 
     auto done = false;

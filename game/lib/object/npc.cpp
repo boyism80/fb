@@ -156,9 +156,6 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
     try
     {
         auto model = this->based<fb::game::npc>();
-        if (model->sell.size() == 0)
-            return false;
-
         if (model->repair == false)
             return false;
 
@@ -265,22 +262,98 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
 
 bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_t> money)
 {
-    return true;
+    try
+    {
+        auto model = this->based<fb::game::npc>();
+        if (model->hold_money == false)
+            return false;
+
+        if (money.has_value() == false)
+            money = session.money();
+
+        if (money.value() > session.money())
+            throw std::runtime_error("그만큼 가지고 있지 않습니다.");
+
+        auto capacity = 0xFFFFFFFF - session.deposited_money();
+        if (money > capacity)
+            throw std::runtime_error("더 이상 맡길 수 없습니다.");
+
+        session.money_reduce(money.value());
+        session.deposited_money_add(money.value());
+        this->chat(fb::format("금전 %d전을 맡았습니다.", money.value()));
+
+        return true;
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
 }
 
 bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint32_t> money)
 {
-    return true;
+    try
+    {
+        auto model = this->based<fb::game::npc>();
+        if (model->hold_money == false)
+            return false;
+
+        if (money.has_value() == false)
+            money = session.deposited_money();
+
+        if (money > session.deposited_money())
+            throw std::runtime_error("그만큼 맡기지 않았습니다.");
+
+        auto capacity = 0xFFFFFFFF - session.money();
+        if (money.value() > capacity)
+            throw std::runtime_error("소지금이 너무 많습니다.");
+
+        session.deposited_money_reduce(money.value());
+        session.money_add(money.value());
+        this->chat(fb::format("금전 %d전을 돌려드렸습니다.", money.value()));
+
+        return true;
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
 }
 
 bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
 {
-    return true;
+    try
+    {
+        auto model = this->based<fb::game::npc>();
+        if (model->hold_item == false)
+            return false;
+
+        return true;
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
 }
 
 bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
 {
-    return true;
+    try
+    {
+        auto model = this->based<fb::game::npc>();
+        if (model->hold_item == false)
+            return false;
+
+        return true;
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
 }
 
 fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
@@ -288,7 +361,9 @@ fb::game::npc::model::model(const fb::game::npc::model::config& config) :
     script(config.script),
     sell(config.sell),
     buy(config.buy),
-    repair(config.repair)
+    repair(config.repair),
+    hold_money(config.hold_money),
+    hold_item(config.hold_item)
 { }
 
 fb::game::npc::model::~model()

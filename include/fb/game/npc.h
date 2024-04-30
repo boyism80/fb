@@ -63,6 +63,7 @@ public:
         std::map<std::string, uint16_t>     sell;
         std::optional<uint16_t>             buy;
         bool                                repair;
+        bool                                hold_money, hold_item;
     };
 
 public:
@@ -70,6 +71,7 @@ public:
     const std::map<std::string, uint16_t>   sell;
     const std::optional<uint16_t>           buy;
     const bool                              repair;
+    const bool                              hold_money, hold_item;
 
 public:
     friend class npc;

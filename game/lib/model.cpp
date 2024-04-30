@@ -570,6 +570,8 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
             auto                sells     = std::map<std::string, uint16_t>();
             auto                buy       = std::optional<uint16_t>();
             auto                repair    = data["repair"].asBool();
+            auto                hold_money = data["hold_money"].asBool();
+            auto                hold_item = data["hold_item"].asBool();
 
             if (data.isMember("sell"))
             {
@@ -651,7 +653,9 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
                         script,
                         sells,
                         buy,
-                        repair
+                        repair,
+                        hold_money,
+                        hold_item
                     });
                 this->insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
                 callback(name, percentage);

@@ -101,6 +101,7 @@ private:
     uint32_t                    _money           = 0;
     std::optional<uint16_t>     _disguise        = 0;
     bool                        _options[0x0B+1] = {0,};
+    uint32_t                    _deposited_money = 0;
 
     std::string                 _title;
 
@@ -240,6 +241,11 @@ public:
     uint32_t                    money_reduce(uint32_t value);
     uint32_t                    money_drop(uint32_t value);
 
+    uint32_t                    deposited_money() const;
+    void                        deposited_money(uint32_t value);
+    uint32_t                    deposited_money_add(uint32_t value);
+    uint32_t                    deposited_money_reduce(uint32_t value);
+
     uint32_t                    damage() const;
     void                        damage(uint8_t value);
 
@@ -275,10 +281,10 @@ private:
     bool                        sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        deposit(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        withdraw(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        leave_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        checkout_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);

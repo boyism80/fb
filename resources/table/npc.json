@@ -6,7 +6,9 @@
         "script": "scripts/npc/낙랑.lua",
         "sell": 0,
         "buy": 0,
-        "repair": true
+        "repair": true,
+        "hold_money": true,
+        "hold_item": true
     },
     "1": {
         "name": "비도",
