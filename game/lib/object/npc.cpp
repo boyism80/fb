@@ -263,6 +263,26 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
     }
 }
 
+bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_t> money)
+{
+    return true;
+}
+
+bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint32_t> money)
+{
+    return true;
+}
+
+bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
+{
+    return true;
+}
+
+bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
+{
+    return true;
+}
+
 fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
     fb::game::object::model(config),
     script(config.script),

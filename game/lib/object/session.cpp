@@ -8,7 +8,15 @@ using namespace fb::game;
 session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
     life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.fd()} }),
     _socket(socket)
-{ }
+{
+    inline_interaction_funcs.push_back(std::bind(&session::sell,            this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::buy,             this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::repair,          this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::deposit,         this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::withdraw,        this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::leave_item,      this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::checkout_item,   this, std::placeholders::_1, std::placeholders::_2));
+}
 
 session::~session()
 { }
@@ -1011,6 +1019,86 @@ bool fb::game::session::repair(const std::string& message, const std::vector<fb:
     }
 
     return done;
+}
+
+bool fb::game::session::deposit(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto money = std::optional<uint32_t>();
+    if (fb::game::regex::match_deposit_message(message, money) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if (npc->hold_money(*this, money))
+            done = true;
+    }
+
+    return done;
+}
+
+bool fb::game::session::withdraw(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto money = std::optional<uint32_t>();
+    if (fb::game::regex::match_withdraw_message(message, money) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if (npc->return_money(*this, money))
+            done = true;
+    }
+
+    return done;
+}
+
+bool fb::game::session::leave_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    auto count = std::optional<uint16_t>(0);
+    if (fb::game::regex::match_leave_item_message(message, model, count) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if (npc->hold_item(*this, model, count))
+            done = true;
+    }
+
+    return true;
+}
+
+bool fb::game::session::checkout_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    auto count = std::optional<uint16_t>(0);
+    if (fb::game::regex::match_checkout_item_message(message, model, count) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if (npc->return_item(*this, model, count))
+            done = true;
+    }
+
+    return true;
+}
+
+bool fb::game::session::inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    if (npcs.size() == 0)
+        return false;
+
+    for(auto & fn : this->inline_interaction_funcs)
+    {
+        if (fn(message, npcs))
+            return true;
+    }
+
+    return false;
 }
 
 fb::game::session::container::container()

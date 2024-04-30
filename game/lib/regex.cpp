@@ -69,3 +69,23 @@ bool fb::game::regex::match_repair_message(const std::string& message, fb::game:
 
     return true;
 }
+
+bool fb::game::regex::match_deposit_message(const std::string& message, std::optional<uint32_t>& money)
+{
+    return true;
+}
+
+bool fb::game::regex::match_withdraw_message(const std::string& message, std::optional<uint32_t>& count)
+{
+    return true;
+}
+
+bool fb::game::regex::match_leave_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
+{
+    return true;
+}
+
+bool fb::game::regex::match_checkout_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
+{
+    return true;
+}

@@ -1507,8 +1507,8 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
             npcs.push_back(static_cast<fb::game::npc*>(npc));
         }
     }
-    if (npcs.size() > 0)
-        session->sell(request.message, npcs) || session->buy(request.message, npcs) || session->repair(request.message, npcs);
+    
+    session->inline_interaction(request.message, npcs);
     
     co_return true;
 }

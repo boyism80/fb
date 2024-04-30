@@ -93,7 +93,7 @@ private:
 
     fb::game::NATION_TYPE       _nation          = NATION_TYPE::GOGURYEO;
     fb::game::CREATURE_TYPE     _creature        = CREATURE_TYPE::DRAGON;
-    fb::game::SEX_TYPE               _sex             = fb::game::SEX_TYPE::BOTH;
+    fb::game::SEX_TYPE          _sex             = fb::game::SEX_TYPE::BOTH;
     fb::game::STATE_TYPE        _state           = STATE_TYPE::NORMAL;
     uint8_t                     _level           = 1;
     uint8_t                     _class           = 0;
@@ -106,6 +106,9 @@ private:
 
     fb::game::group*            _group           = nullptr;
     fb::game::clan*             _clan            = nullptr;
+
+private:
+    std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
     fb::game::trade             trade            = fb::game::trade(*this);
@@ -189,10 +192,10 @@ public:
     uint32_t                    base_hp() const;
     uint32_t                    base_mp() const;
 
-    fb::game::NATION_TYPE            nation() const;
+    fb::game::NATION_TYPE       nation() const;
     bool                        nation(fb::game::NATION_TYPE value);
 
-    fb::game::CREATURE_TYPE          creature() const;
+    fb::game::CREATURE_TYPE     creature() const;
     bool                        creature(fb::game::CREATURE_TYPE value);
 
     uint8_t                     level() const;
@@ -200,7 +203,7 @@ public:
     bool                        level_up();
     bool                        max_level() const;
 
-    fb::game::SEX_TYPE               sex() const;
+    fb::game::SEX_TYPE          sex() const;
     void                        sex(fb::game::SEX_TYPE value);
 
     fb::game::STATE_TYPE        state() const;
@@ -268,9 +271,17 @@ public:
     bool                        alive() const;
     void                        refresh_map();
 
+private:
     bool                        sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        deposit(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        withdraw(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        leave_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        checkout_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+
+public:
+    bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     static int                  builtin_look(lua_State* lua);

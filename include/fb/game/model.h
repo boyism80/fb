@@ -268,7 +268,7 @@ class regex
 public:
     enum class TYPE
     {
-        SELL = 0, BUY = 1, REPAIR = 2
+        SELL = 0, BUY = 1, REPAIR = 2, DEPOSIT_MONEY = 3, WITHDRAW_MONEY = 4, LEAVE_ITEM = 5, CHECKOUT_ITEM = 6
     };
 
 private:
