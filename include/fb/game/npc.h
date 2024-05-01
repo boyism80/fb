@@ -28,7 +28,7 @@ public:
     npc*                        make(fb::game::context& context);
     bool                        buy(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count, bool bought);
     bool                        sell(fb::game::session& session, fb::game::item::model* item, uint16_t count, bool sold);
-    bool                        repair(fb::game::session& session, fb::game::item::model* item, bool all, bool done);
+    bool                        repair(fb::game::session& session, fb::game::item::model* item, bool done);
     bool                        hold_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count);

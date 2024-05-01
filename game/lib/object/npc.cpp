@@ -151,7 +151,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
     }
 }
 
-bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* item_model, bool all, bool done)
+bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* item_model, bool done)
 {
     try
     {
@@ -160,6 +160,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
             return false;
 
         auto equipments = std::vector<fb::game::equipment*>();
+        auto all = item_model == nullptr;
         if (all)
         {
             for (auto& [parts, equipment] : session.items.equipments())
@@ -179,7 +180,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
                 if (item->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
                     continue;
 
-                auto equipment_model = static_cast<fb::game::equipment::model*>(item_model);
+                auto equipment_model = item->based<fb::game::equipment>();
                 if (equipment_model->repair.has_value() == false)
                     continue;
 

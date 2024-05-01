@@ -66,14 +66,14 @@ bool fb::game::regex::match_buy_message(const std::string& message, fb::game::it
     return true;
 }
 
-bool fb::game::regex::match_repair_message(const std::string& message, fb::game::item::model*& item, bool& all)
+bool fb::game::regex::match_repair_message(const std::string& message, fb::game::item::model*& item)
 {
     auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::REPAIR];
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    all = what["all"].matched;
+    auto all = what["all"].matched;
     if (all)
     {
         item = nullptr;
@@ -95,13 +95,21 @@ bool fb::game::regex::match_deposit_money_message(const std::string& message, st
 
     try
     {
-        money = std::stoul(what["money"].str());
-        if (money > 0xFFFFFFFF)
-            throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+        auto all = what["all"].matched;
+        if(all)
+        {
+            money.reset();
+        }
+        else
+        {
+            money = std::stoul(what["money"].str());
+            if (money > 0xFFFFFFFF)
+                throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+        }
     }
     catch (std::out_of_range&)
     {
-        money = 0;
+        money.reset();
         return false;
     }
     return true;
@@ -116,13 +124,21 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
 
     try
     {
-        money = std::stoul(what["money"].str());
-        if (money > 0xFFFFFFFF)
-            throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+        auto all = what["all"].matched;
+        if(all)
+        {
+            money.reset();
+        }
+        else
+        {
+            money = std::stoul(what["money"].str());
+            if (money > 0xFFFFFFFF)
+                throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+        }
     }
     catch (std::out_of_range&)
     {
-        money = 0;
+        money.reset();
         return false;
     }
     return true;

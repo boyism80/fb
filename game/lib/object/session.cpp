@@ -1050,14 +1050,13 @@ bool fb::game::session::buy(const std::string& message, const std::vector<fb::ga
 bool fb::game::session::repair(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto model = static_cast<fb::game::item::model*>(nullptr);
-    auto all = false;
-    if (fb::game::regex::match_repair_message(message, model, all) == false)
+    if (fb::game::regex::match_repair_message(message, model) == false)
         return false;
 
     auto done = false;
     for (auto npc : npcs)
     {
-        if (npc->repair(*this, model, all, done))
+        if (npc->repair(*this, model, done))
             done = true;
     }
 
