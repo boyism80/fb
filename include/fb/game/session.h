@@ -285,6 +285,11 @@ private:
     bool                        withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);

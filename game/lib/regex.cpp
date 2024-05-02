@@ -153,3 +153,55 @@ bool fb::game::regex::match_withdraw_item_message(const std::string& message, fb
 {
     return true;
 }
+
+bool fb::game::regex::match_sell_list(const std::string& message)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::SELL_LIST];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    return true;
+}
+
+bool fb::game::regex::match_buy_list(const std::string& message)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::BUY_LIST];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    return true;
+}
+
+bool fb::game::regex::match_sell_price(const std::string& message, fb::game::item::model*& item)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::SELL_PRICE];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    item = fb::game::model::items.name2item(what["name"].str());
+    return true;
+}
+
+bool fb::game::regex::match_buy_price(const std::string& message, fb::game::item::model*& item)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::BUY_PRICE];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    item = fb::game::model::items.name2item(what["name"].str());
+    return true;
+}
+
+bool fb::game::regex::match_deposited_money(const std::string& message)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::DEPOSITED_MONEY];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    return true;
+}

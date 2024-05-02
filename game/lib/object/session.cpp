@@ -9,13 +9,18 @@ session::session(fb::socket<fb::game::session>& socket, fb::game::context& conte
     life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.fd()} }),
     _socket(socket)
 {
-    inline_interaction_funcs.push_back(std::bind(&session::sell,            this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::buy,             this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::repair,          this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::deposit_money,   this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::withdraw_money,  this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::deposit_item,    this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(std::bind(&session::withdraw_item,   this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::sell,                    this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::buy,                     this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::repair,                  this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::deposit_money,           this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::withdraw_money,          this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::deposit_item,            this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::withdraw_item,           this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::sell_list,               this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::buy_list,                this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::sell_price,              this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::buy_price,               this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::show_deposited_money,    this, std::placeholders::_1, std::placeholders::_2));
 }
 
 session::~session()
@@ -1109,7 +1114,7 @@ bool fb::game::session::deposit_item(const std::string& message, const std::vect
             done = true;
     }
 
-    return true;
+    return done;
 }
 
 bool fb::game::session::withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1126,7 +1131,76 @@ bool fb::game::session::withdraw_item(const std::string& message, const std::vec
             done = true;
     }
 
+    return done;
+}
+
+bool fb::game::session::sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    if (fb::game::regex::match_sell_list(message) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        npc->sell_list();
+    }
+
     return true;
+}
+
+bool fb::game::session::buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    if (fb::game::regex::match_buy_list(message) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        npc->buy_list();
+    }
+
+    return true;
+}
+
+bool fb::game::session::sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    if (fb::game::regex::match_sell_price(message, model) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        npc->sell_price(model);
+    }
+
+    return true;
+}
+
+bool fb::game::session::buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto model = static_cast<fb::game::item::model*>(nullptr);
+    if (fb::game::regex::match_buy_price(message, model) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        npc->buy_price(model);
+    }
+
+    return true;
+}
+
+bool fb::game::session::show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    if (fb::game::regex::match_deposited_money(message) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if(npc->deposited_money(*this))
+            done = true;
+    }
+
+    return done;
 }
 
 bool fb::game::session::inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs)

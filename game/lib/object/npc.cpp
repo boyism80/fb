@@ -357,6 +357,118 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::mode
     }
 }
 
+void fb::game::npc::sell_list()
+{
+    auto model = this->based<fb::game::npc>();
+    if(model->sell.size() == 0)
+        return;
+
+    auto overflow = 0;
+    auto items = std::vector<std::string>();
+    for (auto& [_, pursuit] : model->sell)
+    {
+        for (auto& [item, price] : *fb::game::model::sell[pursuit])
+        {
+            if (items.size() >= 3)
+                overflow++;
+            else
+                items.push_back(item->name);
+        }
+    }
+
+    auto sstream = std::stringstream();
+    auto names = boost::algorithm::join(items, ", ");
+    if (overflow > 0)
+        sstream << names << " 등 여러가지를";
+    else
+        sstream << name_with(names);
+
+    sstream << " 판매하고 있습니다.";
+    this->chat(sstream.str());
+}
+
+void fb::game::npc::buy_list()
+{
+    auto model = this->based<fb::game::npc>();
+    if(model->buy.has_value() == false)
+        return;
+
+    auto overflow = 0;
+    auto items = std::vector<std::string>();
+    for (auto& [item, price] : *fb::game::model::buy[model->buy.value()])
+    {
+        if (items.size() >= 3)
+            overflow++;
+        else
+            items.push_back(item->name);
+    }
+
+    auto sstream = std::stringstream();
+    auto names = boost::algorithm::join(items, ", ");
+    if (overflow > 0)
+        sstream << names << " 등 여러가지를";
+    else
+        sstream << name_with(names);
+
+    sstream << " 사고 있습니다.";
+    this->chat(sstream.str());
+}
+
+void fb::game::npc::sell_price(const fb::game::item::model* item)
+{
+    auto model = this->based<fb::game::npc>();
+    if (model->sell.size() == 0)
+        return;
+
+    try
+    {
+        auto price = uint32_t(0);
+        if (item == nullptr || model->contains_sell(*item, price) == false)
+            throw std::runtime_error("그런 물건은 안 팝니다.");
+
+        fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price);
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+    }
+}
+
+void fb::game::npc::buy_price(const fb::game::item::model* item)
+{
+    auto model = this->based<fb::game::npc>();
+    if (model->buy.has_value() == false)
+        return;
+
+    try
+    {
+        auto price = uint32_t(0);
+        if (item == nullptr || model->contains_buy(*item, price) == false)
+            throw std::runtime_error("그런 물건은 안 삽니다.");
+
+        fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price);
+    }
+    catch (std::runtime_error& e)
+    {
+        this->chat(e.what());
+    }
+}
+
+bool fb::game::npc::deposited_money(const fb::game::session& session)
+{
+    auto model = this->based<fb::game::npc>();
+    if(model->hold_money == false)
+        return false;
+
+    auto money = session.deposited_money();
+    if(money == 0)
+        this->chat("맡긴 돈이 없습니다.");
+    else
+        this->chat(fb::format("%d전을 맡아두고 있습니다.", money));
+    
+    return true;
+}
+
 fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
     fb::game::object::model(config),
     script(config.script),

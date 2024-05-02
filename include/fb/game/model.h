@@ -268,7 +268,18 @@ class regex
 public:
     enum class TYPE
     {
-        SELL = 0, BUY = 1, REPAIR = 2, DEPOSIT_MONEY = 3, WITHDRAW_MONEY = 4, DEPOSIT_ITEM = 5, WITHDRAW_ITEM = 6
+        SELL = 0,
+        BUY = 1,
+        REPAIR = 2,
+        DEPOSIT_MONEY = 3,
+        WITHDRAW_MONEY = 4,
+        DEPOSIT_ITEM = 5,
+        WITHDRAW_ITEM = 6,
+        SELL_LIST = 7,
+        BUY_LIST = 8,
+        SELL_PRICE = 9,
+        BUY_PRICE = 10,
+        DEPOSITED_MONEY = 11
     };
 
 private:

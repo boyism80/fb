@@ -14,6 +14,11 @@ bool                match_deposit_money_message(const std::string& message, std:
 bool                match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);
 bool                match_deposit_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count);
 bool                match_withdraw_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count);
+bool                match_sell_list(const std::string& message);
+bool                match_buy_list(const std::string& message);
+bool                match_sell_price(const std::string& message, fb::game::item::model*& item);
+bool                match_buy_price(const std::string& message, fb::game::item::model*& item);
+bool                match_deposited_money(const std::string& message);
 
 } } }
 

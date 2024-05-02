@@ -33,6 +33,11 @@ public:
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count);
     bool                        return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count);
+    void                        sell_list();
+    void                        buy_list();
+    void                        sell_price(const fb::game::item::model* item);
+    void                        buy_price(const fb::game::item::model* item);
+    bool                        deposited_money(const fb::game::session& session);
 
 public:
     static int                  builtin_input(lua_State* lua);
