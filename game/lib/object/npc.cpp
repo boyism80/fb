@@ -55,7 +55,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
                 if(count == 1)
                     this->chat(fb::format("%s %d전에 샀습니다.", name_with(item_model->name).c_str(), price));
                 else
-                    this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), count, price * count.value()));
+                    this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), count.value(), price * count.value()));
             }
         }
         else
@@ -272,6 +272,9 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
         if (money.has_value() == false)
             money = session.money();
 
+        if(money.value() == 0)
+            return false;
+
         if (money.value() > session.money())
             throw std::runtime_error("그만큼 가지고 있지 않습니다.");
 
@@ -299,6 +302,9 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
         auto model = this->based<fb::game::npc>();
         if (model->hold_money == false)
             return false;
+
+        if(session.deposited_money() == 0)
+            throw std::runtime_error("맡아둔 돈이 없습니다.");
 
         if (money.has_value() == false)
             money = session.deposited_money();
@@ -426,7 +432,7 @@ void fb::game::npc::sell_price(const fb::game::item::model* item)
         if (item == nullptr || model->contains_sell(*item, price) == false)
             throw std::runtime_error("그런 물건은 안 팝니다.");
 
-        fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price);
+        this->chat(fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
     }
     catch (std::runtime_error& e)
     {
@@ -446,7 +452,7 @@ void fb::game::npc::buy_price(const fb::game::item::model* item)
         if (item == nullptr || model->contains_buy(*item, price) == false)
             throw std::runtime_error("그런 물건은 안 삽니다.");
 
-        fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price);
+        this->chat(fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
     }
     catch (std::runtime_error& e)
     {

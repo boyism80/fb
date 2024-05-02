@@ -45,9 +45,9 @@ function buy(me, npc, pursuit)
 
     local message = nil
     if count > 1 then
-        message = string.format('%s %d개를 %d에 파시겠습니까?', item:name(), count, price)
+        message = string.format('%s %d개를 %d전에 파시겠습니까?', item:name(), count, price)
     else
-        message = string.format('%s %d에 파시겠습니까?', name_with(item:name()), price)
+        message = string.format('%s %d전에 파시겠습니까?', name_with(item:name()), price)
     end
     if npc:menu(me, message, {'네', '아니오'}) == 0 then
         me:money(me:money() + price)

@@ -146,12 +146,12 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
 
 bool fb::game::regex::match_deposit_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
 {
-    return true;
+    return false;
 }
 
 bool fb::game::regex::match_withdraw_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
 {
-    return true;
+    return false;
 }
 
 bool fb::game::regex::match_sell_list(const std::string& message)
