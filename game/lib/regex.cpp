@@ -1,5 +1,13 @@
 #include <fb/game/regex.h>
 
+bool fb::game::regex::match(const std::string& message, fb::game::container::regex::TYPE v)
+{
+    auto& regex = fb::game::model::regex[v];
+    auto what = boost::xpressive::smatch();
+    
+    return boost::xpressive::regex_search(message, what, regex);
+}
+
 bool fb::game::regex::match_sell_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
 {
     auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::SELL];
@@ -203,5 +211,17 @@ bool fb::game::regex::match_deposited_money(const std::string& message)
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
+    return true;
+}
+
+bool fb::game::regex::match_rename_weapon(const std::string& message, fb::game::item::model*& item, std::string& name)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::RENAME_WEAPON];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    item = fb::game::model::items.name2item(what["weapon"].str());
+    name = what["weapon"].str();
     return true;
 }

@@ -38,6 +38,7 @@ public:
     void                        sell_price(const fb::game::item::model* item);
     void                        buy_price(const fb::game::item::model* item);
     bool                        deposited_money(const fb::game::session& session);
+    bool                        rename_weapon(fb::game::session& session, const fb::game::item::model* item, const std::string& name);
 
 public:
     static int                  builtin_input(lua_State* lua);
@@ -73,6 +74,7 @@ public:
         std::optional<uint16_t>             buy;
         bool                                repair;
         bool                                hold_money, hold_item;
+        bool                                rename;
     };
 
 public:
@@ -81,6 +83,7 @@ public:
     const std::optional<uint16_t>           buy;
     const bool                              repair;
     const bool                              hold_money, hold_item;
+    const bool                              rename;
 
 public:
     friend class npc;

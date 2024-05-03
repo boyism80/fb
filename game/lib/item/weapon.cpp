@@ -1,4 +1,5 @@
 #include <fb/game/item.h>
+#include <fb/game/context.h>
 
 fb::game::weapon::model::model(const fb::game::weapon::model::config& config) : 
     fb::game::equipment::model(config),
@@ -75,9 +76,23 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
 void fb::game::weapon::custom_name(const std::string& name)
 {
     this->_custom_name = name;
+    auto listener = this->_owner->get_listener<fb::game::session>();
+    if (listener != nullptr)
+    {
+        auto index = this->_owner->items.index(*this);
+        if (index != 0xFF)
+            listener->on_item_update(*this->_owner, index);
+    }
 }
 
 void fb::game::weapon::reset_custom_name()
 {
     this->_custom_name.reset();
+    auto listener = this->_owner->get_listener<fb::game::session>();
+    if (listener != nullptr)
+    {
+        auto index = this->_owner->items.index(*this);
+        if (index != 0xFF)
+            listener->on_item_update(*this->_owner, index);
+    }
 }

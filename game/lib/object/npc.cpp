@@ -475,6 +475,50 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
     return true;
 }
 
+bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::item::model* item, const std::string& name)
+{
+    auto model = this->based<fb::game::npc>();
+    if(model->rename == false)
+        return false;
+
+    try
+    {
+        if(item == nullptr) // 등록되지 않은 아이템
+            throw std::runtime_error("그게 뭐야?");
+
+        if(item->attr(fb::game::item::ATTRIBUTE::WEAPON) == false)
+            throw std::runtime_error(fb::format("%s 무기가 아닙니다.", name_with(item->name).c_str()));
+
+        auto weapon = session.items.find(*item);
+        if (weapon == nullptr)
+            throw std::runtime_error(fb::format("%s 가지고 있지 않습니다.", name_with(item->name).c_str()));
+
+        auto weapon_model = static_cast<const fb::game::weapon::model*>(item);
+        if (weapon_model->rename.has_value() == false)
+            throw std::runtime_error(fb::format("%s 별칭을 부여할 수 없습니다.", name_with(item->name, {"은", "는"})));
+
+        auto money = session.money();
+        if (weapon_model->rename.value() > money)
+            throw std::runtime_error(fb::format("돈이 모자랍니다. %s에 별칭을 부여하려면 %d전이 필요합니다.", item->name.c_str(), weapon_model->rename.value()));
+
+        if (name.size() > 32)
+            throw std::runtime_error("이름이 너무 깁니다.");
+
+        if (fb::game::regex::match(name, fb::game::container::regex::TYPE::KOREAN) == false)
+            throw std::runtime_error("그렇게 바꿀 수 없습니다.");
+
+        static_cast<fb::game::weapon*>(weapon)->custom_name(name);
+        session.money_reduce(weapon_model->rename.value());
+    }
+    catch(std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
+
+    return true;
+}
+
 fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
     fb::game::object::model(config),
     script(config.script),
@@ -482,7 +526,8 @@ fb::game::npc::model::model(const fb::game::npc::model::config& config) :
     buy(config.buy),
     repair(config.repair),
     hold_money(config.hold_money),
-    hold_item(config.hold_item)
+    hold_item(config.hold_item),
+    rename(config.rename)
 { }
 
 fb::game::npc::model::~model()

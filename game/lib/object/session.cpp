@@ -21,6 +21,7 @@ session::session(fb::socket<fb::game::session>& socket, fb::game::context& conte
     inline_interaction_funcs.push_back(std::bind(&session::sell_price,              this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::buy_price,               this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::show_deposited_money,    this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::rename_weapon,           this, std::placeholders::_1, std::placeholders::_2));
 }
 
 session::~session()
@@ -1197,6 +1198,23 @@ bool fb::game::session::show_deposited_money(const std::string& message, const s
     for (auto npc : npcs)
     {
         if(npc->deposited_money(*this))
+            done = true;
+    }
+
+    return done;
+}
+
+bool fb::game::session::rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto item = static_cast<fb::game::item::model*>(nullptr);
+    auto name = std::string();
+    if (fb::game::regex::match_rename_weapon(message, item, name) == false)
+        return false;
+
+    auto done = false;
+    for (auto npc : npcs)
+    {
+        if(npc->rename_weapon(*this, item, name))
             done = true;
     }
 

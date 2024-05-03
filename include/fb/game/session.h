@@ -290,6 +290,7 @@ private:
     bool                        sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);

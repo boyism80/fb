@@ -279,7 +279,9 @@ public:
         BUY_LIST = 8,
         SELL_PRICE = 9,
         BUY_PRICE = 10,
-        DEPOSITED_MONEY = 11
+        DEPOSITED_MONEY = 11,
+        RENAME_WEAPON = 12,
+        KOREAN = 13
     };
 
 private:

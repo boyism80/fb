@@ -458,10 +458,14 @@ fb::game::item* fb::game::items::find(const fb::game::item::model& base) const
         if(item == nullptr)
             continue;
 
-        if(item->based<fb::game::item>() != &base)
-            continue;
+        if (item->based<fb::game::item>() == &base)
+            return item;
+    }
 
-        return item;
+    for (auto& [slot, equipment] : this->equipments())
+    {
+        if (equipment->based<fb::game::item>() == &base)
+            return equipment;
     }
 
     return nullptr;
