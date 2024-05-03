@@ -154,9 +154,9 @@ int fb::game::item::model::builtin_rename_price(lua_State* lua)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    if(model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT))
+    if(model->attr(fb::game::item::ATTRIBUTE::WEAPON))
     {
-        auto rename_price = static_cast<fb::game::equipment::model*>(model)->rename;
+        auto rename_price = static_cast<fb::game::weapon::model*>(model)->rename;
         if(rename_price.has_value())
             thread->pushinteger(rename_price.value());
         else
@@ -401,6 +401,52 @@ int fb::game::item::builtin_durability(lua_State* lua)
         auto durability = item->durability();
         if(durability.has_value())
             thread->pushinteger(durability.value());
+        else
+            thread->pushnil();
+        return 1;
+    }
+}
+
+int fb::game::item::builtin_rename(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto argc = thread->argc();
+    auto item = thread->touserdata<fb::game::item>(1);
+    auto weapon = item->attr(fb::game::item::ATTRIBUTE::WEAPON) ? static_cast<fb::game::weapon*>(item) : nullptr;
+
+    if (weapon == nullptr)
+    {
+        thread->pushboolean(false);
+        return 1;
+    }
+
+    if(argc > 1)
+    {
+        if (thread->is_str(2))
+        {
+            auto name = thread->tostring(2);
+            weapon->custom_name(name);
+            return 0;
+        }
+        else if (thread->is_nil(2))
+        {
+            weapon->reset_custom_name();
+            return 0;
+        }
+        else
+        {
+            thread->pushboolean(false);
+            return 1;
+        }
+    }
+    else
+    {
+        auto& custom_name = weapon->custom_name();
+        if (custom_name.has_value())
+            thread->pushstring(custom_name.value());
         else
             thread->pushnil();
         return 1;

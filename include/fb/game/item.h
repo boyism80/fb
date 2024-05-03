@@ -131,6 +131,7 @@ public:
     static int                              builtin_model(lua_State* lua);
     static int                              builtin_count(lua_State* lua);
     static int                              builtin_durability(lua_State* lua);
+    static int                              builtin_rename(lua_State* lua);
 };
 
 
@@ -409,7 +410,6 @@ public:
         uint16_t                            dress = 0;
         uint16_t                            durability = 0;
         std::optional<double>               repair;
-        std::optional<uint32_t>             rename;
         std::string                         dress_script;
         std::string                         undress_script;
         uint8_t                             hit = 0;
@@ -433,7 +433,6 @@ public:
     const uint16_t                      dress;
     const uint16_t                      durability;
     const std::optional<double>         repair;
-    const std::optional<uint32_t>       rename;
     const std::string                   dress_script, undress_script;
 
     const uint8_t                       hit, damage;
@@ -502,6 +501,7 @@ public:
         range32_t                       large;
         uint16_t                        sound;
         std::string                     spell;
+        std::optional<uint32_t>         rename;
     };
 
 public:
@@ -511,6 +511,7 @@ public:
     const weapon::damage_range          damage_range;
     const uint16_t                      sound;
     const std::string                   spell;
+    const std::optional<uint32_t>       rename;
 
 public:
     model(const fb::game::weapon::model::config& config);
@@ -521,7 +522,7 @@ public:
     {
         return new fb::game::weapon(context, this);
     }
-    virtual fb::game::item::ATTRIBUTE       attr() const;
+    virtual fb::game::item::ATTRIBUTE   attr() const;
     fb::game::weapon::types             weapon_type() const;
 
 };

@@ -325,3 +325,55 @@ end
 function return_item(me, npc)
     return npc:dialog(me, '미구현', false, true)
 end
+
+function rename_weapon(me, npc)
+    local slots = {}
+    local items = {}
+    for slot, item in pairs(me:items()) do
+        local model = item:model()
+        if model:attr(ITEM_ATTR_WEAPON) and model:rename_price() ~= nil then
+            table.insert(slots, slot)
+            items[slot] = item
+        end
+    end
+
+::RENAME_WEAPON_0001::
+    local slot = npc:slot(me, '어떤 장비에 별칭을 부여하시겠어요?', slots)
+    if slot == nil then
+        return DIALOG_RESULT_NEXT
+    end
+
+    local weapon = items[slot]
+::RENAME_WEAPON_0002::
+    local name = npc:input(me, '어떤 이름을 붙이고 싶으세요?')
+    if name == nil then
+        goto RENAME_WEAPON_0001
+    end
+
+    if #name > 16 then
+        npc:dialog(me, '이름이 너무 깁니다.', false, true)
+        goto RENAME_WEAPON_0002
+    end
+
+    if not assert_korean(name) then
+        npc:dialog(me, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), false, true)
+        goto RENAME_WEAPON_0002
+    end
+
+    local price = weapon:model():rename_price()
+    local money = me:money()
+    if price > 0 then
+        if npc:menu(me, string.format('바꾸는데 %d전이 필요합니다. 정말 바꾸시겠습니까?', price), {'네', '아니오'}) == 0 then
+            if price > money then
+                return npc:dialog(me, '돈이 부족합니다.', false, true)
+            end
+
+            me:money(money - price)
+        else
+            return DIALOG_RESULT_NEXT
+        end
+    end
+
+    weapon:rename(name)
+    return npc:dialog(me, string.format('%s의 이름을 %s로 변경했습니다.', weapon:model():name(), name), false, true)
+end

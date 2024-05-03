@@ -134,6 +134,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
 {"model",               fb::game::item::builtin_model},
 {"count",               fb::game::item::builtin_count},
 {"durability",          fb::game::item::builtin_durability},
+{"rename",              fb::game::item::builtin_rename},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")

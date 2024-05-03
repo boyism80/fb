@@ -7,7 +7,6 @@ fb::game::equipment::model::model(const fb::game::equipment::model::config& conf
     dress(config.dress),
     durability(config.durability),
     repair(config.repair),
-    rename(config.rename),
     dress_script(config.dress_script),
     undress_script(config.undress_script),
     hit(config.hit),

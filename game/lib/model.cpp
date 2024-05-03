@@ -295,7 +295,6 @@ fb::game::item::model* container::item::create(uint32_t id, const Json::Value& d
         /* dress          */ (uint16_t)option["look"].asInt(),
         /* durability     */ (uint16_t)option["durability"].asInt(),
         /* repair         */ option["repair"].isNull() ? std::optional<double>() : std::optional<double>(option["repair"].asDouble()),
-        /* rename         */ option["rename"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(option["repair"].asUInt()),
         /* dress_script   */ CP949(data["script"]["dress"].asString(), PLATFORM::Windows),
         /* undress_script */ CP949(data["script"]["undress"].asString(), PLATFORM::Windows),
         /* hit            */ (uint8_t)option["hit"].asInt(),
@@ -339,10 +338,11 @@ fb::game::item::model* container::item::create(uint32_t id, const Json::Value& d
         auto weapon_config = fb::game::weapon::model::config
         {
             equipment_config,
-            /* small */ fb::game::range32_t(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt()),
-            /* large */ fb::game::range32_t(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt()),
-            /* sound */ (uint16_t)option["sound"].asInt(),
-            /* spell */ CP949(option["spell"].asString(), PLATFORM::Windows)
+            /* small  */ fb::game::range32_t(option["damage range"]["small"]["min"].asInt(), option["damage range"]["small"]["max"].asInt()),
+            /* large  */ fb::game::range32_t(option["damage range"]["large"]["min"].asInt(), option["damage range"]["large"]["max"].asInt()),
+            /* sound  */ (uint16_t)option["sound"].asInt(),
+            /* spell  */ CP949(option["spell"].asString(), PLATFORM::Windows),
+            /* rename */ option["rename"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(option["rename"].asUInt()),
         };
         return new fb::game::weapon::model(weapon_config);
     }

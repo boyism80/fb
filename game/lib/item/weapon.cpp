@@ -5,7 +5,8 @@ fb::game::weapon::model::model(const fb::game::weapon::model::config& config) :
     fb::game::equipment::model(config),
     damage_range(config.small, config.large),
     sound(config.sound),
-    spell(config.spell)
+    spell(config.spell),
+    rename(config.rename)
 { }
 
 
