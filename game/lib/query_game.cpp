@@ -67,6 +67,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
 
         auto model = item->based<fb::game::item>();
         auto durability = item->durability();
+        auto custom_name = (item->attr(fb::game::item::ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
@@ -75,6 +76,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
             std::to_string(model->id),
             std::to_string(item->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
+            custom_name.has_value() ? custom_name.value() : "NULL"
         };
         item_set.push_back(fb::query::make_insert(parameter));
     }
@@ -87,6 +89,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
 
         auto model = equipment->based<fb::game::equipment>();
         auto durability = equipment->durability();
+        auto custom_name = (equipment->attr(fb::game::item::ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(equipment)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
         {
             std::to_string(session.id()),
@@ -95,6 +98,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
             std::to_string(model->id),
             std::to_string(equipment->count()),
             durability.has_value() ? std::to_string(durability.value()) : "NULL",
+            custom_name.has_value() ? custom_name.value() : "NULL"
         };
 
         item_set.push_back(fb::query::make_insert(parameter));
@@ -104,9 +108,9 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         return std::string();
 
     std::stringstream sstream;
-    sstream << "INSERT INTO item (`owner`, `index`, `slot`, `model`, `count`, `durability`) VALUES "
+    sstream << "INSERT INTO item (`owner`, `index`, `slot`, `model`, `count`, `durability`, `custom_name`) VALUES "
         << boost::algorithm::join(item_set, ", ")
-        << " ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability)";
+        << " ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability), custom_name=VALUES(custom_name)";
 
     return sstream.str();
 }

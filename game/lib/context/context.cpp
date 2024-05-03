@@ -620,9 +620,9 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     return true;
 }
 
-void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::session& session)
+void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::session& session)
 {
-    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> model, std::optional<uint32_t> count, std::optional<uint32_t> durability)
+    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> model, std::optional<uint32_t> count, std::optional<uint32_t> durability, std::optional<std::string> custom_name)
     {
         if(model.has_value() == false)
             return true;
@@ -635,6 +635,9 @@ void fb::game::context::fetch_gear(daotk::mysql::result& db_result, fb::game::se
         item->count(count.value());
         if (durability.has_value())
             item->durability(durability.value());
+
+        if (custom_name.has_value() && item->attr(fb::game::item::ATTRIBUTE::WEAPON))
+            static_cast<fb::game::weapon*>(item)->custom_name(custom_name.value());
 
         if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
             session.items.add(*item, index);
@@ -991,7 +994,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
         this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
         this->send(*session, fb::protocol::game::response::session::option(*session), scope::SELF);
 
-        this->fetch_gear(results[1], *session);
+        this->fetch_item(results[1], *session);
         this->fetch_spell(results[2], *session);
     }
     catch(std::exception& e)

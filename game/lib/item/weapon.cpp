@@ -58,3 +58,26 @@ std::string fb::game::weapon::mid_message() const
     sstream << "　　　  　 　L:　" << std::to_string(model->damage_range.large.min) << 'm' << std::to_string(model->damage_range.large.max) << std::endl;
     return sstream.str();
 }
+
+const std::string& fb::game::weapon::name() const
+{
+    if (this->_custom_name.has_value())
+        return this->_custom_name.value();
+
+    return fb::game::item::name();
+}
+
+const std::optional<std::string>& fb::game::weapon::custom_name() const
+{
+    return this->_custom_name;
+}
+
+void fb::game::weapon::custom_name(const std::string& name)
+{
+    this->_custom_name = name;
+}
+
+void fb::game::weapon::reset_custom_name()
+{
+    this->_custom_name.reset();
+}

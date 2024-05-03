@@ -464,6 +464,9 @@ public:
 public:
     enum class types : uint8_t { NORMAL, SPEAR, BOW, FAN, UNKNOWN };
 
+private:
+    std::optional<std::string>          _custom_name;
+
 public:
     weapon(fb::game::context& context, const fb::game::weapon::model* model);
     weapon(const fb::game::weapon& right);
@@ -471,6 +474,12 @@ public:
 
 protected:
     std::string                         mid_message() const final;
+
+public:
+    const std::string&                  name() const override;
+    const std::optional<std::string>&   custom_name() const;
+    void                                custom_name(const std::string& name);
+    void                                reset_custom_name();
 };
 
 

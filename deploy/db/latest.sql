@@ -79,6 +79,7 @@ CREATE TABLE `item` (
   `model` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
+  `custom_name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`owner`,`index`,`slot`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -476,4 +477,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-02  1:22:03
+-- Dump completed on 2024-05-03 14:16:35

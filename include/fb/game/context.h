@@ -58,7 +58,7 @@ private:
     void                    bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
     bool                    fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer);
-    void                    fetch_gear(daotk::mysql::result& db_result, fb::game::session& session);
+    void                    fetch_item(daotk::mysql::result& db_result, fb::game::session& session);
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
 private:
