@@ -1,22 +1,18 @@
-# The Kingdom of the wind - Private
-
 ## Introduce
-'fb' is 2D MMORPG online game server project that based on C++ and boost asio.
-<br>
-This server works on Windows and Linux.
-<br>
-Do not use it commercially, as this may be exploited.
+2D mmorpg server written by c++
 
 ## Dependency
-Boost asio 1.74
+boost asio 1.74
 <br>
-Lua 5.3
+lua 5.3
 <br>
-mysql server 8.0.16 / C++ connector 8.0.20
+mysql server 8.0.16
 <br>
-Jsoncpp
+jsoncpp
 <br>
 ncurses (Linux only)
+<br>
+[mysql+++](https://github.com/daotrungkien/mysql-modern-cpp)
 
 ## Contact
  - [youtube](https://www.youtube.com/channel/UCPcH5qX7aLTFs3mgh32_FVQ?view_as=subscriber)
