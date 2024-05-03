@@ -11,7 +11,7 @@ fb::game::item::model::model(const fb::game::item::model::config& config) :
     penalty(config.penalty),
     capacity(config.capacity),
     trade(config.trade),
-    storage(config.storage),
+    deposit_price(config.deposit_price),
     desc(config.desc),
     active_script(config.active_script)
 { }
@@ -170,16 +170,16 @@ int fb::game::item::model::builtin_rename_price(lua_State* lua)
     return 1;
 }
 
-int fb::game::item::model::builtin_store_price(lua_State* lua)
+int fb::game::item::model::builtin_deposit_price(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)
         return 0;
     
     auto model = thread->touserdata<fb::game::item::model>(1);
-    if(model->storage.has_value())
+    if(model->deposit_price.has_value())
     {
-        thread->pushinteger(model->storage.value());
+        thread->pushinteger(model->deposit_price.value());
     }
     else
     {

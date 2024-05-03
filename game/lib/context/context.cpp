@@ -127,7 +127,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"price",               fb::game::item::model::builtin_price},
 {"repair_price",        fb::game::item::model::builtin_repair_price},
 {"rename_price",        fb::game::item::model::builtin_rename_price},
-{"store_price",         fb::game::item::model::builtin_store_price},
+{"deposit_price",       fb::game::item::model::builtin_deposit_price},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")

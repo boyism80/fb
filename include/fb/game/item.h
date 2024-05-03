@@ -168,7 +168,7 @@ public:
         fb::game::item::DEATH_PENALTY_TYPE  penalty     = fb::game::item::DEATH_PENALTY_TYPE::NONE;
         uint16_t                            capacity    = 0;
         bool                                trade;
-        std::optional<uint32_t>             storage;
+        std::optional<uint32_t>             deposit_price;
         std::string                         desc;
         std::string                         active_script;
     };
@@ -185,7 +185,7 @@ public:
     const DEATH_PENALTY_TYPE                penalty;
     const uint16_t                          capacity;
     const bool                              trade;
-    const std::optional<uint32_t>           storage;
+    const std::optional<uint32_t>           deposit_price;
     const std::string                       desc;
     const std::string                       active_script;
 
@@ -214,7 +214,7 @@ public:
     static int                              builtin_price(lua_State* lua);
     static int                              builtin_repair_price(lua_State* lua);
     static int                              builtin_rename_price(lua_State* lua);
-    static int                              builtin_store_price(lua_State* lua);
+    static int                              builtin_deposit_price(lua_State* lua);
 };
 
 

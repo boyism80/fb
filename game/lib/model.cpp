@@ -249,10 +249,10 @@ fb::game::item::model* container::item::create(uint32_t id, const Json::Value& d
         /* id            */ id,
         /* price         */ (uint32_t)data["price"].asInt(),
         /* condition     */ to_condition(data),
-        /* penalty       */ to_penalty(CP949(data["death penalty"].asString(), PLATFORM::Windows)),
+        /* penalty       */ to_penalty(CP949(data["death_penalty"].asString(), PLATFORM::Windows)),
         /* capacity      */ std::max(uint16_t(1), (uint16_t)data["capacity"].asInt()),
         /* trade         */ data["trade"].asBool(),
-        /* storage       */ data["storage"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(data["storage"].asUInt()),
+        /* deposit_price */ data["deposit_price"].isNull() ? std::optional<uint32_t>() : std::optional<uint32_t>(data["deposit_price"].asUInt()),
         /* desc          */ CP949(data["desc"].asString(), PLATFORM::Windows),
         /* active_script */ CP949(data["script"]["active"].asString(), PLATFORM::Windows)
     };
@@ -276,7 +276,7 @@ fb::game::item::model* container::item::create(uint32_t id, const Json::Value& d
 
     if(types == "consume")
     {
-        std::string     bundle_type = CP949(data["bundle type"].asString(), PLATFORM::Windows);   // package Ex) 동동주
+        std::string     bundle_type = CP949(data["bundle_type"].asString(), PLATFORM::Windows);   // package Ex) 동동주
                                                                                                   // bundle  Ex) 도토리
         if (bundle_type == "package")
         {
