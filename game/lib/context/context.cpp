@@ -50,6 +50,10 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"buy",                 fb::game::npc::model::builtin_buy},
 {"repair",              fb::game::npc::model::builtin_repair},
 {"repair_all",          fb::game::npc::model::builtin_repair_all},
+{"hold_money",          fb::game::npc::builtin_hold_money},
+{"hold_item",           fb::game::npc::builtin_hold_item},
+{"return_money",        fb::game::npc::builtin_return_money},
+{"return_item",         fb::game::npc::builtin_return_item},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -62,6 +66,10 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"buy",                 fb::game::npc::builtin_buy},
 {"repair",              fb::game::npc::builtin_repair},
 {"repair_all",          fb::game::npc::builtin_repair_all},
+{"hold_money",          fb::game::npc::builtin_hold_money},
+{"hold_item",           fb::game::npc::builtin_hold_item},
+{"return_money",        fb::game::npc::builtin_return_money},
+{"return_item",         fb::game::npc::builtin_return_item},
 END_LUA_EXTENSION
 
 
@@ -150,6 +158,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"level",               fb::game::session::builtin_level},
 {"group",               fb::game::session::builtin_group},
 {"assert",              fb::game::session::builtin_assert},
+{"deposited_money",     fb::game::session::builtin_deposited_money},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")

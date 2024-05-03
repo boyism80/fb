@@ -603,3 +603,27 @@ int fb::game::session::builtin_admin(lua_State* lua)
         return 0;
     }
 }
+
+int fb::game::session::builtin_deposited_money(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    if(session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    if(argc == 1)
+    {
+        thread->pushinteger(session->deposited_money());
+        return 1;
+    }
+    else
+    {
+        session->deposited_money(thread->tointeger(2));
+        return 0;
+    }
+}

@@ -251,3 +251,77 @@ function repair_all(me, npc)
         end
     end
 end
+
+
+
+function hold_money(me, npc)
+    local count = npc:input(me, '얼마나 맡아드릴까요?')
+    if count == nil then
+        return DIALOG_RESULT_NEXT
+    end
+
+    count = tonumber(count)
+    if count == nil or count <= 0 then
+        return npc:dialog(me, '금액이 올바르지 않습니다.', false, true)
+    end
+
+    local current_money = me:money()
+    if count > current_money then
+       return npc:dialog(me, '돈이 모자랍니다.', false, true) 
+    end
+
+    local deposited_money = me:deposited_money()
+    local capacity = 0xFFFFFFFF - deposited_money
+    if count > capacity then
+        return npc:dialog(me, '그만큼 맡아드릴 수 없습니다.', false, true)
+    end
+
+    me:deposited_money(deposited_money + count)
+    me:money(current_money - count)
+    return npc:dialog(me, string.format('금전 %d전을 맡았습니다.', count), false, true)
+end
+
+
+
+function hold_item(me, npc)
+    return npc:dialog(me, '미구현', false, true)
+end
+
+
+
+function return_money(me, npc)
+    local deposited_money = me:deposited_money()
+    if deposited_money <= 0 then
+        return npc:dialog(me, '돈을 보관하고 있지 않습니다.', false, true)
+    end
+
+    local count = npc:input(me, string.format('제가 %d전을 보관하고 있습니다. 얼마나 돌려드릴까요?', deposited_money))
+    if count == nil then
+        return DIALOG_RESULT_NEXT
+    end
+
+    count = tonumber(count)
+    if count == nil or count <= 0 then
+        return npc:dialog(me, '금액이 올바르지 않습니다.', false, true)
+    end
+
+    if count > deposited_money then
+        return npc:dialog(me, '그만큼 보관하고 있지 않습니다.', false, true)
+    end
+
+    local current_money = me:money()
+    local capacity = 0xFFFFFFFF - current_money
+    if count > capacity then
+       return npc:dialog(me, '가진 돈이 너무 많습니다.', false, true)
+    end
+
+    me:deposited_money(deposited_money - count)
+    me:money(current_money + count)
+    return npc:dialog(me, string.format('금전 %d전을 돌려드렸습니다.', count), false, true)
+end
+
+
+
+function return_item(me, npc)
+    return npc:dialog(me, '미구현', false, true)
+end

@@ -1,6 +1,6 @@
 function on_interact(me, npc)
 ::ROUTINE_1::
-    local selected = npc:menu(me, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '물건 고치기', '모두 고치기', '메뉴3', '메뉴4', '메뉴5'})
+    local selected = npc:menu(me, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '물건 고치기', '모두 고치기', '금전 맡기기', '물건 맡기기', '금전 찾기', '물건 찾기'})
     if selected == nil then
         return
     end
@@ -20,6 +20,22 @@ function on_interact(me, npc)
     elseif selected == 3 then
         if npc:repair_all(me) == DIALOG_RESULT_NEXT then
             goto ROUTINE_1
+        end
+    elseif selected == 4 then
+        if npc:hold_money(me) == DIALOG_RESULT_NEXT then
+           goto ROUTINE_1 
+        end
+    elseif selected == 5 then
+        if npc:hold_item(me) == DIALOG_RESULT_NEXT then
+           goto ROUTINE_1 
+        end
+    elseif selected == 6 then
+        if npc:return_money(me) == DIALOG_RESULT_NEXT then
+           goto ROUTINE_1 
+        end
+    elseif selected == 7 then
+        if npc:return_item(me) == DIALOG_RESULT_NEXT then
+           goto ROUTINE_1 
         end
     else
 

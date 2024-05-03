@@ -84,6 +84,46 @@ int __builtin_repair_all(fb::game::lua::context* thread, fb::game::session* sess
     return thread->yield(1);
 }
 
+int __builtin_hold_money(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("hold_money")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
+int __builtin_hold_item(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("hold_item")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
+int __builtin_return_money(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("return_money")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
+int __builtin_return_item(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("return_item")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
 int fb::game::npc::model::builtin_input(lua_State* lua)
 {
     // Ex) npc::input(session, "message")
@@ -179,6 +219,79 @@ int fb::game::npc::model::builtin_repair_all(lua_State* lua)
     return __builtin_repair_all(thread, session, npc);
 }
 
+int fb::game::npc::model::builtin_hold_money(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_hold_money(thread, session, npc);
+}
+
+int fb::game::npc::model::builtin_hold_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_hold_item(thread, session, npc);
+}
+
+int fb::game::npc::model::builtin_return_money(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_return_money(thread, session, npc);
+}
+
+int fb::game::npc::model::builtin_return_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_return_item(thread, session, npc);
+}
+
+
 int fb::game::npc::builtin_input(lua_State* lua)
 {
     return ::builtin_input<npc>(lua);
@@ -273,4 +386,80 @@ int fb::game::npc::builtin_repair_all(lua_State* lua)
 
     auto npc = obj->based<fb::game::npc::model>();
     return __builtin_repair_all(thread, session, npc);
+}
+
+int fb::game::npc::builtin_hold_money(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_hold_money(thread, session, npc);
+}
+
+int fb::game::npc::builtin_hold_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_hold_item(thread, session, npc);
+}
+
+int fb::game::npc::builtin_return_money(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_return_money(thread, session, npc);
+}
+
+int fb::game::npc::builtin_return_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_return_item(thread, session, npc);
 }

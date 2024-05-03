@@ -48,6 +48,10 @@ public:
     static int                  builtin_buy(lua_State* lua);
     static int                  builtin_repair(lua_State* lua);
     static int                  builtin_repair_all(lua_State* lua);
+    static int                  builtin_hold_money(lua_State* lua);
+    static int                  builtin_hold_item(lua_State* lua);
+    static int                  builtin_return_money(lua_State* lua);
+    static int                  builtin_return_item(lua_State* lua);
 };
 
 class npc::model : public object::model
@@ -101,6 +105,10 @@ public:
     static int                  builtin_buy(lua_State* lua);
     static int                  builtin_repair(lua_State* lua);
     static int                  builtin_repair_all(lua_State* lua);
+    static int                  builtin_hold_money(lua_State* lua);
+    static int                  builtin_hold_item(lua_State* lua);
+    static int                  builtin_return_money(lua_State* lua);
+    static int                  builtin_return_item(lua_State* lua);
 };
 
 
