@@ -185,6 +185,7 @@ public:
     fb::task<bool>          handle_command_mapobj(fb::game::session& session, Json::Value& parameters);
     fb::task<bool>          handle_command_randmap(fb::game::session& session, Json::Value& parameters);
     fb::task<bool>          handle_command_npc(fb::game::session& session, Json::Value& parameters);
+    fb::task<bool>          handle_command_durability(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

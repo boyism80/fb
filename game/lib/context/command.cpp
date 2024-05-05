@@ -393,3 +393,44 @@ fb::task<bool> fb::game::context::handle_command_npc(fb::game::session& session,
     npc->map(session.map(), session.position());
     co_return true;
 }
+
+fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& session, Json::Value& parameters)
+{
+    if(parameters.size() < 1)
+        co_return false;
+
+    if(parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto percent = std::max(0, std::min(100, (int)parameters[0].asUInt()));
+    auto equipments = std::vector<fb::game::equipment*>();
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = session.items[i];
+        if (item == nullptr)
+            continue;
+
+        if (item->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+            continue;
+
+        auto equipment = static_cast<fb::game::equipment*>(item);
+        equipments.push_back(equipment);
+    }
+
+    for (auto& [slot, item] : session.items.equipments())
+    {
+        if (item == nullptr)
+            continue;
+
+        auto equipment = static_cast<fb::game::equipment*>(item);
+        equipments.push_back(equipment);
+    }
+
+    for (auto equipment : equipments)
+    {
+        auto model = equipment->based<fb::game::equipment>();
+        equipment->durability(uint16_t(model->durability * (percent / 100.0f)));
+    }
+
+    co_return true;
+}

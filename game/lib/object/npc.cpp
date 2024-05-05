@@ -168,6 +168,13 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
                 if (equipment == nullptr)
                     continue;
 
+                auto equipment_model = equipment->based<fb::game::equipment>();
+                if (equipment_model->repair.has_value() == false)
+                    continue;
+
+                if (equipment->durability() >= equipment_model->durability)
+                    continue;
+
                 equipments.push_back(static_cast<fb::game::equipment*>(equipment));
             }
 
@@ -200,14 +207,6 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
                 throw std::runtime_error("뭘 고쳐줘?");
 
             auto item = session.items.find(*item_model);
-            if (item == nullptr)
-            {
-                for (auto& [parts, equipment] : session.items.equipments())
-                {
-                    if (equipment->based() == item_model)
-                        item = equipment;
-                }
-            }
             if (item == nullptr)
                 throw std::runtime_error("가지고 있지 않은데요");
 
@@ -249,7 +248,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
         }
         else
         {
-            this->chat("고치는데 %d전이 들었습니다.", price);
+            this->chat(fb::format("고치는데 %d전이 들었습니다.", price));
         }
 
         return true;
