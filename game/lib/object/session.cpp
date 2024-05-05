@@ -1075,14 +1075,13 @@ bool fb::game::session::deposit_money(const std::string& message, const std::vec
     if (fb::game::regex::match_deposit_money_message(message, money) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if (npc->hold_money(*this, money))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1091,14 +1090,13 @@ bool fb::game::session::withdraw_money(const std::string& message, const std::ve
     if (fb::game::regex::match_withdraw_money_message(message, money) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if (npc->return_money(*this, money))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1108,14 +1106,13 @@ bool fb::game::session::deposit_item(const std::string& message, const std::vect
     if (fb::game::regex::match_deposit_item_message(message, model, count) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if (npc->hold_item(*this, model, count))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1125,14 +1122,13 @@ bool fb::game::session::withdraw_item(const std::string& message, const std::vec
     if (fb::game::regex::match_withdraw_item_message(message, model, count) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if (npc->return_item(*this, model, count))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1194,14 +1190,13 @@ bool fb::game::session::show_deposited_money(const std::string& message, const s
     if (fb::game::regex::match_deposited_money(message) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if(npc->deposited_money(*this))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -1211,14 +1206,13 @@ bool fb::game::session::rename_weapon(const std::string& message, const std::vec
     if (fb::game::regex::match_rename_weapon(message, item, name) == false)
         return false;
 
-    auto done = false;
     for (auto npc : npcs)
     {
         if(npc->rename_weapon(*this, item, name))
-            done = true;
+            return true;
     }
 
-    return done;
+    return false;
 }
 
 bool fb::game::session::inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs)
