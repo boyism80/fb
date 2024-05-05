@@ -189,7 +189,7 @@ function repair(me, npc)
     local model = item:model()
     local price = math.floor(model:repair_price() * (model:durability() - item:durability()))
 
-    if price < 10 then
+    if price == 0 then
         item:durability(model:durability())
         return npc:dialog(me, '거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요')
     else
@@ -225,7 +225,7 @@ function repair_all(me, npc)
     end
     price = math.floor(price)
 
-    if price < 10 then
+    if price == 0 then
         for slot, item in pairs(items) do
             local model = item:model()
             item:durability(model:durability())

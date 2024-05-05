@@ -92,7 +92,7 @@ public:
                                 
     context&                    pushstring(const std::string& value);
     context&                    pushinteger(lua_Integer value);
-    context&                    pushnumber(lua_Integer value);
+    context&                    pushnumber(lua_Number value);
     context&                    pushnil();
     context&                    pushboolean(bool value);
     context&                    pushobject(const luable* object);
