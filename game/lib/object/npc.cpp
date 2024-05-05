@@ -500,10 +500,14 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::it
         if (weapon_model->rename.value() > money)
             throw std::runtime_error(fb::format("돈이 모자랍니다. %s에 별칭을 부여하려면 %d전이 필요합니다.", item->name.c_str(), weapon_model->rename.value()));
 
-        if (name.size() > 32)
+        auto cp949 = CP949(name);
+        if(cp949.size() < 4)
+            throw std::runtime_error("이름이 너무 짧습니다.");
+
+        if (cp949.size() > 32)
             throw std::runtime_error("이름이 너무 깁니다.");
 
-        if (assert_korean(name) == false)
+        if (assert_korean(cp949) == false)
             throw std::runtime_error("그렇게 바꿀 수 없습니다.");
 
         static_cast<fb::game::weapon*>(weapon)->custom_name(name);

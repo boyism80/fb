@@ -284,3 +284,15 @@ int fb::game::context::builtin_assert_korean(lua_State* lua)
     thread->pushboolean(assert_korean(text));
     return 1;
 }
+
+int fb::game::context::builtin_cp949(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto text = thread->tostring(1);
+    thread->pushstring(CP949(text));
+    return 1;
+}

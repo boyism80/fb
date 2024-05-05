@@ -350,12 +350,18 @@ function rename_weapon(me, npc)
         goto RENAME_WEAPON_0001
     end
 
-    if #name > 16 then
+    local cp949 = CP949(name)
+    if #cp949 < 4 then
+        npc:dialog(me, '이름이 너무 짧습니다.', false, true)
+        goto RENAME_WEAPON_0002
+    end
+
+    if #cp949 > 32 then
         npc:dialog(me, '이름이 너무 깁니다.', false, true)
         goto RENAME_WEAPON_0002
     end
 
-    if not assert_korean(name) then
+    if not assert_korean(cp949) then
         npc:dialog(me, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), false, true)
         goto RENAME_WEAPON_0002
     end
