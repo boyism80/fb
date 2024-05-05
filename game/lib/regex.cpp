@@ -222,6 +222,6 @@ bool fb::game::regex::match_rename_weapon(const std::string& message, fb::game::
         return false;
 
     item = fb::game::model::items.name2item(what["weapon"].str());
-    name = what["weapon"].str();
+    name = what["name"].str();
     return true;
 }

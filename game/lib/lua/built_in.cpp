@@ -272,3 +272,15 @@ int fb::game::context::builtin_name_with(lua_State* lua)
     }
     return 1;
 }
+
+int fb::game::context::builtin_assert_korean(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto text = thread->tostring(1);
+    thread->pushboolean(assert_korean(text));
+    return 1;
+}

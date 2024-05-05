@@ -504,11 +504,12 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::it
         if (name.size() > 32)
             throw std::runtime_error("이름이 너무 깁니다.");
 
-        if (fb::game::regex::match(name, fb::game::container::regex::TYPE::KOREAN) == false)
+        if (assert_korean(name) == false)
             throw std::runtime_error("그렇게 바꿀 수 없습니다.");
 
         static_cast<fb::game::weapon*>(weapon)->custom_name(name);
         session.money_reduce(weapon_model->rename.value());
+        this->chat(fb::format("%s의 이름을 %s로 변경했습니다.", item->name.c_str(), name_with(name, { "으", "" }).c_str()));
     }
     catch(std::runtime_error& e)
     {

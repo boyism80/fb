@@ -34,33 +34,6 @@ bool fb::login::context::decrypt_policy(uint8_t cmd) const
     }
 }
 
-// 참고자료
-// https://gala04.tistory.com/entry/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4-%EC%A3%BC%EC%84%B8%EC%9A%94
-bool fb::login::context::is_hangul(const std::string& str)
-{
-    auto len = str.length();
-    if(len % 2 > 0)
-        return false;
-
-    auto raw = str.c_str();
-    for(int i = 0; i < len; i += 2)
-    {
-        uint8_t e1 = raw[i+0];
-        uint8_t e2 = raw[i+1];
-
-        if(isascii(e1))
-            return false;
-
-        if(e1 < 0xB0 || e1 > 0xC8)
-            return false;
-
-        if(e2 < 0xA1 || e2 > 0xFE)
-            return false;
-    }
-
-    return true;
-}
-
 bool fb::login::context::is_forbidden(const std::string& str) const
 {
     return std::any_of(this->_forbiddens.cbegin(), this->_forbiddens.cend(), 
@@ -99,7 +72,7 @@ void fb::login::context::assert_account(const std::string& id, const std::string
         throw id_exception(fb::login::message::account::INVALID_NAME);
 
     // Name must be full-hangul characters
-    if(config["allow other language"].asBool() == false && this->is_hangul(cp949) == false)
+    if(config["allow other language"].asBool() == false && assert_korean(cp949) == false)
         throw id_exception(fb::login::message::account::INVALID_NAME);
 
     // Name cannot contains subcharacters in forbidden list
@@ -347,7 +320,7 @@ fb::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name must be full-hangul characters
-        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && this->is_hangul(name.c_str()) == false)
+        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && assert_korean(name.c_str()) == false)
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list

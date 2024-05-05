@@ -8,7 +8,8 @@
         "buy": 0,
         "repair": true,
         "hold_money": true,
-        "hold_item": true
+        "hold_item": true,
+        "rename": true
     },
     "1": {
         "name": "비도",

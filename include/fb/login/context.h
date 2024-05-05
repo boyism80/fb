@@ -76,7 +76,6 @@ public:
     ~context();
 
 private:
-    static bool                 is_hangul(const std::string& str);
     bool                        is_forbidden(const std::string& str) const;
     std::string                 sha256(const std::string& data) const;
     void                        assert_account(const std::string& id, const std::string& pw) const;

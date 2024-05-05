@@ -32,4 +32,6 @@ std::string                 M(const std::wstring& w);
 std::string                 name_with(const std::string& name);
 std::string                 name_with(const std::string& name, const std::pair<std::string, std::string>& postfix);
 
+bool                        assert_korean(const std::string& str);
+
 #endif

@@ -124,6 +124,16 @@ int __builtin_return_item(fb::game::lua::context* thread, fb::game::session* ses
     return thread->yield(1);
 }
 
+int __builtin_rename_weapon(fb::game::lua::context* thread, fb::game::session* session, const fb::game::npc::model* npc)
+{
+    session->dialog.from("scripts/common/npc.lua")
+                   .func("rename_weapon")
+                   .pushobject(session)
+                   .pushobject(npc)
+                   .resume(2);
+    return thread->yield(1);
+}
+
 int fb::game::npc::model::builtin_input(lua_State* lua)
 {
     // Ex) npc::input(session, "message")
@@ -291,6 +301,23 @@ int fb::game::npc::model::builtin_return_item(lua_State* lua)
     return __builtin_return_item(thread, session, npc);
 }
 
+int fb::game::npc::model::builtin_rename_weapon(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::game::npc::model>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    return __builtin_rename_weapon(thread, session, npc);
+}
 
 int fb::game::npc::builtin_input(lua_State* lua)
 {
@@ -462,4 +489,23 @@ int fb::game::npc::builtin_return_item(lua_State* lua)
 
     auto npc = obj->based<fb::game::npc::model>();
     return __builtin_return_item(thread, session, npc);
+}
+
+int fb::game::npc::builtin_rename_weapon(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj = thread->touserdata<fb::game::npc>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto npc = obj->based<fb::game::npc::model>();
+    return __builtin_rename_weapon(thread, session, npc);
 }

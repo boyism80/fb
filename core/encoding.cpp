@@ -181,3 +181,30 @@ std::string name_with(const std::string& name, const std::pair<std::string, std:
     else
         return name + postfix.second;
 }
+
+// 참고자료
+// https://gala04.tistory.com/entry/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4-%EC%A3%BC%EC%84%B8%EC%9A%94
+bool assert_korean(const std::string& str)
+{
+    auto len = str.length();
+    if (len % 2 > 0)
+        return false;
+
+    auto raw = str.c_str();
+    for (int i = 0; i < len; i += 2)
+    {
+        uint8_t e1 = raw[i + 0];
+        uint8_t e2 = raw[i + 1];
+
+        if (isascii(e1))
+            return false;
+
+        if (e1 < 0xB0 || e1 > 0xC8)
+            return false;
+
+        if (e2 < 0xA1 || e2 > 0xFE)
+            return false;
+    }
+
+    return true;
+}

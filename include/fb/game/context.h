@@ -284,6 +284,7 @@ public:
     static int              builtin_timer(lua_State* lua);
     static int              builtin_weather(lua_State* lua);
     static int              builtin_name_with(lua_State* lua);
+    static int              builtin_assert_korean(lua_State* lua);
 };
 
 

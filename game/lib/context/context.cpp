@@ -54,6 +54,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"hold_item",           fb::game::npc::builtin_hold_item},
 {"return_money",        fb::game::npc::builtin_return_money},
 {"return_item",         fb::game::npc::builtin_return_item},
+{"rename_weapon",       fb::game::npc::builtin_rename_weapon},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
@@ -70,6 +71,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
 {"hold_item",           fb::game::npc::builtin_hold_item},
 {"return_money",        fb::game::npc::builtin_return_money},
 {"return_item",         fb::game::npc::builtin_return_item},
+{"rename_weapon",       fb::game::npc::builtin_rename_weapon},
 END_LUA_EXTENSION
 
 
@@ -207,6 +209,7 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_function("timer",             builtin_timer);
     lua::bind_function("weather",           builtin_weather);
     lua::bind_function("name_with",         builtin_name_with);
+    lua::bind_function("assert_korean",     builtin_assert_korean);
 
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러

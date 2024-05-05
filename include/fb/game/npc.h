@@ -53,6 +53,7 @@ public:
     static int                  builtin_hold_item(lua_State* lua);
     static int                  builtin_return_money(lua_State* lua);
     static int                  builtin_return_item(lua_State* lua);
+    static int                  builtin_rename_weapon(lua_State* lua);
 };
 
 class npc::model : public object::model
@@ -112,6 +113,7 @@ public:
     static int                  builtin_hold_item(lua_State* lua);
     static int                  builtin_return_money(lua_State* lua);
     static int                  builtin_return_item(lua_State* lua);
+    static int                  builtin_rename_weapon(lua_State* lua);
 };
 
 
