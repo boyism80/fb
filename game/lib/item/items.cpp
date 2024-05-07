@@ -114,7 +114,6 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         if(item == nullptr)
             continue;
 
-        auto exists = (fb::game::item*)nullptr;
         if(item->attr(item::ATTRIBUTE::BUNDLE))
         {
             auto exists = this->find(*item->based<fb::game::item>());
@@ -130,7 +129,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
 
             auto index = this->index(*exists);
             
-            updates.insert(std::make_pair(index, exists));
+            updates.insert({ index, exists });
             indices.push_back(index);
         }
         else
@@ -144,7 +143,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             if(item->_map != nullptr)
                 item->map(nullptr);
 
-            updates.insert(std::make_pair(index, item));
+            updates.insert({ index, item });
             indices.push_back(index);
         }
     }
@@ -165,16 +164,6 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
         listener->on_item_update(static_cast<session&>(this->owner()), index);
 
     return index;
-}
-
-bool fb::game::items::reduce(uint8_t index, uint16_t count)
-{
-    auto                    item = this->at(index);
-    if(item == nullptr)
-        return false;
-
-    this->at(index)->reduce(count);
-    return true;
 }
 
 fb::game::item* fb::game::items::active(uint8_t index)

@@ -284,7 +284,51 @@ end
 
 
 function hold_item(me, npc)
-    return npc:dialog(me, '미구현', false, true)
+    local slots = {}
+    local items = {}
+    local my_items = me:items()
+    for slot, item in pairs(my_items) do
+        local model = item:model()
+        local name = model:name()
+        table.insert(slots, slot)
+        items[slot] = model
+    end
+
+    local slot = npc:slot(me, '무엇을 맡기시겠습니까?', slots)
+    local item = items[slot]
+    local model = item:model()
+    local count = 1
+    if model:attr(ITEM_ATTR_BUNDLE) then
+        count = npc:input(me, '얼마나 맡아드릴까요?')
+        if count == nil then
+            return DIALOG_RESULT_NEXT
+        end
+
+        count = tonumber(count)
+        if count == nil or count <= 0 then
+            return npc:dialog(me, '수량이 올바르지 않습니다.', false, true)
+        end
+
+        if item:count() < count then
+            return npc:dialog(me, '그만큼 가지고 있지 않습니다.', false, true)
+        end
+
+        local deposited_item = me:deposited_item(model:name())
+        if deposited_item ~= nil then
+            local deposited_count = deposited_item:count()
+            local capacity = 0xFFFF - deposited_count
+            if count > capacity then
+                return npc:dialog(me, '더 이상 맡길 수 없습니다.', false, true)
+            end
+        end
+    end
+
+    me:deposit_item(item, count)
+    if model:attr(ITEM_ATTR_BUNDLE) then
+        return npc:chat(string.format('%s %d개를 맡았습니다.', model:name(), count))
+    else
+        return npc:chat(string.format('%s 맡았습니다.', name_with(model:name()), count))
+    end
 end
 
 
@@ -323,7 +367,48 @@ end
 
 
 function return_item(me, npc)
-    return npc:dialog(me, '미구현', false, true)
+    local list = {}
+    for _, deposited_item in pairs(me:deposited_item()) do
+        local model = deposited_item:model()
+        local count = deposited_item:count()
+        table.insert(list, {model, count})
+    end
+
+    local selected = npc:item(me, '제가 맡고 있는 물건들입니다. 무엇을 찾으시겠습니까?', list)
+    if selected == nil then
+        return DIALOG_RESULT_NEXT
+    end
+
+    local deposited_item = me:deposited_item(selected)
+    local model = deposited_item:model()
+    local count = 1
+    if deposited_item.attr(ITEM_ATTR_BUNDLE) then
+        count = npc:input(me, '얼마나 돌려드릴까요?')
+        if count == nil then
+            return DIALOG_RESULT_NEXT
+        end
+
+        count = tonumber(count)
+        if count == nil or count <= 0 then
+            return npc:dialog(me, '수량이 올바르지 않습니다.', false, true)
+        end
+
+        if deposited_item:count() < count then
+            return npc:dialog(me, '그만큼 맡고 있지 않습니다.', false, true)
+        end
+
+        local exists = me:item(model)
+        if exists ~= nil and exists:count() + count > model:capacity() then
+            return npc:dialog(me, '더 이상 가질 수 없습니다.', false, true)
+        end
+    end
+    
+    me:withdraw_item(deposited_item, count)
+    if model:attr(ITEM_ATTR_BUNDLE) then
+        return npc:chat(string.format('%s %d개를 돌려드렸습니다.', model:name(), count))
+    else
+        return npc:chat(string.format('%s 돌려드렸습니다.', name_with(model:name()), count))
+    end
 end
 
 function rename_weapon(me, npc)

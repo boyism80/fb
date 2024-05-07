@@ -262,13 +262,6 @@ uint16_t fb::game::item::fill(uint16_t count)
     return std::max(0, count - space);
 }
 
-uint16_t fb::game::item::reduce(uint16_t count)
-{
-    count = std::min(this->_count, count);
-    this->_count -= count;
-    return this->_count;
-}
-
 uint16_t fb::game::item::free_space() const
 {
     auto model = this->based<fb::game::item>();
@@ -282,8 +275,7 @@ uint16_t fb::game::item::count() const
 
 void fb::game::item::count(uint16_t value)
 {
-    auto model = this->based<fb::game::item>();
-    this->_count = std::min(value, model->capacity);
+    this->_count = value;
 }
 
 bool fb::game::item::empty() const

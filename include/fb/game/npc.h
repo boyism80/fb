@@ -31,8 +31,8 @@ public:
     bool                        repair(fb::game::session& session, fb::game::item::model* item, bool done);
     bool                        hold_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
-    bool                        hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count);
-    bool                        return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count);
+    bool                        hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count);
+    bool                        return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count);
     void                        sell_list();
     void                        buy_list();
     void                        sell_price(const fb::game::item::model* item);

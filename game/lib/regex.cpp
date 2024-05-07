@@ -154,12 +154,66 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
 
 bool fb::game::regex::match_deposit_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
 {
-    return false;
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::DEPOSIT_ITEM];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    try
+    {
+        auto all = what["all"].matched;
+        if(all)
+        {
+            count.reset();
+        }
+        else
+        {
+            count = std::stoul(what["count"].str());
+            if (count > 0XFFFF)
+                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+        }
+
+        item = fb::game::model::items.name2item(what["name"].str());
+    }
+    catch (std::out_of_range&)
+    {
+        item = nullptr;
+        count.reset();
+        return false;
+    }
+    return true;
 }
 
 bool fb::game::regex::match_withdraw_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
 {
-    return false;
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::WITHDRAW_ITEM];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    try
+    {
+        auto all = what["all"].matched;
+        if(all)
+        {
+            count.reset();
+        }
+        else
+        {
+            count = std::stoul(what["count"].str());
+            if (count > 0XFFFF)
+                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+        }
+
+        item = fb::game::model::items.name2item(what["name"].str());
+    }
+    catch (std::out_of_range&)
+    {
+        item = nullptr;
+        count.reset();
+        return false;
+    }
+    return true;
 }
 
 bool fb::game::regex::match_sell_list(const std::string& message)

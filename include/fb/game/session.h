@@ -102,7 +102,7 @@ private:
     std::optional<uint16_t>     _disguise        = 0;
     bool                        _options[0x0B+1] = {0,};
     uint32_t                    _deposited_money = 0;
-
+    std::vector<item*>          _deposited_items;
     std::string                 _title;
 
     fb::game::group*            _group           = nullptr;
@@ -243,8 +243,16 @@ public:
 
     uint32_t                    deposited_money() const;
     void                        deposited_money(uint32_t value);
-    uint32_t                    deposited_money_add(uint32_t value);
-    uint32_t                    deposited_money_reduce(uint32_t value);
+    uint32_t                    deposit_money(uint32_t value);
+    uint32_t                    withdraw_money(uint32_t value);
+
+    bool                        deposit_item(uint8_t index, uint16_t count);
+    bool                        deposit_item(const std::string& name, uint16_t count);
+    fb::game::item*             deposited_item(const fb::game::item::model& item);
+    const std::vector<item*>&   deposited_items() const;
+    fb::game::item*             withdraw_item(uint8_t index, uint16_t count);
+    fb::game::item*             withdraw_item(const std::string& name, uint16_t count);
+    fb::game::item*             withdraw_item(const fb::game::item::model& item, uint16_t count);
 
     uint32_t                    damage() const;
     void                        damage(uint8_t value);
@@ -278,19 +286,19 @@ public:
     void                        refresh_map();
 
 private:
-    bool                        sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
@@ -318,6 +326,9 @@ public:
     static int                  builtin_assert(lua_State* lua);
     static int                  builtin_admin(lua_State* lua);
     static int                  builtin_deposited_money(lua_State* lua);
+    static int                  builtin_deposited_item(lua_State* lua);
+    static int                  builtin_deposit_item(lua_State* lua);
+    static int                  builtin_withdraw_item(lua_State* lua);
 };
 
 

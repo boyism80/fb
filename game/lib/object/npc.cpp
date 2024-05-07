@@ -282,7 +282,7 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
             throw std::runtime_error("더 이상 맡길 수 없습니다.");
 
         session.money_reduce(money.value());
-        session.deposited_money_add(money.value());
+        session.deposit_money(money.value());
         this->chat(fb::format("금전 %d전을 맡았습니다.", money.value()));
 
         return true;
@@ -315,7 +315,7 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
         if (money.value() > capacity)
             throw std::runtime_error("소지금이 너무 많습니다.");
 
-        session.deposited_money_reduce(money.value());
+        session.withdraw_money(money.value());
         session.money_add(money.value());
         this->chat(fb::format("금전 %d전을 돌려드렸습니다.", money.value()));
 
@@ -328,13 +328,43 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
     }
 }
 
-bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
+bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count)
 {
     try
     {
         auto model = this->based<fb::game::npc>();
         if (model->hold_item == false)
             return false;
+
+        if (item == nullptr)
+            return true;
+
+        auto exists = session.items.find(*item);
+        if (exists == nullptr)
+            throw std::runtime_error("가지고 있지 않습니다.");
+
+        if (count.has_value() == false)
+            count = exists->count();
+
+        if (count.value() == 0)
+            return true;
+
+        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        {
+            if (count.value() > exists->count())
+                throw std::runtime_error("갯수가 모자랍니다.");
+        }
+        else
+        {
+            count = 1;
+        }
+
+        auto index = session.items.index(*exists);
+        session.deposit_item(index, count.value());
+        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+            this->chat(fb::format("%s %d개를 맡았습니다.", item->name.c_str(), count.value()));
+        else
+            this->chat(fb::format("%s 맡았습니다.", name_with(item->name).c_str()));
 
         return true;
     }
@@ -345,13 +375,49 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
     }
 }
 
-bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint32_t> count)
+bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count)
 {
     try
     {
         auto model = this->based<fb::game::npc>();
         if (model->hold_item == false)
             return false;
+
+        if (item == nullptr)
+            return true;
+
+        auto deposited_item = session.deposited_item(*item);
+        if (deposited_item == nullptr)
+            throw std::runtime_error("그런 물품은 맡아두고 있지 않습니다.");
+
+        if (count.has_value() == false)
+            count = deposited_item->count();
+
+        if (count.value() == 0)
+            return true;
+
+        if (count.value() > deposited_item->count())
+            throw std::runtime_error("그만큼 가지고 있지 않습니다.");
+
+        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        {
+            auto exists = session.items.find(*item);
+            if (exists != nullptr && exists->count() + count.value() > item->capacity)
+                throw std::runtime_error("더 이상 가질 수 없습니다.");
+        }
+        else
+        {
+            if(session.items.free() == false)
+                throw std::runtime_error("더 이상 가질 수 없습니다.");
+        }
+
+        if (session.withdraw_item(*item, count.value()) == nullptr)
+            throw std::runtime_error("알 수 없는 에러");
+
+        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+            this->chat(fb::format("%s %d개를 돌려드렸습니다.", item->name.c_str(), count.value()));
+        else
+            this->chat(fb::format("%s 돌려드렸습니다.", name_with(item->name).c_str()));
 
         return true;
     }

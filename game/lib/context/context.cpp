@@ -162,6 +162,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::session, "fb.game.session")
 {"group",               fb::game::session::builtin_group},
 {"assert",              fb::game::session::builtin_assert},
 {"deposited_money",     fb::game::session::builtin_deposited_money},
+{"deposited_item",      fb::game::session::builtin_deposited_item},
+{"deposit_item",        fb::game::session::builtin_deposit_item},
+{"withdraw_item",       fb::game::session::builtin_withdraw_item},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
@@ -970,7 +973,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
     try
     {
         auto id = request.id;
-        auto name = request.name;
+        auto name = std::string(request.name);
         auto from = request.from;
         auto transfer = request.transfer;
 

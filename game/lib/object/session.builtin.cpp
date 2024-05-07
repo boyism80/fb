@@ -627,3 +627,139 @@ int fb::game::session::builtin_deposited_money(lua_State* lua)
         return 0;
     }
 }
+
+int fb::game::session::builtin_deposited_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    if(session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    const auto& deposited_items = session->deposited_items();
+    if(argc == 1)
+    {
+        thread->new_table();
+        for (int i = 0; i < deposited_items.size(); i++)
+        {
+            thread->pushinteger(i + 1);
+            thread->pushobject(deposited_items.at(i));
+            lua_settable(lua, -3);
+        }
+    }
+    else if(argc >= 2)
+    {
+        try
+        {
+            if (thread->is_num(2))
+            {
+                auto index = thread->tointeger(2);
+                if (index > deposited_items.size() - 1)
+                    throw std::exception();
+
+                auto deposited_item = deposited_items.at(index);
+                thread->pushobject(deposited_item);
+            }
+            else if (thread->is_str(2))
+            {
+                auto name = thread->tostring(2);
+                auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [&name](auto& deposited_item)
+                {
+                    return deposited_item->based<fb::game::item>()->name == name;
+                });
+
+                if (found == deposited_items.cend())
+                    throw std::exception();
+
+                thread->pushobject(*found);
+            }
+            else if (thread->is_obj(2))
+            {
+                auto model = thread->touserdata<fb::game::item::model>(2);
+                auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [model](auto& deposited_item) 
+                {
+                    return deposited_item->based<fb::game::item>() == model;
+                });
+
+                if (found == deposited_items.cend())
+                    throw std::exception();
+
+                thread->pushobject(*found);
+            }
+            else
+            {
+                throw std::exception();
+            }
+        }
+        catch (std::exception&)
+        {
+            thread->pushnil();
+        }
+    }
+    else
+    {
+        thread->pushnil();
+    }
+
+    return 1;
+}
+
+int fb::game::session::builtin_deposit_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    if(session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto item = thread->touserdata<fb::game::item>(2);
+    auto count = argc >= 3 ? thread->tointeger(3) : 1;
+    auto index = session->items.index(*item);
+    if (index == 0xFF)
+    {
+        thread->pushboolean(false);
+    }
+    else
+    {
+        thread->pushboolean(session->deposit_item(index, count));
+    }
+
+    return 1;
+}
+
+int fb::game::session::builtin_withdraw_item(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto session = thread->touserdata<fb::game::session>(1);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
+
+    auto item = thread->touserdata<fb::game::item>(2);
+    auto count = argc >= 3 ? thread->tointeger(3) : 1;
+    auto& deposited_items = session->deposited_items();
+    auto found = std::find(deposited_items.cbegin(), deposited_items.cend(), item);
+    if (found == deposited_items.cend())
+    {
+        thread->pushboolean(false);
+    }
+    else
+    {
+        auto index = std::distance(deposited_items.cbegin(), found);
+        thread->pushboolean(session->withdraw_item(index, count));
+    }
+    
+    return 1;
+}

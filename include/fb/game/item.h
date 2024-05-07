@@ -109,7 +109,6 @@ public:
 public:
     const std::string&                      name() const override;
     uint16_t                                fill(uint16_t count);
-    uint16_t                                reduce(uint16_t count);
     uint16_t                                free_space() const;
     uint16_t                                count() const;
     void                                    count(uint16_t value);
@@ -715,7 +714,6 @@ public:
     uint8_t                             add(fb::game::item* item);
     std::vector<uint8_t>                add(const std::vector<fb::game::item*>& items);
     uint8_t                             add(fb::game::item& item, uint8_t index);
-    bool                                reduce(uint8_t index, uint16_t count);
     fb::game::item*                     active(uint8_t index);
     uint8_t                             inactive(equipment::slot slot);
     uint8_t                             index(const fb::game::item::model* item) const;
