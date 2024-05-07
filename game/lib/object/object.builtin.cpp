@@ -64,7 +64,7 @@ int fb::game::object::model::builtin_dialog(lua_State* lua)
     return ::builtin_dialog<object::model>(lua);
 }
 
-int fb::game::object::builtin_core(lua_State* lua)
+int fb::game::object::builtin_model(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
     if(thread == nullptr)

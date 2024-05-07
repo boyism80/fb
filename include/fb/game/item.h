@@ -341,17 +341,17 @@ public:
 class equipment : public item
 {
 public:
-    enum class slot : uint8_t
+    enum class parts : uint8_t
     {
-        UNKNOWN_SLOT                    = 0,
-        WEAPON_SLOT                     = 1,
-        ARMOR_SLOT                      = 2,
-        SHIELD_SLOT                     = 3,
-        HELMET_SLOT                     = 4,
-        LEFT_HAND_SLOT                  = 7,
-        RIGHT_HAND_SLOT                 = 8,
-        LEFT_AUX_SLOT                   = 20,
-        RIGHT_AUX_SLOT                  = 21,
+        UNKNOWN                    = 0,
+        WEAPON                     = 1,
+        ARMOR                      = 2,
+        SHIELD                     = 3,
+        HELMET                     = 4,
+        LEFT_HAND                  = 7,
+        RIGHT_HAND                 = 8,
+        LEFT_AUX                   = 20,
+        RIGHT_AUX                  = 21,
     };
 
     enum class position : uint8_t { LEFT = 0, RIGHT = 1, };
@@ -390,14 +390,14 @@ public:
     virtual std::string                 tip_message() const;
 
 public:
-    static const std::string            column(equipment::slot slot);
+    static const std::string            column(equipment::parts parts);
 };
 
 
 interface equipment::listener : public virtual fb::game::item::listener
 {
-    virtual void on_equipment_on(session& me, item& item, equipment::slot slot) = 0;
-    virtual void on_equipment_off(session& me, equipment::slot slot, uint8_t index) = 0;
+    virtual void on_equipment_on(session& me, item& item, equipment::parts parts) = 0;
+    virtual void on_equipment_off(session& me, equipment::parts parts, uint8_t index) = 0;
 };
 
 class equipment::model : public fb::game::item::model
@@ -707,7 +707,7 @@ public:
     ~items();
 
 private:
-    uint8_t                             equipment_off(fb::game::equipment::slot slot);
+    uint8_t                             equipment_off(fb::game::equipment::parts parts);
 
 public:
     uint8_t                             add(fb::game::item& item);
@@ -715,12 +715,12 @@ public:
     std::vector<uint8_t>                add(const std::vector<fb::game::item*>& items);
     uint8_t                             add(fb::game::item& item, uint8_t index);
     fb::game::item*                     active(uint8_t index);
-    uint8_t                             inactive(equipment::slot slot);
+    uint8_t                             inactive(equipment::parts parts);
     uint8_t                             index(const fb::game::item::model* item) const;
     uint8_t                             index(const fb::game::item& item) const;
     std::vector<uint8_t>                index_all(const fb::game::item::model* item) const;
 
-    fb::game::equipment*                wear(fb::game::equipment::slot slot, fb::game::equipment* item);
+    fb::game::equipment*                wear(fb::game::equipment::parts parts, fb::game::equipment* item);
 
     fb::game::weapon*                   weapon() const;
     fb::game::weapon*                   weapon(fb::game::weapon* weapon);
@@ -751,7 +751,7 @@ public:
     fb::game::item*                     remove(uint8_t index, uint16_t count = 1, item::DELETE_TYPE attr = item::DELETE_TYPE::NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, item::DELETE_TYPE attr = item::DELETE_TYPE::NONE);
 
-    std::map<equipment::slot, item*>    equipments() const;
+    std::map<equipment::parts, item*>   equipments() const;
     
     bool                                swap(uint8_t src, uint8_t dst) override;
 };

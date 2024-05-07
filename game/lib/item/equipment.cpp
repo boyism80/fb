@@ -57,37 +57,37 @@ const std::string fb::game::equipment::name_trade() const
 bool fb::game::equipment::active()
 {
     fb::game::item*         before = nullptr;
-    auto                    slot = equipment::slot::UNKNOWN_SLOT;
+    auto                    parts = equipment::parts::UNKNOWN;
     switch(this->attr())
     {
     case item::ATTRIBUTE::WEAPON:
         before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
-        slot = equipment::slot::WEAPON_SLOT;
+        parts = equipment::parts::WEAPON;
         break;
 
     case item::ATTRIBUTE::ARMOR:
         before = this->_owner->items.armor(static_cast<fb::game::armor*>(this));
-        slot = equipment::slot::ARMOR_SLOT;
+        parts = equipment::parts::ARMOR;
         break;
 
     case item::ATTRIBUTE::SHIELD:
         before = this->_owner->items.shield(static_cast<fb::game::shield*>(this));
-        slot = equipment::slot::SHIELD_SLOT;
+        parts = equipment::parts::SHIELD;
         break;
 
     case item::ATTRIBUTE::HELMET:
         before = this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
-        slot = equipment::slot::HELMET_SLOT;
+        parts = equipment::parts::HELMET;
         break;
 
     case item::ATTRIBUTE::RING:
         if(this->_owner->items.ring(equipment::position::LEFT) == nullptr)
         {
-            slot = equipment::slot::LEFT_HAND_SLOT;
+            parts = equipment::parts::LEFT_HAND;
         }
         else
         {
-            slot = equipment::slot::RIGHT_HAND_SLOT;
+            parts = equipment::parts::RIGHT_HAND;
         }
 
         before = this->_owner->items.ring(static_cast<fb::game::ring*>(this));
@@ -97,11 +97,11 @@ bool fb::game::equipment::active()
     case item::ATTRIBUTE::AUXILIARY:
         if(this->_owner->items.auxiliary(equipment::position::LEFT) == nullptr)
         {
-            slot = equipment::slot::LEFT_AUX_SLOT;
+            parts = equipment::parts::LEFT_AUX;
         }
         else
         {
-            slot = equipment::slot::RIGHT_AUX_SLOT;
+            parts = equipment::parts::RIGHT_AUX;
         }
 
         before = this->_owner->items.auxiliary(static_cast<fb::game::auxiliary*>(this));
@@ -118,7 +118,7 @@ bool fb::game::equipment::active()
     this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::session>();
-    listener->on_equipment_on(*this->_owner, *this, slot);
+    listener->on_equipment_on(*this->_owner, *this, parts);
 
     return true;
 }
@@ -183,35 +183,35 @@ std::string fb::game::equipment::tip_message() const
     return sstream.str();
 }
 
-const std::string equipment::column(equipment::slot slot)
+const std::string equipment::column(equipment::parts parts)
 {
-    switch(slot)
+    switch(parts)
     {
-    case fb::game::equipment::slot::WEAPON_SLOT:
+    case fb::game::equipment::parts::WEAPON:
         return "weapon";
 
-    case fb::game::equipment::slot::ARMOR_SLOT:
+    case fb::game::equipment::parts::ARMOR:
         return "armor";
 
-    case fb::game::equipment::slot::SHIELD_SLOT:
+    case fb::game::equipment::parts::SHIELD:
         return "shield";
 
-    case fb::game::equipment::slot::HELMET_SLOT:
+    case fb::game::equipment::parts::HELMET:
         return "helmet";
 
-    case fb::game::equipment::slot::LEFT_HAND_SLOT:
+    case fb::game::equipment::parts::LEFT_HAND:
         return "ring_left";
 
-    case fb::game::equipment::slot::RIGHT_HAND_SLOT:
+    case fb::game::equipment::parts::RIGHT_HAND:
         return "ring_right";
 
-    case fb::game::equipment::slot::LEFT_AUX_SLOT:
+    case fb::game::equipment::parts::LEFT_AUX:
         return "aux_top";
 
-    case fb::game::equipment::slot::RIGHT_AUX_SLOT:
+    case fb::game::equipment::parts::RIGHT_AUX:
         return "aux_bot";
 
     default:
-        throw std::runtime_error("invalid equipment slot");
+        throw std::runtime_error("invalid equipment parts");
     }
 }

@@ -76,7 +76,7 @@ END_LUA_EXTENSION
 
 
 IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
-{"core",                fb::game::object::builtin_core},
+{"model",               fb::game::object::builtin_model},
 {"__eq",                fb::game::object::builtin_eq},
 {"__tostring",          fb::game::object::builtin_tostring},
 {"id",                  fb::game::object::builtin_id},
@@ -636,13 +636,19 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
 
 void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::session& session)
 {
-    db_result.each([this, &session] (uint32_t owner, uint32_t index, uint32_t slot, std::optional<uint32_t> model, std::optional<uint32_t> count, std::optional<uint32_t> durability, std::optional<std::string> custom_name)
+    db_result.each([this, &session] (uint32_t owner,
+                                     uint32_t index,
+                                     uint32_t parts,
+                                     uint32_t deposited,
+                                     std::optional<uint32_t> model,
+                                     std::optional<uint32_t> count,
+                                     std::optional<uint32_t> durability,
+                                     std::optional<std::string> custom_name)
     {
         if(model.has_value() == false)
             return true;
 
-        auto& items = fb::game::model::items;
-        auto  item = items[model.value()]->make(*this);
+        auto item = fb::game::model::items[model.value()]->make(*this);
         if(item == nullptr)
             return true;
 
@@ -653,10 +659,12 @@ void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::se
         if (custom_name.has_value() && item->attr(fb::game::item::ATTRIBUTE::WEAPON))
             static_cast<fb::game::weapon*>(item)->custom_name(custom_name.value());
 
-        if(slot == static_cast<uint32_t>(fb::game::equipment::slot::UNKNOWN_SLOT))
+        if(deposited != -1)
+            session.deposit_item(*item);
+        else if(parts == static_cast<uint32_t>(fb::game::equipment::parts::UNKNOWN))
             session.items.add(*item, index);
         else
-            session.items.wear((fb::game::equipment::slot)slot, static_cast<fb::game::equipment*>(item));
+            session.items.wear((fb::game::equipment::parts)parts, static_cast<fb::game::equipment*>(item));
 
         return true;
     });
@@ -1169,7 +1177,7 @@ fb::task<bool> fb::game::context::handle_inactive_item(fb::socket<fb::game::sess
     if (session->inited() == false)
         co_return true;
 
-    session->items.inactive(request.slot);
+    session->items.inactive(request.parts);
     co_return true;
 }
 

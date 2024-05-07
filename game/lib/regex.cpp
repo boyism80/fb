@@ -161,16 +161,19 @@ bool fb::game::regex::match_deposit_item_message(const std::string& message, fb:
 
     try
     {
-        auto all = what["all"].matched;
-        if(all)
+        if(what["all"].matched)
         {
             count.reset();
         }
-        else
+        else if (what["count"].matched)
         {
             count = std::stoul(what["count"].str());
             if (count > 0XFFFF)
                 throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+        }
+        else
+        {
+            count = 1;
         }
 
         item = fb::game::model::items.name2item(what["name"].str());
@@ -193,16 +196,19 @@ bool fb::game::regex::match_withdraw_item_message(const std::string& message, fb
 
     try
     {
-        auto all = what["all"].matched;
-        if(all)
+        if (what["all"].matched)
         {
             count.reset();
         }
-        else
+        else if (what["count"].matched)
         {
             count = std::stoul(what["count"].str());
             if (count > 0XFFFF)
                 throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+        }
+        else
+        {
+            count = 1;
         }
 
         item = fb::game::model::items.name2item(what["name"].str());

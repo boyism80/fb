@@ -166,7 +166,7 @@ public:
     bool                                operator != (const object& right) const;
 
 public:
-    static int                          builtin_core(lua_State* lua);
+    static int                          builtin_model(lua_State* lua);
     static int                          builtin_id(lua_State* lua);
     static int                          builtin_eq(lua_State* lua);
     static int                          builtin_tostring(lua_State* lua);

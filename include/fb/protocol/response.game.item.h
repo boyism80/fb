@@ -60,11 +60,11 @@ class update_slot : public fb::protocol::base::header
 {
 public:
     const fb::game::session&            me;
-    const fb::game::equipment::slot     slot;
+    const fb::game::equipment::parts    parts;
 
 public:
-    update_slot(const fb::game::session& me, fb::game::equipment::slot slot) : fb::protocol::base::header(0x37),
-        me(me), slot(slot)
+    update_slot(const fb::game::session& me, fb::game::equipment::parts parts) : fb::protocol::base::header(0x37),
+        me(me), parts(parts)
     { }
 
 public:
@@ -72,37 +72,37 @@ public:
     {
         fb::game::item*         item;
 
-        switch(slot)
+        switch(parts)
         {
-        case equipment::slot::WEAPON_SLOT:
+        case equipment::parts::WEAPON:
             item = this->me.items.weapon();
             break;
 
-        case equipment::slot::ARMOR_SLOT:
+        case equipment::parts::ARMOR:
             item = this->me.items.armor();
             break;
 
-        case equipment::slot::SHIELD_SLOT:
+        case equipment::parts::SHIELD:
             item = this->me.items.shield();
             break;
 
-        case equipment::slot::HELMET_SLOT:
+        case equipment::parts::HELMET:
             item = this->me.items.helmet();
             break;
 
-        case equipment::slot::LEFT_HAND_SLOT:
+        case equipment::parts::LEFT_HAND:
             item = this->me.items.ring(equipment::position::LEFT);
             break;
 
-        case equipment::slot::RIGHT_HAND_SLOT:
+        case equipment::parts::RIGHT_HAND:
             item = this->me.items.ring(equipment::position::RIGHT);
             break;
 
-        case equipment::slot::LEFT_AUX_SLOT:
+        case equipment::parts::LEFT_AUX:
             item = this->me.items.auxiliary(equipment::position::LEFT);
             break;
 
-        case equipment::slot::RIGHT_AUX_SLOT:
+        case equipment::parts::RIGHT_AUX:
             item = this->me.items.auxiliary(equipment::position::RIGHT);
             break;
 
@@ -144,18 +144,18 @@ public:
 class unequip : public fb::protocol::base::header
 {
 public:
-    const equipment::slot   slot;
+    const equipment::parts  parts;
 
 public:
-    unequip(equipment::slot slot) : fb::protocol::base::header(0x38),
-        slot(slot)
+    unequip(equipment::parts parts) : fb::protocol::base::header(0x38),
+        parts(parts)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u8(this->slot)
+        out_stream.write_u8(this->parts)
                   .write_u8(0x00);
     }
 };

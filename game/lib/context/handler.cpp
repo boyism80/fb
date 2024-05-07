@@ -179,43 +179,43 @@ void fb::game::context::on_notify(session& me, const std::string& message, fb::g
     this->send(me, fb::protocol::game::response::message(message, type), scope::SELF);
 }
 
-void fb::game::context::on_equipment_on(session& me, item& item, equipment::slot slot)
+void fb::game::context::on_equipment_on(session& me, item& item, equipment::parts parts)
 {
-    this->send(me, fb::protocol::game::response::item::update_slot(me, slot), scope::SELF);
+    this->send(me, fb::protocol::game::response::item::update_slot(me, parts), scope::SELF);
     this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_ON), scope::PIVOT);
 
     std::stringstream sstream;
-    switch(slot)
+    switch(parts)
     {
-    case fb::game::equipment::slot::WEAPON_SLOT:
+    case fb::game::equipment::parts::WEAPON:
         sstream << "w:무기  :";
         break;
 
-    case fb::game::equipment::slot::ARMOR_SLOT:
+    case fb::game::equipment::parts::ARMOR:
         sstream << "a:갑옷  :";
         break;
 
-    case fb::game::equipment::slot::SHIELD_SLOT:
+    case fb::game::equipment::parts::SHIELD:
         sstream << "s:방패  :";
         break;
 
-    case fb::game::equipment::slot::HELMET_SLOT:
+    case fb::game::equipment::parts::HELMET:
         sstream << "h:머리  :";
         break;
 
-    case fb::game::equipment::slot::LEFT_HAND_SLOT:
+    case fb::game::equipment::parts::LEFT_HAND:
         sstream << "l:왼손  :";
         break;
 
-    case fb::game::equipment::slot::RIGHT_HAND_SLOT:
+    case fb::game::equipment::parts::RIGHT_HAND:
         sstream << "r:오른손  :";
         break;
 
-    case fb::game::equipment::slot::LEFT_AUX_SLOT:
+    case fb::game::equipment::parts::LEFT_AUX:
         sstream << "[:보조1  :";
         break;
 
-    case fb::game::equipment::slot::RIGHT_AUX_SLOT:
+    case fb::game::equipment::parts::RIGHT_AUX:
         sstream << "]:보조2  :";
         break;
     }
@@ -228,7 +228,7 @@ void fb::game::context::on_equipment_on(session& me, item& item, equipment::slot
     this->send(me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
-void fb::game::context::on_equipment_off(session& me, equipment::slot slot, uint8_t index)
+void fb::game::context::on_equipment_off(session& me, equipment::parts parts, uint8_t index)
 {
     this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_OFF), scope::PIVOT);
 }

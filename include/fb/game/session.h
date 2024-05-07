@@ -246,6 +246,7 @@ public:
     uint32_t                    deposit_money(uint32_t value);
     uint32_t                    withdraw_money(uint32_t value);
 
+    bool                        deposit_item(fb::game::item& item);
     bool                        deposit_item(uint8_t index, uint16_t count);
     bool                        deposit_item(const std::string& name, uint16_t count);
     fb::game::item*             deposited_item(const fb::game::item::model& item);

@@ -807,6 +807,38 @@ uint32_t fb::game::session::withdraw_money(uint32_t value)
     return lack;
 }
 
+bool fb::game::session::deposit_item(fb::game::item& item)
+{
+    if (item.attr(fb::game::item::ATTRIBUTE::BUNDLE))
+    {
+        auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto& deposited_item)
+            {
+                auto model = deposited_item->based<fb::game::item>();
+                return item.based<fb::game::item>() == model;
+            });
+
+        if (found == this->_deposited_items.end())
+        {
+            this->_deposited_items.push_back(&item);
+        }
+        else
+        {
+            auto deposited_item = *found;
+            auto capacity = 0xFFFF - deposited_item->count();
+            if(item.count() > capacity)
+                return false;
+            
+            deposited_item->count(deposited_item->count() + item.count());
+        }
+    }
+    else
+    {
+        this->_deposited_items.push_back(&item);
+    }
+    
+    return true;
+}
+
 bool fb::game::session::deposit_item(uint8_t index, uint16_t count)
 {
     auto item = this->items.at(index);
@@ -817,34 +849,11 @@ bool fb::game::session::deposit_item(uint8_t index, uint16_t count)
         return false;
 
     auto deleted = this->items.remove(*item, count);
-    if (deleted->attr(fb::game::item::ATTRIBUTE::BUNDLE))
-    {
-        auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [item](auto& deposited_item)
-            {
-                auto model = deposited_item->based<fb::game::item>();
-                return item->based<fb::game::item>() == model;
-            });
-
-        if (found == this->_deposited_items.end())
-        {
-            this->_deposited_items.push_back(deleted);
-        }
-        else
-        {
-            auto exist = *found;
-            auto capacity = 0xFFFF - count;
-            if(count > capacity)
-                return false;
-            
-            exist->count(exist->count() + deleted->count());
-        }
-    }
-    else
-    {
-        this->_deposited_items.push_back(deleted);
-    }
+    auto result = this->deposit_item(*deleted);
+    if(result == false)
+        this->items.add(deleted);
     
-    return true;
+    return result;
 }
 
 bool fb::game::session::deposit_item(const std::string& name, uint16_t count)

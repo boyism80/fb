@@ -288,10 +288,8 @@ function hold_item(me, npc)
     local items = {}
     local my_items = me:items()
     for slot, item in pairs(my_items) do
-        local model = item:model()
-        local name = model:name()
         table.insert(slots, slot)
-        items[slot] = model
+        items[slot] = item
     end
 
     local slot = npc:slot(me, '무엇을 맡기시겠습니까?', slots)
@@ -325,9 +323,9 @@ function hold_item(me, npc)
 
     me:deposit_item(item, count)
     if model:attr(ITEM_ATTR_BUNDLE) then
-        return npc:chat(string.format('%s %d개를 맡았습니다.', model:name(), count))
+        return npc:dialog(me, string.format('%s %d개를 맡았습니다.', model:name(), count), false, true)
     else
-        return npc:chat(string.format('%s 맡았습니다.', name_with(model:name()), count))
+        return npc:dialog(me, string.format('%s 맡았습니다.', name_with(model:name()), count), false, true)
     end
 end
 
@@ -382,7 +380,7 @@ function return_item(me, npc)
     local deposited_item = me:deposited_item(selected)
     local model = deposited_item:model()
     local count = 1
-    if deposited_item.attr(ITEM_ATTR_BUNDLE) then
+    if model:attr(ITEM_ATTR_BUNDLE) then
         count = npc:input(me, '얼마나 돌려드릴까요?')
         if count == nil then
             return DIALOG_RESULT_NEXT
@@ -405,9 +403,9 @@ function return_item(me, npc)
     
     me:withdraw_item(deposited_item, count)
     if model:attr(ITEM_ATTR_BUNDLE) then
-        return npc:chat(string.format('%s %d개를 돌려드렸습니다.', model:name(), count))
+        return npc:dialog(me, string.format('%s %d개를 돌려드렸습니다.', model:name(), count), false, true)
     else
-        return npc:chat(string.format('%s 돌려드렸습니다.', name_with(model:name()), count))
+        return npc:dialog(me, string.format('%s 돌려드렸습니다.', name_with(model:name()), count), false, true)
     end
 end
 

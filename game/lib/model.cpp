@@ -205,8 +205,7 @@ fb::game::map::OPTION container::map::to_option(const Json::Value& data)
 
 bool container::map::load_data(uint16_t id, std::vector<char>& buffer)
 {
-    char                    fname[256];
-    sprintf(fname, "maps/%06d.map", id);
+    auto                    fname = fb::format("maps/%06d.map", id);
 
     std::ifstream           map_file(fname, std::ios::binary);
     if(map_file.is_open() == false)
@@ -220,10 +219,7 @@ bool container::map::load_data(uint16_t id, std::vector<char>& buffer)
 
 bool container::map::load_blocks(uint16_t id, Json::Value& buffer)
 {
-    char                    fname[256];
-    sprintf(fname, "maps/%06d.block", id);
-
-
+    auto                    fname = fb::format("maps/%06d.block", id);
     std::ifstream           file(fname);
     if(file.is_open() == false)
         return false;
@@ -857,10 +853,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
             auto                name        = CP949(key.asString(), PLATFORM::Windows);
             auto                core        = fb::game::model::mobs.name2mob(name);
             if (core == nullptr)
-            {
-                sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str());
-                throw std::runtime_error(buffer);
-            }
+                throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str()));
 
             for(auto& x : data)
             {
@@ -869,10 +862,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
                 auto        item_core       = fb::game::model::items.name2item(item_name);
 
                 if (item_core == nullptr)
-                {
-                    sprintf(buffer, "%s (%s)", fb::game::message::assets::INVALID_ITEM_NAME, item_name.c_str());
-                    throw std::runtime_error(buffer);
-                }
+                    throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_ITEM_NAME, item_name.c_str()));
 
                 {
                     auto _ = std::lock_guard(*mutex);

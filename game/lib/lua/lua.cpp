@@ -436,24 +436,24 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, fb::game::equipment::position::RIGHT);
     lua_setglobal(*this, "POSITION_RIGHT");
 
-    lua_pushinteger(*this, fb::game::equipment::slot::UNKNOWN_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_UNKNOWN");
-    lua_pushinteger(*this, fb::game::equipment::slot::WEAPON_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_WEAPON");
-    lua_pushinteger(*this, fb::game::equipment::slot::ARMOR_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_ARMOR");
-    lua_pushinteger(*this, fb::game::equipment::slot::SHIELD_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_SHIELD");
-    lua_pushinteger(*this, fb::game::equipment::slot::HELMET_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_HELMET");
-    lua_pushinteger(*this, fb::game::equipment::slot::LEFT_HAND_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_LEFT_HAND");
-    lua_pushinteger(*this, fb::game::equipment::slot::RIGHT_HAND_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_RIGHT_HAND");
-    lua_pushinteger(*this, fb::game::equipment::slot::LEFT_AUX_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_LEFT_AUX");
-    lua_pushinteger(*this, fb::game::equipment::slot::RIGHT_AUX_SLOT);
-    lua_setglobal(*this, "ITEM_SLOT_RIGHT_AUX");
+    lua_pushinteger(*this, fb::game::equipment::parts::UNKNOWN);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_UNKNOWN");
+    lua_pushinteger(*this, fb::game::equipment::parts::WEAPON);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_WEAPON");
+    lua_pushinteger(*this, fb::game::equipment::parts::ARMOR);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_ARMOR");
+    lua_pushinteger(*this, fb::game::equipment::parts::SHIELD);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_SHIELD");
+    lua_pushinteger(*this, fb::game::equipment::parts::HELMET);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_HELMET");
+    lua_pushinteger(*this, fb::game::equipment::parts::LEFT_HAND);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_LEFT_HAND");
+    lua_pushinteger(*this, fb::game::equipment::parts::RIGHT_HAND);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_HAND");
+    lua_pushinteger(*this, fb::game::equipment::parts::LEFT_AUX);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_LEFT_AUX");
+    lua_pushinteger(*this, fb::game::equipment::parts::RIGHT_AUX);
+    lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_AUX");
 
 
     lua_pushinteger(*this, fb::game::weapon::types::NORMAL);

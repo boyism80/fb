@@ -74,13 +74,14 @@ DROP TABLE IF EXISTS `item`;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `item` (
   `owner` int(10) unsigned NOT NULL,
-  `index` smallint(6) NOT NULL,
-  `slot` smallint(6) NOT NULL,
+  `index` smallint(6) NOT NULL DEFAULT '-1',
+  `parts` smallint(6) NOT NULL DEFAULT '0',
+  `deposited` smallint(6) NOT NULL DEFAULT '-1',
   `model` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` smallint(5) unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
-  PRIMARY KEY (`owner`,`index`,`slot`),
+  PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -477,4 +478,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-03 14:16:35
+-- Dump completed on 2024-05-07 23:50:23

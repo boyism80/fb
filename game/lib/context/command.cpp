@@ -417,7 +417,7 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
         equipments.push_back(equipment);
     }
 
-    for (auto& [slot, item] : session.items.equipments())
+    for (auto& [parts, item] : session.items.equipments())
     {
         if (item == nullptr)
             continue;

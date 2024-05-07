@@ -10,7 +10,7 @@ fb::game::items::items(session& owner) :
 fb::game::items::~items()
 { }
 
-uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
+uint8_t fb::game::items::equipment_off(fb::game::equipment::parts parts)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -20,52 +20,52 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
             throw std::runtime_error(message::exception::INVENTORY_OVERFLOW);
 
         fb::game::item* item = nullptr;
-        switch (slot)
+        switch (parts)
         {
-        case fb::game::equipment::slot::WEAPON_SLOT:
+        case fb::game::equipment::parts::WEAPON:
             item = this->_weapon;
             if (this->_weapon != nullptr)
                 this->_weapon = nullptr;
 
             break;
 
-        case fb::game::equipment::slot::ARMOR_SLOT:
+        case fb::game::equipment::parts::ARMOR:
             item = this->_armor;
             if (this->_armor != nullptr)
                 this->_armor = nullptr;
             break;
 
-        case fb::game::equipment::slot::SHIELD_SLOT:
+        case fb::game::equipment::parts::SHIELD:
             item = this->_shield;
             if (this->_shield != nullptr)
                 this->_shield = nullptr;
             break;
 
-        case fb::game::equipment::slot::HELMET_SLOT:
+        case fb::game::equipment::parts::HELMET:
             item = this->_helmet;
             if (this->_helmet != nullptr)
                 this->_helmet = nullptr;
             break;
 
-        case fb::game::equipment::slot::LEFT_HAND_SLOT:
+        case fb::game::equipment::parts::LEFT_HAND:
             item = this->_rings[0];
             if (this->_rings[0] != nullptr)
                 this->_rings[0] = nullptr;
             break;
 
-        case fb::game::equipment::slot::RIGHT_HAND_SLOT:
+        case fb::game::equipment::parts::RIGHT_HAND:
             item = this->_rings[1];
             if (this->_rings[1] != nullptr)
                 this->_rings[1] = nullptr;
             break;
 
-        case fb::game::equipment::slot::LEFT_AUX_SLOT:
+        case fb::game::equipment::parts::LEFT_AUX:
             item = this->_auxiliaries[0];
             if (this->_auxiliaries[0] != nullptr)
                 this->_auxiliaries[0] = nullptr;
             break;
 
-        case fb::game::equipment::slot::RIGHT_AUX_SLOT:
+        case fb::game::equipment::parts::RIGHT_AUX:
             item = this->_auxiliaries[1];
             if (this->_auxiliaries[1] != nullptr)
                 this->_auxiliaries[1] = nullptr;
@@ -78,7 +78,7 @@ uint8_t fb::game::items::equipment_off(fb::game::equipment::slot slot)
         auto index = this->add(item);
         listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
         listener->on_show(this->_owner, false);
-        listener->on_equipment_off(this->_owner, slot, index);
+        listener->on_equipment_off(this->_owner, parts, index);
         
         return index;
     }
@@ -196,9 +196,9 @@ fb::game::item* fb::game::items::active(uint8_t index)
     }
 }
 
-uint8_t fb::game::items::inactive(equipment::slot slot)
+uint8_t fb::game::items::inactive(equipment::parts parts)
 {
-    return this->equipment_off(slot);
+    return this->equipment_off(parts);
 }
 
 uint8_t fb::game::items::index(const fb::game::item::model* item) const
@@ -246,37 +246,37 @@ std::vector<uint8_t> fb::game::items::index_all(const fb::game::item::model* ite
     return result;
 }
 
-fb::game::equipment* fb::game::items::wear(fb::game::equipment::slot slot, fb::game::equipment* item)
+fb::game::equipment* fb::game::items::wear(fb::game::equipment::parts parts, fb::game::equipment* item)
 {
-    switch(slot) // equipment::slot
+    switch(parts) // equipment::parts
     {
-    case equipment::slot::WEAPON_SLOT:
+    case equipment::parts::WEAPON:
         return this->_owner.items.weapon(static_cast<fb::game::weapon*>(item));
 
-    case equipment::slot::ARMOR_SLOT:
+    case equipment::parts::ARMOR:
         return this->_owner.items.armor(static_cast<fb::game::armor*>(item));
 
-    case equipment::slot::SHIELD_SLOT:
+    case equipment::parts::SHIELD:
         return this->_owner.items.shield(static_cast<fb::game::shield*>(item));
 
-    case equipment::slot::HELMET_SLOT:
+    case equipment::parts::HELMET:
         return this->_owner.items.helmet(static_cast<fb::game::helmet*>(item));
 
-    case equipment::slot::LEFT_HAND_SLOT:
+    case equipment::parts::LEFT_HAND:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::LEFT);
         break;
 
-    case equipment::slot::RIGHT_HAND_SLOT:
+    case equipment::parts::RIGHT_HAND:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::RIGHT);
 
-    case equipment::slot::LEFT_AUX_SLOT:
+    case equipment::parts::LEFT_AUX:
         return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::LEFT);
 
-    case equipment::slot::RIGHT_AUX_SLOT:
+    case equipment::parts::RIGHT_AUX:
         return this->_owner.items.auxiliary(static_cast<fb::game::auxiliary*>(item), equipment::position::RIGHT);
 
     default:
-        throw std::runtime_error("invalid equipment slot");
+        throw std::runtime_error("invalid equipment parts");
     }
 }
 
@@ -451,8 +451,11 @@ fb::game::item* fb::game::items::find(const fb::game::item::model& base) const
             return item;
     }
 
-    for (auto& [slot, equipment] : this->equipments())
+    for (auto& [parts, equipment] : this->equipments())
     {
+        if (equipment == nullptr)
+            continue;
+
         if (equipment->based<fb::game::item>() == &base)
             return equipment;
     }
@@ -647,17 +650,17 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-std::map<fb::game::equipment::slot, fb::game::item*> fb::game::items::equipments() const
+std::map<fb::game::equipment::parts, fb::game::item*> fb::game::items::equipments() const
 {
-    return std::map<equipment::slot, item*>
+    return std::map<equipment::parts, item*>
     {
-        {equipment::slot::WEAPON_SLOT,      _weapon},
-        {equipment::slot::ARMOR_SLOT,       _armor},
-        {equipment::slot::SHIELD_SLOT,      _shield},
-        {equipment::slot::HELMET_SLOT,      _helmet},
-        {equipment::slot::LEFT_HAND_SLOT,   _rings[static_cast<int>(equipment::position::LEFT)]},
-        {equipment::slot::RIGHT_HAND_SLOT,  _rings[static_cast<int>(equipment::position::RIGHT)]},
-        {equipment::slot::LEFT_AUX_SLOT,    _auxiliaries[static_cast<int>(equipment::position::LEFT)]},
-        {equipment::slot::RIGHT_AUX_SLOT,   _auxiliaries[static_cast<int>(equipment::position::RIGHT)]}
+        {equipment::parts::WEAPON,      _weapon},
+        {equipment::parts::ARMOR,       _armor},
+        {equipment::parts::SHIELD,      _shield},
+        {equipment::parts::HELMET,      _helmet},
+        {equipment::parts::LEFT_HAND,   _rings[static_cast<int>(equipment::position::LEFT)]},
+        {equipment::parts::RIGHT_HAND,  _rings[static_cast<int>(equipment::position::RIGHT)]},
+        {equipment::parts::LEFT_AUX,    _auxiliaries[static_cast<int>(equipment::position::LEFT)]},
+        {equipment::parts::RIGHT_AUX,   _auxiliaries[static_cast<int>(equipment::position::RIGHT)]}
     };
 }

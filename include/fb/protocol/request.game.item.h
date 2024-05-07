@@ -28,7 +28,7 @@ public:
 class inactive : public fb::protocol::base::header
 {
 public:
-    equipment::slot         slot;
+    equipment::parts        parts;
 
 public:
     inactive() : fb::protocol::base::header(0x1F)
@@ -37,7 +37,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->slot = equipment::slot(in_stream.read_u8());
+        this->parts = equipment::parts(in_stream.read_u8());
     }
 };
 
