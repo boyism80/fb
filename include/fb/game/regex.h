@@ -21,6 +21,8 @@ bool                match_sell_price(const std::string& message, fb::game::item:
 bool                match_buy_price(const std::string& message, fb::game::item::model*& item);
 bool                match_deposited_money(const std::string& message);
 bool                match_rename_weapon(const std::string& message, fb::game::item::model*& item, std::string& name);
+bool                match_hold_item_list(const std::string& message);
+bool                match_hold_item_count(const std::string& message, fb::game::item::model*& item);
 
 } } }
 

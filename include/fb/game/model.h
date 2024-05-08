@@ -281,6 +281,8 @@ public:
         BUY_PRICE = 10,
         DEPOSITED_MONEY = 11,
         RENAME_WEAPON = 12,
+        HOLD_ITEM_LIST = 13,
+        HOLD_ITEM_COUNT = 14
     };
 
 private:

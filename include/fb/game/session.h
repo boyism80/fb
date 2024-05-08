@@ -249,7 +249,7 @@ public:
     bool                        deposit_item(fb::game::item& item);
     bool                        deposit_item(uint8_t index, uint16_t count);
     bool                        deposit_item(const std::string& name, uint16_t count);
-    fb::game::item*             deposited_item(const fb::game::item::model& item);
+    fb::game::item*             deposited_item(const fb::game::item::model& item) const;
     const std::vector<item*>&   deposited_items() const;
     fb::game::item*             withdraw_item(uint8_t index, uint16_t count);
     fb::game::item*             withdraw_item(const std::string& name, uint16_t count);
@@ -300,6 +300,8 @@ private:
     bool                        inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
     bool                        inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool                        inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);

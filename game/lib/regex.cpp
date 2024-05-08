@@ -285,3 +285,34 @@ bool fb::game::regex::match_rename_weapon(const std::string& message, fb::game::
     name = what["name"].str();
     return true;
 }
+
+bool fb::game::regex::match_hold_item_list(const std::string& message)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::HOLD_ITEM_LIST];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    return true;
+}
+
+bool fb::game::regex::match_hold_item_count(const std::string& message, fb::game::item::model*& item)
+{
+    auto& regex = fb::game::model::regex[fb::game::container::regex::TYPE::HOLD_ITEM_COUNT];
+    auto what = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    try
+    {
+        auto name = what["name"].str();
+        item = fb::game::model::items.name2item(what["name"].str());
+    }
+    catch (std::out_of_range&)
+    {
+        item = nullptr;
+        return false;
+    }
+
+    return true;
+}

@@ -559,7 +559,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::it
             throw std::runtime_error("그게 뭐야?");
 
         if(item->attr(fb::game::item::ATTRIBUTE::WEAPON) == false)
-            throw std::runtime_error(fb::format("%s 무기가 아닙니다.", name_with(item->name).c_str()));
+            throw std::runtime_error(fb::format("%s 무기가 아닙니다.", name_with(item->name, {"은", "는"}).c_str()));
 
         auto weapon = session.items.find(*item);
         if (weapon == nullptr)
@@ -586,6 +586,73 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::it
         static_cast<fb::game::weapon*>(weapon)->custom_name(name);
         session.money_reduce(weapon_model->rename.value());
         this->chat(fb::format("%s의 이름을 %s로 변경했습니다.", item->name.c_str(), name_with(name, { "으", "" }).c_str()));
+    }
+    catch(std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool fb::game::npc::hold_item_list(const fb::game::session& session)
+{
+    auto model = this->based<fb::game::npc>();
+    if (model->hold_item == false)
+        return false;
+
+    try
+    {
+        auto& deposited_items = session.deposited_items();
+        if(deposited_items.size() == 0)
+            throw std::runtime_error("맡긴 물건이 없습니다.");
+
+        auto overflow = 0;
+        auto items = std::vector<std::string>();
+        for (auto& item : deposited_items)
+        {
+            if (items.size() >= 3)
+                overflow++;
+            else
+                items.push_back(item->based<fb::game::item>()->name);
+        }
+
+        auto sstream = std::stringstream();
+        auto names = boost::algorithm::join(items, ", ");
+        if (overflow > 0)
+            sstream << names << fb::format(" 외 %d개를", overflow);
+        else
+            sstream << name_with(names);
+
+        sstream << " 맡고 있습니다.";
+        this->chat(sstream.str());
+    }
+    catch(std::runtime_error& e)
+    {
+        this->chat(e.what());
+        return false;
+    }
+
+    return true;
+}
+
+bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::game::item::model* item)
+{
+    auto model = this->based<fb::game::npc>();
+    if (model->hold_item == false)
+        return false;
+
+    try
+    {
+        if(item == nullptr)
+            return true;
+
+        auto deposited_item = session.deposited_item(*item);
+        if(deposited_item == nullptr)
+            throw std::runtime_error("그런 물건은 맡고 있지 않습니다.");
+
+        this->chat(fb::format("%s %d개 맡고 있습니다.", name_with(item->name).c_str(), deposited_item->count()));
     }
     catch(std::runtime_error& e)
     {

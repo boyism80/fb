@@ -39,6 +39,8 @@ public:
     void                        buy_price(const fb::game::item::model* item);
     bool                        deposited_money(const fb::game::session& session);
     bool                        rename_weapon(fb::game::session& session, const fb::game::item::model* item, const std::string& name);
+    bool                        hold_item_list(const fb::game::session& session);
+    bool                        hold_item_count(const fb::game::session& session, const fb::game::item::model* item);
 
 public:
     static int                  builtin_input(lua_State* lua);

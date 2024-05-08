@@ -22,6 +22,8 @@ session::session(fb::socket<fb::game::session>& socket, fb::game::context& conte
     inline_interaction_funcs.push_back(std::bind(&session::inline_buy_price,               this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::inline_show_deposited_money,    this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::inline_rename_weapon,           this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::inline_hold_item_list,          this, std::placeholders::_1, std::placeholders::_2));
+    inline_interaction_funcs.push_back(std::bind(&session::inline_hold_item_count,         this, std::placeholders::_1, std::placeholders::_2));
 }
 
 session::~session()
@@ -899,14 +901,14 @@ bool fb::game::session::deposit_item(const std::string& name, uint16_t count)
     return this->deposit_item(index, count);
 }
 
-fb::game::item* fb::game::session::deposited_item(const fb::game::item::model& item)
+fb::game::item* fb::game::session::deposited_item(const fb::game::item::model& item) const
 {
-    auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto& deposited_item)
+    auto found = std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](auto& deposited_item)
     {
         return deposited_item->based<fb::game::item>() == &item;
     });
 
-    if(found == this->_deposited_items.end())
+    if(found == this->_deposited_items.cend())
         return nullptr;
 
     return *found;
@@ -1403,6 +1405,35 @@ bool fb::game::session::inline_rename_weapon(const std::string& message, const s
     for (auto npc : npcs)
     {
         if(npc->rename_weapon(*this, item, name))
+            return true;
+    }
+
+    return false;
+}
+
+bool fb::game::session::inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    if (fb::game::regex::match_hold_item_list(message) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        if(npc->hold_item_list(*this))
+            return true;
+    }
+
+    return false;
+}
+
+bool fb::game::session::inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    auto item = static_cast<fb::game::item::model*>(nullptr);
+    if (fb::game::regex::match_hold_item_count(message, item) == false)
+        return false;
+
+    for (auto npc : npcs)
+    {
+        if(npc->hold_item_count(*this, item))
             return true;
     }
 
