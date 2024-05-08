@@ -17,7 +17,7 @@ function buy(me, npc, pursuit)
         local name = model:name()
         if purchase_list[model:name()] ~= nil then
             table.insert(slots, slot)
-            items[slot] = model
+            items[slot] = item
         end
     end
 
@@ -28,9 +28,10 @@ function buy(me, npc, pursuit)
     end
 
     local item = items[slot]
+    local model = item:model()
     local price = purchase_list[item:name()]
     local count = 1
-    if item:attr(ITEM_ATTR_BUNDLE) then
+    if model:attr(ITEM_ATTR_BUNDLE) then
         count = npc:input(me, '몇개나 파시겠어요?')
         if count == nil then
             goto ROUTINE0000
@@ -40,14 +41,18 @@ function buy(me, npc, pursuit)
         if count == nil or count <= 0 then
             return npc:dialog(me, '갯수가 올바르지 않습니다.', false, true)
         end
+
+        if count > item:count() then
+            return npc:dialog(me, '그만큼 가지고 있지 않습니다.', false, true)
+        end
     end
     price = price * count
 
     local message = nil
     if count > 1 then
-        message = string.format('%s %d개를 %d전에 파시겠습니까?', item:name(), count, price)
+        message = string.format('%s %d개를 %d전에 파시겠습니까?', model:name(), count, price)
     else
-        message = string.format('%s %d전에 파시겠습니까?', name_with(item:name()), price)
+        message = string.format('%s %d전에 파시겠습니까?', name_with(model:name()), price)
     end
     if npc:menu(me, message, {'네', '아니오'}) == 0 then
         me:money(me:money() + price)

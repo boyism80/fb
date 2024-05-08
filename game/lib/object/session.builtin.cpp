@@ -393,7 +393,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
         }
 
 
-        auto dropped = session->items.remove(index, 1, delete_attr);
+        auto dropped = session->items.remove(index, count, delete_attr);
         if(dropped != nullptr)
             dropped->destroy();
     }
