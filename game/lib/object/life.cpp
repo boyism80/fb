@@ -39,7 +39,8 @@ uint32_t fb::game::life::hp_up(uint32_t value, fb::game::object* from)
 
     value = std::min(value, this->base_hp() - this->_hp);
     this->hp(this->_hp + value);
-    listener->on_heal_hp(*this, value, from);
+    if(listener != nullptr)
+        listener->on_heal_hp(*this, value, from);
 
     return value;
 }
@@ -68,7 +69,8 @@ uint32_t fb::game::life::mp_up(uint32_t value, fb::game::object* from)
 
     value = std::min(value, this->base_mp() - this->_mp);
     this->mp(this->_mp + value);
-    listener->on_heal_mp(*this, value, from);
+    if(listener != nullptr)
+        listener->on_heal_mp(*this, value, from);
 
     return value;
 }
@@ -122,7 +124,8 @@ void fb::game::life::hp(uint32_t value)
     this->on_update();
 
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_hp(*this, before, this->_hp);
+    if(listener != nullptr)
+        listener->on_hp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::mp() const
@@ -138,7 +141,8 @@ void fb::game::life::mp(uint32_t value)
     this->on_update();
 
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_mp(*this, before, this->_hp);
+    if(listener != nullptr)
+        listener->on_mp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::base_hp() const
@@ -198,7 +202,8 @@ void fb::game::life::kill()
     this->_hp = 0;
 
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_hide(*this);
+    if(listener != nullptr)
+        listener->on_hide(*this);
 }
 
 bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
@@ -300,29 +305,34 @@ bool fb::game::life::on_calculate_miss(fb::game::life& you) const
 void fb::game::life::on_attack(fb::game::object* you)
 {
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_attack(*this, you);
+    if(listener != nullptr)
+        listener->on_attack(*this, you);
 }
 
 void fb::game::life::on_hit(fb::game::life& you, uint32_t damage, bool critical)
 {
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_hit(*this, you, damage, critical);
+    if(listener != nullptr)
+        listener->on_hit(*this, you, damage, critical);
 }
 
 void fb::game::life::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_damaged(*this, from, damage, critical);
+    if(listener != nullptr)
+        listener->on_damaged(*this, from, damage, critical);
 }
 
 void fb::game::life::on_die(fb::game::object* from)
 {
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_die(*this, from);
+    if(listener != nullptr)
+        listener->on_die(*this, from);
 }
 
 void fb::game::life::on_kill(fb::game::life& you)
 {
     auto listener = this->get_listener<fb::game::life>();
-    listener->on_kill(*this, you);
+    if(listener != nullptr)
+        listener->on_kill(*this, you);
 }

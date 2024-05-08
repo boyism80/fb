@@ -54,7 +54,8 @@ bool fb::game::itemmix::builder::mix()
                 this->_owner.items.add(item);
             }
 
-            listener->on_notify(this->_owner, fb::game::message::mix::SUCCESS);
+            if(listener != nullptr)
+                listener->on_notify(this->_owner, fb::game::message::mix::SUCCESS);
         }
         else
         {
@@ -65,14 +66,16 @@ bool fb::game::itemmix::builder::mix()
                 this->_owner.items.add(item);
             }
 
-            listener->on_notify(this->_owner, fb::game::message::mix::FAILED);
+            if(listener != nullptr)
+                listener->on_notify(this->_owner, fb::game::message::mix::FAILED);
         }
 
         return true;
     }
     catch(std::exception& e)
     { 
-        listener->on_notify(this->_owner, e.what());
+        if(listener != nullptr)
+            listener->on_notify(this->_owner, e.what());
         return false;
     }
 }

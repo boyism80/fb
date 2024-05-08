@@ -263,7 +263,6 @@ fb::game::equipment* fb::game::items::wear(fb::game::equipment::parts parts, fb:
 
     case equipment::parts::LEFT_HAND:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::LEFT);
-        break;
 
     case equipment::parts::RIGHT_HAND:
         return this->_owner.items.ring(static_cast<fb::game::ring*>(item), equipment::position::RIGHT);

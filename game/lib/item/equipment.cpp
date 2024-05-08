@@ -118,7 +118,8 @@ bool fb::game::equipment::active()
     this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::session>();
-    listener->on_equipment_on(*this->_owner, *this, parts);
+    if(listener != nullptr)
+        listener->on_equipment_on(*this->_owner, *this, parts);
 
     return true;
 }

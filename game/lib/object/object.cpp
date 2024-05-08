@@ -34,7 +34,8 @@ fb::game::object::object(fb::game::context& context, const model* model, const f
     _map(config.map),
     buffs(*this)
 {
-    this->_listener->on_create(*this);
+    if(this->_listener != nullptr)
+        this->_listener->on_create(*this);
 }
 
 fb::game::object::object(const object& right) :
@@ -50,7 +51,8 @@ fb::game::object::object(const object& right) :
 
 fb::game::object::~object()
 {
-    this->_listener->on_destroy(*this);
+    if(this->_listener != nullptr)
+        this->_listener->on_destroy(*this);
     this->map(nullptr);
 }
 
@@ -96,7 +98,8 @@ void fb::game::object::destroy()
 void fb::game::object::chat(const std::string& message, bool shout)
 {
     if(this->_listener != nullptr)
-        this->_listener->on_chat(*this, message, shout);
+        if(this->_listener != nullptr)
+            this->_listener->on_chat(*this, message, shout);
 }
 
 const fb::game::point16_t& fb::game::object::position() const
@@ -124,6 +127,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     auto nears_before = this->_map->nears(before);
     auto nears_after = this->_map->nears(this->_position);
 
+    if(this->_listener != nullptr)
     {
         // 내 이전 위치에서 내 시야에 보이는 오브젝트들
         auto befores = this->showings(nears_before, before);
@@ -155,6 +159,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         }
     }
 
+    if(this->_listener != nullptr)
     {
         // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
         //auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::types::UNKNOWN/* , true, false */);
@@ -234,7 +239,8 @@ bool fb::game::object::move(fb::game::DIRECTION_TYPE direction)
 
     auto before = this->_position;
     this->position(after);
-    this->_listener->on_move(*this, before);
+    if(this->_listener != nullptr)
+        this->_listener->on_move(*this, before);
 
     return true;
 }
@@ -309,7 +315,8 @@ bool fb::game::object::direction(fb::game::DIRECTION_TYPE value)
         return true;
 
     this->_direction = value;
-    this->_listener->on_direction(*this);
+    if(this->_listener != nullptr)
+        this->_listener->on_direction(*this);
 
     return true;
 }
@@ -410,10 +417,13 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             if(this->_map != nullptr)
             {
                 this->_map->objects.remove(*this);
-                for (auto x : this->_map->nears(this->_position))
+                if(this->_listener != nullptr)
                 {
-                    if (x != this)
-                        this->_listener->on_hide(*x, *this);
+                    for (auto x : this->_map->nears(this->_position))
+                    {
+                        if (x != this)
+                            this->_listener->on_hide(*x, *this);
+                    }
                 }
 
                 this->_map = nullptr;
@@ -468,15 +478,19 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         this->_position = position;
         this->_map->update(*this);
         this->_map->objects.add(*this);
-        this->_listener->on_map_changed(*this, before, map);
+        if(this->_listener != nullptr)
+            this->_listener->on_map_changed(*this, before, map);
 
         for(auto x : map->nears(this->_position))
         {
             if(x == this)
                 continue;
 
-            this->_listener->on_show(*this, *x, false);
-            this->_listener->on_show(*x, *this, false);
+            if(this->_listener != nullptr)
+            {
+                this->_listener->on_show(*this, *x, false);
+                this->_listener->on_show(*x, *this, false);
+            }
         }
 
         auto result = true;

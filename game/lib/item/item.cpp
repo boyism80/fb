@@ -342,11 +342,14 @@ void fb::game::item::merge(fb::game::item& item)
 
     auto listener = this->_owner->get_listener<fb::game::session>();
     auto model = this->based<fb::game::item>();
-    if(before != this->_count)
-        listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
+    if(listener != nullptr)
+    {
+        if(before != this->_count)
+            listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
 
-    if(remain > 0 && this->_count == model->capacity)
-        listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+        if(remain > 0 && this->_count == model->capacity)
+            listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+    }
 }
 
 int fb::game::item::builtin_model(lua_State* lua)

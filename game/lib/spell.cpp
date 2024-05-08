@@ -68,7 +68,8 @@ uint8_t fb::game::spells::add(spell& element)
     auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(index != 0xFF)
-        listener->on_spell_update(this->owner(), index);
+        if(listener != nullptr)
+            listener->on_spell_update(this->owner(), index);
 
     return index;
 }
@@ -78,7 +79,8 @@ uint8_t fb::game::spells::add(spell& element, uint8_t index)
     auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(fb::game::base_container<fb::game::spell>::add(element, index) != 0xFF)
-        listener->on_spell_update(this->owner(), index);
+        if(listener != nullptr)
+            listener->on_spell_update(this->owner(), index);
 
     return index;
 }
@@ -105,7 +107,8 @@ bool fb::game::spells::remove(uint8_t index)
     auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(success)
-        listener->on_spell_remove(this->owner(), index);
+        if(listener != nullptr)
+            listener->on_spell_remove(this->owner(), index);
 
     return success;
 }
@@ -116,17 +119,20 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dst)
         return false;
 
     auto listener = this->owner().get_listener<fb::game::spell>();
-    const auto              right = this->at(src);
-    if(right != nullptr)
-        listener->on_spell_update(this->owner(), src);
-    else
-        listener->on_spell_remove(this->owner(), src);
+    if(listener != nullptr)
+    {
+        const auto              right = this->at(src);
+        if(right != nullptr)
+            listener->on_spell_update(this->owner(), src);
+        else
+            listener->on_spell_remove(this->owner(), src);
 
-    const auto              left = this->at(dst);
-    if(left != nullptr)
-        listener->on_spell_update(this->owner(), dst);
-    else
-        listener->on_spell_remove(this->owner(), dst);
+        const auto              left = this->at(dst);
+        if(left != nullptr)
+            listener->on_spell_update(this->owner(), dst);
+        else
+            listener->on_spell_remove(this->owner(), dst);
+    }
 
     return true;
 }
@@ -221,7 +227,8 @@ bool fb::game::buffs::remove(const std::string& name)
         return false;
     
     auto listener = this->_owner.get_listener<fb::game::object>();
-    listener->on_unbuff(this->_owner, *buff);
+    if(listener != nullptr)
+        listener->on_unbuff(this->_owner, *buff);
 
     this->erase(found);
     return true;

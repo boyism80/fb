@@ -319,11 +319,13 @@ fb::task<bool> fb::game::context::handle_command_tile(fb::game::session& session
 
     auto sstream = std::stringstream();
     sstream << "맵타일 : " << tile->id;
-    listener->on_notify(session, sstream.str());
+    if(listener != nullptr)
+        listener->on_notify(session, sstream.str());
 
     sstream.str("");
     sstream << "오브젝트 : " << tile->object;
-    listener->on_notify(session, sstream.str());
+    if(listener != nullptr)
+        listener->on_notify(session, sstream.str());
     
     co_return true;
 }

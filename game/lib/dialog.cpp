@@ -206,7 +206,8 @@ fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable& obje
 void fb::game::dialog::show(const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, object, message, button_prev, button_next, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, object, message, button_prev, button_next, interaction);
 }
 
 void fb::game::dialog::show(const object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
@@ -217,7 +218,8 @@ void fb::game::dialog::show(const object& object, const std::string& message, bo
 void fb::game::dialog::show(const npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, npc, message, menus, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, menus, interaction);
 }
 
 void fb::game::dialog::show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
@@ -228,7 +230,8 @@ void fb::game::dialog::show(const npc& npc, const std::string& message, const st
 void fb::game::dialog::show(const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
 }
 
 void fb::game::dialog::show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
@@ -239,7 +242,8 @@ void fb::game::dialog::show(const npc& npc, const std::string& message, const st
 void fb::game::dialog::show(const npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, npc, message, pairs, pursuit, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, pairs, pursuit, interaction);
 }
 
 void fb::game::dialog::show(const npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
@@ -250,7 +254,8 @@ void fb::game::dialog::show(const npc& npc, const std::string& message, const fb
 void fb::game::dialog::input(const npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, npc, message, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, interaction);
 }
 
 void fb::game::dialog::input(const npc& npc, const std::string& message, fb::game::dialog::interaction interaction)
@@ -261,7 +266,8 @@ void fb::game::dialog::input(const npc& npc, const std::string& message, fb::gam
 void fb::game::dialog::input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    listener->on_dialog(this->_owner, npc, message, top, bottom, maxlen, prev, interaction);
+    if(listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, top, bottom, maxlen, prev, interaction);
 }
 
 void fb::game::dialog::input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)

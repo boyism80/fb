@@ -58,7 +58,8 @@ bool fb::game::pack::active()
         this->count(0);
     
     auto listener = this->_owner->get_listener<fb::game::session>();
-    listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+    if(listener != nullptr)
+        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if(this->empty())
         this->_owner->items.remove(*this, 0xFF, DELETE_TYPE::REDUCE);
