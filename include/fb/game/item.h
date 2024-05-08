@@ -744,6 +744,7 @@ public:
 
     fb::game::item*                     find(const std::string& name) const;
     fb::game::item*                     find(const fb::game::item::model& base) const;
+    fb::game::item*                     find_bundle(const fb::game::item::model& base) const;
     fb::game::item*                     drop(uint8_t index, uint8_t count);
     void                                pickup(bool boost);
     bool                                throws(uint8_t index);

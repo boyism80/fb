@@ -406,7 +406,10 @@ function return_item(me, npc)
         end
     end
     
-    me:withdraw_item(deposited_item, count)
+    if me:withdraw_item(deposited_item, count) == nil then
+        return npc:dialog(me, '공간이 부족합니다.', false, true)
+    end
+    
     if model:attr(ITEM_ATTR_BUNDLE) then
         return npc:dialog(me, string.format('%s %d개를 돌려드렸습니다.', model:name(), count), false, true)
     else
