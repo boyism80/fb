@@ -343,6 +343,12 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
         if (exists == nullptr)
             throw std::runtime_error("가지고 있지 않습니다.");
 
+        if(item->deposit_price.has_value() == false)
+            throw std::runtime_error(fb::format("%s 맡을 수 없습니다.", name_with(item->name, {"은", "는"}).c_str()));
+
+        if(item->deposit_price > session.money())
+            throw std::runtime_error("돈이 부족합니다.");
+
         if (count.has_value() == false)
             count = exists->count();
 
@@ -361,6 +367,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
 
         auto index = session.items.index(*exists);
         session.deposit_item(index, count.value());
+        session.money_reduce(item->deposit_price.value());
         if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
             this->chat(fb::format("%s %d개를 맡았습니다.", item->name.c_str(), count.value()));
         else

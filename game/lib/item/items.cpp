@@ -472,7 +472,7 @@ fb::game::item* fb::game::items::find(const fb::game::item::model& base) const
 
 fb::game::item* fb::game::items::find_bundle(const fb::game::item::model& model) const
 {
-    if(model->attr(fb::game::item::ATTRIBUTE::BUNDLE) == false)
+    if(model.attr(fb::game::item::ATTRIBUTE::BUNDLE) == false)
         return nullptr;
 
     return this->find(model);

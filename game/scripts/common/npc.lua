@@ -293,8 +293,11 @@ function hold_item(me, npc)
     local items = {}
     local my_items = me:items()
     for slot, item in pairs(my_items) do
-        table.insert(slots, slot)
-        items[slot] = item
+        local model = item:model()
+        if model.deposit_price() ~= nil then
+            table.insert(slots, slot)
+            items[slot] = item
+        end
     end
 
     local slot = npc:slot(me, '무엇을 맡기시겠습니까?', slots)
@@ -323,6 +326,20 @@ function hold_item(me, npc)
             if count > capacity then
                 return npc:dialog(me, '더 이상 맡길 수 없습니다.', false, true)
             end
+        end
+    end
+
+    local deposit_price = model:deposit_price()
+    if deposit_price > 0 then
+        local selected = npc:menu(me, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', deposit_price), {'네', '아니오'})
+        if selected == 0 then
+            if me:money() < deposit_price then
+                return npc:dialog(me, '돈이 모자랍니다.')
+            else
+                me:money(me:money() - deposit_price)
+            end
+        else
+            return DIALOG_RESULT_NEXT
         end
     end
 
@@ -409,7 +426,7 @@ function return_item(me, npc)
     if me:withdraw_item(deposited_item, count) == nil then
         return npc:dialog(me, '공간이 부족합니다.', false, true)
     end
-    
+
     if model:attr(ITEM_ATTR_BUNDLE) then
         return npc:dialog(me, string.format('%s %d개를 돌려드렸습니다.', model:name(), count), false, true)
     else
