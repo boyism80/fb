@@ -26,7 +26,7 @@ using task_result        = std::vector<daotk::mysql::result>&;
 using task_callback_func = std::function<void(std::vector<daotk::mysql::result>&)>;
 using task_error_func    = std::function<void(std::exception&)>;
 using workers            = std::vector<std::unique_ptr<worker>>;
-using result_type        = fb::awaitable<std::vector<daotk::mysql::result>>;
+using awaiter            = fb::awaitable<std::vector<daotk::mysql::result>>;
 
 class connections
 {
@@ -112,11 +112,11 @@ public:
     void                        enqueue(uint32_t id,  const task& t);
     void                        exit();
     void                        exec(uint32_t id, const std::string& sql);
-    result_type                 co_exec(uint32_t id, const std::string& sql);
+    awaiter                     co_exec(uint32_t id, const std::string& sql);
     void                        exec(uint32_t id, const std::vector<std::string>& queries);
-    result_type                 co_exec(uint32_t id, const std::vector<std::string>& queries);
+    awaiter                     co_exec(uint32_t id, const std::vector<std::string>& queries);
     void                        exec_f(uint32_t id, const std::string& format, ...);
-    result_type                 co_exec_f(uint32_t id, const std::string& format, ...);
+    awaiter                     co_exec_f(uint32_t id, const std::string& format, ...);
 };
 
 template <typename T>
@@ -135,45 +135,52 @@ public:
     using fb::db::base_context::exit;
 
 public:
-    fb::db::result_type     co_exec(uint32_t id, const std::string& sql)
+    fb::db::awaiter     co_exec(uint32_t id, const std::string& sql)
     {
         auto await_callback = [this, sql, id](auto& awaitable)
         {
             auto thread = this->_owner.current_thread();
-            this->enqueue(id, fb::db::task{ sql, [this, thread, &awaitable](auto& results)
+            auto task = fb::db::task
             {
-                auto data = std::make_shared<std::vector<daotk::mysql::result>>();
-                for(auto& x : results)
+                /* sql */ sql,
+                /* callback */
+                [this, thread, &awaitable](auto& results)
                 {
-                    data->push_back(std::move(x));
-                }
+                    auto data = std::make_shared<std::vector<daotk::mysql::result>>();
+                    for(auto& x : results)
+                        data->push_back(std::move(x));
 
-                if(thread != nullptr)
-                {
-                    thread->dispatch([&awaitable, data](uint8_t) mutable
+                    if(thread != nullptr)
+                    {
+                        thread->dispatch([&awaitable, data](uint8_t) mutable
+                        {
+                            awaitable.result = data.get();
+                            awaitable.handler.resume();
+                        });
+                    }
+                    else
                     {
                         awaitable.result = data.get();
                         awaitable.handler.resume();
-                    });
-                }
-                else
+                    }
+                },
+                /* error */
+                [&awaitable](auto& e)
                 {
-                    awaitable.result = data.get();
+                    awaitable.error = std::make_unique<std::runtime_error>(e.what());
                     awaitable.handler.resume();
                 }
-            }, [&awaitable](auto& e)
-            {
-                awaitable.error = std::make_unique<std::runtime_error>(e.what());
-                awaitable.handler.resume();
-            } });
+            };
+            this->enqueue(id, task);
         };
+
         return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
     }
-    fb::db::result_type     co_exec(const std::string& sql)
+    fb::db::awaiter     co_exec(const std::string& sql)
     {
         return this->co_exec(-1, sql);
     }
-    fb::db::result_type     co_exec(uint32_t id, const std::vector<std::string>& queries)
+    fb::db::awaiter     co_exec(uint32_t id, const std::vector<std::string>& queries)
     {
         auto sstream = std::stringstream();
         for (auto& query : queries)
@@ -186,11 +193,11 @@ public:
 
         return this->co_exec(id, sstream.str());
     }
-    fb::db::result_type     co_exec(const std::vector<std::string>& queries)
+    fb::db::awaiter     co_exec(const std::vector<std::string>& queries)
     {
         return this->co_exec(-1, queries);
     }
-    fb::db::result_type     co_exec_f(uint32_t id, const std::string& format, ...)
+    fb::db::awaiter     co_exec_f(uint32_t id, const std::string& format, ...)
     {
         va_list args;
         va_start(args, format);
@@ -199,7 +206,7 @@ public:
 
         return this->co_exec(id, sql);
     }
-    fb::db::result_type     co_exec_f(const std::string& format, ...)
+    fb::db::awaiter     co_exec_f(const std::string& format, ...)
     {
         va_list args;
         va_start(args, format);

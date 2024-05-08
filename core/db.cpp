@@ -224,7 +224,7 @@ void fb::db::base_context::exec(uint32_t id, const std::string& sql)
     this->enqueue(id, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
-result_type fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
+fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
 {
     auto await_callback = [this, id, sql](auto& awaitable)
     {
@@ -256,7 +256,7 @@ void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& que
     this->exec(id, sstream.str());
 }
 
-result_type fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
+fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -280,7 +280,7 @@ void fb::db::base_context::exec_f(uint32_t id, const std::string& format, ...)
     this->exec(id, sql);
 }
 
-result_type fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
+fb::db::awaiter fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
