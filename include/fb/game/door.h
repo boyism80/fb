@@ -22,7 +22,7 @@ public:
     class model;
 
 private:
-    model&                     _model;
+    model&                      _model;
     fb::game::map*              _owner  = nullptr;
     bool                        _opened = false;
     bool                        _locked = false;
@@ -35,7 +35,7 @@ public:
     ~door();
 
 public:
-    const door::model&         based() const;
+    const door::model&          based() const;
     bool                        toggle();
     bool                        opened() const;
     bool                        locked() const;
