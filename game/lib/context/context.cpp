@@ -1098,11 +1098,8 @@ fb::task<bool> fb::game::context::handle_update_move(fb::socket<fb::game::sessio
     if(map == nullptr)
         co_return true;
 
-    auto task = this->handle_move(socket, request);
-    if(task.done() && task.value())
-    {
+    if(co_await this->handle_move(socket, request))
         this->send(*session, fb::protocol::game::response::map::update(*map, request.begin, request.size), scope::SELF);
-    }
 
     co_return true;
 }

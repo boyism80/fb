@@ -540,7 +540,7 @@ void fb::game::items::pickup(bool boost)
             }
             else
             {
-                auto            index = owner.items.add(below);
+                auto        index = owner.items.add(below);
                 if(index == -1)
                     break;
             }

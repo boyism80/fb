@@ -32,6 +32,21 @@ struct task
     task(handle_type handler) : _handler(handler) { }
     ~task() { }
 
+    bool await_ready()
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> h)
+    {
+        h.resume();
+    }
+
+    T await_resume()
+    {
+        return this->value();
+    }
+
     bool done()
     {
         return this->_handler.done();
@@ -74,6 +89,21 @@ struct task<void>
 
     task(handle_type handler) : _handler(handler) {}
     ~task() { }
+
+    bool await_ready()
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> h)
+    {
+        h.resume();
+    }
+
+    void await_resume()
+    {
+
+    }
 
     bool done()
     {
