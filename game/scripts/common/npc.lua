@@ -29,7 +29,7 @@ function buy(me, npc, pursuit)
 
     local item = items[slot]
     local model = item:model()
-    local price = purchase_list[item:name()]
+    local price = purchase_list[model:name()]
     local count = 1
     if model:attr(ITEM_ATTR_BUNDLE) then
         count = npc:input(me, '몇개나 파시겠어요?')
