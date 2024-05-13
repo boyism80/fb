@@ -924,6 +924,9 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
     if (index > this->_deposited_items.size() - 1)
         return nullptr;
 
+    if (this->items.free() == false)
+        return nullptr;
+
     auto deposited_item = this->_deposited_items.at(index);
     auto deposited_count = deposited_item->count();
     if (deposited_count < count)
@@ -937,28 +940,30 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
             return nullptr;
 
         deposited_item->count(deposited_count - count);
-        auto returned_item = deposited_item->based<fb::game::item>()->make(this->context, count);
-        this->items.add(returned_item);
+        auto added_slot = this->items.add(deposited_item->based<fb::game::item>()->make(this->context, count));
         if (deposited_item->empty())
         {
             auto i = this->_deposited_items.begin() + index;
             this->_deposited_items.erase(i);
         }
 
-        return returned_item;
+        return this->items.at(added_slot);
     }
     else
     {
         if (this->items.free() == false)
             return nullptr;
 
-        auto i = this->_deposited_items.begin() + index;
-        this->_deposited_items.erase(i);
+        deposited_item->count(deposited_count - count);
+        if (deposited_item->empty())
+        {
+            auto i = this->_deposited_items.begin() + index;
+            this->_deposited_items.erase(i);
+        }
 
-        auto returned_item = deposited_item->based<fb::game::item>()->make(this->context);
-        this->items.add(returned_item);
+        auto added_slot = this->items.add(deposited_item->based<fb::game::item>()->make(this->context, count));
 
-        return returned_item;
+        return this->items.at(added_slot);
     }
 }
 

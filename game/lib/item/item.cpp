@@ -314,13 +314,10 @@ bool fb::game::item::active()
 fb::game::item* fb::game::item::split(uint16_t count)
 {
     auto model = this->based<fb::game::item>();
-    if(model->trade == false)
-        throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
-
     if(this->attr(item::ATTRIBUTE::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        return this->based<fb::game::item>()->make(this->context, count);
+        return model->make(this->context, count);
     }
     else
     {

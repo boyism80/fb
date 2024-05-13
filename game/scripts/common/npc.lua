@@ -294,7 +294,7 @@ function hold_item(me, npc)
     local my_items = me:items()
     for slot, item in pairs(my_items) do
         local model = item:model()
-        if model.deposit_price() ~= nil then
+        if model:deposit_price() ~= nil then
             table.insert(slots, slot)
             items[slot] = item
         end

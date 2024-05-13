@@ -485,8 +485,15 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
     try
     {
         owner.assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
+        auto                    item = this->at(index);
+        if (item == nullptr)
+            return nullptr;
 
-        auto                    dropped = this->remove(index, count, fb::game::item::DELETE_TYPE::DROP);
+        auto                    model = item->based<fb::game::item>();
+        if (model->trade == false)
+            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
+
+        auto                    dropped = this->remove(*item, count, fb::game::item::DELETE_TYPE::DROP);
         if(dropped != nullptr)
         {
             dropped->map(owner.map(), owner.position());
