@@ -1,6 +1,9 @@
 #include "resource.h"
 #include <fb/game/context.h>
 #include <fb/core/leak.h>
+#include <redis-cpp/stream.h>
+#include <redis-cpp/execute.h>
+#include <fb/core/redis.h>
 
 bool load_db(fb::console& c, fb::game::context& context)
 {
@@ -439,6 +442,9 @@ bool load_db(fb::console& c, fb::game::context& context)
     return true;
 }
 
+#include <boost/thread.hpp>
+
+
 int main(int argc, const char** argv)
 {
     auto& c = fb::console::get();
@@ -455,7 +461,7 @@ int main(int argc, const char** argv)
         boost::asio::io_context io_context;
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
-        
+
         load_db(c, *context);
         
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();

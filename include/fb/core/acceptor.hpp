@@ -2,9 +2,10 @@
 
 template <template<class> class S, class T>
 fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads) : 
-    boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+    icontext(context, port),
     _context(context),
-    _threads(context, num_threads)
+    _threads(context, num_threads),
+    _redis(*this)
 {
     this->accept();
 }

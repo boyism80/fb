@@ -395,6 +395,12 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
             .fn = std::bind(&context::handle_command_durability, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
+
+    this->bind_command("동시성테스트", command
+        {
+            .fn = std::bind(&context::handle_concurrency, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
 }
 
 fb::game::context::~context()

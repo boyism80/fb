@@ -1,4 +1,5 @@
 #include <fb/game/context.h>
+#include <fb/core/redis.h>
 using namespace fb::game;
 
 fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session, Json::Value& parameters)
@@ -432,6 +433,41 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
     {
         auto model = equipment->based<fb::game::equipment>();
         equipment->durability(uint16_t(model->durability * (percent / 100.0f)));
+    }
+
+    co_return true;
+}
+
+fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session, Json::Value& parameters)
+{
+    auto& threads = this->threads();
+    auto thread = threads.current();
+    auto key = "lock";
+    int result = 0;
+    auto fn = [this, &result, thread, key, &session]() -> fb::task<int>
+    {
+        auto x = co_await this->_redis.sync<int>(key, [this, thread, &result]() 
+        {
+            for (int i = 0; i < 100; i++)
+                result++;
+
+            std::this_thread::sleep_for(100ms);
+            return result;
+        });
+
+        co_await thread->dispatch();
+        session.chat(fb::format("result : %d", x));
+
+        co_return x;
+    };
+
+    for (int i = 0; i < threads.count(); i++)
+    {
+        auto thread = threads[i];
+        thread->dispatch([fn](uint8_t) 
+        {
+            auto task = fn();
+        });
     }
 
     co_return true;

@@ -4,7 +4,7 @@
 #include <map>
 #include <ctime>
 #include <chrono>
-#include <boost/asio.hpp>
+#include <fb/core/abstract.h>
 #include <zlib.h>
 #include <functional>
 #include <iomanip>
@@ -12,14 +12,14 @@
 #include <fb/core/socket.h>
 #include <fb/protocol/protocol.h>
 #include <fb/core/logger.h>
-#include <fb/core/thread.h>
+#include <fb/core/redis.h>
 
 using namespace std::chrono_literals;
 
 namespace fb { namespace base {
 
 template <template<class> class S, class T>
-class acceptor : public boost::asio::ip::tcp::acceptor
+class acceptor : public icontext
 {
 private:
     fb::threads                                 _threads;
@@ -30,6 +30,7 @@ protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::unique_ptr<fb::internal::socket<>>     _internal;
+    fb::redis                                   _redis;
 
 
 public:
