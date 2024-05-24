@@ -178,9 +178,6 @@
     <ClCompile Include="lib\regex.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\redis.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

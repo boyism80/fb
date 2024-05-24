@@ -440,35 +440,18 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
 
 fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session, Json::Value& parameters)
 {
-    auto& threads = this->threads();
-    auto thread = threads.current();
-    auto key = "lock";
-    int result = 0;
-    auto fn = [this, &result, thread, key, &session]() -> fb::task<int>
-    {
-        auto x = co_await this->_redis.sync(key, [this, thread, &result]() 
-        {
-            for (int i = 0; i < 100; i++)
-                result++;
+    auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
+    auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
 
-            std::this_thread::sleep_for(100ms);
-            return result;
+    auto result = co_await this->_redis.sync<bool>(key, [this, &session, seconds]()
+        {
+            for (int i = 0; i < seconds; i++)
+            {
+                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+                std::this_thread::sleep_for(1s);
+            }
+            return true;
         });
 
-        co_await thread->dispatch();
-        session.chat(fb::format("result : %d", x));
-
-        co_return x;
-    };
-
-    for (int i = 0; i < threads.count(); i++)
-    {
-        auto thread = threads[i];
-        thread->dispatch([fn](uint8_t) 
-        {
-            auto task = fn();
-        });
-    }
-
-    co_return true;
+    co_return result;
 }

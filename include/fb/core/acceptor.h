@@ -30,8 +30,6 @@ protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::unique_ptr<fb::internal::socket<>>     _internal;
-
-public:
     fb::redis                                   _redis;
 
 
