@@ -443,9 +443,6 @@ bool load_db(fb::console& c, fb::game::context& context)
     return true;
 }
 
-#include <boost/thread.hpp>
-
-
 int main(int argc, const char** argv)
 {
     auto& c = fb::console::get();
@@ -463,45 +460,11 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
 
-        auto result = 0;
-        boost::thread thread1
-        {
-            [&context, &result]() -> fb::task<void>
-            {
-                auto x = co_await context->_redis.sync<int>("key", [result]()
-                    {
-                        //std::this_thread::sleep_for(1s);
-                        return result + 100;
-                    });
-
-                std::cout << x;
-            }
-        };
-
-        boost::thread thread2
-        {
-            [&context, &result]() -> fb::task<void>
-            {
-                auto x = co_await context->_redis.sync<int>("key", [result]()
-                    {
-                        //std::this_thread::sleep_for(1s);
-                        return result + 200;
-                    });
-
-                std::cout << x;
-            }
-        };
-
-        thread1.join();
-        thread2.join();
-
-
         load_db(c, *context);
         
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
 
-        auto npc = fb::game::model::npcs.name2npc("³«¶û");
         while (context->running())
         {
             std::this_thread::sleep_for(100ms);

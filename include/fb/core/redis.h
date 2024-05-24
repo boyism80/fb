@@ -9,58 +9,74 @@
 #include <fb/core/abstract.h>
 #include <fb/core/logger.h>
 #include <boost/thread.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace fb {
 
-class redis_stream_pool
+template <typename T>
+class pool_pairs
 {
 private:
-    std::queue<std::shared_ptr<cpp_redis::client>> _idle;
-    std::set<std::shared_ptr<cpp_redis::client>> _busy;
-    std::mutex _mutex;
+    std::queue<std::shared_ptr<T>>  _idle;
+    std::set<std::shared_ptr<T>>    _busy;
+    std::mutex                      _mutex;
 
 public:
-    redis_stream_pool() = default;
-    ~redis_stream_pool() = default;
+    pool_pairs() = default;
+    ~pool_pairs() = default;
 
 public:
-    std::shared_ptr<cpp_redis::client> get()
+    public:
+    std::shared_ptr<T> get()
     {
         auto _ = std::lock_guard(_mutex);
 
         if (this->_idle.empty() == false)
         {
-            auto& client = this->_idle.front();
-            this->_busy.insert(client);
+            auto& item = this->_idle.front();
+            this->_busy.insert(item);
             this->_idle.pop();
 
-            return client;
+            return item;
         }
         else
         {
-            auto client = std::make_shared< cpp_redis::client>();
-            client->connect();
-            this->_busy.insert(client);
+            auto item = std::make_shared< T>();
+            item->connect();
 
-            return client;
+            while (item->is_connected() == false)
+            {
+                std::this_thread::sleep_for(10ms);
+            }
+            this->_busy.insert(item);
+            return item;
         }
     }
 
-    void release(std::shared_ptr<cpp_redis::client>& client)
+    void release(std::shared_ptr<T>& item)
     {
         auto _ = std::lock_guard(_mutex);
 
-        this->_idle.push(client);
-        this->_busy.erase(client);
+        this->_idle.push(item);
+        this->_busy.erase(item);
     }
+};
+
+class redis_stream_pool
+{
+public:
+    pool_pairs<cpp_redis::subscriber>   subs;
+    pool_pairs<cpp_redis::client>       conn;
 };
 
 
 class redis
 {
 private:
-    icontext& _owner;
-    redis_stream_pool _pool;
+    icontext&                           _owner;
+    redis_stream_pool                   _pool;
 
 public:
 	redis(icontext& owner) : _owner(owner)
@@ -68,86 +84,11 @@ public:
 	~redis() = default;
 
 private:
-    template <typename T>
-    void try_lock(const std::string& key, fb::awaitable<T>& awaitable, const std::function<T()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::subscriber> subscriber, fb::thread* thread)
-    {
-        auto conn = std::make_shared< cpp_redis::client>();
-        conn->connect();
-        auto script =
-            "local success = redis.call('setnx', KEYS[1], 'lock')\n"
-            "if success == 1 then\n"
-            "    redis.call('expire', KEYS[1], 5)\n"
-            "end\n"
-            "return success";
-        conn->eval(script, 1, { key }, {}, [&, this, conn, key, uuid, subscriber, thread](cpp_redis::reply& v) mutable
-            {
-                auto success = v.as_integer() == 1;
-                if (success)
-                {
-                    auto action = [this](auto& awaitable, auto& fn, const std::string key, const std::string uuid, auto conn)
-                    {
-                        auto result = fn();
-
-                        auto new_conn = std::make_shared< cpp_redis::client>();
-                        new_conn->connect();
-
-                        new_conn->del({ key });
-                        new_conn->publish(key, uuid, [&, this, conn, key, result](cpp_redis::reply& reply) mutable
-                            {
-                                //this->_pool.release(conn);
-                            });
-
-                        new_conn->commit();
-
-                        awaitable.result = &result;
-                        awaitable.handler.resume();
-                    };
-
-                    if (thread != nullptr)
-                    {
-                        thread->dispatch([&action, &awaitable, &fn, key, uuid, conn](uint8_t) { action(awaitable, fn, key, uuid, conn); });
-                    }
-                    else
-                    {
-                        boost::thread{ [&action, &awaitable, &fn, key, uuid, conn]() { action(awaitable, fn, key, uuid, conn); } };
-                    }
-
-                    fb::logger::debug("리소스 점유에 성공");
-                }
-                else
-                {
-                    fb::logger::debug("리소스 점유에 실패하여 대기");
-                }
-            });
-        conn->commit();
-    }
+    void try_lock(const std::string& key, fb::awaitable<int>& awaitable, const std::function<int()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread);
 
 
 public:
-	template <typename T>
-    fb::awaitable<T> sync(const std::string& key, const std::function<T()>& fn)
-    {
-        auto callback = [this, key, &fn](auto& awaitable)
-        {
-            auto thread = this->_owner.current_thread();
-            auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-            auto subscriber = std::make_shared<cpp_redis::subscriber>();
-            subscriber->connect();
-            subscriber->subscribe(key, [&, this, key, uuid, subscriber, thread](const std::string& chan, const std::string& msg)
-                {
-                    if (chan != key)
-                        return;
-
-                    if (msg != uuid)
-                        this->try_lock(key, awaitable, fn, uuid, subscriber, thread);
-                });
-            subscriber->commit();
-
-            this->try_lock(key, awaitable, fn, uuid, subscriber, thread);
-        };
-
-        return fb::awaitable<T>(callback);
-    }
+    fb::awaitable<int> sync(const std::string& key, const std::function<int()>& fn);
 };
 
 }

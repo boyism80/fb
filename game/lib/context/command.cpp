@@ -446,7 +446,7 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
     int result = 0;
     auto fn = [this, &result, thread, key, &session]() -> fb::task<int>
     {
-        auto x = co_await this->_redis.sync<int>(key, [this, thread, &result]() 
+        auto x = co_await this->_redis.sync(key, [this, thread, &result]() 
         {
             for (int i = 0; i < 100; i++)
                 result++;
