@@ -107,7 +107,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmtd.lib;zlib\x86\zlibd.lib;lua5.3\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmtd.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib\x86\zlibd.lib;lua5.3\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -123,7 +123,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,7 +143,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmt.lib;zlib\x86\zlib.lib;lua5.3\x86\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmt.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib\x86\zlib.lib;lua5.3\x86\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,7 +163,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
