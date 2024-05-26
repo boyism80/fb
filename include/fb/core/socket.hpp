@@ -171,7 +171,7 @@ fb::socket<T>::operator fb::cryptor& ()
 
 template <typename T, typename C>
 template <typename R>
-fb::awaitable_socket<T,C>::awaitable<R>::awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R, boost::system::error_code>& on_suspend) : fb::awaitable<R, boost::system::error_code>(on_suspend), _owner(owner), _cmd(cmd)
+fb::awaitable_socket<T,C>::awaitable<R>::awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_callback_handler<R, boost::system::error_code>& on_suspend) : fb::awaitable<R, boost::system::error_code>(on_suspend), _owner(owner), _cmd(cmd)
 { }
 
 template <typename T, typename C>

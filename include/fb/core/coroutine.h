@@ -17,6 +17,7 @@ struct task
     {
         std::optional<T> _value;
         std::exception_ptr _exception;
+        std::coroutine_handle<> _handler;
 
         auto get_return_object()        { return task(handle_type::from_promise(*this)); }
         auto initial_suspend()          { return std::suspend_never{}; }
@@ -24,7 +25,7 @@ struct task
         void unhandled_exception()      { this->_exception = std::current_exception(); }
 
         template<std::convertible_to<T> From>
-        void return_value(From&& from)  { this->_value = std::forward<From>(from); }
+        void return_value(From&& from)  { this->_value = std::forward<From>(from); if(_handler) this->_handler.resume(); }
     };
 
     handle_type _handler;
@@ -39,7 +40,10 @@ struct task
 
     void await_suspend(std::coroutine_handle<> h)
     {
-        h.resume();
+        this->_handler.promise()._handler = h;
+
+        if (this->_handler.promise()._exception)
+            std::rethrow_exception(this->_handler.promise()._exception);
     }
 
     T await_resume()
@@ -61,6 +65,9 @@ struct task
 
     T value()
     {
+        if (this->_handler.promise()._exception)
+            std::rethrow_exception(this->_handler.promise()._exception);
+
         if (this->_handler.promise()._value.has_value() == false)
             throw std::runtime_error("value is empty");
 
@@ -77,12 +84,13 @@ struct task<void>
     struct promise_type
     {
         std::exception_ptr _exception;
+        std::coroutine_handle<> _handler;
 
         auto get_return_object()        { return task(handle_type::from_promise(*this)); }
         auto initial_suspend()          { return std::suspend_never{}; }
         auto final_suspend() noexcept   { return std::suspend_always{}; }
         void return_void()              { }
-        void unhandled_exception()      { this->_exception = std::current_exception(); }
+        void unhandled_exception()      { this->_exception = std::current_exception(); if(this->_handler) this->_handler.resume(); }
     };
 
     handle_type _handler;
@@ -97,7 +105,10 @@ struct task<void>
 
     void await_suspend(std::coroutine_handle<> h)
     {
-        h.resume();
+        this->_handler.promise()._handler = h;
+
+        if (this->_handler.promise()._exception)
+            std::rethrow_exception(this->_handler.promise()._exception);
     }
 
     void await_resume()
@@ -122,13 +133,13 @@ template <typename R, typename E>
 class awaitable;
 
 template <typename R, typename E>
-using awaitable_suspend_handler = std::function<void(awaitable<R, E>&)>;
+using awaitable_callback_handler = std::function<void(awaitable<R, E>&)>;
 
 template <typename R, typename E = std::runtime_error>
 class awaitable
 {
 private:
-    const awaitable_suspend_handler<R, E> _on_suspend;
+    const awaitable_callback_handler<R, E> _callback;
 
 public:
     R*                              result;
@@ -136,7 +147,7 @@ public:
     std::coroutine_handle<>         handler;
 
 public:
-    awaitable(const awaitable_suspend_handler<R, E>& on_suspend) : _on_suspend(on_suspend), result(nullptr)
+    awaitable(const awaitable_callback_handler<R, E>& callback) : _callback(callback), result(nullptr)
     { }
     virtual ~awaitable()
     { }
@@ -148,7 +159,7 @@ public:
     virtual void                    await_suspend(std::coroutine_handle<> h)
     {
         this->handler = h;
-        this->_on_suspend(*this);
+        this->_callback(*this);
     }
     virtual R                       await_resume()
     {
@@ -163,14 +174,14 @@ template <typename E>
 class awaitable<void, E>
 {
 private:
-    const awaitable_suspend_handler<void, E> _on_suspend;
+    const awaitable_callback_handler<void, E> _callback;
 
 public:
     std::unique_ptr<E>              error;
     std::coroutine_handle<>         handler;
 
 public:
-    awaitable(const awaitable_suspend_handler<void, E>& on_suspend) : _on_suspend(on_suspend)
+    awaitable(const awaitable_callback_handler<void, E>& callback) : _callback(callback)
     { }
     virtual ~awaitable()
     { }
@@ -182,7 +193,7 @@ public:
     virtual void                    await_suspend(std::coroutine_handle<> h)
     {
         this->handler = h;
-        this->_on_suspend(*this);
+        this->_callback(*this);
     }
     virtual void                    await_resume()
     {

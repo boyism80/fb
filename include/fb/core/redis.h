@@ -16,16 +16,21 @@
 namespace fb {
 
 template <typename T>
-class pool_pairs
+class redis_pool
 {
+private:
+    const std::string               _ip;
+    uint16_t                        _port;
+
 private:
     std::queue<std::shared_ptr<T>>  _idle;
     std::set<std::shared_ptr<T>>    _busy;
     std::mutex                      _mutex;
 
 public:
-    pool_pairs() = default;
-    ~pool_pairs() = default;
+    redis_pool(const std::string& ip, uint16_t port) : _ip(ip), _port(port)
+    { }
+    ~redis_pool() = default;
 
 public:
     std::shared_ptr<T> get()
@@ -42,8 +47,11 @@ public:
         }
         else
         {
-            auto item = std::make_shared< T>();
-            item->connect();
+            auto item = std::make_shared<T>();
+            item->connect(this->_ip, this->_port, [](const std::string& host, std::size_t port, auto status)
+            {
+                // CHECK CONNECTING STATE
+            });
 
             while (item->is_connected() == false)
             {
@@ -63,11 +71,15 @@ public:
     }
 };
 
-class redis_stream_pool
+class redis_pools
 {
 public:
-    pool_pairs<cpp_redis::subscriber>   subs;
-    pool_pairs<cpp_redis::client>       conn;
+    redis_pool<cpp_redis::subscriber>   subs;
+    redis_pool<cpp_redis::client>       conn;
+
+public:
+    redis_pools(const std::string& ip, uint16_t port) : subs(ip, port), conn(ip, port)
+    { }
 };
 
 
@@ -75,12 +87,13 @@ class redis
 {
 private:
     icontext&                           _owner;
+    uint8_t                             _timeout;
 
 public:
-    redis_stream_pool                   pool;
+    redis_pools                         pool;
 
 public:
-	redis(icontext& owner) : _owner(owner)
+	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), pool(ip, port)
 	{ }
 	~redis() = default;
 
@@ -91,42 +104,49 @@ private:
         auto script =
         "local success = redis.call('setnx', KEYS[1], 'lock')\n"
         "if success == 1 then\n"
-        "    redis.call('expire', KEYS[1], 5)\n"
+        "    redis.call('expire', KEYS[1], ARGV[1])\n"
         "end\n"
         "return success\n";
 
 
-    conn->eval(script, 1, { key }, {}, [this, conn, subs, key, uuid, thread, &awaitable, &fn](cpp_redis::reply& v) mutable
+        conn->eval(script, 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaitable, &fn](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
-            if (success)
+            if (success == false)
+                return;
+            
+            auto handler = [this, &fn, conn, subs, key, uuid, &awaitable](uint8_t)
             {
-                auto handler = [this, &fn, conn, subs, key, uuid, &awaitable](uint8_t)
+                try
                 {
                     auto result = fn();
                     awaitable.result = &result;
-                    awaitable.handler.resume();
+                }
+                catch(std::exception& e)
+                {
+                    awaitable.error = std::make_unique<std::runtime_error>(e.what());
+                }
+                awaitable.handler.resume();
 
-                    conn->del({ key }, [this, conn, subs, key](auto& reply)  mutable
-                    {
-                        subs->unsubscribe(key);
-                        subs->commit();
-                        this->pool.subs.release(subs);
-                    });
-                    conn->publish(key, uuid, [this, conn](auto& reply)  mutable
-                    {
-                        this->pool.conn.release(conn);
-                    });
-                    conn->commit();
-                };
+                conn->del({ key }, [this, conn, subs, key](auto& reply)  mutable
+                {
+                    subs->unsubscribe(key);
+                    subs->commit();
+                    this->pool.subs.release(subs);
+                });
+                conn->publish(key, uuid, [this, conn](auto& reply)  mutable
+                {
+                    this->pool.conn.release(conn);
+                });
+                conn->commit();
+            };
 
-                if (thread != nullptr)
-                    thread->dispatch(handler);
-                else
-                    handler(-1);
-            }
+            if (thread != nullptr)
+                thread->dispatch(handler);
+            else
+                handler(-1);
         });
-    conn->commit();
+        conn->commit();
     }
 
 
@@ -135,22 +155,30 @@ public:
     fb::awaitable<T> sync(const std::string& key, const std::function<T()>& fn)
     {
         return fb::awaitable<T>([this, key, &fn](auto& awaitable) mutable
-    {
-        auto conn = this->pool.conn.get();
-        auto subs = this->pool.subs.get();
-        auto thread = this->_owner.current_thread();
-        auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-        subs->subscribe(key, [&, this, key, uuid, conn, subs, thread](const std::string& chan, const std::string& msg) mutable
         {
-            if (chan != key)
-                return;
+            try
+            {
+                auto conn = this->pool.conn.get();
+                auto subs = this->pool.subs.get();
+                auto thread = this->_owner.current_thread();
+                auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+                subs->subscribe(key, [&, this, key, uuid, conn, subs, thread](const std::string& chan, const std::string& msg) mutable
+                {
+                    if (chan != key)
+                        return;
 
-            if (msg != uuid)
+                    if (msg != uuid)
+                        this->try_lock(key, awaitable, fn, uuid, conn, subs, thread);
+                });
+                subs->commit();
                 this->try_lock(key, awaitable, fn, uuid, conn, subs, thread);
+            }
+            catch(std::exception& e)
+            {
+                awaitable.error = std::make_unique<std::runtime_error>(e.what());
+                awaitable.handler.resume();
+            }
         });
-        subs->commit();
-        this->try_lock(key, awaitable, fn, uuid, conn, subs, thread);
-    });
     }
 };
 

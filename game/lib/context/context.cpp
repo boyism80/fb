@@ -1517,16 +1517,8 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
     if (session->inited() == false)
         co_return true;
 
-    if(session->admin())
-    {
-        auto task = handle_command(*session, request.message);
-        while(task.done() == false)
-        {
-            task();
-        }
-        if(task.value())
-            co_return true;
-    }
+    if (session->admin())
+        co_return co_await handle_command(*session, request.message);
     
     session->chat(request.message, request.shout);
 
@@ -2106,6 +2098,5 @@ fb::task<bool> fb::game::context::handle_command(fb::game::session& session, con
             parameters.append(*i);
     }
 
-    found->second.fn(session, parameters);
-    co_return true;
+    co_return co_await found->second.fn(session, parameters);
 }

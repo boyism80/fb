@@ -135,7 +135,7 @@ public:
         C                           _cmd;
 
     public:
-        awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R, boost::system::error_code>& on_suspend);
+        awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_callback_handler<R, boost::system::error_code>& on_suspend);
         ~awaitable();
 
         void                        await_suspend(std::coroutine_handle<> h);

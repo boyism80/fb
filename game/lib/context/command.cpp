@@ -444,14 +444,14 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
     auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
 
     auto result = co_await this->_redis.sync<bool>(key, [this, &session, seconds]()
+    {
+        for (int i = 0; i < seconds; i++)
         {
-            for (int i = 0; i < seconds; i++)
-            {
-                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
-                std::this_thread::sleep_for(1s);
-            }
-            return true;
-        });
+            session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+            std::this_thread::sleep_for(1s);
+        }
+        return true;
+    });
 
     co_return result;
 }
