@@ -93,13 +93,13 @@ public:
     redis_pools                         pool;
 
 public:
-	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), pool(ip, port)
+	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), pool(ip, port), _timeout(timeout)
 	{ }
 	~redis() = default;
 
 private:
     template <typename T>
-    void try_lock(const std::string& key, fb::awaitable<T>& awaitable, const std::function<T()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread)
+    void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread)
     {
         auto script =
         "local success = redis.call('setnx', KEYS[1], 'lock')\n"
@@ -109,24 +109,24 @@ private:
         "return success\n";
 
 
-        conn->eval(script, 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaitable, &fn](cpp_redis::reply& v) mutable
+        conn->eval(script, 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
                 return;
-            
-            auto handler = [this, &fn, conn, subs, key, uuid, &awaitable](uint8_t)
+
+            auto handler = [this, &fn, conn, subs, key, uuid](auto& awaiter) -> fb::task<void>
             {
                 try
                 {
-                    auto result = fn();
-                    awaitable.result = &result;
+                    auto result = co_await fn();
+                    awaiter.result = &result;
                 }
-                catch(std::exception& e)
+                catch (std::exception& e)
                 {
-                    awaitable.error = std::make_unique<std::runtime_error>(e.what());
+                    awaiter.error = std::make_unique<std::runtime_error>(e.what());
                 }
-                awaitable.handler.resume();
+                awaiter.handler.resume();
 
                 conn->del({ key }, [this, conn, subs, key](auto& reply)  mutable
                 {
@@ -140,11 +140,15 @@ private:
                 });
                 conn->commit();
             };
-
+            
             if (thread != nullptr)
-                thread->dispatch(handler);
+            {
+                thread->dispatch([this, handler, &awaiter](uint8_t) { handler(awaiter); });
+            }
             else
-                handler(-1);
+            {
+                handler(awaiter);
+            }
         });
         conn->commit();
     }
@@ -152,9 +156,9 @@ private:
 
 public:
     template <typename T>
-    fb::awaitable<T> sync(const std::string& key, const std::function<T()>& fn)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>()>& fn)
     {
-        return fb::awaitable<T>([this, key, &fn](auto& awaitable) mutable
+        return fb::awaiter<T>([this, key, &fn](auto& awaiter) mutable
         {
             try
             {
@@ -168,15 +172,15 @@ public:
                         return;
 
                     if (msg != uuid)
-                        this->try_lock(key, awaitable, fn, uuid, conn, subs, thread);
+                        this->try_lock(key, awaiter, fn, uuid, conn, subs, thread);
                 });
                 subs->commit();
-                this->try_lock(key, awaitable, fn, uuid, conn, subs, thread);
+                this->try_lock(key, awaiter, fn, uuid, conn, subs, thread);
             }
             catch(std::exception& e)
             {
-                awaitable.error = std::make_unique<std::runtime_error>(e.what());
-                awaitable.handler.resume();
+                awaiter.error = std::make_unique<std::runtime_error>(e.what());
+                awaiter.handler.resume();
             }
         });
     }

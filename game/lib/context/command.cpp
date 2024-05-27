@@ -443,14 +443,18 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
 
-    auto result = co_await this->_redis.sync<bool>(key, [this, &session, seconds]()
+    // 데드락 발생 케이스
+    auto result = co_await this->_redis.sync<bool>(key, [this, &session, seconds, key]() -> fb::task<bool>
     {
-        for (int i = 0; i < seconds; i++)
+        co_return co_await this->_redis.sync<bool>(key, [this, &session, seconds]() -> fb::task<bool>
         {
-            session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
-            std::this_thread::sleep_for(1s);
-        }
-        return true;
+            for (int i = 0; i < seconds; i++)
+            {
+                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+                std::this_thread::sleep_for(1s);
+            }
+            co_return true;
+        });
     });
 
     co_return result;

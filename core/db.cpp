@@ -226,20 +226,20 @@ void fb::db::base_context::exec(uint32_t id, const std::string& sql)
 
 fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
 {
-    auto await_callback = [this, id, sql](auto& awaitable)
+    auto await_callback = [this, id, sql](auto& awaiter)
     {
-        this->enqueue(id, task {sql, [&awaitable] (auto& results) 
+        this->enqueue(id, task {sql, [&awaiter] (auto& results) 
         {
-            awaitable.result = &results;
-            awaitable.handler.resume();
-        }, [&awaitable] (auto& e)
+            awaiter.result = &results;
+            awaiter.handler.resume();
+        }, [&awaiter] (auto& e)
         {
-            awaitable.error = std::make_unique<std::runtime_error>(e.what());
-            awaitable.handler.resume();
+            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.handler.resume();
         }});
     };
 
-    return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
+    return fb::awaiter<std::vector<daotk::mysql::result>>(await_callback);
 }
 
 void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& queries)

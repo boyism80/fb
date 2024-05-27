@@ -138,8 +138,8 @@ public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     object::types               type() const final;
-    fb::awaitable<bool>         co_map(fb::game::map* map, const point16_t& position) final;
-    fb::awaitable<bool>         co_map(fb::game::map* map) final;
+    fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position) final;
+    fb::awaiter<bool>           co_map(fb::game::map* map) final;
     bool                        map(fb::game::map* map, const point16_t& position) final;
     bool                        map(fb::game::map* map) final;
 
@@ -353,7 +353,7 @@ public:
     virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
     virtual void                on_option(session& me, fb::game::OPTION option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
-    virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable = nullptr) = 0;
+    virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;

@@ -7,25 +7,124 @@
 
 namespace fb {
 
-template <typename T>
-struct task
+#pragma region abstract
+template <typename E>
+class awaitable
 {
-    struct promise_type;
+public:
+    std::unique_ptr<E> error;
+    std::coroutine_handle<> handler;
+
+public:
+    awaitable() = default;
+    ~awaitable() = default;
+
+public:
+    virtual bool await_ready()
+    {
+        return false;
+    }
+
+    virtual void await_suspend(std::coroutine_handle<> h)
+    {
+        this->handler = h;
+    }
+
+    void await_resume()
+    {
+        if (this->error != nullptr)
+            throw* this->error;
+    }
+};
+
+template <typename T, typename E>
+class awaiter;
+
+template <typename T, typename E>
+using awaiter_handler = std::function<void(awaiter<T, E>&)>;
+
+
+
+template <typename T, typename E = std::runtime_error>
+class base_awaiter : public awaitable<E>
+{
+private:
+    const awaiter_handler<T, E> _callback;
+
+protected:
+    base_awaiter(const awaiter_handler<T, E>& callback) : _callback(callback)
+    {}
+
+public:
+    virtual ~base_awaiter()
+    {}
+
+public:
+    virtual void await_suspend(std::coroutine_handle<> h)
+    {
+        awaitable<E>::await_suspend(h);
+        this->_callback(static_cast<awaiter<T, E>&>(*this));
+    }
+};
+#pragma endregion
+
+template <typename T, typename E = std::runtime_error>
+class awaiter : public base_awaiter<T, E>
+{
+public:
+    T* result;
+
+public:
+    awaiter(const awaiter_handler<T, E>& callback) : base_awaiter<T, E>(callback), result(nullptr)
+    { }
+    virtual ~awaiter()
+    { }
+
+public:
+    T await_resume()
+    {
+        base_awaiter<T, E>::await_resume();
+        return std::move(*this->result);
+    }
+};
+
+template <typename E>
+class awaiter<void, E> : public base_awaiter<void, E>
+{
+public:
+    awaiter(const awaiter_handler<void, E>& callback) : base_awaiter<void, E>(callback)
+    { }
+    virtual ~awaiter()
+    { }
+};
+
+
+template <typename T>
+class task : public awaitable<std::runtime_error>
+{
+public:
+    class promise_type;
     using handle_type = std::coroutine_handle<promise_type>;
 
-    struct promise_type
+    class promise_type
     {
+    public:
         std::optional<T> _value;
         std::exception_ptr _exception;
-        std::coroutine_handle<> _handler;
+        awaitable<std::runtime_error>* _awaitable = nullptr;
 
-        auto get_return_object()        { return task(handle_type::from_promise(*this)); }
-        auto initial_suspend()          { return std::suspend_never{}; }
-        auto final_suspend() noexcept   { return std::suspend_always{}; }
-        void unhandled_exception()      { this->_exception = std::current_exception(); }
+        auto get_return_object() { return task(handle_type::from_promise(*this)); }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_always{}; }
+        void unhandled_exception() { this->_exception = std::current_exception(); }
 
         template<std::convertible_to<T> From>
-        void return_value(From&& from)  { this->_value = std::forward<From>(from); if(_handler) this->_handler.resume(); }
+        void return_value(From&& from)
+        {
+            this->_value = std::forward<From>(from);
+            if (_awaitable != nullptr)
+                _awaitable->handler.resume();
+        }
     };
 
     handle_type _handler;
@@ -33,21 +132,24 @@ struct task
     task(handle_type handler) : _handler(handler) { }
     ~task() { }
 
-    bool await_ready()
-    {
-        return false;
-    }
-
     void await_suspend(std::coroutine_handle<> h)
     {
-        this->_handler.promise()._handler = h;
+        awaitable<std::runtime_error>::await_suspend(h);
 
-        if (this->_handler.promise()._exception)
+        auto& promise = this->_handler.promise();
+        promise._awaitable = this;
+        if (promise._exception)
             std::rethrow_exception(this->_handler.promise()._exception);
+
+        if (promise._value.has_value())
+        {
+            awaitable<std::runtime_error>::handler.resume();
+        }
     }
 
     T await_resume()
     {
+        awaitable<std::runtime_error>::await_resume();
         return this->value();
     }
 
@@ -58,62 +160,75 @@ struct task
 
     void operator()()
     {
-        this->_handler();
-        if (this->_handler.promise()._exception)
-            std::rethrow_exception(this->_handler.promise()._exception);
+        auto& promise = this->_handler.promise();
+        if (promise._awaitable != nullptr)
+        {
+            promise._awaitable->_handler.resume();
+        }
+        else
+        {
+            this->_handler.resume();
+        }
+
+        if (promise._exception)
+            std::rethrow_exception(promise._exception);
     }
 
     T value()
     {
-        if (this->_handler.promise()._exception)
-            std::rethrow_exception(this->_handler.promise()._exception);
+        auto& promise = this->_handler.promise();
+        if (promise._exception)
+            std::rethrow_exception(promise._exception);
 
-        if (this->_handler.promise()._value.has_value() == false)
+        if (promise._value.has_value() == false)
             throw std::runtime_error("value is empty");
 
-        return *this->_handler.promise()._value;
+        return *promise._value;
     }
 };
 
 template <>
-struct task<void>
+class task<void> : public awaitable<std::runtime_error>
 {
-    struct promise_type;
+public:
+    class promise_type;
     using handle_type = std::coroutine_handle<promise_type>;
 
-    struct promise_type
+    class promise_type
     {
+    public:
         std::exception_ptr _exception;
-        std::coroutine_handle<> _handler;
+        awaitable<std::runtime_error>* _awaitable = nullptr;
 
-        auto get_return_object()        { return task(handle_type::from_promise(*this)); }
-        auto initial_suspend()          { return std::suspend_never{}; }
-        auto final_suspend() noexcept   { return std::suspend_always{}; }
-        void return_void()              { }
-        void unhandled_exception()      { this->_exception = std::current_exception(); if(this->_handler) this->_handler.resume(); }
+        auto get_return_object() { return task(handle_type::from_promise(*this)); }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_always{}; }
+        void unhandled_exception() { this->_exception = std::current_exception(); }
+        void return_void() 
+        {
+            if (_awaitable != nullptr)
+                _awaitable->handler.resume();
+        }
     };
 
     handle_type _handler;
 
-    task(handle_type handler) : _handler(handler) {}
+    task(handle_type handler) : _handler(handler) { }
     ~task() { }
-
-    bool await_ready()
-    {
-        return false;
-    }
 
     void await_suspend(std::coroutine_handle<> h)
     {
-        this->_handler.promise()._handler = h;
+        awaitable<std::runtime_error>::await_suspend(h);
 
-        if (this->_handler.promise()._exception)
+        auto& promise = this->_handler.promise();
+        promise._awaitable = this;
+        if (promise._exception)
             std::rethrow_exception(this->_handler.promise()._exception);
     }
 
     void await_resume()
     {
-
+        awaitable<std::runtime_error>::await_resume();
     }
 
     bool done()
@@ -123,82 +238,18 @@ struct task<void>
 
     void operator()()
     {
-        this->_handler();
-        if (this->_handler.promise()._exception)
-            std::rethrow_exception(this->_handler.promise()._exception);
-    }
-};
+        auto& promise = this->_handler.promise();
+        if (promise._awaitable != nullptr)
+        {
+            promise._awaitable->handler.resume();
+        }
+        else
+        {
+            this->_handler.resume();
+        }
 
-template <typename R, typename E>
-class awaitable;
-
-template <typename R, typename E>
-using awaitable_callback_handler = std::function<void(awaitable<R, E>&)>;
-
-template <typename R, typename E = std::runtime_error>
-class awaitable
-{
-private:
-    const awaitable_callback_handler<R, E> _callback;
-
-public:
-    R*                              result;
-    std::unique_ptr<E>              error;
-    std::coroutine_handle<>         handler;
-
-public:
-    awaitable(const awaitable_callback_handler<R, E>& callback) : _callback(callback), result(nullptr)
-    { }
-    virtual ~awaitable()
-    { }
-
-    virtual bool                    await_ready()
-    {
-        return false;
-    }
-    virtual void                    await_suspend(std::coroutine_handle<> h)
-    {
-        this->handler = h;
-        this->_callback(*this);
-    }
-    virtual R                       await_resume()
-    {
-        if (this->error != nullptr)
-            throw *this->error;
-
-        return std::move(*this->result);
-    }
-};
-
-template <typename E>
-class awaitable<void, E>
-{
-private:
-    const awaitable_callback_handler<void, E> _callback;
-
-public:
-    std::unique_ptr<E>              error;
-    std::coroutine_handle<>         handler;
-
-public:
-    awaitable(const awaitable_callback_handler<void, E>& callback) : _callback(callback)
-    { }
-    virtual ~awaitable()
-    { }
-
-    virtual bool                    await_ready()
-    {
-        return false;
-    }
-    virtual void                    await_suspend(std::coroutine_handle<> h)
-    {
-        this->handler = h;
-        this->_callback(*this);
-    }
-    virtual void                    await_resume()
-    {
-        if (this->error != nullptr)
-            throw *this->error;
+        if (promise._exception)
+            std::rethrow_exception(promise._exception);
     }
 };
 

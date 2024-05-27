@@ -865,17 +865,17 @@ void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
     });
 }
 
-fb::awaitable<void> fb::game::context::co_save(fb::game::session& session)
+fb::awaiter<void> fb::game::context::co_save(fb::game::session& session)
 {
-    auto await_callback = [this, &session](auto& awaitable)
+    auto await_callback = [this, &session](auto& awaiter)
     {
-        this->save(session, [this, &awaitable] (auto& session)
+        this->save(session, [this, &awaiter] (auto& session)
         {
-            awaitable.handler.resume();
+            awaiter.handler.resume();
         });
     };
 
-    return fb::awaitable<void>(await_callback);
+    return fb::awaiter<void>(await_callback);
 }
 
 uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& socket) const
@@ -1517,8 +1517,8 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
     if (session->inited() == false)
         co_return true;
 
-    if (session->admin())
-        co_return co_await handle_command(*session, request.message);
+    if (session->admin() && co_await handle_command(*session, request.message))
+        co_return true;
     
     session->chat(request.message, request.shout);
 

@@ -62,7 +62,7 @@ private:
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
 private:
-    fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable);
+    fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter);
 
 public:
     bool                    exists(const fb::game::object& object) const;
@@ -83,7 +83,7 @@ public:
     fb::task<void>          save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
     void                    save();
     void                    save(const std::function<void(fb::game::session&)>& fn);
-    fb::awaitable<void>     co_save(fb::game::session& session);
+    fb::awaiter<void>       co_save(fb::game::session& session);
 
 public:
     fb::thread*             thread(const fb::game::map* map) const;
@@ -227,7 +227,7 @@ public:
     void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type) final;
     void                    on_option(session& me, fb::game::OPTION option, bool enabled) final;
     void                    on_level_up(session& me) final;
-    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable = nullptr) final;
+    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) final;
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) final;
