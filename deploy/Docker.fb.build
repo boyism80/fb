@@ -1,24 +1,13 @@
 FROM ubuntu:18.04
-  
+
 RUN apt-get update -y
 RUN apt-get upgrade -y
-RUN apt-get install make -y
-RUN apt-get install wget -y
-RUN apt-get install libjsoncpp-dev -y
-RUN apt-get install lua5.3-dev -y
-RUN apt-get install libmysqlcppconn-dev -y
-RUN apt-get install libmysqlclient-dev -y
-RUN apt-get install redis -y
-RUN apt-get install libssl-dev -y
-RUN apt-get install libncurses5-dev libncursesw5-dev -y
-RUN apt-get install python3-pip -y
-RUN apt-get install default-jre -y
-RUN apt-get install unzip -y
-RUN apt-get install libboost-program-options-dev -y
+RUN apt-get install git make wget libjsoncpp-dev lua5.3-dev libmysqlcppconn-dev libmysqlclient-dev redis libssl-dev libncurses5-dev libncursesw5-dev python3-pip default-jre unzip libboost-program-options-dev -y
 RUN pip3 install --upgrade --ignore-installed pip setuptools
 RUN pip3 install fabric3 
 RUN pip3 install jinja2
 
+# zlib
 RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz
 RUN tar xvfz zlib-1.1.4.tar.gz
 WORKDIR /zlib-1.1.4
@@ -29,22 +18,48 @@ WORKDIR /
 RUN rm -f zlib-1.1.4.tar.gz
 RUN rm -rf zlib-1.1.4
 
-
+# boost
 RUN wget -O boost_1_74_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz
 RUN tar xvf boost_1_74_0.tar.gz
-
 WORKDIR /boost_1_74_0
 RUN ./bootstrap.sh --prefix=/usr/
 RUN ./b2 --with-program_options
 RUN ./b2 install
-
 WORKDIR /
 RUN rm -f boost_1_74_0.tar.gz
 RUN rm -rf boost_1_74_0
 
+# gcc & g++
 RUN apt-get install software-properties-common -y
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install gcc-10 g++-10 -y
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 102 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+
+
+# cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.22.3/cmake-3.22.3.tar.gz
+RUN tar -xvzf cmake-3.22.3.tar.gz
+WORKDIR ./cmake-3.22.3
+RUN ./bootstrap -- -DCMAKE_USE_OPENSSL=OFF
+RUN make
+RUN make install
+WORKDIR /
+RUN rm cmake-3.22.3.tar.gz
+RUN rm -rf cmake-3.22.3
+
+# cpp_redis
+RUN git clone https://github.com/cpp-redis/cpp_redis.git
+WORKDIR ./cpp_redis
+RUN git submodule init && git submodule update
+WORKDIR ./tacopie
+RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
+WORKDIR ../
+RUN mkdir build
+WORKDIR ./build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release
+RUN make
+RUN make install
+WORKDIR /
+RUN rm -rf cpp_redis
