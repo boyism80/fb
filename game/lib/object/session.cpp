@@ -843,7 +843,7 @@ bool fb::game::session::deposit_item(fb::game::item& item)
 {
     if (item.attr(fb::game::item::ATTRIBUTE::BUNDLE))
     {
-        auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto& deposited_item)
+        auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
         {
             auto model = deposited_item->based<fb::game::item>();
             return item.based<fb::game::item>() == model;
@@ -903,7 +903,7 @@ bool fb::game::session::deposit_item(const std::string& name, uint16_t count)
 
 fb::game::item* fb::game::session::deposited_item(const fb::game::item::model& item) const
 {
-    auto found = std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](auto& deposited_item)
+    auto found = std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](fb::game::item* deposited_item)
     {
         return deposited_item->based<fb::game::item>() == &item;
     });
@@ -969,7 +969,7 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
 
 fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16_t count)
 {
-    auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](auto& deposited_item)
+    auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](fb::game::item* deposited_item)
     {
         auto model = deposited_item->based<fb::game::item>();
         return model->name == name;
@@ -984,7 +984,7 @@ fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16
 
 fb::game::item* fb::game::session::withdraw_item(const fb::game::item::model& item, uint16_t count)
 {
-    auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto& deposited_item)
+    auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
     {
         auto model = deposited_item->based<fb::game::item>();
         return model == &item;
