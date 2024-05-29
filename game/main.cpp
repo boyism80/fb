@@ -1,10 +1,6 @@
 #include "resource.h"
 #include <fb/game/context.h>
 #include <fb/core/leak.h>
-#include <redis-cpp/stream.h>
-#include <redis-cpp/execute.h>
-#include <fb/core/redis.h>
-#include <cpp_redis/cpp_redis>
 
 bool load_db(fb::console& c, fb::game::context& context)
 {

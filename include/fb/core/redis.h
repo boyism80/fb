@@ -115,7 +115,7 @@ private:
             if (success == false)
                 return;
 
-            auto handler = [this, &fn, conn, subs, key, uuid](auto& awaiter) -> fb::task<void>
+            auto handler = [this, &fn, conn, subs, key, uuid](auto& awaiter) mutable -> fb::task<void>
             {
                 try
                 {
@@ -128,13 +128,13 @@ private:
                 }
                 awaiter.handler.resume();
 
-                conn->del({ key }, [this, conn, subs, key](auto& reply)  mutable
+                conn->del({ key }, [this, conn, subs, key](auto& reply) mutable
                 {
                     subs->unsubscribe(key);
                     subs->commit();
                     this->pool.subs.release(subs);
                 });
-                conn->publish(key, uuid, [this, conn](auto& reply)  mutable
+                conn->publish(key, uuid, [this, conn](auto& reply) mutable
                 {
                     this->pool.conn.release(conn);
                 });
@@ -143,7 +143,7 @@ private:
             
             if (thread != nullptr)
             {
-                thread->dispatch([this, handler, &awaiter](uint8_t) { handler(awaiter); });
+                thread->dispatch([this, handler, &awaiter](uint8_t) mutable { handler(awaiter); });
             }
             else
             {
