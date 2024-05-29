@@ -71,18 +71,6 @@ public:
     }
 };
 
-class redis_pools
-{
-public:
-    redis_pool<cpp_redis::subscriber>   subs;
-    redis_pool<cpp_redis::client>       conn;
-
-public:
-    redis_pools(const std::string& ip, uint16_t port) : subs(ip, port), conn(ip, port)
-    { }
-};
-
-
 class redis
 {
 private:
@@ -90,10 +78,11 @@ private:
     uint8_t                             _timeout;
 
 public:
-    redis_pools                         pool;
+    redis_pool<cpp_redis::subscriber>   subs;
+    redis_pool<cpp_redis::client>       conn;
 
 public:
-	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), pool(ip, port), _timeout(timeout)
+	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), subs(ip, port), conn(ip, port), _timeout(timeout)
 	{ }
 	~redis() = default;
 
@@ -132,11 +121,11 @@ private:
                 {
                     subs->unsubscribe(key);
                     subs->commit();
-                    this->pool.subs.release(subs);
+                    this->subs.release(subs);
                 });
                 conn->publish(key, uuid, [this, conn](auto& reply) mutable
                 {
-                    this->pool.conn.release(conn);
+                    this->conn.release(conn);
                 });
                 conn->commit();
             };
@@ -162,8 +151,8 @@ public:
         {
             try
             {
-                auto conn = this->pool.conn.get();
-                auto subs = this->pool.subs.get();
+                auto conn = this->conn.get();
+                auto subs = this->subs.get();
                 auto thread = this->_owner.current_thread();
                 auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
                 subs->subscribe(key, [&, this, key, uuid, conn, subs, thread](const std::string& chan, const std::string& msg) mutable

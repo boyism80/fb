@@ -5,7 +5,7 @@ fb::base::acceptor<S, T>::acceptor(boost::asio::io_context& context, uint16_t po
     icontext(context, port),
     _context(context),
     _threads(context, num_threads),
-    _redis(*this)
+    _redis(*this, fb::config::get()["redis"]["default"]["ip"].asString(), fb::config::get()["redis"]["default"]["port"].asUInt())
 {
     this->accept();
 }

@@ -8,15 +8,24 @@
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}
     },
     "log": ["info", "fatal"],
+    "redis": {
+{%- for key, value in redis.items() %}
+        "{{ key }}": 
+        {
+            "ip": "{{ value.ip }}",
+            "port": {{ value.port }},
+            "db": {{ value.db }}
+        }{%- if not loop.last %}, {% endif %}
+{%- endfor %}
+    },
     "entrypoints": [
-        {% for entry in deploy.gateway[name].entrypoints -%}
+{%- for entry in deploy.gateway[name].entrypoints %}
         {
             "name": "{{  entry.name }}",
             "desc": "{{ entry.desc }}",
             "ip": "{{ deploy.login[entry.login].ip }}",
             "port": {{ deploy.login[entry.login].port }}
-        }{% if not loop.last %}, 
-        {% endif %}
-        {%- endfor %}
+        }{% if not loop.last %}, {% endif %}
+{%- endfor %}
     ]
 }

@@ -5,10 +5,19 @@
     "table": {
         "host": "table/host.json"
     },
+    "redis": {
+{%- for key, value in redis.items() %}
+        "{{ key }}": 
+        {
+            "ip": "{{ value.ip }}",
+            "port": {{ value.port }},
+            "db": {{ value.db }}
+        }{%- if not loop.last %}, {% endif %}
+{%- endfor %}
+    },
     "hosts": {
-        {% for name, config in deploy.game.items() -%}
-        "{{ name }}": { "ip": "{{ config.ip }}", "port": {{ config.port }} }{% if not loop.last %}, 
-        {% endif %}
-        {%- endfor %}
+{%- for name, config in deploy.game.items() %}
+        "{{ name }}": { "ip": "{{ config.ip }}", "port": {{ config.port }} }{% if not loop.last %}, {% endif %}
+{%- endfor %}
     }
 }
