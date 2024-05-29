@@ -3,7 +3,7 @@ DEFINE			= -DREDISCPP_HEADER_ONLY
 BUILD           = ../dist/fb/game
 STD             = -std=c++20
 TARGET          = $(BUILD)/game 
-LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw -lboost_program_options -fcoroutines
+LIBS            = -ljsoncpp -lz -lpthread -lmysqlclient -lcrypto -llua5.3 -lncursesw -lboost_program_options -lcpp_redis -fcoroutines
 INC             = -I.. -I. -I../plugin/linux -I/usr/include/mysql -I../include
 
 all: $(BUILD)/config.o $(BUILD)/console.o $(BUILD)/logger.o $(BUILD)/cryptor.o $(BUILD)/db.o $(BUILD)/encoding.o $(BUILD)/query.o $(BUILD)/stream.o $(BUILD)/table.o $(BUILD)/thread.o $(BUILD)/time.o $(BUILD)/format.o $(BUILD)/board.o $(BUILD)/clan.o $(BUILD)/model.o $(BUILD)/door.o $(BUILD)/group.o $(BUILD)/listener.o $(BUILD)/mmo.o $(BUILD)/query_game.o $(BUILD)/spell.o $(BUILD)/trade.o $(BUILD)/regex.o $(BUILD)/command.o $(BUILD)/context.o $(BUILD)/handler.o $(BUILD)/armor.o $(BUILD)/auxiliary.o $(BUILD)/bow.o $(BUILD)/cash.o $(BUILD)/consume.o $(BUILD)/equipment.o $(BUILD)/helmet.o $(BUILD)/item.o $(BUILD)/itemmix.o $(BUILD)/items.o $(BUILD)/pack.o $(BUILD)/ring.o $(BUILD)/shield.o $(BUILD)/weapon.o $(BUILD)/built_in.o $(BUILD)/lua.o $(BUILD)/map.o $(BUILD)/sector.o $(BUILD)/life.o $(BUILD)/mob.o $(BUILD)/npc.o $(BUILD)/object.o $(BUILD)/session.o $(BUILD)/dialog.o $(BUILD)/life_builtin.o $(BUILD)/mob_builtin.o $(BUILD)/npc_builtin.o $(BUILD)/object_builtin.o $(BUILD)/session_builtin.o $(BUILD)/main.o
