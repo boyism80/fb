@@ -41,27 +41,11 @@ pipeline {
         }
 
         stage('Deploy') {
-            parallel {
-                stage('internal') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
-                    }
-                }
-                stage('gateway') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
-                    }
-                }
-                stage('login') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
-                    }
-                }
-                stage('game') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
-                    }
-                }
+            steps { 
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
             }
         }
 
