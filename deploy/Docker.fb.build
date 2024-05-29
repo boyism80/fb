@@ -55,7 +55,9 @@ WORKDIR ./cpp_redis
 RUN git submodule init && git submodule update
 WORKDIR ./tacopie
 RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
+RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${tacopie_sources})/add_library(${PROJECT_NAME} ${tacopie_sources})/' CMakeLists.txt
 WORKDIR ../
+RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${cpp_redis_sources})/add_library(${PROJECT_NAME} ${cpp_redis_sources})/' CMakeLists.txt
 RUN mkdir build
 WORKDIR ./build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release
