@@ -32,27 +32,11 @@ pipeline {
         }
 
         stage('Build') {
-            parallel { 
-                stage('internal') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:internal'
-                    }
-                }
-                stage('gateway') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:gateway'
-                    }
-                }
-                stage('login') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:login'
-                    }
-                }
-                stage('game') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:game'
-                    }
-                }
+            steps { 
+                sh 'fab -f deploy/fabfile.py build:game'
+                sh 'fab -f deploy/fabfile.py build:login'
+                sh 'fab -f deploy/fabfile.py build:internal'
+                sh 'fab -f deploy/fabfile.py build:gateway'
             }
         }
 
