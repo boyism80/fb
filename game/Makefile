@@ -1,4 +1,4 @@
-CXX             = g++-12 -g
+CXX             = g++ -g
 DEFINE          = -DREDISCPP_HEADER_ONLY
 BUILD           = ../dist/fb/game
 STD             = -std=c++20

@@ -3,6 +3,7 @@ FROM ubuntu:22.04
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install git make cmake gcc-12 g++-12 wget libjsoncpp-dev lua5.3-dev libmysqlcppconn-dev libmysqlclient-dev redis libssl-dev libncurses5-dev libncursesw5-dev python3-pip default-jre unzip libboost-program-options-dev -y
+RUN ln -s -f /usr/bin/gcc-12 /usr/bin/gcc && ln -s -f /usr/bin/g++-12 /usr/bin/g++
 RUN pip3 install --upgrade --ignore-installed pip setuptools
 RUN pip3 install fabric3 
 RUN pip3 install jinja2
@@ -19,15 +20,15 @@ RUN rm -f zlib-1.1.4.tar.gz
 RUN rm -rf zlib-1.1.4
 
 # boost
-RUN wget -O boost_1_74_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz
-RUN tar xvf boost_1_74_0.tar.gz
-WORKDIR /boost_1_74_0
+RUN wget -O boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
+RUN tar xvf boost_1_84_0.tar.gz
+WORKDIR /boost_1_84_0
 RUN ./bootstrap.sh --prefix=/usr/
 RUN ./b2 --with-program_options
 RUN ./b2 install
 WORKDIR /
-RUN rm -f boost_1_74_0.tar.gz
-RUN rm -rf boost_1_74_0
+RUN rm -f boost_1_84_0.tar.gz
+RUN rm -rf boost_1_84_0
 
 # cpp_redis
 RUN git clone https://github.com/cpp-redis/cpp_redis.git

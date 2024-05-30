@@ -1,4 +1,4 @@
-CXX             = g++-12 -g
+CXX             = g++ -g
 BUILD           = ../dist/fb/gateway
 STD             = -std=c++20
 TARGET          = $(BUILD)/gateway
