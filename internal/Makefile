@@ -1,4 +1,4 @@
-CXX             = g++ -g
+CXX             = g++-12 -g
 BUILD           = ../dist/fb/internal
 STD             = -std=c++20
 TARGET          = $(BUILD)/internal

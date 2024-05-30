@@ -1,15 +1,8 @@
-FROM ubuntu:18.04
+FROM ubuntu:22.04
   
 RUN apt-get update -y
 RUN apt-get upgrade -y
-RUN apt-get install software-properties-common -y
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y
-RUN apt-get install libjsoncpp-dev -y
-RUN apt-get install lua5.3-dev -y
-RUN apt-get install libmysqlclient-dev -y
-RUN apt-get install libstdc++-10-dev -y
-RUN apt-get install libboost-program-options-dev -y
-RUN apt-get install wget -y
+RUN apt-get install libjsoncpp-dev lua5.3-dev libmysqlclient-dev libstdc++-12-dev libboost-program-options-dev wget -y
 
 RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz
 RUN tar xvfz zlib-1.1.4.tar.gz
