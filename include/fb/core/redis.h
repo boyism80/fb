@@ -1,9 +1,10 @@
-#ifndef	__REDIS_H__
-#define	__REDIS_H__
+#ifndef __REDIS_H__
+#define __REDIS_H__
 
 #include <functional>
 #include <queue>
 #include <set>
+#include <map>
 #include <cpp_redis/cpp_redis>
 #include <fb/core/coroutine.h>
 #include <fb/core/abstract.h>
@@ -76,29 +77,38 @@ class redis
 private:
     icontext&                           _owner;
     uint8_t                             _timeout;
+    std::map<std::string, std::string>  _scripts;
 
 public:
     redis_pool<cpp_redis::subscriber>   subs;
     redis_pool<cpp_redis::client>       conn;
 
 public:
-	redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), subs(ip, port), conn(ip, port), _timeout(timeout)
-	{ }
-	~redis() = default;
+    redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) : _owner(owner), subs(ip, port), conn(ip, port), _timeout(timeout)
+    {
+        auto conn = this->conn.get();
+        auto script =
+            "local success = redis.call('setnx', KEYS[1], 'lock')\n"
+            "if success == 1 then\n"
+            "    redis.call('expire', KEYS[1], ARGV[1])\n"
+            "end\n"
+            "return success";
+
+        conn->script_load(script, [this, conn](auto& reply) mutable
+        {
+            auto hash = reply.as_string();
+            _scripts.insert({"lock", hash});
+            this->conn.release(conn);
+        });
+        conn->sync_commit();
+    }
+    ~redis() = default;
 
 private:
     template <typename T>
     void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread)
     {
-        auto script =
-        "local success = redis.call('setnx', KEYS[1], 'lock')\n"
-        "if success == 1 then\n"
-        "    redis.call('expire', KEYS[1], ARGV[1])\n"
-        "end\n"
-        "return success\n";
-
-
-        conn->eval(script, 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn](cpp_redis::reply& v) mutable
+        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
