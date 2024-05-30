@@ -4,7 +4,7 @@
 #include <map>
 #include <ctime>
 #include <chrono>
-#include <boost/asio.hpp>
+#include <fb/core/abstract.h>
 #include <zlib.h>
 #include <functional>
 #include <iomanip>
@@ -12,14 +12,14 @@
 #include <fb/core/socket.h>
 #include <fb/protocol/protocol.h>
 #include <fb/core/logger.h>
-#include <fb/core/thread.h>
+#include <fb/core/redis.h>
 
 using namespace std::chrono_literals;
 
 namespace fb { namespace base {
 
 template <template<class> class S, class T>
-class acceptor : public boost::asio::ip::tcp::acceptor
+class acceptor : public icontext
 {
 private:
     fb::threads                                 _threads;
@@ -30,6 +30,7 @@ protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::unique_ptr<fb::internal::socket<>>     _internal;
+    fb::redis                                   _redis;
 
 
 public:
@@ -48,7 +49,7 @@ protected:
     const fb::threads&                          threads() const;
 
     template <typename R>
-    fb::task<void>                              co_internal_request(fb::awaitable<R, boost::system::error_code>& awaitable, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
+    fb::task<void>                              co_internal_request(fb::awaiter<R, boost::system::error_code>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
 
 protected:
     virtual void                                handle_start() {}
@@ -75,15 +76,15 @@ public:
 
 public:
     template <typename R>
-    fb::awaitable<R, boost::system::error_code> request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    fb::awaiter<R, boost::system::error_code>   request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
     bool                                        precedence(S<T>*, fb::queue_callback&& fn);
-    fb::awaitable<void>                         precedence(S<T>*);
+    fb::awaiter<void>                           precedence(S<T>*);
     bool                                        dispatch(S<T>*, fb::queue_callback&& fn);
-    fb::awaitable<void>                         dispatch(S<T>*);
+    fb::awaiter<void>                           dispatch(S<T>*);
     void                                        run(int thread_size);
     bool                                        running() const;
-    fb::awaitable<void>                         sleep(const std::chrono::steady_clock::duration& duration);
+    fb::awaiter<void>                           sleep(const std::chrono::steady_clock::duration& duration);
     void                                        exit();
 
 public:
@@ -113,7 +114,7 @@ private:
     fb::task<bool>              default_handler();
     fb::task<void>              connect_internal();
     fb::task<bool>              call(fb::socket<T>& socket, uint8_t cmd);
-    fb::awaitable<void>         co_connect_internal(const std::string& ip, uint16_t port);
+    fb::awaiter<void>           co_connect_internal(const std::string& ip, uint16_t port);
     bool                        handle_internal_receive(fb::base::socket<>& socket);
 
 protected:

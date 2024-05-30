@@ -78,7 +78,7 @@ public:
     virtual ~object();
 
 private:
-    fb::task<bool>                      __map(fb::game::map* map, const point16_t position, fb::awaitable<bool>* awaitable = nullptr);
+    fb::task<bool>                      __map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter = nullptr);
     void                                leave();
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 
@@ -120,8 +120,8 @@ public:
     fb::game::DIRECTION_TYPE                 direction() const;
     bool                                direction(fb::game::DIRECTION_TYPE value);
 
-    virtual fb::awaitable<bool>         co_map(fb::game::map* map, const point16_t& position);
-    virtual fb::awaitable<bool>         co_map(fb::game::map* map);
+    virtual fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position);
+    virtual fb::awaiter<bool>           co_map(fb::game::map* map);
     virtual bool                        map(fb::game::map* map, const point16_t& position);
     virtual bool                        map(fb::game::map* map);
     fb::game::map*                      map() const;

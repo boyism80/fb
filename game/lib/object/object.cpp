@@ -405,7 +405,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaitable<bool>* awaitable)
+fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
 {
     try
     {
@@ -431,10 +431,10 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             this->_position = point16_t(1, 1); // 가상계 위치
             this->sector(nullptr);
             auto result = true;
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return result;
         }
@@ -443,10 +443,10 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         {
             this->position(position, true);
             auto result = true;
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return result;
         }
@@ -454,10 +454,10 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         if(map->active == false)
         {
             auto result = false;
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return result;
         }
@@ -494,10 +494,10 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         }
 
         auto result = true;
-        if(awaitable != nullptr)
+        if(awaiter != nullptr)
         {
-            awaitable->result = &result;
-            awaitable->handler.resume();
+            awaiter->result = &result;
+            awaiter->handler.resume();
         }
         this->_map_lock = false;
         co_return result;
@@ -512,15 +512,15 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
     }
 }
 
-fb::awaitable<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
 {
-    return fb::awaitable<bool>([this, map, position](auto& awaitable)
+    return fb::awaiter<bool>([this, map, position](auto& awaiter)
     {
-        this->__map(map, position, &awaitable);
+        this->__map(map, position, &awaiter);
     });
 }
 
-fb::awaitable<bool> fb::game::object::co_map(fb::game::map* map)
+fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }

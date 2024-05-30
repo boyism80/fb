@@ -455,13 +455,12 @@ int main(int argc, const char** argv)
         boost::asio::io_context io_context;
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
-        
+
         load_db(c, *context);
         
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
 
-        auto npc = fb::game::model::npcs.name2npc("³«¶û");
         while (context->running())
         {
             std::this_thread::sleep_for(100ms);

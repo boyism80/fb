@@ -1,4 +1,5 @@
 #include <fb/game/context.h>
+#include <fb/core/redis.h>
 using namespace fb::game;
 
 fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session, Json::Value& parameters)
@@ -435,4 +436,22 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
     }
 
     co_return true;
+}
+
+fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session, Json::Value& parameters)
+{
+    auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
+    auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
+
+    auto result = co_await this->_redis.sync<bool>(key, [this, &session, seconds]() -> fb::task<bool>
+    {
+        for (int i = 0; i < seconds; i++)
+        {
+            session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+            std::this_thread::sleep_for(1s);
+        }
+        co_return true;
+    });
+
+    co_return result;
 }

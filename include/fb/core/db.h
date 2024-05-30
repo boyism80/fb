@@ -26,7 +26,7 @@ using task_result        = std::vector<daotk::mysql::result>&;
 using task_callback_func = std::function<void(std::vector<daotk::mysql::result>&)>;
 using task_error_func    = std::function<void(std::exception&)>;
 using workers            = std::vector<std::unique_ptr<worker>>;
-using awaiter            = fb::awaitable<std::vector<daotk::mysql::result>>;
+using awaiter            = fb::awaiter<std::vector<daotk::mysql::result>>;
 
 class connections
 {
@@ -137,14 +137,14 @@ public:
 public:
     fb::db::awaiter     co_exec(uint32_t id, const std::string& sql)
     {
-        auto await_callback = [this, sql, id](auto& awaitable)
+        auto await_callback = [this, sql, id](auto& awaiter)
         {
             auto thread = this->_owner.current_thread();
             auto task = fb::db::task
             {
                 /* sql */ sql,
                 /* callback */
-                [this, thread, &awaitable](auto& results)
+                [this, thread, &awaiter](auto& results)
                 {
                     auto data = std::make_shared<std::vector<daotk::mysql::result>>();
                     for(auto& x : results)
@@ -152,29 +152,29 @@ public:
 
                     if(thread != nullptr)
                     {
-                        thread->dispatch([&awaitable, data](uint8_t) mutable
+                        thread->dispatch([&awaiter, data](uint8_t) mutable
                         {
-                            awaitable.result = data.get();
-                            awaitable.handler.resume();
+                            awaiter.result = data.get();
+                            awaiter.handler.resume();
                         });
                     }
                     else
                     {
-                        awaitable.result = data.get();
-                        awaitable.handler.resume();
+                        awaiter.result = data.get();
+                        awaiter.handler.resume();
                     }
                 },
                 /* error */
-                [&awaitable](auto& e)
+                [&awaiter](auto& e)
                 {
-                    awaitable.error = std::make_unique<std::runtime_error>(e.what());
-                    awaitable.handler.resume();
+                    awaiter.error = std::make_unique<std::runtime_error>(e.what());
+                    awaiter.handler.resume();
                 }
             };
             this->enqueue(id, task);
         };
 
-        return fb::awaitable<std::vector<daotk::mysql::result>>(await_callback);
+        return fb::awaiter<std::vector<daotk::mysql::result>>(await_callback);
     }
     fb::db::awaiter     co_exec(const std::string& sql)
     {

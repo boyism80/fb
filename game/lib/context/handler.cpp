@@ -447,7 +447,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable)
+fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
@@ -463,10 +463,10 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         auto socket = this->sockets[response.fd];
         if(socket == nullptr)
         {
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return;
         }
@@ -488,10 +488,10 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
         
         result = true;
-        if(awaitable != nullptr)
+        if(awaiter != nullptr)
         {
-            awaitable->result = &result;
-            awaitable->handler.resume();
+            awaiter->result = &result;
+            awaiter->handler.resume();
         }
     }
     catch(std::exception& e)
@@ -500,10 +500,10 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         auto client = this->sockets[fd];
         if(client == nullptr)
         {
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return;
         }
@@ -513,10 +513,10 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         session->refresh_map();
         this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
 
-        if(awaitable != nullptr)
+        if(awaiter != nullptr)
         {
-            awaitable->result = &result;
-            awaitable->handler.resume();
+            awaiter->result = &result;
+            awaiter->handler.resume();
         }
     }
     catch(boost::system::error_code& e)
@@ -525,10 +525,10 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         auto client = this->sockets[fd];
         if(client == nullptr)
         {
-            if(awaitable != nullptr)
+            if(awaiter != nullptr)
             {
-                awaitable->result = &result;
-                awaitable->handler.resume();
+                awaiter->result = &result;
+                awaiter->handler.resume();
             }
             co_return;
         }
@@ -538,17 +538,17 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         session->refresh_map();
         this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
 
-        if(awaitable != nullptr)
+        if(awaiter != nullptr)
         {
-            awaitable->result = &result;
-            awaitable->handler.resume();
+            awaiter->result = &result;
+            awaiter->handler.resume();
         }
     }
 }
 
-void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaitable<bool>* awaitable)
+void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
 {
-    this->co_transfer(me, map, position, awaitable);
+    this->co_transfer(me, map, position, awaiter);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)

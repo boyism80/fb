@@ -1,10 +1,10 @@
 {
     "id": "login",
-    "ip": "192.168.0.100",
+    "ip": "127.0.0.1",
     "port": 3002,
     "thread": null,
     "internal": {
-        "ip": "192.168.0.100",
+        "ip": "127.0.0.1",
         "port": 3000
     },
     "transfer delay": 0,
@@ -14,7 +14,7 @@
     "admin_mode": true,
     "database": {
         "global": {
-            "ip": "192.168.0.100",
+            "ip": "127.0.0.1",
             "port": 3306,
             "name": "fb",
             "uid": "fb",
@@ -22,13 +22,21 @@
         },
         "shard": [
             {
-                "ip": "192.168.0.100",
+                "ip": "127.0.0.1",
                 "port": 3306,
                 "name": "fb",
                 "uid": "fb",
                 "pwd": "admin"
             }
         ]
+    },
+    "redis": {
+        "default": 
+        {
+            "ip": "127.0.0.1",
+            "port": 6379,
+            "db": 0
+        }
     },
     "log": ["debug", "info", "warn", "fatal"],
     "init": {

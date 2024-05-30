@@ -13,6 +13,8 @@ jsoncpp
 ncurses (Linux only)
 <br>
 [mysql+++](https://github.com/daotrungkien/mysql-modern-cpp)
+<br>
+[cpp_redis](https://github.com/cpp-redis/cpp_redis)
 
 ## Contact
  - [youtube](https://www.youtube.com/channel/UCPcH5qX7aLTFs3mgh32_FVQ?view_as=subscriber)

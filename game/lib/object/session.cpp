@@ -50,19 +50,19 @@ object::types fb::game::session::type() const
     return object::types::SESSION;
 }
 
-fb::awaitable<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
 {
     if (this->_map_lock)
-        return fb::awaitable<bool>([this, map, position](auto& awaitable) { return false; });
+        return fb::awaiter<bool>([this, map, position](auto& awaiter) { return false; });
     
     auto switch_process = (map != nullptr && map->active == false);
     if(switch_process)
     {
-        return fb::awaitable<bool>([this, map, position](auto& awaitable)
+        return fb::awaiter<bool>([this, map, position](auto& awaiter)
         {
             auto listener = this->get_listener<fb::game::session>();
             if(listener != nullptr)
-                listener->on_transfer(*this, *map, position, &awaitable);
+                listener->on_transfer(*this, *map, position, &awaiter);
         });
     }
     else
@@ -71,7 +71,7 @@ fb::awaitable<bool> fb::game::session::co_map(fb::game::map* map, const point16_
     }
 }
 
-fb::awaitable<bool> fb::game::session::co_map(fb::game::map* map)
+fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }

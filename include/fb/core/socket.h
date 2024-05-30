@@ -128,15 +128,15 @@ class awaitable_socket : public fb::base::socket<T>
 {
 public:
     template <typename R>
-    class awaitable : public fb::awaitable<R, boost::system::error_code>
+    class awaiter : public fb::awaiter<R, boost::system::error_code>
     {
     private:
         awaitable_socket<T,C>&      _owner;
         C                           _cmd;
 
     public:
-        awaitable(awaitable_socket<T,C>& owner, C cmd, const awaitable_suspend_handler<R, boost::system::error_code>& on_suspend);
-        ~awaitable();
+        awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R, boost::system::error_code>& on_suspend);
+        ~awaiter();
 
         void                        await_suspend(std::coroutine_handle<> h);
     };
@@ -152,7 +152,7 @@ public:
 
 private:
     template <typename R>
-    void                            register_awaiter(C cmd, awaitable<R>* awaitable);
+    void                            register_awaiter(C cmd, awaiter<R>* awaiter);
 
 public:
     template <typename R>
@@ -160,10 +160,10 @@ public:
 
 public:
     template <typename R>
-    awaitable<R>                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    awaiter<R>                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 
     template <typename R>
-    awaitable<R>                    request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    awaiter<R>                    request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
 };
 
 }

@@ -20,39 +20,39 @@
                                         };
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-T operator | (T flag1, T flag2)
+constexpr T operator | (T flag1, T flag2)
 {
     return static_cast<T>(static_cast<int>(flag1) | static_cast<int>(flag2));
 }
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-T operator |= (T& flag1, const T& flag2)
+constexpr T operator |= (T& flag1, const T& flag2)
 {
     flag1 = static_cast<T>(static_cast<int>(flag1) | static_cast<int>(flag2));
     return flag1;
 }
 
 template <typename T1, typename T2, typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type, typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
-bool operator && (const T1& flag1, const T2& flag2)
+constexpr bool operator && (const T1& flag1, const T2& flag2)
 {
     return static_cast<int>(flag1) && static_cast<int>(flag2);
 }
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-T operator & (T flag1, T flag2)
+constexpr T operator & (T flag1, T flag2)
 {
     return static_cast<T>(static_cast<int>(flag1) & static_cast<int>(flag2));
 }
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-T operator &= (T& flag1, const T& flag2)
+constexpr T operator &= (T& flag1, const T& flag2)
 {
     flag1 = static_cast<T>(static_cast<int>(flag1) & static_cast<int>(flag2));
     return flag1;
 }
 
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
-T operator ~ (T& flag)
+constexpr T operator ~ (T& flag)
 {
     flag = static_cast<T>(~static_cast<int>(flag));
     return flag;

@@ -106,7 +106,7 @@ private:
 
 private:
     fb::queue<fb::queue_callback>                   _queue, _precedence;
-    fb::queue<fb::awaitable<void>*>                 _dispatch_awaitable_queue, _precedence_awaitable_queue;
+    fb::queue<fb::awaiter<void>*>                   _dispatch_awaiter_queue, _precedence_awaiter_queue;
 
 public:
     thread(uint8_t index);
@@ -131,9 +131,9 @@ public:
     void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
     void                                            settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration);
     void                                            dispatch(fb::queue_callback&& fn, bool precedence = false);
-    fb::awaitable<void>                             dispatch();
-    fb::awaitable<void>                             precedence();
-    fb::awaitable<void>                             sleep(const std::chrono::steady_clock::duration& duration);
+    fb::awaiter<void>                               dispatch();
+    fb::awaiter<void>                               precedence();
+    fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();

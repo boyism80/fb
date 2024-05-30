@@ -27,25 +27,25 @@ void fb::thread::handle_thread(uint8_t index)
     while(!this->_exit)
     {
         auto fn = fb::queue_callback();
-        auto awaitable = (fb::awaitable<void>*)nullptr;
+        auto awaiter = (fb::awaiter<void>*)nullptr;
 
         while(this->_precedence.dequeue(fn))
         {
             fn(index);
         }
 
-        while(this->_precedence_awaitable_queue.dequeue(awaitable))
+        while(this->_precedence_awaiter_queue.dequeue(awaiter))
         {
-            awaitable->handler.resume();
+            awaiter->handler.resume();
         }
 
         if(this->_queue.dequeue(fn))
         {
             fn(index);
         }
-        else if(this->_dispatch_awaitable_queue.dequeue(awaitable))
+        else if(this->_dispatch_awaiter_queue.dequeue(awaiter))
         {
-            awaitable->handler.resume();
+            awaiter->handler.resume();
         }
         else
         {
@@ -127,36 +127,36 @@ void fb::thread::dispatch(fb::queue_callback&& fn, bool precedence)
         this->_queue.enqueue(std::move(fn));
 }
 
-fb::awaitable<void> fb::thread::precedence()
+fb::awaiter<void> fb::thread::precedence()
 {
-    auto await_callback = [this](auto& awaitable)
+    auto await_callback = [this](auto& awaiter)
     {
-        this->_precedence_awaitable_queue.enqueue(&awaitable);
+        this->_precedence_awaiter_queue.enqueue(&awaiter);
     };
 
-    return fb::awaitable<void>(await_callback);
+    return fb::awaiter<void>(await_callback);
 }
 
-fb::awaitable<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)
+fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)
 {
-    auto await_callback = [this, duration](auto& awaitable)
+    auto await_callback = [this, duration](auto& awaiter)
     {
-        this->dispatch([this, &awaitable]
+        this->dispatch([this, &awaiter]
         {
-            this->_dispatch_awaitable_queue.enqueue(&awaitable);
+            this->_dispatch_awaiter_queue.enqueue(&awaiter);
         }, duration);
     };
-    return fb::awaitable<void>(await_callback);
+    return fb::awaiter<void>(await_callback);
 }
 
-fb::awaitable<void> fb::thread::dispatch()
+fb::awaiter<void> fb::thread::dispatch()
 {
-    auto await_callback = [this](auto& awaitable)
+    auto await_callback = [this](auto& awaiter)
     {
-        this->_dispatch_awaitable_queue.enqueue(&awaitable);
+        this->_dispatch_awaiter_queue.enqueue(&awaiter);
     };
 
-    return fb::awaitable<void>(await_callback);
+    return fb::awaiter<void>(await_callback);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()

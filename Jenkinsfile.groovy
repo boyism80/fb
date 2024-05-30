@@ -32,52 +32,20 @@ pipeline {
         }
 
         stage('Build') {
-            parallel { 
-                stage('internal') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:internal'
-                    }
-                }
-                stage('gateway') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:gateway'
-                    }
-                }
-                stage('login') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:login'
-                    }
-                }
-                stage('game') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py build:game'
-                    }
-                }
+            steps { 
+                sh 'fab -f deploy/fabfile.py build:game'
+                sh 'fab -f deploy/fabfile.py build:login'
+                sh 'fab -f deploy/fabfile.py build:internal'
+                sh 'fab -f deploy/fabfile.py build:gateway'
             }
         }
 
         stage('Deploy') {
-            parallel {
-                stage('internal') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
-                    }
-                }
-                stage('gateway') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
-                    }
-                }
-                stage('login') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
-                    }
-                }
-                stage('game') {
-                    steps{ 
-                        sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
-                    }
-                }
+            steps { 
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
             }
         }
 
