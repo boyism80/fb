@@ -7,16 +7,16 @@ pipeline {
             }
             steps {
                 dir('internal') {
-                    sh 'make clean'
+                    sh 'rm -rf build'
                 }
                 dir('gateway') {
-                    sh 'make clean'
+                    sh 'rm -rf build'
                 }
                 dir('login') {
-                    sh 'make clean'
+                    sh 'rm -rf build'
                 }
                 dir('game') {
-                    sh 'make clean'
+                    sh 'rm -rf build'
                 }
             }
         }
