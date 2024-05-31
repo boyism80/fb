@@ -77,7 +77,7 @@ def clean():
 @task
 def build(service):
     local(f'docker pull cshyeon/fb:build')
-    local(f'docker run -v $PWD:/app -i -w /app/{service} cshyeon/fb:build make -j4')
+    local(f'docker run -v $PWD:/app -i -w /app/{service} cshyeon/fb:build mkdir build && cd build && cmake .. && make -j4 && cp ./app /app/dist/fb/{service}/app')
 
 
 @task
@@ -100,11 +100,11 @@ def deploy(service):
             json.loads(json_str)
             sudo(f"echo '{json_str}' > config.{name}.json", quiet=True)
 
-        put(f'dist/fb/{service}/{service}', '.', use_sudo=True, mode='0755')
+        put(f'dist/fb/{service}/app', '.', use_sudo=True, mode='0755')
 
         for name, config in configs['deploy'][service].items():
             sudo(f'docker pull cshyeon/fb:latest')
-            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./{service}")
+            sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./app")
 
 def current():
     global CONFIGURATION
