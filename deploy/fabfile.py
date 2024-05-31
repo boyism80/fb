@@ -77,7 +77,7 @@ def clean():
 @task
 def build(service):
     local(f'docker pull cshyeon/fb:build')
-    local(f'docker run -v $PWD:/app -i -w /app/{service} cshyeon/fb:build mkdir build && cd build && cmake .. && make -j4 && cp ./app /app/dist/fb/{service}/app')
+    local(f'docker run -v $PWD:/app -i -w /app/{service}/build cshyeon/fb:build /bin/bash -c "cmake .. && make -j4 && cp ./app /app/dist/fb/{service}/app"')
 
 
 @task
