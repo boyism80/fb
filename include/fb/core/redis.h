@@ -9,6 +9,7 @@
 #include <fb/core/coroutine.h>
 #include <fb/core/abstract.h>
 #include <fb/core/logger.h>
+#include <fb/core/mst.h>
 #include <boost/thread.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -78,6 +79,8 @@ private:
     icontext&                           _owner;
     uint8_t                             _timeout;
     std::map<std::string, std::string>  _scripts;
+    fb::mst                             _root;
+    std::set<std::string>               _routes;
 
 public:
     redis_pool<cpp_redis::subscriber>   subs;
@@ -106,26 +109,65 @@ public:
 
 private:
     template <typename T>
-    void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>()>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread)
+    void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::mst* m)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, fb::mst* trans)
     {
-        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn](cpp_redis::reply& v) mutable
+        auto is_root = (trans == nullptr);
+        auto parent = trans;
+        auto current = std::make_unique<fb::mst>(key, parent);
+        auto current_ptr = current.get();
+
+        if (parent != nullptr)
+            current_ptr = parent->add(*current.get());
+
+        if (is_root)
+        {
+            auto routes = current_ptr->routes();
+            auto contains = std::all_of(routes.cbegin(), routes.cend(), [this](const fb::mst::node_route& route) mutable
+                {
+                    auto keys = fb::mst::keys(route);
+                    return this->_routes.contains(keys);
+                });
+
+            if (!contains)
+            {
+                current_ptr = this->_root.add(*current_ptr);
+                for (auto& route : routes)
+                {
+                    this->_routes.insert(fb::mst::keys(route));
+                }
+            }
+        }
+
+        try
+        {
+            current_ptr->root()->assert_dead_lock();
+        }
+        catch (std::exception& e)
+        {
+            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.handler.resume();
+            return;
+        }
+
+        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn, trans, current_ptr](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
                 return;
 
-            auto handler = [this, &fn, conn, subs, key, uuid](auto& awaiter) mutable -> fb::task<void>
+            auto handler = [this, &fn, conn, subs, key, uuid, trans, current_ptr](auto& awaiter) mutable -> fb::task<void>
             {
                 try
                 {
-                    auto result = co_await fn();
+                    auto result = co_await fn(current_ptr);
                     awaiter.result = &result;
+                    awaiter.handler.resume();
                 }
                 catch (std::exception& e)
                 {
                     awaiter.error = std::make_unique<std::runtime_error>(e.what());
+                    awaiter.handler.resume();
                 }
-                awaiter.handler.resume();
 
                 conn->del({ key }, [this, conn, subs, key](auto& reply) mutable
                 {
@@ -155,32 +197,24 @@ private:
 
 public:
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>()>& fn)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::mst* m)>& fn, fb::mst* trans = nullptr)
     {
-        return fb::awaiter<T>([this, key, &fn](auto& awaiter) mutable
+        return fb::awaiter<T>([this, key, &fn, trans](auto& awaiter) mutable
         {
-            try
+            auto conn = this->conn.get();
+            auto subs = this->subs.get();
+            auto thread = this->_owner.current_thread();
+            auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+            subs->subscribe(key, [&, this, key, uuid, conn, subs, thread, trans](const std::string& chan, const std::string& msg) mutable
             {
-                auto conn = this->conn.get();
-                auto subs = this->subs.get();
-                auto thread = this->_owner.current_thread();
-                auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-                subs->subscribe(key, [&, this, key, uuid, conn, subs, thread](const std::string& chan, const std::string& msg) mutable
-                {
-                    if (chan != key)
-                        return;
+                if (chan != key)
+                    return;
 
-                    if (msg != uuid)
-                        this->try_lock(key, awaiter, fn, uuid, conn, subs, thread);
-                });
-                subs->commit();
-                this->try_lock(key, awaiter, fn, uuid, conn, subs, thread);
-            }
-            catch(std::exception& e)
-            {
-                awaiter.error = std::make_unique<std::runtime_error>(e.what());
-                awaiter.handler.resume();
-            }
+                if (msg != uuid)
+                    this->try_lock(key, awaiter, fn, uuid, conn, subs, thread, trans);
+            });
+            subs->commit();
+            this->try_lock(key, awaiter, fn, uuid, conn, subs, thread, trans);
         });
     }
 };

@@ -62,9 +62,16 @@ void fb::mst::assert_dead_lock(const node_route& route1, const node_route& route
     }
 }
 
-void fb::mst::add(mst* node)
+fb::mst* fb::mst::add(const mst& node)
 {
-    this->_nodes.push_back(std::make_unique<mst>(*node));
+    return this->add(node.key, node.parent);
+}
+
+fb::mst* fb::mst::add(const std::string& key, const fb::mst* parent)
+{
+    auto ptr = new fb::mst(key, parent);
+    this->_nodes.push_back(std::unique_ptr<fb::mst>(ptr));
+    return ptr;
 }
 
 const fb::mst* fb::mst::root()
@@ -159,7 +166,7 @@ void fb::mst::assert_dead_lock() const
         }
     }
 
-    if (errors.size() > 1)
+    if (errors.size() > 0)
     {
         throw std::runtime_error(boost::algorithm::join(errors, "\n"));
     }

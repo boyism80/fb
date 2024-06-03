@@ -23,26 +23,31 @@ private:
 
 public:
     const std::string key;
-    const mst* parent;
+    const mst* parent = nullptr;
 
 public:
-    mst(const std::string& key, mst* parent = nullptr) : key(key), parent(parent)
+    mst()
+    {}
+    mst(const std::string& key, const mst* parent) : key(key), parent(parent)
     {}
     mst(const mst& node) : key(node.key), parent(node.parent)
     { }
     ~mst() = default;
 
 private:
-    static std::string      keys(const node_route& nodes);
     void                    assert_circulated_route(const node_route& route) const;
     void                    assert_dead_lock(const node_route& route1, const node_route& route2) const;
 
 public:
-    void                    add(mst* node);
+    fb::mst*                add(const mst& node);
+    fb::mst*                add(const std::string& key, const fb::mst* parent);
     const mst*              root();
     const node_list&        nodes() const;
     std::vector<node_route> routes() const;
     void                    assert_dead_lock() const;
+
+public:
+    static std::string      keys(const node_route& nodes);
 };
 
 }
