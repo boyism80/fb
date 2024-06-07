@@ -844,6 +844,7 @@ fb::task<void> fb::game::context::save(fb::game::session& session, std::function
     try
     {
         co_await this->_db.co_exec(session.id(), sql);
+        fn(session);
     }
     catch(std::exception& e)
     {
