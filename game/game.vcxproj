@@ -176,6 +176,7 @@
     <ClCompile Include="..\core\logger.cpp" />
     <ClCompile Include="..\core\mst.cpp" />
     <ClCompile Include="..\core\query.cpp" />
+    <ClCompile Include="..\core\redis.cpp" />
     <ClCompile Include="..\core\stream.cpp" />
     <ClCompile Include="..\core\table.cpp" />
     <ClCompile Include="..\core\thread.cpp" />

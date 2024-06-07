@@ -1,5 +1,16 @@
 #include <fb/core/mst.h>
 
+fb::mst::mst()
+{}
+
+fb::mst::mst(const std::string& key, const std::shared_ptr<mst>& parent) : key(key), parent(parent)
+{}
+
+fb::mst::~mst()
+{
+    fb::logger::debug("mst address : 0x%X", this);
+}
+
 std::string fb::mst::keys(const fb::mst::node_route& nodes)
 {
     auto sstream = std::stringstream();
@@ -31,10 +42,11 @@ void fb::mst::assert_dead_lock(const node_route& route1, const node_route& route
 {
     auto keys1 = keys(route1);
     auto keys2 = keys(route2);
+    auto last = std::prev(route1.cend());
 
-    for (auto i1 = route1.cbegin(); i1 != --route1.cend(); i1++)
+    for (auto i1 = route1.cbegin(); i1 != last; i1++)
     {
-        for(auto i2 = i1; i2 != route1.cend(); i2++)
+        for(auto i2 = std::next(i1); i2 != route1.cend(); i2++)
         {
             auto& begin = (*i1)->key;
             auto& end = (*i2)->key;
@@ -42,36 +54,30 @@ void fb::mst::assert_dead_lock(const node_route& route1, const node_route& route
             int n = 0, pos1 = -1, pos2 = -1;
             for (auto i3 = route2.cbegin(); i3 != route2.cend(); i3++, n++)
             {
-                if (pos1 != -1 && (*i3)->key == begin)
+                if (pos1 == -1 && (*i3)->key == begin)
                     pos1 = n;
-                else if (pos2 != -1 && (*i3)->key == end)
+                
+                if (pos2 == -1 && (*i3)->key == end)
                     pos2 = n;
+            }
 
-                if (pos1 != -1 && pos2 != -1 && pos1 > pos2)
-                {
-                    auto sstream = std::stringstream();
-                    sstream << "DeadLock detected : "
-                        << keys(route1)
-                        << "<=>"
-                        << keys(route2);
+            if (pos1 != -1 && pos2 != -1 && pos1 > pos2)
+            {
+                auto sstream = std::stringstream();
+                sstream << "DeadLock detected : "
+                    << keys(route1)
+                    << "<=>"
+                    << keys(route2);
 
-                    throw std::runtime_error(sstream.str());
-                }
+                throw std::runtime_error(sstream.str());
             }
         }
     }
 }
 
-fb::mst* fb::mst::add(const mst& node)
+void fb::mst::add(const std::shared_ptr<fb::mst>& node)
 {
-    return this->add(node.key, node.parent);
-}
-
-fb::mst* fb::mst::add(const std::string& key, const fb::mst* parent)
-{
-    auto ptr = new fb::mst(key, parent);
-    this->_nodes.push_back(std::unique_ptr<fb::mst>(ptr));
-    return ptr;
+    this->_nodes.push_back(node);
 }
 
 const fb::mst* fb::mst::root()
@@ -79,7 +85,7 @@ const fb::mst* fb::mst::root()
     const mst* node = this;
     while (node->parent != nullptr)
     {
-        node = node->parent;
+        node = node->parent.get();
     }
 
     return node;
