@@ -32,17 +32,16 @@ public:
     ~mst();
 
 private:
-    void                        assert_circulated_route(const node_route& route) const;
-    void                        assert_dead_lock(const node_route& route1, const node_route& route2) const;
-    std::vector<node_route>     routes() const;
     bool                        contains(const fb::mst* node) const;
     bool                        subtree(const fb::mst* sub) const;
     fb::mst*                    search(const fb::mst* node);
+    const fb::mst*              search(const fb::mst* node) const;
+    void                        travel(const std::function<bool(const node_route&)>& fn) const;
 
 public:
     void                        add(const std::shared_ptr<fb::mst>& node);
     const mst*                  root();
-    void                        assert_circulated_route() const;
+    void                        assert_circulated_lock() const;
     void                        assert_dead_lock(const fb::mst* node) const;
 
 public:

@@ -29,7 +29,7 @@ fb::task<void> fb::redis::handle_locked(fb::awaiter<int>& awaiter, const std::fu
     conn->commit();
 }
 
-void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
+bool fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
 {
     auto current = std::make_shared<fb::mst>(key, trans);
 
@@ -39,14 +39,14 @@ void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, cons
     try
     {
         auto root = current->root();
-        root->assert_circulated_route();
+        root->assert_circulated_lock();
         this->_root->assert_dead_lock(root);
     }
     catch (std::exception& e)
     {
         awaiter.error = std::make_unique<std::runtime_error>(e.what());
         awaiter.handler.resume();
-        return;
+        return false;
     }
 
     conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn, trans, current](cpp_redis::reply& v) mutable
@@ -68,6 +68,7 @@ void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, cons
         }
     });
     conn->commit();
+    return true;
 }
 
 fb::awaiter<int> fb::redis::sync(const std::string& key, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, std::shared_ptr<fb::mst>& trans)
@@ -86,8 +87,9 @@ fb::awaiter<int> fb::redis::sync(const std::string& key, const std::function<fb:
             if (msg != uuid)
                 this->try_lock(key, awaiter, fn, uuid, conn, subs, thread, trans);
         });
-        subs->commit();
-        this->try_lock(key, awaiter, fn, uuid, conn, subs, thread, trans);
+
+        if (this->try_lock(key, awaiter, fn, uuid, conn, subs, thread, trans))
+            subs->commit();
     });
 }
 
