@@ -198,7 +198,7 @@ void base_context::enqueue(uint32_t id, const task& t)
 
 void base_context::exit()
 {
-    std::lock_guard<std::mutex>(this->_mutex_exit);
+    auto _ = std::lock_guard<std::mutex>(this->_mutex_exit);
 
     for(auto& worker : this->_workers)
     {

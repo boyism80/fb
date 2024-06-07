@@ -6,10 +6,10 @@ std::string cp949(const std::string& utf8)
         return std::string();
 
 #ifdef _WIN32
-    auto wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), nullptr, 0) + 1;
+    auto wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.length(), nullptr, 0) + 1;
     auto wide = new wchar_t[wide_size];
     memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), wide, wide_size);
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), (int)utf8.length(), wide, wide_size);
 
     auto mbs_size = WideCharToMultiByte(CP_ACP, 0, wide, -1, nullptr, 0, nullptr, nullptr);
     auto mbs = new char[mbs_size];
@@ -45,10 +45,10 @@ std::string utf8(const std::string& cp949)
         return std::string();
 
 #ifdef _WIN32
-    auto wide_size = MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), nullptr, 0) + 1;
+    auto wide_size = MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), (int)cp949.length(), nullptr, 0) + 1;
     auto wide = new wchar_t[wide_size];
     memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), wide, wide_size);
+    MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), (int)cp949.length(), wide, wide_size);
 
     auto mbs_size = WideCharToMultiByte(CP_UTF8, 0, wide, -1, nullptr, 0, nullptr, nullptr);
     auto mbs = new char[mbs_size];
@@ -133,10 +133,10 @@ std::string UTF8(const std::string& cp949, PLATFORM p)
 std::wstring W(const std::string& m)
 {
 #ifdef _WIN32
-    auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), nullptr, 0) + 1;
+    auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), (int)m.length(), nullptr, 0) + 1;
     auto wide = new wchar_t[wide_size];
     memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), wide, wide_size);
+    MultiByteToWideChar(CP_ACP, 0, m.c_str(), (int)m.length(), wide, wide_size);
 
     auto dst = std::wstring(wide);
     delete[] wide;

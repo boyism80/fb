@@ -1026,7 +1026,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
         this->fetch_item(results[1], *session);
         this->fetch_spell(results[2], *session);
     }
-    catch(std::exception& e)
+    catch(std::exception& /*e*/)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
@@ -1886,7 +1886,7 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
 
         session->send(fb::protocol::game::response::message(sstream.str(), fb::game::MESSAGE_TYPE::NOTIFY));
     }
-    catch(std::exception& e)
+    catch(std::exception& /*e*/)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;

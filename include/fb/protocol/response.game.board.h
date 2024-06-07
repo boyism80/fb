@@ -25,7 +25,7 @@ public:
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
-                  .write_u16(size);
+                  .write_u16((uint16_t)size);
 
         for(const auto& [k, v] : fb::game::model::boards)
         {

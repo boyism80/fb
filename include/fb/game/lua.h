@@ -111,7 +111,7 @@ public:
     const std::string           ret_string(int offset) { return tostring(-offset); }
     
     int                         tointeger(int offset) { return (int)lua_tointeger(*this, offset); }
-    lua_Integer                 tonumber(int offset) { return lua_tonumber(*this, offset); }
+    lua_Number                  tonumber(int offset) { return lua_tonumber(*this, offset); }
     int                         arg_integer(int offset) { return tointeger(offset); }
     int                         ret_integer(int offset) { return tointeger(-offset); }
     

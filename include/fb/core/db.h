@@ -45,7 +45,7 @@ public:
 };
 
 
-struct task
+class task
 {
 public:
     std::string                 sql;

@@ -361,7 +361,7 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     static std::once_flag               flag;
     std::call_once(flag, [] 
         { 
-            std::srand(std::time(nullptr));
+            std::srand(static_cast<unsigned int>(std::time(nullptr)));
             for(auto& [id, map] : fb::game::model::maps)
             {
                 maps.push_back(map.get());

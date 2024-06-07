@@ -71,7 +71,7 @@ uint32_t fb::table::load(const std::string& path, const std::function<void(Json:
     if(async)
     {
         auto tasks = std::queue<std::future<void>>();
-        for(int i = 0; i < std::thread::hardware_concurrency(); i++)
+        for(uint32_t i = 0; i < std::thread::hardware_concurrency(); i++)
         {
             tasks.push(std::async(std::launch::async, fn));
         }

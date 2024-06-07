@@ -77,7 +77,7 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
         else
             cache.erase(x.id());
     };
-    for(auto i = 0; i < this->_count; i++)
+    for(uint32_t i = 0; i < this->_count; i++)
         this->_pool.push_back(std::make_unique<sector>(i, callback));
 }
 

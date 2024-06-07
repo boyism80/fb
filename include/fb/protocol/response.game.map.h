@@ -103,7 +103,7 @@ public:
     const uint8_t                   volume;
 
 public:
-    bgm(const fb::game::map& map, uint16_t volume = 100) : fb::protocol::base::header(0x19),
+    bgm(const fb::game::map& map, uint8_t volume = 100) : fb::protocol::base::header(0x19),
         map(map), volume(volume)
     { }
 
@@ -241,7 +241,7 @@ public:
             return;
 
         out_stream.writestr_u8(world->name)
-                  .write_u8(offsets.size())
+                  .write_u8((uint8_t)offsets.size())
                   .write_u8(current);
 
         auto offset_id = 0;
@@ -257,7 +257,7 @@ public:
                           .write_u16(windex)
                           .write_u16(current)
                           .write_u16(offset_id++)
-                          .write_u16(group->size());
+                          .write_u16((uint8_t)group->size());
 
                 for(int i = 0; i < offsets.size(); i++)
                 {

@@ -757,7 +757,7 @@ int fb::game::session::builtin_withdraw_item(lua_State* lua)
     }
     else
     {
-        auto index = std::distance(deposited_items.cbegin(), found);
+        auto index = (uint8_t)std::distance(deposited_items.cbegin(), found);
         auto returned = session->withdraw_item(index, count);
         thread->pushobject(returned);
     }

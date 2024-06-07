@@ -11,13 +11,13 @@ bool load_db(fb::console& c, fb::game::context& context)
     c.box(0, 0, c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);
+    c.cursor((c.width()-1 - (uint16_t)strlen(header)) / 2, 2).put(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.cursor(c.width()-1 - strlen(github) - 3, 4).put(github);
+    c.cursor(c.width()-1 - (uint16_t)strlen(github) - 3, 4).put(github);
 
     auto madeby = "made by cshyeon";
-    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).put(madeby);
+    c.cursor(c.width()-1 - (uint16_t)strlen(madeby) - 3, 5).put(madeby);
 
     auto pivot = height + 1;
     auto stack = 0;

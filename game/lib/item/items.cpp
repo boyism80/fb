@@ -528,7 +528,7 @@ void fb::game::items::pickup(bool boost)
 
         // Pick up items in reverse order
         auto belows = map->belows(this->_owner.position(), fb::game::object::types::ITEM);
-        for(int i = belows.size() - 1; i >= 0; i--)
+        for(int i = (int)belows.size() - 1; i >= 0; i--)
         {
             auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);

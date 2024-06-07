@@ -29,8 +29,8 @@ const void* fb::buffer::data() const
 
 fb::buffer fb::buffer::compress() const
 {
-    uint32_t                    src_size = this->size();
-    uint32_t                    dst_size = this->size() * 2;
+    uint32_t                    src_size = (uint32_t)this->size();
+    uint32_t                    dst_size = (uint32_t)this->size() * 2;
     uint8_t*                    buffer = new uint8_t[dst_size];
 
     if(compress2(buffer, (uLongf*)&dst_size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
@@ -43,8 +43,8 @@ fb::buffer fb::buffer::compress() const
 
 fb::buffer fb::buffer::decompress() const
 {
-    uint32_t src_size = this->size();
-    uint32_t dst_size = this->size() * 2;
+    uint32_t src_size = (uint32_t)this->size();
+    uint32_t dst_size = (uint32_t)this->size() * 2;
     uint8_t* buffer = new uint8_t[dst_size];
 
     if(uncompress(buffer, (uLongf*)& dst_size, vector<uint8_t>::data(), uint32_t(this->size())) != Z_OK)
@@ -142,7 +142,7 @@ void fb::istream::read(void * buffer, size_t size)
 
 std::string fb::istream::readstr(bool encoding)
 {
-    auto size = strlen((const char*)this->data() + this->_offset);
+    auto size = (uint32_t)strlen((const char*)this->data() + this->_offset);
     char* buffer = new char[size + 1];
     this->read(buffer, size + 1);
 
