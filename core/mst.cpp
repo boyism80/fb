@@ -7,9 +7,7 @@ fb::mst::mst(const std::string& key, const std::shared_ptr<mst>& parent) : key(k
 {}
 
 fb::mst::~mst()
-{
-    fb::logger::debug("mst address : 0x%X", this);
-}
+{}
 
 std::string fb::mst::keys(const fb::mst::node_route& nodes)
 {

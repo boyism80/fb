@@ -1,9 +1,33 @@
 #include <fb/core/redis.h>
 
+fb::task<void> fb::redis::handle_locked(fb::awaiter<int>& awaiter, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, std::shared_ptr<fb::mst> current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
+{
+    try
+    {
+        auto result = co_await fn(current);
+        awaiter.result = &result;
+    }
+    catch (std::exception& e)
+    {
+        awaiter.error = std::make_unique<std::runtime_error>(e.what());
+    }
+
+    conn->del({ key }, [this, subs, key](auto& reply) mutable
+    {
+        subs->unsubscribe(key);
+        subs->commit();
+        this->subs.release(subs);
+    });
+    conn->publish(key, uuid, [this, key, conn, &awaiter](auto& reply) mutable
+    {
+        this->conn.release(conn);
+        awaiter.handler.resume();
+    });
+    conn->commit();
+}
+
 void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
 {
-    fb::logger::debug("lock id : %s", key.c_str());
-
     auto is_root = (trans == nullptr);
     auto current = std::make_shared<fb::mst>(key, trans);
 
@@ -44,48 +68,16 @@ void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, cons
         if (success == false)
             return;
 
-        auto handler = [this, &fn, conn, subs, key, uuid, trans, current](auto& awaiter) mutable -> fb::task<void>
-        {
-            auto clone_key = std::string(key);
-            auto clone_conn = conn;
-            auto clone_subs = subs;
-            auto clone_uuid = uuid;
-            auto& subs_pool = this->subs;
-            auto& conn_pool = this->conn;
-
-            try
-            {
-                auto result = co_await fn(current);
-                awaiter.result = &result;
-            }
-            catch (std::exception& e)
-            {
-                awaiter.error = std::make_unique<std::runtime_error>(e.what());
-            }
-
-            fb::logger::debug("delete lock key : %s", clone_key.c_str());
-            clone_conn->del({ clone_key }, [&subs_pool, clone_subs, clone_key](auto& reply) mutable
-            {
-                    clone_subs->unsubscribe(clone_key);
-                    clone_subs->commit();
-                    subs_pool.release(clone_subs);
-            });
-            clone_conn->publish(clone_key, clone_uuid, [clone_key, &conn_pool, clone_conn, &awaiter](auto& reply) mutable
-            {
-                    conn_pool.release(clone_conn);
-                    fb::logger::debug("awaiter address : 0x%X", &awaiter);
-                awaiter.handler.resume();
-            });
-            clone_conn->commit();
-        };
-        
         if (thread != nullptr)
         {
-            thread->dispatch([this, handler, &awaiter](uint8_t) mutable { handler(awaiter); });
+            thread->dispatch([this, &awaiter, &fn, current, key, uuid, conn, subs](uint8_t) mutable 
+            {
+                this->handle_locked(awaiter, fn, current, key, uuid, conn, subs);
+            });
         }
         else
         {
-            handler(awaiter);
+            this->handle_locked(awaiter, fn, current, key, uuid, conn, subs);
         }
     });
     conn->commit();
