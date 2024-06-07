@@ -13,6 +13,7 @@
 #include <fb/protocol/protocol.h>
 #include <fb/core/logger.h>
 #include <fb/core/redis.h>
+#include <fb/core/mutex.h>
 
 using namespace std::chrono_literals;
 
@@ -30,9 +31,8 @@ protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     std::unique_ptr<fb::internal::socket<>>     _internal;
-
-public:
     fb::redis                                   _redis;
+    fb::mutex                                   _mutex;
 
 
 public:

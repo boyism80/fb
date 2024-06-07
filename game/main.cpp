@@ -457,57 +457,6 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
 
-        auto fn = [&context]() -> fb::task<void>
-        {
-            try
-            {
-                auto result = co_await context->_redis.sync("lock1", [&context](auto& trans) -> fb::task<int>
-                    {
-                        auto result = co_await context->_redis.sync("lock2", [&context](auto& trans) -> fb::task<int>
-                            {
-                                auto result = co_await context->_redis.sync("lock3", [&context](auto& trans) -> fb::task<int>
-                                    {
-                                        co_return 1;
-                                    }, trans);
-                                co_return result;
-                            }, trans);
-                        co_return result;
-                    });
-
-                auto result2 = co_await context->_redis.sync("lock1", [&context](auto& trans) -> fb::task<int>
-                    {
-                        auto result = co_await context->_redis.sync("lock6", [&context](auto& trans) -> fb::task<int>
-                            {
-                                auto result = co_await context->_redis.sync("lock5", [&context](auto& trans) -> fb::task<int>
-                                    {
-                                        co_return 1;
-                                    }, trans);
-                                co_return result;
-                            }, trans);
-                        co_return result;
-                    });
-
-                auto result3 = co_await context->_redis.sync("lock3", [&context](auto& trans) -> fb::task<int>
-                    {
-                        auto result = co_await context->_redis.sync("lock5", [&context](auto& trans) -> fb::task<int>
-                            {
-                                auto result = co_await context->_redis.sync("lock1", [&context](auto& trans) -> fb::task<int>
-                                    {
-                                        co_return 1;
-                                    }, trans);
-                                co_return result;
-                            }, trans);
-                        co_return result;
-                    });
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-            }
-        };
-
-        fn();
-
         load_db(c, *context);
         
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
