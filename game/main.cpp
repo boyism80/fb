@@ -474,11 +474,11 @@ int main(int argc, const char** argv)
                         co_return result;
                     });
 
-                auto result2 = co_await context->_redis.sync("lock3", [&context](auto& trans) -> fb::task<int>
+                auto result2 = co_await context->_redis.sync("lock1", [&context](auto& trans) -> fb::task<int>
                     {
                         auto result = co_await context->_redis.sync("lock2", [&context](auto& trans) -> fb::task<int>
                             {
-                                auto result = co_await context->_redis.sync("lock1", [&context](auto& trans) -> fb::task<int>
+                                auto result = co_await context->_redis.sync("lock4", [&context](auto& trans) -> fb::task<int>
                                     {
                                         co_return 1;
                                     }, trans);

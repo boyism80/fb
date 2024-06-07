@@ -73,27 +73,6 @@ void fb::mst::assert_dead_lock(const node_route& route1, const node_route& route
     }
 }
 
-void fb::mst::add(const std::shared_ptr<fb::mst>& node)
-{
-    this->_nodes.push_back(node);
-}
-
-const fb::mst* fb::mst::root()
-{
-    const mst* node = this;
-    while (node->parent != nullptr)
-    {
-        node = node->parent.get();
-    }
-
-    return node;
-}
-
-const fb::mst::node_list& fb::mst::nodes() const
-{
-    return this->_nodes;
-}
-
 std::vector<fb::mst::node_route> fb::mst::routes() const
 {
     auto queue = std::queue<fb::mst::node_route>();
@@ -138,7 +117,91 @@ std::vector<fb::mst::node_route> fb::mst::routes() const
     return result;
 }
 
-void fb::mst::assert_dead_lock() const
+bool fb::mst::contains(const fb::mst* node) const
+{
+    if (this->key != node->key)
+        return false;
+
+    if(this->_nodes.size() < node->_nodes.size())
+        return false;
+
+    if (node->_nodes.size() == 0)
+        return true;
+
+    for(auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
+    {
+        auto match = true;
+        for(auto i2 = node->_nodes.cbegin(); i2 != node->_nodes.cend(); i2++)
+        {
+            match = match && (*i1)->contains(i2->get());
+            if (!match)
+                break;
+        }
+
+        if (match)
+            return true;
+    }
+
+    return false;
+}
+
+bool fb::mst::subtree(const fb::mst* sub) const
+{
+    if (this->contains(sub))
+        return true;
+
+    for(auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
+    {
+        if ((*i1)->subtree(sub))
+            return true;
+    }
+
+    return false;
+}
+
+fb::mst* fb::mst::search(const fb::mst* node)
+{
+    if(this->key == node->key)
+        return this;
+
+    for(auto i = this->_nodes.cbegin(); i != this->_nodes.cend(); i++)
+    {
+        auto found = (*i)->search(node);
+        if(found != nullptr)
+            return found;
+    }
+
+    return nullptr;
+}
+
+void fb::mst::add(const std::shared_ptr<fb::mst>& node)
+{
+    auto found = this->search(node.get());
+    if (found == nullptr)
+    {
+        this->_nodes.push_back(node);
+    }
+    else
+    {
+        for (auto i = node->_nodes.cbegin(); i != node->_nodes.cend(); i++)
+        {
+            found->add(*i);
+        }
+    }
+}
+
+const fb::mst* fb::mst::root()
+{
+    const mst* node = this;
+    while (node->parent != nullptr)
+    {
+        node = node->parent.get();
+    }
+
+    return node;
+}
+
+void fb::mst::assert_circulated_route() const
 {
     auto routes = this->routes();
     auto errors = std::vector<std::string>();
@@ -154,6 +217,20 @@ void fb::mst::assert_dead_lock() const
             errors.push_back(e.what());
         }
     }
+
+    if (errors.size() > 0)
+    {
+        throw std::runtime_error(boost::algorithm::join(errors, "\n"));
+    }
+}
+
+void fb::mst::assert_dead_lock(const fb::mst* node) const
+{
+    auto routes = this->routes();
+    for(auto& route : node->routes())
+        routes.push_back(route);
+    
+    auto errors = std::vector<std::string>();
 
     for (int i1 = 0; i1 < routes.size() - 1; i1++)
     {

@@ -6,6 +6,9 @@ fb::task<void> fb::redis::handle_locked(fb::awaiter<int>& awaiter, const std::fu
     {
         auto result = co_await fn(current);
         awaiter.result = &result;
+
+        if (current->parent == nullptr)
+            this->_root->add(current);
     }
     catch (std::exception& e)
     {
@@ -28,32 +31,16 @@ fb::task<void> fb::redis::handle_locked(fb::awaiter<int>& awaiter, const std::fu
 
 void fb::redis::try_lock(const std::string& key, fb::awaiter<int>& awaiter, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
 {
-    auto is_root = (trans == nullptr);
     auto current = std::make_shared<fb::mst>(key, trans);
 
-    trans->add(current);
-    //if (is_root)
-    //{
-    //    auto routes = current->routes();
-    //    auto contains = std::all_of(routes.cbegin(), routes.cend(), [this](const fb::mst::node_route& route) mutable
-    //        {
-    //            auto keys = fb::mst::keys(route);
-    //            return this->_routes.contains(keys);
-    //        });
-
-    //    if (!contains)
-    //    {
-    //        current_ptr = this->_root.add(*current_ptr);
-    //        for (auto& route : routes)
-    //        {
-    //            this->_routes.insert(fb::mst::keys(route));
-    //        }
-    //    }
-    //}
+    if(trans != nullptr)
+        trans->add(current);
 
     try
     {
-        current->root()->assert_dead_lock();
+        auto root = current->root();
+        root->assert_circulated_route();
+        this->_root->assert_dead_lock(root);
     }
     catch (std::exception& e)
     {
@@ -106,5 +93,6 @@ fb::awaiter<int> fb::redis::sync(const std::string& key, const std::function<fb:
 
 fb::awaiter<int> fb::redis::sync(const std::string& key, const std::function<fb::task<int>(std::shared_ptr<fb::mst>&)>& fn)
 {
-    return this->sync(key, fn, this->_root);
+    auto empty_ptr = std::shared_ptr<fb::mst>(nullptr);
+    return this->sync(key, fn, empty_ptr);
 }
