@@ -66,25 +66,10 @@ bool fb::mst::subtree(const fb::mst* sub) const
     return false;
 }
 
-fb::mst* fb::mst::search(const fb::mst* node)
+fb::mst* fb::mst::search(const fb::mst* node) const
 {
     if (this->key == node->key)
-        return this;
-
-    for (auto i = this->_nodes.cbegin(); i != this->_nodes.cend(); i++)
-    {
-        auto found = (*i)->search(node);
-        if (found != nullptr)
-            return found;
-    }
-
-    return nullptr;
-}
-
-const fb::mst* fb::mst::search(const fb::mst* node) const
-{
-    if (this->key == node->key)
-        return this;
+        return const_cast<fb::mst*>(this);
 
     for (auto i = this->_nodes.cbegin(); i != this->_nodes.cend(); i++)
     {
@@ -147,7 +132,7 @@ void fb::mst::add(const std::shared_ptr<fb::mst>& node)
     }
 }
 
-const fb::mst* fb::mst::root()
+const fb::mst* fb::mst::root() const
 {
     const mst* node = this;
     while (node->parent != nullptr)
@@ -195,7 +180,7 @@ void fb::mst::assert_circulated_lock() const
     if (errors.size() > 0)
     {
         auto sstream = std::stringstream();
-        sstream << "Circulated lock detected : " << boost::algorithm::join(errors, "\n");
+        sstream << "Circulated lock detected : " << boost::algorithm::join(errors, ", ");
         throw std::runtime_error(sstream.str());
     }
 }

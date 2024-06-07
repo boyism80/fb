@@ -34,13 +34,12 @@ public:
 private:
     bool                        contains(const fb::mst* node) const;
     bool                        subtree(const fb::mst* sub) const;
-    fb::mst*                    search(const fb::mst* node);
-    const fb::mst*              search(const fb::mst* node) const;
+    fb::mst*                    search(const fb::mst* node) const;
     void                        travel(const std::function<bool(const node_route&)>& fn) const;
 
 public:
     void                        add(const std::shared_ptr<fb::mst>& node);
-    const mst*                  root();
+    const mst*                  root() const;
     void                        assert_circulated_lock() const;
     void                        assert_dead_lock(const fb::mst* node) const;
 
