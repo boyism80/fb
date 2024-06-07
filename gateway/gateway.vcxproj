@@ -168,6 +168,7 @@
     <ClCompile Include="..\core\encoding.cpp" />
     <ClCompile Include="..\core\format.cpp" />
     <ClCompile Include="..\core\logger.cpp" />
+    <ClCompile Include="..\core\mst.cpp" />
     <ClCompile Include="..\core\query.cpp" />
     <ClCompile Include="..\core\stream.cpp" />
     <ClCompile Include="..\core\table.cpp" />

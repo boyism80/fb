@@ -72,5 +72,8 @@
     <ClCompile Include="..\core\format.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\mst.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

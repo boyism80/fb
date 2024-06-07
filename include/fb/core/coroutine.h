@@ -116,7 +116,12 @@ public:
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
         auto initial_suspend() { return std::suspend_never{}; }
         auto final_suspend() noexcept { return std::suspend_always{}; }
-        void unhandled_exception() { this->_exception = std::current_exception(); }
+        void unhandled_exception()
+        {
+            this->_exception = std::current_exception();
+            if (_awaitable != nullptr)
+                _awaitable->handler.resume();
+        }
 
         template<std::convertible_to<T> From>
         void return_value(From&& from)
@@ -203,7 +208,12 @@ public:
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
         auto initial_suspend() { return std::suspend_never{}; }
         auto final_suspend() noexcept { return std::suspend_always{}; }
-        void unhandled_exception() { this->_exception = std::current_exception(); }
+        void unhandled_exception() 
+        {
+            this->_exception = std::current_exception(); 
+            if (_awaitable != nullptr)
+                _awaitable->handler.resume();
+        }
         void return_void() 
         {
             if (_awaitable != nullptr)
