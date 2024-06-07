@@ -9,21 +9,6 @@ fb::mst::mst(const std::string& key, const std::shared_ptr<mst>& parent) : key(k
 fb::mst::~mst()
 {}
 
-std::string fb::mst::keys(const fb::mst::node_route& nodes)
-{
-    auto sstream = std::stringstream();
-    auto i = nodes.cbegin();
-    if(i != nodes.cend())
-        sstream << (*i)->key;
-
-    while (++i != nodes.cend())
-    {
-        sstream << '-' << (*i)->key;
-    }
-
-    return sstream.str();
-}
-
 bool fb::mst::contains(const fb::mst* node) const
 {
     if (this->key != node->key)

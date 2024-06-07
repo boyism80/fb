@@ -42,9 +42,6 @@ public:
     const mst*                  root() const;
     void                        assert_circulated_lock() const;
     void                        assert_dead_lock(const fb::mst* node) const;
-
-public:
-    static std::string          keys(const node_route& nodes);
 };
 
 }
