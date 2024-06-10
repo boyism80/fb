@@ -51,7 +51,7 @@ protected:
     const fb::threads&                          threads() const;
 
     template <typename R>
-    fb::task<void>                              co_internal_request(fb::awaiter<R, boost::system::error_code>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
+    fb::task<void>                              co_internal_request(fb::awaiter<R>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
 
 protected:
     virtual void                                handle_start() {}
@@ -78,7 +78,7 @@ public:
 
 public:
     template <typename R>
-    fb::awaiter<R, boost::system::error_code>   request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    fb::awaiter<R>                              request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
     bool                                        dispatch(S<T>*, fb::queue_callback&& fn, uint32_t priority = 0);
     fb::awaiter<void>                           dispatch(S<T>*, uint32_t priority = 0);

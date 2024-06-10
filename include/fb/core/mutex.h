@@ -38,7 +38,7 @@ private:
         }
         catch(std::exception& e)
         {
-            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
         }
         mutex.unlock();
         awaiter.handler.resume();
@@ -56,14 +56,14 @@ private:
             }
             catch(std::exception& e)
             {
-                awaiter.error = std::make_unique<std::runtime_error>(e.what());
+                awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
             }
 
             mutex.unlock();
         }
         else
         {
-            awaiter.error = std::make_unique<fb::lock_error>();
+            awaiter.error = std::make_exception_ptr(fb::lock_error());
         }
         
         awaiter.handler.resume();
@@ -88,7 +88,7 @@ private:
         }
         catch(std::exception& e)
         {
-            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
             awaiter.handler.resume();
             return false;
         }
