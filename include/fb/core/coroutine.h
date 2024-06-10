@@ -45,7 +45,7 @@ using awaiter_handler = std::function<void(awaiter<T, E>&)>;
 
 
 
-template <typename T, typename E = std::runtime_error>
+template <typename T, typename E = std::exception>
 class base_awaiter : public awaitable<E>
 {
 private:
@@ -68,7 +68,7 @@ public:
 };
 #pragma endregion
 
-template <typename T, typename E = std::runtime_error>
+template <typename T, typename E = std::exception>
 class awaiter : public base_awaiter<T, E>
 {
 public:
@@ -100,7 +100,7 @@ public:
 
 
 template <typename T>
-class task : public awaitable<std::runtime_error>
+class task : public awaitable<std::exception>
 {
 public:
     class promise_type;
@@ -111,7 +111,7 @@ public:
     public:
         std::optional<T> _value;
         std::exception_ptr _exception;
-        awaitable<std::runtime_error>* _awaitable = nullptr;
+        awaitable<std::exception>* _awaitable = nullptr;
 
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
         auto initial_suspend() { return std::suspend_never{}; }
@@ -139,7 +139,7 @@ public:
 
     void await_suspend(std::coroutine_handle<> h)
     {
-        awaitable<std::runtime_error>::await_suspend(h);
+        awaitable<std::exception>::await_suspend(h);
 
         auto& promise = this->_handler.promise();
         promise._awaitable = this;
@@ -148,13 +148,13 @@ public:
 
         if (promise._value.has_value())
         {
-            awaitable<std::runtime_error>::handler.resume();
+            awaitable<std::exception>::handler.resume();
         }
     }
 
     T await_resume()
     {
-        awaitable<std::runtime_error>::await_resume();
+        awaitable<std::exception>::await_resume();
         return this->value();
     }
 
@@ -186,14 +186,14 @@ public:
             std::rethrow_exception(promise._exception);
 
         if (promise._value.has_value() == false)
-            throw std::runtime_error("value is empty");
+            throw std::exception("value is empty");
 
         return *promise._value;
     }
 };
 
 template <>
-class task<void> : public awaitable<std::runtime_error>
+class task<void> : public awaitable<std::exception>
 {
 public:
     class promise_type;
@@ -203,7 +203,7 @@ public:
     {
     public:
         std::exception_ptr _exception;
-        awaitable<std::runtime_error>* _awaitable = nullptr;
+        awaitable<std::exception>* _awaitable = nullptr;
 
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
         auto initial_suspend() { return std::suspend_never{}; }
@@ -228,7 +228,7 @@ public:
 
     void await_suspend(std::coroutine_handle<> h)
     {
-        awaitable<std::runtime_error>::await_suspend(h);
+        awaitable<std::exception>::await_suspend(h);
 
         auto& promise = this->_handler.promise();
         promise._awaitable = this;
@@ -238,7 +238,7 @@ public:
 
     void await_resume()
     {
-        awaitable<std::runtime_error>::await_resume();
+        awaitable<std::exception>::await_resume();
     }
 
     bool done()

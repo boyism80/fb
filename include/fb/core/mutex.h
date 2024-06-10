@@ -45,7 +45,32 @@ private:
     }
 
     template <typename T>
-    bool try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
+    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>()>& fn, const std::string key, std::mutex& mutex)
+    {
+        if(mutex.try_lock())
+        {
+            try
+            {
+                auto result = co_await fn();
+                awaiter.result = &result;
+            }
+            catch(std::exception& e)
+            {
+                awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            }
+
+            mutex.unlock();
+        }
+        else
+        {
+            awaiter.error = std::make_unique<fb::lock_error>();
+        }
+        
+        awaiter.handler.resume();
+    }
+
+    template <typename T>
+    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
     {
         std::mutex* mutex = nullptr;
         {
@@ -83,6 +108,31 @@ private:
         return true;
     }
 
+    template <typename T>
+    void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(void)>& fn, fb::thread* thread)
+    {
+        std::mutex* mutex = nullptr;
+        {
+            auto _ = std::lock_guard<std::mutex>(this->_mutex);
+            if (this->_pool.contains(key) == false)
+                this->_pool.insert({key, std::make_unique<std::mutex>()});
+
+            mutex = this->_pool[key].get();
+        }
+
+        if (thread != nullptr)
+        {
+            thread->dispatch([this, &awaiter, &fn, key, mutex](uint8_t) mutable 
+            {
+                this->handle_locked(awaiter, fn, key, *mutex);
+            });
+        }
+        else
+        {
+            this->handle_locked(awaiter, fn, key, *mutex);
+        }
+    }
+
 public:
     template <typename T>
     fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, std::shared_ptr<fb::mst>& trans)
@@ -90,7 +140,7 @@ public:
         return fb::awaiter<T>([this, key, &fn, trans](auto& awaiter) mutable
         {
             auto thread = this->_owner.current_thread();
-            this->try_lock(key, awaiter, fn, thread, trans);
+            this->lock(key, awaiter, fn, thread, trans);
         });
     }
 
@@ -99,6 +149,16 @@ public:
     {
         auto empty_ptr = std::shared_ptr<fb::mst>(nullptr);
         return this->sync(key, fn, empty_ptr);
+    }
+
+    template <typename T>
+    fb::awaiter<T> try_sync(const std::string& key, const std::function<fb::task<T>(void)>& fn)
+    {
+        return fb::awaiter<T>([this, key, &fn](auto& awaiter) mutable
+        {
+            auto thread = this->_owner.current_thread();
+            this->try_lock(key, awaiter, fn, thread);
+        });
     }
 };
 
