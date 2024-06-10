@@ -115,7 +115,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
         }
 
         conn->del({ key }, [this, subs, key](auto& reply) mutable
@@ -142,7 +142,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
         }
 
         conn->del({ key });
@@ -165,7 +165,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_unique<std::runtime_error>(e.what());
+            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
             awaiter.handler.resume();
             return false;
         }
@@ -200,7 +200,7 @@ private:
             auto success = v.as_integer() == 1;
             if (success == false)
             {
-                awaiter.error = std::make_unique<fb::lock_error>();
+                awaiter.error = std::make_exception_ptr(fb::lock_error());
                 awaiter.handler.resume();
             }
             else if (thread != nullptr)

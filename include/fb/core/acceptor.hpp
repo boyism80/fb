@@ -215,7 +215,7 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 
 template <template<class> class S, class T>
 template <typename R>
-fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R, boost::system::error_code>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap)
 {
     auto thread = this->current_thread();
     try
@@ -233,13 +233,13 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R, boos
         {
             thread->dispatch([&awaiter, &ec] (uint8_t)
             {
-                awaiter.error = std::make_unique<boost::system::error_code>(ec);
+                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
                 awaiter.handler.resume();
             });
         }
         else
         {
-            awaiter.error = std::make_unique<boost::system::error_code>(ec);
+            awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
             awaiter.handler.resume();
         }
     }
@@ -247,14 +247,14 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R, boos
 
 template <template<class> class S, class T>
 template <typename R>
-fb::awaiter<R, boost::system::error_code> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+fb::awaiter<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
 {
     auto await_callback = [=, this, &header](auto& awaiter)
     {
         this->co_internal_request(awaiter, header, encrypt, wrap);
     };
 
-    return fb::awaiter<R, boost::system::error_code>(await_callback);
+    return fb::awaiter<R>(await_callback);
 }
 
 template <template<class> class S, class T>
@@ -264,32 +264,7 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback&& fn)
-{
-    auto id = this->handle_thread_index(*socket);
-    auto thread = this->_threads[id];
-
-    if(thread == nullptr)
-        fn(id);
-    else
-        this->_threads[id]->dispatch(std::move(fn), true);
-    return true;
-}
-
-template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::precedence(S<T>* socket)
-{
-    auto id = this->handle_thread_index(*socket);
-    auto thread = this->_threads[id];
-    
-    if(thread == nullptr)
-        throw std::runtime_error("precedence thread cannot be nullptr");
-
-    return this->_threads[id]->precedence();
-}
-
-template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -297,12 +272,12 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
     if(thread == nullptr)
         fn(id);
     else
-        this->_threads[id]->dispatch(std::move(fn));
+        this->_threads[id]->dispatch(std::move(fn), priority);
     return true;
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket)
+fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -310,7 +285,7 @@ fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket)
     if(thread == nullptr)
         throw std::runtime_error("dispatch thread cannot be nullptr");
 
-    return this->_threads[id]->dispatch();
+    return this->_threads[id]->dispatch(priority);
 }
 
 template <template<class> class S, class T>
@@ -512,7 +487,7 @@ fb::awaiter<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, ui
             {
                 if(error)
                 {
-                    awaiter.error = std::make_unique<std::runtime_error>(error.message());
+                    awaiter.error = std::make_exception_ptr(std::runtime_error(error.message()));
                 }
                 else
                 {

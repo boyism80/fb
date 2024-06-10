@@ -171,7 +171,7 @@ fb::socket<T>::operator fb::cryptor& ()
 
 template <typename T, typename C>
 template <typename R>
-fb::awaitable_socket<T,C>::awaiter<R>::awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R, boost::system::error_code>& on_suspend) : fb::awaiter<R, boost::system::error_code>(on_suspend), _owner(owner), _cmd(cmd)
+fb::awaitable_socket<T,C>::awaiter<R>::awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R>& on_suspend) : fb::awaiter<R>(on_suspend), _owner(owner), _cmd(cmd)
 { }
 
 template <typename T, typename C>
@@ -185,7 +185,7 @@ void fb::awaitable_socket<T,C>::awaiter<R>::await_suspend(std::coroutine_handle<
 {
     this->_owner.register_awaiter(this->_cmd, this);
 
-    fb::awaiter<R, boost::system::error_code>::await_suspend(h);
+    fb::awaiter<R>::await_suspend(h);
 }
 
 template <typename T, typename C>
@@ -207,7 +207,7 @@ void fb::awaitable_socket<T,C>::register_awaiter(C cmd, awaiter<R>* awaiter)
     if(i != this->_coroutines.end())
     {
         auto awaiter = static_cast<awaitable_socket<T,C>::awaiter<R>*>(i->second);
-        awaiter->error = std::make_unique<boost::system::error_code>();
+        awaiter->error = std::make_exception_ptr(boost::system::error_code());
         this->_coroutines.erase(cmd);
     }
     
@@ -247,7 +247,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                 if (!ec)
                     return;
 
-                awaiter.error = std::make_unique<boost::system::error_code>(ec);
+                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
                 awaiter.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);
@@ -266,7 +266,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                 if (!ec)
                     return;
 
-                awaiter.error = std::make_unique<boost::system::error_code>(ec);
+                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
                 awaiter.handler.resume();
             };
             this->send(header, encrypt, wrap, callback);

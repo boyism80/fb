@@ -128,14 +128,14 @@ class awaitable_socket : public fb::base::socket<T>
 {
 public:
     template <typename R>
-    class awaiter : public fb::awaiter<R, boost::system::error_code>
+    class awaiter : public fb::awaiter<R>
     {
     private:
         awaitable_socket<T,C>&      _owner;
         C                           _cmd;
 
     public:
-        awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R, boost::system::error_code>& on_suspend);
+        awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R>& on_suspend);
         ~awaiter();
 
         void                        await_suspend(std::coroutine_handle<> h);

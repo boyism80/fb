@@ -167,7 +167,7 @@ public:
                 /* error */
                 [&awaiter](auto& e)
                 {
-                    awaiter.error = std::make_unique<std::runtime_error>(e.what());
+                    awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
                     awaiter.handler.resume();
                 }
             };
