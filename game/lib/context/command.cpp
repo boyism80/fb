@@ -443,15 +443,26 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
 
-    auto result = co_await this->_mutex.sync<bool>(key, [this, &session, seconds](auto& trans) -> fb::task<bool>
+    try
     {
-        for (int i = 0; i < seconds; i++)
+        co_await this->_mutex.try_sync<bool>(key, [this, &session, seconds]() -> fb::task<bool>
         {
-            session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
-            std::this_thread::sleep_for(1s);
-        }
-        co_return true;
-    });
+            for (int i = 0; i < seconds; i++)
+            {
+                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+                std::this_thread::sleep_for(1s);
+            }
+            co_return true;
+        });
+    }
+    catch(fb::lock_error&)
+    {
+        session.chat("리소스 점유 실패");
+    }
+    catch(std::exception& e)
+    {
+        session.chat(e.what());
+    }
 
-    co_return result;
+    co_return true;
 }
