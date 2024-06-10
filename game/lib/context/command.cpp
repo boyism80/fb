@@ -450,7 +450,7 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
             for (int i = 0; i < seconds; i++)
             {
                 session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
-                std::this_thread::sleep_for(1s);
+                co_await this->sleep(1s);
             }
             co_return true;
         });
