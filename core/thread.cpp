@@ -1,13 +1,5 @@
 #include <fb/core/thread.h>
 
-fb::timer::timer(const fb::thread_callback& fn, std::chrono::steady_clock::duration duration) : 
-    fn(fn),
-    duration(duration)
-{ }
-
-fb::timer::~timer()
-{ }
-
 
 fb::thread::thread(uint8_t index) : 
     _index(index)
@@ -28,16 +20,6 @@ void fb::thread::handle_thread(uint8_t index)
     {
         auto fn = fb::queue_callback();
         auto awaiter = (fb::awaiter<void>*)nullptr;
-
-        while(this->_precedence.dequeue(fn))
-        {
-            fn(index);
-        }
-
-        while(this->_precedence_awaiter_queue.dequeue(awaiter))
-        {
-            awaiter->handler.resume();
-        }
 
         if(this->_queue.dequeue(fn))
         {
@@ -106,7 +88,7 @@ void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::st
     this->_timers.push_back(std::move(ptr));
 }
 
-void fb::thread::settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration)
+void fb::thread::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
 {
     this->dispatch
     (
@@ -119,22 +101,9 @@ void fb::thread::settimer(fb::thread_callback fn, const std::chrono::steady_cloc
     );
 }
 
-void fb::thread::dispatch(fb::queue_callback&& fn, bool precedence)
+void fb::thread::dispatch(fb::queue_callback&& fn, int priority)
 {
-    if(precedence)
-        this->_precedence.enqueue(std::move(fn));
-    else
-        this->_queue.enqueue(std::move(fn));
-}
-
-fb::awaiter<void> fb::thread::precedence()
-{
-    auto await_callback = [this](auto& awaiter)
-    {
-        this->_precedence_awaiter_queue.enqueue(&awaiter);
-    };
-
-    return fb::awaiter<void>(await_callback);
+    this->_queue.enqueue(std::move(fn), priority);
 }
 
 fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)
@@ -149,11 +118,11 @@ fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& d
     return fb::awaiter<void>(await_callback);
 }
 
-fb::awaiter<void> fb::thread::dispatch()
+fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
 {
-    auto await_callback = [this](auto& awaiter)
+    auto await_callback = [this, priority](auto& awaiter)
     {
-        this->_dispatch_awaiter_queue.enqueue(&awaiter);
+        this->_dispatch_awaiter_queue.enqueue(&awaiter, priority);
     };
 
     return fb::awaiter<void>(await_callback);
@@ -286,7 +255,7 @@ void fb::threads::dispatch(const std::function<void()>& fn, const std::chrono::s
     }
 }
 
-void fb::threads::settimer(fb::thread_callback fn, const std::chrono::steady_clock::duration& duration)
+void fb::threads::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
 {
     if(this->_threads.empty())
     {

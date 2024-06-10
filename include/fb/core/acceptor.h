@@ -80,10 +80,8 @@ public:
     template <typename R>
     fb::awaiter<R, boost::system::error_code>   request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
-    bool                                        precedence(S<T>*, fb::queue_callback&& fn);
-    fb::awaiter<void>                           precedence(S<T>*);
-    bool                                        dispatch(S<T>*, fb::queue_callback&& fn);
-    fb::awaiter<void>                           dispatch(S<T>*);
+    bool                                        dispatch(S<T>*, fb::queue_callback&& fn, uint32_t priority = 0);
+    fb::awaiter<void>                           dispatch(S<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
     fb::awaiter<void>                           sleep(const std::chrono::steady_clock::duration& duration);

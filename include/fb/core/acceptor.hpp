@@ -264,32 +264,7 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::precedence(S<T>* socket, fb::queue_callback&& fn)
-{
-    auto id = this->handle_thread_index(*socket);
-    auto thread = this->_threads[id];
-
-    if(thread == nullptr)
-        fn(id);
-    else
-        this->_threads[id]->dispatch(std::move(fn), true);
-    return true;
-}
-
-template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::precedence(S<T>* socket)
-{
-    auto id = this->handle_thread_index(*socket);
-    auto thread = this->_threads[id];
-    
-    if(thread == nullptr)
-        throw std::runtime_error("precedence thread cannot be nullptr");
-
-    return this->_threads[id]->precedence();
-}
-
-template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -297,12 +272,12 @@ bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn)
     if(thread == nullptr)
         fn(id);
     else
-        this->_threads[id]->dispatch(std::move(fn));
+        this->_threads[id]->dispatch(std::move(fn), priority);
     return true;
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket)
+fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -310,7 +285,7 @@ fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket)
     if(thread == nullptr)
         throw std::runtime_error("dispatch thread cannot be nullptr");
 
-    return this->_threads[id]->dispatch();
+    return this->_threads[id]->dispatch(priority);
 }
 
 template <template<class> class S, class T>

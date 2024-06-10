@@ -472,7 +472,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
 
         auto thread = this->context.thread(map);
         if(thread != nullptr && thread != this->context.current_thread())
-            co_await thread->precedence();
+            co_await thread->dispatch(uint32_t(-1));
 
         this->_map = map;
         this->_position = position;
