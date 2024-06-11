@@ -185,7 +185,7 @@ public:
             std::rethrow_exception(promise.error);
 
         if (promise._value.has_value() == false)
-            throw std::exception("value is empty");
+            throw std::runtime_error("value is empty");
 
         return *promise._value;
     }

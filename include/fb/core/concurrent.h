@@ -5,10 +5,10 @@
 
 namespace fb {
 
-class lock_error : public std::exception
+class lock_error : public std::runtime_error
 {
 public:
-    lock_error() : std::exception("lock failed")
+    lock_error() : std::runtime_error("lock failed")
     {}
     ~lock_error() = default;
 };
