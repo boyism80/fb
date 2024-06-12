@@ -12,3 +12,4 @@ __pycache__
 optimize.bat
 ssh
 deploy/fb
+game/json
