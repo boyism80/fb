@@ -25,11 +25,12 @@ class console
 private:
 #ifdef _WIN32
     HANDLE                  _stdout;
-    int                     _x       = 0;
-    int                     _y       = 0;
+    int                     _x            = 0;
+    int                     _y            = 0;
 #endif
-    uint16_t                _width   = 0;
-    uint16_t                _height  = 0;
+    uint16_t                _width        = 0;
+    uint16_t                _height       = 0;
+    uint16_t                _additional_y = 0;
     std::mutex              _mutex;
 
 private:
@@ -47,12 +48,17 @@ public:
 public:
     fb::console&            put(const char* format, ...);
     fb::console&            puts(const char* format, ...);
+    fb::console&            comment(const char* format, ...);
     fb::console&            clear(uint16_t x, uint16_t y);
     fb::console&            trim();
-    bool                    line(uint16_t x, uint16_t y, uint16_t width, char content, char side = '+');
-    bool                    box(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+    bool                    line(uint16_t width, char content, char side = '+');
+    bool                    box(uint16_t width, uint16_t height);
     uint16_t                x() const;
+    void                    x(uint16_t val);
     uint16_t                y() const;
+    void                    y(uint16_t val);
+    void                    reset_x();
+    void                    reset_y();
     uint16_t                width() const;
     uint16_t                height() const;
     fb::console&            next();

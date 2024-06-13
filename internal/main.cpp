@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get();
 
         auto height = 8;
-        c.box(0, 0, c.width()-1, height);
+        c.box(c.width()-1, height);
 
         auto header = "The Kingdom of the wind [INTERNAL]";
         c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);

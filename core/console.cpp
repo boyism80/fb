@@ -48,7 +48,7 @@ fb::console::~console()
 #endif
 }
 
-bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, char side)
+bool fb::console::line(uint16_t width, char content, char side)
 {
     if(width < 3)
         return false;
@@ -60,13 +60,17 @@ bool fb::console::line(uint16_t x, uint16_t y, uint16_t width, char content, cha
     std::memset(buffer+offset, content, width-1);   offset += (width-1);
     buffer[offset] = side;
 
-    this->cursor(x, y).puts(buffer);
+    uint16_t before_x, before_y;
+    this->cursor(&before_x, &before_y);
+
+    this->put(buffer);
+    this->cursor(before_x, before_y);
     return true;
 }
 
 fb::console& fb::console::put(const char* fmt, ...)
 {
-    std::lock_guard<std::mutex> __gd(this->_mutex);
+    auto _ = std::lock_guard(this->_mutex);
     
     va_list                 args;
 
@@ -79,21 +83,22 @@ fb::console& fb::console::put(const char* fmt, ...)
 
 #ifdef _WIN32
     DWORD                   written;
-    this->_x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
+    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
 #else
     mvprintw(y, x, combined.c_str());
     refresh();
 #endif
 
-    this->next();
+    this->clear(x, y);
     return *this;
 }
 
 fb::console& fb::console::puts(const char* fmt, ...)
 {
-    std::lock_guard<std::mutex> __gd(this->_mutex);
-
+    auto _ = std::lock_guard(this->_mutex);
+    
     va_list                 args;
+
     va_start(args, fmt);
     auto                    combined = fb::format(fmt, &args);
     va_end(args);
@@ -103,13 +108,40 @@ fb::console& fb::console::puts(const char* fmt, ...)
 
 #ifdef _WIN32
     DWORD                   written;
-    this->_x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
+    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
 #else
     mvprintw(y, x, combined.c_str());
     refresh();
 #endif
 
-    this->trim().next();
+    this->clear(x, y);
+    this->next();
+    return *this;
+}
+
+fb::console& fb::console::comment(const char* fmt, ...)
+{
+    auto _ = std::lock_guard(this->_mutex);
+    
+    va_list                 args;
+
+    va_start(args, fmt);
+    auto                    combined = fb::format(fmt, &args);
+    va_end(args);
+
+    uint16_t                x, y;
+    this->cursor(&x, &y);
+    y += ++this->_additional_y;
+
+#ifdef _WIN32
+    DWORD                   written;
+    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
+#else
+    mvprintw(y, x, combined.c_str());
+    refresh();
+#endif
+
+    this->clear(x, y);
     return *this;
 }
 
@@ -140,18 +172,21 @@ fb::console& fb::console::trim()
     return this->clear(x, y);
 }
 
-bool fb::console::box(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
+bool fb::console::box(uint16_t width, uint16_t height)
 {
     if(height < 3)
         return false;
 
-    int rows = 0;
-    this->line(x, y + rows++, width, '-', '+');
+    auto rows = 0;
+    auto pivot = this->y();
+    this->y(pivot + rows++);  this->line(width, '-', '+');
     while(rows < height - 1)
     {
-        this->line(x, y + rows++, width, ' ', '+');
+        this->y(pivot + rows++); this->line(width, ' ', '+');
     }
-    this->line(x, y + rows++, width, '-', '+');
+    this->y(pivot + rows++); this->line(width, '-', '+');
+
+    this->y(pivot);
     return true;
 }
 
@@ -166,6 +201,11 @@ uint16_t fb::console::x() const
 #endif
 }
 
+void fb::console::x(uint16_t val)
+{
+    this->cursor(val, this->y());
+}
+
 uint16_t fb::console::y() const
 {
 #ifdef _WIN32
@@ -175,6 +215,21 @@ uint16_t fb::console::y() const
     this->cursor(&x, &y);
     return y;
 #endif
+}
+
+void fb::console::y(uint16_t val)
+{
+    this->cursor(this->x(), val);
+}
+
+void fb::console::reset_x()
+{
+    this->x(0);
+}
+
+void fb::console::reset_y()
+{
+    this->y(0);
 }
 
 uint16_t fb::console::width() const
@@ -191,11 +246,13 @@ fb::console& fb::console::next()
 {
 #ifdef _WIN32
     this->_x = 0;
-    this->_y++;
+    this->_y += (this->_additional_y + 1);
 #else
     uint16_t                x, y;
     this->cursor(x, y+1);
 #endif
+
+    this->_additional_y = 0;
     return *this;
 }
 
@@ -207,7 +264,6 @@ fb::console& fb::console::cursor(uint16_t x, uint16_t y)
 #else
     ::move(y, x);
 #endif
-
     return *this;
 }
 
