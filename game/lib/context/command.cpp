@@ -11,7 +11,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
         co_return false;
 
     auto name = parameters[0].asString();
-    auto map = fb::game::model::maps.name2map(name);
+    auto map = fb::game::old_model::maps.name2map(name);
     if(map == nullptr)
         co_return false;
 
@@ -116,7 +116,7 @@ fb::task<bool> fb::game::context::handle_command_disguise(fb::game::session& ses
         co_return false;
 
     auto name = parameters[0].asString();
-    auto mob = fb::game::model::mobs.name2mob(name);
+    auto mob = fb::game::old_model::mobs.name2mob(name);
     if(mob == nullptr)
         co_return true;
 
@@ -142,7 +142,7 @@ fb::task<bool> fb::game::context::handle_command_mob(fb::game::session& session,
         co_return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::model::mobs.name2mob(name);
+    auto core = fb::game::old_model::mobs.name2mob(name);
     if(core == nullptr)
         co_return true;
 
@@ -162,7 +162,7 @@ fb::task<bool> fb::game::context::handle_command_class(fb::game::session& sessio
 
     auto name = parameters[0].asString();
     uint8_t cls, promotion;
-    if(fb::game::model::classes.name2class(name, &cls, &promotion) == false)
+    if(fb::game::old_model::classes.name2class(name, &cls, &promotion) == false)
         co_return true;
 
     session.cls(cls);
@@ -195,7 +195,7 @@ fb::task<bool> fb::game::context::handle_command_spell(fb::game::session& sessio
         co_return false;
 
     auto name = parameters[0].asString();
-    auto spell = fb::game::model::spells.name2spell(name);
+    auto spell = fb::game::old_model::spells.name2spell(name);
     if(spell == nullptr)
         co_return false;
 
@@ -215,7 +215,7 @@ fb::task<bool> fb::game::context::handle_command_item(fb::game::session& session
         co_return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::model::items.name2item(name);
+    auto core = fb::game::old_model::items.name2item(name);
     if(core == nullptr)
         co_return false;
 
@@ -362,7 +362,7 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     std::call_once(flag, [] 
         { 
             std::srand(std::time(nullptr));
-            for(auto& [id, map] : fb::game::model::maps)
+            for(auto& [id, map] : fb::game::old_model::maps)
             {
                 maps.push_back(map.get());
             }
@@ -387,7 +387,7 @@ fb::task<bool> fb::game::context::handle_command_npc(fb::game::session& session,
 
     auto name = parameters[0].asString();
 
-    auto model = fb::game::model::npcs.name2npc(name);
+    auto model = fb::game::old_model::npcs.name2npc(name);
     if(model == nullptr)
         co_return false;
 

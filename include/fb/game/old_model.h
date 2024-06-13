@@ -313,7 +313,7 @@ public:
 
 class session;
 
-class model
+class old_model
 {
 public:
     static std::vector<clan*>               clans;
@@ -332,8 +332,8 @@ public:
     static fb::game::container::regex       regex;
 
 private:
-    model();
-    ~model();
+    old_model();
+    ~old_model();
 };
 
 } }

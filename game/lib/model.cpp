@@ -39,25 +39,25 @@ void assert_script(const std::string& script, const std::string& regex, const st
     }
 }
 
-std::vector<fb::game::clan*> fb::game::model::clans;
-container::map               fb::game::model::maps;
-container::worlds            fb::game::model::worlds;
-container::item              fb::game::model::items;
-container::npc               fb::game::model::npcs;
-container::mob               fb::game::model::mobs;
-container::spell             fb::game::model::spells;
-container::cls               fb::game::model::classes;
-container::mix               fb::game::model::mixes;
-container::door              fb::game::model::doors;
-container::board             fb::game::model::boards;
-container::pursuit           fb::game::model::sell;
-container::pursuit           fb::game::model::buy;
-container::regex             fb::game::model::regex;
+std::vector<fb::game::clan*> fb::game::old_model::clans;
+container::map               fb::game::old_model::maps;
+container::worlds            fb::game::old_model::worlds;
+container::item              fb::game::old_model::items;
+container::npc               fb::game::old_model::npcs;
+container::mob               fb::game::old_model::mobs;
+container::spell             fb::game::old_model::spells;
+container::cls               fb::game::old_model::classes;
+container::mix               fb::game::old_model::mixes;
+container::door              fb::game::old_model::doors;
+container::board             fb::game::old_model::boards;
+container::pursuit           fb::game::old_model::sell;
+container::pursuit           fb::game::old_model::buy;
+container::regex             fb::game::old_model::regex;
 
-fb::game::model::model()
+fb::game::old_model::old_model()
 { }
 
-fb::game::model::~model()
+fb::game::old_model::~old_model()
 { }
 
 fb::game::map* container::map::name2map(const std::string& name)
@@ -471,7 +471,7 @@ bool container::map::load_warps(const std::string& path, fb::table::handle_callb
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id      = std::stoi(key.asString());
-            auto                map         = fb::game::model::maps[map_id];
+            auto                map         = fb::game::old_model::maps[map_id];
             if (map == nullptr)
                 return;
 
@@ -483,7 +483,7 @@ bool container::map::load_warps(const std::string& path, fb::table::handle_callb
                 if(js_warp.isMember("world"))
                 {
                     auto        widx        = js_warp["world"]["wm"].asInt();
-                    auto        world       = fb::game::model::worlds[widx];
+                    auto        world       = fb::game::old_model::worlds[widx];
 
                     auto        gidx        = js_warp["world"]["group"].asInt();
                     auto&       group       = (*world)[gidx];
@@ -498,7 +498,7 @@ bool container::map::load_warps(const std::string& path, fb::table::handle_callb
                     const range8_t  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
 
                     auto        next_map_id = js_warp["to"].asInt();
-                    auto        next_map    = fb::game::model::maps[next_map_id];
+                    auto        next_map    = fb::game::old_model::maps[next_map_id];
                     map->push_warp(next_map, before, after, condition);
                 }
             }
@@ -509,7 +509,7 @@ bool container::map::load_warps(const std::string& path, fb::table::handle_callb
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id      = std::stoi(key.asString());
-            auto                map         = fb::game::model::maps[map_id];
+            auto                map         = fb::game::old_model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -596,7 +596,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
             }
             for (auto& [k, v] : sells)
             {
-                if (fb::game::model::sell.contains(v) == false)
+                if (fb::game::old_model::sell.contains(v) == false)
                 {
                     auto sstream = std::stringstream();
                     sstream << v << " : sell에 정의되지 않았습니다.";
@@ -619,7 +619,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
                 }
             }
             
-            if (buy.has_value() && fb::game::model::buy.contains(buy.value()) == false)
+            if (buy.has_value() && fb::game::old_model::buy.contains(buy.value()) == false)
             {
                 auto sstream = std::stringstream();
                 sstream << buy.value() << " : buy에 정의되지 않았습니다.";
@@ -682,7 +682,7 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
         [&](Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id          = std::stoi(key.asString());
-            auto                map             = fb::game::model::maps[map_id];
+            auto                map             = fb::game::old_model::maps[map_id];
             if (map == nullptr)
                 return;
 
@@ -692,7 +692,7 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
             for (auto& spawn : data)
             {
                 auto            npc_id          = spawn["npc"].asInt();
-                auto            core            = fb::game::model::npcs[npc_id];
+                auto            core            = fb::game::old_model::npcs[npc_id];
                 if (core == nullptr)
                     continue;
 
@@ -724,7 +724,7 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id = std::stoi(key.asString());
-            auto                map    = fb::game::model::maps[map_id];
+            auto                map    = fb::game::old_model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -851,7 +851,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                name        = CP949(key.asString(), PLATFORM::Windows);
-            auto                core        = fb::game::model::mobs.name2mob(name);
+            auto                core        = fb::game::old_model::mobs.name2mob(name);
             if (core == nullptr)
                 throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str()));
 
@@ -859,7 +859,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
             {
                 float       percentage      = x["percentage"].asFloat();
                 auto        item_name       = CP949(x["item"].asString(), PLATFORM::Windows);
-                auto        item_core       = fb::game::model::items.name2item(item_name);
+                auto        item_core       = fb::game::old_model::items.name2item(item_name);
 
                 if (item_core == nullptr)
                     throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_ITEM_NAME, item_name.c_str()));
@@ -896,7 +896,7 @@ bool container::mob::load_spawn(const std::string& path, fb::game::context& cont
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             auto                map_id  = std::stoi(key.asString());
-            auto                map     = fb::game::model::maps[map_id];
+            auto                map     = fb::game::old_model::maps[map_id];
             if (map == nullptr)
                 return;
 
@@ -906,7 +906,7 @@ bool container::mob::load_spawn(const std::string& path, fb::game::context& cont
             for (auto& spawn : data)
             {
                 auto            mob_id  = spawn["mob"].asInt();
-                auto            core    = fb::game::model::mobs[mob_id];
+                auto            core    = fb::game::old_model::mobs[mob_id];
                 if (core == nullptr)
                     continue;
 
@@ -939,7 +939,7 @@ bool container::mob::load_spawn(const std::string& path, fb::game::context& cont
         {
             auto _ = std::lock_guard(*mutex);
             auto                map_id  = std::stoi(key.asString());
-            auto                map     = fb::game::model::maps[map_id];
+            auto                map     = fb::game::old_model::maps[map_id];
             error(map->name(), e);
         }
     );
@@ -1096,21 +1096,21 @@ bool container::mix::load(const std::string& path, fb::table::handle_callback ca
 
             for(auto& require : data["require"])
             {
-                auto            item    = fb::game::model::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::old_model::items.name2item(CP949(require["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = require["count"].asInt();
                 itemmix->require_add(item, count);
             }
 
             for(auto& success: data["success"])
             {
-                auto            item    = fb::game::model::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::old_model::items.name2item(CP949(success["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = success["count"].asInt();
                 itemmix->success_add(item, count);
             }
 
             for(auto& failed: data["failed"])
             {
-                auto            item    = fb::game::model::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
+                auto            item    = fb::game::old_model::items.name2item(CP949(failed["item"].asString(), PLATFORM::Windows));
                 uint32_t        count   = failed["count"].asInt();
                 itemmix->failed_add(item, count);
             }
@@ -1207,7 +1207,7 @@ bool container::worlds::load(const std::string& path, fb::table::handle_callback
                                 js_offset["destination"]["x"].asInt(), 
                                 js_offset["destination"]["y"].asInt()
                             ), 
-                            model::maps[js_offset["destination"]["map"].asInt()]
+                            old_model::maps[js_offset["destination"]["map"].asInt()]
                         )
                     ));
                 }
@@ -1301,7 +1301,7 @@ bool container::pursuit::load(const std::string& path, fb::table::handle_callbac
                  for(auto i = data.begin(); i != data.end(); i++)
                  {
                      auto k = CP949(i.key().asString(), PLATFORM::Windows);
-                     auto item = fb::game::model::items.name2item(k);
+                     auto item = fb::game::old_model::items.name2item(k);
                      if (item == nullptr)
                      {
                          auto sstream = std::stringstream();
@@ -1335,7 +1335,7 @@ bool container::pursuit::load(const std::string& path, fb::table::handle_callbac
                  for (auto& e : data)
                  {
                      auto k = CP949(e.asString(), PLATFORM::Windows);
-                     auto item = fb::game::model::items.name2item(k);
+                     auto item = fb::game::old_model::items.name2item(k);
                      if (item == nullptr)
                      {
                          auto sstream = std::stringstream();

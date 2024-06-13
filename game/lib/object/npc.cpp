@@ -445,7 +445,7 @@ void fb::game::npc::sell_list()
     auto items = std::vector<std::string>();
     for (auto& [_, pursuit] : model->sell)
     {
-        for (auto& [item, price] : *fb::game::model::sell[pursuit])
+        for (auto& [item, price] : *fb::game::old_model::sell[pursuit])
         {
             if (items.size() >= 3)
                 overflow++;
@@ -473,7 +473,7 @@ void fb::game::npc::buy_list()
 
     auto overflow = 0;
     auto items = std::vector<std::string>();
-    for (auto& [item, price] : *fb::game::model::buy[model->buy.value()])
+    for (auto& [item, price] : *fb::game::old_model::buy[model->buy.value()])
     {
         if (items.size() >= 3)
             overflow++;
@@ -681,7 +681,7 @@ bool fb::game::npc::model::contains_sell(const fb::game::item::model& item, uint
 {
     for (auto& [msg, i] : this->sell)
     {
-        for (auto& sell : *fb::game::model::sell[i])
+        for (auto& sell : *fb::game::old_model::sell[i])
         {
             if (sell.first == &item)
             {
@@ -700,7 +700,7 @@ bool fb::game::npc::model::contains_buy(const fb::game::item::model& item, uint3
     if (this->buy.has_value() == false)
         return false;
 
-    for (auto& buy : *fb::game::model::buy[this->buy.value()])
+    for (auto& buy : *fb::game::old_model::buy[this->buy.value()])
     {
         if (buy.first == &item)
         {

@@ -468,7 +468,7 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else if(thread->is_str(2))
         {
-            fb::game::model::maps.name2map(thread->tostring(2));
+            fb::game::old_model::maps.name2map(thread->tostring(2));
             if(map == nullptr)
                 throw std::exception();
         }
@@ -519,7 +519,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     
     auto name = thread->tostring(2);
 
-    auto model = fb::game::model::items.name2item(name);
+    auto model = fb::game::old_model::items.name2item(name);
     if(model == nullptr)
     {
         thread->pushnil();

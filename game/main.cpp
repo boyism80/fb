@@ -21,7 +21,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     c.cursor(0, height + 1);
 
-    if(fb::game::model::doors.load
+    if(fb::game::old_model::doors.load
     (
         config["table"]["door"].asString(),
         [&] (const auto& name, auto percentage)
@@ -41,7 +41,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::regex.load
+    if(fb::game::old_model::regex.load
     (
         config["table"]["regex"].asString(),
         [&] (const auto& name, auto percentage)
@@ -61,7 +61,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::maps.load
+    if(fb::game::old_model::maps.load
     (
         config["table"]["map"].asString(),
         [&] (const auto& name, auto percentage)
@@ -81,7 +81,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::worlds.load
+    if(fb::game::old_model::worlds.load
     (
         config["table"]["world"].asString(),
         [&] (const auto& name, auto percentage)
@@ -101,7 +101,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::spells.load
+    if(fb::game::old_model::spells.load
     (
         config["table"]["spell"].asString(),
         [&] (const auto& name, auto percentage)
@@ -122,7 +122,7 @@ bool load_db(fb::console& c, fb::game::context& context)
 
 
     c.next();
-    if(fb::game::model::maps.load_warps
+    if(fb::game::old_model::maps.load_warps
     (
         config["table"]["warp"].asString(),
         [&] (const auto& name, auto percentage)
@@ -142,7 +142,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::items.load
+    if(fb::game::old_model::items.load
     (
         config["table"]["item"].asString(),
         [&] (const auto& name, auto percentage)
@@ -162,7 +162,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::mixes.load
+    if(fb::game::old_model::mixes.load
     (
         config["table"]["item mix"].asString(),
         [&] (const auto& name, auto percentage)
@@ -182,7 +182,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::sell.load
+    if(fb::game::old_model::sell.load
     (
         config["table"]["sell"].asString(),
         [&] (const auto& name, auto percentage)
@@ -202,7 +202,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::buy.load
+    if(fb::game::old_model::buy.load
     (
         config["table"]["buy"].asString(),
         [&] (const auto& name, auto percentage)
@@ -222,7 +222,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::npcs.load
+    if(fb::game::old_model::npcs.load
     (
         config["table"]["npc"].asString(),
         [&] (const auto& name, auto percentage)
@@ -242,7 +242,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::mobs.load
+    if(fb::game::old_model::mobs.load
     (
         config["table"]["mob"].asString(),
         [&] (const auto& name, auto percentage)
@@ -262,7 +262,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::mobs.load_drops
+    if(fb::game::old_model::mobs.load_drops
     (
         config["table"]["item drop"].asString(),
         [&] (const auto& name, auto percentage)
@@ -286,7 +286,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::npcs.load_spawn
+    if(fb::game::old_model::npcs.load_spawn
     (
         config["table"]["npc spawn"].asString(),
         context, 
@@ -307,7 +307,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::mobs.load_spawn
+    if(fb::game::old_model::mobs.load_spawn
     (
         config["table"]["mob spawn"].asString(),
         context, 
@@ -328,7 +328,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::classes.load
+    if(fb::game::old_model::classes.load
     (
         config["table"]["class"].asString(),
         [&] (const auto& name, auto percentage)
@@ -348,7 +348,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     }
 
     c.next();
-    if(fb::game::model::boards.load
+    if(fb::game::old_model::boards.load
     (
         config["table"]["board"].asString(),
         [&] (const auto& name, auto percentage)

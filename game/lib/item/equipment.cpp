@@ -175,7 +175,7 @@ std::string fb::game::equipment::tip_message() const
     if(model->condition.cls == 0)
         class_stream << "직업제한무";
     else
-        class_stream << fb::game::model::classes.class2name(model->condition.cls, 0) << "용";
+        class_stream << fb::game::old_model::classes.class2name(model->condition.cls, 0) << "용";
     sstream << class_stream.str() << "레벨 " << std::to_string(model->condition.level) << " 이상";
 
     if(model->desc.empty() == false)

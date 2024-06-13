@@ -24,7 +24,7 @@ bool fb::game::itemmix::builder::mix()
 
     try
     {
-        auto                    itemmix = fb::game::model::mixes.find(*this);
+        auto                    itemmix = fb::game::old_model::mixes.find(*this);
         if(itemmix == nullptr)
             throw itemmix::no_match_exception();
 

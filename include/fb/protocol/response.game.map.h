@@ -185,11 +185,11 @@ public:
     {
         try
         {
-            auto  windex = fb::game::model::worlds.find(id);
+            auto  windex = fb::game::old_model::worlds.find(id);
             if(windex == -1)
                 throw nullptr;
 
-            auto  world = fb::game::model::worlds[windex];
+            auto  world = fb::game::old_model::worlds[windex];
             auto& offsets = world->offsets();
             auto  found = std::find_if
             (
@@ -219,11 +219,11 @@ public:
         if(this->offset == nullptr)
             return;
 
-        auto windex = fb::game::model::worlds.find(this->offset->id);
+        auto windex = fb::game::old_model::worlds.find(this->offset->id);
         if(windex == -1)
             return;
 
-        auto world = fb::game::model::worlds[windex];
+        auto world = fb::game::old_model::worlds[windex];
         if(world == nullptr)
             return;
 

@@ -173,7 +173,7 @@ void fb::game::session::on_kill(fb::game::life& you)
     auto exp = you.on_exp();
     if(exp > 0)
     {
-        auto                    range = fb::game::model::classes.exp(this->cls(), this->level());
+        auto                    range = fb::game::old_model::classes.exp(this->cls(), this->level());
 #if defined DEBUG | defined _DEBUG
         exp *= 100;
 #else
@@ -472,12 +472,12 @@ bool fb::game::session::level_up()
     if(this->_class == 0 && this->_level >= 5)
         return false;
 
-    this->strength_up(fb::game::model::classes[this->_class]->abilities[this->_level]->strength);
-    this->intelligence_up(fb::game::model::classes[this->_class]->abilities[this->_level]->intelligence);
-    this->dexteritry_up(fb::game::model::classes[this->_class]->abilities[this->_level]->dexteritry);
+    this->strength_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->strength);
+    this->intelligence_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->intelligence);
+    this->dexteritry_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->dexteritry);
 
-    this->base_hp_up(fb::game::model::classes[this->_class]->abilities[this->_level]->base_hp + std::rand() % 10);
-    this->base_mp_up(fb::game::model::classes[this->_class]->abilities[this->_level]->base_mp + std::rand() % 10);
+    this->base_hp_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->base_hp + std::rand() % 10);
+    this->base_mp_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->base_mp + std::rand() % 10);
 
     this->hp(this->base_hp());
     this->mp(this->base_mp());
@@ -620,7 +620,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
         if(this->_class == 0)
         {
-            auto require = fb::game::model::classes.exp(0, 5 - 1);
+            auto require = fb::game::old_model::classes.exp(0, 5 - 1);
             if(this->_experience > require)
                 value = 0;
 
@@ -654,7 +654,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             if(this->max_level())
                 break;
 
-            auto require = fb::game::model::classes.exp(this->_class, this->_level);
+            auto require = fb::game::old_model::classes.exp(this->_class, this->_level);
             if(require == 0)
                 break;
 
@@ -701,15 +701,15 @@ uint32_t fb::game::session::experience_remained() const
     if(this->_class == 0 && this->_level >= 5)
         return 0;
 
-    return fb::game::model::classes.exp(this->_class, this->_level) - this->experience();
+    return fb::game::old_model::classes.exp(this->_class, this->_level) - this->experience();
 }
 
 float fb::game::session::experience_percent() const
 {
     auto                    current_level = this->level();
-    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::model::classes.exp(this->cls(), current_level);
+    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::old_model::classes.exp(this->cls(), current_level);
     auto                    prev_exp = current_level > 1 ? 
-                                       (this->max_level() ? 0x00000000 : fb::game::model::classes.exp(this->cls(), current_level - 1)) : 0;
+                                       (this->max_level() ? 0x00000000 : fb::game::old_model::classes.exp(this->cls(), current_level - 1)) : 0;
     auto                    exp_range = next_exp - prev_exp;
 
     return std::min(100.0f, ((this->_experience - prev_exp) / float(exp_range)) * 100.0f);
@@ -1139,7 +1139,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(this->state() == fb::game::STATE_TYPE::RIDING)
             throw std::runtime_error(message::ride::ALREADY_RIDE);
 
-        if(horse.based<fb::game::mob>() != fb::game::model::mobs.name2mob("말"))
+        if(horse.based<fb::game::mob>() != fb::game::old_model::mobs.name2mob("말"))
             throw session::no_conveyance_exception();
 
         if(horse.map() != this->_map)
@@ -1190,7 +1190,7 @@ void fb::game::session::unride()
         if(this->state() != fb::game::STATE_TYPE::RIDING)
             throw std::runtime_error(message::ride::UNRIDE);
 
-        auto model = fb::game::model::mobs.name2mob("말");
+        auto model = fb::game::old_model::mobs.name2mob("말");
         auto horse = this->context.make<fb::game::mob>(model, fb::game::mob::config { .alive = true });
         horse->map(this->_map, this->position_forward());
         

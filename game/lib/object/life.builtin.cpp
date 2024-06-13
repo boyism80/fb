@@ -268,7 +268,7 @@ int fb::game::life::builtin_cast(lua_State* lua)
         you = nullptr;
 
     auto name = thread->tostring(3);
-    auto spell = fb::game::model::spells.name2spell(name);
+    auto spell = fb::game::old_model::spells.name2spell(name);
     if(spell == nullptr)
         return 0;
 

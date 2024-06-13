@@ -322,7 +322,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(store == false)
         return object::builtin_mkitem(lua);
 
-    auto model = fb::game::model::items.name2item(name);
+    auto model = fb::game::old_model::items.name2item(name);
     if(model == nullptr)
     {
         thread->pushnil();
@@ -381,7 +381,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(name.empty())
                 throw std::exception();
 
-            auto model = fb::game::model::items.name2item(name);
+            auto model = fb::game::old_model::items.name2item(name);
             if(model == nullptr)
                 throw std::exception();
 
@@ -473,7 +473,7 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls = session->_class;
         auto promotion = session->_promotion;
 
-        auto cls_name = fb::game::model::classes.class2name(cls, promotion);
+        auto cls_name = fb::game::old_model::classes.class2name(cls, promotion);
         if(cls_name == nullptr)
         {
             thread->pushnil();
@@ -487,7 +487,7 @@ int fb::game::session::builtin_class(lua_State* lua)
     {
         auto cls_name = thread->tostring(2);
         uint8_t cls, promotion;
-        if(fb::game::model::classes.name2class(cls_name, &cls, &promotion) == false)
+        if(fb::game::old_model::classes.name2class(cls_name, &cls, &promotion) == false)
         {
             thread->pushboolean(false);
         }

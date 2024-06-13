@@ -103,7 +103,7 @@ int builtin_item(lua_State* lua)
             switch(lua_type(*thread, -1))
             {
                 case LUA_TSTRING:
-                    item = fb::game::model::items.name2item(thread->tostring(-1));
+                    item = fb::game::old_model::items.name2item(thread->tostring(-1));
                     break;
 
                 case LUA_TUSERDATA:
