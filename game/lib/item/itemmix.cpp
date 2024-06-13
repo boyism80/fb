@@ -1,6 +1,6 @@
 #include <fb/game/item.h>
 #include <fb/game/session.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 
 fb::game::itemmix::builder::builder(session& owner) : 
     _owner(owner)

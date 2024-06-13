@@ -2,7 +2,7 @@
 #define __PROTOCOL_REQUEST_BOARD_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace board {
 

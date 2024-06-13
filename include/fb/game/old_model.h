@@ -1,5 +1,5 @@
-#ifndef __MODEL_H__
-#define __MODEL_H__
+#ifndef __OLD_MODEL_H__
+#define __OLD_MODEL_H__
 
 #include <map>
 #include <queue>

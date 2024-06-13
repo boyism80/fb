@@ -1,6 +1,6 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 
 int fb::game::session::builtin_look(lua_State* lua)
 {

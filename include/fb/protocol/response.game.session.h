@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/session.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 #include <fb/game/clan.h>
 #include <fb/game/group.h>
 

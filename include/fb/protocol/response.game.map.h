@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/map.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 
 static constexpr uint16_t crc16tab[256] = 
 {

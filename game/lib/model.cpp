@@ -1,5 +1,5 @@
 #include <fb/game/session.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 #include <regex>
 
 using namespace fb::game;

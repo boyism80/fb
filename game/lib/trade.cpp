@@ -1,6 +1,6 @@
 #include <fb/game/session.h>
 #include <fb/game/trade.h>
-#include <fb/game/model.h>
+#include <fb/game/old_model.h>
 
 fb::game::trade::trade(session& owner) : 
     _owner(owner)
