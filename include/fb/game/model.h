@@ -994,49 +994,49 @@ template <typename T> typename std::enable_if<is_optional<T>::value, T>::type bu
         return std::optional<typename T::value_type>(build<typename T::value_type>(json));
 }
 
-template <> static int8_t build<int8_t>(const Json::Value& json)
+template <> int8_t build<int8_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asInt();
     return static_cast<int8_t>(result);
 }
 
-template <> static uint8_t build<uint8_t>(const Json::Value& json)
+template <> uint8_t build<uint8_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asUInt();
     return static_cast<uint8_t>(result);
 }
 
-template <> static int16_t build<int16_t>(const Json::Value& json)
+template <> int16_t build<int16_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asInt();
     return static_cast<int16_t>(result);
 }
 
-template <> static uint16_t build<uint16_t>(const Json::Value& json)
+template <> uint16_t build<uint16_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asUInt();
     return static_cast<uint16_t>(result);
 }
 
-template <> static int build<int>(const Json::Value& json)
+template <> int build<int>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asInt();
     return static_cast<int>(result);
 }
 
-template <> static uint32_t build<uint32_t>(const Json::Value& json)
+template <> uint32_t build<uint32_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asUInt();
     return static_cast<uint32_t>(result);
 }
 
-template <> static int64_t build<int64_t>(const Json::Value& json)
+template <> int64_t build<int64_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asInt64();
     return static_cast<int64_t>(result);
 }
 
-template <> static uint64_t build<uint64_t>(const Json::Value& json)
+template <> uint64_t build<uint64_t>(const Json::Value& json)
 {
     auto result = json.isString() ? std::atoi(json.asCString()) : json.asUInt64();
     return static_cast<uint64_t>(result);
