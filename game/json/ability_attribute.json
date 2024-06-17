@@ -1,0 +1,17 @@
+{
+  "none": {
+    "id": "none"
+  },
+  "warrior": {
+    "id": "warrior"
+  },
+  "magicion": {
+    "id": "magicion"
+  },
+  "thief": {
+    "id": "thief"
+  },
+  "ascetic": {
+    "id": "ascetic"
+  }
+}

@@ -1,0 +1,7912 @@
+{
+  "컨디션.초심자의남자갑주": {
+    "id": "컨디션.초심자의남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.초심자의여자갑주": {
+    "id": "컨디션.초심자의여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.목검": {
+    "id": "컨디션.목검",
+    "sex": "all",
+    "strength": 5,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.사두목도": {
+    "id": "컨디션.사두목도",
+    "sex": "all",
+    "strength": 10,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.사두목검": {
+    "id": "컨디션.사두목검",
+    "sex": "all",
+    "strength": 13,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.도씨검": {
+    "id": "컨디션.도씨검",
+    "sex": "all",
+    "strength": 15,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.장창": {
+    "id": "컨디션.장창",
+    "sex": "all",
+    "strength": 17,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.철단도": {
+    "id": "컨디션.철단도",
+    "sex": "all",
+    "strength": 20,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.비철단도": {
+    "id": "컨디션.비철단도",
+    "sex": "all",
+    "strength": 10,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 5,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.철도": {
+    "id": "컨디션.철도",
+    "sex": "all",
+    "strength": 30,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.철검": {
+    "id": "컨디션.철검",
+    "sex": "all",
+    "strength": 30,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.상아검": {
+    "id": "컨디션.상아검",
+    "sex": "all",
+    "strength": 10,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.뢰진도": {
+    "id": "컨디션.뢰진도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.얼음칼": {
+    "id": "컨디션.얼음칼",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진명삼지창": {
+    "id": "컨디션.진명삼지창",
+    "sex": "all",
+    "strength": 20,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.현랑부": {
+    "id": "컨디션.현랑부",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백현모": {
+    "id": "컨디션.백현모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백화검": {
+    "id": "컨디션.백화검",
+    "sex": "all",
+    "strength": 70,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백화별검": {
+    "id": "컨디션.백화별검",
+    "sex": "all",
+    "strength": 70,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진백화검": {
+    "id": "컨디션.진백화검",
+    "sex": "all",
+    "strength": 70,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.방천화극": {
+    "id": "컨디션.방천화극",
+    "sex": "all",
+    "strength": 70,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.도깨비방망이": {
+    "id": "컨디션.도깨비방망이",
+    "sex": "all",
+    "strength": 20,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.양첨목봉": {
+    "id": "컨디션.양첨목봉",
+    "sex": "all",
+    "strength": 45,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.현철중검": {
+    "id": "컨디션.현철중검",
+    "sex": "all",
+    "strength": 40,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.환두대도": {
+    "id": "컨디션.환두대도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.아광검": {
+    "id": "컨디션.아광검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.진아광검": {
+    "id": "컨디션.진아광검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.녹슨단검": {
+    "id": "컨디션.녹슨단검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.야월도": {
+    "id": "컨디션.야월도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.가시철도": {
+    "id": "컨디션.가시철도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.일월대도": {
+    "id": "컨디션.일월대도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.영혼마령봉": {
+    "id": "컨디션.영혼마령봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.대마령봉": {
+    "id": "컨디션.대마령봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.술사별봉": {
+    "id": "컨디션.술사별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 92,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.해골죽장": {
+    "id": "컨디션.해골죽장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.삼촉현창": {
+    "id": "컨디션.삼촉현창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.꼬마별봉": {
+    "id": "컨디션.꼬마별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.진꼬마별봉": {
+    "id": "컨디션.진꼬마별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.뇌진도": {
+    "id": "컨디션.뇌진도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.인어장군지팡이": {
+    "id": "컨디션.인어장군지팡이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.괴력선창": {
+    "id": "컨디션.괴력선창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.심판의낫": {
+    "id": "컨디션.심판의낫",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.운의제이검": {
+    "id": "컨디션.운의제이검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.운의제일검": {
+    "id": "컨디션.운의제일검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.풍의제이검": {
+    "id": "컨디션.풍의제이검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.풍의제일검": {
+    "id": "컨디션.풍의제일검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.오뢰창": {
+    "id": "컨디션.오뢰창",
+    "sex": "all",
+    "strength": 17,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.오선창": {
+    "id": "컨디션.오선창",
+    "sex": "all",
+    "strength": 17,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.오귀창": {
+    "id": "컨디션.오귀창",
+    "sex": "all",
+    "strength": 40,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.단사모": {
+    "id": "컨디션.단사모",
+    "sex": "all",
+    "strength": 40,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.낭아봉": {
+    "id": "컨디션.낭아봉",
+    "sex": "all",
+    "strength": 40,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.영롱비창": {
+    "id": "컨디션.영롱비창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.월아검": {
+    "id": "컨디션.월아검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 77,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.칠교칠선": {
+    "id": "컨디션.칠교칠선",
+    "sex": "all",
+    "strength": 17,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.인풍죽선": {
+    "id": "컨디션.인풍죽선",
+    "sex": "all",
+    "strength": 20,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.천풍선": {
+    "id": "컨디션.천풍선",
+    "sex": "all",
+    "strength": 25,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.환두대검": {
+    "id": "컨디션.환두대검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.진성검": {
+    "id": "컨디션.진성검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.가시철단도": {
+    "id": "컨디션.가시철단도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.백진도": {
+    "id": "컨디션.백진도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.대마혼봉": {
+    "id": "컨디션.대마혼봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용설봉": {
+    "id": "컨디션.용설봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.삼촉현선": {
+    "id": "컨디션.삼촉현선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.진선장": {
+    "id": "컨디션.진선장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.이가닌자의검": {
+    "id": "컨디션.이가닌자의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.태존도": {
+    "id": "컨디션.태존도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.요존도": {
+    "id": "컨디션.요존도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.횃불": {
+    "id": "컨디션.횃불",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.곤봉": {
+    "id": "컨디션.곤봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진일신검": {
+    "id": "컨디션.진일신검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청일기창": {
+    "id": "컨디션.청일기창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황염곤봉": {
+    "id": "컨디션.황염곤봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.적염곤봉": {
+    "id": "컨디션.적염곤봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.안시도": {
+    "id": "컨디션.안시도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.석단장": {
+    "id": "컨디션.석단장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백사도": {
+    "id": "컨디션.백사도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.구곡검": {
+    "id": "컨디션.구곡검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.협가검": {
+    "id": "컨디션.협가검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.영후단봉": {
+    "id": "컨디션.영후단봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청형도": {
+    "id": "컨디션.청형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진용형도": {
+    "id": "컨디션.진용형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑형도": {
+    "id": "컨디션.흑형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적형도": {
+    "id": "컨디션.적형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백형도": {
+    "id": "컨디션.백형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.용형도": {
+    "id": "컨디션.용형도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.대모홍접선": {
+    "id": "컨디션.대모홍접선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 98,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.흑장단검": {
+    "id": "컨디션.흑장단검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 25,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.음양도": {
+    "id": "컨디션.음양도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑영패도": {
+    "id": "컨디션.흑영패도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.그림자의막대": {
+    "id": "컨디션.그림자의막대",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.등대빛의검": {
+    "id": "컨디션.등대빛의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.태양의막대'풍": {
+    "id": "컨디션.태양의막대'풍",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.태양의막대'지": {
+    "id": "컨디션.태양의막대'지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.영웅의칼'뇌": {
+    "id": "컨디션.영웅의칼'뇌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.영웅의칼'염": {
+    "id": "컨디션.영웅의칼'염",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.달빛의막대": {
+    "id": "컨디션.달빛의막대",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.위엄의칼": {
+    "id": "컨디션.위엄의칼",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용맹의칼": {
+    "id": "컨디션.용맹의칼",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.저주의단검": {
+    "id": "컨디션.저주의단검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 55,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.가시나무봉": {
+    "id": "컨디션.가시나무봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.반룡곤": {
+    "id": "컨디션.반룡곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 15,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.수련봉": {
+    "id": "컨디션.수련봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 5,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.수련검": {
+    "id": "컨디션.수련검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 5,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.녹호박별검": {
+    "id": "컨디션.녹호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.갈호박별검": {
+    "id": "컨디션.갈호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.자호박별검": {
+    "id": "컨디션.자호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연갈호박별검": {
+    "id": "컨디션.연갈호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연녹호박별검": {
+    "id": "컨디션.연녹호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연자호박별검": {
+    "id": "컨디션.연자호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연청호박별검": {
+    "id": "컨디션.연청호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.적호박별검": {
+    "id": "컨디션.적호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청호박별검": {
+    "id": "컨디션.청호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황호박별검": {
+    "id": "컨디션.황호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.회호박별검": {
+    "id": "컨디션.회호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황금호박별검": {
+    "id": "컨디션.황금호박별검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.녹호박별곤": {
+    "id": "컨디션.녹호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.갈호박별곤": {
+    "id": "컨디션.갈호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.자호박별곤": {
+    "id": "컨디션.자호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연갈호박별곤": {
+    "id": "컨디션.연갈호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연녹호박별곤": {
+    "id": "컨디션.연녹호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연자호박별곤": {
+    "id": "컨디션.연자호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연청호박별곤": {
+    "id": "컨디션.연청호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.적호박별곤": {
+    "id": "컨디션.적호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청호박별곤": {
+    "id": "컨디션.청호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황호박별곤": {
+    "id": "컨디션.황호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.회호박별곤": {
+    "id": "컨디션.회호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황금호박별곤": {
+    "id": "컨디션.황금호박별곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.녹호박별봉": {
+    "id": "컨디션.녹호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.갈호박별봉": {
+    "id": "컨디션.갈호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.자호박별봉": {
+    "id": "컨디션.자호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연갈호박별봉": {
+    "id": "컨디션.연갈호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연녹호박별봉": {
+    "id": "컨디션.연녹호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연자호박별봉": {
+    "id": "컨디션.연자호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연청호박별봉": {
+    "id": "컨디션.연청호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.적호박별봉": {
+    "id": "컨디션.적호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.청호박별봉": {
+    "id": "컨디션.청호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황호박별봉": {
+    "id": "컨디션.황호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.회호박별봉": {
+    "id": "컨디션.회호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황금호박별봉": {
+    "id": "컨디션.황금호박별봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.녹호박별도": {
+    "id": "컨디션.녹호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.갈호박별도": {
+    "id": "컨디션.갈호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.자호박별도": {
+    "id": "컨디션.자호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연갈호박별도": {
+    "id": "컨디션.연갈호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연녹호박별도": {
+    "id": "컨디션.연녹호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연자호박별도": {
+    "id": "컨디션.연자호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연청호박별도": {
+    "id": "컨디션.연청호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.적호박별도": {
+    "id": "컨디션.적호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청호박별도": {
+    "id": "컨디션.청호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황호박별도": {
+    "id": "컨디션.황호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.회호박별도": {
+    "id": "컨디션.회호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황금호박별도": {
+    "id": "컨디션.황금호박별도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.다문창": {
+    "id": "컨디션.다문창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적화접선": {
+    "id": "컨디션.적화접선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황화곤봉": {
+    "id": "컨디션.황화곤봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청월기창": {
+    "id": "컨디션.청월기창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.진월신검": {
+    "id": "컨디션.진월신검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.진선역봉": {
+    "id": "컨디션.진선역봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 4
+  },
+  "컨디션.현자금봉": {
+    "id": "컨디션.현자금봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 4
+  },
+  "컨디션.검성기검": {
+    "id": "컨디션.검성기검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 4
+  },
+  "컨디션.태성태도": {
+    "id": "컨디션.태성태도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 4
+  },
+  "컨디션.남도": {
+    "id": "컨디션.남도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 35,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.거미독창": {
+    "id": "컨디션.거미독창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 65,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.의식의지팡이": {
+    "id": "컨디션.의식의지팡이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.환술의봉": {
+    "id": "컨디션.환술의봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용사의칼": {
+    "id": "컨디션.용사의칼",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.투사의칼": {
+    "id": "컨디션.투사의칼",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.전투용창": {
+    "id": "컨디션.전투용창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.합현곤": {
+    "id": "컨디션.합현곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.망월봉": {
+    "id": "컨디션.망월봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.장예도": {
+    "id": "컨디션.장예도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.국본검": {
+    "id": "컨디션.국본검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.목근정곤": {
+    "id": "컨디션.목근정곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.금기련봉": {
+    "id": "컨디션.금기련봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.수류곡도": {
+    "id": "컨디션.수류곡도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.화분천검": {
+    "id": "컨디션.화분천검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.낭아극쇄검": {
+    "id": "컨디션.낭아극쇄검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 85,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.원앙홍선": {
+    "id": "컨디션.원앙홍선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 65,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.원앙청선": {
+    "id": "컨디션.원앙청선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 65,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진원창": {
+    "id": "컨디션.진원창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적문창": {
+    "id": "컨디션.적문창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적사모": {
+    "id": "컨디션.적사모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑문창": {
+    "id": "컨디션.흑문창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑사모": {
+    "id": "컨디션.흑사모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청선창": {
+    "id": "컨디션.청선창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황선창": {
+    "id": "컨디션.황선창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황선칠선": {
+    "id": "컨디션.황선칠선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑선의검": {
+    "id": "컨디션.흑선의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청문창": {
+    "id": "컨디션.청문창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑선죽선": {
+    "id": "컨디션.흑선죽선",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청사모": {
+    "id": "컨디션.청사모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.칠지도": {
+    "id": "컨디션.칠지도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청선목봉": {
+    "id": "컨디션.청선목봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑단화염장": {
+    "id": "컨디션.흑단화염장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.백운장": {
+    "id": "컨디션.백운장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.남월곡장": {
+    "id": "컨디션.남월곡장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.은십자막대": {
+    "id": "컨디션.은십자막대",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 33,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.홍옥지팡이": {
+    "id": "컨디션.홍옥지팡이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 33,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청명백현모": {
+    "id": "컨디션.청명백현모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.현무의검": {
+    "id": "컨디션.현무의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주작의검": {
+    "id": "컨디션.주작의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.백호의검": {
+    "id": "컨디션.백호의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청룡의검": {
+    "id": "컨디션.청룡의검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진'고균의영검": {
+    "id": "컨디션.진'고균의영검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.고균의영검": {
+    "id": "컨디션.고균의영검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.각암추": {
+    "id": "컨디션.각암추",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.참마도": {
+    "id": "컨디션.참마도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.현월창": {
+    "id": "컨디션.현월창",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보물탐지봉": {
+    "id": "컨디션.보물탐지봉",
+    "sex": "all",
+    "strength": 4,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주작선장": {
+    "id": "컨디션.주작선장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청룡신검": {
+    "id": "컨디션.청룡신검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.흑철중검": {
+    "id": "컨디션.흑철중검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.검정깃발": {
+    "id": "컨디션.검정깃발",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청화검": {
+    "id": "컨디션.청화검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.역사수호깃발": {
+    "id": "컨디션.역사수호깃발",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.영혼죽장": {
+    "id": "컨디션.영혼죽장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용마제일검": {
+    "id": "컨디션.용마제일검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제이검": {
+    "id": "컨디션.용마제이검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제삼검": {
+    "id": "컨디션.용마제삼검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제사검": {
+    "id": "컨디션.용마제사검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제오검": {
+    "id": "컨디션.용마제오검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제육검": {
+    "id": "컨디션.용마제육검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제칠검": {
+    "id": "컨디션.용마제칠검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제팔검": {
+    "id": "컨디션.용마제팔검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용마제구검": {
+    "id": "컨디션.용마제구검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.용천제일검": {
+    "id": "컨디션.용천제일검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제이검": {
+    "id": "컨디션.용천제이검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제삼검": {
+    "id": "컨디션.용천제삼검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제사검": {
+    "id": "컨디션.용천제사검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제오검": {
+    "id": "컨디션.용천제오검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제육검": {
+    "id": "컨디션.용천제육검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제칠검": {
+    "id": "컨디션.용천제칠검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제팔검": {
+    "id": "컨디션.용천제팔검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용천제구검": {
+    "id": "컨디션.용천제구검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 100,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.용랑제일봉": {
+    "id": "컨디션.용랑제일봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제이봉": {
+    "id": "컨디션.용랑제이봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제삼봉": {
+    "id": "컨디션.용랑제삼봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제사봉": {
+    "id": "컨디션.용랑제사봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제오봉": {
+    "id": "컨디션.용랑제오봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제육봉": {
+    "id": "컨디션.용랑제육봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제칠봉": {
+    "id": "컨디션.용랑제칠봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제팔봉": {
+    "id": "컨디션.용랑제팔봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용랑제구봉": {
+    "id": "컨디션.용랑제구봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.용겸제일봉": {
+    "id": "컨디션.용겸제일봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제이봉": {
+    "id": "컨디션.용겸제이봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제삼봉": {
+    "id": "컨디션.용겸제삼봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제사봉": {
+    "id": "컨디션.용겸제사봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제오봉": {
+    "id": "컨디션.용겸제오봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제육봉": {
+    "id": "컨디션.용겸제육봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제칠봉": {
+    "id": "컨디션.용겸제칠봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제팔봉": {
+    "id": "컨디션.용겸제팔봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.용겸제구봉": {
+    "id": "컨디션.용겸제구봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.[손상]용마제칠검": {
+    "id": "컨디션.[손상]용마제칠검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.[손상]용마제팔검": {
+    "id": "컨디션.[손상]용마제팔검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.[손상]용천제칠검": {
+    "id": "컨디션.[손상]용천제칠검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.[손상]용천제팔검": {
+    "id": "컨디션.[손상]용천제팔검",
+    "sex": "all",
+    "strength": 100,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.[손상]용랑제칠봉": {
+    "id": "컨디션.[손상]용랑제칠봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.[손상]용랑제팔봉": {
+    "id": "컨디션.[손상]용랑제팔봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.[손상]용겸제칠봉": {
+    "id": "컨디션.[손상]용겸제칠봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.[손상]용겸제팔봉": {
+    "id": "컨디션.[손상]용겸제팔봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.일식천부연검": {
+    "id": "컨디션.일식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.이식천부연검": {
+    "id": "컨디션.이식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.삼식천부연검": {
+    "id": "컨디션.삼식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.사식천부연검": {
+    "id": "컨디션.사식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.오식천부연검": {
+    "id": "컨디션.오식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.육식천부연검": {
+    "id": "컨디션.육식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.칠식천부연검": {
+    "id": "컨디션.칠식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.팔식천부연검": {
+    "id": "컨디션.팔식천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.진'천부연검": {
+    "id": "컨디션.진'천부연검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.일식천부연도": {
+    "id": "컨디션.일식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.이식천부연도": {
+    "id": "컨디션.이식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.삼식천부연도": {
+    "id": "컨디션.삼식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.사식천부연도": {
+    "id": "컨디션.사식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.오식천부연도": {
+    "id": "컨디션.오식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.육식천부연도": {
+    "id": "컨디션.육식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.칠식천부연도": {
+    "id": "컨디션.칠식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.팔식천부연도": {
+    "id": "컨디션.팔식천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.진'천부연도": {
+    "id": "컨디션.진'천부연도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.일식천부연봉": {
+    "id": "컨디션.일식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.이식천부연봉": {
+    "id": "컨디션.이식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.삼식천부연봉": {
+    "id": "컨디션.삼식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.사식천부연봉": {
+    "id": "컨디션.사식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.오식천부연봉": {
+    "id": "컨디션.오식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.육식천부연봉": {
+    "id": "컨디션.육식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.칠식천부연봉": {
+    "id": "컨디션.칠식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.팔식천부연봉": {
+    "id": "컨디션.팔식천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.진'천부연봉": {
+    "id": "컨디션.진'천부연봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.일식천부연곤": {
+    "id": "컨디션.일식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.이식천부연곤": {
+    "id": "컨디션.이식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.삼식천부연곤": {
+    "id": "컨디션.삼식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.사식천부연곤": {
+    "id": "컨디션.사식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 45,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.오식천부연곤": {
+    "id": "컨디션.오식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.육식천부연곤": {
+    "id": "컨디션.육식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.칠식천부연곤": {
+    "id": "컨디션.칠식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.팔식천부연곤": {
+    "id": "컨디션.팔식천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.진'천부연곤": {
+    "id": "컨디션.진'천부연곤",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.흑월도": {
+    "id": "컨디션.흑월도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.해골흑장": {
+    "id": "컨디션.해골흑장",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.적철검": {
+    "id": "컨디션.적철검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 33,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.비늘단도": {
+    "id": "컨디션.비늘단도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 33,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.철태도": {
+    "id": "컨디션.철태도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.염인백화검": {
+    "id": "컨디션.염인백화검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.무쌍현랑부": {
+    "id": "컨디션.무쌍현랑부",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.극경도깨비봉": {
+    "id": "컨디션.극경도깨비봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.원혼마령봉": {
+    "id": "컨디션.원혼마령봉",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.풍의제삼검": {
+    "id": "컨디션.풍의제삼검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.운의제삼검": {
+    "id": "컨디션.운의제삼검",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색남자도복": {
+    "id": "컨디션.연두색남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색짧은도포": {
+    "id": "컨디션.연두색짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색남자갑옷": {
+    "id": "컨디션.연두색남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색남자갑주": {
+    "id": "컨디션.연두색남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색치마": {
+    "id": "컨디션.연두색치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색여자도복": {
+    "id": "컨디션.연두색여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색여자갑옷": {
+    "id": "컨디션.연두색여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색여자갑주": {
+    "id": "컨디션.연두색여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색도포": {
+    "id": "컨디션.연두색도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색통치마": {
+    "id": "컨디션.연두색통치마",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색비늘남자갑주": {
+    "id": "컨디션.연두색비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색비늘여자갑주": {
+    "id": "컨디션.연두색비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색장삼": {
+    "id": "컨디션.연두색장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색여자통옷": {
+    "id": "컨디션.연두색여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또": {
+    "id": "컨디션.망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연노랑망또": {
+    "id": "컨디션.연노랑망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연갈색망또": {
+    "id": "컨디션.연갈색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.녹색야광망또": {
+    "id": "컨디션.녹색야광망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.올리브색망또": {
+    "id": "컨디션.올리브색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금빛망또": {
+    "id": "컨디션.금빛망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.갈색망또": {
+    "id": "컨디션.갈색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.보라색망또": {
+    "id": "컨디션.보라색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.자주색망또": {
+    "id": "컨디션.자주색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.장미색망또": {
+    "id": "컨디션.장미색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.초록색망또": {
+    "id": "컨디션.초록색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.파란색망또": {
+    "id": "컨디션.파란색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.하늘색망또": {
+    "id": "컨디션.하늘색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황금빛망또": {
+    "id": "컨디션.황금빛망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.회색망또": {
+    "id": "컨디션.회색망또",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또23": {
+    "id": "컨디션.망또23",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또24": {
+    "id": "컨디션.망또24",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또25": {
+    "id": "컨디션.망또25",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또26": {
+    "id": "컨디션.망또26",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또27": {
+    "id": "컨디션.망또27",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또28": {
+    "id": "컨디션.망또28",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또29": {
+    "id": "컨디션.망또29",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또30": {
+    "id": "컨디션.망또30",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.망또31": {
+    "id": "컨디션.망또31",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스": {
+    "id": "컨디션.웨딩드레스",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스1": {
+    "id": "컨디션.웨딩드레스1",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스2": {
+    "id": "컨디션.웨딩드레스2",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스3": {
+    "id": "컨디션.웨딩드레스3",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스4": {
+    "id": "컨디션.웨딩드레스4",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스5": {
+    "id": "컨디션.웨딩드레스5",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스6": {
+    "id": "컨디션.웨딩드레스6",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스7": {
+    "id": "컨디션.웨딩드레스7",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스8": {
+    "id": "컨디션.웨딩드레스8",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스9": {
+    "id": "컨디션.웨딩드레스9",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스10": {
+    "id": "컨디션.웨딩드레스10",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스11": {
+    "id": "컨디션.웨딩드레스11",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스12": {
+    "id": "컨디션.웨딩드레스12",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스13": {
+    "id": "컨디션.웨딩드레스13",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스14": {
+    "id": "컨디션.웨딩드레스14",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스15": {
+    "id": "컨디션.웨딩드레스15",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스16": {
+    "id": "컨디션.웨딩드레스16",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스17": {
+    "id": "컨디션.웨딩드레스17",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스18": {
+    "id": "컨디션.웨딩드레스18",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스19": {
+    "id": "컨디션.웨딩드레스19",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스20": {
+    "id": "컨디션.웨딩드레스20",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스21": {
+    "id": "컨디션.웨딩드레스21",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스22": {
+    "id": "컨디션.웨딩드레스22",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스23": {
+    "id": "컨디션.웨딩드레스23",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스24": {
+    "id": "컨디션.웨딩드레스24",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스25": {
+    "id": "컨디션.웨딩드레스25",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스26": {
+    "id": "컨디션.웨딩드레스26",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스27": {
+    "id": "컨디션.웨딩드레스27",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스28": {
+    "id": "컨디션.웨딩드레스28",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스29": {
+    "id": "컨디션.웨딩드레스29",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스30": {
+    "id": "컨디션.웨딩드레스30",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.웨딩드레스31": {
+    "id": "컨디션.웨딩드레스31",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷1": {
+    "id": "컨디션.끈옷1",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷2": {
+    "id": "컨디션.끈옷2",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷3": {
+    "id": "컨디션.끈옷3",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷4": {
+    "id": "컨디션.끈옷4",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷5": {
+    "id": "컨디션.끈옷5",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷6": {
+    "id": "컨디션.끈옷6",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷7": {
+    "id": "컨디션.끈옷7",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷8": {
+    "id": "컨디션.끈옷8",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.끈옷9": {
+    "id": "컨디션.끈옷9",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.사비의갑주": {
+    "id": "컨디션.사비의갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.도절의갑주": {
+    "id": "컨디션.도절의갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.도절의장삼": {
+    "id": "컨디션.도절의장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.사비의도복": {
+    "id": "컨디션.사비의도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.도절의도포": {
+    "id": "컨디션.도절의도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.사비의치마": {
+    "id": "컨디션.사비의치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.사비의통옷": {
+    "id": "컨디션.사비의통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.도절의갑옷": {
+    "id": "컨디션.도절의갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.검황의영혼": {
+    "id": "컨디션.검황의영혼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 3
+  },
+  "컨디션.검황의심장": {
+    "id": "컨디션.검황의심장",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 3
+  },
+  "컨디션.귀검의심장": {
+    "id": "컨디션.귀검의심장",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 3
+  },
+  "컨디션.귀검의영혼": {
+    "id": "컨디션.귀검의영혼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 3
+  },
+  "컨디션.진인의심장": {
+    "id": "컨디션.진인의심장",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 3
+  },
+  "컨디션.진인의영혼": {
+    "id": "컨디션.진인의영혼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 3
+  },
+  "컨디션.현인의영혼": {
+    "id": "컨디션.현인의영혼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 3
+  },
+  "컨디션.현인의심장": {
+    "id": "컨디션.현인의심장",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 3
+  },
+  "컨디션.남자기모노": {
+    "id": "컨디션.남자기모노",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여자기모노": {
+    "id": "컨디션.여자기모노",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주술갑옷": {
+    "id": "컨디션.주술갑옷",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.외강의복": {
+    "id": "컨디션.외강의복",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.내강의복": {
+    "id": "컨디션.내강의복",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.타라의여자옷": {
+    "id": "컨디션.타라의여자옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.타라의남자옷": {
+    "id": "컨디션.타라의남자옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.직녀의옷": {
+    "id": "컨디션.직녀의옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.남자설빔": {
+    "id": "컨디션.남자설빔",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여자설빔": {
+    "id": "컨디션.여자설빔",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.한문사복": {
+    "id": "컨디션.한문사복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.한무사복": {
+    "id": "컨디션.한무사복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.남흑산포복": {
+    "id": "컨디션.남흑산포복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.한족남자평복": {
+    "id": "컨디션.한족남자평복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 10,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.남자치파오": {
+    "id": "컨디션.남자치파오",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여자치파오": {
+    "id": "컨디션.여자치파오",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.차이나드레스": {
+    "id": "컨디션.차이나드레스",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.무도가옷": {
+    "id": "컨디션.무도가옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.한족여자평복": {
+    "id": "컨디션.한족여자평복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 10,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여흑산포복": {
+    "id": "컨디션.여흑산포복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.계후의장삼": {
+    "id": "컨디션.계후의장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.미유의통옷": {
+    "id": "컨디션.미유의통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.계후의갑옷": {
+    "id": "컨디션.계후의갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.미유의도복": {
+    "id": "컨디션.미유의도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.계후의갑주": {
+    "id": "컨디션.계후의갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.미유의갑주": {
+    "id": "컨디션.미유의갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.계후의도포": {
+    "id": "컨디션.계후의도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.미유의치마": {
+    "id": "컨디션.미유의치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.회색갑옷": {
+    "id": "컨디션.회색갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.묘족여자평복": {
+    "id": "컨디션.묘족여자평복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.남만의장삼": {
+    "id": "컨디션.남만의장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.삼묘의통옷": {
+    "id": "컨디션.삼묘의통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.남만의갑옷": {
+    "id": "컨디션.남만의갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.삼묘의도복": {
+    "id": "컨디션.삼묘의도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.남만의도포": {
+    "id": "컨디션.남만의도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.삼묘의치마": {
+    "id": "컨디션.삼묘의치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.남만의갑주": {
+    "id": "컨디션.남만의갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.삼묘의갑주": {
+    "id": "컨디션.삼묘의갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.산신의정화": {
+    "id": "컨디션.산신의정화",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.산신의정령": {
+    "id": "컨디션.산신의정령",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.산신의비설": {
+    "id": "컨디션.산신의비설",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.산신의비령": {
+    "id": "컨디션.산신의비령",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.산신의천수": {
+    "id": "컨디션.산신의천수",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.산신의수령": {
+    "id": "컨디션.산신의수령",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.산신의인풍": {
+    "id": "컨디션.산신의인풍",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.산신의인령": {
+    "id": "컨디션.산신의인령",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.남자원주민의옷": {
+    "id": "컨디션.남자원주민의옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여자원주민의옷": {
+    "id": "컨디션.여자원주민의옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.번개의활복": {
+    "id": "컨디션.번개의활복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.번개의도복": {
+    "id": "컨디션.번개의도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.물의장삼": {
+    "id": "컨디션.물의장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.물의통옷": {
+    "id": "컨디션.물의통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.땅의도포": {
+    "id": "컨디션.땅의도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.땅의치마": {
+    "id": "컨디션.땅의치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.불의갑주": {
+    "id": "컨디션.불의갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.불의연갑": {
+    "id": "컨디션.불의연갑",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황혼의갑주": {
+    "id": "컨디션.황혼의갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.여명의연갑": {
+    "id": "컨디션.여명의연갑",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황혼의활복": {
+    "id": "컨디션.황혼의활복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.여명의도복": {
+    "id": "컨디션.여명의도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황혼의도포": {
+    "id": "컨디션.황혼의도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.여명의치마": {
+    "id": "컨디션.여명의치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황혼의장삼": {
+    "id": "컨디션.황혼의장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.여명의통옷": {
+    "id": "컨디션.여명의통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.초록색남자갑주": {
+    "id": "컨디션.초록색남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보라남자갑주": {
+    "id": "컨디션.보라남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.파란색남자갑주": {
+    "id": "컨디션.파란색남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.가죽남자갑주": {
+    "id": "컨디션.가죽남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.구리색남자갑주": {
+    "id": "컨디션.구리색남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청동남자갑주": {
+    "id": "컨디션.청동남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.철남자갑주": {
+    "id": "컨디션.철남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.은남자갑주": {
+    "id": "컨디션.은남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.금남자갑주": {
+    "id": "컨디션.금남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.초록색비늘남자갑주": {
+    "id": "컨디션.초록색비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보라비늘남자갑주": {
+    "id": "컨디션.보라비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.파란색비늘남자갑주": {
+    "id": "컨디션.파란색비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.가죽비늘남자갑주": {
+    "id": "컨디션.가죽비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.구리비늘남자갑주": {
+    "id": "컨디션.구리비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청동비늘남자갑주": {
+    "id": "컨디션.청동비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.철비늘남자갑주": {
+    "id": "컨디션.철비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.은비늘남자갑주": {
+    "id": "컨디션.은비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.금비늘남자갑주": {
+    "id": "컨디션.금비늘남자갑주",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.초록색여자갑주": {
+    "id": "컨디션.초록색여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보라여자갑주": {
+    "id": "컨디션.보라여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.파란색여자갑주": {
+    "id": "컨디션.파란색여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.가죽여자갑주": {
+    "id": "컨디션.가죽여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.구리색여자갑주": {
+    "id": "컨디션.구리색여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청동여자갑주": {
+    "id": "컨디션.청동여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.철여자갑주": {
+    "id": "컨디션.철여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.은여자갑주": {
+    "id": "컨디션.은여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.금여자갑주": {
+    "id": "컨디션.금여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.초록색비늘여자갑주": {
+    "id": "컨디션.초록색비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보라비늘여자갑주": {
+    "id": "컨디션.보라비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.파란색비늘여자갑주": {
+    "id": "컨디션.파란색비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.가죽비늘여자갑주": {
+    "id": "컨디션.가죽비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.구리비늘여자갑주": {
+    "id": "컨디션.구리비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청동비늘여자갑주": {
+    "id": "컨디션.청동비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.철비늘여자갑주": {
+    "id": "컨디션.철비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.은비늘여자갑주": {
+    "id": "컨디션.은비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.금비늘여자갑주": {
+    "id": "컨디션.금비늘여자갑주",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.초록색남자도복": {
+    "id": "컨디션.초록색남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.보라남자도복": {
+    "id": "컨디션.보라남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.파란색남자도복": {
+    "id": "컨디션.파란색남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.가죽남자도복": {
+    "id": "컨디션.가죽남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.구리남자도복": {
+    "id": "컨디션.구리남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청동남자도복": {
+    "id": "컨디션.청동남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.철남자도복": {
+    "id": "컨디션.철남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.은남자도복": {
+    "id": "컨디션.은남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.금남자도복": {
+    "id": "컨디션.금남자도복",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.초록색남자갑옷": {
+    "id": "컨디션.초록색남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.보라남자갑옷": {
+    "id": "컨디션.보라남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.파란색남자갑옷": {
+    "id": "컨디션.파란색남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.가죽남자갑옷": {
+    "id": "컨디션.가죽남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.구리남자갑옷": {
+    "id": "컨디션.구리남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청동남자갑옷": {
+    "id": "컨디션.청동남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.철남자갑옷": {
+    "id": "컨디션.철남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.은남자갑옷": {
+    "id": "컨디션.은남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.금남자갑옷": {
+    "id": "컨디션.금남자갑옷",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.초록색여자도복": {
+    "id": "컨디션.초록색여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.보라여자도복": {
+    "id": "컨디션.보라여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.파란색여자도복": {
+    "id": "컨디션.파란색여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.가죽여자도복": {
+    "id": "컨디션.가죽여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.구리여자도복": {
+    "id": "컨디션.구리여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청동여자도복": {
+    "id": "컨디션.청동여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.철여자도복": {
+    "id": "컨디션.철여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.은여자도복": {
+    "id": "컨디션.은여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.금여자도복": {
+    "id": "컨디션.금여자도복",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.초록색여자갑옷": {
+    "id": "컨디션.초록색여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.보라여자갑옷": {
+    "id": "컨디션.보라여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.파란색여자갑옷": {
+    "id": "컨디션.파란색여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.가죽여자갑옷": {
+    "id": "컨디션.가죽여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.구리여자갑옷": {
+    "id": "컨디션.구리여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청동여자갑옷": {
+    "id": "컨디션.청동여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.철여자갑옷": {
+    "id": "컨디션.철여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.은여자갑옷": {
+    "id": "컨디션.은여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.금여자갑옷": {
+    "id": "컨디션.금여자갑옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.초록색짧은도포": {
+    "id": "컨디션.초록색짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.보라짧은도포": {
+    "id": "컨디션.보라짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.파란색짧은도포": {
+    "id": "컨디션.파란색짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.가죽짧은도포": {
+    "id": "컨디션.가죽짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.구리짧은도포": {
+    "id": "컨디션.구리짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청동짧은도포": {
+    "id": "컨디션.청동짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.철짧은도포": {
+    "id": "컨디션.철짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.은짧은도포": {
+    "id": "컨디션.은짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.금짧은도포": {
+    "id": "컨디션.금짧은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.초록색도포": {
+    "id": "컨디션.초록색도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.보라도포": {
+    "id": "컨디션.보라도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.파란색도포": {
+    "id": "컨디션.파란색도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.가죽도포": {
+    "id": "컨디션.가죽도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.구리도포": {
+    "id": "컨디션.구리도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청동도포": {
+    "id": "컨디션.청동도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.철도포": {
+    "id": "컨디션.철도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.은도포": {
+    "id": "컨디션.은도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.금도포": {
+    "id": "컨디션.금도포",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.초록색치마": {
+    "id": "컨디션.초록색치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.보라치마": {
+    "id": "컨디션.보라치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.파란색치마": {
+    "id": "컨디션.파란색치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.가죽치마": {
+    "id": "컨디션.가죽치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.구리치마": {
+    "id": "컨디션.구리치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청동치마": {
+    "id": "컨디션.청동치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.철치마": {
+    "id": "컨디션.철치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.은치마": {
+    "id": "컨디션.은치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.금치마": {
+    "id": "컨디션.금치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.초록색통치마": {
+    "id": "컨디션.초록색통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.보라통치마": {
+    "id": "컨디션.보라통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.파란색통치마": {
+    "id": "컨디션.파란색통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.가죽통치마": {
+    "id": "컨디션.가죽통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.구리통치마": {
+    "id": "컨디션.구리통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청동통치마": {
+    "id": "컨디션.청동통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.철통치마": {
+    "id": "컨디션.철통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.은통치마": {
+    "id": "컨디션.은통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.금통치마": {
+    "id": "컨디션.금통치마",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.초록색장삼": {
+    "id": "컨디션.초록색장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.보라장삼": {
+    "id": "컨디션.보라장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.파란색장삼": {
+    "id": "컨디션.파란색장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.가죽장삼": {
+    "id": "컨디션.가죽장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.구리장삼": {
+    "id": "컨디션.구리장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.청동장삼": {
+    "id": "컨디션.청동장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.철장삼": {
+    "id": "컨디션.철장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.은장삼": {
+    "id": "컨디션.은장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.금장삼": {
+    "id": "컨디션.금장삼",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.초록색여자통옷": {
+    "id": "컨디션.초록색여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 6,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.보라여자통옷": {
+    "id": "컨디션.보라여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 16,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.파란색여자통옷": {
+    "id": "컨디션.파란색여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 26,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.가죽여자통옷": {
+    "id": "컨디션.가죽여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.구리여자통옷": {
+    "id": "컨디션.구리여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.청동여자통옷": {
+    "id": "컨디션.청동여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.철여자통옷": {
+    "id": "컨디션.철여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 66,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.은여자통옷": {
+    "id": "컨디션.은여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 76,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.금여자통옷": {
+    "id": "컨디션.금여자통옷",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 86,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.팔세지도": {
+    "id": "컨디션.팔세지도",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.여신의방패": {
+    "id": "컨디션.여신의방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 77,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.문신방패": {
+    "id": "컨디션.문신방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.주술방패": {
+    "id": "컨디션.주술방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.거울방패": {
+    "id": "컨디션.거울방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 10,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.일광방패": {
+    "id": "컨디션.일광방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.월광방패": {
+    "id": "컨디션.월광방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.정화의방패": {
+    "id": "컨디션.정화의방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.철방패": {
+    "id": "컨디션.철방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 46,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.보라방패": {
+    "id": "컨디션.보라방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.나무방패": {
+    "id": "컨디션.나무방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 11,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.사각방패": {
+    "id": "컨디션.사각방패",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.주술투구": {
+    "id": "컨디션.주술투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.낭아투구": {
+    "id": "컨디션.낭아투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진취양모": {
+    "id": "컨디션.진취양모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.현취월모": {
+    "id": "컨디션.현취월모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.태공투구": {
+    "id": "컨디션.태공투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.검신투구": {
+    "id": "컨디션.검신투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.격랑모": {
+    "id": "컨디션.격랑모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.법비모": {
+    "id": "컨디션.법비모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.강마두건": {
+    "id": "컨디션.강마두건",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.강마투구": {
+    "id": "컨디션.강마투구",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.경비투구": {
+    "id": "컨디션.경비투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.경랑투구": {
+    "id": "컨디션.경랑투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.진비투구": {
+    "id": "컨디션.진비투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.진랑투구": {
+    "id": "컨디션.진랑투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연녹호박투구": {
+    "id": "컨디션.연녹호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황금호박투구": {
+    "id": "컨디션.황금호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.자호박투구": {
+    "id": "컨디션.자호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연자호박투구": {
+    "id": "컨디션.연자호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연갈호박투구": {
+    "id": "컨디션.연갈호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연청호박투구": {
+    "id": "컨디션.연청호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.녹호박투구": {
+    "id": "컨디션.녹호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적호박투구": {
+    "id": "컨디션.적호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황호박투구": {
+    "id": "컨디션.황호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.용왕의투구": {
+    "id": "컨디션.용왕의투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 99,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주홍투구": {
+    "id": "컨디션.주홍투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.쇄자황금투구": {
+    "id": "컨디션.쇄자황금투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청연신투구": {
+    "id": "컨디션.청연신투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.황금투구": {
+    "id": "컨디션.황금투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.사연갈투구": {
+    "id": "컨디션.사연갈투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.비룡투구": {
+    "id": "컨디션.비룡투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑선투구": {
+    "id": "컨디션.흑선투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.천공투구": {
+    "id": "컨디션.천공투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.아미투구": {
+    "id": "컨디션.아미투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.신장투구": {
+    "id": "컨디션.신장투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.통투구": {
+    "id": "컨디션.통투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.세시투구": {
+    "id": "컨디션.세시투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금장남자투구": {
+    "id": "컨디션.금장남자투구",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.초록색남자투구": {
+    "id": "컨디션.초록색남자투구",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색남자투구": {
+    "id": "컨디션.연두색남자투구",
+    "sex": "man",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금장여자투구": {
+    "id": "컨디션.금장여자투구",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.초록색여자투구": {
+    "id": "컨디션.초록색여자투구",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연두색여자투구": {
+    "id": "컨디션.연두색여자투구",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.격비모": {
+    "id": "컨디션.격비모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.법랑모": {
+    "id": "컨디션.법랑모",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청호박투구": {
+    "id": "컨디션.청호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.갈호박투구": {
+    "id": "컨디션.갈호박투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 80,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.강철투구": {
+    "id": "컨디션.강철투구",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.꽃목걸이": {
+    "id": "컨디션.꽃목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주술선류": {
+    "id": "컨디션.주술선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.문신선류": {
+    "id": "컨디션.문신선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.주술반지": {
+    "id": "컨디션.주술반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.문신반지": {
+    "id": "컨디션.문신반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.주술팔찌": {
+    "id": "컨디션.주술팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.문신팔찌": {
+    "id": "컨디션.문신팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.주술장갑": {
+    "id": "컨디션.주술장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 95,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.문신장갑": {
+    "id": "컨디션.문신장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.강건부": {
+    "id": "컨디션.강건부",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.연녹호박선류": {
+    "id": "컨디션.연녹호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황금호박선류": {
+    "id": "컨디션.황금호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.자호박선류": {
+    "id": "컨디션.자호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연갈호박선류": {
+    "id": "컨디션.연갈호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.청호박선류": {
+    "id": "컨디션.청호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연청호박선류": {
+    "id": "컨디션.연청호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.적호박선류": {
+    "id": "컨디션.적호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황호박선류": {
+    "id": "컨디션.황호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.연녹호박반지": {
+    "id": "컨디션.연녹호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황금호박반지": {
+    "id": "컨디션.황금호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.자호박반지": {
+    "id": "컨디션.자호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연갈호박반지": {
+    "id": "컨디션.연갈호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.청호박반지": {
+    "id": "컨디션.청호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연청호박반지": {
+    "id": "컨디션.연청호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.적호박반지": {
+    "id": "컨디션.적호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황호박반지": {
+    "id": "컨디션.황호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.연녹호박팔찌": {
+    "id": "컨디션.연녹호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황금호박팔찌": {
+    "id": "컨디션.황금호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.자호박팔찌": {
+    "id": "컨디션.자호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연갈호박팔찌": {
+    "id": "컨디션.연갈호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청호박팔찌": {
+    "id": "컨디션.청호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연청호박팔찌": {
+    "id": "컨디션.연청호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.녹호박팔찌": {
+    "id": "컨디션.녹호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.적호박팔찌": {
+    "id": "컨디션.적호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황호박팔찌": {
+    "id": "컨디션.황호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연자호박팔찌": {
+    "id": "컨디션.연자호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연녹호박장갑": {
+    "id": "컨디션.연녹호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황금호박장갑": {
+    "id": "컨디션.황금호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.자호박장갑": {
+    "id": "컨디션.자호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연갈호박장갑": {
+    "id": "컨디션.연갈호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청호박장갑": {
+    "id": "컨디션.청호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연청호박장갑": {
+    "id": "컨디션.연청호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.녹호박장갑": {
+    "id": "컨디션.녹호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.적호박장갑": {
+    "id": "컨디션.적호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황호박장갑": {
+    "id": "컨디션.황호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연자호박장갑": {
+    "id": "컨디션.연자호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.인어반지": {
+    "id": "컨디션.인어반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.용왕의반지": {
+    "id": "컨디션.용왕의반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진주반지": {
+    "id": "컨디션.진주반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.쇄자황금선류": {
+    "id": "컨디션.쇄자황금선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.황금선류": {
+    "id": "컨디션.황금선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.흑선선류": {
+    "id": "컨디션.흑선선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.비룡선류": {
+    "id": "컨디션.비룡선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.아미선류": {
+    "id": "컨디션.아미선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.천공선류": {
+    "id": "컨디션.천공선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.일월선류": {
+    "id": "컨디션.일월선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.유연선류": {
+    "id": "컨디션.유연선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.승류": {
+    "id": "컨디션.승류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.비승류": {
+    "id": "컨디션.비승류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.백금소선류": {
+    "id": "컨디션.백금소선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.당예류": {
+    "id": "컨디션.당예류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.쇄자황금반지": {
+    "id": "컨디션.쇄자황금반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.황금반지": {
+    "id": "컨디션.황금반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.흑선반지": {
+    "id": "컨디션.흑선반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.비룡반지": {
+    "id": "컨디션.비룡반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.아미반지": {
+    "id": "컨디션.아미반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.천공반지": {
+    "id": "컨디션.천공반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.일월반지": {
+    "id": "컨디션.일월반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.금마반지": {
+    "id": "컨디션.금마반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.은마반지": {
+    "id": "컨디션.은마반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.천수반지": {
+    "id": "컨디션.천수반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.호피반지": {
+    "id": "컨디션.호피반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.쇄자황금팔찌": {
+    "id": "컨디션.쇄자황금팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.황금팔찌": {
+    "id": "컨디션.황금팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.흑선팔찌": {
+    "id": "컨디션.흑선팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.비룡팔찌": {
+    "id": "컨디션.비룡팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.아미팔찌": {
+    "id": "컨디션.아미팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.천공팔찌": {
+    "id": "컨디션.천공팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.일월팔찌": {
+    "id": "컨디션.일월팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.연위팔찌": {
+    "id": "컨디션.연위팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.세명팔찌": {
+    "id": "컨디션.세명팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.청류팔찌": {
+    "id": "컨디션.청류팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.경번팔찌": {
+    "id": "컨디션.경번팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.쇄자황금장갑": {
+    "id": "컨디션.쇄자황금장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.황금장갑": {
+    "id": "컨디션.황금장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.흑선장갑": {
+    "id": "컨디션.흑선장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.비룡장갑": {
+    "id": "컨디션.비룡장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.아미장갑": {
+    "id": "컨디션.아미장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.천공장갑": {
+    "id": "컨디션.천공장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.일월장갑": {
+    "id": "컨디션.일월장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.연환장갑": {
+    "id": "컨디션.연환장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.신장갑": {
+    "id": "컨디션.신장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.엄심장갑": {
+    "id": "컨디션.엄심장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.백금소장갑": {
+    "id": "컨디션.백금소장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.통장갑": {
+    "id": "컨디션.통장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 20,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청연신장갑": {
+    "id": "컨디션.청연신장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.현철장갑": {
+    "id": "컨디션.현철장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.선류": {
+    "id": "컨디션.선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.천둥부적": {
+    "id": "컨디션.천둥부적",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 40,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.퇴마반지": {
+    "id": "컨디션.퇴마반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 55,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.붉은색반지": {
+    "id": "컨디션.붉은색반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 35,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.진마반지": {
+    "id": "컨디션.진마반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.보라색반지": {
+    "id": "컨디션.보라색반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 15,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.흑심반지": {
+    "id": "컨디션.흑심반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 12,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.파란색반지": {
+    "id": "컨디션.파란색반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 5,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.속삭임팔찌": {
+    "id": "컨디션.속삭임팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.녹호박선류": {
+    "id": "컨디션.녹호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.갈호박선류": {
+    "id": "컨디션.갈호박선류",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.녹호박반지": {
+    "id": "컨디션.녹호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.갈호박반지": {
+    "id": "컨디션.갈호박반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.갈호박팔찌": {
+    "id": "컨디션.갈호박팔찌",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.갈호박장갑": {
+    "id": "컨디션.갈호박장갑",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 75,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.청동손목보호대": {
+    "id": "컨디션.청동손목보호대",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.해골목걸이": {
+    "id": "컨디션.해골목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.정령인형": {
+    "id": "컨디션.정령인형",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.빨간고무신": {
+    "id": "컨디션.빨간고무신",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.검정나막신": {
+    "id": "컨디션.검정나막신",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.강철의구두": {
+    "id": "컨디션.강철의구두",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.묘족의귀걸이": {
+    "id": "컨디션.묘족의귀걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.한족의귀걸이": {
+    "id": "컨디션.한족의귀걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.적월의귀걸이": {
+    "id": "컨디션.적월의귀걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.일월의귀걸이": {
+    "id": "컨디션.일월의귀걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "warrior",
+    "promotion": 0
+  },
+  "컨디션.봉마의귀걸이": {
+    "id": "컨디션.봉마의귀걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금격의목걸이": {
+    "id": "컨디션.금격의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "ascetic",
+    "promotion": 0
+  },
+  "컨디션.혈충의목걸이": {
+    "id": "컨디션.혈충의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "magicion",
+    "promotion": 0
+  },
+  "컨디션.봉마의목걸이": {
+    "id": "컨디션.봉마의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 56,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.주홍의목걸이": {
+    "id": "컨디션.주홍의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.수정의목걸이": {
+    "id": "컨디션.수정의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.비취의목걸이": {
+    "id": "컨디션.비취의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 60,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.적막의목걸이": {
+    "id": "컨디션.적막의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금편의목걸이": {
+    "id": "컨디션.금편의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 70,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청옥의목걸이": {
+    "id": "컨디션.청옥의목걸이",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": "thief",
+    "promotion": 0
+  },
+  "컨디션.마반경": {
+    "id": "컨디션.마반경",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 50,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.명석부": {
+    "id": "컨디션.명석부",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.금강석": {
+    "id": "컨디션.금강석",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.공주의반지": {
+    "id": "컨디션.공주의반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.청옥반지": {
+    "id": "컨디션.청옥반지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 36,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.수선도사의머리띠": {
+    "id": "컨디션.수선도사의머리띠",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 30,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.해골갑옷": {
+    "id": "컨디션.해골갑옷",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 90,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.장인의회중시계": {
+    "id": "컨디션.장인의회중시계",
+    "sex": "woman",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 1,
+    "class_id": null,
+    "promotion": 0
+  },
+  "컨디션.건전지": {
+    "id": "컨디션.건전지",
+    "sex": "all",
+    "strength": 0,
+    "dexterity": 0,
+    "intelligence": 0,
+    "level": 0,
+    "class_id": "thief",
+    "promotion": 1
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "0": {
+    "id": 0,
+    "name": "공지사항",
+    "min_level": 0,
+    "max_level": 0,
+    "admin": true
+  },
+  "1": {
+    "id": 1,
+    "name": "자유게시판",
+    "min_level": 10,
+    "max_level": 255,
+    "admin": false
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "warrior": {
+    "0": {
+      "step": 0,
+      "parent": "warrior"
+    },
+    "1": {
+      "step": 1,
+      "parent": "warrior"
+    },
+    "2": {
+      "step": 2,
+      "parent": "warrior"
+    },
+    "3": {
+      "step": 3,
+      "parent": "warrior"
+    },
+    "4": {
+      "step": 4,
+      "parent": "warrior"
+    }
+  },
+  "thief": {
+    "0": {
+      "step": 0,
+      "parent": "thief"
+    },
+    "1": {
+      "step": 1,
+      "parent": "thief"
+    },
+    "2": {
+      "step": 2,
+      "parent": "thief"
+    },
+    "3": {
+      "step": 3,
+      "parent": "thief"
+    },
+    "4": {
+      "step": 4,
+      "parent": "thief"
+    }
+  },
+  "magicion": {
+    "0": {
+      "step": 0,
+      "parent": "magicion"
+    },
+    "1": {
+      "step": 1,
+      "parent": "magicion"
+    },
+    "2": {
+      "step": 2,
+      "parent": "magicion"
+    },
+    "3": {
+      "step": 3,
+      "parent": "magicion"
+    },
+    "4": {
+      "step": 4,
+      "parent": "magicion"
+    }
+  },
+  "ascetic": {
+    "0": {
+      "step": 0,
+      "parent": "ascetic"
+    },
+    "1": {
+      "step": 1,
+      "parent": "ascetic"
+    },
+    "2": {
+      "step": 2,
+      "parent": "ascetic"
+    },
+    "3": {
+      "step": 3,
+      "parent": "ascetic"
+    },
+    "4": {
+      "step": 4,
+      "parent": "ascetic"
+    }
+  }
+}

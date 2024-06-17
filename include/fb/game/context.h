@@ -1,4 +1,3 @@
-
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
@@ -20,6 +19,7 @@
 #include <fb/game/regex.h>
 #include <fb/protocol/game.h>
 #include <fb/protocol/internal.h>
+#include <fb/game/model.h>
 
 namespace fb { namespace game {
 
@@ -46,6 +46,9 @@ private:
     object_set               _objects;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
+
+public:
+    fb::model::container    model;
 
 public:
     context(boost::asio::io_context& context, uint16_t port);

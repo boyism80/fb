@@ -21,6 +21,16 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     c.cursor(0, height + 1);
 
+#if _WIN32
+    fb::model::string_encoding_func = cp949;
+#endif
+
+    context.model.load([&](float percent)
+    {
+        c.put(" * [%0.2lf%%] 데이터를 읽었습니다.", percent);
+    });
+    c.next();
+
     if(fb::game::old_model::doors.load
     (
         config["table"]["door"].asString(),
