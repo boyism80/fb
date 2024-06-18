@@ -1,5 +1,5 @@
 {
-  "none": {
+  "NONE": {
     "1": {
       "level": 1,
       "dexteritry": 0,
@@ -8,7 +8,7 @@
       "exp": 0,
       "hp": 0,
       "mp": 0,
-      "parent": "none"
+      "parent": "NONE"
     },
     "2": {
       "level": 2,
@@ -18,7 +18,7 @@
       "exp": 300,
       "hp": 0,
       "mp": 0,
-      "parent": "none"
+      "parent": "NONE"
     },
     "3": {
       "level": 3,
@@ -28,7 +28,7 @@
       "exp": 600,
       "hp": 0,
       "mp": 0,
-      "parent": "none"
+      "parent": "NONE"
     },
     "4": {
       "level": 4,
@@ -38,7 +38,7 @@
       "exp": 900,
       "hp": 0,
       "mp": 0,
-      "parent": "none"
+      "parent": "NONE"
     },
     "5": {
       "level": 5,
@@ -48,10 +48,10 @@
       "exp": 1200,
       "hp": 0,
       "mp": 0,
-      "parent": "none"
+      "parent": "NONE"
     }
   },
-  "warrior": {
+  "WARRIOR": {
     "5": {
       "level": 5,
       "dexteritry": 0,
@@ -60,7 +60,7 @@
       "exp": 1200,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "6": {
       "level": 6,
@@ -70,7 +70,7 @@
       "exp": 2400,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "7": {
       "level": 7,
@@ -80,7 +80,7 @@
       "exp": 3600,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "8": {
       "level": 8,
@@ -90,7 +90,7 @@
       "exp": 4800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "9": {
       "level": 9,
@@ -100,7 +100,7 @@
       "exp": 6000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "10": {
       "level": 10,
@@ -110,7 +110,7 @@
       "exp": 8400,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "11": {
       "level": 11,
@@ -120,7 +120,7 @@
       "exp": 10800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "12": {
       "level": 12,
@@ -130,7 +130,7 @@
       "exp": 13200,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "13": {
       "level": 13,
@@ -140,7 +140,7 @@
       "exp": 18000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "14": {
       "level": 14,
@@ -150,7 +150,7 @@
       "exp": 22800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "15": {
       "level": 15,
@@ -160,7 +160,7 @@
       "exp": 27600,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "16": {
       "level": 16,
@@ -170,7 +170,7 @@
       "exp": 37200,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "17": {
       "level": 17,
@@ -180,7 +180,7 @@
       "exp": 46800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "18": {
       "level": 18,
@@ -190,7 +190,7 @@
       "exp": 56400,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "19": {
       "level": 19,
@@ -200,7 +200,7 @@
       "exp": 75600,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "20": {
       "level": 20,
@@ -210,7 +210,7 @@
       "exp": 94800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "21": {
       "level": 21,
@@ -220,7 +220,7 @@
       "exp": 114000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "22": {
       "level": 22,
@@ -230,7 +230,7 @@
       "exp": 152400,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "23": {
       "level": 23,
@@ -240,7 +240,7 @@
       "exp": 190800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "24": {
       "level": 24,
@@ -250,7 +250,7 @@
       "exp": 229200,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "25": {
       "level": 25,
@@ -260,7 +260,7 @@
       "exp": 306000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "26": {
       "level": 26,
@@ -270,7 +270,7 @@
       "exp": 382800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "27": {
       "level": 27,
@@ -280,7 +280,7 @@
       "exp": 459600,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "28": {
       "level": 28,
@@ -290,7 +290,7 @@
       "exp": 613200,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "29": {
       "level": 29,
@@ -300,7 +300,7 @@
       "exp": 766800,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "30": {
       "level": 30,
@@ -310,7 +310,7 @@
       "exp": 920400,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "31": {
       "level": 31,
@@ -320,7 +320,7 @@
       "exp": 1140000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "32": {
       "level": 32,
@@ -330,7 +330,7 @@
       "exp": 1370000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "33": {
       "level": 33,
@@ -340,7 +340,7 @@
       "exp": 1590000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "34": {
       "level": 34,
@@ -350,7 +350,7 @@
       "exp": 1900000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "35": {
       "level": 35,
@@ -360,7 +360,7 @@
       "exp": 2290000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "36": {
       "level": 36,
@@ -370,7 +370,7 @@
       "exp": 2510000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "37": {
       "level": 37,
@@ -380,7 +380,7 @@
       "exp": 2960000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "38": {
       "level": 38,
@@ -390,7 +390,7 @@
       "exp": 3410000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "39": {
       "level": 39,
@@ -400,7 +400,7 @@
       "exp": 3860000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "40": {
       "level": 40,
@@ -410,7 +410,7 @@
       "exp": 4350000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "41": {
       "level": 41,
@@ -420,7 +420,7 @@
       "exp": 4800000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "42": {
       "level": 42,
@@ -430,7 +430,7 @@
       "exp": 5340000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "43": {
       "level": 43,
@@ -440,7 +440,7 @@
       "exp": 6060000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "44": {
       "level": 44,
@@ -450,7 +450,7 @@
       "exp": 6780000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "45": {
       "level": 45,
@@ -460,7 +460,7 @@
       "exp": 7510000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "46": {
       "level": 46,
@@ -470,7 +470,7 @@
       "exp": 8480000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "47": {
       "level": 47,
@@ -480,7 +480,7 @@
       "exp": 9460000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "48": {
       "level": 48,
@@ -490,7 +490,7 @@
       "exp": 10450000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "49": {
       "level": 49,
@@ -500,7 +500,7 @@
       "exp": 18890000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "50": {
       "level": 50,
@@ -510,7 +510,7 @@
       "exp": 13330000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "51": {
       "level": 51,
@@ -520,7 +520,7 @@
       "exp": 14770000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "52": {
       "level": 52,
@@ -530,7 +530,7 @@
       "exp": 16400000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "53": {
       "level": 53,
@@ -540,7 +540,7 @@
       "exp": 18040000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "54": {
       "level": 54,
@@ -550,7 +550,7 @@
       "exp": 19680000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "55": {
       "level": 55,
@@ -560,7 +560,7 @@
       "exp": 22080000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "56": {
       "level": 56,
@@ -570,7 +570,7 @@
       "exp": 24480000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "57": {
       "level": 57,
@@ -580,7 +580,7 @@
       "exp": 26880000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "58": {
       "level": 58,
@@ -590,7 +590,7 @@
       "exp": 30380000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "59": {
       "level": 59,
@@ -600,7 +600,7 @@
       "exp": 35880000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "60": {
       "level": 60,
@@ -610,7 +610,7 @@
       "exp": 40380000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "61": {
       "level": 61,
@@ -620,7 +620,7 @@
       "exp": 47780000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "62": {
       "level": 62,
@@ -630,7 +630,7 @@
       "exp": 47780000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "63": {
       "level": 63,
@@ -640,7 +640,7 @@
       "exp": 63580000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "64": {
       "level": 64,
@@ -650,7 +650,7 @@
       "exp": 72900000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "65": {
       "level": 65,
@@ -660,7 +660,7 @@
       "exp": 81220000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "66": {
       "level": 66,
@@ -670,7 +670,7 @@
       "exp": 92540000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "67": {
       "level": 67,
@@ -680,7 +680,7 @@
       "exp": 100000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "68": {
       "level": 68,
@@ -690,7 +690,7 @@
       "exp": 110000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "69": {
       "level": 69,
@@ -700,7 +700,7 @@
       "exp": 120000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "70": {
       "level": 70,
@@ -710,7 +710,7 @@
       "exp": 140000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "71": {
       "level": 71,
@@ -720,7 +720,7 @@
       "exp": 160000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "72": {
       "level": 72,
@@ -730,7 +730,7 @@
       "exp": 170000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "73": {
       "level": 73,
@@ -740,7 +740,7 @@
       "exp": 200000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "74": {
       "level": 74,
@@ -750,7 +750,7 @@
       "exp": 220000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "75": {
       "level": 75,
@@ -760,7 +760,7 @@
       "exp": 250000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "76": {
       "level": 76,
@@ -770,7 +770,7 @@
       "exp": 290000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "77": {
       "level": 77,
@@ -780,7 +780,7 @@
       "exp": 330000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "78": {
       "level": 78,
@@ -790,7 +790,7 @@
       "exp": 370000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "79": {
       "level": 79,
@@ -800,7 +800,7 @@
       "exp": 400000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "80": {
       "level": 80,
@@ -810,7 +810,7 @@
       "exp": 470000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "81": {
       "level": 81,
@@ -820,7 +820,7 @@
       "exp": 530000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "82": {
       "level": 82,
@@ -830,7 +830,7 @@
       "exp": 600000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "83": {
       "level": 83,
@@ -840,7 +840,7 @@
       "exp": 650000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "84": {
       "level": 84,
@@ -850,7 +850,7 @@
       "exp": 700000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "85": {
       "level": 85,
@@ -860,7 +860,7 @@
       "exp": 800000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "86": {
       "level": 86,
@@ -870,7 +870,7 @@
       "exp": 900000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "87": {
       "level": 87,
@@ -880,7 +880,7 @@
       "exp": 1000000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "88": {
       "level": 88,
@@ -890,7 +890,7 @@
       "exp": 1100000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "89": {
       "level": 89,
@@ -900,7 +900,7 @@
       "exp": 1200000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "90": {
       "level": 90,
@@ -910,7 +910,7 @@
       "exp": 1340000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "91": {
       "level": 91,
@@ -920,7 +920,7 @@
       "exp": 1400000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "92": {
       "level": 92,
@@ -930,7 +930,7 @@
       "exp": 1570000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "93": {
       "level": 93,
@@ -940,7 +940,7 @@
       "exp": 1670000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "94": {
       "level": 94,
@@ -950,7 +950,7 @@
       "exp": 1780000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "95": {
       "level": 95,
@@ -960,7 +960,7 @@
       "exp": 1900000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "96": {
       "level": 96,
@@ -970,7 +970,7 @@
       "exp": 2000000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "97": {
       "level": 97,
@@ -980,7 +980,7 @@
       "exp": 2100000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "98": {
       "level": 98,
@@ -990,7 +990,7 @@
       "exp": 2300000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     },
     "99": {
       "level": 99,
@@ -1000,10 +1000,10 @@
       "exp": 2600000000,
       "hp": 0,
       "mp": 0,
-      "parent": "warrior"
+      "parent": "WARRIOR"
     }
   },
-  "magicion": {
+  "MAGICION": {
     "5": {
       "level": 5,
       "dexteritry": 0,
@@ -1012,7 +1012,7 @@
       "exp": 1200,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "6": {
       "level": 6,
@@ -1022,7 +1022,7 @@
       "exp": 2160,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "7": {
       "level": 7,
@@ -1032,7 +1032,7 @@
       "exp": 3240,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "8": {
       "level": 8,
@@ -1042,7 +1042,7 @@
       "exp": 4320,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "9": {
       "level": 9,
@@ -1052,7 +1052,7 @@
       "exp": 5400,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "10": {
       "level": 10,
@@ -1062,7 +1062,7 @@
       "exp": 7560,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "11": {
       "level": 11,
@@ -1072,7 +1072,7 @@
       "exp": 9720,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "12": {
       "level": 12,
@@ -1082,7 +1082,7 @@
       "exp": 11800,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "13": {
       "level": 13,
@@ -1092,7 +1092,7 @@
       "exp": 16200,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "14": {
       "level": 14,
@@ -1102,7 +1102,7 @@
       "exp": 20520,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "15": {
       "level": 15,
@@ -1112,7 +1112,7 @@
       "exp": 24840,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "16": {
       "level": 16,
@@ -1122,7 +1122,7 @@
       "exp": 33480,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "17": {
       "level": 17,
@@ -1132,7 +1132,7 @@
       "exp": 42120,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "18": {
       "level": 18,
@@ -1142,7 +1142,7 @@
       "exp": 50760,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "19": {
       "level": 19,
@@ -1152,7 +1152,7 @@
       "exp": 68040,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "20": {
       "level": 20,
@@ -1162,7 +1162,7 @@
       "exp": 85320,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "21": {
       "level": 21,
@@ -1172,7 +1172,7 @@
       "exp": 102600,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "22": {
       "level": 22,
@@ -1182,7 +1182,7 @@
       "exp": 137160,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "23": {
       "level": 23,
@@ -1192,7 +1192,7 @@
       "exp": 171720,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "24": {
       "level": 24,
@@ -1202,7 +1202,7 @@
       "exp": 206280,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "25": {
       "level": 25,
@@ -1212,7 +1212,7 @@
       "exp": 275400,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "26": {
       "level": 26,
@@ -1222,7 +1222,7 @@
       "exp": 344520,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "27": {
       "level": 27,
@@ -1232,7 +1232,7 @@
       "exp": 413640,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "28": {
       "level": 28,
@@ -1242,7 +1242,7 @@
       "exp": 551880,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "29": {
       "level": 29,
@@ -1252,7 +1252,7 @@
       "exp": 690120,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "30": {
       "level": 30,
@@ -1262,7 +1262,7 @@
       "exp": 828360,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "31": {
       "level": 31,
@@ -1272,7 +1272,7 @@
       "exp": 1030000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "32": {
       "level": 32,
@@ -1282,7 +1282,7 @@
       "exp": 1230000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "33": {
       "level": 33,
@@ -1292,7 +1292,7 @@
       "exp": 1430000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "34": {
       "level": 34,
@@ -1302,7 +1302,7 @@
       "exp": 1710000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "35": {
       "level": 35,
@@ -1312,7 +1312,7 @@
       "exp": 1980000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "36": {
       "level": 36,
@@ -1322,7 +1322,7 @@
       "exp": 2260000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "37": {
       "level": 37,
@@ -1332,7 +1332,7 @@
       "exp": 2670000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "38": {
       "level": 38,
@@ -1342,7 +1342,7 @@
       "exp": 3070000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "39": {
       "level": 39,
@@ -1352,7 +1352,7 @@
       "exp": 3480000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "40": {
       "level": 40,
@@ -1362,7 +1362,7 @@
       "exp": 3920000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "41": {
       "level": 41,
@@ -1372,7 +1372,7 @@
       "exp": 4360000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "42": {
       "level": 42,
@@ -1382,7 +1382,7 @@
       "exp": 4900000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "43": {
       "level": 43,
@@ -1392,7 +1392,7 @@
       "exp": 5450000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "44": {
       "level": 44,
@@ -1402,7 +1402,7 @@
       "exp": 6100000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "45": {
       "level": 45,
@@ -1412,7 +1412,7 @@
       "exp": 6750000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "46": {
       "level": 46,
@@ -1422,7 +1422,7 @@
       "exp": 7630000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "47": {
       "level": 47,
@@ -1432,7 +1432,7 @@
       "exp": 8520000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "48": {
       "level": 48,
@@ -1442,7 +1442,7 @@
       "exp": 9400000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "49": {
       "level": 49,
@@ -1452,7 +1452,7 @@
       "exp": 10700000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "50": {
       "level": 50,
@@ -1462,7 +1462,7 @@
       "exp": 11990000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "51": {
       "level": 51,
@@ -1472,7 +1472,7 @@
       "exp": 13290000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "52": {
       "level": 52,
@@ -1482,7 +1482,7 @@
       "exp": 14760000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "53": {
       "level": 53,
@@ -1492,7 +1492,7 @@
       "exp": 16240000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "54": {
       "level": 54,
@@ -1502,7 +1502,7 @@
       "exp": 17710000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "55": {
       "level": 55,
@@ -1512,7 +1512,7 @@
       "exp": 19870000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "56": {
       "level": 56,
@@ -1522,7 +1522,7 @@
       "exp": 22030000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "57": {
       "level": 57,
@@ -1532,7 +1532,7 @@
       "exp": 24190000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "58": {
       "level": 58,
@@ -1542,7 +1542,7 @@
       "exp": 27040000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "59": {
       "level": 59,
@@ -1552,7 +1552,7 @@
       "exp": 31890000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "60": {
       "level": 60,
@@ -1562,7 +1562,7 @@
       "exp": 36740000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "61": {
       "level": 61,
@@ -1572,7 +1572,7 @@
       "exp": 42500000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "62": {
       "level": 62,
@@ -1582,7 +1582,7 @@
       "exp": 49260000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "63": {
       "level": 63,
@@ -1592,7 +1592,7 @@
       "exp": 57020000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "64": {
       "level": 64,
@@ -1602,7 +1602,7 @@
       "exp": 65510000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "65": {
       "level": 65,
@@ -1612,7 +1612,7 @@
       "exp": 73000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "66": {
       "level": 66,
@@ -1622,7 +1622,7 @@
       "exp": 81490000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "67": {
       "level": 67,
@@ -1632,7 +1632,7 @@
       "exp": 91200000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "68": {
       "level": 68,
@@ -1642,7 +1642,7 @@
       "exp": 110000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "69": {
       "level": 69,
@@ -1652,7 +1652,7 @@
       "exp": 130000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "70": {
       "level": 70,
@@ -1662,7 +1662,7 @@
       "exp": 130000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "71": {
       "level": 71,
@@ -1672,7 +1672,7 @@
       "exp": 150000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "72": {
       "level": 72,
@@ -1682,7 +1682,7 @@
       "exp": 180000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "73": {
       "level": 73,
@@ -1692,7 +1692,7 @@
       "exp": 210000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "74": {
       "level": 74,
@@ -1702,7 +1702,7 @@
       "exp": 240000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "75": {
       "level": 75,
@@ -1712,7 +1712,7 @@
       "exp": 280000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "76": {
       "level": 76,
@@ -1722,7 +1722,7 @@
       "exp": 330000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "77": {
       "level": 77,
@@ -1732,7 +1732,7 @@
       "exp": 380000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "78": {
       "level": 78,
@@ -1742,7 +1742,7 @@
       "exp": 440000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "79": {
       "level": 79,
@@ -1752,7 +1752,7 @@
       "exp": 505000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "80": {
       "level": 80,
@@ -1762,7 +1762,7 @@
       "exp": 570000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "81": {
       "level": 81,
@@ -1772,7 +1772,7 @@
       "exp": 650000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "82": {
       "level": 82,
@@ -1782,7 +1782,7 @@
       "exp": 730000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "83": {
       "level": 83,
@@ -1792,7 +1792,7 @@
       "exp": 820000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "84": {
       "level": 84,
@@ -1802,7 +1802,7 @@
       "exp": 910000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "85": {
       "level": 85,
@@ -1812,7 +1812,7 @@
       "exp": 1010000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "86": {
       "level": 86,
@@ -1822,7 +1822,7 @@
       "exp": 1120000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "87": {
       "level": 87,
@@ -1832,7 +1832,7 @@
       "exp": 1230000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "88": {
       "level": 88,
@@ -1842,7 +1842,7 @@
       "exp": 1340000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "89": {
       "level": 89,
@@ -1852,7 +1852,7 @@
       "exp": 1460000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "90": {
       "level": 90,
@@ -1862,7 +1862,7 @@
       "exp": 1580000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "91": {
       "level": 91,
@@ -1872,7 +1872,7 @@
       "exp": 1610000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "92": {
       "level": 92,
@@ -1882,7 +1882,7 @@
       "exp": 1740000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "93": {
       "level": 93,
@@ -1892,7 +1892,7 @@
       "exp": 1890000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "94": {
       "level": 94,
@@ -1902,7 +1902,7 @@
       "exp": 2050000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "95": {
       "level": 95,
@@ -1912,7 +1912,7 @@
       "exp": 2210000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "96": {
       "level": 96,
@@ -1922,7 +1922,7 @@
       "exp": 2380000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "97": {
       "level": 97,
@@ -1932,7 +1932,7 @@
       "exp": 2570000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "98": {
       "level": 98,
@@ -1942,7 +1942,7 @@
       "exp": 2770000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     },
     "99": {
       "level": 99,
@@ -1952,10 +1952,10 @@
       "exp": 2970000000,
       "hp": 0,
       "mp": 0,
-      "parent": "magicion"
+      "parent": "MAGICION"
     }
   },
-  "thief": {
+  "THIEF": {
     "5": {
       "level": 5,
       "dexteritry": 0,
@@ -1964,7 +1964,7 @@
       "exp": 1200,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "6": {
       "level": 6,
@@ -1974,7 +1974,7 @@
       "exp": 2100,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "7": {
       "level": 7,
@@ -1984,7 +1984,7 @@
       "exp": 2880,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "8": {
       "level": 8,
@@ -1994,7 +1994,7 @@
       "exp": 3840,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "9": {
       "level": 9,
@@ -2004,7 +2004,7 @@
       "exp": 4800,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "10": {
       "level": 10,
@@ -2014,7 +2014,7 @@
       "exp": 6720,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "11": {
       "level": 11,
@@ -2024,7 +2024,7 @@
       "exp": 8640,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "12": {
       "level": 12,
@@ -2034,7 +2034,7 @@
       "exp": 10560,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "13": {
       "level": 13,
@@ -2044,7 +2044,7 @@
       "exp": 14400,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "14": {
       "level": 14,
@@ -2054,7 +2054,7 @@
       "exp": 18240,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "15": {
       "level": 15,
@@ -2064,7 +2064,7 @@
       "exp": 22080,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "16": {
       "level": 16,
@@ -2074,7 +2074,7 @@
       "exp": 29760,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "17": {
       "level": 17,
@@ -2084,7 +2084,7 @@
       "exp": 37440,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "18": {
       "level": 18,
@@ -2094,7 +2094,7 @@
       "exp": 45120,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "19": {
       "level": 19,
@@ -2104,7 +2104,7 @@
       "exp": 60480,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "20": {
       "level": 20,
@@ -2114,7 +2114,7 @@
       "exp": 75840,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "21": {
       "level": 21,
@@ -2124,7 +2124,7 @@
       "exp": 91200,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "22": {
       "level": 22,
@@ -2134,7 +2134,7 @@
       "exp": 121920,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "23": {
       "level": 23,
@@ -2144,7 +2144,7 @@
       "exp": 152640,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "24": {
       "level": 24,
@@ -2154,7 +2154,7 @@
       "exp": 183360,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "25": {
       "level": 25,
@@ -2164,7 +2164,7 @@
       "exp": 244800,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "26": {
       "level": 26,
@@ -2174,7 +2174,7 @@
       "exp": 306240,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "27": {
       "level": 27,
@@ -2184,7 +2184,7 @@
       "exp": 367680,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "28": {
       "level": 28,
@@ -2194,7 +2194,7 @@
       "exp": 490560,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "29": {
       "level": 29,
@@ -2204,7 +2204,7 @@
       "exp": 613440,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "30": {
       "level": 30,
@@ -2214,7 +2214,7 @@
       "exp": 736320,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "31": {
       "level": 31,
@@ -2224,7 +2224,7 @@
       "exp": 916320,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "32": {
       "level": 32,
@@ -2234,7 +2234,7 @@
       "exp": 1090000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "33": {
       "level": 33,
@@ -2244,7 +2244,7 @@
       "exp": 1270000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "34": {
       "level": 34,
@@ -2254,7 +2254,7 @@
       "exp": 1520000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "35": {
       "level": 35,
@@ -2264,7 +2264,7 @@
       "exp": 1760000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "36": {
       "level": 36,
@@ -2274,7 +2274,7 @@
       "exp": 2010000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "37": {
       "level": 37,
@@ -2284,7 +2284,7 @@
       "exp": 2370000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "38": {
       "level": 38,
@@ -2294,7 +2294,7 @@
       "exp": 2730000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "39": {
       "level": 39,
@@ -2304,7 +2304,7 @@
       "exp": 3090000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "40": {
       "level": 40,
@@ -2314,7 +2314,7 @@
       "exp": 3480000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "41": {
       "level": 41,
@@ -2324,7 +2324,7 @@
       "exp": 3880000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "42": {
       "level": 42,
@@ -2334,7 +2334,7 @@
       "exp": 4270000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "43": {
       "level": 43,
@@ -2344,7 +2344,7 @@
       "exp": 4840000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "44": {
       "level": 44,
@@ -2354,7 +2354,7 @@
       "exp": 5420000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "45": {
       "level": 45,
@@ -2364,7 +2364,7 @@
       "exp": 6000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "46": {
       "level": 46,
@@ -2374,7 +2374,7 @@
       "exp": 6780000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "47": {
       "level": 47,
@@ -2384,7 +2384,7 @@
       "exp": 7570000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "48": {
       "level": 48,
@@ -2394,7 +2394,7 @@
       "exp": 8360000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "49": {
       "level": 49,
@@ -2404,7 +2404,7 @@
       "exp": 9510000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "50": {
       "level": 50,
@@ -2414,7 +2414,7 @@
       "exp": 10660000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "51": {
       "level": 51,
@@ -2424,7 +2424,7 @@
       "exp": 11810000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "52": {
       "level": 52,
@@ -2434,7 +2434,7 @@
       "exp": 13120000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "53": {
       "level": 53,
@@ -2444,7 +2444,7 @@
       "exp": 14430000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "54": {
       "level": 54,
@@ -2454,7 +2454,7 @@
       "exp": 15740000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "55": {
       "level": 55,
@@ -2464,7 +2464,7 @@
       "exp": 17660000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "56": {
       "level": 56,
@@ -2474,7 +2474,7 @@
       "exp": 19580000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "57": {
       "level": 57,
@@ -2484,7 +2484,7 @@
       "exp": 21500000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "58": {
       "level": 58,
@@ -2494,7 +2494,7 @@
       "exp": 24700000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "59": {
       "level": 59,
@@ -2504,7 +2504,7 @@
       "exp": 28900000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "60": {
       "level": 60,
@@ -2514,7 +2514,7 @@
       "exp": 33100000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "61": {
       "level": 61,
@@ -2524,7 +2524,7 @@
       "exp": 38220000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "62": {
       "level": 62,
@@ -2534,7 +2534,7 @@
       "exp": 43340000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "63": {
       "level": 63,
@@ -2544,7 +2544,7 @@
       "exp": 48460000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "64": {
       "level": 64,
@@ -2554,7 +2554,7 @@
       "exp": 58120000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "65": {
       "level": 65,
@@ -2564,7 +2564,7 @@
       "exp": 65780000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "66": {
       "level": 66,
@@ -2574,7 +2574,7 @@
       "exp": 72420000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "67": {
       "level": 67,
@@ -2584,7 +2584,7 @@
       "exp": 81080000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "68": {
       "level": 68,
@@ -2594,7 +2594,7 @@
       "exp": 89740000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "69": {
       "level": 69,
@@ -2604,7 +2604,7 @@
       "exp": 98390000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "70": {
       "level": 70,
@@ -2614,7 +2614,7 @@
       "exp": 100000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "71": {
       "level": 71,
@@ -2624,7 +2624,7 @@
       "exp": 120000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "72": {
       "level": 72,
@@ -2634,7 +2634,7 @@
       "exp": 130000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "73": {
       "level": 73,
@@ -2644,7 +2644,7 @@
       "exp": 140000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "74": {
       "level": 74,
@@ -2654,7 +2654,7 @@
       "exp": 150000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "75": {
       "level": 75,
@@ -2664,7 +2664,7 @@
       "exp": 170000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "76": {
       "level": 76,
@@ -2674,7 +2674,7 @@
       "exp": 190000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "77": {
       "level": 77,
@@ -2684,7 +2684,7 @@
       "exp": 210000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "78": {
       "level": 78,
@@ -2694,7 +2694,7 @@
       "exp": 240000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "79": {
       "level": 79,
@@ -2704,7 +2704,7 @@
       "exp": 260000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "80": {
       "level": 80,
@@ -2714,7 +2714,7 @@
       "exp": 290000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "81": {
       "level": 81,
@@ -2724,7 +2724,7 @@
       "exp": 320000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "82": {
       "level": 82,
@@ -2734,7 +2734,7 @@
       "exp": 360000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "83": {
       "level": 83,
@@ -2744,7 +2744,7 @@
       "exp": 400000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "84": {
       "level": 84,
@@ -2754,7 +2754,7 @@
       "exp": 440000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "85": {
       "level": 85,
@@ -2764,7 +2764,7 @@
       "exp": 480000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "86": {
       "level": 86,
@@ -2774,7 +2774,7 @@
       "exp": 530000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "87": {
       "level": 87,
@@ -2784,7 +2784,7 @@
       "exp": 580000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "88": {
       "level": 88,
@@ -2794,7 +2794,7 @@
       "exp": 640000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "89": {
       "level": 89,
@@ -2804,7 +2804,7 @@
       "exp": 700000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "90": {
       "level": 90,
@@ -2814,7 +2814,7 @@
       "exp": 770000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "91": {
       "level": 91,
@@ -2824,7 +2824,7 @@
       "exp": 850000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "92": {
       "level": 92,
@@ -2834,7 +2834,7 @@
       "exp": 940000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "93": {
       "level": 93,
@@ -2844,7 +2844,7 @@
       "exp": 1040000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "94": {
       "level": 94,
@@ -2854,7 +2854,7 @@
       "exp": 1150000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "95": {
       "level": 95,
@@ -2864,7 +2864,7 @@
       "exp": 1270000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "96": {
       "level": 96,
@@ -2874,7 +2874,7 @@
       "exp": 1400000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "97": {
       "level": 97,
@@ -2884,7 +2884,7 @@
       "exp": 1550000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "98": {
       "level": 98,
@@ -2894,7 +2894,7 @@
       "exp": 1700000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     },
     "99": {
       "level": 99,
@@ -2904,10 +2904,10 @@
       "exp": 2000000000,
       "hp": 0,
       "mp": 0,
-      "parent": "thief"
+      "parent": "THIEF"
     }
   },
-  "ascetic": {
+  "ASCETIC": {
     "5": {
       "level": 5,
       "dexteritry": 0,
@@ -2916,7 +2916,7 @@
       "exp": 1200,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "6": {
       "level": 6,
@@ -2926,7 +2926,7 @@
       "exp": 2240,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "7": {
       "level": 7,
@@ -2936,7 +2936,7 @@
       "exp": 3280,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "8": {
       "level": 8,
@@ -2946,7 +2946,7 @@
       "exp": 4300,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "9": {
       "level": 9,
@@ -2956,7 +2956,7 @@
       "exp": 6100,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "10": {
       "level": 10,
@@ -2966,7 +2966,7 @@
       "exp": 7900,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "11": {
       "level": 11,
@@ -2976,7 +2976,7 @@
       "exp": 9720,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "12": {
       "level": 12,
@@ -2986,7 +2986,7 @@
       "exp": 11880,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "13": {
       "level": 13,
@@ -2996,7 +2996,7 @@
       "exp": 16200,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "14": {
       "level": 14,
@@ -3006,7 +3006,7 @@
       "exp": 20520,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "15": {
       "level": 15,
@@ -3016,7 +3016,7 @@
       "exp": 24840,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "16": {
       "level": 16,
@@ -3026,7 +3026,7 @@
       "exp": 33480,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "17": {
       "level": 17,
@@ -3036,7 +3036,7 @@
       "exp": 42120,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "18": {
       "level": 18,
@@ -3046,7 +3046,7 @@
       "exp": 50760,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "19": {
       "level": 19,
@@ -3056,7 +3056,7 @@
       "exp": 68040,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "20": {
       "level": 20,
@@ -3066,7 +3066,7 @@
       "exp": 85320,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "21": {
       "level": 21,
@@ -3076,7 +3076,7 @@
       "exp": 102000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "22": {
       "level": 22,
@@ -3086,7 +3086,7 @@
       "exp": 137000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "23": {
       "level": 23,
@@ -3096,7 +3096,7 @@
       "exp": 172000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "24": {
       "level": 24,
@@ -3106,7 +3106,7 @@
       "exp": 206000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "25": {
       "level": 25,
@@ -3116,7 +3116,7 @@
       "exp": 275000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "26": {
       "level": 26,
@@ -3126,7 +3126,7 @@
       "exp": 344000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "27": {
       "level": 27,
@@ -3136,7 +3136,7 @@
       "exp": 413000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "28": {
       "level": 28,
@@ -3146,7 +3146,7 @@
       "exp": 551000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "29": {
       "level": 29,
@@ -3156,7 +3156,7 @@
       "exp": 690000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "30": {
       "level": 30,
@@ -3166,7 +3166,7 @@
       "exp": 828000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "31": {
       "level": 31,
@@ -3176,7 +3176,7 @@
       "exp": 102000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "32": {
       "level": 32,
@@ -3186,7 +3186,7 @@
       "exp": 119400,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "33": {
       "level": 33,
@@ -3196,7 +3196,7 @@
       "exp": 137600,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "34": {
       "level": 34,
@@ -3206,7 +3206,7 @@
       "exp": 1670000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "35": {
       "level": 35,
@@ -3216,7 +3216,7 @@
       "exp": 1960000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "36": {
       "level": 36,
@@ -3226,7 +3226,7 @@
       "exp": 2250000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "37": {
       "level": 37,
@@ -3236,7 +3236,7 @@
       "exp": 2670000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "38": {
       "level": 38,
@@ -3246,7 +3246,7 @@
       "exp": 3070000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "39": {
       "level": 39,
@@ -3256,7 +3256,7 @@
       "exp": 3480000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "40": {
       "level": 40,
@@ -3266,7 +3266,7 @@
       "exp": 3920000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "41": {
       "level": 41,
@@ -3276,7 +3276,7 @@
       "exp": 4360000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "42": {
       "level": 42,
@@ -3286,7 +3286,7 @@
       "exp": 4800000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "43": {
       "level": 43,
@@ -3296,7 +3296,7 @@
       "exp": 5440000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "44": {
       "level": 44,
@@ -3306,7 +3306,7 @@
       "exp": 6100000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "45": {
       "level": 45,
@@ -3316,7 +3316,7 @@
       "exp": 6750000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "46": {
       "level": 46,
@@ -3326,7 +3326,7 @@
       "exp": 7630000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "47": {
       "level": 47,
@@ -3336,7 +3336,7 @@
       "exp": 8520000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "48": {
       "level": 48,
@@ -3346,7 +3346,7 @@
       "exp": 9400000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "49": {
       "level": 49,
@@ -3356,7 +3356,7 @@
       "exp": 10700000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "50": {
       "level": 50,
@@ -3366,7 +3366,7 @@
       "exp": 11990000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "51": {
       "level": 51,
@@ -3376,7 +3376,7 @@
       "exp": 13290000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "52": {
       "level": 52,
@@ -3386,7 +3386,7 @@
       "exp": 14760000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "53": {
       "level": 53,
@@ -3396,7 +3396,7 @@
       "exp": 16240000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "54": {
       "level": 54,
@@ -3406,7 +3406,7 @@
       "exp": 17710000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "55": {
       "level": 55,
@@ -3416,7 +3416,7 @@
       "exp": 19870000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "56": {
       "level": 56,
@@ -3426,7 +3426,7 @@
       "exp": 22030000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "57": {
       "level": 57,
@@ -3436,7 +3436,7 @@
       "exp": 24190000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "58": {
       "level": 58,
@@ -3446,7 +3446,7 @@
       "exp": 27540000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "59": {
       "level": 59,
@@ -3456,7 +3456,7 @@
       "exp": 32390000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "60": {
       "level": 60,
@@ -3466,7 +3466,7 @@
       "exp": 36740000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "61": {
       "level": 61,
@@ -3476,7 +3476,7 @@
       "exp": 43640000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "62": {
       "level": 62,
@@ -3486,7 +3486,7 @@
       "exp": 50540000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "63": {
       "level": 63,
@@ -3496,7 +3496,7 @@
       "exp": 57520000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "64": {
       "level": 64,
@@ -3506,7 +3506,7 @@
       "exp": 65510000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "65": {
       "level": 65,
@@ -3516,7 +3516,7 @@
       "exp": 73500000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "66": {
       "level": 66,
@@ -3526,7 +3526,7 @@
       "exp": 81490000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "67": {
       "level": 67,
@@ -3536,7 +3536,7 @@
       "exp": 91040000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "68": {
       "level": 68,
@@ -3546,7 +3546,7 @@
       "exp": 100000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "69": {
       "level": 69,
@@ -3556,7 +3556,7 @@
       "exp": 110000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "70": {
       "level": 70,
@@ -3566,7 +3566,7 @@
       "exp": 120000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "71": {
       "level": 71,
@@ -3576,7 +3576,7 @@
       "exp": 130000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "72": {
       "level": 72,
@@ -3586,7 +3586,7 @@
       "exp": 150000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "73": {
       "level": 73,
@@ -3596,7 +3596,7 @@
       "exp": 170000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "74": {
       "level": 74,
@@ -3606,7 +3606,7 @@
       "exp": 190000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "75": {
       "level": 75,
@@ -3616,7 +3616,7 @@
       "exp": 210000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "76": {
       "level": 76,
@@ -3626,7 +3626,7 @@
       "exp": 240000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "77": {
       "level": 77,
@@ -3636,7 +3636,7 @@
       "exp": 270000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "78": {
       "level": 78,
@@ -3646,7 +3646,7 @@
       "exp": 300000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "79": {
       "level": 79,
@@ -3656,7 +3656,7 @@
       "exp": 340000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "80": {
       "level": 80,
@@ -3666,7 +3666,7 @@
       "exp": 380000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "81": {
       "level": 81,
@@ -3676,7 +3676,7 @@
       "exp": 420000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "82": {
       "level": 82,
@@ -3686,7 +3686,7 @@
       "exp": 470000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "83": {
       "level": 83,
@@ -3696,7 +3696,7 @@
       "exp": 520000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "84": {
       "level": 84,
@@ -3706,7 +3706,7 @@
       "exp": 580000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "85": {
       "level": 85,
@@ -3716,7 +3716,7 @@
       "exp": 640000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "86": {
       "level": 86,
@@ -3726,7 +3726,7 @@
       "exp": 710000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "87": {
       "level": 87,
@@ -3736,7 +3736,7 @@
       "exp": 790000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "88": {
       "level": 88,
@@ -3746,7 +3746,7 @@
       "exp": 880000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "89": {
       "level": 89,
@@ -3756,7 +3756,7 @@
       "exp": 980000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "90": {
       "level": 90,
@@ -3766,7 +3766,7 @@
       "exp": 1080000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "91": {
       "level": 91,
@@ -3776,7 +3776,7 @@
       "exp": 1190000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "92": {
       "level": 92,
@@ -3786,7 +3786,7 @@
       "exp": 1390000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "93": {
       "level": 93,
@@ -3796,7 +3796,7 @@
       "exp": 1520000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "94": {
       "level": 94,
@@ -3806,7 +3806,7 @@
       "exp": 1650000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "95": {
       "level": 95,
@@ -3816,7 +3816,7 @@
       "exp": 1790000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "96": {
       "level": 96,
@@ -3826,7 +3826,7 @@
       "exp": 1830000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "97": {
       "level": 97,
@@ -3836,7 +3836,7 @@
       "exp": 1980000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "98": {
       "level": 98,
@@ -3846,7 +3846,7 @@
       "exp": 2130000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     },
     "99": {
       "level": 99,
@@ -3856,7 +3856,7 @@
       "exp": 2300000000,
       "hp": 0,
       "mp": 0,
-      "parent": "ascetic"
+      "parent": "ASCETIC"
     }
   }
 }

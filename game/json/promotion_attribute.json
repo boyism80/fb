@@ -1,14 +1,14 @@
 {
-  "warrior": {
-    "id": "warrior"
+  "WARRIOR": {
+    "id": "WARRIOR"
   },
-  "thief": {
-    "id": "thief"
+  "THIEF": {
+    "id": "THIEF"
   },
-  "magicion": {
-    "id": "magicion"
+  "MAGICION": {
+    "id": "MAGICION"
   },
-  "ascetic": {
-    "id": "ascetic"
+  "ASCETIC": {
+    "id": "ASCETIC"
   }
 }

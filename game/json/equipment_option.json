@@ -5497,7 +5497,7 @@
     "dexterity": 0,
     "hp_percent": 0.0,
     "mp_percent": 0.0,
-    "spell": "현무의검"
+    "spell": 6018
   },
   "장비옵션.주작의검": {
     "id": "장비옵션.주작의검",
@@ -5522,7 +5522,7 @@
     "dexterity": 0,
     "hp_percent": 0.0,
     "mp_percent": 0.0,
-    "spell": "주작의검"
+    "spell": 6017
   },
   "장비옵션.백호의검": {
     "id": "장비옵션.백호의검",
@@ -5547,7 +5547,7 @@
     "dexterity": 0,
     "hp_percent": 0.0,
     "mp_percent": 0.0,
-    "spell": "백호의검"
+    "spell": 6020
   },
   "장비옵션.청룡의검": {
     "id": "장비옵션.청룡의검",
@@ -5572,7 +5572,7 @@
     "dexterity": 0,
     "hp_percent": 0.0,
     "mp_percent": 0.0,
-    "spell": "청룡의검"
+    "spell": 6019
   },
   "장비옵션.진'고균의영검": {
     "id": "장비옵션.진'고균의영검",
