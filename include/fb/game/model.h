@@ -12,7 +12,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <unordered_map>
 
-namespace fb { namespace model { 
+namespace fb { namespace model {
 
 static inline std::function<std::string(const std::string&)> string_encoding_func;
 
@@ -32,6 +32,8 @@ public:
 #pragma endregion
 
 #pragma region enum
+namespace enum_value {
+
 template <typename T>
 inline T enum_parse(const std::string k)
 {
@@ -142,7 +144,8 @@ inline DIRECTION enum_parse<DIRECTION>(const std::string k)
 
 enum class DSL
 {
-    item = 0
+    item = 0, 
+    level = 1
 };
 
 template <>
@@ -150,7 +153,8 @@ inline DSL enum_parse<DSL>(const std::string k)
 {
     static const std::unordered_map<std::string, DSL> enums
     {
-        { "item", DSL::item }
+        { "item", DSL::item }, 
+        { "level", DSL::level }
     };
 
     auto i = enums.find(k);
@@ -248,6 +252,54 @@ inline MOB_SIZE enum_parse<MOB_SIZE>(const std::string k)
     return i->second;
 }
 
+enum class REGEX
+{
+    SELL = 0, 
+    BUY = 1, 
+    REPAIR = 2, 
+    DEPOSIT_MONEY = 3, 
+    WITHDRAW_MONEY = 4, 
+    DEPOSIT_ITEM = 5, 
+    WITHDRAW_ITEM = 6, 
+    SELL_LIST = 7, 
+    BUY_LIST = 8, 
+    SELL_PRICE = 9, 
+    BUY_PRICE = 10, 
+    DEPOSITED_MONEY = 11, 
+    RENAME_WEAPON = 12, 
+    HOLD_ITEM_LIST = 13, 
+    HOLD_ITEM_COUNT = 14
+};
+
+template <>
+inline REGEX enum_parse<REGEX>(const std::string k)
+{
+    static const std::unordered_map<std::string, REGEX> enums
+    {
+        { "SELL", REGEX::SELL }, 
+        { "BUY", REGEX::BUY }, 
+        { "REPAIR", REGEX::REPAIR }, 
+        { "DEPOSIT_MONEY", REGEX::DEPOSIT_MONEY }, 
+        { "WITHDRAW_MONEY", REGEX::WITHDRAW_MONEY }, 
+        { "DEPOSIT_ITEM", REGEX::DEPOSIT_ITEM }, 
+        { "WITHDRAW_ITEM", REGEX::WITHDRAW_ITEM }, 
+        { "SELL_LIST", REGEX::SELL_LIST }, 
+        { "BUY_LIST", REGEX::BUY_LIST }, 
+        { "SELL_PRICE", REGEX::SELL_PRICE }, 
+        { "BUY_PRICE", REGEX::BUY_PRICE }, 
+        { "DEPOSITED_MONEY", REGEX::DEPOSITED_MONEY }, 
+        { "RENAME_WEAPON", REGEX::RENAME_WEAPON }, 
+        { "HOLD_ITEM_LIST", REGEX::HOLD_ITEM_LIST }, 
+        { "HOLD_ITEM_COUNT", REGEX::HOLD_ITEM_COUNT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SEX
 {
     MAN = 1, 
@@ -272,11 +324,154 @@ inline SEX enum_parse<SEX>(const std::string k)
     return i->second;
 }
 
+}
 #pragma endregion
 
 #pragma region const
-namespace consts { 
+namespace const_value {
 
+class regex
+{
+public:
+    inline static constexpr const char* SELL = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개)|(?P<all>다|전부))\\s+)?(?:판다|팜|팔게)";
+    inline static constexpr const char* BUY = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개))\\s+)?(?:산다|줘|주세요)";
+    inline static constexpr const char* REPAIR = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘";
+    inline static constexpr const char* DEPOSIT_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* WITHDRAW_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* DEPOSIT_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* WITHDRAW_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* SELL_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
+    inline static constexpr const char* BUY_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
+    inline static constexpr const char* SELL_PRICE = "(?P<name>\\S+)\\s+(?:(?:얼마(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
+    inline static constexpr const char* BUY_PRICE = "(?P<name>\\S+)\\s+(?:얼마에\\s?)?사(?:니|냐)";
+    inline static constexpr const char* DEPOSITED_MONEY = "(?:돈|금전)\\s*얼마(?:나)?\\s*맡(?:아두)?고\\s*있(?:니|냐)";
+    inline static constexpr const char* RENAME_WEAPON = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명";
+    inline static constexpr const char* HOLD_ITEM_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)";
+    inline static constexpr const char* HOLD_ITEM_COUNT = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)";
+
+private:
+    regex() = default;
+    ~regex() = default;
+};
+class string
+{
+public:
+    inline static constexpr const char* ACCOUNT_INVALID_NAME = "이름이 길거나 적합하지 않습니다.";
+    inline static constexpr const char* ACCOUNT_ALREADY_LOGIN = "이미 접속중입니다.";
+    inline static constexpr const char* ACCOUNT_NOT_FOUND_NAME = "존재하지 않는 이름입니다.";
+    inline static constexpr const char* ACCOUNT_PASSWORD_SIZE = "암호는 4자 이상 8자 이하";
+    inline static constexpr const char* ACCOUNT_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
+    inline static constexpr const char* ACCOUNT_SIMPLE_PASSWORD = "암호가 단순합니다.";
+    inline static constexpr const char* ACCOUNT_SUCCESS_REGISTER_ACCOUNT = "등록완료, 이어하기를 선택하세요.";
+    inline static constexpr const char* ACCOUNT_SUCCESS_CHANGE_PASSWORD = "변경됐다리";
+    inline static constexpr const char* ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
+    inline static constexpr const char* ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
+    inline static constexpr const char* ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [%0.2lf%%] 맵 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [%0.2lf%%] 정규표현식 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [%0.2lf%%] 월드맵 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_LOADED = "* [%0.2lf%%] 도어 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_LOADED = "* [%0.2lf%%] 스펠 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_LOADED = "* [%0.2lf%%] 워프 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_LOADED = "* [%0.2lf%%] 아이템 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_LOADED = "* [%0.2lf%%] 조합 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_LOADED = "* [%0.2lf%%] 판매 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_LOADED = "* [%0.2lf%%] 구매 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_LOADED = "* [%0.2lf%%] NPC 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_LOADED = "* [%0.2lf%%] 몹 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_LOADED = "* [%0.2lf%%] 드롭 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [%0.2lf%%] NPC 스폰 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [%0.2lf%%] 몹 스폰 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [%0.2lf%%] 클래스 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [%0.2lf%%] 게시판 정보를 읽었습니다. (%s)";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%%] 총 %d개의 맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%%] 총 %d개의 정규표현식 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%%] 총 %d개의 월드맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_ALL_LOADED = "* [100%%] 총 %d개의 도어 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_ALL_LOADED = "* [100%%] 총 %d개의 스펠 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_ALL_LOADED = "* [100%%] 총 %d개의 워프 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_ALL_LOADED = "* [100%%] 총 %d개의 아이템 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_ALL_LOADED = "* [100%%] 총 %d개의 조합 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_ALL_LOADED = "* [100%%] 총 %d개의 판매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_ALL_LOADED = "* [100%%] 총 %d개의 구매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_ALL_LOADED = "* [100%%] 총 %d개의 NPC 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_ALL_LOADED = "* [100%%] 총 %d개의 몹 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_ALL_LOADED = "* [100%%] 총 %d개의 드롭 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%%] 총 %d개의 클래스 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%%] 총 %d개의 게시판 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_SEX = "성별을 확인할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_DEATH_PENALTY = "아이템 데스 패널티를 확인할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_SIZE = "몹 크기 형식을 확인할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_OFFENSIVE = "몹 공격 타입을 확인할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA = "맵 데이터를 읽을 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK = "맵 블록 데이터를 읽을 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_NPC_NAME = "존재하지 않는 NPC입니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_MAP_NAME = "존재하지 않는 맵입니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_NPC_DIRECTION = "NPC의 방향이 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_NPC_POSITION = "NPC의 위치가 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_NAME = "올바르지 않은 몹 이름입니다.";
+    inline static constexpr const char* MESSAGE_ASSET_INVALID_ITEM_NAME = "올바르지 않은 아이템 이름입니다.";
+    inline static constexpr const char* MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE = "더 이상 가질 수 없습니다.";
+    inline static constexpr const char* MESSAGE_GROUP_CANNOT_FIND_TARGET = "대상을 찾을 수 없습니다.";
+    inline static constexpr const char* MESSAGE_GROUP_DISABLED_MINE = "그룹 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_GROUP_DISABLED_TARGET = "상대방이 그룹 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_GROUP_NOT_OWNER = "그룹장만 할 수 있습니다.";
+    inline static constexpr const char* MESSAGE_GROUP_FULL_MEMBER = "자리가 없습니다.";
+    inline static constexpr const char* MESSAGE_GROUP_ALREADY_JOINED = "님은 이미 그룹 참여 중입니다.";
+    inline static constexpr const char* MESSAGE_GROUP_JOINED = "님 그룹에 참여";
+    inline static constexpr const char* MESSAGE_GROUP_LEFT = "님 그룹 탈퇴";
+    inline static constexpr const char* MESSAGE_EXCEPTION_RIDDING = "말을 타고는 할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_GHOST = "귀신은 할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_REQUIRE_CLASS = "직업을 선택해야 합니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_NO_CONVEYANCE = "탈 것이 없습니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_DISGUISE = "변신 중에는 할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_CANNOT_DROP_ITEM = "버릴 수 없는 물건입니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_CANNOT_THROW_ITEM = "던질 수 없는 물건입니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_INVENTORY_OVERFLOW = "소지품이 꽉 찼습니다.";
+    inline static constexpr const char* MESSAGE_EXCEPTION_INVALID_TARGET = "대상이 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_NOT_TRADING = "교환중이 아닙니다.";
+    inline static constexpr const char* MESSAGE_TRADE_NOT_SELECTED = "선택된 아이템이 없습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_SUCCESS = "교환에 성공했습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_FAILED = "교환에 실패했습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_NOTIFY_LOCK_TO_PARTNER = "상대방이 확인을 눌렀습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_CANCELLED_BY_ME = "내가 교환을 취소했습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_CANCELLED_BY_PARTNER = "상대방이 교환을 취소했습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_INVALID_COUNT = "갯수가 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE = "교환이 불가능한 아이템입니다.";
+    inline static constexpr const char* MESSAGE_TRADE_REFUSED_BY_ME = "교환 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_TRADE_REFUSED_BY_PARTNER = "님은 교환 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_TRADE_PARTNER_ALREADY_TRADING = "님은 이미 교환 중입니다.";
+    inline static constexpr const char* MESSAGE_TRADE_PARTNER_INVISIBLE = "대상이 보이지 않습니다.";
+    inline static constexpr const char* MESSAGE_TRADE_PARTNER_TOO_FAR = "님과 너무 멀리 떨어져 있습니다.";
+    inline static constexpr const char* MESSAGE_MIX_SUCCESS = "성공하였습니다.";
+    inline static constexpr const char* MESSAGE_MIX_FAILED = "실패하였습니다.";
+    inline static constexpr const char* MESSAGE_RIDE_UNRIDE = "말에 타고 있지 않습니다.";
+    inline static constexpr const char* MESSAGE_RIDE_ALREADY_RIDE = "이미 타고 있습니다.";
+    inline static constexpr const char* MESSAGE_RIDE_ON = "말에 탔습니다.";
+    inline static constexpr const char* MESSAGE_RIDE_OFF = "말에서 내렸습니다.";
+    inline static constexpr const char* MESSAGE_MONEY_DROP = "돈을 버렸습니다.";
+    inline static constexpr const char* MESSAGE_MONEY_FULL = "더 이상 돈을 가질 수 없습니다.";
+    inline static constexpr const char* MESSAGE_LEVEL_UP = "레벨이 올랐습니다";
+    inline static constexpr const char* MESSAGE_BOARD_WRITE = "글을 작성하였습니다";
+    inline static constexpr const char* MESSAGE_BOARD_ARTICLE_NOT_EXIST = "게시글이 존재하지 않습니다.";
+    inline static constexpr const char* MESSAGE_BOARD_SECTION_NOT_EXIST = "섹션이 존재하지 않습니다.";
+    inline static constexpr const char* MESSAGE_BOARD_NOT_AUTH = "권한이 없습니다.";
+    inline static constexpr const char* MESSAGE_BOARD_SUCCESS_DELETE = "글이 삭제되었습니다.";
+    inline static constexpr const char* MESSAGE_BOARD_TOO_LONG_TITLE = "게시글 제목이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_BOARD_TOO_LONG_CONTENTS = "게시글 내용이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_DOOR_OPEN = "문을 열었습니다.";
+    inline static constexpr const char* MESSAGE_DOOR_CLOSE = "문을 닫았습니다.";
+    inline static constexpr const char* MESSAGE_DOOR_LOCK = "문을 잠궜습니다.";
+    inline static constexpr const char* MESSAGE_DOOR_UNLOCK = "문을 열었습니다.";
+    inline static constexpr const char* MESSAGE_DOOR_LOCKED = "문이 잠겼습니다.";
+    inline static constexpr const char* MESSAGE_ERROR_UNKNOWN = "올바르지 않은 명령입니다.";
+
+private:
+    string() = default;
+    ~string() = default;
+};
 
 }
 #pragma endregion
@@ -338,18 +533,19 @@ class dsl
 {
 public:
     class item;
+    class level;
 
 public:
-    fb::model::DSL header;
+    fb::model::enum_value::DSL header;
     const std::vector<std::any> params;
 
 private:
     static std::vector<std::any> parse_params(const Json::Value& json);
 
 public:
-    dsl(fb::model::DSL header, const std::vector<std::any>& params) : header(header), params(params)
+    dsl(fb::model::enum_value::DSL header, const std::vector<std::any>& params) : header(header), params(params)
     { }
-    dsl(const Json::Value& json) : header(build<fb::model::DSL>(json["Type"])), params(parse_params(json))
+    dsl(const Json::Value& json) : header(build<fb::model::enum_value::DSL>(json["Type"])), params(parse_params(json))
     { }
     ~dsl()
     { }
@@ -382,19 +578,48 @@ public:
 public:
     fb::model::dsl to_dsl()
     {
-        return fb::model::dsl(fb::model::DSL::item, {id, count, percent});
+        return fb::model::dsl(fb::model::enum_value::DSL::item, {id, count, percent});
+    }
+};
+
+
+class fb::model::dsl::level
+{
+public:
+    const std::optional<uint8_t> min;
+    const std::optional<uint8_t> max;
+
+public:
+    level(std::optional<uint8_t> min, std::optional<uint8_t> max) : 
+        min(min),
+        max(max)
+    { }
+    level(const Json::Value& json) : 
+        min(fb::model::build<std::optional<uint8_t>>(json[0])),
+        max(fb::model::build<std::optional<uint8_t>>(json[1]))
+    { }
+    level(const std::vector<std::any>& parameters) : 
+        min(any_cast<const std::optional<uint8_t>&>(parameters[0])),
+        max(any_cast<const std::optional<uint8_t>&>(parameters[1]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::level, {min, max});
     }
 };
 
 
 inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& json)
 {
-    static auto data = std::unordered_map<fb::model::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
+    static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
-        {fb::model::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }}
+        { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }}
     };
 
-    auto header = build<fb::model::DSL>(json["Type"]);
+    auto header = build<fb::model::enum_value::DSL>(json["Type"]);
     auto i = data.find(header);
     if(i == data.end())
         throw std::runtime_error("invalid dsl header");
@@ -407,7 +632,7 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
 class ability
 {
 public:
-    const fb::model::CLASS parent;
+    const fb::model::enum_value::CLASS parent;
     const uint8_t level;
     const uint8_t dexteritry;
     const uint8_t intelligence;
@@ -418,7 +643,7 @@ public:
 
 public:
     ability(const Json::Value& json) : 
-        parent(fb::model::build<fb::model::CLASS>(json["parent"])),
+        parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         level(fb::model::build<uint8_t>(json["level"])),
         dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
@@ -433,11 +658,11 @@ public:
 class ability_attribute
 {
 public:
-    const fb::model::CLASS id;
+    const fb::model::enum_value::CLASS id;
 
 public:
     ability_attribute(const Json::Value& json) : 
-        id(fb::model::build<fb::model::CLASS>(json["id"]))
+        id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
     ~ability_attribute()
     { }
@@ -618,10 +843,10 @@ public:
     const uint32_t price;
     const std::optional<uint32_t> deposit_price;
     const bool trade;
-    const fb::model::ITEM_TYPE type;
-    const fb::model::BUNDLE_TYPE BUNDLE;
+    const fb::model::enum_value::ITEM_TYPE type;
+    const fb::model::enum_value::BUNDLE_TYPE BUNDLE;
     const std::string desc;
-    const fb::model::DEATH_PENALTY death_penalty;
+    const fb::model::enum_value::DEATH_PENALTY death_penalty;
     const uint16_t capacity;
     const std::string tooltip;
     const std::string script_active;
@@ -639,10 +864,10 @@ public:
         price(fb::model::build<uint32_t>(json["price"])),
         deposit_price(fb::model::build<std::optional<uint32_t>>(json["deposit_price"])),
         trade(fb::model::build<bool>(json["trade"])),
-        type(fb::model::build<fb::model::ITEM_TYPE>(json["type"])),
-        BUNDLE(fb::model::build<fb::model::BUNDLE_TYPE>(json["BUNDLE"])),
+        type(fb::model::build<fb::model::enum_value::ITEM_TYPE>(json["type"])),
+        BUNDLE(fb::model::build<fb::model::enum_value::BUNDLE_TYPE>(json["BUNDLE"])),
         desc(fb::model::build<std::string>(json["desc"])),
-        death_penalty(fb::model::build<fb::model::DEATH_PENALTY>(json["death_penalty"])),
+        death_penalty(fb::model::build<fb::model::enum_value::DEATH_PENALTY>(json["death_penalty"])),
         capacity(fb::model::build<uint16_t>(json["capacity"])),
         tooltip(fb::model::build<std::string>(json["tooltip"])),
         script_active(fb::model::build<std::string>(json["script_active"])),
@@ -658,23 +883,23 @@ class item_condition
 {
 public:
     const std::string id;
-    const fb::model::SEX sex;
+    const fb::model::enum_value::SEX sex;
     const uint8_t strength;
     const uint8_t dexterity;
     const uint8_t intelligence;
     const uint8_t level;
-    const std::optional<fb::model::CLASS> class_id;
+    const std::optional<fb::model::enum_value::CLASS> class_id;
     const uint8_t promotion;
 
 public:
     item_condition(const Json::Value& json) : 
         id(fb::model::build<std::string>(json["id"])),
-        sex(fb::model::build<fb::model::SEX>(json["sex"])),
+        sex(fb::model::build<fb::model::enum_value::SEX>(json["sex"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         level(fb::model::build<uint8_t>(json["level"])),
-        class_id(fb::model::build<std::optional<fb::model::CLASS>>(json["class_id"])),
+        class_id(fb::model::build<std::optional<fb::model::enum_value::CLASS>>(json["class_id"])),
         promotion(fb::model::build<uint8_t>(json["promotion"]))
     { }
     ~item_condition()
@@ -723,11 +948,11 @@ public:
     const int color;
     const uint32_t hp;
     const uint32_t mp;
-    const fb::model::MOB_SIZE size;
+    const fb::model::enum_value::MOB_SIZE size;
     const uint32_t exp;
     const int defensive_physical;
     const int defensive_magical;
-    const fb::model::MOB_ATTACK_TYPE attack_type;
+    const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const uint32_t damage_min;
     const uint32_t damage_max;
     const uint32_t speed;
@@ -743,11 +968,11 @@ public:
         color(fb::model::build<int>(json["color"])),
         hp(fb::model::build<uint32_t>(json["hp"])),
         mp(fb::model::build<uint32_t>(json["mp"])),
-        size(fb::model::build<fb::model::MOB_SIZE>(json["size"])),
+        size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         exp(fb::model::build<uint32_t>(json["exp"])),
         defensive_physical(fb::model::build<int>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int>(json["defensive_magical"])),
-        attack_type(fb::model::build<fb::model::MOB_ATTACK_TYPE>(json["attack_type"])),
+        attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage_min(fb::model::build<uint32_t>(json["damage_min"])),
         damage_max(fb::model::build<uint32_t>(json["damage_max"])),
         speed(fb::model::build<uint32_t>(json["speed"])),
@@ -835,7 +1060,7 @@ public:
     const uint32_t npc;
     const uint32_t x;
     const uint32_t y;
-    const fb::model::DIRECTION direction;
+    const fb::model::enum_value::DIRECTION direction;
 
 public:
     npc_spawn(const Json::Value& json) : 
@@ -843,7 +1068,7 @@ public:
         npc(fb::model::build<uint32_t>(json["npc"])),
         x(fb::model::build<uint32_t>(json["x"])),
         y(fb::model::build<uint32_t>(json["y"])),
-        direction(fb::model::build<fb::model::DIRECTION>(json["direction"]))
+        direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
     { }
     ~npc_spawn()
     { }
@@ -863,12 +1088,12 @@ public:
 class promotion
 {
 public:
-    const fb::model::CLASS parent;
+    const fb::model::enum_value::CLASS parent;
     const uint8_t step;
 
 public:
     promotion(const Json::Value& json) : 
-        parent(fb::model::build<fb::model::CLASS>(json["parent"])),
+        parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         step(fb::model::build<uint8_t>(json["step"]))
     { }
     ~promotion()
@@ -877,11 +1102,11 @@ public:
 class promotion_attribute
 {
 public:
-    const fb::model::CLASS id;
+    const fb::model::enum_value::CLASS id;
 
 public:
     promotion_attribute(const Json::Value& json) : 
-        id(fb::model::build<fb::model::CLASS>(json["id"]))
+        id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
     ~promotion_attribute()
     { }
@@ -952,6 +1177,110 @@ public:
         message(fb::model::build<std::string>(json["message"]))
     { }
     ~spell()
+    { }
+};
+class warp
+{
+public:
+    const uint32_t parent;
+    const uint32_t x;
+    const uint32_t y;
+    const std::string world;
+    const std::optional<uint32_t> next;
+    const uint32_t next_x;
+    const uint32_t next_y;
+    const std::vector<fb::model::dsl> condition;
+
+public:
+    warp(const Json::Value& json) : 
+        parent(fb::model::build<uint32_t>(json["parent"])),
+        x(fb::model::build<uint32_t>(json["x"])),
+        y(fb::model::build<uint32_t>(json["y"])),
+        world(fb::model::build<std::string>(json["world"])),
+        next(fb::model::build<std::optional<uint32_t>>(json["next"])),
+        next_x(fb::model::build<uint32_t>(json["next_x"])),
+        next_y(fb::model::build<uint32_t>(json["next_y"])),
+        condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
+    { }
+    ~warp()
+    { }
+};
+class warp_attribute
+{
+public:
+    const uint32_t map;
+
+public:
+    warp_attribute(const Json::Value& json) : 
+        map(fb::model::build<uint32_t>(json["map"]))
+    { }
+    ~warp_attribute()
+    { }
+};
+class world
+{
+public:
+    const uint16_t parent;
+    const std::string group;
+
+public:
+    world(const Json::Value& json) : 
+        parent(fb::model::build<uint16_t>(json["parent"])),
+        group(fb::model::build<std::string>(json["group"]))
+    { }
+    ~world()
+    { }
+};
+class world_attribute
+{
+public:
+    const uint16_t id;
+    const std::string name;
+
+public:
+    world_attribute(const Json::Value& json) : 
+        id(fb::model::build<uint16_t>(json["id"])),
+        name(fb::model::build<std::string>(json["name"]))
+    { }
+    ~world_attribute()
+    { }
+};
+class world_group
+{
+public:
+    const std::string parent;
+    const std::string id;
+    const std::string name;
+    const uint32_t map;
+    const uint32_t x;
+    const uint32_t y;
+    const uint16_t world_x;
+    const uint16_t world_y;
+
+public:
+    world_group(const Json::Value& json) : 
+        parent(fb::model::build<std::string>(json["parent"])),
+        id(fb::model::build<std::string>(json["id"])),
+        name(fb::model::build<std::string>(json["name"])),
+        map(fb::model::build<uint32_t>(json["map"])),
+        x(fb::model::build<uint32_t>(json["x"])),
+        y(fb::model::build<uint32_t>(json["y"])),
+        world_x(fb::model::build<uint16_t>(json["world_x"])),
+        world_y(fb::model::build<uint16_t>(json["world_y"]))
+    { }
+    ~world_group()
+    { }
+};
+class world_group_attribute
+{
+public:
+    const std::string id;
+
+public:
+    world_group_attribute(const Json::Value& json) : 
+        id(fb::model::build<std::string>(json["id"]))
+    { }
+    ~world_group_attribute()
     { }
 };
 
@@ -1110,19 +1439,19 @@ public:
     }
 };
 
-class __ability : public fb::model::kv_container<fb::model::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>
+class __ability : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>
 {
 public:
-    __ability() : fb::model::kv_container<fb::model::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>(std::string("json/ability.json"))
+    __ability() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>(std::string("json/ability.json"))
     { }
     ~__ability()
     { }
 };
 
-class __ability_attribute : public fb::model::kv_container<fb::model::CLASS, fb::model::ability_attribute>
+class __ability_attribute : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::ability_attribute>
 {
 public:
-    __ability_attribute() : fb::model::kv_container<fb::model::CLASS, fb::model::ability_attribute>(std::string("json/ability_attribute.json"))
+    __ability_attribute() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::ability_attribute>(std::string("json/ability_attribute.json"))
     { }
     ~__ability_attribute()
     { }
@@ -1281,19 +1610,19 @@ public:
     { }
 };
 
-class __promotion : public fb::model::kv_container<fb::model::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>
+class __promotion : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>
 {
 public:
-    __promotion() : fb::model::kv_container<fb::model::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>(std::string("json/promotion.json"))
+    __promotion() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>(std::string("json/promotion.json"))
     { }
     ~__promotion()
     { }
 };
 
-class __promotion_attribute : public fb::model::kv_container<fb::model::CLASS, fb::model::promotion_attribute>
+class __promotion_attribute : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::promotion_attribute>
 {
 public:
-    __promotion_attribute() : fb::model::kv_container<fb::model::CLASS, fb::model::promotion_attribute>(std::string("json/promotion_attribute.json"))
+    __promotion_attribute() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::promotion_attribute>(std::string("json/promotion_attribute.json"))
     { }
     ~__promotion_attribute()
     { }
@@ -1335,6 +1664,60 @@ public:
     { }
 };
 
+class __warp : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>
+{
+public:
+    __warp() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>(std::string("json/warp.json"))
+    { }
+    ~__warp()
+    { }
+};
+
+class __warp_attribute : public fb::model::kv_container<uint32_t, fb::model::warp_attribute>
+{
+public:
+    __warp_attribute() : fb::model::kv_container<uint32_t, fb::model::warp_attribute>(std::string("json/warp_attribute.json"))
+    { }
+    ~__warp_attribute()
+    { }
+};
+
+class __world : public fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>
+{
+public:
+    __world() : fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>(std::string("json/world.json"))
+    { }
+    ~__world()
+    { }
+};
+
+class __world_attribute : public fb::model::kv_container<uint16_t, fb::model::world_attribute>
+{
+public:
+    __world_attribute() : fb::model::kv_container<uint16_t, fb::model::world_attribute>(std::string("json/world_attribute.json"))
+    { }
+    ~__world_attribute()
+    { }
+};
+
+class __world_group : public fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>
+{
+public:
+    __world_group() : fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>(std::string("json/world_group.json"))
+    { }
+    ~__world_group()
+    { }
+};
+
+class __world_group_attribute : public fb::model::kv_container<std::string, fb::model::world_group_attribute>
+{
+public:
+    __world_group_attribute() : fb::model::kv_container<std::string, fb::model::world_group_attribute>(std::string("json/world_group_attribute.json"))
+    { }
+    ~__world_group_attribute()
+    { }
+};
+
 
 class container
 {
@@ -1364,6 +1747,12 @@ public:
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
     fb::model::__spell spell;
+    fb::model::__warp warp;
+    fb::model::__warp_attribute warp_attribute;
+    fb::model::__world world;
+    fb::model::__world_attribute world_attribute;
+    fb::model::__world_group world_group;
+    fb::model::__world_group_attribute world_group_attribute;
 
 public:
     void load(const std::function<void(float)>& callback)
@@ -1395,6 +1784,12 @@ public:
         queue.push([this]() { this->sell.load(); });
         queue.push([this]() { this->sell_attribute.load(); });
         queue.push([this]() { this->spell.load(); });
+        queue.push([this]() { this->warp.load(); });
+        queue.push([this]() { this->warp_attribute.load(); });
+        queue.push([this]() { this->world.load(); });
+        queue.push([this]() { this->world_attribute.load(); });
+        queue.push([this]() { this->world_group.load(); });
+        queue.push([this]() { this->world_group_attribute.load(); });
 #pragma endregion
 
         auto size = queue.size();
@@ -1442,7 +1837,7 @@ template <typename T> typename std::enable_if<is_default<T>::value, T>::type bui
 template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json)
 {
     if(json.isString())
-        return T(enum_parse<T>(build<std::string>(json)));
+        return T(enum_value::enum_parse<T>(build<std::string>(json)));
     else
         return T(json.asInt());
 }
@@ -1588,6 +1983,6 @@ template <> date_range build<date_range>(const Json::Value& json)
 }
 #pragma endregion
 
-} } 
+} }
 
 #endif

@@ -3,6 +3,8 @@
 #include <fb/core/leak.h>
 #include <fb/core/mst.h>
 
+using namespace fb::model;
+
 bool load_db(fb::console& c, fb::game::context& context)
 {
     auto& config = fb::config::get();
@@ -36,7 +38,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["door"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::DOOR_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_DOOR_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -44,27 +46,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::DOOR_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::regex.load
-    (
-        config["table"]["regex"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(fb::game::message::assets::REGEX_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(fb::game::message::assets::REGEX_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_DOOR_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -76,7 +58,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["map"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::MAP_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_MAP_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -84,7 +66,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::MAP_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_MAP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -96,7 +78,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["world"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::WORLD_MAP_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_WORLD_MAP_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -104,7 +86,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::WORLD_MAP_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_WORLD_MAP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -116,7 +98,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["spell"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::SPELL_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_SPELL_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -124,7 +106,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::SPELL_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_SPELL_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -137,7 +119,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["warp"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::WARP_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_WARP_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -145,7 +127,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::WARP_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_WARP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -157,7 +139,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["item"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_ITEM_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -165,7 +147,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::ITEM_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_ITEM_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -177,7 +159,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["item mix"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::ITEM_MIX_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_ITEM_MIX_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -185,7 +167,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::ITEM_MIX_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_ITEM_MIX_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -197,7 +179,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["sell"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::SELL_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_SELL_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -205,7 +187,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::SELL_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_SELL_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -217,7 +199,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["buy"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::BUY_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_BUY_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -225,7 +207,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::BUY_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_BUY_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -237,7 +219,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["npc"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::NPC_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_NPC_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -245,7 +227,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::NPC_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_NPC_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -257,7 +239,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["mob"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::MOB_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_MOB_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -265,7 +247,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::MOB_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_MOB_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -277,7 +259,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["item drop"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::ITEM_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_ITEM_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -289,7 +271,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::DROP_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_DROP_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -302,7 +284,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         context, 
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::NPC_SPAWN_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_NPC_SPAWN_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -310,7 +292,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::NPC_SPAWN_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -323,7 +305,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         context, 
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::MOB_SPAWN_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_MOB_SPAWN_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -331,7 +313,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::MOB_SPAWN_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -343,7 +325,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["class"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::CLASS_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_CLASS_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -351,7 +333,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::CLASS_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_CLASS_ALL_LOADED, count);
         }) == false)
     {
         return false;
@@ -363,7 +345,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         config["table"]["board"].asString(),
         [&] (const auto& name, auto percentage)
         {
-            c.put(fb::game::message::assets::BOARD_LOADED, percentage, name.c_str());
+            c.put(const_value::string::MESSAGE_ASSET_BOARD_LOADED, percentage, name.c_str());
         }, 
         [&] (const auto& name, const auto& error)
         {
@@ -371,7 +353,7 @@ bool load_db(fb::console& c, fb::game::context& context)
         }, 
         [&] (uint32_t count)
         {
-            c.put(fb::game::message::assets::BOARD_ALL_LOADED, count);
+            c.put(const_value::string::MESSAGE_ASSET_BOARD_ALL_LOADED, count);
         }) == false)
     {
         return false;

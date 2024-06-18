@@ -8,6 +8,7 @@
 #include <fb/game/board.h>
 #include <fb/core/table.h>
 #include <boost/xpressive/xpressive.hpp>
+#include <fb/game/model.h>
 
 namespace fb { namespace game {
 
@@ -263,52 +264,6 @@ public:
     pursuit_pair*                           operator [] (uint16_t index);
 };
 
-class regex
-{
-public:
-    enum class TYPE
-    {
-        SELL = 0,
-        BUY = 1,
-        REPAIR = 2,
-        DEPOSIT_MONEY = 3,
-        WITHDRAW_MONEY = 4,
-        DEPOSIT_ITEM = 5,
-        WITHDRAW_ITEM = 6,
-        SELL_LIST = 7,
-        BUY_LIST = 8,
-        SELL_PRICE = 9,
-        BUY_PRICE = 10,
-        DEPOSITED_MONEY = 11,
-        RENAME_WEAPON = 12,
-        HOLD_ITEM_LIST = 13,
-        HOLD_ITEM_COUNT = 14
-    };
-
-private:
-    using iterator = std::map<TYPE, boost::xpressive::sregex>::iterator;
-    using const_iterator = std::map<TYPE, boost::xpressive::sregex>::const_iterator;
-
-private:
-    std::map<TYPE, boost::xpressive::sregex> _regexs;
-
-public:
-    regex() = default;
-    ~regex() = default;
-
-public:
-    iterator                                begin();
-    iterator                                end();
-    const_iterator                          cbegin() const;
-    const_iterator                          cend() const;
-    size_t                                  size() const;
-    bool                                    contains(TYPE k) const;
-    boost::xpressive::sregex&               operator [] (TYPE k);
-
-public:
-    bool                                    load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete);
-};
-
 }
 
 class session;
@@ -329,7 +284,6 @@ public:
     static fb::game::container::board       boards;
     static fb::game::container::pursuit     sell;
     static fb::game::container::pursuit     buy;
-    static fb::game::container::regex       regex;
 
 private:
     old_model();

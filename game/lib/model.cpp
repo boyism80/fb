@@ -52,7 +52,6 @@ container::door              fb::game::old_model::doors;
 container::board             fb::game::old_model::boards;
 container::pursuit           fb::game::old_model::sell;
 container::pursuit           fb::game::old_model::buy;
-container::regex             fb::game::old_model::regex;
 
 fb::game::old_model::old_model()
 { }
@@ -376,7 +375,7 @@ fb::game::item::conditions container::item::to_condition(const Json::Value& data
         else if(value == "woman")
             sex = fb::game::SEX_TYPE::WOMAN;
         else
-            throw std::runtime_error(fb::game::message::assets::INVALID_SEX);
+            throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_SEX);
     }
 
     return fb::game::item::conditions
@@ -402,7 +401,7 @@ fb::game::item::DEATH_PENALTY_TYPE container::item::to_penalty(const std::string
     if(penalty == "destroy")
         return fb::game::item::DEATH_PENALTY_TYPE::DESTRUCTION;
 
-    throw std::runtime_error(fb::game::message::assets::INVALID_DEATH_PENALTY);
+    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_DEATH_PENALTY);
 }
 
 bool container::map::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -431,11 +430,11 @@ bool container::map::load(const std::string& path, fb::table::handle_callback ca
             {
                 // Load binary
                 if(this->load_data(id, binary) == false)
-                    throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_DATA);
+                    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA);
 
                 // Load blocks
                 if(this->load_blocks(id, blocks) == false)
-                    throw std::runtime_error(fb::game::message::assets::CANNOT_LOAD_MAP_BLOCK);
+                    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK);
             }
 
             auto                map = new fb::game::map(id, parent, bgm, name, option, effect, group, binary.data(), binary.size());
@@ -708,7 +707,7 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
                 else if (direction_str == "left")
                     direction = fb::game::DIRECTION_TYPE::LEFT;
                 else
-                    throw std::runtime_error(fb::game::message::assets::INVALID_NPC_DIRECTION);
+                    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_NPC_DIRECTION);
 
                 auto                cloned      = core->make<fb::game::npc>(context);
                 cloned->direction(direction);
@@ -741,7 +740,7 @@ fb::game::mob::sizes container::mob::to_size(const std::string& size)
     if(size == "large")
         return fb::game::mob::sizes::LARGE;
 
-    throw std::runtime_error(fb::game::message::assets::INVALID_MOB_SIZE);
+    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_SIZE);
 }
 
 fb::game::mob::offensive_type container::mob::to_offensive(const std::string& offensive)
@@ -761,7 +760,7 @@ fb::game::mob::offensive_type container::mob::to_offensive(const std::string& of
     if(offensive == "run away")
         return fb::game::mob::offensive_type::RUN_AWAY;
 
-    throw std::runtime_error(fb::game::message::assets::INVALID_MOB_OFFENSIVE);
+    throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_OFFENSIVE);
 }
 
 bool container::mob::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
@@ -853,7 +852,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
             auto                name        = CP949(key.asString(), PLATFORM::Windows);
             auto                core        = fb::game::old_model::mobs.name2mob(name);
             if (core == nullptr)
-                throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_MOB_NAME, name.c_str()));
+                throw std::runtime_error(fb::format("%s (%s)", fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_NAME, name.c_str()));
 
             for(auto& x : data)
             {
@@ -862,7 +861,7 @@ bool container::mob::load_drops(const std::string& path, fb::table::handle_callb
                 auto        item_core       = fb::game::old_model::items.name2item(item_name);
 
                 if (item_core == nullptr)
-                    throw std::runtime_error(fb::format("%s (%s)", fb::game::message::assets::INVALID_ITEM_NAME, item_name.c_str()));
+                    throw std::runtime_error(fb::format("%s (%s)", fb::model::const_value::string::MESSAGE_ASSET_INVALID_ITEM_NAME, item_name.c_str()));
 
                 {
                     auto _ = std::lock_guard(*mutex);
@@ -1372,44 +1371,4 @@ container::pursuit_pair* container::pursuit::operator [] (uint16_t index)
         return nullptr;
 
     return &base_pursuit::operator[](index);
-}
-
-container::regex::iterator container::regex::begin() { return this->_regexs.begin(); }
-
-container::regex::iterator container::regex::end() { return this->_regexs.end(); }
-
-container::regex::const_iterator container::regex::cbegin() const { return this->_regexs.cbegin(); }
-
-container::regex::const_iterator container::regex::cend() const { return this->_regexs.cend(); }
-
-size_t container::regex::size() const { return this->_regexs.size(); }
-
-bool container::regex::contains(TYPE k) const { return this->_regexs.contains(k); }
-
-boost::xpressive::sregex& container::regex::operator [] (TYPE k) { return this->_regexs[k]; }
-
-bool container::regex::load(const std::string& path, fb::table::handle_callback callback, fb::table::handle_error error, fb::table::handle_complete complete)
-{
-    auto                        count   = fb::table::load
-    (
-        path, 
-        [&] (Json::Value& key, Json::Value& data, double percentage)
-        {
-            auto                id      = std::stoi(key.asCString());
-            auto                value   = CP949(data.asString(), PLATFORM::Windows);
-            auto                regex   = boost::xpressive::sregex::compile(value);
-
-            this->_regexs.insert({ (TYPE)id, regex });
-            callback(std::to_string(id), percentage);
-        },
-        [&] (Json::Value& key, Json::Value& data, const std::string& e)
-        {
-            auto                id      = key.asInt();
-            error(std::to_string(id), e);
-        },
-        false
-    );
-
-    complete(count);
-    return true;
 }

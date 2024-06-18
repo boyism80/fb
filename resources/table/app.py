@@ -41,8 +41,8 @@ with open('warp.json', 'r', encoding='utf8') as f:
     warps = json.loads(warps)
 
 with open('world.json', 'r', encoding='utf8') as f:
-    warps = f.read()
-    warps = json.loads(warps)
+    worlds = f.read()
+    worlds = json.loads(worlds)
 
 def item_id(name):
     for id, item in items.items():
@@ -83,30 +83,48 @@ def timespan_from_seconds(seconds):
 
 with open('result.txt', 'w', encoding='utf8') as f:
 
-    # for map_name, arr in warps.items():
-    #     mapid = map_id(map_name)
-    #     f.write(f"{mapid}\n")
+    # for wm, arr in worlds.items():
+    #     for i in range(len(arr)):
+    #         world_group_id = f'{wm}.{i}'
+    #         f.write(f'{world_group_id}\n')
+    #         for id, world_group in arr[i].items():
+    #             name = world_group['name']
+    #             map = map_id(world_group['destination']['map'])
+    #             if not map:
+    #                 raise Exception()
+                
+    #             x = world_group['destination']['x']
+    #             y = world_group['destination']['y']
+    #             world_x = world_group['position']['x']
+    #             world_y = world_group['position']['y']
 
-    #     for a in arr:
-    #         x = a['before']['x']
-    #         y = a['before']['y']
-    #         world = a['world'] if 'world' in a else ''
-    #         next_id = map_id(a['map']) if 'map' in a else ''
-    #         next_x = a['after']['x'] if 'after' in a else '0'
-    #         next_y = a['after']['y'] if 'after' in a else '0'
-    #         min_lv = a['limit']['min'] if 'limit' in a else 'null'
-    #         if min_lv == 0:
-    #             min_lv = 'null'
-
-    #         max_lv = a['limit']['max'] if 'limit' in a else 'null'
-    #         if max_lv == 99:
-    #             max_lv = 'null'
+    #             f.write(f"\t{id}\t{name}\t{map}\t{x}\t{y}\t{world_x}\t{world_y}\n")
             
-    #         if min_lv == 'null' and max_lv == 'null':
-    #             dsl = ''
-    #         else:
-    #             dsl = f"level({min_lv}, {max_lv})"
-    #         f.write(f'\t{x}\t{y}\t{world}\t{next_id}\t{next_x}\t{next_y}\t{dsl}\n')
+
+    for map_name, arr in warps.items():
+        mapid = map_id(map_name)
+        f.write(f"{mapid}\n")
+
+        for a in arr:
+            x = a['before']['x']
+            y = a['before']['y']
+            world = a['world'] if 'world' in a else ''
+            next_id = map_id(a['map']) if 'map' in a else ''
+            next_x = a['after']['x'] if 'after' in a else '0'
+            next_y = a['after']['y'] if 'after' in a else '0'
+            min_lv = a['limit']['min'] if 'limit' in a else 'null'
+            if min_lv == 0:
+                min_lv = 'null'
+
+            max_lv = a['limit']['max'] if 'limit' in a else 'null'
+            if max_lv == 99:
+                max_lv = 'null'
+            
+            if min_lv == 'null' and max_lv == 'null':
+                dsl = ''
+            else:
+                dsl = f"level({min_lv}, {max_lv})"
+            f.write(f'\t{x}\t{y}\t{world}\t{next_id}\t{next_x}\t{next_y}\t{dsl}\n')
 
     # for id, spell in spells.items():
     #     message = spell['message']

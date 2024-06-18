@@ -7,7 +7,6 @@
 
 namespace fb { namespace game { namespace regex {
 
-bool                match(const std::string& message, fb::game::container::regex::TYPE v);
 bool                match_sell_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count);
 bool                match_buy_message(const std::string& message, fb::game::item::model*& item, uint16_t& count);
 bool                match_repair_message(const std::string& message, fb::game::item::model*& item);
