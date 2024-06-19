@@ -27,8 +27,32 @@ bool load_db(fb::console& c, fb::game::context& context)
     fb::model::string_encoding_func = cp949;
 #endif
 
-    context.model.item.hook.build = [](const Json::Value& json)
+    context.model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
     {
+        auto type = fb::model::build<fb::model::enum_value::ITEM_TYPE>(json["type"]);
+        switch (type)
+        {
+        case fb::model::enum_value::ITEM_TYPE::STUFF:
+            return fb::model::build<fb::model::item*>(json);
+        case fb::model::enum_value::ITEM_TYPE::CONSUME:
+            return fb::model::build<fb::model::consume*>(json);
+        case fb::model::enum_value::ITEM_TYPE::WEAPON:
+            return fb::model::build<fb::model::weapon*>(json);
+        case fb::model::enum_value::ITEM_TYPE::ARMOR:
+            return fb::model::build<fb::model::armor*>(json);
+        case fb::model::enum_value::ITEM_TYPE::HELMET:
+            return fb::model::build<fb::model::helmet*>(json);
+        case fb::model::enum_value::ITEM_TYPE::RING:
+            return fb::model::build<fb::model::ring*>(json);
+        case fb::model::enum_value::ITEM_TYPE::SHIELD:
+            return fb::model::build<fb::model::shield*>(json);
+        case fb::model::enum_value::ITEM_TYPE::AUXILIARY:
+            return fb::model::build<fb::model::auxiliary*>(json);
+        case fb::model::enum_value::ITEM_TYPE::BOW:
+            return fb::model::build<fb::model::bow*>(json);
+        case fb::model::enum_value::ITEM_TYPE::PACKAGE:
+            return fb::model::build<fb::model::pack*>(json);
+        }
         return nullptr;
     };
 
@@ -37,6 +61,11 @@ bool load_db(fb::console& c, fb::game::context& context)
         c.put(" * [%0.2lf%%] 데이터를 읽었습니다.", percent);
     });
     c.next();
+
+    for (auto& [id, item] : context.model.item)
+    {
+        std::cout << item.name << std::endl;
+    }
 
     if(fb::game::old_model::doors.load
     (

@@ -147,7 +147,12 @@ inline DIRECTION enum_parse<DIRECTION>(const std::string k)
 enum class DSL
 {
     item = 0, 
-    level = 1
+    level = 1, 
+    sex = 2, 
+    strength = 3, 
+    intelligence = 4, 
+    dexteritry = 5, 
+    promotion = 6
 };
 
 template <>
@@ -156,7 +161,12 @@ inline DSL enum_parse<DSL>(const std::string k)
     static const std::unordered_map<std::string, DSL> enums
     {
         { "item", DSL::item }, 
-        { "level", DSL::level }
+        { "level", DSL::level }, 
+        { "sex", DSL::sex }, 
+        { "strength", DSL::strength }, 
+        { "intelligence", DSL::intelligence }, 
+        { "dexteritry", DSL::dexteritry }, 
+        { "promotion", DSL::promotion }
     };
 
     auto i = enums.find(k);
@@ -176,7 +186,8 @@ enum class ITEM_TYPE
     RING = 6, 
     SHIELD = 7, 
     AUXILIARY = 8, 
-    BOW = 9
+    BOW = 9, 
+    PACKAGE = 10
 };
 
 template <>
@@ -192,7 +203,8 @@ inline ITEM_TYPE enum_parse<ITEM_TYPE>(const std::string k)
         { "RING", ITEM_TYPE::RING }, 
         { "SHIELD", ITEM_TYPE::SHIELD }, 
         { "AUXILIARY", ITEM_TYPE::AUXILIARY }, 
-        { "BOW", ITEM_TYPE::BOW }
+        { "BOW", ITEM_TYPE::BOW }, 
+        { "PACKAGE", ITEM_TYPE::PACKAGE }
     };
 
     auto i = enums.find(k);
@@ -544,8 +556,13 @@ template <> static fb::model::dsl build<fb::model::dsl>(const Json::Value& json)
 class dsl
 {
 public:
+    class dexteritry;
+    class intelligence;
     class item;
     class level;
+    class promotion;
+    class sex;
+    class strength;
 
 public:
     fb::model::enum_value::DSL header;
@@ -562,6 +579,54 @@ public:
     ~dsl()
     { }
 };
+
+class fb::model::dsl::dexteritry
+{
+public:
+    const uint8_t value;
+
+public:
+    dexteritry(uint8_t value) : 
+        value(value)
+    { }
+    dexteritry(const Json::Value& json) : 
+        value(fb::model::build<uint8_t>(json[0]))
+    { }
+    dexteritry(const std::vector<std::any>& parameters) : 
+        value(any_cast<uint8_t>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::dexteritry, {value});
+    }
+};
+
+
+class fb::model::dsl::intelligence
+{
+public:
+    const uint8_t value;
+
+public:
+    intelligence(uint8_t value) : 
+        value(value)
+    { }
+    intelligence(const Json::Value& json) : 
+        value(fb::model::build<uint8_t>(json[0]))
+    { }
+    intelligence(const std::vector<std::any>& parameters) : 
+        value(any_cast<uint8_t>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::intelligence, {value});
+    }
+};
+
 
 class fb::model::dsl::item
 {
@@ -623,12 +688,89 @@ public:
 };
 
 
+class fb::model::dsl::promotion
+{
+public:
+    const uint8_t value;
+
+public:
+    promotion(uint8_t value) : 
+        value(value)
+    { }
+    promotion(const Json::Value& json) : 
+        value(fb::model::build<uint8_t>(json[0]))
+    { }
+    promotion(const std::vector<std::any>& parameters) : 
+        value(any_cast<uint8_t>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::promotion, {value});
+    }
+};
+
+
+class fb::model::dsl::sex
+{
+public:
+    const fb::model::enum_value::SEX value;
+
+public:
+    sex(fb::model::enum_value::SEX value) : 
+        value(value)
+    { }
+    sex(const Json::Value& json) : 
+        value(fb::model::build<fb::model::enum_value::SEX>(json[0]))
+    { }
+    sex(const std::vector<std::any>& parameters) : 
+        value(any_cast<fb::model::enum_value::SEX>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::sex, {value});
+    }
+};
+
+
+class fb::model::dsl::strength
+{
+public:
+    const uint8_t value;
+
+public:
+    strength(uint8_t value) : 
+        value(value)
+    { }
+    strength(const Json::Value& json) : 
+        value(fb::model::build<uint8_t>(json[0]))
+    { }
+    strength(const std::vector<std::any>& parameters) : 
+        value(any_cast<uint8_t>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::strength, {value});
+    }
+};
+
+
 inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& json)
 {
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
+        { fb::model::enum_value::DSL::dexteritry, [](const Json::Value& json) { return fb::model::dsl::dexteritry(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
-        { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }}
+        { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }}
     };
 
     auto header = build<fb::model::enum_value::DSL>(json["Type"]);
@@ -670,8 +812,11 @@ DECLARE_ABILITY_CONSTRUCTOR
         hp(fb::model::build<uint32_t>(json["hp"])),
         mp(fb::model::build<uint32_t>(json["mp"]))
     { }
-    ~ability()
+    virtual ~ability()
     { }
+#ifdef DECLARE_ABILITY_EXTENSION
+DECLARE_ABILITY_EXTENSION
+#endif
 };
 class ability_attribute
 #ifdef DECLARE_ABILITY_ATTRIBUTE_INHERIT
@@ -688,8 +833,11 @@ DECLARE_ABILITY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
-    ~ability_attribute()
+    virtual ~ability_attribute()
     { }
+#ifdef DECLARE_ABILITY_ATTRIBUTE_EXTENSION
+DECLARE_ABILITY_ATTRIBUTE_EXTENSION
+#endif
 };
 class board
 #ifdef DECLARE_BOARD_INHERIT
@@ -714,8 +862,11 @@ DECLARE_BOARD_CONSTRUCTOR
         max_level(fb::model::build<uint8_t>(json["max_level"])),
         admin(fb::model::build<bool>(json["admin"]))
     { }
-    ~board()
+    virtual ~board()
     { }
+#ifdef DECLARE_BOARD_EXTENSION
+DECLARE_BOARD_EXTENSION
+#endif
 };
 class buy
 #ifdef DECLARE_BUY_INHERIT
@@ -736,8 +887,11 @@ DECLARE_BUY_CONSTRUCTOR
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
     { }
-    ~buy()
+    virtual ~buy()
     { }
+#ifdef DECLARE_BUY_EXTENSION
+DECLARE_BUY_EXTENSION
+#endif
 };
 class buy_attribute
 #ifdef DECLARE_BUY_ATTRIBUTE_INHERIT
@@ -754,8 +908,11 @@ DECLARE_BUY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
     { }
-    ~buy_attribute()
+    virtual ~buy_attribute()
     { }
+#ifdef DECLARE_BUY_ATTRIBUTE_EXTENSION
+DECLARE_BUY_ATTRIBUTE_EXTENSION
+#endif
 };
 class combine
 #ifdef DECLARE_COMBINE_INHERIT
@@ -778,8 +935,11 @@ DECLARE_COMBINE_CONSTRUCTOR
         failed(fb::model::build<std::vector<fb::model::dsl>>(json["failed"])),
         percent(fb::model::build<double>(json["percent"]))
     { }
-    ~combine()
+    virtual ~combine()
     { }
+#ifdef DECLARE_COMBINE_EXTENSION
+DECLARE_COMBINE_EXTENSION
+#endif
 };
 class door
 #ifdef DECLARE_DOOR_INHERIT
@@ -798,8 +958,11 @@ DECLARE_DOOR_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         pairs(fb::model::build<std::vector<uint32_t>>(json["pairs"]))
     { }
-    ~door()
+    virtual ~door()
     { }
+#ifdef DECLARE_DOOR_EXTENSION
+DECLARE_DOOR_EXTENSION
+#endif
 };
 class door_pair
 #ifdef DECLARE_DOOR_PAIR_INHERIT
@@ -820,8 +983,11 @@ DECLARE_DOOR_PAIR_CONSTRUCTOR
         open(fb::model::build<uint32_t>(json["open"])),
         close(fb::model::build<uint32_t>(json["close"]))
     { }
-    ~door_pair()
+    virtual ~door_pair()
     { }
+#ifdef DECLARE_DOOR_PAIR_EXTENSION
+DECLARE_DOOR_PAIR_EXTENSION
+#endif
 };
 class drop
 #ifdef DECLARE_DROP_INHERIT
@@ -840,102 +1006,11 @@ DECLARE_DROP_CONSTRUCTOR
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
     { }
-    ~drop()
+    virtual ~drop()
     { }
-};
-class equipment_option
-#ifdef DECLARE_EQUIPMENT_OPTION_INHERIT
-DECLARE_EQUIPMENT_OPTION_INHERIT
+#ifdef DECLARE_DROP_EXTENSION
+DECLARE_DROP_EXTENSION
 #endif
-{
-public:
-    const std::string id;
-    const uint16_t look;
-    const uint32_t durability;
-    const std::optional<float> repair;
-    const uint32_t rename;
-    const int defensive_physical;
-    const int defensive_magical;
-    const uint32_t damage_s_min;
-    const uint32_t damage_s_max;
-    const uint32_t damage_l_min;
-    const uint32_t damage_l_max;
-    const uint8_t healing_cycle;
-    const int8_t intelligence;
-    const uint32_t mp;
-    const int hit;
-    const int damage;
-    const int hp;
-    const uint16_t sound;
-    const int8_t strength;
-    const int8_t dexterity;
-    const double hp_percent;
-    const double mp_percent;
-    const std::optional<uint32_t> spell;
-
-public:
-    equipment_option(const Json::Value& json) : 
-#ifdef DECLARE_EQUIPMENT_OPTION_CONSTRUCTOR
-DECLARE_EQUIPMENT_OPTION_CONSTRUCTOR
-#endif
-        id(fb::model::build<std::string>(json["id"])),
-        look(fb::model::build<uint16_t>(json["look"])),
-        durability(fb::model::build<uint32_t>(json["durability"])),
-        repair(fb::model::build<std::optional<float>>(json["repair"])),
-        rename(fb::model::build<uint32_t>(json["rename"])),
-        defensive_physical(fb::model::build<int>(json["defensive_physical"])),
-        defensive_magical(fb::model::build<int>(json["defensive_magical"])),
-        damage_s_min(fb::model::build<uint32_t>(json["damage_s_min"])),
-        damage_s_max(fb::model::build<uint32_t>(json["damage_s_max"])),
-        damage_l_min(fb::model::build<uint32_t>(json["damage_l_min"])),
-        damage_l_max(fb::model::build<uint32_t>(json["damage_l_max"])),
-        healing_cycle(fb::model::build<uint8_t>(json["healing_cycle"])),
-        intelligence(fb::model::build<int8_t>(json["intelligence"])),
-        mp(fb::model::build<uint32_t>(json["mp"])),
-        hit(fb::model::build<int>(json["hit"])),
-        damage(fb::model::build<int>(json["damage"])),
-        hp(fb::model::build<int>(json["hp"])),
-        sound(fb::model::build<uint16_t>(json["sound"])),
-        strength(fb::model::build<int8_t>(json["strength"])),
-        dexterity(fb::model::build<int8_t>(json["dexterity"])),
-        hp_percent(fb::model::build<double>(json["hp_percent"])),
-        mp_percent(fb::model::build<double>(json["mp_percent"])),
-        spell(fb::model::build<std::optional<uint32_t>>(json["spell"]))
-    { }
-    ~equipment_option()
-    { }
-};
-class item_condition
-#ifdef DECLARE_ITEM_CONDITION_INHERIT
-DECLARE_ITEM_CONDITION_INHERIT
-#endif
-{
-public:
-    const std::string id;
-    const fb::model::enum_value::SEX sex;
-    const uint8_t strength;
-    const uint8_t dexterity;
-    const uint8_t intelligence;
-    const uint8_t level;
-    const std::optional<fb::model::enum_value::CLASS> class_id;
-    const uint8_t promotion;
-
-public:
-    item_condition(const Json::Value& json) : 
-#ifdef DECLARE_ITEM_CONDITION_CONSTRUCTOR
-DECLARE_ITEM_CONDITION_CONSTRUCTOR
-#endif
-        id(fb::model::build<std::string>(json["id"])),
-        sex(fb::model::build<fb::model::enum_value::SEX>(json["sex"])),
-        strength(fb::model::build<uint8_t>(json["strength"])),
-        dexterity(fb::model::build<uint8_t>(json["dexterity"])),
-        intelligence(fb::model::build<uint8_t>(json["intelligence"])),
-        level(fb::model::build<uint8_t>(json["level"])),
-        class_id(fb::model::build<std::optional<fb::model::enum_value::CLASS>>(json["class_id"])),
-        promotion(fb::model::build<uint8_t>(json["promotion"]))
-    { }
-    ~item_condition()
-    { }
 };
 class map
 #ifdef DECLARE_MAP_INHERIT
@@ -974,8 +1049,11 @@ DECLARE_MAP_CONSTRUCTOR
         enable_pk(fb::model::build<bool>(json["enable_pk"])),
         enable_spell(fb::model::build<bool>(json["enable_spell"]))
     { }
-    ~map()
+    virtual ~map()
     { }
+#ifdef DECLARE_MAP_EXTENSION
+DECLARE_MAP_EXTENSION
+#endif
 };
 class mob_spawn
 #ifdef DECLARE_MOB_SPAWN_INHERIT
@@ -1006,8 +1084,11 @@ DECLARE_MOB_SPAWN_CONSTRUCTOR
         mob(fb::model::build<uint32_t>(json["mob"])),
         rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
     { }
-    ~mob_spawn()
+    virtual ~mob_spawn()
     { }
+#ifdef DECLARE_MOB_SPAWN_EXTENSION
+DECLARE_MOB_SPAWN_EXTENSION
+#endif
 };
 class mob_spawn_attribute
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_INHERIT
@@ -1024,8 +1105,11 @@ DECLARE_MOB_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
     { }
-    ~mob_spawn_attribute()
+    virtual ~mob_spawn_attribute()
     { }
+#ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
+DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
+#endif
 };
 class npc_spawn
 #ifdef DECLARE_NPC_SPAWN_INHERIT
@@ -1050,8 +1134,11 @@ DECLARE_NPC_SPAWN_CONSTRUCTOR
         y(fb::model::build<uint32_t>(json["y"])),
         direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
     { }
-    ~npc_spawn()
+    virtual ~npc_spawn()
     { }
+#ifdef DECLARE_NPC_SPAWN_EXTENSION
+DECLARE_NPC_SPAWN_EXTENSION
+#endif
 };
 class npc_spawn_attribute
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_INHERIT
@@ -1068,8 +1155,11 @@ DECLARE_NPC_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
     { }
-    ~npc_spawn_attribute()
+    virtual ~npc_spawn_attribute()
     { }
+#ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
+DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
+#endif
 };
 class object
 #ifdef DECLARE_OBJECT_INHERIT
@@ -1077,7 +1167,6 @@ DECLARE_OBJECT_INHERIT
 #endif
 {
 public:
-    const uint32_t id;
     const std::string name;
     const uint16_t look;
     const uint8_t color;
@@ -1087,13 +1176,15 @@ public:
 #ifdef DECLARE_OBJECT_CONSTRUCTOR
 DECLARE_OBJECT_CONSTRUCTOR
 #endif
-        id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
         look(fb::model::build<uint16_t>(json["look"])),
         color(fb::model::build<uint8_t>(json["color"]))
     { }
-    ~object()
+    virtual ~object()
     { }
+#ifdef DECLARE_OBJECT_EXTENSION
+DECLARE_OBJECT_EXTENSION
+#endif
 };
 class promotion
 #ifdef DECLARE_PROMOTION_INHERIT
@@ -1112,8 +1203,11 @@ DECLARE_PROMOTION_CONSTRUCTOR
         parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         step(fb::model::build<uint8_t>(json["step"]))
     { }
-    ~promotion()
+    virtual ~promotion()
     { }
+#ifdef DECLARE_PROMOTION_EXTENSION
+DECLARE_PROMOTION_EXTENSION
+#endif
 };
 class promotion_attribute
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_INHERIT
@@ -1130,8 +1224,11 @@ DECLARE_PROMOTION_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
-    ~promotion_attribute()
+    virtual ~promotion_attribute()
     { }
+#ifdef DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
+DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
+#endif
 };
 class reward
 #ifdef DECLARE_REWARD_INHERIT
@@ -1150,8 +1247,11 @@ DECLARE_REWARD_CONSTRUCTOR
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
     { }
-    ~reward()
+    virtual ~reward()
     { }
+#ifdef DECLARE_REWARD_EXTENSION
+DECLARE_REWARD_EXTENSION
+#endif
 };
 class sell
 #ifdef DECLARE_SELL_INHERIT
@@ -1172,8 +1272,11 @@ DECLARE_SELL_CONSTRUCTOR
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
     { }
-    ~sell()
+    virtual ~sell()
     { }
+#ifdef DECLARE_SELL_EXTENSION
+DECLARE_SELL_EXTENSION
+#endif
 };
 class sell_attribute
 #ifdef DECLARE_SELL_ATTRIBUTE_INHERIT
@@ -1192,8 +1295,11 @@ DECLARE_SELL_ATTRIBUTE_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         group(fb::model::build<std::string>(json["group"]))
     { }
-    ~sell_attribute()
+    virtual ~sell_attribute()
     { }
+#ifdef DECLARE_SELL_ATTRIBUTE_EXTENSION
+DECLARE_SELL_ATTRIBUTE_EXTENSION
+#endif
 };
 class spell
 #ifdef DECLARE_SPELL_INHERIT
@@ -1222,8 +1328,11 @@ DECLARE_SPELL_CONSTRUCTOR
         concast(fb::model::build<std::string>(json["concast"])),
         message(fb::model::build<std::string>(json["message"]))
     { }
-    ~spell()
+    virtual ~spell()
     { }
+#ifdef DECLARE_SPELL_EXTENSION
+DECLARE_SPELL_EXTENSION
+#endif
 };
 class warp
 #ifdef DECLARE_WARP_INHERIT
@@ -1254,8 +1363,11 @@ DECLARE_WARP_CONSTRUCTOR
         next_y(fb::model::build<uint32_t>(json["next_y"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
     { }
-    ~warp()
+    virtual ~warp()
     { }
+#ifdef DECLARE_WARP_EXTENSION
+DECLARE_WARP_EXTENSION
+#endif
 };
 class warp_attribute
 #ifdef DECLARE_WARP_ATTRIBUTE_INHERIT
@@ -1272,8 +1384,11 @@ DECLARE_WARP_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
     { }
-    ~warp_attribute()
+    virtual ~warp_attribute()
     { }
+#ifdef DECLARE_WARP_ATTRIBUTE_EXTENSION
+DECLARE_WARP_ATTRIBUTE_EXTENSION
+#endif
 };
 class world
 #ifdef DECLARE_WORLD_INHERIT
@@ -1292,8 +1407,11 @@ DECLARE_WORLD_CONSTRUCTOR
         parent(fb::model::build<uint16_t>(json["parent"])),
         group(fb::model::build<std::string>(json["group"]))
     { }
-    ~world()
+    virtual ~world()
     { }
+#ifdef DECLARE_WORLD_EXTENSION
+DECLARE_WORLD_EXTENSION
+#endif
 };
 class world_attribute
 #ifdef DECLARE_WORLD_ATTRIBUTE_INHERIT
@@ -1312,8 +1430,11 @@ DECLARE_WORLD_ATTRIBUTE_CONSTRUCTOR
         id(fb::model::build<uint16_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"]))
     { }
-    ~world_attribute()
+    virtual ~world_attribute()
     { }
+#ifdef DECLARE_WORLD_ATTRIBUTE_EXTENSION
+DECLARE_WORLD_ATTRIBUTE_EXTENSION
+#endif
 };
 class world_group
 #ifdef DECLARE_WORLD_GROUP_INHERIT
@@ -1344,8 +1465,11 @@ DECLARE_WORLD_GROUP_CONSTRUCTOR
         world_x(fb::model::build<uint16_t>(json["world_x"])),
         world_y(fb::model::build<uint16_t>(json["world_y"]))
     { }
-    ~world_group()
+    virtual ~world_group()
     { }
+#ifdef DECLARE_WORLD_GROUP_EXTENSION
+DECLARE_WORLD_GROUP_EXTENSION
+#endif
 };
 class world_group_attribute
 #ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_INHERIT
@@ -1362,46 +1486,44 @@ DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<std::string>(json["id"]))
     { }
-    ~world_group_attribute()
+    virtual ~world_group_attribute()
     { }
+#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
+DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
+#endif
 };
 class item : public fb::model::object
 {
 public:
+    const uint32_t id;
     const uint32_t price;
     const std::optional<uint32_t> deposit_price;
     const bool trade;
     const fb::model::enum_value::ITEM_TYPE type;
-    const fb::model::enum_value::BUNDLE_TYPE BUNDLE;
     const std::string desc;
     const fb::model::enum_value::DEATH_PENALTY death_penalty;
     const uint16_t capacity;
-    const std::string tooltip;
     const std::string script_active;
-    const std::string script_dress;
-    const std::string script_undress;
-    const std::string condition;
-    const std::string equipment_option;
+    const std::vector<fb::model::dsl> condition;
 
 public:
     item(const Json::Value& json) : fb::model::object(json),
+        id(fb::model::build<uint32_t>(json["id"])),
         price(fb::model::build<uint32_t>(json["price"])),
         deposit_price(fb::model::build<std::optional<uint32_t>>(json["deposit_price"])),
         trade(fb::model::build<bool>(json["trade"])),
         type(fb::model::build<fb::model::enum_value::ITEM_TYPE>(json["type"])),
-        BUNDLE(fb::model::build<fb::model::enum_value::BUNDLE_TYPE>(json["BUNDLE"])),
         desc(fb::model::build<std::string>(json["desc"])),
         death_penalty(fb::model::build<fb::model::enum_value::DEATH_PENALTY>(json["death_penalty"])),
         capacity(fb::model::build<uint16_t>(json["capacity"])),
-        tooltip(fb::model::build<std::string>(json["tooltip"])),
         script_active(fb::model::build<std::string>(json["script_active"])),
-        script_dress(fb::model::build<std::string>(json["script_dress"])),
-        script_undress(fb::model::build<std::string>(json["script_undress"])),
-        condition(fb::model::build<std::string>(json["condition"])),
-        equipment_option(fb::model::build<std::string>(json["equipment_option"]))
+        condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
     { }
-    ~item()
+    virtual ~item()
     { }
+#ifdef DECLARE_ITEM_EXTENSION
+DECLARE_ITEM_EXTENSION
+#endif
 };
 class life : public fb::model::object
 {
@@ -1420,12 +1542,16 @@ public:
         defensive_physical(fb::model::build<int>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int>(json["defensive_magical"]))
     { }
-    ~life()
+    virtual ~life()
     { }
+#ifdef DECLARE_LIFE_EXTENSION
+DECLARE_LIFE_EXTENSION
+#endif
 };
 class npc : public fb::model::object
 {
 public:
+    const uint32_t id;
     const std::string script;
     const std::vector<uint32_t> sell;
     const std::vector<uint32_t> buy;
@@ -1436,6 +1562,7 @@ public:
 
 public:
     npc(const Json::Value& json) : fb::model::object(json),
+        id(fb::model::build<uint32_t>(json["id"])),
         script(fb::model::build<std::string>(json["script"])),
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
         buy(fb::model::build<std::vector<uint32_t>>(json["buy"])),
@@ -1444,12 +1571,85 @@ public:
         hold_item(fb::model::build<bool>(json["hold_item"])),
         rename(fb::model::build<bool>(json["rename"]))
     { }
-    ~npc()
+    virtual ~npc()
     { }
+#ifdef DECLARE_NPC_EXTENSION
+DECLARE_NPC_EXTENSION
+#endif
+};
+class cash : public fb::model::item
+{
+public:
+    cash(const Json::Value& json) : fb::model::item(json)
+    { }
+    virtual ~cash()
+    { }
+#ifdef DECLARE_CASH_EXTENSION
+DECLARE_CASH_EXTENSION
+#endif
+};
+class consume : public fb::model::item
+{
+public:
+    consume(const Json::Value& json) : fb::model::item(json)
+    { }
+    virtual ~consume()
+    { }
+#ifdef DECLARE_CONSUME_EXTENSION
+DECLARE_CONSUME_EXTENSION
+#endif
+};
+class equipment : public fb::model::item
+{
+public:
+    const uint16_t dress;
+    const uint16_t durability;
+    const std::optional<double> repair;
+    const std::string dress_script;
+    const std::string undress_script;
+    const uint8_t hit;
+    const uint8_t damage;
+    const uint8_t strength;
+    const uint8_t intelligence;
+    const uint8_t dexteritry;
+    const uint32_t base_hp;
+    const uint32_t base_mp;
+    const float hp_percentage;
+    const float mp_percentage;
+    const uint8_t healing_cycle;
+    const int16_t defensive_physical;
+    const int16_t defensive_magical;
+
+public:
+    equipment(const Json::Value& json) : fb::model::item(json),
+        dress(fb::model::build<uint16_t>(json["dress"])),
+        durability(fb::model::build<uint16_t>(json["durability"])),
+        repair(fb::model::build<std::optional<double>>(json["repair"])),
+        dress_script(fb::model::build<std::string>(json["dress_script"])),
+        undress_script(fb::model::build<std::string>(json["undress_script"])),
+        hit(fb::model::build<uint8_t>(json["hit"])),
+        damage(fb::model::build<uint8_t>(json["damage"])),
+        strength(fb::model::build<uint8_t>(json["strength"])),
+        intelligence(fb::model::build<uint8_t>(json["intelligence"])),
+        dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
+        base_hp(fb::model::build<uint32_t>(json["base_hp"])),
+        base_mp(fb::model::build<uint32_t>(json["base_mp"])),
+        hp_percentage(fb::model::build<float>(json["hp_percentage"])),
+        mp_percentage(fb::model::build<float>(json["mp_percentage"])),
+        healing_cycle(fb::model::build<uint8_t>(json["healing_cycle"])),
+        defensive_physical(fb::model::build<int16_t>(json["defensive_physical"])),
+        defensive_magical(fb::model::build<int16_t>(json["defensive_magical"]))
+    { }
+    virtual ~equipment()
+    { }
+#ifdef DECLARE_EQUIPMENT_EXTENSION
+DECLARE_EQUIPMENT_EXTENSION
+#endif
 };
 class mob : public fb::model::life
 {
 public:
+    const uint32_t id;
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const uint32_t damage_min;
@@ -1461,6 +1661,7 @@ public:
 
 public:
     mob(const Json::Value& json) : fb::model::life(json),
+        id(fb::model::build<uint32_t>(json["id"])),
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage_min(fb::model::build<uint32_t>(json["damage_min"])),
@@ -1470,8 +1671,119 @@ public:
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
     { }
-    ~mob()
+    virtual ~mob()
     { }
+#ifdef DECLARE_MOB_EXTENSION
+DECLARE_MOB_EXTENSION
+#endif
+};
+class pack : public fb::model::item
+{
+public:
+    const uint16_t durability;
+
+public:
+    pack(const Json::Value& json) : fb::model::item(json),
+        durability(fb::model::build<uint16_t>(json["durability"]))
+    { }
+    virtual ~pack()
+    { }
+#ifdef DECLARE_PACK_EXTENSION
+DECLARE_PACK_EXTENSION
+#endif
+};
+class armor : public fb::model::equipment
+{
+public:
+    armor(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~armor()
+    { }
+#ifdef DECLARE_ARMOR_EXTENSION
+DECLARE_ARMOR_EXTENSION
+#endif
+};
+class auxiliary : public fb::model::equipment
+{
+public:
+    auxiliary(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~auxiliary()
+    { }
+#ifdef DECLARE_AUXILIARY_EXTENSION
+DECLARE_AUXILIARY_EXTENSION
+#endif
+};
+class bow : public fb::model::equipment
+{
+public:
+    bow(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~bow()
+    { }
+#ifdef DECLARE_BOW_EXTENSION
+DECLARE_BOW_EXTENSION
+#endif
+};
+class helmet : public fb::model::equipment
+{
+public:
+    helmet(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~helmet()
+    { }
+#ifdef DECLARE_HELMET_EXTENSION
+DECLARE_HELMET_EXTENSION
+#endif
+};
+class ring : public fb::model::equipment
+{
+public:
+    ring(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~ring()
+    { }
+#ifdef DECLARE_RING_EXTENSION
+DECLARE_RING_EXTENSION
+#endif
+};
+class shield : public fb::model::equipment
+{
+public:
+    shield(const Json::Value& json) : fb::model::equipment(json)
+    { }
+    virtual ~shield()
+    { }
+#ifdef DECLARE_SHIELD_EXTENSION
+DECLARE_SHIELD_EXTENSION
+#endif
+};
+class weapon : public fb::model::equipment
+{
+public:
+    const uint32_t damage_s_min;
+    const uint32_t damage_s_max;
+    const uint32_t damage_l_min;
+    const uint32_t damage_l_max;
+    const uint16_t sound;
+    const std::optional<uint32_t> spell;
+    const std::optional<uint32_t> rename;
+
+public:
+    weapon(const Json::Value& json) : fb::model::equipment(json),
+        damage_s_min(fb::model::build<uint32_t>(json["damage_s_min"])),
+        damage_s_max(fb::model::build<uint32_t>(json["damage_s_max"])),
+        damage_l_min(fb::model::build<uint32_t>(json["damage_l_min"])),
+        damage_l_max(fb::model::build<uint32_t>(json["damage_l_max"])),
+        sound(fb::model::build<uint16_t>(json["sound"])),
+        spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
+        rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))
+    { }
+    virtual ~weapon()
+    { }
+#ifdef DECLARE_WEAPON_EXTENSION
+DECLARE_WEAPON_EXTENSION
+#endif
 };
 
 #pragma endregion
@@ -1773,12 +2085,39 @@ public:
     { }
 };
 
+class __armor : public fb::model::kv_container<uint32_t, fb::model::armor>
+{
+public:
+    __armor() : fb::model::kv_container<uint32_t, fb::model::armor>(std::string("json/armor.json"))
+    { }
+    ~__armor()
+    { }
+};
+
+class __auxiliary : public fb::model::kv_container<uint32_t, fb::model::auxiliary>
+{
+public:
+    __auxiliary() : fb::model::kv_container<uint32_t, fb::model::auxiliary>(std::string("json/auxiliary.json"))
+    { }
+    ~__auxiliary()
+    { }
+};
+
 class __board : public fb::model::kv_container<uint32_t, fb::model::board>
 {
 public:
     __board() : fb::model::kv_container<uint32_t, fb::model::board>(std::string("json/board.json"))
     { }
     ~__board()
+    { }
+};
+
+class __bow : public fb::model::kv_container<uint32_t, fb::model::bow>
+{
+public:
+    __bow() : fb::model::kv_container<uint32_t, fb::model::bow>(std::string("json/bow.json"))
+    { }
+    ~__bow()
     { }
 };
 
@@ -1800,12 +2139,30 @@ public:
     { }
 };
 
+class __cash : public fb::model::kv_container<uint32_t, fb::model::cash>
+{
+public:
+    __cash() : fb::model::kv_container<uint32_t, fb::model::cash>(std::string("json/cash.json"))
+    { }
+    ~__cash()
+    { }
+};
+
 class __combine : public fb::model::array_container<fb::model::combine>
 {
 public:
     __combine() : fb::model::array_container<fb::model::combine>(std::string("json/combine.json"))
     { }
     ~__combine()
+    { }
+};
+
+class __consume : public fb::model::kv_container<uint32_t, fb::model::consume>
+{
+public:
+    __consume() : fb::model::kv_container<uint32_t, fb::model::consume>(std::string("json/consume.json"))
+    { }
+    ~__consume()
     { }
 };
 
@@ -1836,12 +2193,21 @@ public:
     { }
 };
 
-class __equipment_option : public fb::model::kv_container<std::string, fb::model::equipment_option>
+class __equipment : public fb::model::kv_container<uint32_t, fb::model::equipment>
 {
 public:
-    __equipment_option() : fb::model::kv_container<std::string, fb::model::equipment_option>(std::string("json/equipment_option.json"))
+    __equipment() : fb::model::kv_container<uint32_t, fb::model::equipment>(std::string("json/equipment.json"))
     { }
-    ~__equipment_option()
+    ~__equipment()
+    { }
+};
+
+class __helmet : public fb::model::kv_container<uint32_t, fb::model::helmet>
+{
+public:
+    __helmet() : fb::model::kv_container<uint32_t, fb::model::helmet>(std::string("json/helmet.json"))
+    { }
+    ~__helmet()
     { }
 };
 
@@ -1854,19 +2220,10 @@ public:
     { }
 };
 
-class __item_condition : public fb::model::kv_container<std::string, fb::model::item_condition>
+class __life : public fb::model::array_container<fb::model::life>
 {
 public:
-    __item_condition() : fb::model::kv_container<std::string, fb::model::item_condition>(std::string("json/item_condition.json"))
-    { }
-    ~__item_condition()
-    { }
-};
-
-class __life : public fb::model::kv_container<uint32_t, fb::model::life>
-{
-public:
-    __life() : fb::model::kv_container<uint32_t, fb::model::life>(std::string("json/life.json"))
+    __life() : fb::model::array_container<fb::model::life>(std::string("json/life.json"))
     { }
     ~__life()
     { }
@@ -1935,12 +2292,21 @@ public:
     { }
 };
 
-class __object : public fb::model::kv_container<uint32_t, fb::model::object>
+class __object : public fb::model::array_container<fb::model::object>
 {
 public:
-    __object() : fb::model::kv_container<uint32_t, fb::model::object>(std::string("json/object.json"))
+    __object() : fb::model::array_container<fb::model::object>(std::string("json/object.json"))
     { }
     ~__object()
+    { }
+};
+
+class __pack : public fb::model::kv_container<uint32_t, fb::model::pack>
+{
+public:
+    __pack() : fb::model::kv_container<uint32_t, fb::model::pack>(std::string("json/pack.json"))
+    { }
+    ~__pack()
     { }
 };
 
@@ -1971,6 +2337,15 @@ public:
     { }
 };
 
+class __ring : public fb::model::kv_container<uint32_t, fb::model::ring>
+{
+public:
+    __ring() : fb::model::kv_container<uint32_t, fb::model::ring>(std::string("json/ring.json"))
+    { }
+    ~__ring()
+    { }
+};
+
 class __sell : public fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>
 {
 public:
@@ -1986,6 +2361,15 @@ public:
     __sell_attribute() : fb::model::kv_container<uint32_t, fb::model::sell_attribute>(std::string("json/sell_attribute.json"))
     { }
     ~__sell_attribute()
+    { }
+};
+
+class __shield : public fb::model::kv_container<uint32_t, fb::model::shield>
+{
+public:
+    __shield() : fb::model::kv_container<uint32_t, fb::model::shield>(std::string("json/shield.json"))
+    { }
+    ~__shield()
     { }
 };
 
@@ -2013,6 +2397,15 @@ public:
     __warp_attribute() : fb::model::kv_container<uint32_t, fb::model::warp_attribute>(std::string("json/warp_attribute.json"))
     { }
     ~__warp_attribute()
+    { }
+};
+
+class __weapon : public fb::model::kv_container<uint32_t, fb::model::weapon>
+{
+public:
+    __weapon() : fb::model::kv_container<uint32_t, fb::model::weapon>(std::string("json/weapon.json"))
+    { }
+    ~__weapon()
     { }
 };
 
@@ -2058,16 +2451,21 @@ class container
 public:
     fb::model::__ability ability;
     fb::model::__ability_attribute ability_attribute;
+    fb::model::__armor armor;
+    fb::model::__auxiliary auxiliary;
     fb::model::__board board;
+    fb::model::__bow bow;
     fb::model::__buy buy;
     fb::model::__buy_attribute buy_attribute;
+    fb::model::__cash cash;
     fb::model::__combine combine;
+    fb::model::__consume consume;
     fb::model::__door door;
     fb::model::__door_pair door_pair;
     fb::model::__drop drop;
-    fb::model::__equipment_option equipment_option;
+    fb::model::__equipment equipment;
+    fb::model::__helmet helmet;
     fb::model::__item item;
-    fb::model::__item_condition item_condition;
     fb::model::__life life;
     fb::model::__map map;
     fb::model::__mob mob;
@@ -2077,14 +2475,18 @@ public:
     fb::model::__npc_spawn npc_spawn;
     fb::model::__npc_spawn_attribute npc_spawn_attribute;
     fb::model::__object object;
+    fb::model::__pack pack;
     fb::model::__promotion promotion;
     fb::model::__promotion_attribute promotion_attribute;
     fb::model::__reward reward;
+    fb::model::__ring ring;
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
+    fb::model::__shield shield;
     fb::model::__spell spell;
     fb::model::__warp warp;
     fb::model::__warp_attribute warp_attribute;
+    fb::model::__weapon weapon;
     fb::model::__world world;
     fb::model::__world_attribute world_attribute;
     fb::model::__world_group world_group;
@@ -2097,16 +2499,21 @@ public:
 #pragma region enqueue
         queue.push([this]() { this->ability.load(); });
         queue.push([this]() { this->ability_attribute.load(); });
+        queue.push([this]() { this->armor.load(); });
+        queue.push([this]() { this->auxiliary.load(); });
         queue.push([this]() { this->board.load(); });
+        queue.push([this]() { this->bow.load(); });
         queue.push([this]() { this->buy.load(); });
         queue.push([this]() { this->buy_attribute.load(); });
+        queue.push([this]() { this->cash.load(); });
         queue.push([this]() { this->combine.load(); });
+        queue.push([this]() { this->consume.load(); });
         queue.push([this]() { this->door.load(); });
         queue.push([this]() { this->door_pair.load(); });
         queue.push([this]() { this->drop.load(); });
-        queue.push([this]() { this->equipment_option.load(); });
+        queue.push([this]() { this->equipment.load(); });
+        queue.push([this]() { this->helmet.load(); });
         queue.push([this]() { this->item.load(); });
-        queue.push([this]() { this->item_condition.load(); });
         queue.push([this]() { this->life.load(); });
         queue.push([this]() { this->map.load(); });
         queue.push([this]() { this->mob.load(); });
@@ -2116,14 +2523,18 @@ public:
         queue.push([this]() { this->npc_spawn.load(); });
         queue.push([this]() { this->npc_spawn_attribute.load(); });
         queue.push([this]() { this->object.load(); });
+        queue.push([this]() { this->pack.load(); });
         queue.push([this]() { this->promotion.load(); });
         queue.push([this]() { this->promotion_attribute.load(); });
         queue.push([this]() { this->reward.load(); });
+        queue.push([this]() { this->ring.load(); });
         queue.push([this]() { this->sell.load(); });
         queue.push([this]() { this->sell_attribute.load(); });
+        queue.push([this]() { this->shield.load(); });
         queue.push([this]() { this->spell.load(); });
         queue.push([this]() { this->warp.load(); });
         queue.push([this]() { this->warp_attribute.load(); });
+        queue.push([this]() { this->weapon.load(); });
         queue.push([this]() { this->world.load(); });
         queue.push([this]() { this->world_attribute.load(); });
         queue.push([this]() { this->world_group.load(); });
