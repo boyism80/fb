@@ -308,6 +308,7 @@ void fb::game::context::on_trade_success(session& me)
     this->send(me, fb::protocol::game::response::trade::close(fb::game::message::trade::SUCCESS), scope::SELF);
 }
 
+// obsolate
 void fb::game::context::on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
@@ -338,10 +339,42 @@ void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, 
     this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
 
+
+// new dialog
+void fb::game::context::on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
+}
+
+void fb::game::context::on_dialog(session& me, const fb::model::object& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::menu(npc, menus, message, interaction), scope::SELF);
+}
+
+void fb::game::context::on_dialog(session& me, const fb::model::object& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
+}
+
+void fb::game::context::on_dialog(session& me, const fb::model::object& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::item(npc, pairs, message, pursuit, interaction), scope::SELF);
+}
+
+void fb::game::context::on_dialog(session& me, const fb::model::object& npc, const std::string& message,  fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::input(npc, message, interaction), scope::SELF);
+}
+
+void fb::game::context::on_dialog(session& me, const fb::model::object& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+{
+    // this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
+}
+
 void fb::game::context::on_trade_item(session& me, session& from, uint8_t index)
 {
-    bool mine = (&me == &from);
-    this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
+    // bool mine = (&me == &from);
+    // this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
 }
 
 void fb::game::context::on_option(session& me, fb::game::OPTION option, bool enabled)

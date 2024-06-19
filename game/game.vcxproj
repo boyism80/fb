@@ -224,6 +224,9 @@
     <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model.item.cpp" />
+    <ClCompile Include="model.life.cpp" />
+    <ClCompile Include="model.object.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

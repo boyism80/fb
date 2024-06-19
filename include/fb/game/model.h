@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <queue>
 #include <any>
 #include <optional>
 #include <chrono>
@@ -13,6 +14,10 @@
 #include <unordered_map>
 #include <fb/game/lua.h>
 #include <fb/game/model.preprocessor.h>
+
+#ifdef ROOT_PREPROCESSOR
+ROOT_PREPROCESSOR
+#endif
 
 namespace fb { namespace model {
 
@@ -176,6 +181,52 @@ inline DSL enum_parse<DSL>(const std::string k)
     return i->second;
 }
 
+enum class ITEM_ATTRIBUTE
+{
+    NONE = 0x00000000, 
+    CONSUME = 0x00000001, 
+    BUNDLE = 0x00000002, 
+    SCRIPT = 0x00000003, 
+    CASH = 0x00000004, 
+    EQUIPMENT = 0x10000000, 
+    PACK = CONSUME | 0x00000100, 
+    WEAPON = EQUIPMENT | 0x00000100, 
+    ARMOR = EQUIPMENT | 0x00000200, 
+    SHIELD = EQUIPMENT | 0x00000400, 
+    HELMET = EQUIPMENT | 0x00000800, 
+    RING = EQUIPMENT | 0x00001000, 
+    AUXILIARY = EQUIPMENT | 0x00002000, 
+    ARROW = EQUIPMENT | 0x00004000
+};
+
+template <>
+inline ITEM_ATTRIBUTE enum_parse<ITEM_ATTRIBUTE>(const std::string k)
+{
+    static const std::unordered_map<std::string, ITEM_ATTRIBUTE> enums
+    {
+        { "NONE", ITEM_ATTRIBUTE::NONE }, 
+        { "CONSUME", ITEM_ATTRIBUTE::CONSUME }, 
+        { "BUNDLE", ITEM_ATTRIBUTE::BUNDLE }, 
+        { "SCRIPT", ITEM_ATTRIBUTE::SCRIPT }, 
+        { "CASH", ITEM_ATTRIBUTE::CASH }, 
+        { "EQUIPMENT", ITEM_ATTRIBUTE::EQUIPMENT }, 
+        { "PACK", ITEM_ATTRIBUTE::PACK }, 
+        { "WEAPON", ITEM_ATTRIBUTE::WEAPON }, 
+        { "ARMOR", ITEM_ATTRIBUTE::ARMOR }, 
+        { "SHIELD", ITEM_ATTRIBUTE::SHIELD }, 
+        { "HELMET", ITEM_ATTRIBUTE::HELMET }, 
+        { "RING", ITEM_ATTRIBUTE::RING }, 
+        { "AUXILIARY", ITEM_ATTRIBUTE::AUXILIARY }, 
+        { "ARROW", ITEM_ATTRIBUTE::ARROW }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class ITEM_TYPE
 {
     STUFF = 1, 
@@ -266,6 +317,38 @@ inline MOB_SIZE enum_parse<MOB_SIZE>(const std::string k)
     return i->second;
 }
 
+enum class OBJECT_TYPE
+{
+    UNKNOWN = 0x00, 
+    ITEM = 0x01, 
+    NPC = 0x02, 
+    MOB = 0x04, 
+    SESSION = 0x08, 
+    OBJECT = ITEM | NPC | MOB, 
+    LIFE = MOB | SESSION
+};
+
+template <>
+inline OBJECT_TYPE enum_parse<OBJECT_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, OBJECT_TYPE> enums
+    {
+        { "UNKNOWN", OBJECT_TYPE::UNKNOWN }, 
+        { "ITEM", OBJECT_TYPE::ITEM }, 
+        { "NPC", OBJECT_TYPE::NPC }, 
+        { "MOB", OBJECT_TYPE::MOB }, 
+        { "SESSION", OBJECT_TYPE::SESSION }, 
+        { "OBJECT", OBJECT_TYPE::OBJECT }, 
+        { "LIFE", OBJECT_TYPE::LIFE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class REGEX
 {
     SELL = 0, 
@@ -329,6 +412,34 @@ inline SEX enum_parse<SEX>(const std::string k)
         { "MAN", SEX::MAN }, 
         { "WOMAN", SEX::WOMAN }, 
         { "ALL", SEX::ALL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class WEAPON_TYPE
+{
+    NORMAL = 0, 
+    SPEAR = 1, 
+    BOW = 2, 
+    FAN = 3, 
+    UNKNOWN = 4
+};
+
+template <>
+inline WEAPON_TYPE enum_parse<WEAPON_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, WEAPON_TYPE> enums
+    {
+        { "NORMAL", WEAPON_TYPE::NORMAL }, 
+        { "SPEAR", WEAPON_TYPE::SPEAR }, 
+        { "BOW", WEAPON_TYPE::BOW }, 
+        { "FAN", WEAPON_TYPE::FAN }, 
+        { "UNKNOWN", WEAPON_TYPE::UNKNOWN }
     };
 
     auto i = enums.find(k);
