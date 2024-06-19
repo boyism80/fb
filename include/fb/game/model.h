@@ -1940,13 +1940,20 @@ private:
         std::ifstream           ifstream;
         ifstream.open(fname);
         if (ifstream.is_open() == false)
-            throw std::runtime_error("cannot find json file");
+        {
+            auto sstream = std::stringstream();
+            sstream << "cannot find json file : " << fname;
+            throw std::runtime_error(sstream.str());
+        }
 
         Json::Reader            reader;
         if (reader.parse(ifstream, json) == false)
         {
             ifstream.close();
-            throw std::runtime_error("cannot parse json file");
+
+            auto sstream = std::stringstream();
+            sstream << "cannot parse json file : " << fname;
+            throw std::runtime_error(sstream.str());
         }
 
         ifstream.close();
@@ -2078,13 +2085,20 @@ private:
         std::ifstream           ifstream;
         ifstream.open(fname);
         if (ifstream.is_open() == false)
-            throw std::runtime_error("cannot find json file");
+        {
+            auto sstream = std::stringstream();
+            sstream << "cannot find json file : " << fname;
+            throw std::runtime_error(sstream.str());
+        }
 
         Json::Reader            reader;
         if (reader.parse(ifstream, json) == false)
         {
             ifstream.close();
-            throw std::runtime_error("cannot parse json file");
+
+            auto sstream = std::stringstream();
+            sstream << "cannot parse json file : " << fname;
+            throw std::runtime_error(sstream.str());
         }
 
         ifstream.close();
@@ -2196,39 +2210,12 @@ public:
     { }
 };
 
-class __armor : public fb::model::kv_container<uint32_t, fb::model::armor>
-{
-public:
-    __armor() : fb::model::kv_container<uint32_t, fb::model::armor>(std::string("json/armor.json"))
-    { }
-    ~__armor()
-    { }
-};
-
-class __auxiliary : public fb::model::kv_container<uint32_t, fb::model::auxiliary>
-{
-public:
-    __auxiliary() : fb::model::kv_container<uint32_t, fb::model::auxiliary>(std::string("json/auxiliary.json"))
-    { }
-    ~__auxiliary()
-    { }
-};
-
 class __board : public fb::model::kv_container<uint32_t, fb::model::board>
 {
 public:
     __board() : fb::model::kv_container<uint32_t, fb::model::board>(std::string("json/board.json"))
     { }
     ~__board()
-    { }
-};
-
-class __bow : public fb::model::kv_container<uint32_t, fb::model::bow>
-{
-public:
-    __bow() : fb::model::kv_container<uint32_t, fb::model::bow>(std::string("json/bow.json"))
-    { }
-    ~__bow()
     { }
 };
 
@@ -2250,30 +2237,12 @@ public:
     { }
 };
 
-class __cash : public fb::model::kv_container<uint32_t, fb::model::cash>
-{
-public:
-    __cash() : fb::model::kv_container<uint32_t, fb::model::cash>(std::string("json/cash.json"))
-    { }
-    ~__cash()
-    { }
-};
-
 class __combine : public fb::model::array_container<fb::model::combine>
 {
 public:
     __combine() : fb::model::array_container<fb::model::combine>(std::string("json/combine.json"))
     { }
     ~__combine()
-    { }
-};
-
-class __consume : public fb::model::kv_container<uint32_t, fb::model::consume>
-{
-public:
-    __consume() : fb::model::kv_container<uint32_t, fb::model::consume>(std::string("json/consume.json"))
-    { }
-    ~__consume()
     { }
 };
 
@@ -2310,15 +2279,6 @@ public:
     __equipment() : fb::model::kv_container<uint32_t, fb::model::equipment>(std::string("json/equipment.json"))
     { }
     ~__equipment()
-    { }
-};
-
-class __helmet : public fb::model::kv_container<uint32_t, fb::model::helmet>
-{
-public:
-    __helmet() : fb::model::kv_container<uint32_t, fb::model::helmet>(std::string("json/helmet.json"))
-    { }
-    ~__helmet()
     { }
 };
 
@@ -2412,15 +2372,6 @@ public:
     { }
 };
 
-class __pack : public fb::model::kv_container<uint32_t, fb::model::pack>
-{
-public:
-    __pack() : fb::model::kv_container<uint32_t, fb::model::pack>(std::string("json/pack.json"))
-    { }
-    ~__pack()
-    { }
-};
-
 class __promotion : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>
 {
 public:
@@ -2448,15 +2399,6 @@ public:
     { }
 };
 
-class __ring : public fb::model::kv_container<uint32_t, fb::model::ring>
-{
-public:
-    __ring() : fb::model::kv_container<uint32_t, fb::model::ring>(std::string("json/ring.json"))
-    { }
-    ~__ring()
-    { }
-};
-
 class __sell : public fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>
 {
 public:
@@ -2472,15 +2414,6 @@ public:
     __sell_attribute() : fb::model::kv_container<uint32_t, fb::model::sell_attribute>(std::string("json/sell_attribute.json"))
     { }
     ~__sell_attribute()
-    { }
-};
-
-class __shield : public fb::model::kv_container<uint32_t, fb::model::shield>
-{
-public:
-    __shield() : fb::model::kv_container<uint32_t, fb::model::shield>(std::string("json/shield.json"))
-    { }
-    ~__shield()
     { }
 };
 
@@ -2508,15 +2441,6 @@ public:
     __warp_attribute() : fb::model::kv_container<uint32_t, fb::model::warp_attribute>(std::string("json/warp_attribute.json"))
     { }
     ~__warp_attribute()
-    { }
-};
-
-class __weapon : public fb::model::kv_container<uint32_t, fb::model::weapon>
-{
-public:
-    __weapon() : fb::model::kv_container<uint32_t, fb::model::weapon>(std::string("json/weapon.json"))
-    { }
-    ~__weapon()
     { }
 };
 
@@ -2562,20 +2486,14 @@ class container
 public:
     fb::model::__ability ability;
     fb::model::__ability_attribute ability_attribute;
-    fb::model::__armor armor;
-    fb::model::__auxiliary auxiliary;
     fb::model::__board board;
-    fb::model::__bow bow;
     fb::model::__buy buy;
     fb::model::__buy_attribute buy_attribute;
-    fb::model::__cash cash;
     fb::model::__combine combine;
-    fb::model::__consume consume;
     fb::model::__door door;
     fb::model::__door_pair door_pair;
     fb::model::__drop drop;
     fb::model::__equipment equipment;
-    fb::model::__helmet helmet;
     fb::model::__item item;
     fb::model::__life life;
     fb::model::__map map;
@@ -2586,44 +2504,34 @@ public:
     fb::model::__npc_spawn npc_spawn;
     fb::model::__npc_spawn_attribute npc_spawn_attribute;
     fb::model::__object object;
-    fb::model::__pack pack;
     fb::model::__promotion promotion;
     fb::model::__promotion_attribute promotion_attribute;
     fb::model::__reward reward;
-    fb::model::__ring ring;
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
-    fb::model::__shield shield;
     fb::model::__spell spell;
     fb::model::__warp warp;
     fb::model::__warp_attribute warp_attribute;
-    fb::model::__weapon weapon;
     fb::model::__world world;
     fb::model::__world_attribute world_attribute;
     fb::model::__world_group world_group;
     fb::model::__world_group_attribute world_group_attribute;
 
 public:
-    void load(const std::function<void(float)>& callback)
+    void load(const std::function<void(float)>& callback, const std::function<void(const std::string&)>& error)
     {
         std::queue<std::function<void()>> queue;
 #pragma region enqueue
         queue.push([this]() { this->ability.load(); });
         queue.push([this]() { this->ability_attribute.load(); });
-        queue.push([this]() { this->armor.load(); });
-        queue.push([this]() { this->auxiliary.load(); });
         queue.push([this]() { this->board.load(); });
-        queue.push([this]() { this->bow.load(); });
         queue.push([this]() { this->buy.load(); });
         queue.push([this]() { this->buy_attribute.load(); });
-        queue.push([this]() { this->cash.load(); });
         queue.push([this]() { this->combine.load(); });
-        queue.push([this]() { this->consume.load(); });
         queue.push([this]() { this->door.load(); });
         queue.push([this]() { this->door_pair.load(); });
         queue.push([this]() { this->drop.load(); });
         queue.push([this]() { this->equipment.load(); });
-        queue.push([this]() { this->helmet.load(); });
         queue.push([this]() { this->item.load(); });
         queue.push([this]() { this->life.load(); });
         queue.push([this]() { this->map.load(); });
@@ -2634,18 +2542,14 @@ public:
         queue.push([this]() { this->npc_spawn.load(); });
         queue.push([this]() { this->npc_spawn_attribute.load(); });
         queue.push([this]() { this->object.load(); });
-        queue.push([this]() { this->pack.load(); });
         queue.push([this]() { this->promotion.load(); });
         queue.push([this]() { this->promotion_attribute.load(); });
         queue.push([this]() { this->reward.load(); });
-        queue.push([this]() { this->ring.load(); });
         queue.push([this]() { this->sell.load(); });
         queue.push([this]() { this->sell_attribute.load(); });
-        queue.push([this]() { this->shield.load(); });
         queue.push([this]() { this->spell.load(); });
         queue.push([this]() { this->warp.load(); });
         queue.push([this]() { this->warp_attribute.load(); });
-        queue.push([this]() { this->weapon.load(); });
         queue.push([this]() { this->world.load(); });
         queue.push([this]() { this->world_attribute.load(); });
         queue.push([this]() { this->world_group.load(); });
@@ -2669,7 +2573,18 @@ public:
                     queue.pop();
                 }
                 
-                job();
+                try
+                {
+                    job();
+                }
+                catch(std::exception& e)
+                {
+                    error(e.what());
+                }
+                catch(...)
+                {
+                    error("unhandled exception");
+                }
 
                 {
                     auto _ = std::lock_guard(mutex);

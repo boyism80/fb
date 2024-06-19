@@ -59,7 +59,11 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     context.model.load([&](float percent)
     {
-        c.put(" * [%0.2lf%%] 데이터를 읽었습니다.", percent);
+        c.put("* [%0.2lf%%] 데이터를 읽었습니다.", percent);
+    },
+    [&](const std::string& err)
+    {
+        c.comment("    - %s", err.c_str());
     });
     c.next();
 

@@ -33,6 +33,13 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object::model, "fb.game.object.core")
 {"dialog",              fb::game::object::model::builtin_dialog},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
+{"name",                fb::model::object::builtin_name},
+{"look",                fb::model::object::builtin_look},
+{"color",               fb::model::object::builtin_color},
+{"dialog",              fb::model::object::builtin_dialog},
+END_LUA_EXTENSION
+
 IMPLEMENT_LUA_EXTENSION(fb::game::mob::model, "fb.game.mob.core")
 {"speed",               fb::game::mob::model::builtin_speed},
 END_LUA_EXTENSION
@@ -105,6 +112,11 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life::model, "fb.game.life.core")
 {"mp",                  fb::game::life::model::builtin_mp},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::model::life, "fb.model.life")
+{"hp",                  fb::model::life::builtin_hp},
+{"mp",                  fb::model::life::builtin_mp},
+END_LUA_EXTENSION
+
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"__eq",                fb::game::object::builtin_eq},
 {"hp",                  fb::game::life::builtin_hp},
@@ -130,6 +142,17 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
 {"repair_price",        fb::game::item::model::builtin_repair_price},
 {"rename_price",        fb::game::item::model::builtin_rename_price},
 {"deposit_price",       fb::game::item::model::builtin_deposit_price},
+END_LUA_EXTENSION
+
+IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
+{"make",                fb::model::item::builtin_make},
+{"attr",                fb::model::item::builtin_attr},
+{"capacity",            fb::model::item::builtin_capacity},
+{"durability",          fb::model::item::builtin_durability},
+{"price",               fb::model::item::builtin_price},
+{"repair_price",        fb::model::item::builtin_repair_price},
+{"rename_price",        fb::model::item::builtin_rename_price},
+{"deposit_price",       fb::model::item::builtin_deposit_price},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
