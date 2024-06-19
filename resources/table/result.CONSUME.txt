@@ -1,0 +1,225 @@
+9	도톨	215	0	0	0	TRUE	CONSUME	BUNDLE	도토리와 비슷해 보이지만...	DROP	100		scripts/item/낙랑아이템2갯수체크.lua				
+
+2200	동동주	77	0	10	0	TRUE	CONSUME	PACKAGE	밥알이 동동 뜬 채로 묵은 술	DROP	200		scripts/item/동동주.lua				
+
+2201	막걸리	728	0	10	0	TRUE	CONSUME	PACKAGE	주막에서 파는 술의 일종.	DROP	200		scripts/item/막걸리.lua				
+
+2202	오십세주	731	0	500	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	50		scripts/item/오십세주.lua				
+
+2203	팔십세주	731	0	800	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	80		scripts/item/팔십세주.lua				
+
+2204	백세주	731	0	1000	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	100		scripts/item/백세주.lua				
+
+2205	홍주	730	0	3000	0	TRUE	CONSUME	PACKAGE	주막에서 파는 술중 가장 비싼 홍주	DROP	100		scripts/item/홍주.lua				
+
+2206	이백세주	731	0	2000	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	200		scripts/item/이백세주.lua				
+
+2207	삼백세주	731	0	3000	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	300		scripts/item/삼백세주.lua				
+
+2208	오백세주	731	0	5000	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	500		scripts/item/오백세주.lua				
+
+2209	진백세주	731	0	1000	0	TRUE	CONSUME	PACKAGE	한약재를 넣어 발효시킨 술	DROP	100		scripts/item/진백세주.lua				
+
+2210	청심사주	253	0	10	0	TRUE	CONSUME	PACKAGE	뱀을 넣어 발효시킨 술	DROP	20		scripts/item/청심사주.lua				
+
+3000	초코바나나	2384	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/초코바나나.lua				
+
+3005	새콤달콤구이	2386	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/새콤달콤구이.lua				
+
+3006	생명보존음료	2399	0	100	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생명보존음료.lua				
+
+3007	생명보존반찬	2403	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생명보존반찬.lua				
+
+3008	생장촉진통구이	2406	0	100	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생장촉진통구이.lua				
+
+3009	생장촉진음료	2398	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생장촉진음료.lua				
+
+3010	생장촉진반찬	2402	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생장촉진반찬.lua				
+
+3012	달콤새콤구이	2566	0	100000	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/달콤새콤구이.lua				
+
+3013	생명보존통구이	2407	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/생명보존통구이.lua				
+
+3014	도토리	215	0	10	0	TRUE	CONSUME	BUNDLE	참나무의 열매	DROP	201		scripts/item/도토리.lua				
+
+3015	고기조각	222	0	10	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/고기조각.lua				
+
+3016	고기	6	0	30	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/고기.lua				
+
+3017	돼지고기	216	0	20	0	TRUE	CONSUME	BUNDLE	육질이 연하고 기름진 돼지의 고기	DROP	100		scripts/item/돼지고기.lua				
+
+3018	토끼고기	218	0	10	0	TRUE	CONSUME	BUNDLE	부드럽고 담백한 토끼의 고기	DROP	100		scripts/item/토끼고기.lua				
+
+3019	쥐고기	289	0	20	0	TRUE	CONSUME	BUNDLE	먹어야 하나?	DROP	150		scripts/item/쥐고기.lua				
+
+3020	뱀고기	222	0	40	0	TRUE	CONSUME	BUNDLE	겉보기와는 달리 좋은 고기	DROP	100		scripts/item/뱀고기.lua				
+
+3021	여우고기	219	0	4	0	TRUE	CONSUME	BUNDLE	먹어 본 사람이 많지 않다고 한다	DROP	50		scripts/item/여우고기.lua				
+
+3022	여우모피	219	0	80	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/여우모피.lua				
+
+3023	곰가죽	220	0	8	0	TRUE	CONSUME	BUNDLE	커다란 곰의 가죽	DROP	200		scripts/item/곰가죽.lua				
+
+3024	호랑이가죽	224	0	10	0	TRUE	CONSUME	BUNDLE	호랑이의 줄무늬 가죽	DROP	100		scripts/item/호랑이가죽.lua				
+
+3025	호랑이고기	225	0	60	0	TRUE	CONSUME	BUNDLE	생명력이 넘치는 호랑이의 고기	DROP	100		scripts/item/호랑이고기.lua				
+
+3026	적호의가죽	224	0	200	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/적호의가죽.lua				
+
+3027	닭고기	214	0	4	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/닭고기.lua				
+
+3028	자호의가죽	224	0	150	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/자호의가죽.lua				
+
+3029	말고기	223	0	12	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/말고기.lua				
+
+3030	쇠고기	223	0	40	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/쇠고기.lua				
+
+3031	녹용	288	0	20	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/녹용.lua				
+
+3032	웅담	221	0	100	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/웅담.lua				
+
+3033	참수박	32	0	500	0	TRUE	CONSUME	BUNDLE		DROP	50		scripts/item/참수박.lua				
+
+3034	인삼	15	0	50	0	TRUE	CONSUME	BUNDLE		DROP	201		scripts/item/인삼.lua				
+
+3035	산삼	15	0	100	0	TRUE	CONSUME	BUNDLE		DROP	201		scripts/item/산삼.lua				
+
+3036	진호의가죽	224	10	500	0	TRUE	CONSUME	BUNDLE		DROP	201		scripts/item/진호의가죽.lua				
+
+3037	사슴고기	223	0	60	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/사슴고기.lua				
+
+3038	산돼지고기	6	0	200	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/산돼지고기.lua				
+
+3039	숲돼지고기	6	0	400	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/숲돼지고기.lua				
+
+3040	뱀꼬리	222	0	40	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/뱀꼬리.lua				
+
+3041	담비고기	6	0	100	0	TRUE	CONSUME	BUNDLE		DROP	100						
+
+3042	담비가죽	219	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100						
+
+3043	이리고기	219	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/고기.lua				
+
+3044	감자	2263	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/감자.lua				
+
+3045	고구마	2266	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/고구마.lua				
+
+3046	야자수액	2269	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/야자수액.lua				
+
+3047	구운감자	2264	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/구운감자.lua				
+
+3048	구운고구마	2267	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/구운고구마.lua				
+
+3049	좋은뱀고기	222	0	40	0	TRUE	CONSUME	BUNDLE		DROP	20		scripts/item/좋은뱀고기.lua				
+
+3050	활력충전통구이	2405	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/활력충전통구이.lua				
+
+3051	활력충전음료	2397	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/활력충전음료.lua				
+
+3052	활력충전반찬	2401	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/활력충전반찬.lua				
+
+3053	환약	1584	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/환약.lua				
+
+3054	환상의도시락	2395	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/환상의도시락.lua				
+
+3055	포도	2373	0	100	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/포도.lua				
+
+3056	파수다지오	2366	0	100	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/파수다지오.lua				
+
+3057	초보도시락	2387	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/초보도시락.lua				
+
+3058	전설의도시락	2394	0	500000	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/전설의도시락.lua				
+
+3059	인어의심장	1600	0	10000	0	TRUE	CONSUME	BUNDLE		DROP	300		scripts/item/인어의심장.lua				
+
+3060	열대땅콩	2367	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/열대땅콩.lua				
+
+3061	오도독망고과편	2385	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/오도독망고과편.lua				
+
+3062	영양통구이	2382	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/영양통구이.lua				
+
+3063	영양음료	2380	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/영양음료.lua				
+
+3064	영양반찬	2381	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/영양반찬.lua				
+
+3065	산해진미	1584	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/산해진미.lua				
+
+3066	상어의심장	1600	0	22500	0	TRUE	CONSUME	BUNDLE		DROP	30		scripts/item/상어의심장.lua				
+
+3067	식용벌레	2370	0	100	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/식용벌레.lua				
+
+3068	실패한요리	2411	0	0	0	TRUE	CONSUME	BUNDLE		DROP	30		scripts/item/실패한요리.lua				
+
+3070	박쥐고기	289	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/박쥐고기.lua				
+
+3071	백두웅담	2435	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/백두웅담.lua				
+
+3072	복어의심장	1600	0	1000	0	TRUE	CONSUME	BUNDLE		DROP	30		scripts/item/복어의심장.lua				
+
+3073	바다거북의알	2375	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/바다거북알.lua				
+
+3074	바나나	2368	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/바나나.lua				
+
+3076	망고	2371	0	200	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/망고.lua				
+
+3079	다랑어살코기	2378	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/다랑어살코기.lua				
+
+3080	노회	2376	0	500	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/노회.lua				
+
+3081	늑대고기	2271	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/늑대고기.lua				
+
+3082	궁극의도시락	2393	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/궁극의도시락.lua				
+
+3083	기분전환음료	2396	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/기분전환음료.lua				
+
+3084	기분전환반찬	2400	0	0	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/기분전환음료.lua				
+
+3085	끔찍한요리	2412	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/끔찍한요리.lua				
+
+3087	1차도시락	2388	0	100000	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/1차도시락.lua				
+
+3088	2차도시락	2389	0	200000	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/2차도시락.lua				
+
+3089	3차도시락	2390	0	300000	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/3차도시락.lua				
+
+3090	4차도시락	2391	0	400000	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/4차도시락.lua				
+
+3091	노란시약	261	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/노란시약.lua				
+
+3092	파란시약	258	0	10	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/파란시약.lua				
+
+3093	보라시약	263	0	30	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/보라시약.lua				
+
+3094	갈색시약	260	0	800	0	TRUE	CONSUME	BUNDLE		DROP	50		scripts/item/갈색시약.lua				
+
+3095	빨간시약	255	0	15000	0	TRUE	CONSUME	BUNDLE		DROP	500		scripts/item/빨간시약.lua				
+
+3096	초록시약	257	0	5000	0	TRUE	CONSUME	BUNDLE		DROP	500		scripts/item/초록시약.lua				
+
+3097	청색시약	264	0	50	0	TRUE	CONSUME	BUNDLE		DROP	500						
+
+3098	하얀시약	254	0	10	0	TRUE	CONSUME	BUNDLE		DROP	500						
+
+3099	맑은시약	253	0	5000	0	TRUE	CONSUME	BUNDLE		DROP	100		scripts/item/맑은시약.lua				
+
+3100	마법의시약	252	0	0	0	TRUE	CONSUME	BUNDLE		DROP	500		scripts/item/마법의시약.lua				
+
+3101	구기자	1635	0	500	0	TRUE	CONSUME	BUNDLE	건강에 좋은 구기자	DROP	201		scripts/item/구기자.lua				
+
+3102	비둘기고기	1800	0	300	0	TRUE	CONSUME	BUNDLE	비둘기를 구워 만든 고기	DROP	201		scripts/item/비둘기고기.lua				
+
+3103	동충하초	1337	0	500	0	TRUE	CONSUME	BUNDLE	건강에 좋은 동충하초	DROP	201		scripts/item/동충하초.lua				
+
+3104	토깽이변신시약	252	0	0	0	TRUE	CONSUME	BUNDLE		DROP	50		scripts/item/토깽이변신시약.lua				
+
+3105	암흑왕변신시약	252	0	0	0	TRUE	CONSUME	BUNDLE		DROP	50		scripts/item/암흑왕변신시약.lua				
+
+3106	청의태자변신시약	252	0	0	0	TRUE	CONSUME	BUNDLE		DROP	50		scripts/item/청의태자변신시약.lua				
+
+3107	잔치떡	849	0	0	0	TRUE	CONSUME	BUNDLE	결혼을 축하하는 의미에서 주는 맛있는 떡	DROP	1		scripts/item/잔치떡.lua				
+
+3108	감초	1635	0	500	0	TRUE	CONSUME	BUNDLE	건강에 좋은 감초	DROP	201		scripts/item/구기자.lua				
+
+4026	팔과탕	1584	0	0	0	TRUE	CONSUME	BUNDLE		DROP	200		scripts/item/팔과탕.lua				
+
+10247	자양강장요리	1584	0	0	0	FALSE	CONSUME	BUNDLE	돈유합의 달인이 만든 야심작	DROP	1		scripts/item/자양강장요리.lua				
