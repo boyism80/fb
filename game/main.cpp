@@ -27,6 +27,11 @@ bool load_db(fb::console& c, fb::game::context& context)
     fb::model::string_encoding_func = cp949;
 #endif
 
+    context.model.item.hook.build = [](const Json::Value& json)
+    {
+        return nullptr;
+    };
+
     context.model.load([&](float percent)
     {
         c.put(" * [%0.2lf%%] 데이터를 읽었습니다.", percent);

@@ -483,6 +483,12 @@ template<class T>
 struct is_optional<std::optional<T>> : std::true_type {};
 
 template<class T>
+struct is_unique : std::false_type {};
+
+template<class T>
+struct is_unique<std::unique_ptr<T>> : std::true_type {};
+
+template<class T>
 struct is_vector : std::false_type {};
 
 template<class T>
@@ -499,18 +505,22 @@ struct is_default
 {
     static constexpr bool value =
         !std::is_enum<T>::value &&
+        !std::is_pointer<T>::value &&
         !fb::model::is_vector<T>::value &&
         !fb::model::is_map<T>::value &&
-        !fb::model::is_optional<T>::value;
+        !fb::model::is_optional<T>::value &&
+        !fb::model::is_unique<T>::value;
 };
 
 class dsl;
 
 template <typename T> static typename std::enable_if<fb::model::is_default<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json);
+template <typename T> static typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<fb::model::is_vector<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
+template <typename T> static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
 template <> static int8_t build<int8_t>(const Json::Value& json);
 template <> static uint8_t build<uint8_t>(const Json::Value& json);
 template <> static int16_t build<int16_t>(const Json::Value& json);
@@ -1287,18 +1297,27 @@ public:
 #pragma endregion
 
 #pragma region container
-template <typename K, typename V>
-class kv_container : private std::unordered_map<K, V>
+template <typename T>
+class hook_funcs
 {
+public:
+    std::function<T*(const Json::Value&)> build;
+};
+
+template <typename K, typename V>
+class kv_container : private std::unordered_map<K, std::unique_ptr<V>>
+{
+public:
+    class iterator;
+
 private:
     const std::string _fname;
 
 public:
-    using std::unordered_map<K,V>::size;
-    using std::unordered_map<K,V>::begin;
-    using std::unordered_map<K,V>::end;
-    using std::unordered_map<K,V>::cbegin;
-    using std::unordered_map<K,V>::cend;
+    hook_funcs<V> hook;
+
+public:
+    using std::unordered_map<K,std::unique_ptr<V>>::size;
 
 protected:
     kv_container(const std::string& fname) : _fname(fname)
@@ -1334,7 +1353,13 @@ private:
     {
         for (auto i = json.begin(); i != json.end(); i++)
         {
-            std::unordered_map<K, V>::insert({ fb::model::build<K>(i.key()), fb::model::build<V>(*i) });
+            auto ptr = std::unique_ptr<V>();
+            if (this->hook.build != nullptr)
+                ptr.reset(this->hook.build(*i));
+            if (ptr == nullptr)
+                ptr = fb::model::build<std::unique_ptr<V>>(*i);
+
+            std::unordered_map<K, std::unique_ptr<V>>::insert({ fb::model::build<K>(i.key()), std::move(ptr)});
         }
     }
 
@@ -1346,8 +1371,8 @@ public:
 
     const V* find(const K& k) const
     {
-        auto i = std::unordered_map<K, V>::find(k);
-        if (i == std::unordered_map<K, V>::cend())
+        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(k);
+        if (i == std::unordered_map<K, std::unique_ptr<V>>::cend())
             return nullptr;
 
         return &i->second;
@@ -1361,21 +1386,76 @@ public:
 
         return *found;
     }
+
+    iterator begin();
+    iterator end();
+    const iterator cbegin() const;
+    const iterator cend() const;
 };
 
-template <typename T>
-class array_container : private std::vector<T>
+template <typename K, typename V>
+class kv_container<K,V>::iterator : public std::unordered_map<K, std::unique_ptr<V>>::iterator
 {
+private:
+    std::unique_ptr<std::pair<K, V&>> _pair;
+
+public:
+    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i)
+    {
+        if(i != container->end())
+            this->_pair = std::make_unique<std::pair<K,V&>>(i->first, *i->second);
+    }
+    ~iterator() = default;
+
+public:
+    std::pair<K,V&>& operator * ()
+    {
+        return *this->_pair;
+    }
+    const std::pair<K,V&>& operator * () const
+    {
+        return *this->_pair;
+    }
+};
+
+template <typename K, typename V>
+kv_container<K,V>::iterator kv_container<K,V>::begin()
+{
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
+}
+
+template <typename K, typename V>
+kv_container<K,V>::iterator kv_container<K,V>::end()
+{
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
+}
+
+template <typename K, typename V>
+const typename kv_container<K,V>::iterator kv_container<K,V>::cbegin() const
+{
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::cbegin(), this);
+}
+
+template <typename K, typename V>
+const typename kv_container<K,V>::iterator kv_container<K,V>::cend() const
+{
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::cend(), this);
+}
+
+template <typename T>
+class array_container : private std::vector<std::unique_ptr<T>>
+{
+public:
+    class iterator;
+
 private:
     const std::string _fname;
 
 public:
-    using std::vector<T>::size;
-    using std::vector<T>::begin;
-    using std::vector<T>::end;
-    using std::vector<T>::cbegin;
-    using std::vector<T>::cend;
-    using std::vector<T>::at;
+    hook_funcs<T> hook;
+
+public:
+    using std::vector<std::unique_ptr<T>>::size;
 
 protected:
     array_container(const std::string& fname) : _fname(fname)
@@ -1411,7 +1491,13 @@ private:
     {
         for (auto i = json.begin(); i != json.end(); i++)
         {
-            std::vector<T>::push_back(fb::model::build<T>(*i));
+            auto ptr = std::unique_ptr<T>();
+            if (this->hook.build != nullptr)
+                ptr.reset(this->hook.build(*i));
+            if (ptr == nullptr)
+                ptr = fb::model::build<std::unique_ptr<T>>(*i);
+
+            std::vector<std::unique_ptr<T>>::push_back(std::move(ptr));
         }
     }
 
@@ -1423,10 +1509,10 @@ public:
 
     const T* find(uint32_t i) const
     {
-        if (i > std::vector<T>::size() - 1)
+        if (i > std::vector<std::unique_ptr<T>>::size() - 1)
             return nullptr;
 
-        return &std::vector<T>::at(i);
+        return &std::vector<std::unique_ptr<T>>::at(i);
     }
 
     const T& operator [] (uint32_t i) const
@@ -1437,7 +1523,57 @@ public:
 
         return *found;
     }
+
+public:
+    iterator begin();
+    iterator end();
+    const iterator cbegin() const;
+    const iterator cend() const;
 };
+
+template <typename T>
+class array_container<T>::iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>
+{
+public:
+    iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator& i) : std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator(i)
+    {}
+    ~iterator() = default;
+
+public:
+    T& operator * ()
+    {
+        return std::vector<std::unique_ptr<T>>::iterator::operator*();
+    }
+
+    const T& operator * () const
+    {
+        return std::vector<std::unique_ptr<T>>::iterator::operator*();
+    }
+};
+
+template <typename T>
+array_container<T>::iterator array_container<T>::begin()
+{
+    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::begin());
+}
+
+template <typename T>
+array_container<T>::iterator array_container<T>::end()
+{
+    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::end());
+}
+
+template <typename T>
+const typename array_container<T>::iterator array_container<T>::cbegin() const
+{
+    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cbegin());
+}
+
+template <typename T>
+const typename array_container<T>::iterator array_container<T>::cend() const
+{
+    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cend());
+}
 
 class __ability : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>
 {
@@ -1842,6 +1978,14 @@ template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type b
         return T(json.asInt());
 }
 
+template <typename T> typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json)
+{
+    if(json.isNull())
+        return nullptr;
+    else
+        return new typename std::pointer_traits<T>::element_type(json);
+}
+
 template <typename T> typename std::enable_if<is_vector<T>::value, T>::type build(const Json::Value& json)
 {
     auto result = std::vector<typename T::value_type>();
@@ -1863,6 +2007,14 @@ template <typename T> typename std::enable_if<is_optional<T>::value, T>::type bu
         return std::nullopt;
     else
         return std::optional<typename T::value_type>(build<typename T::value_type>(json));
+}
+
+template <typename T> typename std::enable_if<is_unique<T>::value, T>::type build(const Json::Value& json)
+{
+    if (json.isNull())
+        return std::unique_ptr<typename std::pointer_traits<T>::element_type>();
+    else
+        return std::unique_ptr<typename std::pointer_traits<T>::element_type>(build<typename std::pointer_traits<T>::element_type*>(json));
 }
 
 template <> int8_t build<int8_t>(const Json::Value& json)
