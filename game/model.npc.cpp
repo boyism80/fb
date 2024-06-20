@@ -164,114 +164,90 @@ int fb::model::npc::builtin_slot(lua_State* lua)
 
 int fb::model::npc::builtin_sell(lua_State* lua)
 {
-    return 0;
-    //auto thread = fb::game::lua::get(lua);
-    //if (thread == nullptr)
-    //    return 0;
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
 
-    //auto context = thread->env<fb::game::context>("context");
-    //auto npc = thread->touserdata<fb::model::npc>(1);
-    //if (npc == nullptr)
-    //    return 0;
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
 
-    //auto session = thread->touserdata<fb::game::session>(2);
-    //if (session == nullptr || context->exists(*session) == false)
-    //    return 0;
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
 
-    //auto& dialog = session->dialog.from("scripts/common/npc.lua")
-    //    .func("sell")
-    //    .pushobject(session)
-    //    .pushobject(npc);
+    auto& dialog = session->dialog.from("scripts/common/npc.lua")
+        .func("sell")
+        .pushobject(session)
+        .pushobject(npc);
 
-    //if (npc->sell.size() == 1 && npc->sell.contains(""))
-    //{
-    //    auto pursuit = npc->sell.at("");
-    //    dialog.pushinteger(pursuit);
-    //}
-    //else if (npc->sell.size() > 1)
-    //{
-    //    dialog.new_table();
-    //    auto i = 1;
-    //    for (auto& [menu, pursuit] : npc->sell)
-    //    {
-    //        dialog.pushinteger(i);
-    //        dialog.new_table();
-    //        {
-    //            dialog.pushinteger(1);
-    //            dialog.pushstring(menu);
-    //            dialog.set_table();
+    if (npc->sell.size() == 1)
+    {
+        auto pursuit = npc->sell[0];
+        dialog.pushinteger(pursuit);
+    }
+    else if (npc->sell.size() > 1)
+    {
+        dialog.new_table();
+        for (int i = 0; i < npc->sell.size(); i++)
+        {
+            auto pursuit = npc->sell[i];
+            auto& name = context->model.sell_attribute[pursuit].group;
+            dialog.pushinteger(i);
+            dialog.new_table();
+            {
+                dialog.pushinteger(1);
+                dialog.pushstring(name);
+                dialog.set_table();
 
-    //            dialog.pushinteger(2);
-    //            dialog.pushinteger(pursuit);
-    //            dialog.set_table();
-    //        }
-    //        dialog.set_table();
-    //        i++;
-    //    }
-    //}
-    //else
-    //{
-    //    dialog.pushnil();
-    //}
+                dialog.pushinteger(2);
+                dialog.pushinteger(pursuit);
+                dialog.set_table();
+            }
+            dialog.set_table();
+        }
+    }
+    else
+    {
+        dialog.pushnil();
+    }
 
-    //dialog.resume(3);
-    //return thread->yield(1);
+    dialog.resume(3);
+    return thread->yield(1);
 }
 
 int fb::model::npc::builtin_buy(lua_State* lua)
 {
-    return 0;
-    //auto thread = fb::game::lua::get(lua);
-    //if (thread == nullptr)
-    //    return 0;
+    auto thread = fb::game::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
 
-    //auto context = thread->env<fb::game::context>("context");
-    //auto npc = thread->touserdata<fb::model::npc>(1);
-    //if (npc == nullptr)
-    //    return 0;
+    auto context = thread->env<fb::game::context>("context");
+    auto npc = thread->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
 
-    //auto session = thread->touserdata<fb::game::session>(2);
-    //if (session == nullptr || context->exists(*session) == false)
-    //    return 0;
+    auto session = thread->touserdata<fb::game::session>(2);
+    if (session == nullptr || context->exists(*session) == false)
+        return 0;
 
-    //auto& dialog = session->dialog.from("scripts/common/npc.lua")
-    //               .func("sell")
-    //               .pushobject(session)
-    //               .pushobject(npc);
+    auto& dialog = session->dialog.from("scripts/common/npc.lua")
+        .func("buy")
+        .pushobject(session)
+        .pushobject(npc);
 
-    //if (npc->sell.size() == 1 && npc->sell.contains(""))
-    //{
-    //    auto pursuit = npc->sell.at("");
-    //    dialog.pushinteger(pursuit);
-    //}
-    //else if(npc->sell.size() > 1)
-    //{
-    //    dialog.new_table();
-    //    auto i = 1;
-    //    for (auto& [menu, pursuit] : npc->sell)
-    //    {
-    //        dialog.pushinteger(i);
-    //        dialog.new_table();
-    //        {
-    //            dialog.pushinteger(1);
-    //            dialog.pushstring(menu);
-    //            dialog.set_table();
+    if (npc->buy.has_value())
+    {
+        dialog.pushinteger(npc->buy.value());
+    }
+    else
+    {
+        dialog.pushnil();
+    }
 
-    //            dialog.pushinteger(2);
-    //            dialog.pushinteger(pursuit);
-    //            dialog.set_table();
-    //        }
-    //        dialog.set_table();
-    //        i++;
-    //    }
-    //}
-    //else
-    //{
-    //    dialog.pushnil();
-    //}
-
-    //dialog.resume(3);
-    //return thread->yield(1);
+    dialog.resume(3);
+    return thread->yield(1);
 }
 
 int fb::model::npc::builtin_repair(lua_State* lua)

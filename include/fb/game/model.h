@@ -1665,7 +1665,7 @@ public:
     const uint32_t id;
     const std::string script;
     const std::vector<uint32_t> sell;
-    const std::vector<uint32_t> buy;
+    const std::optional<uint32_t> buy;
     const bool repair;
     const bool hold_money;
     const bool hold_item;
@@ -1676,7 +1676,7 @@ public:
         id(fb::model::build<uint32_t>(json["id"])),
         script(fb::model::build<std::string>(json["script"])),
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
-        buy(fb::model::build<std::vector<uint32_t>>(json["buy"])),
+        buy(fb::model::build<std::optional<uint32_t>>(json["buy"])),
         repair(fb::model::build<bool>(json["repair"])),
         hold_money(fb::model::build<bool>(json["hold_money"])),
         hold_item(fb::model::build<bool>(json["hold_item"])),
@@ -1985,7 +1985,7 @@ public:
         if (i == std::unordered_map<K, std::unique_ptr<V>>::cend())
             return nullptr;
 
-        return &i->second;
+        return i->second.get();
     }
 
     const V& operator [] (const K& k) const 
