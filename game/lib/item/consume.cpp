@@ -1,23 +1,7 @@
 #include <fb/game/item.h>
 #include <fb/game/session.h>
 
-fb::game::consume::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config)
-{ }
-
-fb::game::consume::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::consume::model::attr() const
-{
-    item::ATTRIBUTE attr = item::ATTRIBUTE::CONSUME;
-    if(this->capacity > 1)
-        attr = item::ATTRIBUTE(attr | item::ATTRIBUTE::BUNDLE);
-
-    return attr;
-}
-
-
-fb::game::consume::consume(fb::game::context& context, const fb::game::consume::model* model, uint16_t count) : 
+fb::game::consume::consume(fb::game::context& context, const fb::model::consume& model, uint16_t count) : 
     fb::game::item(context, model, fb::game::item::config { .count = count })
 { }
 

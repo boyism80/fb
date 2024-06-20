@@ -359,7 +359,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             return 0;
         auto index = uint8_t(0);
         auto count = argc < 3 ? 1 : (int)thread->tointeger(3);
-        auto delete_attr = argc < 4 ? fb::game::item::DELETE_TYPE::REMOVED : (fb::game::item::DELETE_TYPE)thread->tointeger(4);
+        auto delete_attr = argc < 4 ? ITEM_DELETE_TYPE::REMOVED : (ITEM_DELETE_TYPE)thread->tointeger(4);
 
         if(lua_isuserdata(lua, 2))
         {
@@ -679,7 +679,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
             }
             else if (thread->is_obj(2))
             {
-                auto model = thread->touserdata<fb::game::item::model>(2);
+                auto model = thread->touserdata<fb::model::item>(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [model](fb::game::item* deposited_item) 
                 {
                     return deposited_item->based<fb::game::item>() == model;

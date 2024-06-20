@@ -118,39 +118,6 @@ interface life::listener : public virtual fb::game::object::listener,
     virtual void                on_mp(life& me, uint32_t before, uint32_t current) = 0;
 };
 
-class life::model : public fb::game::object::model
-{
-public:
-    struct config : public fb::game::object::model::config
-    {
-    public:
-        fb::game::defensive     defensive;
-        uint32_t                hp  = 0;
-        uint32_t                mp  = 0;
-        uint32_t                exp = 0;
-    };
-
-public:
-    friend class life;
-
-public:
-    LUA_PROTOTYPE
-
-public:
-    const fb::game::defensive   defensive;
-    const uint32_t              hp          = 0;
-    const uint32_t              mp          = 0;
-    const uint32_t              experience  = 0;
-
-public:
-    model(const fb::game::life::model::config& config);
-    virtual ~model();
-
-public:
-    static int                  builtin_hp(lua_State* lua);
-    static int                  builtin_mp(lua_State* lua);
-};
-
 } }
 
 #endif // !__LIFE_H__

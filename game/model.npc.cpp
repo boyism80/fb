@@ -90,7 +90,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
     while (thread->next(4))
     {
         // auto i = thread->tointeger(-2);
-        auto item = static_cast<fb::game::item::model*>(nullptr);
+        auto item = static_cast<fb::model::item*>(nullptr);
         auto price = uint32_t(0);
 
         { // get 1st field
@@ -103,7 +103,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
                     break;
 
                 case LUA_TUSERDATA:
-                    item = thread->touserdata<fb::game::item::model>(-1);
+                    item = thread->touserdata<fb::model::item>(-1);
                     break;
             }
             thread->pop(1);
@@ -409,4 +409,18 @@ int fb::model::npc::builtin_rename_weapon(lua_State* lua)
                    .pushobject(npc)
                    .resume(2);
     return thread->yield(1);
+}
+
+
+
+
+fb::model::npc* fb::model::__npc::name2npc(const std::string& name) const
+{
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](auto& pair)
+        {
+            return pair.second->name == name;
+        });
+
+    return i != this->end() ? i->second.get() : nullptr;
 }

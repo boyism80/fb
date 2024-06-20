@@ -3,7 +3,7 @@
 #include <fb/core/leak.h>
 #include <fb/core/mst.h>
 
-using namespace fb::model;
+using namespace fb::model::enum_value;
 
 bool load_db(fb::console& c, fb::game::context& context)
 {
@@ -29,29 +29,29 @@ bool load_db(fb::console& c, fb::game::context& context)
 
     context.model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
     {
-        auto type = build<enum_value::ITEM_TYPE>(json["type"]);
+        auto type = fb::model::build<ITEM_TYPE>(json["type"]);
         switch (type)
         {
-        case enum_value::ITEM_TYPE::STUFF:
-            return build<fb::model::item*>(json);
-        case enum_value::ITEM_TYPE::CONSUME:
-            return build<fb::model::consume*>(json);
-        case enum_value::ITEM_TYPE::WEAPON:
-            return build<fb::model::weapon*>(json);
-        case enum_value::ITEM_TYPE::ARMOR:
-            return build<fb::model::armor*>(json);
-        case enum_value::ITEM_TYPE::HELMET:
-            return build<fb::model::helmet*>(json);
-        case enum_value::ITEM_TYPE::RING:
-            return build<fb::model::ring*>(json);
-        case enum_value::ITEM_TYPE::SHIELD:
-            return build<fb::model::shield*>(json);
-        case enum_value::ITEM_TYPE::AUXILIARY:
-            return build<fb::model::auxiliary*>(json);
-        case enum_value::ITEM_TYPE::BOW:
-            return build<fb::model::bow*>(json);
-        case enum_value::ITEM_TYPE::PACKAGE:
-            return build<fb::model::pack*>(json);
+        case ITEM_TYPE::STUFF:
+            return fb::model::build<fb::model::item*>(json);
+        case ITEM_TYPE::CONSUME:
+            return fb::model::build<fb::model::consume*>(json);
+        case ITEM_TYPE::WEAPON:
+            return fb::model::build<fb::model::weapon*>(json);
+        case ITEM_TYPE::ARMOR:
+            return fb::model::build<fb::model::armor*>(json);
+        case ITEM_TYPE::HELMET:
+            return fb::model::build<fb::model::helmet*>(json);
+        case ITEM_TYPE::RING:
+            return fb::model::build<fb::model::ring*>(json);
+        case ITEM_TYPE::SHIELD:
+            return fb::model::build<fb::model::shield*>(json);
+        case ITEM_TYPE::AUXILIARY:
+            return fb::model::build<fb::model::auxiliary*>(json);
+        case ITEM_TYPE::BOW:
+            return fb::model::build<fb::model::bow*>(json);
+        case ITEM_TYPE::PACKAGE:
+            return fb::model::build<fb::model::pack*>(json);
         default:
             return nullptr;
         }
@@ -66,332 +66,6 @@ bool load_db(fb::console& c, fb::game::context& context)
         c.comment("    - %s", err.c_str());
     });
     c.next();
-
-    if(fb::game::old_model::doors.load
-    (
-        config["table"]["door"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_DOOR_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_DOOR_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::maps.load
-    (
-        config["table"]["map"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MAP_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MAP_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::worlds.load
-    (
-        config["table"]["world"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_WORLD_MAP_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_WORLD_MAP_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::spells.load
-    (
-        config["table"]["spell"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_SPELL_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_SPELL_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-
-    c.next();
-    if(fb::game::old_model::maps.load_warps
-    (
-        config["table"]["warp"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_WARP_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_WARP_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::items.load
-    (
-        config["table"]["item"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_ITEM_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_ITEM_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::mixes.load
-    (
-        config["table"]["item mix"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_ITEM_MIX_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_ITEM_MIX_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::sell.load
-    (
-        config["table"]["sell"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_SELL_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_SELL_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::buy.load
-    (
-        config["table"]["buy"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_BUY_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_BUY_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::npcs.load
-    (
-        config["table"]["npc"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_NPC_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_NPC_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::mobs.load
-    (
-        config["table"]["mob"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MOB_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MOB_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::mobs.load_drops
-    (
-        config["table"]["item drop"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_ITEM_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            if(name.size() > 0)
-                c.comment("    - %s (%s)", error.c_str(), name.c_str());
-            else
-                c.comment("    - %s", error.c_str());
-            c.trim();
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_DROP_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::npcs.load_spawn
-    (
-        config["table"]["npc spawn"].asString(),
-        context, 
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_NPC_SPAWN_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::mobs.load_spawn
-    (
-        config["table"]["mob spawn"].asString(),
-        context, 
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MOB_SPAWN_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::classes.load
-    (
-        config["table"]["class"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_CLASS_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_CLASS_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
-
-    c.next();
-    if(fb::game::old_model::boards.load
-    (
-        config["table"]["board"].asString(),
-        [&] (const auto& name, auto percentage)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_BOARD_LOADED, percentage, name.c_str());
-        }, 
-        [&] (const auto& name, const auto& error)
-        {
-            c.comment("    - %s (%s)", error.c_str(), name.c_str());
-        }, 
-        [&] (uint32_t count)
-        {
-            c.put(const_value::string::MESSAGE_ASSET_BOARD_ALL_LOADED, count);
-        }) == false)
-    {
-        return false;
-    }
 
     return true;
 }

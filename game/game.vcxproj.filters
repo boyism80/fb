@@ -148,9 +148,6 @@
     <ClCompile Include="..\core\query.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="lib\object\object.builtin.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="lib\object\life.builtin.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -194,6 +191,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="model.mob.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="model.map.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

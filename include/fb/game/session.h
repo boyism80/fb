@@ -96,7 +96,7 @@ private:
     fb::game::SEX_TYPE          _sex             = fb::game::SEX_TYPE::BOTH;
     fb::game::STATE_TYPE        _state           = STATE_TYPE::NORMAL;
     uint8_t                     _level           = 1;
-    uint8_t                     _class           = 0;
+    CLASS                       _class           = CLASS::NONE;
     uint8_t                     _promotion       = 0;
     uint32_t                    _money           = 0;
     std::optional<uint16_t>     _disguise        = 0;
@@ -137,7 +137,7 @@ protected:
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
-    object::types               type() const final;
+    OBJECT_TYPE                 type() const final;
     fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position) final;
     fb::awaiter<bool>           co_map(fb::game::map* map) final;
     bool                        map(fb::game::map* map, const point16_t& position) final;
@@ -210,8 +210,8 @@ public:
     fb::game::STATE_TYPE        state() const;
     void                        state(fb::game::STATE_TYPE value);
 
-    uint8_t                     cls() const;
-    void                        cls(uint8_t value);
+    CLASS                       cls() const;
+    void                        cls(CLASS value);
 
     uint8_t                     promotion() const;
     void                        promotion(uint8_t value);
@@ -249,11 +249,11 @@ public:
     bool                        deposit_item(fb::game::item& item);
     bool                        deposit_item(uint8_t index, uint16_t count);
     bool                        deposit_item(const std::string& name, uint16_t count);
-    fb::game::item*             deposited_item(const fb::game::item::model& item) const;
+    fb::game::item*             deposited_item(const fb::model::item& item) const;
     const std::vector<item*>&   deposited_items() const;
     fb::game::item*             withdraw_item(uint8_t index, uint16_t count);
     fb::game::item*             withdraw_item(const std::string& name, uint16_t count);
-    fb::game::item*             withdraw_item(const fb::game::item::model& item, uint16_t count);
+    fb::game::item*             withdraw_item(const fb::model::item& item, uint16_t count);
 
     uint32_t                    damage() const;
     void                        damage(uint8_t value);

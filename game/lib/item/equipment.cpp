@@ -3,7 +3,7 @@
 #include <fb/game/context.h>
 
 fb::game::equipment::model::model(const fb::game::equipment::model::config& config) : 
-    fb::game::item::model(config),
+    fb::model::item(config),
     dress(config.dress),
     durability(config.durability),
     repair(config.repair),
@@ -25,9 +25,9 @@ fb::game::equipment::model::model(const fb::game::equipment::model::config& conf
 fb::game::equipment::model::~model()
 { }
 
-fb::game::item::ATTRIBUTE fb::game::equipment::model::attr() const
+ITEM_ATTRIBUTE fb::game::equipment::model::attr() const
 {
-    return item::ATTRIBUTE::EQUIPMENT;
+    return ITEM_ATTRIBUTE::EQUIPMENT;
 }
 
 fb::game::equipment::equipment(fb::game::context& context, const equipment::model* model) : 
@@ -57,51 +57,51 @@ const std::string fb::game::equipment::name_trade() const
 bool fb::game::equipment::active()
 {
     fb::game::item*         before = nullptr;
-    auto                    parts = equipment::parts::UNKNOWN;
+    auto                    parts = EQUIPMENT_PARTS::UNKNOWN;
     switch(this->attr())
     {
-    case item::ATTRIBUTE::WEAPON:
+    case ITEM_ATTRIBUTE::WEAPON:
         before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
-        parts = equipment::parts::WEAPON;
+        parts = EQUIPMENT_PARTS::WEAPON;
         break;
 
-    case item::ATTRIBUTE::ARMOR:
+    case ITEM_ATTRIBUTE::ARMOR:
         before = this->_owner->items.armor(static_cast<fb::game::armor*>(this));
-        parts = equipment::parts::ARMOR;
+        parts = EQUIPMENT_PARTS::ARMOR;
         break;
 
-    case item::ATTRIBUTE::SHIELD:
+    case ITEM_ATTRIBUTE::SHIELD:
         before = this->_owner->items.shield(static_cast<fb::game::shield*>(this));
-        parts = equipment::parts::SHIELD;
+        parts = EQUIPMENT_PARTS::SHIELD;
         break;
 
-    case item::ATTRIBUTE::HELMET:
+    case ITEM_ATTRIBUTE::HELMET:
         before = this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
-        parts = equipment::parts::HELMET;
+        parts = EQUIPMENT_PARTS::HELMET;
         break;
 
-    case item::ATTRIBUTE::RING:
-        if(this->_owner->items.ring(equipment::position::LEFT) == nullptr)
+    case ITEM_ATTRIBUTE::RING:
+        if(this->_owner->items.ring(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
-            parts = equipment::parts::LEFT_HAND;
+            parts = EQUIPMENT_PARTS::LEFT_HAND;
         }
         else
         {
-            parts = equipment::parts::RIGHT_HAND;
+            parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
         before = this->_owner->items.ring(static_cast<fb::game::ring*>(this));
         break;
 
 
-    case item::ATTRIBUTE::AUXILIARY:
-        if(this->_owner->items.auxiliary(equipment::position::LEFT) == nullptr)
+    case ITEM_ATTRIBUTE::AUXILIARY:
+        if(this->_owner->items.auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
-            parts = equipment::parts::LEFT_AUX;
+            parts = EQUIPMENT_PARTS::LEFT_AUX;
         }
         else
         {
-            parts = equipment::parts::RIGHT_AUX;
+            parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
         before = this->_owner->items.auxiliary(static_cast<fb::game::auxiliary*>(this));
@@ -184,32 +184,32 @@ std::string fb::game::equipment::tip_message() const
     return sstream.str();
 }
 
-const std::string equipment::column(equipment::parts parts)
+const std::string equipment::column(EQUIPMENT_PARTS parts)
 {
     switch(parts)
     {
-    case fb::game::equipment::parts::WEAPON:
+    case EQUIPMENT_PARTS::WEAPON:
         return "weapon";
 
-    case fb::game::equipment::parts::ARMOR:
+    case EQUIPMENT_PARTS::ARMOR:
         return "armor";
 
-    case fb::game::equipment::parts::SHIELD:
+    case EQUIPMENT_PARTS::SHIELD:
         return "shield";
 
-    case fb::game::equipment::parts::HELMET:
+    case EQUIPMENT_PARTS::HELMET:
         return "helmet";
 
-    case fb::game::equipment::parts::LEFT_HAND:
+    case EQUIPMENT_PARTS::LEFT_HAND:
         return "ring_left";
 
-    case fb::game::equipment::parts::RIGHT_HAND:
+    case EQUIPMENT_PARTS::RIGHT_HAND:
         return "ring_right";
 
-    case fb::game::equipment::parts::LEFT_AUX:
+    case EQUIPMENT_PARTS::LEFT_AUX:
         return "aux_top";
 
-    case fb::game::equipment::parts::RIGHT_AUX:
+    case EQUIPMENT_PARTS::RIGHT_AUX:
         return "aux_bot";
 
     default:

@@ -14,7 +14,7 @@ fb::game::sector::~sector()
 void fb::game::sector::push(fb::game::object& object)
 {
     this->push_back(&object);
-    if(object.is(fb::game::object::types::SESSION))
+    if(object.is(OBJECT_TYPE::SESSION))
     {
         if(this->_activated)
             return;
@@ -34,14 +34,14 @@ void fb::game::sector::erase(fb::game::object& object)
     std::vector<fb::game::object*>::erase(found);
 
     // 섹터에서 세션을 지워낸 경우 active 상태를 검사한다.
-    if(object.is(fb::game::object::types::SESSION))
+    if(object.is(OBJECT_TYPE::SESSION))
     {
         this->_activated = std::find_if
         (
             this->begin(), this->end(),
             [] (auto x) 
             {
-                return x->is(fb::game::object::types::SESSION);
+                return x->is(OBJECT_TYPE::SESSION);
             }
         ) != this->end();
         
@@ -200,7 +200,7 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(const point16_t& pivot) 
     return this->nears(this->index(pivot));
 }
 
-std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot, OBJECT_TYPE type) const
 {
     auto&& sectors = this->nears(pivot);
     auto   objects = std::vector<fb::game::object*>();
@@ -213,7 +213,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
         }
     }
 
-    if(type == fb::game::object::types::UNKNOWN)
+    if(type == OBJECT_TYPE::UNKNOWN)
     {
         return std::move(objects);
     }
@@ -232,7 +232,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
     }
 }
 
-std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::sectors::activated_objects(OBJECT_TYPE type) const
 {
     auto result = std::vector<fb::game::object*>();
     for(auto& sector : this->activated_sectors())
@@ -242,7 +242,7 @@ std::vector<fb::game::object*> fb::game::sectors::activated_objects(fb::game::ob
             sector->begin(), sector->end(), std::back_inserter(result),
             [type] (auto x)
             {
-                return type == fb::game::object::types::UNKNOWN ||  x->is(type);
+                return type == OBJECT_TYPE::UNKNOWN ||  x->is(type);
             }
         );
     }

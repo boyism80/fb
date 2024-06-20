@@ -214,7 +214,6 @@
     <ClCompile Include="lib\object\mob.cpp" />
     <ClCompile Include="lib\object\npc.builtin.cpp" />
     <ClCompile Include="lib\object\npc.cpp" />
-    <ClCompile Include="lib\object\object.builtin.cpp" />
     <ClCompile Include="lib\object\object.cpp" />
     <ClCompile Include="lib\object\session.builtin.cpp" />
     <ClCompile Include="lib\object\session.cpp" />
@@ -226,6 +225,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.item.cpp" />
     <ClCompile Include="model.life.cpp" />
+    <ClCompile Include="model.map.cpp" />
     <ClCompile Include="model.mob.cpp" />
     <ClCompile Include="model.npc.cpp" />
     <ClCompile Include="model.object.cpp" />

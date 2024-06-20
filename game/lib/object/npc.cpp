@@ -3,7 +3,7 @@
 
 using namespace fb::game;
 
-fb::game::npc::npc(fb::game::context& context, const fb::game::npc::model* model) : 
+fb::game::npc::npc(fb::game::context& context, const fb::model::npc* model) : 
     fb::game::object(context, model, fb::game::object::config())
 { }
 
@@ -14,7 +14,7 @@ fb::game::npc::npc(const npc& right) :
 fb::game::npc::~npc()
 { }
 
-bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_model, std::optional<uint16_t> count, bool bought)
+bool fb::game::npc::buy(fb::game::session& session, fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
 {
     try
     {
@@ -33,7 +33,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
         if (model->contains_buy(*item_model, price) == false)
             throw std::runtime_error("그런 물건은 안 삽니다.");
 
-        if (item_model->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        if (item_model->attr(ITEM_ATTRIBUTE::BUNDLE))
         {
             auto item = session.items.at(slots[0]);
             if (count.has_value() == false)
@@ -49,7 +49,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
             }
             else
             {
-                session.items.remove(slots[0], count.value(), fb::game::item::DELETE_TYPE::SELL);
+                session.items.remove(slots[0], count.value(), ITEM_DELETE_TYPE::SELL);
                 session.money_add(price * count.value());
 
                 if(count == 1)
@@ -69,7 +69,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
             auto sell_count = 0;
             for (auto slot : slots)
             {
-                session.items.remove(slot, 1, fb::game::item::DELETE_TYPE::SELL);
+                session.items.remove(slot, 1, ITEM_DELETE_TYPE::SELL);
                 sell_count++;
 
                 if (sell_count >= count.value())
@@ -91,7 +91,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::game::item::model* item_
     }
 }
 
-bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item_model, uint16_t count, bool sold)
+bool fb::game::npc::sell(fb::game::session& session, fb::model::item* item_model, uint16_t count, bool sold)
 {
     try
     {
@@ -121,7 +121,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
         {
             throw std::runtime_error("그렇게나 많이요?");
         }
-        else if(item_model->attr(fb::game::item::ATTRIBUTE::BUNDLE) && exist_count + count > item_model->capacity)
+        else if(item_model->attr(ITEM_ATTRIBUTE::BUNDLE) && exist_count + count > item_model->capacity)
         {
             throw std::runtime_error("더 이상 가질 수 없습니다.");
         }
@@ -151,7 +151,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::game::item::model* item
     }
 }
 
-bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* item_model, bool done)
+bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_model, bool done)
 {
     try
     {
@@ -184,7 +184,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
                 if (item == nullptr)
                     continue;
 
-                if (item->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+                if (item->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
                     continue;
 
                 auto equipment_model = item->based<fb::game::equipment>();
@@ -203,7 +203,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::game::item::model* it
             if (item_model == nullptr) // 정의되지 않은 아이템
                 throw std::runtime_error("뭘 고쳐줘?");
 
-            if(item_model->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+            if(item_model->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
                 throw std::runtime_error("뭘 고쳐줘?");
 
             auto item = session.items.find(*item_model);
@@ -328,7 +328,7 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
     }
 }
 
-bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count)
+bool fb::game::npc::hold_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
@@ -355,7 +355,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
         if (count.value() == 0)
             return true;
 
-        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
         {
             if (count.value() > exists->count())
                 throw std::runtime_error("갯수가 모자랍니다.");
@@ -368,7 +368,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
         auto index = session.items.index(*exists);
         session.deposit_item(index, count.value());
         session.money_reduce(item->deposit_price.value());
-        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
             this->chat(fb::format("%s %d개를 맡았습니다.", item->name.c_str(), count.value()));
         else
             this->chat(fb::format("%s 맡았습니다.", name_with(item->name).c_str()));
@@ -382,7 +382,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::game::item::model*
     }
 }
 
-bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::model* item, std::optional<uint16_t> count)
+bool fb::game::npc::return_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
@@ -406,7 +406,7 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::mode
         if (count.value() > deposited_item->count())
             throw std::runtime_error("그만큼 가지고 있지 않습니다.");
 
-        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
         {
             auto exists = session.items.find(*item);
             if (exists != nullptr && exists->count() + count.value() > item->capacity)
@@ -421,7 +421,7 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::game::item::mode
         if (session.withdraw_item(*item, count.value()) == nullptr)
             throw std::runtime_error("알 수 없는 에러");
 
-        if (item->attr(fb::game::item::ATTRIBUTE::BUNDLE))
+        if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
             this->chat(fb::format("%s %d개를 돌려드렸습니다.", item->name.c_str(), count.value()));
         else
             this->chat(fb::format("%s 돌려드렸습니다.", name_with(item->name).c_str()));
@@ -492,7 +492,7 @@ void fb::game::npc::buy_list()
     this->chat(sstream.str());
 }
 
-void fb::game::npc::sell_price(const fb::game::item::model* item)
+void fb::game::npc::sell_price(const fb::model::item* item)
 {
     auto model = this->based<fb::game::npc>();
     if (model->sell.size() == 0)
@@ -512,7 +512,7 @@ void fb::game::npc::sell_price(const fb::game::item::model* item)
     }
 }
 
-void fb::game::npc::buy_price(const fb::game::item::model* item)
+void fb::game::npc::buy_price(const fb::model::item* item)
 {
     auto model = this->based<fb::game::npc>();
     if (model->buy.has_value() == false)
@@ -547,7 +547,7 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
     return true;
 }
 
-bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::item::model* item, const std::string& name)
+bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::item* item, const std::string& name)
 {
     auto model = this->based<fb::game::npc>();
     if(model->rename == false)
@@ -558,7 +558,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::game::it
         if(item == nullptr) // 등록되지 않은 아이템
             throw std::runtime_error("그게 뭐야?");
 
-        if(item->attr(fb::game::item::ATTRIBUTE::WEAPON) == false)
+        if(item->attr(ITEM_ATTRIBUTE::WEAPON) == false)
             throw std::runtime_error(fb::format("%s 무기가 아닙니다.", name_with(item->name, {"은", "는"}).c_str()));
 
         auto weapon = session.items.find(*item);
@@ -637,7 +637,7 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
     return true;
 }
 
-bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::game::item::model* item)
+bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::model::item* item)
 {
     auto model = this->based<fb::game::npc>();
     if (model->hold_item == false)
@@ -663,8 +663,8 @@ bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::
     return true;
 }
 
-fb::game::npc::model::model(const fb::game::npc::model::config& config) : 
-    fb::game::object::model(config),
+fb::model::npc::model(const fb::model::npc::config& config) : 
+    fb::model::object(config),
     script(config.script),
     sell(config.sell),
     buy(config.buy),
@@ -674,10 +674,10 @@ fb::game::npc::model::model(const fb::game::npc::model::config& config) :
     rename(config.rename)
 { }
 
-fb::game::npc::model::~model()
+fb::model::npc::~model()
 { }
 
-bool fb::game::npc::model::contains_sell(const fb::game::item::model& item, uint32_t& price) const
+bool fb::model::npc::contains_sell(const fb::model::item& item, uint32_t& price) const
 {
     for (auto& [msg, i] : this->sell)
     {
@@ -695,7 +695,7 @@ bool fb::game::npc::model::contains_sell(const fb::game::item::model& item, uint
     return false;
 }
 
-bool fb::game::npc::model::contains_buy(const fb::game::item::model& item, uint32_t& price) const
+bool fb::model::npc::contains_buy(const fb::model::item& item, uint32_t& price) const
 {
     if (this->buy.has_value() == false)
         return false;

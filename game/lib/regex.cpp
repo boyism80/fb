@@ -1,6 +1,6 @@
 #include <fb/game/regex.h>
 
-bool fb::game::regex::match_sell_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
+bool fb::game::regex::match_sell_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL);
     auto what = boost::xpressive::smatch();
@@ -35,7 +35,7 @@ bool fb::game::regex::match_sell_message(const std::string& message, fb::game::i
     return true;
 }
 
-bool fb::game::regex::match_buy_message(const std::string& message, fb::game::item::model*& item, uint16_t& count)
+bool fb::game::regex::match_buy_message(const std::string& message, const fb::model::item* item, uint16_t& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY);
     auto what = boost::xpressive::smatch();
@@ -66,7 +66,7 @@ bool fb::game::regex::match_buy_message(const std::string& message, fb::game::it
     return true;
 }
 
-bool fb::game::regex::match_repair_message(const std::string& message, fb::game::item::model*& item)
+bool fb::game::regex::match_repair_message(const std::string& message, const fb::model::item* item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::REPAIR);
     auto what = boost::xpressive::smatch();
@@ -144,7 +144,7 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
     return true;
 }
 
-bool fb::game::regex::match_deposit_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
+bool fb::game::regex::match_deposit_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_ITEM);
     auto what = boost::xpressive::smatch();
@@ -179,7 +179,7 @@ bool fb::game::regex::match_deposit_item_message(const std::string& message, fb:
     return true;
 }
 
-bool fb::game::regex::match_withdraw_item_message(const std::string& message, fb::game::item::model*& item, std::optional<uint16_t>& count)
+bool fb::game::regex::match_withdraw_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::WITHDRAW_ITEM);
     auto what = boost::xpressive::smatch();
@@ -234,7 +234,7 @@ bool fb::game::regex::match_buy_list(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_sell_price(const std::string& message, fb::game::item::model*& item)
+bool fb::game::regex::match_sell_price(const std::string& message, const fb::model::item* item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_PRICE);
     auto what = boost::xpressive::smatch();
@@ -245,7 +245,7 @@ bool fb::game::regex::match_sell_price(const std::string& message, fb::game::ite
     return true;
 }
 
-bool fb::game::regex::match_buy_price(const std::string& message, fb::game::item::model*& item)
+bool fb::game::regex::match_buy_price(const std::string& message, const fb::model::item* item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY_PRICE);
     auto what = boost::xpressive::smatch();
@@ -266,7 +266,7 @@ bool fb::game::regex::match_deposited_money(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_rename_weapon(const std::string& message, fb::game::item::model*& item, std::string& name)
+bool fb::game::regex::match_rename_weapon(const std::string& message, const fb::model::item* item, std::string& name)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::RENAME_WEAPON);
     auto what = boost::xpressive::smatch();
@@ -288,7 +288,7 @@ bool fb::game::regex::match_hold_item_list(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_hold_item_count(const std::string& message, fb::game::item::model*& item)
+bool fb::game::regex::match_hold_item_count(const std::string& message, const fb::model::item* item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::HOLD_ITEM_COUNT);
     auto what = boost::xpressive::smatch();

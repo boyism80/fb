@@ -2,16 +2,16 @@
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
-fb::game::pack::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config),
+fb::game::pack::model::model(const fb::model::item::config& config) : fb::model::item(config),
     durability(config.capacity)
 { }
 
 fb::game::pack::model::~model()
 { }
 
-fb::game::item::ATTRIBUTE fb::game::pack::model::attr() const
+ITEM_ATTRIBUTE fb::game::pack::model::attr() const
 {
-    return item::ATTRIBUTE::PACK;
+    return ITEM_ATTRIBUTE::PACK;
 }
 
 fb::game::pack::pack(fb::game::context& context, const fb::game::pack::model* model) : 

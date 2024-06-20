@@ -67,12 +67,12 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
 
         auto model = item->based<fb::game::item>();
         auto durability = item->durability();
-        auto custom_name = (item->attr(fb::game::item::ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
+        auto custom_name = (item->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
         {
             /* owner       */ std::to_string(session.id()),
             /* index       */ std::to_string(i),
-            /* parts       */ std::to_string(static_cast<int>(fb::game::equipment::parts::UNKNOWN)),
+            /* parts       */ std::to_string(static_cast<int>(EQUIPMENT_PARTS::UNKNOWN)),
             /* deposited   */ std::to_string(-1),
             /* model       */ std::to_string(model->id),
             /* count       */ std::to_string(item->count()),
@@ -89,7 +89,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
 
         auto model = equipment->based<fb::game::equipment>();
         auto durability = equipment->durability();
-        auto custom_name = (equipment->attr(fb::game::item::ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(equipment)->custom_name() : std::optional<std::string>();
+        auto custom_name = (equipment->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(equipment)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
         {
             /* owner       */ std::to_string(session.id()),
@@ -111,12 +111,12 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         auto item = deposited_items.at(i);
         auto model = item->based<fb::game::item>();
         auto durability = item->durability();
-        auto custom_name = (item->attr(fb::game::item::ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
+        auto custom_name = (item->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
         {
             /* owner       */ std::to_string(session.id()),
             /* index       */ std::to_string(-1),
-            /* parts       */ std::to_string(static_cast<int>(fb::game::equipment::parts::UNKNOWN)),
+            /* parts       */ std::to_string(static_cast<int>(EQUIPMENT_PARTS::UNKNOWN)),
             /* deposited   */ std::to_string(i),
             /* model       */ std::to_string(model->id),
             /* count       */ std::to_string(item->count()),

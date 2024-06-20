@@ -35,6 +35,8 @@ protected:                                                                      
                                                                                               \
 public:                                                                                       \
     virtual enum_value::OBJECT_TYPE         type() const;                                     \
+    bool                                    operator == (const object&) const;                \
+    bool                                    operator != (const object&) const;                \
                                                                                               \
 public:                                                                                       \
     static int                              builtin_name(lua_State* lua);                     \
@@ -249,6 +251,42 @@ public:                                                                         
     }                                                                                         \
                                                                                               \
 public:                                                                                       \
-    static int                  builtin_speed(lua_State* lua);                                
+    static int                  builtin_speed(lua_State* lua);
+
+
+#define DECLARE_MOB_CONTAINER_EXTENSION                                                       \
+public:                                                                                       \
+    fb::model::mob*             name2mob(const std::string& name) const;
+
+
+#define DECLARE_NPC_CONTAINER_EXTENSION                                                       \
+public:                                                                                       \
+    fb::model::npc*             name2npc(const std::string& name) const;
+
+
+#define DECLARE_MAP_INHERIT : public fb::game::lua::luable
+
+
+#define DECLARE_MAP_EXTENSION                                                                 \
+public:                                                                                       \
+    LUA_PROTOTYPE                                                                             \
+                                                                                              \
+private:                                                                                      \
+    uint16_t                        _width = 0, _height = 0;                                  \
+                                                                                              \
+public:                                                                                       \
+    uint16_t                        width() const;                                            \
+    uint16_t                        height() const;                                           \
+                                                                                              \
+public:                                                                                       \
+    static int                      builtin_name(lua_State* lua);                             \
+    static int                      builtin_width(lua_State* lua);                            \
+    static int                      builtin_height(lua_State* lua);                           \
+    static int                      builtin_area(lua_State* lua);                             \
+    static int                      builtin_movable(lua_State* lua);
+
+#define DECLARE_MAP_CONTAINER_EXTENSION                                                       \
+public:                                                                                       \
+    fb::model::map*                 name2map(const std::string& name) const;
 
 #endif

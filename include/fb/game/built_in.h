@@ -94,7 +94,7 @@ int builtin_item(lua_State* lua)
     while (thread->next(4))
     {
         // auto i = thread->tointeger(-2);
-        auto item = static_cast<fb::game::item::model*>(nullptr);
+        auto item = static_cast<fb::model::item*>(nullptr);
         auto price = uint32_t(0);
 
         { // get 1st field
@@ -107,7 +107,7 @@ int builtin_item(lua_State* lua)
                     break;
 
                 case LUA_TUSERDATA:
-                    item = thread->touserdata<fb::game::item::model>(-1);
+                    item = thread->touserdata<fb::model::item>(-1);
                     break;
             }
             thread->pop(1);

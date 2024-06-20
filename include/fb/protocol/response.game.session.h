@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/session.h>
-#include <fb/game/old_model.h>
+#include <fb/game/model.h>
 #include <fb/game/clan.h>
 #include <fb/game/group.h>
 
@@ -51,7 +51,7 @@ private:
         if(&this->session == &this->to)
             return true;
 
-        if(this->to.is(fb::game::object::types::SESSION) == false)
+        if(this->to.is(OBJECT_TYPE::SESSION) == false)
             return false;
 
         // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
@@ -116,7 +116,7 @@ public:
             auto armor = this->session.items.armor();
             if(armor != nullptr)
             {
-                out_stream.write_u8((uint8_t)armor->based<fb::game::armor>()->dress)
+                out_stream.write_u8((uint8_t)armor->based<fb::model::armor>().dress)
                           .write_u8(session.current_armor_color());
             }
             else
@@ -128,7 +128,7 @@ public:
             auto weapon = this->session.items.weapon();
             if(weapon != nullptr)
             {
-                out_stream.write_u16(weapon->based<fb::game::weapon>()->dress)
+                out_stream.write_u16(weapon->based<fb::model::weapon>().dress)
                           .write_u8(weapon->color());
             }
             else
@@ -140,7 +140,7 @@ public:
             auto shield = this->session.items.shield();
             if(shield != nullptr)
             {
-                out_stream.write_u8((uint8_t)shield->based<fb::game::shield>()->dress)
+                out_stream.write_u8((uint8_t)shield->based<fb::model::shield>().dress)
                           .write_u8(shield->color());
             }
             else
@@ -402,10 +402,11 @@ class internal_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
+    const fb::model::container& model;
 
 public:
-    internal_info(const fb::game::session& session) : fb::protocol::base::header(0x39),
-        session(session)
+    internal_info(const fb::game::session& session, const fb::model::container& model) : fb::protocol::base::header(0x39),
+        session(session), model(model)
     { }
 
 public:
@@ -451,13 +452,10 @@ public:
         uint32_t                remained_exp = this->session.experience_remained();
         out_stream.write_u32(remained_exp);
 
-        auto                    class_name = fb::game::old_model::classes.class2name(this->session.cls(), this->session.promotion());
-        if(class_name == nullptr)
-            return;
+        auto&                   class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
+        out_stream.write(class_name);
 
-        out_stream.write(*class_name);
-
-        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(equipment::position::LEFT), this->session.items.ring(equipment::position::RIGHT), this->session.items.auxiliary(equipment::position::LEFT), this->session.items.auxiliary(equipment::position::RIGHT)};
+        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(EQUIPMENT_POSITION::LEFT), this->session.items.ring(EQUIPMENT_POSITION::RIGHT), this->session.items.auxiliary(EQUIPMENT_POSITION::LEFT), this->session.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
         for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
         {
             if(equipments[i] == nullptr)
@@ -491,10 +489,11 @@ class external_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
+    const fb::model::container& model;
 
 public:
-    external_info(const fb::game::session& session) : fb::protocol::base::header(0x34),
-        session(session)
+    external_info(const fb::game::session& session, const fb::model::container& model) : fb::protocol::base::header(0x34),
+        session(session), model(model)
     { }
 
 public:
@@ -506,11 +505,8 @@ public:
                   .write("클랜 타이틀");
 
         // 클래스 이름
-        const auto              class_name = fb::game::old_model::classes.class2name(this->session.cls(), this->session.promotion());
-        if(class_name == nullptr)
-            return;
-
-        out_stream.write(*class_name)  // 직업
+        const auto&              class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
+        out_stream.write(class_name)  // 직업
                   .write(this->session.name());    // 이름
 
         auto                    disguised = (this->session.state() == fb::game::STATE_TYPE::DISGUISE);
@@ -531,13 +527,13 @@ public:
             out_stream.write_u16(this->session.look())
                       .write_u8(this->session.color());
 
-            out_stream.write_u8(armor != nullptr ? armor->based<fb::game::armor>()->dress : 0xFF)
+            out_stream.write_u8(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF)
                       .write_u8(this->session.current_armor_color());
 
-            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::game::weapon>()->dress : 0xFFFF)
+            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF)
                       .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-            out_stream.write_u8(shield != nullptr ? shield->based<fb::game::shield>()->dress : 0xFF)
+            out_stream.write_u8(shield != nullptr ? shield->based<fb::model::shield>().dress : 0xFF)
                       .write_u8(shield != nullptr ? shield->color() : 0x00);
         }
 
@@ -547,19 +543,19 @@ public:
         out_stream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
                   .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-        auto                    ring_l = this->session.items.ring(equipment::position::LEFT); // 왼손
+        auto                    ring_l = this->session.items.ring(EQUIPMENT_POSITION::LEFT); // 왼손
         out_stream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
                   .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-        auto                    ring_r = this->session.items.ring(equipment::position::RIGHT); // 오른손
+        auto                    ring_r = this->session.items.ring(EQUIPMENT_POSITION::RIGHT); // 오른손
         out_stream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
                   .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-        auto                    aux_l = this->session.items.auxiliary(equipment::position::LEFT); // 보조1
+        auto                    aux_l = this->session.items.auxiliary(EQUIPMENT_POSITION::LEFT); // 보조1
         out_stream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
                   .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-        auto                    aux_r = this->session.items.auxiliary(equipment::position::RIGHT); // 보조2
+        auto                    aux_r = this->session.items.auxiliary(EQUIPMENT_POSITION::RIGHT); // 보조2
         out_stream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
                   .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 

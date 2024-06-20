@@ -1,74 +1,9 @@
 #include <fb/game/item.h>
 
-const fb::game::cash::model fb::game::cash::BRONZE(fb::game::item::model::config
-    {
-        {
-            .name = "엽전", 
-            .look = 23 + 0xBFFF,
-            .color = 0
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::BRONZE_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "엽전뭉치", 
-            .look = 74 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::SILVER(fb::game::item::model::config
-    {
-        {
-            .name = "은전", 
-            .look = 70 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::SILVER_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "은전뭉치", 
-            .look = 73 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::GOLD(fb::game::item::model::config
-    {
-        {
-            .name = "금전", 
-            .look = 71 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::GOLD_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "금덩어리", 
-            .look = 72 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-
-fb::game::cash::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config)
-{ }
-
-fb::game::cash::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::cash::model::attr() const
+fb::game::cash::cash(fb::game::context& context, uint32_t value) : 
+    fb::model::item(context, nullptr)
 {
-    return item::ATTRIBUTE::CASH;
-}
-
-
-//
-// class cash
-//
-fb::game::cash::cash(fb::game::context& context, uint32_t chunk) : 
-    fb::game::item(context, nullptr)
-{
-    this->chunk(chunk);
+    this->chunk(value);
 }
 
 fb::game::cash::~cash()
@@ -91,7 +26,7 @@ fb::game::cash* fb::game::cash::chunk(uint32_t value)
 {
     this->_chunk = value;
 
-    const fb::game::item* model = nullptr;
+    const fb::model::item* model = nullptr;
     if(this->_chunk == 1)
         this->_model = &fb::game::cash::BRONZE;
     else if(this->_chunk < 100)

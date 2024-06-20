@@ -1,5 +1,5 @@
 #include <fb/game/session.h>
-#include <fb/game/old_model.h>
+#include <fb/game/model.h>
 #include <regex>
 
 using namespace fb::game;
@@ -70,7 +70,7 @@ fb::game::map* container::map::name2map(const std::string& name)
     return nullptr;
 }
 
-fb::game::npc::model* container::npc::name2npc(const std::string& name)
+fb::model::npc* container::npc::name2npc(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](auto& pair)
@@ -92,7 +92,7 @@ fb::game::mob::model* container::mob::name2mob(const std::string& name)
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::item::model* container::item::name2item(const std::string& name)
+fb::model::item* container::item::name2item(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](auto& pair)
@@ -231,10 +231,10 @@ bool container::map::load_blocks(uint16_t id, Json::Value& buffer)
     return true;
 }
 
-fb::game::item::model* container::item::create(uint32_t id, const Json::Value& data)
+fb::model::item* container::item::create(uint32_t id, const Json::Value& data)
 {
     std::string         types   = CP949(data["type"].asString(), PLATFORM::Windows);
-    auto                config  = fb::game::item::model::config
+    auto                config  = fb::model::item::config
     {
         { 
             .name  = CP949(data["name"].asString(), PLATFORM::Windows),
@@ -266,7 +266,7 @@ fb::game::item::model* container::item::create(uint32_t id, const Json::Value& d
     
     if(types == "stuff")
     {
-        return new fb::game::item::model(config);
+        return new fb::model::item(config);
     }
 
     if(types == "consume")
@@ -390,16 +390,16 @@ fb::game::item::conditions container::item::to_condition(const Json::Value& data
     };
 }
 
-fb::game::item::DEATH_PENALTY_TYPE container::item::to_penalty(const std::string& penalty)
+DEATH_PENALTY_TYPE container::item::to_penalty(const std::string& penalty)
 {
     if(penalty.empty())
-        return fb::game::item::DEATH_PENALTY_TYPE::NONE;
+        return DEATH_PENALTY_TYPE::NONE;
 
     if(penalty == "drop")
-        return fb::game::item::DEATH_PENALTY_TYPE::DROP;
+        return DEATH_PENALTY_TYPE::DROP;
 
     if(penalty == "destroy")
-        return fb::game::item::DEATH_PENALTY_TYPE::DESTRUCTION;
+        return DEATH_PENALTY_TYPE::DESTRUCTION;
 
     throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_DEATH_PENALTY);
 }
@@ -525,7 +525,7 @@ bool container::item::load(const std::string& path, fb::table::handle_callback c
         path, 
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
-            auto                item = (fb::game::item::model*)nullptr;
+            auto                item = (fb::model::item*)nullptr;
             auto                name = CP949(data["name"].asString(), PLATFORM::Windows);
 
             // Create x core
@@ -533,7 +533,7 @@ bool container::item::load(const std::string& path, fb::table::handle_callback c
             uint16_t            id = std::stoi(key.asString());
             {
                 auto _ = std::lock_guard(*mutex);
-                this->insert({id, std::unique_ptr<fb::game::item::model>(item)});
+                this->insert({id, std::unique_ptr<fb::model::item>(item)});
                 callback(name, percentage);
             }
         },
@@ -639,7 +639,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
             {
                 //name, look, color, script
                 auto _ = std::lock_guard(*mutex);
-                auto npc = new fb::game::npc::model(fb::game::npc::model::config 
+                auto npc = new fb::model::npc(fb::model::npc::config 
                     {
                         {
                             .name = name,
@@ -654,7 +654,7 @@ bool container::npc::load(const std::string& path, fb::table::handle_callback ca
                         hold_item,
                         rename
                     });
-                this->insert({id, std::unique_ptr<fb::game::npc::model>(npc)});
+                this->insert({id, std::unique_ptr<fb::model::npc>(npc)});
                 callback(name, percentage);
             }
         },
@@ -772,7 +772,7 @@ bool container::mob::load(const std::string& path, fb::table::handle_callback ca
         [&] (Json::Value& key, Json::Value& data, double percentage)
         {
             uint16_t            id = std::stoi(key.asString());
-            auto                object_config = fb::game::object::model::config
+            auto                object_config = fb::model::object::config
             {
                 .name  = CP949(data["name"].asString(), PLATFORM::Windows),
                 .look  = (uint16_t)(data["look"].asInt() + 0x7FFF),

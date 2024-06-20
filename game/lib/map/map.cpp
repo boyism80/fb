@@ -31,12 +31,12 @@ uint16_t fb::game::objects::empty_seq()
     return 0xFFFF;
 }
 
-std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::objects::filter(OBJECT_TYPE type) const
 {
     auto result = std::vector<fb::game::object*>();
     for(auto& [key, value] : *this)
     {
-        if(value->is(object::types::SESSION))
+        if(value->is(OBJECT_TYPE::SESSION))
             result.push_back(value);
     }
 
@@ -252,7 +252,7 @@ bool fb::game::map::movable(const point16_t position) const
         if(value->visible() == false)
             continue;
 
-        if(value->type() == fb::game::object::types::ITEM)
+        if(value->type() == OBJECT_TYPE::ITEM)
             continue;
 
         if(value->position() == position)
@@ -339,7 +339,7 @@ bool fb::game::map::activated() const
     return this->_sectors->activated();
 }
 
-std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJECT_TYPE type) const
 {
     if(this->_sectors == nullptr)
         return std::vector<fb::game::object*> { };
@@ -347,7 +347,7 @@ std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJECT_TYPE type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try
@@ -362,7 +362,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
             [type, &pivot] (auto x)
             {
                 return 
-                    (type == fb::game::object::types::UNKNOWN || x->is(type)) && 
+                    (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && 
                     x->position() == pivot;
             }
         );
@@ -373,7 +373,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
     return std::move(objects);
 }
 
-std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types type)
+std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
 {
     if(this->_sectors == nullptr)
         return std::vector<fb::game::object*> { };
@@ -397,20 +397,6 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     return &this->_tiles[y * this->_size.width + x];
 }
 
-int fb::game::map::builtin_name(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-
-    thread->pushstring(map->name());
-    return 1;
-}
-
 int fb::game::map::builtin_objects(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -432,52 +418,6 @@ int fb::game::map::builtin_objects(lua_State* lua)
     }
 
     return 1;
-}
-
-int fb::game::map::builtin_width(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-    
-
-    thread->pushinteger(map->width());
-    return 1;
-}
-
-int fb::game::map::builtin_height(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-    
-
-    thread->pushinteger(map->height());
-    return 1;
-}
-
-int fb::game::map::builtin_area(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-    
-
-    thread->pushinteger(map->width());
-    thread->pushinteger(map->height());
-    return 2;
 }
 
 int fb::game::map::builtin_movable(lua_State* lua)

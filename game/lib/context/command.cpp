@@ -413,7 +413,7 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
         if (item == nullptr)
             continue;
 
-        if (item->attr(fb::game::item::ATTRIBUTE::EQUIPMENT) == false)
+        if (item->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
             continue;
 
         auto equipment = static_cast<fb::game::equipment*>(item);

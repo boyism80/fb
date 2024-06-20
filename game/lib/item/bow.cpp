@@ -1,18 +1,6 @@
 #include <fb/game/item.h>
 
-fb::game::bow::model::model(const fb::game::equipment::model::config& config) : fb::game::equipment::model(config)
-{ }
-
-fb::game::bow::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::bow::model::attr() const
-{
-    return item::ATTRIBUTE::ARROW;
-}
-
-
-fb::game::bow::bow(fb::game::context& context, const model* model) : 
+fb::game::bow::bow(fb::game::context& context, const fb::model::bow& model) : 
     equipment(context, model)
 { }
 

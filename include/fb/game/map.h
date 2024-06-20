@@ -147,7 +147,7 @@ private:
     bool                            remove(fb::game::object& object);
 
 public:
-    std::vector<object*>            filter(fb::game::object::types type) const;
+    std::vector<object*>            filter(OBJECT_TYPE type) const;
     fb::game::object*               exists(point16_t position) const;
 
 public:
@@ -240,9 +240,9 @@ public:
     bool                            update(fb::game::object& object);
     bool                            activated() const;
     
-    std::vector<object*>            nears(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>            belows(const point16_t& pivot, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>            activateds(fb::game::object::types type = fb::game::object::types::UNKNOWN);
+    std::vector<object*>            nears(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>            belows(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>            activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);
 
 public:
     void                            on_timer(uint64_t elapsed_milliseconds);
@@ -251,11 +251,7 @@ public:
     tile*                           operator () (uint16_t x, uint16_t y) const;
 
 public:
-    static int                      builtin_name(lua_State* lua);
     static int                      builtin_objects(lua_State* lua);
-    static int                      builtin_width(lua_State* lua);
-    static int                      builtin_height(lua_State* lua);
-    static int                      builtin_area(lua_State* lua);
     static int                      builtin_movable(lua_State* lua);
     static int                      builtin_door(lua_State* lua);
     static int                      builtin_doors(lua_State* lua);

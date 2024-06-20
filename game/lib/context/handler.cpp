@@ -35,7 +35,7 @@ void fb::game::context::on_direction(fb::game::object& me)
 
 void fb::game::context::on_show(fb::game::object& me, bool light)
 {
-    if(me.is(fb::game::object::types::SESSION))
+    if(me.is(OBJECT_TYPE::SESSION))
     {
         this->send
         (
@@ -55,7 +55,7 @@ void fb::game::context::on_show(fb::game::object& me, bool light)
 
 void fb::game::context::on_show(fb::game::object& me, fb::game::object& you, bool light)
 {
-    if(you.is(fb::game::object::types::SESSION))
+    if(you.is(OBJECT_TYPE::SESSION))
         this->send(me, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(you), me, light), scope::SELF);
     else
         this->send(me, fb::protocol::game::response::object::show(you), scope::SELF);
@@ -149,7 +149,7 @@ void fb::game::context::on_attack(session& me, object* you)
 void fb::game::context::on_hit(session& me, life& you, uint32_t damage, bool critical)
 {
 #ifndef PK
-    if(you.is(object::types::SESSION))
+    if(you.is(OBJECT_TYPE::SESSION))
         return;
 #endif
 
@@ -179,7 +179,7 @@ void fb::game::context::on_notify(session& me, const std::string& message, fb::g
     this->send(me, fb::protocol::game::response::message(message, type), scope::SELF);
 }
 
-void fb::game::context::on_equipment_on(session& me, item& item, equipment::parts parts)
+void fb::game::context::on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts)
 {
     this->send(me, fb::protocol::game::response::item::update_slot(me, parts), scope::SELF);
     this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_ON), scope::PIVOT);
@@ -187,35 +187,35 @@ void fb::game::context::on_equipment_on(session& me, item& item, equipment::part
     std::stringstream sstream;
     switch(parts)
     {
-    case fb::game::equipment::parts::WEAPON:
+    case EQUIPMENT_PARTS::WEAPON:
         sstream << "w:무기  :";
         break;
 
-    case fb::game::equipment::parts::ARMOR:
+    case EQUIPMENT_PARTS::ARMOR:
         sstream << "a:갑옷  :";
         break;
 
-    case fb::game::equipment::parts::SHIELD:
+    case EQUIPMENT_PARTS::SHIELD:
         sstream << "s:방패  :";
         break;
 
-    case fb::game::equipment::parts::HELMET:
+    case EQUIPMENT_PARTS::HELMET:
         sstream << "h:머리  :";
         break;
 
-    case fb::game::equipment::parts::LEFT_HAND:
+    case EQUIPMENT_PARTS::LEFT_HAND:
         sstream << "l:왼손  :";
         break;
 
-    case fb::game::equipment::parts::RIGHT_HAND:
+    case EQUIPMENT_PARTS::RIGHT_HAND:
         sstream << "r:오른손  :";
         break;
 
-    case fb::game::equipment::parts::LEFT_AUX:
+    case EQUIPMENT_PARTS::LEFT_AUX:
         sstream << "[:보조1  :";
         break;
 
-    case fb::game::equipment::parts::RIGHT_AUX:
+    case EQUIPMENT_PARTS::RIGHT_AUX:
         sstream << "]:보조2  :";
         break;
     }
@@ -228,7 +228,7 @@ void fb::game::context::on_equipment_on(session& me, item& item, equipment::part
     this->send(me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
-void fb::game::context::on_equipment_off(session& me, equipment::parts parts, uint8_t index)
+void fb::game::context::on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index)
 {
     this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_OFF), scope::PIVOT);
 }
@@ -308,73 +308,41 @@ void fb::game::context::on_trade_success(session& me)
     this->send(me, fb::protocol::game::response::trade::close(fb::game::message::trade::SUCCESS), scope::SELF);
 }
 
-// obsolate
-void fb::game::context::on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+// new dialog
+void fb::game::context::on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::menu(npc, menus, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::item(npc, pairs, message, pursuit, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input(npc, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
 
-
-// new dialog
-void fb::game::context::on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
-}
-
-void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::menu(npc, menus, message, interaction), scope::SELF);
-}
-
-void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
-}
-
-void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::item(npc, pairs, message, pursuit, interaction), scope::SELF);
-}
-
-void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message,  fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::input(npc, message, interaction), scope::SELF);
-}
-
-void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
-{
-    // this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
-}
-
 void fb::game::context::on_trade_item(session& me, session& from, uint8_t index)
 {
-    // bool mine = (&me == &from);
-    // this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
+    bool mine = (&me == &from);
+    this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
 }
 
 void fb::game::context::on_option(session& me, fb::game::OPTION option, bool enabled)
@@ -465,7 +433,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
     if(after == nullptr)
         return;
 
-    if(me.is(fb::game::object::types::SESSION) == false)
+    if(me.is(OBJECT_TYPE::SESSION) == false)
         return;
 
     auto& session = static_cast<fb::game::session&>(me);
@@ -614,7 +582,7 @@ void fb::game::context::on_die(mob& me, object* you)
     this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);
 }
 
-void fb::game::context::on_item_remove(session& me, uint8_t index, fb::game::item::DELETE_TYPE attr)
+void fb::game::context::on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr)
 {
     this->send(me, fb::protocol::game::response::item::remove(attr, index, 0), scope::SELF);
 }

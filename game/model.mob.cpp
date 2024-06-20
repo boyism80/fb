@@ -16,3 +16,14 @@ int fb::model::mob::builtin_speed(lua_State* lua)
     lua_pushinteger(lua, mob->speed.count());
     return 1;
 }
+
+fb::model::mob* fb::model::__mob::name2mob(const std::string& name) const
+{
+    auto i = std::find_if(this->begin(), this->end(), 
+        [&name](auto& pair)
+        {
+            return pair.second.name == name;
+        });
+
+    return i != this->end() ? i->second.get() : nullptr;
+}

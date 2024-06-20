@@ -11,19 +11,19 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class common : public fb::protocol::base::header
 {
 public:
-    const fb::game::object::model&      object;
+    const fb::model::object&            object;
     const std::string                   message;
     const bool                          button_prev;
     const bool                          button_next;
     const fb::game::dialog::interaction interaction;
 
 public:
-    common(const fb::game::object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : fb::protocol::base::header(0x30),
+    common(const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : fb::protocol::base::header(0x30),
         object(object), message(message), button_prev(button_prev), button_next(button_next), interaction(interaction)
     { }
 
     common(const fb::game::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) : 
-        common(*object.based(), message, button_prev, button_next, interaction)
+        common(object.based(), message, button_prev, button_next, interaction)
     { }
 
 public:
@@ -50,18 +50,14 @@ public:
 class menu : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&         npc;
+    const fb::model::npc&               npc;
     const std::vector<std::string>      menus;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    menu(const fb::game::npc::model& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : fb::protocol::base::header(0x2F),
+    menu(const fb::model::npc& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : fb::protocol::base::header(0x2F),
         npc(npc), menus(menus), message(message), interaction(interaction)
-    { }
-
-    menu(const fb::game::npc& npc, const std::vector<std::string>& menus, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::MENU) : 
-        menu(*npc.based<fb::game::npc>(), menus, message, interaction)
     { }
 
 public:
@@ -102,18 +98,14 @@ public:
 class slot : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&         npc;
+    const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    slot(const fb::game::npc::model& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : fb::protocol::base::header(0x2F),
+    slot(const fb::model::npc& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : fb::protocol::base::header(0x2F),
         npc(npc), slots(slots), message(message), interaction(interaction)
-    { }
-
-    slot(const fb::game::npc& npc, const std::vector<uint8_t>& slots, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) : 
-        slot(*npc.based<fb::game::npc>(), slots, message, interaction)
     { }
 
 public:
@@ -143,19 +135,15 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&                 npc;
+    const fb::model::npc&                       npc;
     const fb::game::dialog::item_pairs&         items;
     const std::string                           message;
     const uint16_t                              pursuit;
     const fb::game::dialog::interaction         interaction;
 
 public:
-    item(const fb::game::npc::model& npc, const fb::game::dialog::item_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) : fb::protocol::base::header(0x2F),
+    item(const fb::model::npc& npc, const fb::game::dialog::item_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) : fb::protocol::base::header(0x2F),
         npc(npc), items(items), message(message), pursuit(pursuit), interaction(interaction)
-    { }
-
-    item(const fb::game::npc& npc, const fb::game::dialog::item_pairs& items, const std::string& message, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::ITEM) :
-        item(*npc.based<fb::game::npc>(), items, message, pursuit, interaction)
     { }
 
 public:
@@ -178,11 +166,11 @@ public:
 
         for (auto& [item, value] : this->items)
         {
-            out_stream.write_u16(item->look)
-                .write_u8(item->color)
+            out_stream.write_u16(item.look)
+                .write_u8(item.color)
                 .write_u32(value)
-                .write(item->name)
-                .write(item->desc);
+                .write(item.name)
+                .write(item.desc);
         }
 
         out_stream.write_u8(0x00);
@@ -193,18 +181,14 @@ public:
 class input : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&         npc;
+    const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
 
 public:
-    input(const fb::game::npc::model& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : fb::protocol::base::header(0x2F),
+    input(const fb::model::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : fb::protocol::base::header(0x2F),
         npc(npc), message(message), interaction(interaction)
-    { }
-
-    input(const fb::game::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) : 
-        input(*npc.based<fb::game::npc>(), message, interaction)
     { }
 
 public:
@@ -229,7 +213,7 @@ public:
 class input_ext : public fb::protocol::base::header
 {
 public:
-    const fb::game::npc::model&         npc;
+    const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const std::string                   top, bottom;
@@ -238,12 +222,8 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    input_ext(const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : fb::protocol::base::header(0x30),
+    input_ext(const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : fb::protocol::base::header(0x30),
         npc(npc), message(message), top(top), bottom(bottom), maxlen(maxlen), button_prev(button_prev), interaction(interaction)
-    { }
-
-    input_ext(const fb::game::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool button_prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) : 
-        input_ext(*npc.based<fb::game::npc>(), message, top, bottom, maxlen, button_prev, interaction)
     { }
 
 public:

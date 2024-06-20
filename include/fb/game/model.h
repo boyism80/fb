@@ -181,6 +181,64 @@ inline DSL enum_parse<DSL>(const std::string k)
     return i->second;
 }
 
+enum class EQUIPMENT_PARTS
+{
+    UNKNOWN = 0, 
+    WEAPON = 1, 
+    ARMOR = 2, 
+    SHIELD = 3, 
+    HELMET = 4, 
+    LEFT_HAND = 7, 
+    RIGHT_HAND = 8, 
+    LEFT_AUX = 20, 
+    RIGHT_AUX = 21
+};
+
+template <>
+inline EQUIPMENT_PARTS enum_parse<EQUIPMENT_PARTS>(const std::string k)
+{
+    static const std::unordered_map<std::string, EQUIPMENT_PARTS> enums
+    {
+        { "UNKNOWN", EQUIPMENT_PARTS::UNKNOWN }, 
+        { "WEAPON", EQUIPMENT_PARTS::WEAPON }, 
+        { "ARMOR", EQUIPMENT_PARTS::ARMOR }, 
+        { "SHIELD", EQUIPMENT_PARTS::SHIELD }, 
+        { "HELMET", EQUIPMENT_PARTS::HELMET }, 
+        { "LEFT_HAND", EQUIPMENT_PARTS::LEFT_HAND }, 
+        { "RIGHT_HAND", EQUIPMENT_PARTS::RIGHT_HAND }, 
+        { "LEFT_AUX", EQUIPMENT_PARTS::LEFT_AUX }, 
+        { "RIGHT_AUX", EQUIPMENT_PARTS::RIGHT_AUX }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class EQUIPMENT_POSITION
+{
+    LEFT = 0, 
+    RIGHT = 1
+};
+
+template <>
+inline EQUIPMENT_POSITION enum_parse<EQUIPMENT_POSITION>(const std::string k)
+{
+    static const std::unordered_map<std::string, EQUIPMENT_POSITION> enums
+    {
+        { "LEFT", EQUIPMENT_POSITION::LEFT }, 
+        { "RIGHT", EQUIPMENT_POSITION::RIGHT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class ITEM_ATTRIBUTE
 {
     NONE = 0x00000000, 
@@ -218,6 +276,50 @@ inline ITEM_ATTRIBUTE enum_parse<ITEM_ATTRIBUTE>(const std::string k)
         { "RING", ITEM_ATTRIBUTE::RING }, 
         { "AUXILIARY", ITEM_ATTRIBUTE::AUXILIARY }, 
         { "ARROW", ITEM_ATTRIBUTE::ARROW }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class ITEM_DELETE_TYPE
+{
+    REMOVED = 0x00, 
+    DROP = 0x01, 
+    EAT = 0x02, 
+    SMOKE = 0x03, 
+    THROW = 0x04, 
+    SHOOT = 0x05, 
+    REDUCE = 0x06, 
+    STICK = 0x07, 
+    DECAY = 0x08, 
+    GIVE = 0x09, 
+    SELL = 0x0A, 
+    NONE = 0x0C, 
+    DESTROY = 0x0D
+};
+
+template <>
+inline ITEM_DELETE_TYPE enum_parse<ITEM_DELETE_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, ITEM_DELETE_TYPE> enums
+    {
+        { "REMOVED", ITEM_DELETE_TYPE::REMOVED }, 
+        { "DROP", ITEM_DELETE_TYPE::DROP }, 
+        { "EAT", ITEM_DELETE_TYPE::EAT }, 
+        { "SMOKE", ITEM_DELETE_TYPE::SMOKE }, 
+        { "THROW", ITEM_DELETE_TYPE::THROW }, 
+        { "SHOOT", ITEM_DELETE_TYPE::SHOOT }, 
+        { "REDUCE", ITEM_DELETE_TYPE::REDUCE }, 
+        { "STICK", ITEM_DELETE_TYPE::STICK }, 
+        { "DECAY", ITEM_DELETE_TYPE::DECAY }, 
+        { "GIVE", ITEM_DELETE_TYPE::GIVE }, 
+        { "SELL", ITEM_DELETE_TYPE::SELL }, 
+        { "NONE", ITEM_DELETE_TYPE::NONE }, 
+        { "DESTROY", ITEM_DELETE_TYPE::DESTROY }
     };
 
     auto i = enums.find(k);
@@ -923,6 +1025,7 @@ DECLARE_ABILITY_CONSTRUCTOR
         hp(fb::model::build<uint32_t>(json["hp"])),
         mp(fb::model::build<uint32_t>(json["mp"]))
     { }
+    ability(const ability&) = delete;
     virtual ~ability()
     { }
 #ifdef DECLARE_ABILITY_EXTENSION
@@ -944,6 +1047,7 @@ DECLARE_ABILITY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
+    ability_attribute(const ability_attribute&) = delete;
     virtual ~ability_attribute()
     { }
 #ifdef DECLARE_ABILITY_ATTRIBUTE_EXTENSION
@@ -973,6 +1077,7 @@ DECLARE_BOARD_CONSTRUCTOR
         max_level(fb::model::build<uint8_t>(json["max_level"])),
         admin(fb::model::build<bool>(json["admin"]))
     { }
+    board(const board&) = delete;
     virtual ~board()
     { }
 #ifdef DECLARE_BOARD_EXTENSION
@@ -998,6 +1103,7 @@ DECLARE_BUY_CONSTRUCTOR
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
     { }
+    buy(const buy&) = delete;
     virtual ~buy()
     { }
 #ifdef DECLARE_BUY_EXTENSION
@@ -1019,6 +1125,7 @@ DECLARE_BUY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
     { }
+    buy_attribute(const buy_attribute&) = delete;
     virtual ~buy_attribute()
     { }
 #ifdef DECLARE_BUY_ATTRIBUTE_EXTENSION
@@ -1046,6 +1153,7 @@ DECLARE_COMBINE_CONSTRUCTOR
         failed(fb::model::build<std::vector<fb::model::dsl>>(json["failed"])),
         percent(fb::model::build<double>(json["percent"]))
     { }
+    combine(const combine&) = delete;
     virtual ~combine()
     { }
 #ifdef DECLARE_COMBINE_EXTENSION
@@ -1069,6 +1177,7 @@ DECLARE_DOOR_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         pairs(fb::model::build<std::vector<uint32_t>>(json["pairs"]))
     { }
+    door(const door&) = delete;
     virtual ~door()
     { }
 #ifdef DECLARE_DOOR_EXTENSION
@@ -1094,6 +1203,7 @@ DECLARE_DOOR_PAIR_CONSTRUCTOR
         open(fb::model::build<uint32_t>(json["open"])),
         close(fb::model::build<uint32_t>(json["close"]))
     { }
+    door_pair(const door_pair&) = delete;
     virtual ~door_pair()
     { }
 #ifdef DECLARE_DOOR_PAIR_EXTENSION
@@ -1117,6 +1227,7 @@ DECLARE_DROP_CONSTRUCTOR
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
     { }
+    drop(const drop&) = delete;
     virtual ~drop()
     { }
 #ifdef DECLARE_DROP_EXTENSION
@@ -1160,6 +1271,7 @@ DECLARE_MAP_CONSTRUCTOR
         enable_pk(fb::model::build<bool>(json["enable_pk"])),
         enable_spell(fb::model::build<bool>(json["enable_spell"]))
     { }
+    map(const map&) = delete;
     virtual ~map()
     { }
 #ifdef DECLARE_MAP_EXTENSION
@@ -1195,6 +1307,7 @@ DECLARE_MOB_SPAWN_CONSTRUCTOR
         mob(fb::model::build<uint32_t>(json["mob"])),
         rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
     { }
+    mob_spawn(const mob_spawn&) = delete;
     virtual ~mob_spawn()
     { }
 #ifdef DECLARE_MOB_SPAWN_EXTENSION
@@ -1216,6 +1329,7 @@ DECLARE_MOB_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
     { }
+    mob_spawn_attribute(const mob_spawn_attribute&) = delete;
     virtual ~mob_spawn_attribute()
     { }
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
@@ -1245,6 +1359,7 @@ DECLARE_NPC_SPAWN_CONSTRUCTOR
         y(fb::model::build<uint32_t>(json["y"])),
         direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
     { }
+    npc_spawn(const npc_spawn&) = delete;
     virtual ~npc_spawn()
     { }
 #ifdef DECLARE_NPC_SPAWN_EXTENSION
@@ -1266,6 +1381,7 @@ DECLARE_NPC_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
     { }
+    npc_spawn_attribute(const npc_spawn_attribute&) = delete;
     virtual ~npc_spawn_attribute()
     { }
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
@@ -1291,6 +1407,7 @@ DECLARE_OBJECT_CONSTRUCTOR
         look(fb::model::build<uint16_t>(json["look"])),
         color(fb::model::build<uint8_t>(json["color"]))
     { }
+    object(const object&) = delete;
     virtual ~object()
     { }
 #ifdef DECLARE_OBJECT_EXTENSION
@@ -1305,6 +1422,7 @@ DECLARE_PROMOTION_INHERIT
 public:
     const fb::model::enum_value::CLASS parent;
     const uint8_t step;
+    const std::string name;
 
 public:
     promotion(const Json::Value& json) : 
@@ -1312,8 +1430,10 @@ public:
 DECLARE_PROMOTION_CONSTRUCTOR
 #endif
         parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
-        step(fb::model::build<uint8_t>(json["step"]))
+        step(fb::model::build<uint8_t>(json["step"])),
+        name(fb::model::build<std::string>(json["name"]))
     { }
+    promotion(const promotion&) = delete;
     virtual ~promotion()
     { }
 #ifdef DECLARE_PROMOTION_EXTENSION
@@ -1335,6 +1455,7 @@ DECLARE_PROMOTION_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
     { }
+    promotion_attribute(const promotion_attribute&) = delete;
     virtual ~promotion_attribute()
     { }
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
@@ -1358,6 +1479,7 @@ DECLARE_REWARD_CONSTRUCTOR
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
     { }
+    reward(const reward&) = delete;
     virtual ~reward()
     { }
 #ifdef DECLARE_REWARD_EXTENSION
@@ -1383,6 +1505,7 @@ DECLARE_SELL_CONSTRUCTOR
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
     { }
+    sell(const sell&) = delete;
     virtual ~sell()
     { }
 #ifdef DECLARE_SELL_EXTENSION
@@ -1406,6 +1529,7 @@ DECLARE_SELL_ATTRIBUTE_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         group(fb::model::build<std::string>(json["group"]))
     { }
+    sell_attribute(const sell_attribute&) = delete;
     virtual ~sell_attribute()
     { }
 #ifdef DECLARE_SELL_ATTRIBUTE_EXTENSION
@@ -1439,6 +1563,7 @@ DECLARE_SPELL_CONSTRUCTOR
         concast(fb::model::build<std::string>(json["concast"])),
         message(fb::model::build<std::string>(json["message"]))
     { }
+    spell(const spell&) = delete;
     virtual ~spell()
     { }
 #ifdef DECLARE_SPELL_EXTENSION
@@ -1474,6 +1599,7 @@ DECLARE_WARP_CONSTRUCTOR
         next_y(fb::model::build<uint32_t>(json["next_y"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
     { }
+    warp(const warp&) = delete;
     virtual ~warp()
     { }
 #ifdef DECLARE_WARP_EXTENSION
@@ -1495,6 +1621,7 @@ DECLARE_WARP_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
     { }
+    warp_attribute(const warp_attribute&) = delete;
     virtual ~warp_attribute()
     { }
 #ifdef DECLARE_WARP_ATTRIBUTE_EXTENSION
@@ -1518,6 +1645,7 @@ DECLARE_WORLD_CONSTRUCTOR
         parent(fb::model::build<uint16_t>(json["parent"])),
         group(fb::model::build<std::string>(json["group"]))
     { }
+    world(const world&) = delete;
     virtual ~world()
     { }
 #ifdef DECLARE_WORLD_EXTENSION
@@ -1541,6 +1669,7 @@ DECLARE_WORLD_ATTRIBUTE_CONSTRUCTOR
         id(fb::model::build<uint16_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"]))
     { }
+    world_attribute(const world_attribute&) = delete;
     virtual ~world_attribute()
     { }
 #ifdef DECLARE_WORLD_ATTRIBUTE_EXTENSION
@@ -1576,6 +1705,7 @@ DECLARE_WORLD_GROUP_CONSTRUCTOR
         world_x(fb::model::build<uint16_t>(json["world_x"])),
         world_y(fb::model::build<uint16_t>(json["world_y"]))
     { }
+    world_group(const world_group&) = delete;
     virtual ~world_group()
     { }
 #ifdef DECLARE_WORLD_GROUP_EXTENSION
@@ -1597,6 +1727,7 @@ DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<std::string>(json["id"]))
     { }
+    world_group_attribute(const world_group_attribute&) = delete;
     virtual ~world_group_attribute()
     { }
 #ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
@@ -1630,6 +1761,7 @@ public:
         script_active(fb::model::build<std::string>(json["script_active"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
     { }
+    item(const item&) = delete;
     virtual ~item()
     { }
 #ifdef DECLARE_ITEM_EXTENSION
@@ -1653,6 +1785,7 @@ public:
         defensive_physical(fb::model::build<int>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int>(json["defensive_magical"]))
     { }
+    life(const life&) = delete;
     virtual ~life()
     { }
 #ifdef DECLARE_LIFE_EXTENSION
@@ -1682,6 +1815,7 @@ public:
         hold_item(fb::model::build<bool>(json["hold_item"])),
         rename(fb::model::build<bool>(json["rename"]))
     { }
+    npc(const npc&) = delete;
     virtual ~npc()
     { }
 #ifdef DECLARE_NPC_EXTENSION
@@ -1693,6 +1827,7 @@ class cash : public fb::model::item
 public:
     cash(const Json::Value& json) : fb::model::item(json)
     { }
+    cash(const cash&) = delete;
     virtual ~cash()
     { }
 #ifdef DECLARE_CASH_EXTENSION
@@ -1704,6 +1839,7 @@ class consume : public fb::model::item
 public:
     consume(const Json::Value& json) : fb::model::item(json)
     { }
+    consume(const consume&) = delete;
     virtual ~consume()
     { }
 #ifdef DECLARE_CONSUME_EXTENSION
@@ -1751,6 +1887,7 @@ public:
         defensive_physical(fb::model::build<int16_t>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int16_t>(json["defensive_magical"]))
     { }
+    equipment(const equipment&) = delete;
     virtual ~equipment()
     { }
 #ifdef DECLARE_EQUIPMENT_EXTENSION
@@ -1782,6 +1919,7 @@ public:
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
     { }
+    mob(const mob&) = delete;
     virtual ~mob()
     { }
 #ifdef DECLARE_MOB_EXTENSION
@@ -1797,6 +1935,7 @@ public:
     pack(const Json::Value& json) : fb::model::item(json),
         durability(fb::model::build<uint16_t>(json["durability"]))
     { }
+    pack(const pack&) = delete;
     virtual ~pack()
     { }
 #ifdef DECLARE_PACK_EXTENSION
@@ -1808,6 +1947,7 @@ class armor : public fb::model::equipment
 public:
     armor(const Json::Value& json) : fb::model::equipment(json)
     { }
+    armor(const armor&) = delete;
     virtual ~armor()
     { }
 #ifdef DECLARE_ARMOR_EXTENSION
@@ -1819,6 +1959,7 @@ class auxiliary : public fb::model::equipment
 public:
     auxiliary(const Json::Value& json) : fb::model::equipment(json)
     { }
+    auxiliary(const auxiliary&) = delete;
     virtual ~auxiliary()
     { }
 #ifdef DECLARE_AUXILIARY_EXTENSION
@@ -1830,6 +1971,7 @@ class bow : public fb::model::equipment
 public:
     bow(const Json::Value& json) : fb::model::equipment(json)
     { }
+    bow(const bow&) = delete;
     virtual ~bow()
     { }
 #ifdef DECLARE_BOW_EXTENSION
@@ -1841,6 +1983,7 @@ class helmet : public fb::model::equipment
 public:
     helmet(const Json::Value& json) : fb::model::equipment(json)
     { }
+    helmet(const helmet&) = delete;
     virtual ~helmet()
     { }
 #ifdef DECLARE_HELMET_EXTENSION
@@ -1852,6 +1995,7 @@ class ring : public fb::model::equipment
 public:
     ring(const Json::Value& json) : fb::model::equipment(json)
     { }
+    ring(const ring&) = delete;
     virtual ~ring()
     { }
 #ifdef DECLARE_RING_EXTENSION
@@ -1863,6 +2007,7 @@ class shield : public fb::model::equipment
 public:
     shield(const Json::Value& json) : fb::model::equipment(json)
     { }
+    shield(const shield&) = delete;
     virtual ~shield()
     { }
 #ifdef DECLARE_SHIELD_EXTENSION
@@ -1890,6 +2035,7 @@ public:
         spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
         rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))
     { }
+    weapon(const weapon&) = delete;
     virtual ~weapon()
     { }
 #ifdef DECLARE_WEAPON_EXTENSION
@@ -1912,6 +2058,7 @@ class kv_container : private std::unordered_map<K, std::unique_ptr<V>>
 {
 public:
     class iterator;
+    class const_iterator;
 
 private:
     const std::string _fname;
@@ -1999,8 +2146,8 @@ public:
 
     iterator begin();
     iterator end();
-    const iterator cbegin() const;
-    const iterator cend() const;
+    const const_iterator begin() const;
+    const const_iterator end() const;
 };
 
 template <typename K, typename V>
@@ -2010,11 +2157,9 @@ private:
     std::unique_ptr<std::pair<K, V&>> _pair;
 
 public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i)
-    {
-        if(i != container->end())
-            this->_pair = std::make_unique<std::pair<K,V&>>(i->first, *i->second);
-    }
+    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
+        _pair(i != container->end() ? std::make_unique<std::pair<K, V&>>(i->first, *i->second) : nullptr)
+    { }
     ~iterator() = default;
 
 public:
@@ -2022,6 +2167,24 @@ public:
     {
         return *this->_pair;
     }
+};
+
+template <typename K, typename V>
+class kv_container<K,V>::const_iterator : public std::unordered_map<K, std::unique_ptr<V>>::const_iterator
+{
+private:
+    const std::unique_ptr<std::pair<K, V&>> _pair;
+
+public:
+    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
+        _pair(i != container->end() ? std::make_unique<std::pair<K, V&>>(i->first, *i->second) : nullptr)
+    { }
+
+    const_iterator(const typename kv_container<K,V>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : const_iterator(static_cast<const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator&>(i), container)
+    { }
+    ~const_iterator() = default;
+
+public:
     const std::pair<K,V&>& operator * () const
     {
         return *this->_pair;
@@ -2041,15 +2204,15 @@ kv_container<K,V>::iterator kv_container<K,V>::end()
 }
 
 template <typename K, typename V>
-const typename kv_container<K,V>::iterator kv_container<K,V>::cbegin() const
+const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::cbegin(), this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
 }
 
 template <typename K, typename V>
-const typename kv_container<K,V>::iterator kv_container<K,V>::cend() const
+const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::cend(), this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
 }
 
 template <typename T>
@@ -2057,6 +2220,7 @@ class array_container : private std::vector<std::unique_ptr<T>>
 {
 public:
     class iterator;
+    class const_iterator;
 
 private:
     const std::string _fname;
@@ -2144,12 +2308,12 @@ public:
 public:
     iterator begin();
     iterator end();
-    const iterator cbegin() const;
-    const iterator cend() const;
+    const const_iterator begin() const;
+    const const_iterator end() const;
 };
 
 template <typename T>
-class array_container<T>::iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>
+class array_container<T>::iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator
 {
 public:
     iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator& i) : std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator(i)
@@ -2161,10 +2325,20 @@ public:
     {
         return std::vector<std::unique_ptr<T>>::iterator::operator*();
     }
+};
 
+template <typename T>
+class array_container<T>::const_iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator
+{
+public:
+    const_iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator& i) : std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator(i)
+    {}
+    ~const_iterator() = default;
+
+public:
     const T& operator * () const
     {
-        return std::vector<std::unique_ptr<T>>::iterator::operator*();
+        return std::vector<std::unique_ptr<T>>::const_iterator::operator*();
     }
 };
 
@@ -2181,15 +2355,15 @@ array_container<T>::iterator array_container<T>::end()
 }
 
 template <typename T>
-const typename array_container<T>::iterator array_container<T>::cbegin() const
+const typename array_container<T>::const_iterator array_container<T>::begin() const
 {
-    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cbegin());
+    return array_container<T>::const_iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cbegin());
 }
 
 template <typename T>
-const typename array_container<T>::iterator array_container<T>::cend() const
+const typename array_container<T>::const_iterator array_container<T>::end() const
 {
-    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cend());
+    return array_container<T>::const_iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cend());
 }
 
 class __ability : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>
@@ -2199,6 +2373,9 @@ public:
     { }
     ~__ability()
     { }
+#ifdef DECLARE_ABILITY_CONTAINER_EXTENSION
+DECLARE_ABILITY_CONTAINER_EXTENSION
+#endif
 };
 
 class __ability_attribute : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::ability_attribute>
@@ -2208,6 +2385,9 @@ public:
     { }
     ~__ability_attribute()
     { }
+#ifdef DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __board : public fb::model::kv_container<uint32_t, fb::model::board>
@@ -2217,6 +2397,9 @@ public:
     { }
     ~__board()
     { }
+#ifdef DECLARE_BOARD_CONTAINER_EXTENSION
+DECLARE_BOARD_CONTAINER_EXTENSION
+#endif
 };
 
 class __buy : public fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::buy>>
@@ -2226,6 +2409,9 @@ public:
     { }
     ~__buy()
     { }
+#ifdef DECLARE_BUY_CONTAINER_EXTENSION
+DECLARE_BUY_CONTAINER_EXTENSION
+#endif
 };
 
 class __buy_attribute : public fb::model::kv_container<uint32_t, fb::model::buy_attribute>
@@ -2235,6 +2421,9 @@ public:
     { }
     ~__buy_attribute()
     { }
+#ifdef DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __combine : public fb::model::array_container<fb::model::combine>
@@ -2244,6 +2433,9 @@ public:
     { }
     ~__combine()
     { }
+#ifdef DECLARE_COMBINE_CONTAINER_EXTENSION
+DECLARE_COMBINE_CONTAINER_EXTENSION
+#endif
 };
 
 class __door : public fb::model::kv_container<uint32_t, fb::model::door>
@@ -2253,6 +2445,9 @@ public:
     { }
     ~__door()
     { }
+#ifdef DECLARE_DOOR_CONTAINER_EXTENSION
+DECLARE_DOOR_CONTAINER_EXTENSION
+#endif
 };
 
 class __door_pair : public fb::model::kv_container<uint32_t, fb::model::door_pair>
@@ -2262,6 +2457,9 @@ public:
     { }
     ~__door_pair()
     { }
+#ifdef DECLARE_DOOR_PAIR_CONTAINER_EXTENSION
+DECLARE_DOOR_PAIR_CONTAINER_EXTENSION
+#endif
 };
 
 class __drop : public fb::model::kv_container<std::string, fb::model::drop>
@@ -2271,6 +2469,9 @@ public:
     { }
     ~__drop()
     { }
+#ifdef DECLARE_DROP_CONTAINER_EXTENSION
+DECLARE_DROP_CONTAINER_EXTENSION
+#endif
 };
 
 class __equipment : public fb::model::kv_container<uint32_t, fb::model::equipment>
@@ -2280,6 +2481,9 @@ public:
     { }
     ~__equipment()
     { }
+#ifdef DECLARE_EQUIPMENT_CONTAINER_EXTENSION
+DECLARE_EQUIPMENT_CONTAINER_EXTENSION
+#endif
 };
 
 class __item : public fb::model::kv_container<uint32_t, fb::model::item>
@@ -2289,6 +2493,9 @@ public:
     { }
     ~__item()
     { }
+#ifdef DECLARE_ITEM_CONTAINER_EXTENSION
+DECLARE_ITEM_CONTAINER_EXTENSION
+#endif
 };
 
 class __life : public fb::model::array_container<fb::model::life>
@@ -2298,6 +2505,9 @@ public:
     { }
     ~__life()
     { }
+#ifdef DECLARE_LIFE_CONTAINER_EXTENSION
+DECLARE_LIFE_CONTAINER_EXTENSION
+#endif
 };
 
 class __map : public fb::model::kv_container<uint32_t, fb::model::map>
@@ -2307,6 +2517,9 @@ public:
     { }
     ~__map()
     { }
+#ifdef DECLARE_MAP_CONTAINER_EXTENSION
+DECLARE_MAP_CONTAINER_EXTENSION
+#endif
 };
 
 class __mob : public fb::model::kv_container<uint32_t, fb::model::mob>
@@ -2316,6 +2529,9 @@ public:
     { }
     ~__mob()
     { }
+#ifdef DECLARE_MOB_CONTAINER_EXTENSION
+DECLARE_MOB_CONTAINER_EXTENSION
+#endif
 };
 
 class __mob_spawn : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::mob_spawn>>
@@ -2325,6 +2541,9 @@ public:
     { }
     ~__mob_spawn()
     { }
+#ifdef DECLARE_MOB_SPAWN_CONTAINER_EXTENSION
+DECLARE_MOB_SPAWN_CONTAINER_EXTENSION
+#endif
 };
 
 class __mob_spawn_attribute : public fb::model::kv_container<uint32_t, fb::model::mob_spawn_attribute>
@@ -2334,6 +2553,9 @@ public:
     { }
     ~__mob_spawn_attribute()
     { }
+#ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_MOB_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __npc : public fb::model::kv_container<uint32_t, fb::model::npc>
@@ -2343,6 +2565,9 @@ public:
     { }
     ~__npc()
     { }
+#ifdef DECLARE_NPC_CONTAINER_EXTENSION
+DECLARE_NPC_CONTAINER_EXTENSION
+#endif
 };
 
 class __npc_spawn : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::npc_spawn>>
@@ -2352,6 +2577,9 @@ public:
     { }
     ~__npc_spawn()
     { }
+#ifdef DECLARE_NPC_SPAWN_CONTAINER_EXTENSION
+DECLARE_NPC_SPAWN_CONTAINER_EXTENSION
+#endif
 };
 
 class __npc_spawn_attribute : public fb::model::kv_container<uint32_t, fb::model::npc_spawn_attribute>
@@ -2361,6 +2589,9 @@ public:
     { }
     ~__npc_spawn_attribute()
     { }
+#ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_NPC_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __object : public fb::model::array_container<fb::model::object>
@@ -2370,6 +2601,9 @@ public:
     { }
     ~__object()
     { }
+#ifdef DECLARE_OBJECT_CONTAINER_EXTENSION
+DECLARE_OBJECT_CONTAINER_EXTENSION
+#endif
 };
 
 class __promotion : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>
@@ -2379,6 +2613,9 @@ public:
     { }
     ~__promotion()
     { }
+#ifdef DECLARE_PROMOTION_CONTAINER_EXTENSION
+DECLARE_PROMOTION_CONTAINER_EXTENSION
+#endif
 };
 
 class __promotion_attribute : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::promotion_attribute>
@@ -2388,6 +2625,9 @@ public:
     { }
     ~__promotion_attribute()
     { }
+#ifdef DECLARE_PROMOTION_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_PROMOTION_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __reward : public fb::model::kv_container<std::string, fb::model::reward>
@@ -2397,6 +2637,9 @@ public:
     { }
     ~__reward()
     { }
+#ifdef DECLARE_REWARD_CONTAINER_EXTENSION
+DECLARE_REWARD_CONTAINER_EXTENSION
+#endif
 };
 
 class __sell : public fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>
@@ -2406,6 +2649,9 @@ public:
     { }
     ~__sell()
     { }
+#ifdef DECLARE_SELL_CONTAINER_EXTENSION
+DECLARE_SELL_CONTAINER_EXTENSION
+#endif
 };
 
 class __sell_attribute : public fb::model::kv_container<uint32_t, fb::model::sell_attribute>
@@ -2415,6 +2661,9 @@ public:
     { }
     ~__sell_attribute()
     { }
+#ifdef DECLARE_SELL_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_SELL_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __spell : public fb::model::kv_container<uint32_t, fb::model::spell>
@@ -2424,6 +2673,9 @@ public:
     { }
     ~__spell()
     { }
+#ifdef DECLARE_SPELL_CONTAINER_EXTENSION
+DECLARE_SPELL_CONTAINER_EXTENSION
+#endif
 };
 
 class __warp : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>
@@ -2433,6 +2685,9 @@ public:
     { }
     ~__warp()
     { }
+#ifdef DECLARE_WARP_CONTAINER_EXTENSION
+DECLARE_WARP_CONTAINER_EXTENSION
+#endif
 };
 
 class __warp_attribute : public fb::model::kv_container<uint32_t, fb::model::warp_attribute>
@@ -2442,6 +2697,9 @@ public:
     { }
     ~__warp_attribute()
     { }
+#ifdef DECLARE_WARP_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_WARP_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __world : public fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>
@@ -2451,6 +2709,9 @@ public:
     { }
     ~__world()
     { }
+#ifdef DECLARE_WORLD_CONTAINER_EXTENSION
+DECLARE_WORLD_CONTAINER_EXTENSION
+#endif
 };
 
 class __world_attribute : public fb::model::kv_container<uint16_t, fb::model::world_attribute>
@@ -2460,6 +2721,9 @@ public:
     { }
     ~__world_attribute()
     { }
+#ifdef DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 class __world_group : public fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>
@@ -2469,6 +2733,9 @@ public:
     { }
     ~__world_group()
     { }
+#ifdef DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
+DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
+#endif
 };
 
 class __world_group_attribute : public fb::model::kv_container<std::string, fb::model::world_group_attribute>
@@ -2478,6 +2745,9 @@ public:
     { }
     ~__world_group_attribute()
     { }
+#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
 };
 
 

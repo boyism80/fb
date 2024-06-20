@@ -16,21 +16,17 @@ IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
-{"name",                fb::game::map::builtin_name},
 {"objects",             fb::game::map::builtin_objects},
-{"width",               fb::game::map::builtin_width},
-{"height",              fb::game::map::builtin_height},
-{"area",                fb::game::map::builtin_area},
 {"movable",             fb::game::map::builtin_movable},
 {"door",                fb::game::map::builtin_door},
 {"doors",               fb::game::map::builtin_doors},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::object::model, "fb.game.object.core")
-{"name",                fb::game::object::model::builtin_name},
-{"look",                fb::game::object::model::builtin_look},
-{"color",               fb::game::object::model::builtin_color},
-{"dialog",              fb::game::object::model::builtin_dialog},
+IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
+{"name",                fb::model::map::builtin_name},
+{"width",               fb::model::map::builtin_width},
+{"height",              fb::model::map::builtin_height},
+{"area",                fb::model::map::builtin_area},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
@@ -40,32 +36,12 @@ IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
 {"dialog",              fb::model::object::builtin_dialog},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::mob::model, "fb.game.mob.core")
-{"speed",               fb::game::mob::model::builtin_speed},
-END_LUA_EXTENSION
-
 IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 {"speed",               fb::model::mob::builtin_speed},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
 {"__eq",                fb::game::object::builtin_eq},
-END_LUA_EXTENSION
-
-IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
-{"input",               fb::game::npc::model::builtin_input},
-{"menu",                fb::game::npc::model::builtin_menu},
-{"item",                fb::game::npc::model::builtin_item},
-{"slot",                fb::game::npc::model::builtin_slot},
-{"sell",                fb::game::npc::model::builtin_sell},
-{"buy",                 fb::game::npc::model::builtin_buy},
-{"repair",              fb::game::npc::model::builtin_repair},
-{"repair_all",          fb::game::npc::model::builtin_repair_all},
-{"hold_money",          fb::game::npc::builtin_hold_money},
-{"hold_item",           fb::game::npc::builtin_hold_item},
-{"return_money",        fb::game::npc::builtin_return_money},
-{"return_item",         fb::game::npc::builtin_return_item},
-{"rename_weapon",       fb::game::npc::builtin_rename_weapon},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
@@ -113,11 +89,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 END_LUA_EXTENSION
 
 
-IMPLEMENT_LUA_EXTENSION(fb::game::life::model, "fb.game.life.core")
-{"hp",                  fb::game::life::model::builtin_hp},
-{"mp",                  fb::game::life::model::builtin_mp},
-END_LUA_EXTENSION
-
 IMPLEMENT_LUA_EXTENSION(fb::model::life, "fb.model.life")
 {"hp",                  fb::model::life::builtin_hp},
 {"mp",                  fb::model::life::builtin_mp},
@@ -137,17 +108,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"spell",               fb::game::life::builtin_spell},
 {"damage",              fb::game::life::builtin_damage},
 {"cast",                fb::game::life::builtin_cast},
-END_LUA_EXTENSION
-
-IMPLEMENT_LUA_EXTENSION(fb::game::item::model, "fb.game.item.core")
-{"make",                fb::game::item::model::builtin_make},
-{"attr",                fb::game::item::model::builtin_attr},
-{"capacity",            fb::game::item::model::builtin_capacity},
-{"durability",          fb::game::item::model::builtin_durability},
-{"price",               fb::game::item::model::builtin_price},
-{"repair_price",        fb::game::item::model::builtin_repair_price},
-{"rename_price",        fb::game::item::model::builtin_rename_price},
-{"deposit_price",       fb::game::item::model::builtin_deposit_price},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
@@ -691,15 +651,15 @@ void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::se
         if (durability.has_value())
             item->durability(durability.value());
 
-        if (custom_name.has_value() && item->attr(fb::game::item::ATTRIBUTE::WEAPON))
+        if (custom_name.has_value() && item->attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<fb::game::weapon*>(item)->custom_name(custom_name.value());
 
         if(deposited != -1)
             session.deposit_item(*item);
-        else if(parts == static_cast<uint32_t>(fb::game::equipment::parts::UNKNOWN))
+        else if(parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
             session.items.add(*item, index);
         else
-            session.items.wear((fb::game::equipment::parts)parts, static_cast<fb::game::equipment*>(item));
+            session.items.wear((EQUIPMENT_PARTS)parts, static_cast<fb::game::equipment*>(item));
 
         return true;
     });
@@ -736,7 +696,7 @@ void fb::game::context::send(object& object, const fb::protocol::base::header& h
 
     case context::scope::PIVOT:
     {
-        auto nears = object.showings(object::types::SESSION);
+        auto nears = object.showings(OBJECT_TYPE::SESSION);
         if(!exclude_self)
             object.send(header, encrypt);
 
@@ -746,7 +706,7 @@ void fb::game::context::send(object& object, const fb::protocol::base::header& h
 
     case context::scope::GROUP:
     {
-        if(object.is(object::types::SESSION) == false)
+        if(object.is(OBJECT_TYPE::SESSION) == false)
             return;
 
         auto& session = static_cast<fb::game::session&>(object);
@@ -791,7 +751,7 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::PIVOT:
     {
-        auto nears = object.showings(object::types::SESSION);
+        auto nears = object.showings(OBJECT_TYPE::SESSION);
         if(!exclude_self)
             object.send(*fn(object).get(), encrypt);
 
@@ -801,7 +761,7 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::GROUP:
     {
-        if(object.is(object::types::SESSION) == false)
+        if(object.is(OBJECT_TYPE::SESSION) == false)
             return;
 
         auto& session = static_cast<fb::game::session&>(object);
@@ -1255,7 +1215,7 @@ fb::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::session
     for(auto i = forwards.begin(); i != forwards.end(); i++)
     {
         auto object = *i;
-        auto message = object->is(object::types::ITEM) ? 
+        auto message = object->is(OBJECT_TYPE::ITEM) ? 
             static_cast<fb::game::item*>(*i)->name_styled() : 
             (*i)->name();
         
@@ -1329,15 +1289,15 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
 
         switch(you->type())
         {
-        case fb::game::object::types::SESSION:
+        case OBJECT_TYPE::SESSION:
             this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
             break;
 
-        case fb::game::object::types::MOB:
+        case OBJECT_TYPE::MOB:
             this->handle_click_mob(*session, static_cast<mob&>(*you));
             break;
 
-        case fb::game::object::types::NPC:
+        case OBJECT_TYPE::NPC:
             this->handle_click_npc(*session, static_cast<npc&>(*you));
             break;
         }
@@ -1557,13 +1517,13 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
     {
         for (auto& [fd, obj] : session->map()->objects)
         {
-            if (obj->is(fb::game::object::types::NPC))
+            if (obj->is(OBJECT_TYPE::NPC))
                 npcs.push_back(static_cast<fb::game::npc*>(obj));
         }
     }
     else
     {
-        for (auto npc : session->showings(fb::game::object::types::NPC))
+        for (auto npc : session->showings(OBJECT_TYPE::NPC))
         {
             npcs.push_back(static_cast<fb::game::npc*>(npc));
         }
@@ -1963,7 +1923,7 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        const auto mobs = map->activateds(fb::game::object::types::MOB);
+        const auto mobs = map->activateds(OBJECT_TYPE::MOB);
 
         for(auto x : mobs)
         {
@@ -1999,7 +1959,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
         for(auto& [key, value] : map->objects)
         {
-            if(value->type() != object::types::MOB)
+            if(value->type() != OBJECT_TYPE::MOB)
                 continue;
 
             auto mob = static_cast<fb::game::mob*>(value);
@@ -2070,7 +2030,7 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 
         for(auto& [key, value] : map->objects)
         {
-            if(value->is(fb::game::object::types::SESSION) == false)
+            if(value->is(OBJECT_TYPE::SESSION) == false)
                 continue;
 
             auto session = static_cast<fb::game::session*>(value);

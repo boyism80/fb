@@ -5,6 +5,9 @@
 #include <fb/game/spell.h>
 #include <fb/game/lua.h>
 #include <fb/core/stream.h>
+#include <fb/game/model.h>
+
+using namespace fb::model::enum_value;
 
 namespace fb { namespace game {
 
@@ -23,29 +26,7 @@ public:
     interface listener;
 
 public:
-    class model;
-
-public:
-    struct config
-    {
-    public:
-        uint32_t            id          = 0xFFFFFFFF;
-        const point16_t     position    = fb::game::point16_t();
-        fb::game::DIRECTION_TYPE direction   = fb::game::DIRECTION_TYPE::BOTTOM;
-        fb::game::map*      map         = nullptr;
-    };
-
-public:
-    enum class types : uint32_t
-    { 
-        UNKNOWN = 0x00, 
-        ITEM    = 0x01, 
-        NPC     = 0x02, 
-        MOB     = 0x04, 
-        SESSION = 0x08, 
-        LIFE    = (MOB | SESSION),
-        OBJECT  = (ITEM | NPC | MOB) 
-    };
+    struct config;
 
 public:
     LUA_PROTOTYPE
@@ -60,11 +41,11 @@ private:
 
 protected:
     uint32_t                            _sequence   = 0;
-    const fb::game::object::model*      _model;
+    const fb::model::object&            _model;
     bool                                _map_lock   = false;
 
     point16_t                           _position   = point16_t(0, 0);
-    fb::game::DIRECTION_TYPE                 _direction  = fb::game::DIRECTION_TYPE::BOTTOM;
+    DIRECTION_TYPE                      _direction  = DIRECTION_TYPE::BOTTOM;
     fb::game::map*                      _map        = nullptr;
 
 public:
@@ -72,7 +53,7 @@ public:
     fb::game::buffs                     buffs;
 
 protected:
-    object(fb::game::context& context, const model* model, const fb::game::object::config& config);
+    object(fb::game::context& context, const fb::model::object& model, const config& c);
     object(const object& right);
 public:
     virtual ~object();
@@ -92,24 +73,24 @@ public:
     uint32_t                            sequence() const { return this->_sequence; }
     void                                sequence(uint32_t value) { this->_sequence = value; }
 
-    const model*                        based() const;
+    const fb::model::object&            based() const;
     template <typename T>
-    const typename T::model*            based() const { return static_cast<const typename T::model*>(this->_model); }
-    bool                                is(object::types type) const;
+    const typename T&                   based() const { return static_cast<const T&>(this->_model); }
+    bool                                is(OBJECT_TYPE type) const;
 
     virtual const std::string&          name() const;
     virtual uint16_t                    look() const;
     virtual uint8_t                     color() const;
-    virtual object::types               type() const;
+    virtual OBJECT_TYPE                 type() const;
 
     void                                chat(const std::string& message, bool shout = false);
     const point16_t&                    position() const;
     const point16_t                     position_forward() const;
-    const point16_t                     position_forward(fb::game::DIRECTION_TYPE direction) const;
+    const point16_t                     position_forward(DIRECTION_TYPE direction) const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
-    bool                                move(fb::game::DIRECTION_TYPE direction);
+    bool                                move(DIRECTION_TYPE direction);
 
     uint16_t                            x() const;
     bool                                x(uint16_t value);
@@ -117,8 +98,8 @@ public:
     uint16_t                            y() const;
     bool                                y(uint16_t value);
 
-    fb::game::DIRECTION_TYPE                 direction() const;
-    bool                                direction(fb::game::DIRECTION_TYPE value);
+    DIRECTION_TYPE                      direction() const;
+    bool                                direction(DIRECTION_TYPE value);
 
     virtual fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position);
     virtual fb::awaiter<bool>           co_map(fb::game::map* map);
@@ -132,18 +113,18 @@ public:
     bool                                sight(const point16_t& position) const;
     bool                                sight(const fb::game::object& object) const;
 
-    object*                             side(fb::game::DIRECTION_TYPE direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                sides(fb::game::DIRECTION_TYPE direction, fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    object*                             forward(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                forwards(fb::game::object::types type = fb::game::object::types::UNKNOWN) const;
+    object*                             side(DIRECTION_TYPE direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                sides(DIRECTION_TYPE direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    object*                             forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     // 내 시야에서 보여지는 오브젝트들
-    std::vector<object*>                showings(object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                showings(const std::vector<object*>& source, const point16_t& position, object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                showings(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     // 자기 시야에 내가 있는 오브젝트들
-    std::vector<object*>                showns(object::types type = fb::game::object::types::UNKNOWN) const;
-    std::vector<object*>                showns(const std::vector<object*>& source, const point16_t& position, object::types type = fb::game::object::types::UNKNOWN) const;
+    std::vector<object*>                showns(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     bool                                visible() const;
     void                                visible(bool value);
@@ -205,50 +186,13 @@ interface object::listener
     virtual void                        on_destroy(fb::game::object& me) = 0;
 };
 
-class object::model : public lua::luable
+struct object::config
 {
 public:
-    struct config
-    {
-    public:
-        std::string     name;
-        uint16_t        look  = 0;
-        uint8_t         color = 0;
-    };
-
-public:
-    friend class fb::game::object;
-
-public:
-    LUA_PROTOTYPE
-
-public:
-    const std::string                   name;
-    const uint16_t                      look  = 0;
-    const uint8_t                       color = 0;
-
-public:
-    template <typename T, typename... Args>
-    T* make(fb::game::context& context, Args... args) const
-    {
-        return new T(context, static_cast<const typename T::model*>(this), args...);
-    }
-
-public:
-    model(const fb::game::object::model::config& config);
-    virtual ~model();
-
-protected:
-    uint8_t                             dialog_look_type() const;
-
-public:
-    virtual object::types               type() const;
-
-public:
-    static int                          builtin_name(lua_State* lua);
-    static int                          builtin_look(lua_State* lua);
-    static int                          builtin_color(lua_State* lua);
-    static int                          builtin_dialog(lua_State* lua);
+    uint32_t            id          = 0xFFFFFFFF;
+    const point16_t     position    = fb::game::point16_t();
+    DIRECTION_TYPE      direction   = DIRECTION_TYPE::BOTTOM;
+    fb::game::map*      map         = nullptr;
 };
 
 } }

@@ -238,7 +238,7 @@ fb::game::life* fb::game::mob::find_target()
         return nullptr;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto x : this->showings(fb::game::object::types::SESSION))
+    for(auto x : this->showings(OBJECT_TYPE::SESSION))
     {
         auto                life = static_cast<fb::game::life*>(x);
         if(life->alive() == false)
@@ -254,17 +254,12 @@ fb::game::life* fb::game::mob::find_target()
     return this->_target;
 }
 
-//const std::vector<fb::game::mob::drop>& fb::game::mob::items() const
-//{
-//    return static_cast<const model*>(this->_model)->items();
-//}
-
 bool fb::game::mob::near_target(fb::game::DIRECTION_TYPE& out) const
 {
     for(int i = 0; i < 4; i++)
     {
         auto                direction = fb::game::DIRECTION_TYPE(i);
-        if(this->side(direction, fb::game::object::types::SESSION) != this->_target)
+        if(this->side(direction, OBJECT_TYPE::SESSION) != this->_target)
             continue;
 
         out = direction;
@@ -368,7 +363,7 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
     fb::game::life::on_damaged(from, damage, critical);
 
     auto model = this->based<fb::game::mob>();
-    if(model->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(fb::game::object::types::LIFE))
+    if(model->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
     {
         this->target(static_cast<fb::game::life*>(from));
     }

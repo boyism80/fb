@@ -16,6 +16,16 @@ fb::model::enum_value::OBJECT_TYPE fb::model::object::type() const
     return fb::model::enum_value::OBJECT_TYPE::UNKNOWN;
 }
 
+bool fb::model::object::operator == (const fb::model::object& r) const
+{
+    return this == &r;
+}
+
+bool fb::model::object::operator == (const fb::model::object& r) const
+{
+    return this != &r;
+}
+
 int fb::model::object::builtin_name(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);

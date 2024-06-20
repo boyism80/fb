@@ -2,7 +2,7 @@
 #define __PROTOCOL_REQUEST_BOARD_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/old_model.h>
+#include <fb/game/model.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace board {
 
@@ -11,26 +11,28 @@ class sections : public fb::protocol::base::header
 public:
 #ifdef BOT
     std::vector<fb::game::board::section>       section_list;
+#else
+    const fb::model::container& model;
 #endif
 
 public:
-    sections() : fb::protocol::base::header(0x31)
+    sections(fb::game::context& ctx, const fb::model::container& model) : fb::protocol::base::header(0x31), model(model)
     { }
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        auto size = fb::game::old_model::boards.size();
+        auto size = this->model.board.size();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        for(const auto& [k, v] : fb::game::old_model::boards)
+        for(const auto& [k, v] : this->model.board)
         {
             out_stream.write_u16(k)
-                      .write(v->title);
+                      .write(v.name);
         }
     }
 #else

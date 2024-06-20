@@ -243,11 +243,11 @@ public:
     void                    on_die(mob& me, object* you) final;
 
     // listener : item
-    void                    on_item_remove(session& me, uint8_t index, item::DELETE_TYPE attr) final;
+    void                    on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr) final;
     void                    on_item_update(session& me, uint8_t index) final;
     void                    on_item_swap(session& me, uint8_t src, uint8_t dst) final;
-    void                    on_equipment_on(session& me, item& item, equipment::parts parts) final;
-    void                    on_equipment_off(session& me, equipment::parts parts, uint8_t index) final;
+    void                    on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts) final;
+    void                    on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index) final;
     void                    on_item_active(session& me, item& item) final;
     void                    on_item_throws(session& me, item& item, const point16_t& to) final;
 
@@ -268,14 +268,6 @@ public:
 
 
     // listener : dialog
-    // obsolate
-    void                    on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit = 0xFFFF, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-    void                    on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
-
     void                    on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void                    on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;

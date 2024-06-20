@@ -270,19 +270,19 @@ main::main() : context(::luaL_newstate())
     this->load_file("scripts/common/pickup.lua");
     this->load_file("scripts/common/attack.lua");
 
-    lua_pushinteger(*this, fb::game::object::types::UNKNOWN);
+    lua_pushinteger(*this, OBJECT_TYPE::UNKNOWN);
     lua_setglobal(*this, "UNKNOWN");
-    lua_pushinteger(*this, fb::game::object::types::ITEM);
+    lua_pushinteger(*this, OBJECT_TYPE::ITEM);
     lua_setglobal(*this, "ITEM");
-    lua_pushinteger(*this, fb::game::object::types::NPC);
+    lua_pushinteger(*this, OBJECT_TYPE::NPC);
     lua_setglobal(*this, "NPC");
-    lua_pushinteger(*this, fb::game::object::types::MOB);
+    lua_pushinteger(*this, OBJECT_TYPE::MOB);
     lua_setglobal(*this, "MOB");
-    lua_pushinteger(*this, fb::game::object::types::SESSION);
+    lua_pushinteger(*this, OBJECT_TYPE::SESSION);
     lua_setglobal(*this, "SESSION");
-    lua_pushinteger(*this, fb::game::object::types::LIFE);
+    lua_pushinteger(*this, OBJECT_TYPE::LIFE);
     lua_setglobal(*this, "LIFE");
-    lua_pushinteger(*this, fb::game::object::types::OBJECT);
+    lua_pushinteger(*this, OBJECT_TYPE::OBJECT);
     lua_setglobal(*this, "OBJECT");
 
 
@@ -365,94 +365,94 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "STATE_CLOACK");
 
 
-    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::NONE);
+    lua_pushinteger(*this, DEATH_PENALTY_TYPE::NONE);
     lua_setglobal(*this, "ITEM_PENALTY_NONE");
-    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::DROP);
+    lua_pushinteger(*this, DEATH_PENALTY_TYPE::DROP);
     lua_setglobal(*this, "ITEM_PENALTY_DROP");
-    lua_pushinteger(*this, fb::game::item::DEATH_PENALTY_TYPE::DESTRUCTION);
+    lua_pushinteger(*this, DEATH_PENALTY_TYPE::DESTRUCTION);
     lua_setglobal(*this, "ITEM_PENALTY_DESTRUCTION");
 
 
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::REMOVED);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::REMOVED);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_REMOVED");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DROP);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::DROP);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DROP");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::EAT);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::EAT);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_EAT");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SMOKE);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::SMOKE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SMOKE");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::THROW);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::THROW);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_THROW");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SHOOT);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::SHOOT);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SHOOT");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::REDUCE);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::REDUCE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_REDUCE");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::STICK);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::STICK);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_STICK");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DECAY);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::DECAY);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DECAY");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::GIVE);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::GIVE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_GIVE");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::SELL);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::SELL);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_SELL");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::NONE);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::NONE);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_NONE");
-    lua_pushinteger(*this, fb::game::item::DELETE_TYPE::DESTROY);
+    lua_pushinteger(*this, ITEM_DELETE_TYPE::DESTROY);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DESTROY");
 
 
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::NONE);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::NONE);
     lua_setglobal(*this, "ITEM_ATTR_NONE");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::CONSUME);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::CONSUME);
     lua_setglobal(*this, "ITEM_ATTR_CONSUME");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::BUNDLE);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::BUNDLE);
     lua_setglobal(*this, "ITEM_ATTR_BUNDLE");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::SCRIPT);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::SCRIPT);
     lua_setglobal(*this, "ITEM_ATTR_SCRIPT");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::CASH);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::CASH);
     lua_setglobal(*this, "ITEM_ATTR_CASH");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::PACK);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::PACK);
     lua_setglobal(*this, "ITEM_ATTR_PACK");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::EQUIPMENT);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::EQUIPMENT);
     lua_setglobal(*this, "ITEM_ATTR_EQUIPMENT");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::WEAPON);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::WEAPON);
     lua_setglobal(*this, "ITEM_ATTR_WEAPON");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::ARMOR);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::ARMOR);
     lua_setglobal(*this, "ITEM_ATTR_ARMOR");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::SHIELD);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::SHIELD);
     lua_setglobal(*this, "ITEM_ATTR_SHIELD");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::HELMET);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::HELMET);
     lua_setglobal(*this, "ITEM_ATTR_HELMET");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::RING);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::RING);
     lua_setglobal(*this, "ITEM_ATTR_RING");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::AUXILIARY);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::AUXILIARY);
     lua_setglobal(*this, "ITEM_ATTR_AUXILIARY");
-    lua_pushinteger(*this, fb::game::item::ATTRIBUTE::ARROW);
+    lua_pushinteger(*this, ITEM_ATTRIBUTE::ARROW);
     lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
 
-    lua_pushinteger(*this, fb::game::equipment::position::LEFT);
+    lua_pushinteger(*this, EQUIPMENT_POSITION::LEFT);
     lua_setglobal(*this, "POSITION_LEFT");
-    lua_pushinteger(*this, fb::game::equipment::position::RIGHT);
+    lua_pushinteger(*this, EQUIPMENT_POSITION::RIGHT);
     lua_setglobal(*this, "POSITION_RIGHT");
 
-    lua_pushinteger(*this, fb::game::equipment::parts::UNKNOWN);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::UNKNOWN);
     lua_setglobal(*this, "EQUIPMENT_PARTS_UNKNOWN");
-    lua_pushinteger(*this, fb::game::equipment::parts::WEAPON);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::WEAPON);
     lua_setglobal(*this, "EQUIPMENT_PARTS_WEAPON");
-    lua_pushinteger(*this, fb::game::equipment::parts::ARMOR);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::ARMOR);
     lua_setglobal(*this, "EQUIPMENT_PARTS_ARMOR");
-    lua_pushinteger(*this, fb::game::equipment::parts::SHIELD);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::SHIELD);
     lua_setglobal(*this, "EQUIPMENT_PARTS_SHIELD");
-    lua_pushinteger(*this, fb::game::equipment::parts::HELMET);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::HELMET);
     lua_setglobal(*this, "EQUIPMENT_PARTS_HELMET");
-    lua_pushinteger(*this, fb::game::equipment::parts::LEFT_HAND);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::LEFT_HAND);
     lua_setglobal(*this, "EQUIPMENT_PARTS_LEFT_HAND");
-    lua_pushinteger(*this, fb::game::equipment::parts::RIGHT_HAND);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::RIGHT_HAND);
     lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_HAND");
-    lua_pushinteger(*this, fb::game::equipment::parts::LEFT_AUX);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::LEFT_AUX);
     lua_setglobal(*this, "EQUIPMENT_PARTS_LEFT_AUX");
-    lua_pushinteger(*this, fb::game::equipment::parts::RIGHT_AUX);
+    lua_pushinteger(*this, EQUIPMENT_PARTS::RIGHT_AUX);
     lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_AUX");
 
 

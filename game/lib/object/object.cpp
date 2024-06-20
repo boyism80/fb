@@ -2,36 +2,18 @@
 #include <fb/game/map.h>
 #include <fb/game/context.h>
 
-fb::game::object::model::model(const fb::game::object::model::config& config) : 
-    name(config.name),
-    look(config.look),
-    color(config.color)
-{ }
-
-fb::game::object::model::~model()
-{ }
-
-uint8_t fb::game::object::model::dialog_look_type() const
-{
-    return this->look > 0xBFFF ? 0x02 : 0x01;
-}
-
-fb::game::object::types fb::game::object::model::type() const
-{
-    return types::UNKNOWN;
-}
-
+using namespace fb::model::enum_value;
 
 // fb::game::object
-fb::game::object::object(fb::game::context& context, const model* model, const fb::game::object::config& config) : 
-    luable(config.id),
+fb::game::object::object(fb::game::context& context, const fb::model::object& model, const fb::game::object::config& c) : 
+    luable(c.id),
     context(context),
     _listener(&context),
-    _sequence(config.id),
+    _sequence(c.id),
     _model(model),
-    _position(config.position),
-    _direction(config.direction),
-    _map(config.map),
+    _position(c.position),
+    _direction(c.direction),
+    _map(c.map),
     buffs(*this)
 {
     if(this->_listener != nullptr)
@@ -56,12 +38,12 @@ fb::game::object::~object()
     this->map(nullptr);
 }
 
-const fb::game::object::model* fb::game::object::based() const
+const fb::model::object& fb::game::object::based() const
 {
     return this->_model;
 }
 
-bool fb::game::object::is(object::types type) const
+bool fb::game::object::is(OBJECT_TYPE type) const
 {
     auto mine = this->type();
     return (type & mine) == mine;
@@ -69,25 +51,22 @@ bool fb::game::object::is(object::types type) const
 
 const std::string& fb::game::object::name() const
 {
-    return this->_model->name;
+    return this->_model.name;
 }
 
 uint16_t fb::game::object::look() const
 {
-    return this->_model->look;
+    return this->_model.look;
 }
 
 uint8_t fb::game::object::color() const
 {
-    return this->_model->color;
+    return this->_model.color;
 }
 
-fb::game::object::types fb::game::object::type() const
+OBJECT_TYPE fb::game::object::type() const
 {
-    if(this->_model == nullptr)
-        return fb::game::object::types::UNKNOWN;
-    else
-        return this->_model->type();
+    return this->_model.type();
 }
 
 void fb::game::object::destroy()
@@ -162,12 +141,12 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     if(this->_listener != nullptr)
     {
         // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
-        //auto befores = fb::game::object::showns(nears_before, *this, fb::game::object::types::UNKNOWN/* , true, false */);
+        //auto befores = fb::game::object::showns(nears_before, *this, OBJECT_TYPE::UNKNOWN/* , true, false */);
         auto befores = this->showns(nears_before, before);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
-        //auto afters = fb::game::object::showns(nears_after, *this, fb::game::object::types::UNKNOWN/* , false, false */);
+        //auto afters = fb::game::object::showns(nears_after, *this, OBJECT_TYPE::UNKNOWN/* , false, false */);
         auto afters = this->showns(nears_after, this->_position);
         std::sort(afters.begin(), afters.end());
 
@@ -539,7 +518,7 @@ bool fb::game::object::map(fb::game::map* map)
     return this->map(map, point16_t(0, 0));
 }
 
-fb::game::object* fb::game::object::side(fb::game::DIRECTION_TYPE direction, fb::game::object::types type) const
+fb::game::object* fb::game::object::side(fb::game::DIRECTION_TYPE direction, OBJECT_TYPE type) const
 {
     fb::game::map* map = this->_map;
     if(map == nullptr)
@@ -583,7 +562,7 @@ fb::game::object* fb::game::object::side(fb::game::DIRECTION_TYPE direction, fb:
         *found : nullptr;
 }
 
-std::vector<fb::game::object*> fb::game::object::sides(fb::game::DIRECTION_TYPE direction, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::object::sides(fb::game::DIRECTION_TYPE direction, OBJECT_TYPE type) const
 {
     auto result = std::vector<fb::game::object*>();
     try
@@ -631,17 +610,17 @@ std::vector<fb::game::object*> fb::game::object::sides(fb::game::DIRECTION_TYPE 
     return std::move(result);
 }
 
-fb::game::object* fb::game::object::forward(fb::game::object::types type) const
+fb::game::object* fb::game::object::forward(OBJECT_TYPE type) const
 {
     return this->side(this->_direction, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::forwards(fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::object::forwards(OBJECT_TYPE type) const
 {
     return this->sides(this->_direction, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showns(object::types type) const
+std::vector<fb::game::object*> fb::game::object::showns(OBJECT_TYPE type) const
 {
     if(this->_map == nullptr)
         return std::vector<fb::game::object*> { };
@@ -649,7 +628,7 @@ std::vector<fb::game::object*> fb::game::object::showns(object::types type) cons
     return this->showns(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, object::types type) const
+std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     if(this->_map == nullptr)
@@ -666,7 +645,7 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
             if(x->visible() == false)
                 return false;
 
-            if(type != object::types::UNKNOWN && x->is(type) == false)
+            if(type != OBJECT_TYPE::UNKNOWN && x->is(type) == false)
                 return false;
 
             return sight(position, x->_position, this->_map);
@@ -676,7 +655,7 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
     return std::move(objects);
 }
 
-std::vector<object*> fb::game::object::showings(object::types type) const
+std::vector<object*> fb::game::object::showings(OBJECT_TYPE type) const
 {
     if(this->_map == nullptr)
         return std::vector<object*> { };
@@ -684,7 +663,7 @@ std::vector<object*> fb::game::object::showings(object::types type) const
         return this->showings(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, object::types type) const
+std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     if(this->_map == nullptr)
@@ -701,7 +680,7 @@ std::vector<object*> fb::game::object::showings(const std::vector<object*>& sour
             if(x->visible() == false)
                 return false;
 
-            if(type != object::types::UNKNOWN && x->is(type) == false)
+            if(type != OBJECT_TYPE::UNKNOWN && x->is(type) == false)
                 return false;
 
             return x->sight(position);

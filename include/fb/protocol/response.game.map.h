@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/map.h>
-#include <fb/game/old_model.h>
+#include <fb/game/model.h>
 
 static constexpr uint16_t crc16tab[256] = 
 {
@@ -183,91 +183,93 @@ public:
     { }
     worlds(const std::string& id) : fb::protocol::base::header(0x2E)
     {
+        // TODO: 코드 분석 후 다시 구현
         try
         {
-            auto  windex = fb::game::old_model::worlds.find(id);
-            if(windex == -1)
-                throw nullptr;
+            //auto  windex = fb::game::old_model::worlds.find(id);
+            //if(windex == -1)
+            //    throw nullptr;
 
-            auto  world = fb::game::old_model::worlds[windex];
-            auto& offsets = world->offsets();
-            auto  found = std::find_if
-            (
-                offsets.cbegin(), offsets.cend(),
-                [&] (auto offset)
-                {
-                    return offset->id == id;
-                }
-            );
+            //auto  world = fb::game::old_model::worlds[windex];
+            //auto& offsets = world->offsets();
+            //auto  found = std::find_if
+            //(
+            //    offsets.cbegin(), offsets.cend(),
+            //    [&] (auto offset)
+            //    {
+            //        return offset->id == id;
+            //    }
+            //);
 
-            if(found == offsets.cend())
-                throw nullptr;
+            //if(found == offsets.cend())
+            //    throw nullptr;
 
-            this->offset = *found;
+            //this->offset = *found;
         }
         catch(...)
         {
-            this->offset = nullptr;
+            //this->offset = nullptr;
         }
     }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
+        // TODO: 코드 분석 후 다시 구현
         base::header::serialize(out_stream);
 
-        if(this->offset == nullptr)
-            return;
+        //if(this->offset == nullptr)
+        //    return;
 
-        auto windex = fb::game::old_model::worlds.find(this->offset->id);
-        if(windex == -1)
-            return;
+        //auto windex = fb::game::old_model::worlds.find(this->offset->id);
+        //if(windex == -1)
+        //    return;
 
-        auto world = fb::game::old_model::worlds[windex];
-        if(world == nullptr)
-            return;
+        //auto world = fb::game::old_model::worlds[windex];
+        //if(world == nullptr)
+        //    return;
 
-        auto& offsets = world->offsets();
-        auto current = -1;
-        for(int i = 0; i < offsets.size(); i++)
-        {
-            if(this->offset == offsets[i])
-            {
-                current = i;
-                break;
-            }
-        }
-        if(current == -1)
-            return;
+        //auto& offsets = world->offsets();
+        //auto current = -1;
+        //for(int i = 0; i < offsets.size(); i++)
+        //{
+        //    if(this->offset == offsets[i])
+        //    {
+        //        current = i;
+        //        break;
+        //    }
+        //}
+        //if(current == -1)
+        //    return;
 
-        out_stream.writestr_u8(world->name)
-                  .write_u8(offsets.size())
-                  .write_u8(current);
+        //out_stream.writestr_u8(world->name)
+        //          .write_u8(offsets.size())
+        //          .write_u8(current);
 
-        auto offset_id = 0;
-        for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
-        {
-            auto& group = (*world)[gropu_id];
-            for(auto& offset : *group)
-            {
-                out_stream.write_u16(offset->position.x)
-                          .write_u16(offset->position.y)
-                          .writestr_u8(offset->name)
-                          .write_u16(0x0000)
-                          .write_u16(windex)
-                          .write_u16(current)
-                          .write_u16(offset_id++)
-                          .write_u16(group->size());
+        //auto offset_id = 0;
+        //for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
+        //{
+        //    auto& group = (*world)[gropu_id];
+        //    for(auto& offset : *group)
+        //    {
+        //        out_stream.write_u16(offset->position.x)
+        //                  .write_u16(offset->position.y)
+        //                  .writestr_u8(offset->name)
+        //                  .write_u16(0x0000)
+        //                  .write_u16(windex)
+        //                  .write_u16(current)
+        //                  .write_u16(offset_id++)
+        //                  .write_u16(group->size());
 
-                for(int i = 0; i < offsets.size(); i++)
-                {
-                    if(group->contains(*offsets[i]) == false)
-                        continue;
+        //        for(int i = 0; i < offsets.size(); i++)
+        //        {
+        //            if(group->contains(*offsets[i]) == false)
+        //                continue;
 
-                    out_stream.write_u16(i);
-                }
-            }
-        }
+        //            out_stream.write_u16(i);
+        //        }
+        //    }
+        //}
     }
 };
 
