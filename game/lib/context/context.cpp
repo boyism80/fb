@@ -9,10 +9,10 @@ IMPLEMENT_LUA_EXTENSION(fb::game::lua::luable, "fb.game.luable")
 {"__gc",                fb::game::lua::luable::builtin_gc},
 END_LUA_EXTENSION
 
-IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
-{"type",                fb::game::spell::builtin_type},
-{"name",                fb::game::spell::builtin_name},
-{"message",             fb::game::spell::builtin_message},
+IMPLEMENT_LUA_EXTENSION(fb::model::spell, "fb.model.spell")
+{"type",                fb::model::spell::builtin_type},
+{"name",                fb::model::spell::builtin_name},
+{"message",             fb::model::spell::builtin_message},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")

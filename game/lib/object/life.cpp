@@ -206,7 +206,7 @@ void fb::game::life::kill()
         listener->on_hide(*this);
 }
 
-bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
+bool fb::game::life::active(fb::model::spell& spell, const std::string& message)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -215,7 +215,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::INPUT)
+    if(spell.type != SPELL_TYPE::INPUT)
         return false;
 
     thread->pushobject(this)
@@ -225,7 +225,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
     return true;
 }
 
-bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
+bool fb::game::life::active(fb::model::spell& spell, uint32_t fd)
 {
     if(this->_map == nullptr)
         return false;
@@ -237,7 +237,7 @@ bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
     return this->active(spell, *to);
 }
 
-bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
+bool fb::game::life::active(fb::model::spell& spell, fb::game::object& to)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -246,7 +246,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::TARGET)
+    if(spell.type != SPELL_TYPE::TARGET)
         return false;
 
     auto                map = this->map();
@@ -266,7 +266,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     return true;
 }
 
-bool fb::game::life::active(fb::game::spell& spell)
+bool fb::game::life::active(fb::model::spell& spell)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -275,7 +275,7 @@ bool fb::game::life::active(fb::game::spell& spell)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::NORMAL)
+    if(spell.type != SPELL_TYPE::NORMAL)
         return false;
 
     thread->pushobject(this)

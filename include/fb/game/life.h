@@ -68,10 +68,10 @@ public:
     virtual bool                alive() const;
     void                        kill();
 
-    bool                        active(fb::game::spell& spell);
-    bool                        active(fb::game::spell& spell, uint32_t fd);
-    bool                        active(fb::game::spell& spell, const std::string& message);
-    bool                        active(fb::game::spell& spell, fb::game::object& to);
+    bool                        active(fb::model::spell& spell);
+    bool                        active(fb::model::spell& spell, uint32_t fd);
+    bool                        active(fb::model::spell& spell, const std::string& message);
+    bool                        active(fb::model::spell& spell, fb::game::object& to);
 
 protected:
     virtual void                on_update() { }

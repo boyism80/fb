@@ -196,6 +196,9 @@
     <ClCompile Include="model.map.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="model.spell.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

@@ -28,17 +28,17 @@ public:
         this->slot = this->_in_stream.read_u8() - 1;
     }
 
-    void parse(fb::game::spell::types type) const
+    void parse(SPELL_TYPE type) const
     {
         switch(type)
         {
-        case fb::game::spell::types::INPUT:
+        case SPELL_TYPE::INPUT:
         {
             this->message = _in_stream.readstr();
             break;
         }
 
-        case fb::game::spell::types::TARGET:
+        case SPELL_TYPE::TARGET:
         {
             this->fd = this->_in_stream.read_u32();
             this->position.x = this->_in_stream.read_u16();

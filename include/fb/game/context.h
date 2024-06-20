@@ -71,9 +71,9 @@ public:
     bool                    exists(const fb::game::object& object) const;
 
     template <typename T, typename... Args>
-    T*                      make(const typename T::model* core, Args... args)
+    T*                      make(Args... args)
     {
-        return new T(*this, core, args...);
+        return new T(*this, args...);
     }
     bool                    destroy(fb::game::object& obj);
 

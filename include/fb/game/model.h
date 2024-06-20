@@ -367,6 +367,30 @@ inline ITEM_TYPE enum_parse<ITEM_TYPE>(const std::string k)
     return i->second;
 }
 
+enum class MAP_EFFECT_TYPE
+{
+    NONE = 0x00, 
+    FIRE = 0x01, 
+    WATER = 0x02
+};
+
+template <>
+inline MAP_EFFECT_TYPE enum_parse<MAP_EFFECT_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, MAP_EFFECT_TYPE> enums
+    {
+        { "NONE", MAP_EFFECT_TYPE::NONE }, 
+        { "FIRE", MAP_EFFECT_TYPE::FIRE }, 
+        { "WATER", MAP_EFFECT_TYPE::WATER }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class MOB_ATTACK_TYPE
 {
     NONE = 0, 
@@ -514,6 +538,36 @@ inline SEX enum_parse<SEX>(const std::string k)
         { "MAN", SEX::MAN }, 
         { "WOMAN", SEX::WOMAN }, 
         { "ALL", SEX::ALL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class SPELL_TYPE
+{
+    INPUT = 0x01, 
+    TARGET = 0x02, 
+    NORMAL = 0x05, 
+    UNKNOWN1 = 8, 
+    UNKNOWN2 = 9, 
+    UNKNOWN3 = 12
+};
+
+template <>
+inline SPELL_TYPE enum_parse<SPELL_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, SPELL_TYPE> enums
+    {
+        { "INPUT", SPELL_TYPE::INPUT }, 
+        { "TARGET", SPELL_TYPE::TARGET }, 
+        { "NORMAL", SPELL_TYPE::NORMAL }, 
+        { "UNKNOWN1", SPELL_TYPE::UNKNOWN1 }, 
+        { "UNKNOWN2", SPELL_TYPE::UNKNOWN2 }, 
+        { "UNKNOWN3", SPELL_TYPE::UNKNOWN3 }
     };
 
     auto i = enums.find(k);
@@ -1244,6 +1298,7 @@ public:
     const std::string name;
     const uint32_t root;
     const uint16_t bgm;
+    const fb::model::enum_value::MAP_EFFECT_TYPE effect;
     const uint8_t host;
     const bool hunting_ground;
     const bool enable_die_penalty;
@@ -1262,6 +1317,7 @@ DECLARE_MAP_CONSTRUCTOR
         name(fb::model::build<std::string>(json["name"])),
         root(fb::model::build<uint32_t>(json["root"])),
         bgm(fb::model::build<uint16_t>(json["bgm"])),
+        effect(fb::model::build<fb::model::enum_value::MAP_EFFECT_TYPE>(json["effect"])),
         host(fb::model::build<uint8_t>(json["host"])),
         hunting_ground(fb::model::build<bool>(json["hunting_ground"])),
         enable_die_penalty(fb::model::build<bool>(json["enable_die_penalty"])),
@@ -1544,7 +1600,7 @@ DECLARE_SPELL_INHERIT
 public:
     const uint32_t id;
     const std::string name;
-    const uint8_t type;
+    const fb::model::enum_value::SPELL_TYPE type;
     const std::string cast;
     const std::string uncast;
     const std::string concast;
@@ -1557,7 +1613,7 @@ DECLARE_SPELL_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
-        type(fb::model::build<uint8_t>(json["type"])),
+        type(fb::model::build<fb::model::enum_value::SPELL_TYPE>(json["type"])),
         cast(fb::model::build<std::string>(json["cast"])),
         uncast(fb::model::build<std::string>(json["uncast"])),
         concast(fb::model::build<std::string>(json["concast"])),
@@ -2178,9 +2234,6 @@ private:
 public:
     const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
         _pair(i != container->end() ? std::make_unique<std::pair<K, V&>>(i->first, *i->second) : nullptr)
-    { }
-
-    const_iterator(const typename kv_container<K,V>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : const_iterator(static_cast<const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator&>(i), container)
     { }
     ~const_iterator() = default;
 

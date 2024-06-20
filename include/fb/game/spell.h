@@ -5,7 +5,7 @@
 #include <chrono>
 #include <fb/game/mmo.h>
 #include <fb/game/container.h>
-#include <fb/game/lua.h>
+#include <fb/game/model.h>
 
 namespace fb { namespace game {
 
@@ -21,32 +21,22 @@ public:
     interface listener;
 
 public:
-    enum class types : uint8_t
-    {
-        INPUT   = 0x01, 
-        TARGET  = 0x02,
-        NORMAL  = 0x05, 
-    };
+    const fb::model::spell&     model;
 
 public:
-    const uint16_t               id     = 0;
-    const fb::game::spell::types type   = fb::game::spell::types::NORMAL;
-    const std::string            name;
-    const std::string            cast, uncast, concast;
-    const std::string            message;
-
-public:
-    spell(uint16_t id, fb::game::spell::types type, const std::string& name, const std::string& cast, const std::string& uncast, const std::string& concast, const std::string& message);
+    spell(const fb::model::spell& spell);
     ~spell();
-
-public:
-    static int                  builtin_type(lua_State* lua);
-    static int                  builtin_name(lua_State* lua);
-    static int                  builtin_message(lua_State* lua);
 };
 
 
-class spells : public fb::game::base_container<fb::game::spell>
+interface spell::listener
+{
+    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+};
+
+
+class spells : public fb::game::base_container<fb::model::spell>
 {
 public:
     spells(life& owner);
@@ -54,10 +44,10 @@ public:
 
     // override
 public:
-    uint8_t                     add(spell& element);
-    uint8_t                     add(spell& element, uint8_t index);
-    uint8_t                     add(spell* element);
-    uint8_t                     add(spell* element, uint8_t index);
+    uint8_t                     add(fb::model::spell& element);
+    uint8_t                     add(fb::model::spell& element, uint8_t index);
+    uint8_t                     add(fb::model::spell* element);
+    uint8_t                     add(fb::model::spell* element, uint8_t index);
     bool                        remove(uint8_t index);
     bool                        swap(uint8_t src, uint8_t dst);
 };
@@ -69,10 +59,10 @@ private:
     std::chrono::milliseconds   _time;
 
 public:
-    const fb::game::spell&      spell;
+    const fb::model::spell&      spell;
 
 public:
-    buff(const fb::game::spell& spell, uint32_t seconds);
+    buff(const fb::model::spell& spell, uint32_t seconds);
     ~buff();
 
 public:
@@ -83,8 +73,8 @@ public:
     void                        time_dec(uint32_t dec);
 
 public:
-    operator                    const fb::game::spell& () const;
-    operator                    const fb::game::spell* () const;
+    operator                    const fb::model::spell& () const;
+    operator                    const fb::model::spell* () const;
 };
 
 
@@ -113,24 +103,16 @@ private:
 
 public:
     bool                        contains(const buff* buff) const;
-    bool                        contains(const spell* spell) const;
+    bool                        contains(const fb::model::spell* spell) const;
     bool                        contains(const std::string& name) const;
-    buff*                       push_back(const fb::game::spell* spell, uint32_t seconds);
+    buff*                       push_back(const fb::model::spell* spell, uint32_t seconds);
     bool                        remove(const std::string& name);
-    bool                        remove(const fb::game::spell* spell);
+    bool                        remove(const fb::model::spell* spell);
     void                        remove(buff* buff);
 
 public:
     buff*                       operator [] (int index) const;
     buff*                       operator [] (const std::string& name) const;
-};
-
-
-
-interface spell::listener
-{
-    virtual void on_spell_update(life& me, uint8_t index) = 0;
-    virtual void on_spell_remove(life& me, uint8_t index) = 0;
 };
 
 } }

@@ -384,7 +384,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
+fb::task<bool> fb::game::object::__map(fb::model::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
 {
     try
     {
@@ -491,7 +491,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
     }
 }
 
-fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::object::co_map(fb::model::map* map, const point16_t& position)
 {
     return fb::awaiter<bool>([this, map, position](auto& awaiter)
     {
@@ -499,12 +499,12 @@ fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& 
     });
 }
 
-fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map)
+fb::awaiter<bool> fb::game::object::co_map(fb::model::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }
 
-bool fb::game::object::map(fb::game::map* map, const point16_t& position)
+bool fb::game::object::map(fb::model::map* map, const point16_t& position)
 {
     auto task = this->__map(map, position);
     if (task.done())
@@ -513,7 +513,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
     return true;
 }
 
-bool fb::game::object::map(fb::game::map* map)
+bool fb::game::object::map(fb::model::map* map)
 {
     return this->map(map, point16_t(0, 0));
 }

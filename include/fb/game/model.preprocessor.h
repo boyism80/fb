@@ -13,6 +13,7 @@ class item;                                                                     
 class items;                                                                                  \
 class sector;                                                                                 \
 class sectors;                                                                                \
+class listener;                                                                               \
                                                                                               \
 } }
 
@@ -271,22 +272,31 @@ public:                                                                         
 public:                                                                                       \
     LUA_PROTOTYPE                                                                             \
                                                                                               \
-private:                                                                                      \
-    uint16_t                        _width = 0, _height = 0;                                  \
-                                                                                              \
 public:                                                                                       \
-    uint16_t                        width() const;                                            \
-    uint16_t                        height() const;                                           \
-                                                                                              \
-public:                                                                                       \
-    static int                      builtin_name(lua_State* lua);                             \
-    static int                      builtin_width(lua_State* lua);                            \
-    static int                      builtin_height(lua_State* lua);                           \
-    static int                      builtin_area(lua_State* lua);                             \
-    static int                      builtin_movable(lua_State* lua);
-
+    static int                      builtin_name(lua_State* lua);
+                                                                                              
 #define DECLARE_MAP_CONTAINER_EXTENSION                                                       \
 public:                                                                                       \
     fb::model::map*                 name2map(const std::string& name) const;
+
+
+#define DECLARE_SPELL_CONTAINER_EXTENSION                                                     \
+public:                                                                                       \
+    LUA_PROTOTYPE                                                                             \
+                                                                                              \
+public:                                                                                       \
+    fb::model::spell*               name2spell(const std::string& name) const;
+
+
+#define DECLARE_SPELL_EXTENSION                                                               \
+public:                                                                                       \
+    interface listener;                                                                       \
+public:                                                                                       \
+    LUA_PROTOTYPE                                                                             \
+                                                                                              \
+public:                                                                                       \
+    static int                  builtin_type(lua_State* lua);                                 \
+    static int                  builtin_name(lua_State* lua);                                 \
+    static int                  builtin_message(lua_State* lua);
 
 #endif

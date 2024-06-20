@@ -11,7 +11,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
         co_return false;
 
     auto name = parameters[0].asString();
-    auto map = fb::game::old_model::maps.name2map(name);
+    auto map = this->model.map.name2map(name);
     if(map == nullptr)
         co_return false;
 
@@ -116,7 +116,7 @@ fb::task<bool> fb::game::context::handle_command_disguise(fb::game::session& ses
         co_return false;
 
     auto name = parameters[0].asString();
-    auto mob = fb::game::old_model::mobs.name2mob(name);
+    auto mob = this->model.mob.name2mob(name);
     if(mob == nullptr)
         co_return true;
 
@@ -142,11 +142,11 @@ fb::task<bool> fb::game::context::handle_command_mob(fb::game::session& session,
         co_return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::old_model::mobs.name2mob(name);
-    if(core == nullptr)
+    auto model = this->model.mob.name2mob(name);
+    if(model == nullptr)
         co_return true;
 
-    auto mob = this->make<fb::game::mob>(core, fb::game::mob::config { .alive = true });
+    auto mob = this->make<fb::game::mob>(*model, fb::game::mob::config { .alive = true });
     auto map = session.map();
     co_await mob->co_map(map, session.position());
     co_return true;
@@ -195,7 +195,7 @@ fb::task<bool> fb::game::context::handle_command_spell(fb::game::session& sessio
         co_return false;
 
     auto name = parameters[0].asString();
-    auto spell = fb::game::old_model::spells.name2spell(name);
+    auto spell = this->model.spell.name2spell(name);
     if(spell == nullptr)
         co_return false;
 

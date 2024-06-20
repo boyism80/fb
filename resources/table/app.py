@@ -105,11 +105,9 @@ with open('source.txt', 'r', encoding='utf8') as f:
 
 with open('result.txt', 'w', encoding='utf8') as f:
 
-    for id, mob in mobs.items():
-        speed = mob['speed']
-        seconds = speed // 1000
-        ms = f'{speed % 1000}'.ljust(4, '0')
-        f.write(f"00:00:{seconds:02d}.{ms}\n")
+    for id, map in maps.items():
+        effect = map['effect'].upper() if 'effect' in map else 'NONE'
+        f.write(f'{effect}\n')
 
     # for wm, arr in worlds.items():
     #     for i in range(len(arr)):

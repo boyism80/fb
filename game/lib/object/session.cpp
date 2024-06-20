@@ -50,7 +50,7 @@ OBJECT_TYPE fb::game::session::type() const
     return OBJECT_TYPE::SESSION;
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::session::co_map(fb::model::map* map, const point16_t& position)
 {
     if (this->_map_lock)
         return fb::awaiter<bool>([this, map, position](auto& awaiter) { return false; });
@@ -71,7 +71,7 @@ fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t&
     }
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map)
+fb::awaiter<bool> fb::game::session::co_map(fb::model::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }

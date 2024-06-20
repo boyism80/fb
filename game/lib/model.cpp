@@ -103,7 +103,7 @@ fb::model::item* container::item::name2item(const std::string& name)
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::spell* container::spell::name2spell(const std::string& name)
+fb::model::spell* container::spell::name2spell(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](auto& pair)
@@ -1022,8 +1022,8 @@ bool container::spell::load(const std::string& path, fb::table::handle_callback 
 
             {
                 auto _ = std::lock_guard(*mutex);
-                auto spell = new fb::game::spell(id, fb::game::spell::types(type), name, cast, uncast, concast, message);
-                this->insert({id, std::unique_ptr<fb::game::spell>(spell)});
+                auto spell = new fb::model::spell(id, SPELL_TYPE(type), name, cast, uncast, concast, message);
+                this->insert({id, std::unique_ptr<fb::model::spell>(spell)});
                 callback(name, percentage);
             }
         },
