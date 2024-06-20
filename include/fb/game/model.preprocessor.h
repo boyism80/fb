@@ -219,4 +219,36 @@ public:                                                                         
         return enum_value::ITEM_ATTRIBUTE::ARROW;                                             \
     }
 
+#define DECLARE_NPC_EXTENSION                                                                 \
+public:                                                                                       \
+    LUA_PROTOTYPE                                                                             \
+                                                                                              \
+public:                                                                                       \
+    static int                  builtin_input(lua_State* lua);                                \
+    static int                  builtin_menu(lua_State* lua);                                 \
+    static int                  builtin_item(lua_State* lua);                                 \
+    static int                  builtin_slot(lua_State* lua);                                 \
+    static int                  builtin_sell(lua_State* lua);                                 \
+    static int                  builtin_buy(lua_State* lua);                                  \
+    static int                  builtin_repair(lua_State* lua);                               \
+    static int                  builtin_repair_all(lua_State* lua);                           \
+    static int                  builtin_hold_money(lua_State* lua);                           \
+    static int                  builtin_hold_item(lua_State* lua);                            \
+    static int                  builtin_return_money(lua_State* lua);                         \
+    static int                  builtin_return_item(lua_State* lua);                          \
+    static int                  builtin_rename_weapon(lua_State* lua);
+
+#define DECLARE_MOB_EXTENSION                                                                 \
+public:                                                                                       \
+    LUA_PROTOTYPE                                                                             \
+                                                                                              \
+public:                                                                                       \
+    enum_value::OBJECT_TYPE     type() const                                                  \
+    {                                                                                         \
+        return enum_value::OBJECT_TYPE::MOB;                                                  \
+    }                                                                                         \
+                                                                                              \
+public:                                                                                       \
+    static int                  builtin_speed(lua_State* lua);                                
+
 #endif

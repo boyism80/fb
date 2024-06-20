@@ -190,6 +190,12 @@
     <ClCompile Include="model.life.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="model.npc.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="model.mob.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

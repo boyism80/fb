@@ -13,7 +13,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1,
     "damage_max": 2,
-    "speed": 2000,
+    "speed": "00:00:02",
     "drop": "드롭.다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/다람쥐.lua"
@@ -32,7 +32,7 @@
     "attack_type": "NONE",
     "damage_min": 0,
     "damage_max": 0,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": "드롭.토끼",
     "attack_script": null,
     "die_script": "scripts/mob/토끼.lua"
@@ -51,7 +51,7 @@
     "attack_type": "COUNTER",
     "damage_min": 7,
     "damage_max": 14,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -70,7 +70,7 @@
     "attack_type": "COUNTER",
     "damage_min": 11,
     "damage_max": 21,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": "드롭.삽사리",
     "attack_script": null,
     "die_script": "scripts/mob/삽사리.lua"
@@ -89,7 +89,7 @@
     "attack_type": "COUNTER",
     "damage_min": 5,
     "damage_max": 15,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -108,7 +108,7 @@
     "attack_type": "COUNTER",
     "damage_min": 5,
     "damage_max": 15,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -127,7 +127,7 @@
     "attack_type": "COUNTER",
     "damage_min": 5,
     "damage_max": 15,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -146,7 +146,7 @@
     "attack_type": "COUNTER",
     "damage_min": 8,
     "damage_max": 10,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.병든쥐",
     "attack_script": null,
     "die_script": "scripts/mob/병든쥐.lua"
@@ -165,7 +165,7 @@
     "attack_type": "COUNTER",
     "damage_min": 13,
     "damage_max": 17,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.독사",
     "attack_script": null,
     "die_script": "scripts/mob/독사.lua"
@@ -184,7 +184,7 @@
     "attack_type": "COUNTER",
     "damage_min": 11,
     "damage_max": 18,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.백사",
     "attack_script": null,
     "die_script": "scripts/mob/백사.lua"
@@ -203,7 +203,7 @@
     "attack_type": "COUNTER",
     "damage_min": 43,
     "damage_max": 47,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.진백사",
     "attack_script": null,
     "die_script": "scripts/mob/진백사.lua"
@@ -222,7 +222,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 18,
     "damage_max": 22,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.청순록",
     "attack_script": null,
     "die_script": "scripts/mob/청순록.lua"
@@ -241,7 +241,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 18,
     "damage_max": 22,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.적순록",
     "attack_script": null,
     "die_script": "scripts/mob/적순록.lua"
@@ -260,7 +260,7 @@
     "attack_type": "COUNTER",
     "damage_min": 18,
     "damage_max": 22,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.흑여우",
     "attack_script": null,
     "die_script": "scripts/mob/흑여우.lua"
@@ -279,7 +279,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 58,
     "damage_max": 62,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.백여우",
     "attack_script": null,
     "die_script": "scripts/mob/백여우.lua"
@@ -298,7 +298,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 38,
     "damage_max": 42,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.서여우",
     "attack_script": null,
     "die_script": "scripts/mob/서여우.lua"
@@ -317,7 +317,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 58,
     "damage_max": 62,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.불여우",
     "attack_script": null,
     "die_script": "scripts/mob/불여우.lua"
@@ -336,7 +336,7 @@
     "attack_type": "COUNTER",
     "damage_min": 8,
     "damage_max": 12,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": "드롭.돼지",
     "attack_script": null,
     "die_script": "scripts/mob/돼지.lua"
@@ -355,7 +355,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -374,7 +374,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 155,
     "damage_max": 165,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.원랑",
     "attack_script": null,
     "die_script": "scripts/mob/원랑.lua"
@@ -393,7 +393,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 200,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.붉은쥐",
     "attack_script": null,
     "die_script": "scripts/mob/붉은쥐.lua"
@@ -412,7 +412,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 101,
     "damage_max": 400,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.불왕쥐",
     "attack_script": null,
     "die_script": "scripts/mob/불왕쥐.lua"
@@ -431,7 +431,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 595,
     "damage_max": 605,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.흑왕쥐",
     "attack_script": null,
     "die_script": "scripts/mob/흑왕쥐.lua"
@@ -450,7 +450,7 @@
     "attack_type": "COUNTER",
     "damage_min": 595,
     "damage_max": 605,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.쥐왕",
     "attack_script": null,
     "die_script": "scripts/mob/쥐왕.lua"
@@ -469,7 +469,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.불토끼",
     "attack_script": null,
     "die_script": "scripts/mob/불토끼.lua"
@@ -488,7 +488,7 @@
     "attack_type": "COUNTER",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.토끼왕",
     "attack_script": null,
     "die_script": "scripts/mob/토끼왕.lua"
@@ -507,7 +507,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 916,
     "damage_max": 926,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.장닭",
     "attack_script": null,
     "die_script": "scripts/mob/장닭.lua"
@@ -526,7 +526,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1916,
     "damage_max": 1926,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.검은닭",
     "attack_script": null,
     "die_script": "scripts/mob/검은닭.lua"
@@ -545,7 +545,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1000,
     "damage_max": 1010,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.토종뱀",
     "attack_script": null,
     "die_script": "scripts/mob/토종뱀.lua"
@@ -564,7 +564,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1000,
     "damage_max": 1010,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.살모사",
     "attack_script": null,
     "die_script": "scripts/mob/살모사.lua"
@@ -583,7 +583,7 @@
     "attack_type": "COUNTER",
     "damage_min": 515,
     "damage_max": 525,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.뱀왕",
     "attack_script": null,
     "die_script": "scripts/mob/뱀왕.lua"
@@ -602,7 +602,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -621,7 +621,7 @@
     "attack_type": "COUNTER",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.백돈",
     "attack_script": null,
     "die_script": "scripts/mob/백돈.lua"
@@ -640,7 +640,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.서해백",
     "attack_script": null,
     "die_script": "scripts/mob/서해백.lua"
@@ -659,7 +659,7 @@
     "attack_type": "COUNTER",
     "damage_min": 500,
     "damage_max": 600,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.토깽이",
     "attack_script": null,
     "die_script": null
@@ -678,7 +678,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.돈돈돈",
     "attack_script": null,
     "die_script": "scripts/mob/돈돈돈.lua"
@@ -697,7 +697,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.힘의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/힘의뱀.lua"
@@ -716,7 +716,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.주사",
     "attack_script": null,
     "die_script": "scripts/mob/주사.lua"
@@ -735,7 +735,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.대사",
     "attack_script": null,
     "die_script": "scripts/mob/대사.lua"
@@ -754,7 +754,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.력사",
     "attack_script": null,
     "die_script": "scripts/mob/력사.lua"
@@ -773,7 +773,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.민사",
     "attack_script": null,
     "die_script": "scripts/mob/민사.lua"
@@ -792,7 +792,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.지사",
     "attack_script": null,
     "die_script": "scripts/mob/지사.lua"
@@ -811,7 +811,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 16995,
     "damage_max": 17005,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.흑토끼",
     "attack_script": null,
     "die_script": "scripts/mob/흑토끼.lua"
@@ -830,7 +830,7 @@
     "attack_type": "COUNTER",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.상점가포악초성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/상점가포악초성인성초.lua"
@@ -849,7 +849,7 @@
     "attack_type": "COUNTER",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.상점가흉폭초성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/상점가흉폭중성인성초.lua"
@@ -868,7 +868,7 @@
     "attack_type": "COUNTER",
     "damage_min": 20,
     "damage_max": 30,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.시궁창쥐",
     "attack_script": null,
     "die_script": "scripts/mob/시궁창쥐.lua"
@@ -887,7 +887,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.딱총파리",
     "attack_script": null,
     "die_script": "scripts/mob/딱총파리.lua"
@@ -906,7 +906,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마비가시말미잘",
     "attack_script": null,
     "die_script": "scripts/mob/마비가시말미잘.lua"
@@ -925,7 +925,7 @@
     "attack_type": "COUNTER",
     "damage_min": 4995,
     "damage_max": 5005,
-    "speed": 3000,
+    "speed": "00:00:03",
     "drop": "드롭.철갑거북",
     "attack_script": null,
     "die_script": "scripts/mob/철갑거북.lua"
@@ -944,7 +944,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 25,
     "damage_max": 35,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.절벽초성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/절벽초성인성초.lua"
@@ -963,7 +963,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 165,
     "damage_max": 175,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.절벽중성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/절벽중성인성초.lua"
@@ -982,7 +982,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 545,
     "damage_max": 555,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.시녀지주",
     "attack_script": null,
     "die_script": "scripts/mob/시녀지주.lua"
@@ -1001,7 +1001,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/열독사.lua"
@@ -1020,7 +1020,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 25,
     "damage_max": 35,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.초성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/초성인성초.lua"
@@ -1039,7 +1039,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 145,
     "damage_max": 155,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.중성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/중성인성초.lua"
@@ -1058,7 +1058,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.토끼부하",
     "attack_script": null,
     "die_script": "scripts/mob/토끼부하.lua"
@@ -1077,7 +1077,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 516,
     "damage_max": 526,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -1096,7 +1096,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1115,
     "damage_max": 1125,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.흑구렁이",
     "attack_script": null,
     "die_script": "scripts/mob/흑구렁이.lua"
@@ -1115,7 +1115,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1115,
     "damage_max": 1125,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.불구렁이",
     "attack_script": null,
     "die_script": "scripts/mob/불구렁이.lua"
@@ -1134,7 +1134,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1515,
     "damage_max": 1525,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -1153,7 +1153,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.꼬마돼지",
     "attack_script": null,
     "die_script": "scripts/mob/꼬마돼지.lua"
@@ -1172,7 +1172,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.농사꾼원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/농사꾼원숭이.lua"
@@ -1191,7 +1191,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.부자원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/부자원숭이.lua"
@@ -1210,7 +1210,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.사냥꾼원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/사냥꾼원숭이.lua"
@@ -1229,7 +1229,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.날쌘원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/날쌘원숭이.lua"
@@ -1248,7 +1248,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2295,
     "damage_max": 2305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.장로원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/장로원숭이.lua"
@@ -1267,7 +1267,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.용왕토끼",
     "attack_script": null,
     "die_script": "scripts/mob/용왕토끼.lua"
@@ -1286,7 +1286,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.붉은토끼",
     "attack_script": null,
     "die_script": "scripts/mob/붉은토끼.lua"
@@ -1305,7 +1305,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.초록토끼",
     "attack_script": null,
     "die_script": "scripts/mob/초록토끼.lua"
@@ -1324,7 +1324,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.갈색토끼",
     "attack_script": null,
     "die_script": "scripts/mob/초록토끼.lua"
@@ -1343,7 +1343,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.미친토끼",
     "attack_script": null,
     "die_script": "scripts/mob/미친토끼.lua"
@@ -1362,7 +1362,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.방어의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/방어의다람쥐.lua"
@@ -1381,7 +1381,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.명중의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/명중의다람쥐.lua"
@@ -1400,7 +1400,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.공격의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/공격의다람쥐.lua"
@@ -1419,7 +1419,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.체력의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/체력의다람쥐.lua"
@@ -1438,7 +1438,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마력의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/마력의다람쥐.lua"
@@ -1457,7 +1457,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.힘의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/힘의다람쥐.lua"
@@ -1476,7 +1476,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.민첩의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/민첩의다람쥐.lua"
@@ -1495,7 +1495,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.지력의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/지력의다람쥐.lua"
@@ -1514,7 +1514,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.날쌘다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/날쌘다람쥐.lua"
@@ -1533,7 +1533,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.고개다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/고개다람쥐.lua"
@@ -1552,7 +1552,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.문지기다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/문지기다람쥐.lua"
@@ -1571,7 +1571,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.부자다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/부자다람쥐.lua"
@@ -1590,7 +1590,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.행운의다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/행운의다람쥐.lua"
@@ -1609,7 +1609,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무적다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/무적다람쥐.lua"
@@ -1628,7 +1628,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.최강다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/최강다람쥐.lua"
@@ -1647,7 +1647,7 @@
     "attack_type": "COUNTER",
     "damage_min": 0,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.용왕다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/용왕다람쥐.lua"
@@ -1666,7 +1666,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.방어의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/방어의돼지.lua"
@@ -1685,7 +1685,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.명중의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/명중의돼지.lua"
@@ -1704,7 +1704,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.공격의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/공격의돼지.lua"
@@ -1723,7 +1723,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.체력의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/체력의돼지.lua"
@@ -1742,7 +1742,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마력의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/마력의돼지.lua"
@@ -1761,7 +1761,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.힘의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/힘의돼지.lua"
@@ -1780,7 +1780,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.민첩의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/민첩의돼지.lua"
@@ -1799,7 +1799,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.지력의돼지",
     "attack_script": null,
     "die_script": "scripts/mob/지력의돼지.lua"
@@ -1818,7 +1818,7 @@
     "attack_type": "COUNTER",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.착한돼지",
     "attack_script": null,
     "die_script": "scripts/mob/착한돼지.lua"
@@ -1837,7 +1837,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.방어의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/방어의뱀.lua"
@@ -1856,7 +1856,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.명중의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/명중의뱀.lua"
@@ -1875,7 +1875,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.공격의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/공격의뱀.lua"
@@ -1894,7 +1894,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.체력의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/체력의뱀.lua"
@@ -1913,7 +1913,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마력의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/마력의뱀.lua"
@@ -1932,7 +1932,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.민첩의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/민첩의뱀.lua"
@@ -1951,7 +1951,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.지력의뱀",
     "attack_script": null,
     "die_script": "scripts/mob/지력의뱀.lua"
@@ -1970,7 +1970,7 @@
     "attack_type": "COUNTER",
     "damage_min": 14995,
     "damage_max": 15005,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": "드롭.흑다람쥐",
     "attack_script": null,
     "die_script": "scripts/mob/흑다람쥐.lua"
@@ -1989,7 +1989,7 @@
     "attack_type": "COUNTER",
     "damage_min": 16995,
     "damage_max": 17005,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": "드롭.흑암사슴",
     "attack_script": null,
     "die_script": "scripts/mob/흑암사슴.lua"
@@ -2008,7 +2008,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 70,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2027,7 +2027,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 70,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2046,7 +2046,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 70,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2065,7 +2065,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 70,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2084,7 +2084,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2103,7 +2103,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2122,7 +2122,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 90,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2141,7 +2141,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 90,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2160,7 +2160,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 90,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2179,7 +2179,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 45,
     "damage_max": 55,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑악어",
     "attack_script": null,
     "die_script": "scripts/mob/흑악어.lua"
@@ -2198,7 +2198,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진갈악어",
     "attack_script": null,
     "die_script": "scripts/mob/진갈악어.lua"
@@ -2217,7 +2217,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹악어",
     "attack_script": null,
     "die_script": "scripts/mob/녹악어.lua"
@@ -2236,7 +2236,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 445,
     "damage_max": 455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진녹악어",
     "attack_script": null,
     "die_script": "scripts/mob/진녹악어.lua"
@@ -2255,7 +2255,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 445,
     "damage_max": 455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진회악어",
     "attack_script": null,
     "die_script": "scripts/mob/진회악어.lua"
@@ -2274,7 +2274,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 445,
     "damage_max": 455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진적악어",
     "attack_script": null,
     "die_script": "scripts/mob/진적악어.lua"
@@ -2293,7 +2293,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2312,7 +2312,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2331,7 +2331,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2350,7 +2350,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2369,7 +2369,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2388,7 +2388,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2407,7 +2407,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.외눈녹천구",
     "attack_script": null,
     "die_script": "scripts/mob/외눈녹천구.lua"
@@ -2426,7 +2426,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.외눈황천구",
     "attack_script": null,
     "die_script": "scripts/mob/외눈황천구.lua"
@@ -2445,7 +2445,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2464,7 +2464,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2483,7 +2483,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑혈후",
     "attack_script": null,
     "die_script": "scripts/mob/흑혈후.lua"
@@ -2502,7 +2502,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹혈후",
     "attack_script": null,
     "die_script": "scripts/mob/녹혈후.lua"
@@ -2521,7 +2521,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 90,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑선문후",
     "attack_script": null,
     "die_script": null
@@ -2540,7 +2540,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 90,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹선문후",
     "attack_script": null,
     "die_script": null
@@ -2559,7 +2559,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.아기강시",
     "attack_script": null,
     "die_script": "scripts/mob/아기강시.lua"
@@ -2578,7 +2578,7 @@
     "attack_type": "COUNTER",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.청색염유",
     "attack_script": null,
     "die_script": "scripts/mob/청색염유.lua"
@@ -2597,7 +2597,7 @@
     "attack_type": "COUNTER",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.자색염유",
     "attack_script": null,
     "die_script": "scripts/mob/자색염유.lua"
@@ -2616,7 +2616,7 @@
     "attack_type": "COUNTER",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.염구",
     "attack_script": null,
     "die_script": "scripts/mob/염구.lua"
@@ -2635,7 +2635,7 @@
     "attack_type": "COUNTER",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2654,7 +2654,7 @@
     "attack_type": "COUNTER",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.용고",
     "attack_script": null,
     "die_script": "scripts/mob/용고.lua"
@@ -2673,7 +2673,7 @@
     "attack_type": "COUNTER",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.각단",
     "attack_script": null,
     "die_script": "scripts/mob/각단.lua"
@@ -2692,7 +2692,7 @@
     "attack_type": "COUNTER",
     "damage_min": 9,
     "damage_max": 19,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산백사",
     "attack_script": null,
     "die_script": null
@@ -2711,7 +2711,7 @@
     "attack_type": "COUNTER",
     "damage_min": 9,
     "damage_max": 19,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산진백사",
     "attack_script": null,
     "die_script": null
@@ -2730,7 +2730,7 @@
     "attack_type": "COUNTER",
     "damage_min": 7,
     "damage_max": 17,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산독사",
     "attack_script": null,
     "die_script": null
@@ -2749,7 +2749,7 @@
     "attack_type": "COUNTER",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산구렁이",
     "attack_script": null,
     "die_script": null
@@ -2768,7 +2768,7 @@
     "attack_type": "COUNTER",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산토끼부하",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산토끼부하.lua"
@@ -2787,7 +2787,7 @@
     "attack_type": "COUNTER",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산불토끼",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산불토끼.lua"
@@ -2806,7 +2806,7 @@
     "attack_type": "COUNTER",
     "damage_min": 45,
     "damage_max": 55,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2825,7 +2825,7 @@
     "attack_type": "COUNTER",
     "damage_min": 45,
     "damage_max": 55,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -2844,7 +2844,7 @@
     "attack_type": "COUNTER",
     "damage_min": 100,
     "damage_max": 110,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산해파리부하",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산해파리부하.lua"
@@ -2863,7 +2863,7 @@
     "attack_type": "COUNTER",
     "damage_min": 105,
     "damage_max": 115,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산해파리수하",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산해파리수하.lua"
@@ -2882,7 +2882,7 @@
     "attack_type": "COUNTER",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산세발문어",
     "attack_script": null,
     "die_script": null
@@ -2901,7 +2901,7 @@
     "attack_type": "COUNTER",
     "damage_min": 155,
     "damage_max": 165,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산흑묘",
     "attack_script": null,
     "die_script": null
@@ -2920,7 +2920,7 @@
     "attack_type": "COUNTER",
     "damage_min": 145,
     "damage_max": 155,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산적묘",
     "attack_script": null,
     "die_script": null
@@ -2939,7 +2939,7 @@
     "attack_type": "COUNTER",
     "damage_min": 185,
     "damage_max": 195,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산표황야묘",
     "attack_script": null,
     "die_script": null
@@ -2958,7 +2958,7 @@
     "attack_type": "COUNTER",
     "damage_min": 175,
     "damage_max": 185,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산녹대묘",
     "attack_script": null,
     "die_script": null
@@ -2977,7 +2977,7 @@
     "attack_type": "COUNTER",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산적살쾡이",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산적살쾡이.lua"
@@ -2996,7 +2996,7 @@
     "attack_type": "COUNTER",
     "damage_min": 475,
     "damage_max": 485,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산녹살쾡이",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산녹살쾡이.lua"
@@ -3015,7 +3015,7 @@
     "attack_type": "COUNTER",
     "damage_min": 325,
     "damage_max": 335,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -3034,7 +3034,7 @@
     "attack_type": "COUNTER",
     "damage_min": 435,
     "damage_max": 445,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산흑악어",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산흑악어.lua"
@@ -3053,7 +3053,7 @@
     "attack_type": "COUNTER",
     "damage_min": 445,
     "damage_max": 455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산녹악어",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산녹악어.lua"
@@ -3072,7 +3072,7 @@
     "attack_type": "COUNTER",
     "damage_min": 445,
     "damage_max": 455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -3091,7 +3091,7 @@
     "attack_type": "COUNTER",
     "damage_min": 5,
     "damage_max": 15,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": "드롭.암사슴",
     "attack_script": null,
     "die_script": "scripts/mob/암사슴.lua"
@@ -3110,7 +3110,7 @@
     "attack_type": "COUNTER",
     "damage_min": 8,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.시궁쥐",
     "attack_script": null,
     "die_script": "scripts/mob/시궁쥐.lua"
@@ -3129,7 +3129,7 @@
     "attack_type": "COUNTER",
     "damage_min": 30,
     "damage_max": 50,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -3148,7 +3148,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1300,
+    "speed": "00:00:01.3000000",
     "drop": "드롭.숫사슴",
     "attack_script": null,
     "die_script": "scripts/mob/숫사슴.lua"
@@ -3167,7 +3167,7 @@
     "attack_type": "NONE",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -3186,7 +3186,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1400,
+    "speed": "00:00:01.4000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -3205,7 +3205,7 @@
     "attack_type": "COUNTER",
     "damage_min": 10,
     "damage_max": 15,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.큰쥐",
     "attack_script": null,
     "die_script": "scripts/mob/큰쥐.lua"
@@ -3224,7 +3224,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 20,
     "damage_max": 30,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.빨간박쥐",
     "attack_script": null,
     "die_script": "scripts/mob/빨간박쥐.lua"
@@ -3243,7 +3243,7 @@
     "attack_type": "COUNTER",
     "damage_min": 20,
     "damage_max": 30,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.보라박쥐",
     "attack_script": null,
     "die_script": "scripts/mob/보라박쥐.lua"
@@ -3262,7 +3262,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 20,
     "damage_max": 30,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.파란박쥐",
     "attack_script": null,
     "die_script": "scripts/mob/파란박쥐.lua"
@@ -3281,7 +3281,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 78,
     "damage_max": 82,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흡혈쥐",
     "attack_script": null,
     "die_script": "scripts/mob/흡혈쥐.lua"
@@ -3300,7 +3300,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 78,
     "damage_max": 82,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.서생원",
     "attack_script": null,
     "die_script": "scripts/mob/서생원.lua"
@@ -3319,7 +3319,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 78,
     "damage_max": 82,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.자생원",
     "attack_script": null,
     "die_script": "scripts/mob/자생원.lua"
@@ -3338,7 +3338,7 @@
     "attack_type": "COUNTER",
     "damage_min": 20,
     "damage_max": 30,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.박쥐",
     "attack_script": null,
     "die_script": "scripts/mob/박쥐.lua"
@@ -3357,7 +3357,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 58,
     "damage_max": 62,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.왕구렁이",
     "attack_script": null,
     "die_script": "scripts/mob/왕구렁이.lua"
@@ -3376,7 +3376,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 58,
     "damage_max": 62,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.구렁이",
     "attack_script": null,
     "die_script": "scripts/mob/구렁이.lua"
@@ -3395,7 +3395,7 @@
     "attack_type": "COUNTER",
     "damage_min": 38,
     "damage_max": 42,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑광록",
     "attack_script": null,
     "die_script": "scripts/mob/흑광록.lua"
@@ -3414,7 +3414,7 @@
     "attack_type": "COUNTER",
     "damage_min": 38,
     "damage_max": 42,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.백광록",
     "attack_script": null,
     "die_script": "scripts/mob/백광록.lua"
@@ -3433,7 +3433,7 @@
     "attack_type": "COUNTER",
     "damage_min": 93,
     "damage_max": 97,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.광록지수",
     "attack_script": null,
     "die_script": "scripts/mob/광록지수.lua"
@@ -3452,7 +3452,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 68,
     "damage_max": 72,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.산돼지",
     "attack_script": null,
     "die_script": "scripts/mob/산돼지.lua"
@@ -3471,7 +3471,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 70,
     "damage_max": 74,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.숲돼지",
     "attack_script": null,
     "die_script": "scripts/mob/숲돼지.lua"
@@ -3490,7 +3490,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 83,
     "damage_max": 87,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.홍돼지",
     "attack_script": null,
     "die_script": "scripts/mob/홍돼지.lua"
@@ -3509,7 +3509,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 88,
     "damage_max": 92,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.구미호",
     "attack_script": null,
     "die_script": "scripts/mob/구미호.lua"
@@ -3528,7 +3528,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 88,
     "damage_max": 82,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.불구미호",
     "attack_script": null,
     "die_script": "scripts/mob/불구미호.lua"
@@ -3547,7 +3547,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 48,
     "damage_max": 52,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/평웅.lua"
@@ -3566,7 +3566,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 48,
     "damage_max": 52,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.진웅",
     "attack_script": null,
     "die_script": "scripts/mob/진웅.lua"
@@ -3585,7 +3585,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 48,
     "damage_max": 52,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/평호.lua"
@@ -3604,7 +3604,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 53,
     "damage_max": 57,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/진호.lua"
@@ -3623,7 +3623,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 68,
     "damage_max": 72,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.자호",
     "attack_script": null,
     "die_script": "scripts/mob/자호.lua"
@@ -3642,7 +3642,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 148,
     "damage_max": 152,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.친자호",
     "attack_script": null,
     "die_script": "scripts/mob/친자호.lua"
@@ -3661,7 +3661,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 118,
     "damage_max": 122,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.구자호",
     "attack_script": null,
     "die_script": "scripts/mob/구자호.lua"
@@ -3680,7 +3680,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 348,
     "damage_max": 352,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.적호",
     "attack_script": null,
     "die_script": "scripts/mob/적호.lua"
@@ -3699,7 +3699,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 230,
     "damage_max": 270,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.목각인형",
     "attack_script": null,
     "die_script": "scripts/mob/목각인형.lua"
@@ -3718,7 +3718,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 230,
     "damage_max": 270,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.양철인형",
     "attack_script": null,
     "die_script": "scripts/mob/양철인형.lua"
@@ -3737,7 +3737,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 480,
     "damage_max": 520,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.에메랄드인형",
     "attack_script": null,
     "die_script": "scripts/mob/에메랄드인형.lua"
@@ -3756,7 +3756,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 980,
     "damage_max": 1020,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.인형술사",
     "attack_script": null,
     "die_script": "scripts/mob/인형술사.lua"
@@ -3775,7 +3775,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 155,
     "damage_max": 165,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.거미",
     "attack_script": null,
     "die_script": "scripts/mob/거미.lua"
@@ -3794,7 +3794,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 175,
     "damage_max": 185,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.사마귀",
     "attack_script": null,
     "die_script": "scripts/mob/사마귀.lua"
@@ -3813,7 +3813,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 77,
     "damage_max": 87,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.백현귀",
     "attack_script": null,
     "die_script": "scripts/mob/백현귀.lua"
@@ -3832,7 +3832,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 70,
     "damage_max": 80,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.현랑귀",
     "attack_script": null,
     "die_script": "scripts/mob/현랑귀.lua"
@@ -3851,7 +3851,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 140,
     "damage_max": 180,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.가재",
     "attack_script": null,
     "die_script": "scripts/mob/가재.lua"
@@ -3870,7 +3870,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 380,
     "damage_max": 420,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.가재장",
     "attack_script": null,
     "die_script": "scripts/mob/가재장.lua"
@@ -3889,7 +3889,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 160,
     "damage_max": 200,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.전갈",
     "attack_script": null,
     "die_script": "scripts/mob/전갈.lua"
@@ -3908,7 +3908,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 400,
     "damage_max": 440,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.전갈장",
     "attack_script": null,
     "die_script": "scripts/mob/전갈장.lua"
@@ -3927,7 +3927,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.서현가재",
     "attack_script": null,
     "die_script": "scripts/mob/서현가재.lua"
@@ -3946,7 +3946,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 280,
     "damage_max": 320,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.백현재",
     "attack_script": null,
     "die_script": "scripts/mob/백현재.lua"
@@ -3965,7 +3965,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 840,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.백현장",
     "attack_script": null,
     "die_script": "scripts/mob/백현장.lua"
@@ -3984,7 +3984,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 730,
     "damage_max": 770,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.현랑장",
     "attack_script": null,
     "die_script": "scripts/mob/현랑장.lua"
@@ -4003,7 +4003,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 730,
     "damage_max": 770,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.현랑전갈",
     "attack_script": null,
     "die_script": "scripts/mob/현랑전갈.lua"
@@ -4022,7 +4022,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 150,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.해골",
     "attack_script": null,
     "die_script": "scripts/mob/해골.lua"
@@ -4041,7 +4041,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 150,
     "damage_max": 170,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.칼든해골",
     "attack_script": null,
     "die_script": "scripts/mob/칼든해골.lua"
@@ -4060,7 +4060,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 150,
     "damage_max": 170,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.해골전사",
     "attack_script": null,
     "die_script": "scripts/mob/해골전사.lua"
@@ -4079,7 +4079,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 150,
     "damage_max": 170,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.해골도적",
     "attack_script": null,
     "die_script": "scripts/mob/해골도적.lua"
@@ -4098,7 +4098,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 150,
     "damage_max": 170,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.해골마법사",
     "attack_script": null,
     "die_script": "scripts/mob/해골마법사.lua"
@@ -4117,7 +4117,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 595,
     "damage_max": 605,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.불산",
     "attack_script": null,
     "die_script": "scripts/mob/불산.lua"
@@ -4136,7 +4136,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 180,
     "damage_max": 220,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.유령",
     "attack_script": null,
     "die_script": "scripts/mob/유령.lua"
@@ -4155,7 +4155,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 230,
     "damage_max": 270,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.중급유령",
     "attack_script": null,
     "die_script": "scripts/mob/중급유령.lua"
@@ -4174,7 +4174,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 250,
     "damage_max": 290,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.고급유령",
     "attack_script": null,
     "die_script": "scripts/mob/고급유령.lua"
@@ -4193,7 +4193,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2100,
     "damage_max": 2500,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.유령전사",
     "attack_script": null,
     "die_script": "scripts/mob/유령전사.lua"
@@ -4212,7 +4212,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2100,
     "damage_max": 2500,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.유령도적",
     "attack_script": null,
     "die_script": "scripts/mob/유령도적.lua"
@@ -4231,7 +4231,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2100,
     "damage_max": 2500,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.유령마법사",
     "attack_script": null,
     "die_script": "scripts/mob/유령마법사.lua"
@@ -4250,7 +4250,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2100,
     "damage_max": 2500,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.불연",
     "attack_script": null,
     "die_script": "scripts/mob/불연.lua"
@@ -4269,7 +4269,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.흑해골",
     "attack_script": null,
     "die_script": "scripts/mob/흑해골.lua"
@@ -4288,7 +4288,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4307,7 +4307,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4326,7 +4326,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4345,7 +4345,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.사해골",
     "attack_script": null,
     "die_script": "scripts/mob/사해골.lua"
@@ -4364,7 +4364,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 500,
     "damage_max": 600,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.원각",
     "attack_script": null,
     "die_script": "scripts/mob/원각.lua"
@@ -4383,7 +4383,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 150,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.흑령",
     "attack_script": null,
     "die_script": "scripts/mob/흑령.lua"
@@ -4402,7 +4402,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 200,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4421,7 +4421,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4440,7 +4440,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -4459,7 +4459,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.사령",
     "attack_script": null,
     "die_script": "scripts/mob/사령.lua"
@@ -4478,7 +4478,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 250,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.원령",
     "attack_script": null,
     "die_script": "scripts/mob/원령.lua"
@@ -4497,7 +4497,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 380,
     "damage_max": 420,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.도깨비",
     "attack_script": null,
     "die_script": "scripts/mob/도깨비.lua"
@@ -4516,7 +4516,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 310,
     "damage_max": 450,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.도깨비불",
     "attack_script": null,
     "die_script": "scripts/mob/도깨비불.lua"
@@ -4535,7 +4535,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1340,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.사명비",
     "attack_script": null,
     "die_script": "scripts/mob/사명비.lua"
@@ -4554,7 +4554,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1340,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.적명비",
     "attack_script": null,
     "die_script": "scripts/mob/적명비.lua"
@@ -4573,7 +4573,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1340,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.자명비",
     "attack_script": null,
     "die_script": "scripts/mob/적명비.lua"
@@ -4592,7 +4592,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1340,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.청명비",
     "attack_script": null,
     "die_script": "scripts/mob/청명비.lua"
@@ -4611,7 +4611,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1350,
     "damage_max": 1390,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.녹명비",
     "attack_script": null,
     "die_script": "scripts/mob/녹명비.lua"
@@ -4630,7 +4630,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1340,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.도깨비왕",
     "attack_script": null,
     "die_script": "scripts/mob/도깨비왕.lua"
@@ -4649,7 +4649,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1000,
     "damage_max": 1400,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.일본밀정'검",
     "attack_script": null,
     "die_script": "scripts/mob/일본밀정.lua'검"
@@ -4668,7 +4668,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1700,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.일본밀정'유",
     "attack_script": null,
     "die_script": "scripts/mob/일본밀정.lua'유"
@@ -4687,7 +4687,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1300,
     "damage_max": 1700,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.일본밀정'수",
     "attack_script": null,
     "die_script": "scripts/mob/일본밀정.lua'수"
@@ -4706,7 +4706,7 @@
     "attack_type": "COUNTER",
     "damage_min": 2800,
     "damage_max": 3200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.일본밀정두목",
     "attack_script": null,
     "die_script": "scripts/mob/일본밀정두목.lua"
@@ -4725,7 +4725,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 895,
     "damage_max": 905,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.몽달귀신",
     "attack_script": null,
     "die_script": "scripts/mob/몽달귀신.lua"
@@ -4744,7 +4744,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.독충",
     "attack_script": null,
     "die_script": "scripts/mob/독충.lua"
@@ -4763,7 +4763,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 895,
     "damage_max": 905,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.빗자루귀신",
     "attack_script": null,
     "die_script": "scripts/mob/빗자루귀신.lua"
@@ -4782,7 +4782,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.처녀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/처녀귀신.lua"
@@ -4801,7 +4801,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/달걀귀신.lua"
@@ -4820,7 +4820,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.불귀신",
     "attack_script": null,
     "die_script": "scripts/mob/불귀신.lua"
@@ -4839,7 +4839,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.갈달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/갈달걀귀신.lua"
@@ -4858,7 +4858,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연갈달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/연갈달걀귀신.lua"
@@ -4877,7 +4877,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연자달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/연자달걀귀신.lua"
@@ -4896,7 +4896,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.자달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/자달걀귀신.lua"
@@ -4915,7 +4915,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연청달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/연청달걀귀신.lua"
@@ -4934,7 +4934,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.황달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/황달걀귀신.lua"
@@ -4953,7 +4953,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.적달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/적달걀귀신.lua"
@@ -4972,7 +4972,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연녹달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/연녹달걀귀신.lua"
@@ -4991,7 +4991,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.청달걀귀신",
     "attack_script": null,
     "die_script": "scripts/mob/청달걀귀신.lua"
@@ -5010,7 +5010,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.황충",
     "attack_script": null,
     "die_script": "scripts/mob/황충.lua"
@@ -5029,7 +5029,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.적충",
     "attack_script": null,
     "die_script": "scripts/mob/적충.lua"
@@ -5048,7 +5048,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연녹충",
     "attack_script": null,
     "die_script": "scripts/mob/연녹충.lua"
@@ -5067,7 +5067,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.청충",
     "attack_script": null,
     "die_script": "scripts/mob/청충.lua"
@@ -5086,7 +5086,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.회충",
     "attack_script": null,
     "die_script": "scripts/mob/회충.lua"
@@ -5105,7 +5105,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.갈충",
     "attack_script": null,
     "die_script": "scripts/mob/갈충.lua"
@@ -5124,7 +5124,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연갈충",
     "attack_script": null,
     "die_script": "scripts/mob/연갈충.lua"
@@ -5143,7 +5143,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.연자충",
     "attack_script": null,
     "die_script": "scripts/mob/연자충.lua"
@@ -5162,7 +5162,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.자충",
     "attack_script": null,
     "die_script": "scripts/mob/자충.lua"
@@ -5181,7 +5181,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 225,
     "damage_max": 235,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.검랑",
     "attack_script": null,
     "die_script": "scripts/mob/검랑.lua"
@@ -5200,7 +5200,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진인랑",
     "attack_script": null,
     "die_script": "scripts/mob/진인랑.lua"
@@ -5219,7 +5219,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 745,
     "damage_max": 755,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.병사지주",
     "attack_script": null,
     "die_script": "scripts/mob/병사지주.lua"
@@ -5238,7 +5238,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.식인종전사",
     "attack_script": null,
     "die_script": "scripts/mob/식인종전사.lua"
@@ -5257,7 +5257,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.식인종추장후계자",
     "attack_script": null,
     "die_script": "scripts/mob/식인종추장후계자.lua"
@@ -5276,7 +5276,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13445,
     "damage_max": 13445,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.식인종추장",
     "attack_script": null,
     "die_script": "scripts/mob/식인종추장.lua"
@@ -5295,7 +5295,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1695,
     "damage_max": 1705,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.낭아독사",
     "attack_script": null,
     "die_script": "scripts/mob/낭아독사.lua"
@@ -5314,7 +5314,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 6595,
     "damage_max": 6605,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.종성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/종성인성초.lua"
@@ -5333,7 +5333,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3795,
     "damage_max": 3805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.해적선원의망령",
     "attack_script": null,
     "die_script": null
@@ -5352,7 +5352,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 5895,
     "damage_max": 5905,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.해적갑판장의망령",
     "attack_script": null,
     "die_script": null
@@ -5371,7 +5371,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 44995,
     "damage_max": 45005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.해적선장의망령",
     "attack_script": null,
     "die_script": "scripts/mob/해적선장의망령.lua"
@@ -5390,7 +5390,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.상점가포악중성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/상점가포악중성인성초.lua"
@@ -5409,7 +5409,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.상점가흉폭중성인성초",
     "attack_script": null,
     "die_script": "scripts/mob/상점가흉폭초성인성초.lua"
@@ -5428,7 +5428,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.폭염룡",
     "attack_script": null,
     "die_script": "scripts/mob/폭염룡.lua"
@@ -5447,7 +5447,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.폭염익룡",
     "attack_script": null,
     "die_script": "scripts/mob/폭염익룡.lua"
@@ -5466,7 +5466,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.돼지왕",
     "attack_script": null,
     "die_script": "scripts/mob/돼지왕.lua"
@@ -5485,7 +5485,7 @@
     "attack_type": "COUNTER",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.닭왕",
     "attack_script": null,
     "die_script": "scripts/mob/닭왕.lua"
@@ -5504,7 +5504,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 445,
     "damage_max": 445,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.킹콩",
     "attack_script": null,
     "die_script": "scripts/mob/킹콩.lua"
@@ -5523,7 +5523,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 445,
     "damage_max": 445,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.유인원",
     "attack_script": null,
     "die_script": "scripts/mob/유인원.lua"
@@ -5542,7 +5542,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2295,
     "damage_max": 2305,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.오랑우탄",
     "attack_script": null,
     "die_script": "scripts/mob/오랑우탄.lua"
@@ -5561,7 +5561,7 @@
     "attack_type": "COUNTER",
     "damage_min": 795,
     "damage_max": 805,
-    "speed": 1100,
+    "speed": "00:00:01.1000000",
     "drop": "드롭.원숭이왕",
     "attack_script": null,
     "die_script": "scripts/mob/원숭이왕.lua"
@@ -5580,7 +5580,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1445,
     "damage_max": 1455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.코뿔소",
     "attack_script": null,
     "die_script": "scripts/mob/코뿔소.lua"
@@ -5599,7 +5599,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1245,
     "damage_max": 1255,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.황소",
     "attack_script": null,
     "die_script": "scripts/mob/황소.lua"
@@ -5618,7 +5618,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1445,
     "damage_max": 1455,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.까만소",
     "attack_script": null,
     "die_script": "scripts/mob/까만소.lua"
@@ -5637,7 +5637,7 @@
     "attack_type": "COUNTER",
     "damage_min": 845,
     "damage_max": 855,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.소왕",
     "attack_script": null,
     "die_script": "scripts/mob/소왕.lua"
@@ -5656,7 +5656,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1345,
     "damage_max": 1355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5675,7 +5675,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 745,
     "damage_max": 755,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5694,7 +5694,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 745,
     "damage_max": 756,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5713,7 +5713,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 945,
     "damage_max": 955,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5732,7 +5732,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.양왕",
     "attack_script": null,
     "die_script": "scripts/mob/양왕.lua"
@@ -5751,7 +5751,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5770,7 +5770,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5789,7 +5789,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5808,7 +5808,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.말왕",
     "attack_script": null,
     "die_script": "scripts/mob/말왕.lua"
@@ -5827,7 +5827,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.두꺼비",
     "attack_script": null,
     "die_script": "scripts/mob/두꺼비.lua"
@@ -5846,7 +5846,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 115,
     "damage_max": 125,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.일본게",
     "attack_script": null,
     "die_script": "scripts/mob/일본게.lua"
@@ -5865,7 +5865,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13515,
     "damage_max": 13525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이가닌자'병",
     "attack_script": null,
     "die_script": "scripts/mob/이가닌자.lua'병"
@@ -5884,7 +5884,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13515,
     "damage_max": 13525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이가닌자'화",
     "attack_script": null,
     "die_script": "scripts/mob/이가닌자.lua'화"
@@ -5903,7 +5903,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13515,
     "damage_max": 13525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이가닌자'마",
     "attack_script": null,
     "die_script": "scripts/mob/이가닌자.lua'마"
@@ -5922,7 +5922,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13515,
     "damage_max": 13525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이가닌자'영",
     "attack_script": null,
     "die_script": "scripts/mob/이가닌자.lua'영"
@@ -5941,7 +5941,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13515,
     "damage_max": 13525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이가닌자'수",
     "attack_script": null,
     "die_script": "scripts/mob/이가닌자.lua'수"
@@ -5960,7 +5960,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 215,
     "damage_max": 225,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -5979,7 +5979,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 315,
     "damage_max": 325,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마옥",
     "attack_script": "scripts/mob/마옥.lua",
     "die_script": "scripts/mob/마옥.lua"
@@ -5998,7 +5998,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 315,
     "damage_max": 325,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6017,7 +6017,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6036,7 +6036,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6055,7 +6055,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6074,7 +6074,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6093,7 +6093,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6112,7 +6112,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.대장군의망령",
     "attack_script": "scripts/mob/대장군의망령.lua",
     "die_script": "scripts/mob/대장군의망령.lua"
@@ -6131,7 +6131,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 145,
     "damage_max": 155,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6150,7 +6150,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6169,7 +6169,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2295,
     "damage_max": 2305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.이광",
     "attack_script": null,
     "die_script": "scripts/mob/이광.lua"
@@ -6188,7 +6188,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2495,
     "damage_max": 2505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6207,7 +6207,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.백발귀",
     "attack_script": null,
     "die_script": "scripts/mob/백발귀.lua"
@@ -6226,7 +6226,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.적두귀",
     "attack_script": null,
     "die_script": "scripts/mob/적두귀.lua"
@@ -6245,7 +6245,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹두귀",
     "attack_script": null,
     "die_script": "scripts/mob/녹두귀.lua"
@@ -6264,7 +6264,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.사두귀",
     "attack_script": null,
     "die_script": "scripts/mob/사두귀.lua"
@@ -6283,7 +6283,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.청발귀",
     "attack_script": null,
     "die_script": "scripts/mob/청발귀.lua"
@@ -6302,7 +6302,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑발귀",
     "attack_script": null,
     "die_script": "scripts/mob/흑발귀.lua"
@@ -6321,7 +6321,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.백향",
     "attack_script": null,
     "die_script": "scripts/mob/백향.lua"
@@ -6340,7 +6340,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.시오",
     "attack_script": null,
     "die_script": "scripts/mob/시오.lua"
@@ -6359,7 +6359,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.주오",
     "attack_script": null,
     "die_script": "scripts/mob/주오.lua"
@@ -6378,7 +6378,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.맹오",
     "attack_script": null,
     "die_script": "scripts/mob/맹오.lua"
@@ -6397,7 +6397,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.달오",
     "attack_script": null,
     "die_script": "scripts/mob/달오.lua"
@@ -6416,7 +6416,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 2895,
     "damage_max": 2905,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.문위",
     "attack_script": "scripts/mob/문위.lua",
     "die_script": "scripts/mob/문위.lua"
@@ -6435,7 +6435,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6454,7 +6454,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2515,
     "damage_max": 2525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6473,7 +6473,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2515,
     "damage_max": 2525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6492,7 +6492,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 545,
     "damage_max": 555,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6511,7 +6511,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6530,7 +6530,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6549,7 +6549,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6568,7 +6568,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6587,7 +6587,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6606,7 +6606,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6625,7 +6625,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6644,7 +6644,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.파선녀",
     "attack_script": null,
     "die_script": "scripts/mob/파선녀.lua"
@@ -6663,7 +6663,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.단선녀",
     "attack_script": null,
     "die_script": "scripts/mob/단선녀.lua"
@@ -6682,7 +6682,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.하선녀",
     "attack_script": null,
     "die_script": "scripts/mob/하선녀.lua"
@@ -6701,7 +6701,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.견귀",
     "attack_script": null,
     "die_script": "scripts/mob/견귀.lua"
@@ -6720,7 +6720,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.견원귀",
     "attack_script": null,
     "die_script": "scripts/mob/견원귀.lua"
@@ -6739,7 +6739,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.견인귀",
     "attack_script": null,
     "die_script": "scripts/mob/견인귀.lua"
@@ -6758,7 +6758,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6777,7 +6777,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.인화늑대인간",
     "attack_script": null,
     "die_script": "scripts/mob/인화늑대인간.lua"
@@ -6796,7 +6796,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.수화늑대인간",
     "attack_script": null,
     "die_script": "scripts/mob/수화늑대인간.lua"
@@ -6815,7 +6815,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.눈괴물",
     "attack_script": null,
     "die_script": "scripts/mob/눈괴물.lua"
@@ -6834,7 +6834,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.북극해골",
     "attack_script": null,
     "die_script": "scripts/mob/북극해골.lua"
@@ -6853,7 +6853,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1200,
+    "speed": "00:00:01.2000000",
     "drop": "드롭.북극곰",
     "attack_script": null,
     "die_script": "scripts/mob/북극곰.lua"
@@ -6872,7 +6872,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.약한눈괴물",
     "attack_script": null,
     "die_script": "scripts/mob/약한눈괴물.lua"
@@ -6891,7 +6891,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6910,7 +6910,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6929,7 +6929,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹눈괴물",
     "attack_script": null,
     "die_script": "scripts/mob/녹눈괴물.lua"
@@ -6948,7 +6948,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -6967,7 +6967,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.칼찬북극해골",
     "attack_script": null,
     "die_script": "scripts/mob/칼찬북극해골.lua"
@@ -6986,7 +6986,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7005,7 +7005,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.타락산타",
     "attack_script": null,
     "die_script": "scripts/mob/타락산타.lua"
@@ -7024,7 +7024,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도적산타",
     "attack_script": null,
     "die_script": "scripts/mob/도적산타.lua"
@@ -7043,7 +7043,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.적북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/적북극사슴.lua"
@@ -7062,7 +7062,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.황북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/황북극사슴.lua"
@@ -7081,7 +7081,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.불꽃북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/불꽃북극사슴.lua"
@@ -7100,7 +7100,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/녹북극사슴.lua"
@@ -7119,7 +7119,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.청북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/청북극사슴.lua"
@@ -7138,7 +7138,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.남북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/남북극사슴.lua"
@@ -7157,7 +7157,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1795,
     "damage_max": 1805,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.자북극사슴",
     "attack_script": null,
     "die_script": "scripts/mob/자북극사슴.lua"
@@ -7176,7 +7176,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3003,
     "damage_max": 3305,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.청비",
     "attack_script": null,
     "die_script": "scripts/mob/청비.lua"
@@ -7195,7 +7195,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3102,
     "damage_max": 3202,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.적비",
     "attack_script": null,
     "die_script": "scripts/mob/적비.lua"
@@ -7214,7 +7214,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3202,
     "damage_max": 3405,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.흑비",
     "attack_script": null,
     "die_script": "scripts/mob/흑비.lua"
@@ -7233,7 +7233,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4004,
     "damage_max": 5005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.겁살수",
     "attack_script": null,
     "die_script": "scripts/mob/겁살수.lua"
@@ -7252,7 +7252,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4995,
     "damage_max": 5005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.겁살파수",
     "attack_script": null,
     "die_script": "scripts/mob/겁살파수.lua"
@@ -7271,7 +7271,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 9995,
     "damage_max": 10005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.겁살파수꾼",
     "attack_script": null,
     "die_script": "scripts/mob/겁살파수꾼.lua"
@@ -7290,7 +7290,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 16995,
     "damage_max": 17005,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7309,7 +7309,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 950,
     "damage_max": 1350,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.인묘",
     "attack_script": null,
     "die_script": null
@@ -7328,7 +7328,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 250,
     "damage_max": 300,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7347,7 +7347,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 250,
     "damage_max": 300,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7366,7 +7366,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 250,
     "damage_max": 300,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7385,7 +7385,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 320,
     "damage_max": 340,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7404,7 +7404,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 320,
     "damage_max": 350,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7423,7 +7423,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 340,
     "damage_max": 350,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7442,7 +7442,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 550,
     "damage_max": 560,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/코뿔소대왕.lua"
@@ -7461,7 +7461,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 545,
     "damage_max": 555,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.중간왕악어",
     "attack_script": null,
     "die_script": "scripts/mob/중간왕악어.lua"
@@ -7480,7 +7480,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 895,
     "damage_max": 905,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.악어대왕",
     "attack_script": null,
     "die_script": "scripts/mob/악어대왕.lua"
@@ -7499,7 +7499,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 95,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7518,7 +7518,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.살쾡이왕",
     "attack_script": null,
     "die_script": "scripts/mob/살쾡이왕.lua"
@@ -7537,7 +7537,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 110,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7556,7 +7556,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1145,
     "damage_max": 1155,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.불의천신",
     "attack_script": null,
     "die_script": "scripts/mob/불의천신.lua"
@@ -7575,7 +7575,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 205,
     "damage_max": 255,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흡혈비후",
     "attack_script": null,
     "die_script": null
@@ -7594,7 +7594,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2395,
     "damage_max": 2405,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.마계천신",
     "attack_script": null,
     "die_script": "scripts/mob/마계천신.lua"
@@ -7613,7 +7613,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흡혈강시",
     "attack_script": null,
     "die_script": "scripts/mob/흡혈강시.lua"
@@ -7632,7 +7632,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑발강시",
     "attack_script": null,
     "die_script": null
@@ -7651,7 +7651,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 9995,
     "damage_max": 10005,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.만년원귀",
     "attack_script": null,
     "die_script": "scripts/mob/만년원귀.lua"
@@ -7670,7 +7670,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 700,
     "damage_max": 800,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7689,7 +7689,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 600,
     "damage_max": 750,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7708,7 +7708,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.장안성여왕인어",
     "attack_script": null,
     "die_script": "scripts/mob/장안성여왕인어.lua"
@@ -7727,7 +7727,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.염유장군",
     "attack_script": null,
     "die_script": "scripts/mob/염유장군.lua"
@@ -7746,7 +7746,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.염유왕",
     "attack_script": null,
     "die_script": "scripts/mob/염유왕.lua"
@@ -7765,7 +7765,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑마기린",
     "attack_script": null,
     "die_script": "scripts/mob/흑마기린.lua"
@@ -7784,7 +7784,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 75,
     "damage_max": 85,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.기린염왕",
     "attack_script": null,
     "die_script": "scripts/mob/기린염왕.lua"
@@ -7803,7 +7803,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무슈후슈'녹",
     "attack_script": null,
     "die_script": "scripts/mob/무슈후슈.lua'녹"
@@ -7822,7 +7822,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 95,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무슈후슈'갈",
     "attack_script": null,
     "die_script": "scripts/mob/무슈후슈.lua'갈"
@@ -7841,7 +7841,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 95,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무슈후슈'진녹",
     "attack_script": null,
     "die_script": "scripts/mob/무슈후슈.lua'진녹"
@@ -7860,7 +7860,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 85,
     "damage_max": 95,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무슈후슈'진갈",
     "attack_script": null,
     "die_script": "scripts/mob/무슈후슈.lua'진갈"
@@ -7879,7 +7879,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 115,
     "damage_max": 125,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.무슈후슈'태",
     "attack_script": null,
     "die_script": "scripts/mob/무슈후슈.lua'태"
@@ -7898,7 +7898,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 115,
     "damage_max": 125,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.현왕무슈후슈",
     "attack_script": null,
     "die_script": "scripts/mob/현왕무슈후슈.lua"
@@ -7917,7 +7917,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 195,
     "damage_max": 205,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7936,7 +7936,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7955,7 +7955,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -7974,7 +7974,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.흑천리마",
     "attack_script": null,
     "die_script": "scripts/mob/흑천리마.lua"
@@ -7993,7 +7993,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 395,
     "damage_max": 405,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.비영천리마",
     "attack_script": null,
     "die_script": "scripts/mob/비영천리마.lua"
@@ -8012,7 +8012,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.진왕천리마",
     "attack_script": null,
     "die_script": "scripts/mob/진왕천리마.lua"
@@ -8031,7 +8031,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.괴성'청",
     "attack_script": null,
     "die_script": "scripts/mob/괴성.lua'청"
@@ -8050,7 +8050,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.괴성'녹",
     "attack_script": null,
     "die_script": "scripts/mob/괴성.lua'녹"
@@ -8069,7 +8069,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1195,
     "damage_max": 1205,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": "드롭.동괴성",
     "attack_script": null,
     "die_script": "scripts/mob/동괴성.lua"
@@ -8088,7 +8088,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1395,
     "damage_max": 1405,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": "드롭.괴성왕",
     "attack_script": null,
     "die_script": "scripts/mob/괴성왕.lua"
@@ -8107,7 +8107,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8126,7 +8126,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.뇌신'자",
     "attack_script": null,
     "die_script": "scripts/mob/뇌신.lua'자"
@@ -8145,7 +8145,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.뇌신'태",
     "attack_script": null,
     "die_script": "scripts/mob/뇌신.lua'태"
@@ -8164,7 +8164,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": "드롭.뇌신왕",
     "attack_script": null,
     "die_script": "scripts/mob/뇌신왕.lua"
@@ -8183,7 +8183,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": "드롭.연청산소",
     "attack_script": null,
     "die_script": "scripts/mob/연청산소.lua"
@@ -8202,7 +8202,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.백산소",
     "attack_script": null,
     "die_script": "scripts/mob/백산소.lua"
@@ -8221,7 +8221,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.황산소",
     "attack_script": null,
     "die_script": "scripts/mob/황산소.lua"
@@ -8240,7 +8240,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.청산소괴",
     "attack_script": null,
     "die_script": "scripts/mob/청산소괴.lua"
@@ -8259,7 +8259,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.적산소괴",
     "attack_script": null,
     "die_script": "scripts/mob/적산소괴.lua"
@@ -8278,7 +8278,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.녹산소괴",
     "attack_script": null,
     "die_script": "scripts/mob/녹산소괴.lua"
@@ -8297,7 +8297,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 95,
     "damage_max": 105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.산소괴왕",
     "attack_script": "scripts/mob/산소괴왕.lua",
     "die_script": "scripts/mob/산소괴왕.lua"
@@ -8316,7 +8316,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 9,
     "damage_max": 19,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산황소",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산황소.lua"
@@ -8335,7 +8335,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산까만소",
     "attack_script": null,
     "die_script": null
@@ -8354,7 +8354,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산하얀소",
     "attack_script": null,
     "die_script": null
@@ -8373,7 +8373,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 15,
     "damage_max": 25,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산평웅",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산평웅.lua"
@@ -8392,7 +8392,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 10,
     "damage_max": 20,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산진웅",
     "attack_script": null,
     "die_script": null
@@ -8411,7 +8411,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 15,
     "damage_max": 25,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산평호",
     "attack_script": null,
     "die_script": null
@@ -8430,7 +8430,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 50,
     "damage_max": 60,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산진호",
     "attack_script": null,
     "die_script": null
@@ -8449,7 +8449,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 55,
     "damage_max": 65,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8468,7 +8468,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 60,
     "damage_max": 70,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8487,7 +8487,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 45,
     "damage_max": 55,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8506,7 +8506,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 110,
     "damage_max": 120,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산이쁘니인어",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산이쁘니인어.lua"
@@ -8525,7 +8525,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 110,
     "damage_max": 120,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산고양인어",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산고양인어.lua"
@@ -8544,7 +8544,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 115,
     "damage_max": 125,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8563,7 +8563,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 125,
     "damage_max": 135,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산해파리장군",
     "attack_script": null,
     "die_script": null
@@ -8582,7 +8582,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 210,
     "damage_max": 220,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산대발문어",
     "attack_script": null,
     "die_script": null
@@ -8601,7 +8601,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 340,
     "damage_max": 350,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산장간문어",
     "attack_script": null,
     "die_script": null
@@ -8620,7 +8620,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 395,
     "damage_max": 405,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산문어장군",
     "attack_script": null,
     "die_script": null
@@ -8639,7 +8639,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 195,
     "damage_max": 205,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산인묘",
     "attack_script": null,
     "die_script": null
@@ -8658,7 +8658,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 275,
     "damage_max": 285,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산흑코뿔소",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산흑코뿔소.lua"
@@ -8677,7 +8677,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 285,
     "damage_max": 295,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산백코뿔소",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산백코뿔소.lua"
@@ -8696,7 +8696,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산황선코뿔소",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산황선코뿔소.lua"
@@ -8715,7 +8715,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 315,
     "damage_max": 325,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산코뿔소제독",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산코뿔소제독.lua"
@@ -8734,7 +8734,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 345,
     "damage_max": 355,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8753,7 +8753,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8772,7 +8772,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1545,
     "damage_max": 1555,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8791,7 +8791,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1595,
     "damage_max": 1605,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8810,7 +8810,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1695,
     "damage_max": 1705,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8829,7 +8829,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 645,
     "damage_max": 655,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8848,7 +8848,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 645,
     "damage_max": 655,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.도삭산문비도둑",
     "attack_script": null,
     "die_script": null
@@ -8867,7 +8867,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8886,7 +8886,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 875,
     "damage_max": 885,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8905,7 +8905,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1075,
     "damage_max": 1085,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8924,7 +8924,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1095,
     "damage_max": 1105,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8943,7 +8943,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1246,
     "damage_max": 1256,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8962,7 +8962,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1737,
     "damage_max": 1747,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -8981,7 +8981,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2536,
     "damage_max": 2546,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9000,7 +9000,7 @@
     "attack_type": "COUNTER",
     "damage_min": 48,
     "damage_max": 52,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/곰.lua"
@@ -9019,7 +9019,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 48,
     "damage_max": 52,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/호랑이.lua"
@@ -9038,7 +9038,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 610,
     "damage_max": 650,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9057,7 +9057,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/독구름.lua",
     "die_script": null
@@ -9076,7 +9076,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.인면벌",
     "attack_script": null,
     "die_script": "scripts/mob/인면벌.lua"
@@ -9095,7 +9095,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2995,
     "damage_max": 3005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.인면충",
     "attack_script": null,
     "die_script": "scripts/mob/인면충.lua"
@@ -9114,7 +9114,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 500,
     "damage_max": 800,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9133,7 +9133,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 500,
     "damage_max": 800,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.세발문어",
     "attack_script": null,
     "die_script": "scripts/mob/세발문어.lua"
@@ -9152,7 +9152,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 500,
     "damage_max": 800,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.쥐방울해마",
     "attack_script": null,
     "die_script": "scripts/mob/쥐방울해마.lua"
@@ -9171,7 +9171,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 500,
     "damage_max": 800,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.꼬리해마",
     "attack_script": null,
     "die_script": "scripts/mob/꼬리해마.lua"
@@ -9190,7 +9190,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 800,
     "damage_max": 1200,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9209,7 +9209,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 900,
     "damage_max": 1500,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9228,7 +9228,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.너구리",
     "attack_script": null,
     "die_script": "scripts/mob/너구리.lua"
@@ -9247,7 +9247,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.일본원숭이",
     "attack_script": null,
     "die_script": "scripts/mob/일본원숭이.lua"
@@ -9266,7 +9266,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 395,
     "damage_max": 405,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.은여우",
     "attack_script": null,
     "die_script": "scripts/mob/은여우.lua"
@@ -9285,7 +9285,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2119,
     "damage_max": 2129,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.도삭산선비평민",
     "attack_script": "scripts/mob/혼륜수렁.lua'개",
     "die_script": "scripts/mob/도삭산선비평민.lua"
@@ -9304,7 +9304,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2419,
     "damage_max": 2429,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.도삭산선비검객",
     "attack_script": "scripts/mob/뇌성빙목.lua'개",
     "die_script": "scripts/mob/도삭산선비검객.lua"
@@ -9323,7 +9323,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 5009,
     "damage_max": 5019,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.도삭산흉노전사",
     "attack_script": "scripts/mob/도삭산흉노전사.lua",
     "die_script": "scripts/mob/도삭산흉노전사.lua"
@@ -9342,7 +9342,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3009,
     "damage_max": 3019,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.도삭산흉노무사",
     "attack_script": "scripts/mob/도삭산흉노무사.lua",
     "die_script": "scripts/mob/도삭산흉노무사.lua"
@@ -9361,7 +9361,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3495,
     "damage_max": 3505,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9380,7 +9380,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4495,
     "damage_max": 4505,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.백산신",
     "attack_script": null,
     "die_script": "scripts/mob/백산신.lua"
@@ -9399,7 +9399,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 5995,
     "damage_max": 6005,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9418,7 +9418,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 9825,
     "damage_max": 9835,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -9437,7 +9437,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 40000,
     "damage_max": 45000,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/염승천곤.lua",
     "die_script": null
@@ -9456,7 +9456,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 45000,
     "damage_max": 50000,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/염승천곤.lua",
     "die_script": null
@@ -9475,7 +9475,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 50000,
     "damage_max": 55000,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/염승천곤.lua",
     "die_script": null
@@ -9494,7 +9494,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 303149,
     "damage_max": 303159,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.산신대왕",
     "attack_script": "scripts/mob/산신대왕.lua",
     "die_script": "scripts/mob/산신대왕.lua"
@@ -9513,7 +9513,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2423149,
     "damage_max": 2423159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산해골왕",
     "attack_script": "scripts/mob/도삭산해골왕.lua",
     "die_script": "scripts/mob/도삭산해골왕.lua"
@@ -9532,7 +9532,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 623149,
     "damage_max": 623159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산길림장군",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산길림장군.lua"
@@ -9551,7 +9551,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1123149,
     "damage_max": 1123159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": null,
     "attack_script": "scripts/mob/북천황공격.lua",
     "die_script": null
@@ -9570,7 +9570,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 13149,
     "damage_max": 13159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산선우",
     "attack_script": "scripts/mob/도삭산선우.lua",
     "die_script": "scripts/mob/도삭산선우.lua"
@@ -9589,7 +9589,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 123149,
     "damage_max": 123159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산수룡",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산수룡.lua"
@@ -9608,7 +9608,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 313149,
     "damage_max": 313159,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산화룡",
     "attack_script": null,
     "die_script": "scripts/mob/도삭산화룡.lua"
@@ -9627,7 +9627,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 123149,
     "damage_max": 123159,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.도삭산파괴왕",
     "attack_script": "scripts/mob/도삭산파괴왕.lua",
     "die_script": "scripts/mob/도삭산파괴왕.lua"
@@ -9646,7 +9646,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 101149,
     "damage_max": 101159,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": "드롭.도삭산청의태자",
     "attack_script": "scripts/mob/도삭산청의태자.lua",
     "die_script": "scripts/mob/도삭산청의태자.lua"
@@ -9665,7 +9665,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 61226,
     "damage_max": 61236,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.도삭산풍석",
     "attack_script": "scripts/mob/도삭산풍석.lua",
     "die_script": "scripts/mob/도삭산풍석.lua"
@@ -9684,7 +9684,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 162340,
     "damage_max": 162350,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.도삭산암흑왕",
     "attack_script": "scripts/mob/도삭산암흑왕.lua",
     "die_script": "scripts/mob/도삭산암흑왕.lua"
@@ -9703,7 +9703,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 5500,
     "damage_max": 5600,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.선비평민",
     "attack_script": "scripts/mob/선비평민.lua",
     "die_script": "scripts/mob/선비평민.lua"
@@ -9722,7 +9722,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 7000,
     "damage_max": 7500,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.선비검객",
     "attack_script": "scripts/mob/선비검객.lua",
     "die_script": "scripts/mob/선비검객.lua"
@@ -9741,7 +9741,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 399995,
     "damage_max": 400005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.길림장군",
     "attack_script": null,
     "die_script": "scripts/mob/길림장군.lua"
@@ -9760,7 +9760,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 299995,
     "damage_max": 300005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.중월장군",
     "attack_script": null,
     "die_script": "scripts/mob/중월장군.lua"
@@ -9779,7 +9779,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 19995,
     "damage_max": 20005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/암흑투기.lua",
     "die_script": null
@@ -9798,7 +9798,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 88885,
     "damage_max": 90005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/암흑열광탄.lua",
     "die_script": null
@@ -9817,7 +9817,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 19995,
     "damage_max": 20005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/암흑정령.lua",
     "die_script": null
@@ -9836,7 +9836,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 19995,
     "damage_max": 20005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/암흑정령.lua",
     "die_script": null
@@ -9855,7 +9855,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 199995,
     "damage_max": 200005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.폭염귀",
     "attack_script": "scripts/mob/폭염귀.lua",
     "die_script": "scripts/mob/폭염귀.lua"
@@ -9874,7 +9874,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 199995,
     "damage_max": 200005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.수렴귀",
     "attack_script": "scripts/mob/수렴귀.lua",
     "die_script": "scripts/mob/수렴귀.lua"
@@ -9893,7 +9893,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 199995,
     "damage_max": 200005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.풍석",
     "attack_script": "scripts/mob/풍석.lua",
     "die_script": "scripts/mob/풍석.lua"
@@ -9912,7 +9912,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 199995,
     "damage_max": 200005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.운랑",
     "attack_script": "scripts/mob/운랑.lua",
     "die_script": "scripts/mob/운랑.lua"
@@ -9931,7 +9931,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 499995,
     "damage_max": 500005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.암흑왕",
     "attack_script": "scripts/mob/암흑왕.lua",
     "die_script": "scripts/mob/암흑왕.lua"
@@ -9950,7 +9950,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 59995,
     "damage_max": 60005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.수룡",
     "attack_script": null,
     "die_script": "scripts/mob/수룡.lua"
@@ -9969,7 +9969,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 69995,
     "damage_max": 70005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.화룡",
     "attack_script": null,
     "die_script": "scripts/mob/화룡.lua"
@@ -9988,7 +9988,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 479995,
     "damage_max": 480005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.북천황",
     "attack_script": "scripts/mob/북천황.lua",
     "die_script": "scripts/mob/북천황.lua"
@@ -10007,7 +10007,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 39995,
     "damage_max": 40005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.뇌랑",
     "attack_script": "scripts/mob/뇌랑.lua",
     "die_script": "scripts/mob/뇌랑.lua"
@@ -10026,7 +10026,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 99995,
     "damage_max": 100005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.천오",
     "attack_script": "scripts/mob/천오.lua",
     "die_script": "scripts/mob/천오.lua"
@@ -10045,7 +10045,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 149995,
     "damage_max": 150005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.마려",
     "attack_script": "scripts/mob/마려.lua",
     "die_script": "scripts/mob/마려.lua"
@@ -10064,7 +10064,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 349995,
     "damage_max": 350005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.야월진랑",
     "attack_script": "scripts/mob/야월진랑.lua",
     "die_script": "scripts/mob/야월진랑.lua"
@@ -10083,7 +10083,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 49995,
     "damage_max": 50005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.암령",
     "attack_script": null,
     "die_script": "scripts/mob/암령.lua"
@@ -10102,7 +10102,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 249995,
     "damage_max": 250005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.철거인",
     "attack_script": null,
     "die_script": "scripts/mob/철거인.lua"
@@ -10121,7 +10121,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 59995,
     "damage_max": 60005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.소천대사",
     "attack_script": "scripts/mob/소천대사.lua",
     "die_script": "scripts/mob/소천대사.lua"
@@ -10140,7 +10140,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.대나무",
     "attack_script": null,
     "die_script": "scripts/mob/대나무.lua"
@@ -10159,7 +10159,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 2995,
     "damage_max": 3005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.문비",
     "attack_script": null,
     "die_script": "scripts/mob/문비.lua"
@@ -10178,7 +10178,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.박가",
     "attack_script": null,
     "die_script": "scripts/mob/박가.lua"
@@ -10197,7 +10197,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 4995,
     "damage_max": 5005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.왕가",
     "attack_script": null,
     "die_script": "scripts/mob/왕가.lua"
@@ -10216,7 +10216,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.백보",
     "attack_script": null,
     "die_script": "scripts/mob/백보.lua"
@@ -10235,7 +10235,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 11995,
     "damage_max": 12005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.최가",
     "attack_script": null,
     "die_script": "scripts/mob/최가.lua"
@@ -10254,7 +10254,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 13995,
     "damage_max": 14005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.청웅",
     "attack_script": null,
     "die_script": "scripts/mob/청웅.lua"
@@ -10273,7 +10273,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 13995,
     "damage_max": 14005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.황웅",
     "attack_script": null,
     "die_script": "scripts/mob/황웅.lua"
@@ -10292,7 +10292,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 9995,
     "damage_max": 10005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.귀응",
     "attack_script": null,
     "die_script": "scripts/mob/귀응.lua"
@@ -10311,7 +10311,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 11995,
     "damage_max": 12005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.태산",
     "attack_script": null,
     "die_script": "scripts/mob/태산.lua"
@@ -10330,7 +10330,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 19995,
     "damage_max": 20005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.독화",
     "attack_script": null,
     "die_script": "scripts/mob/독화.lua"
@@ -10349,7 +10349,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 29995,
     "damage_max": 30005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.신몽",
     "attack_script": "scripts/mob/신몽.lua",
     "die_script": "scripts/mob/신몽.lua"
@@ -10368,7 +10368,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 24995,
     "damage_max": 25005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.엽춘",
     "attack_script": null,
     "die_script": "scripts/mob/엽춘.lua"
@@ -10387,7 +10387,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 29995,
     "damage_max": 30005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.조왕",
     "attack_script": null,
     "die_script": "scripts/mob/조왕.lua"
@@ -10406,7 +10406,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 199995,
     "damage_max": 200005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.철보장",
     "attack_script": null,
     "die_script": "scripts/mob/철보장.lua"
@@ -10425,7 +10425,7 @@
     "attack_type": "COUNTER",
     "damage_min": 1499995,
     "damage_max": 1500005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -10444,7 +10444,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 80,
     "damage_max": 100,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.복순이",
     "attack_script": null,
     "die_script": "scripts/mob/복순이.lua"
@@ -10463,7 +10463,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 80,
     "damage_max": 100,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.복수리",
     "attack_script": null,
     "die_script": "scripts/mob/복수리.lua"
@@ -10482,7 +10482,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 80,
     "damage_max": 100,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.복홍",
     "attack_script": null,
     "die_script": "scripts/mob/복홍.lua"
@@ -10501,7 +10501,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 120,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -10520,7 +10520,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 120,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.사산게",
     "attack_script": null,
     "die_script": "scripts/mob/사산게.lua"
@@ -10539,7 +10539,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100,
     "damage_max": 120,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.파산게",
     "attack_script": null,
     "die_script": "scripts/mob/파산게.lua"
@@ -10558,7 +10558,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 11995,
     "damage_max": 12005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/암흑진.lua",
     "die_script": null
@@ -10577,7 +10577,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 300,
     "damage_max": 500,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.대발문어",
     "attack_script": null,
     "die_script": "scripts/mob/대발문어.lua"
@@ -10596,7 +10596,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 300,
     "damage_max": 500,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.장간문어",
     "attack_script": null,
     "die_script": "scripts/mob/장간문어.lua"
@@ -10615,7 +10615,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 14995,
     "damage_max": 15005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/태샅진동.lua",
     "die_script": null
@@ -10634,7 +10634,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 400,
     "damage_max": 600,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.해마병사",
     "attack_script": null,
     "die_script": "scripts/mob/해마병사.lua"
@@ -10653,7 +10653,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 24995,
     "damage_max": 25005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/수마파.lua",
     "die_script": null
@@ -10672,7 +10672,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 600,
     "damage_max": 700,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.고양이인어",
     "attack_script": null,
     "die_script": "scripts/mob/고양이인어.lua"
@@ -10691,7 +10691,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 600,
     "damage_max": 700,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.이쁘니인어",
     "attack_script": null,
     "die_script": "scripts/mob/이쁘니인어.lua"
@@ -10710,7 +10710,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 30065,
     "damage_max": 30075,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/인어의포박.lua",
     "die_script": null
@@ -10729,7 +10729,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1200,
     "damage_max": 1300,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.외칼이상어",
     "attack_script": null,
     "die_script": "scripts/mob/외칼이상어.lua"
@@ -10748,7 +10748,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 800,
     "damage_max": 900,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.쌍칼상어",
     "attack_script": null,
     "die_script": "scripts/mob/쌍칼상어.lua"
@@ -10767,7 +10767,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 47995,
     "damage_max": 48005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/괴력선참.lua",
     "die_script": null
@@ -10786,7 +10786,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 107995,
     "damage_max": 108005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/천귀살상.lua",
     "die_script": null
@@ -10805,7 +10805,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 69995,
     "damage_max": 60005,
-    "speed": 1500,
+    "speed": "00:00:01.5000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -10824,7 +10824,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 400000,
     "damage_max": 500000,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": null,
     "attack_script": "scripts/mob/청의태자.lua",
     "die_script": null
@@ -10843,7 +10843,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 34345,
     "damage_max": 34355,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범녹",
     "attack_script": "scripts/mob/범녹.lua",
     "die_script": "scripts/mob/범녹.lua"
@@ -10862,7 +10862,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 54345,
     "damage_max": 54355,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범목",
     "attack_script": "scripts/mob/범목.lua",
     "die_script": "scripts/mob/범목.lua"
@@ -10881,7 +10881,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 29995,
     "damage_max": 30005,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범수",
     "attack_script": "scripts/mob/범수.lua",
     "die_script": "scripts/mob/범수.lua"
@@ -10900,7 +10900,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 29995,
     "damage_max": 30005,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범증",
     "attack_script": "scripts/mob/범증.lua",
     "die_script": "scripts/mob/범증.lua"
@@ -10919,7 +10919,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 28345,
     "damage_max": 28355,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범지",
     "attack_script": "scripts/mob/범지.lua",
     "die_script": "scripts/mob/범지.lua"
@@ -10938,7 +10938,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 29995,
     "damage_max": 30005,
-    "speed": 850,
+    "speed": "00:00:00.8500000",
     "drop": "드롭.범천",
     "attack_script": "scripts/mob/범천.lua",
     "die_script": "scripts/mob/범천.lua"
@@ -10957,7 +10957,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 69995,
     "damage_max": 70005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.백호왕",
     "attack_script": "scripts/mob/백호왕.lua",
     "die_script": "scripts/mob/백호왕.lua"
@@ -10976,7 +10976,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 114345,
     "damage_max": 114355,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.적호왕",
     "attack_script": "scripts/mob/적호왕.lua",
     "die_script": "scripts/mob/적호왕.lua"
@@ -10995,7 +10995,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 239995,
     "damage_max": 240005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.진백호왕",
     "attack_script": "scripts/mob/진백호왕.lua",
     "die_script": "scripts/mob/진백호왕.lua"
@@ -11014,7 +11014,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 124345,
     "damage_max": 124355,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.감룡",
     "attack_script": "scripts/mob/감룡.lua",
     "die_script": "scripts/mob/감룡.lua"
@@ -11033,7 +11033,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 124345,
     "damage_max": 124355,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.묵룡",
     "attack_script": "scripts/mob/묵룡.lua",
     "die_script": "scripts/mob/묵룡.lua"
@@ -11052,7 +11052,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 124345,
     "damage_max": 124355,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.흑룡",
     "attack_script": "scripts/mob/흑룡.lua",
     "die_script": "scripts/mob/흑룡.lua"
@@ -11071,7 +11071,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 124345,
     "damage_max": 124355,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.진룡",
     "attack_script": "scripts/mob/진룡.lua",
     "die_script": "scripts/mob/진룡.lua"
@@ -11090,7 +11090,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 67995,
     "damage_max": 68005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.용겸",
     "attack_script": "scripts/mob/용겸.lua",
     "die_script": "scripts/mob/용겸.lua"
@@ -11109,7 +11109,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 67995,
     "damage_max": 68005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.용랑",
     "attack_script": "scripts/mob/용랑.lua",
     "die_script": "scripts/mob/용랑.lua"
@@ -11128,7 +11128,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 67995,
     "damage_max": 68005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.용마",
     "attack_script": "scripts/mob/용마.lua",
     "die_script": "scripts/mob/용마.lua"
@@ -11147,7 +11147,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 67995,
     "damage_max": 68005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.용천",
     "attack_script": "scripts/mob/용천.lua",
     "die_script": "scripts/mob/용천.lua"
@@ -11166,7 +11166,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 339995,
     "damage_max": 340005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.용왕용겸",
     "attack_script": "scripts/mob/용왕용겸.lua",
     "die_script": "scripts/mob/용왕용겸.lua"
@@ -11185,7 +11185,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 339995,
     "damage_max": 340005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.용왕용랑",
     "attack_script": "scripts/mob/용왕용랑.lua",
     "die_script": "scripts/mob/용왕용랑.lua"
@@ -11204,7 +11204,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 339995,
     "damage_max": 340005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.용왕용마",
     "attack_script": "scripts/mob/용왕용마.lua",
     "die_script": "scripts/mob/용왕용마.lua"
@@ -11223,7 +11223,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 339995,
     "damage_max": 340005,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.용왕용천",
     "attack_script": "scripts/mob/용왕용천.lua",
     "die_script": "scripts/mob/용왕용천.lua"
@@ -11242,7 +11242,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.거미랑",
     "attack_script": null,
     "die_script": "scripts/mob/거미랑.lua"
@@ -11261,7 +11261,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 65,
     "damage_max": 75,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.사마귀랑",
     "attack_script": null,
     "die_script": "scripts/mob/사마귀랑.lua"
@@ -11280,7 +11280,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.백현귀랑",
     "attack_script": null,
     "die_script": "scripts/mob/백현귀랑.lua"
@@ -11299,7 +11299,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 695,
     "damage_max": 705,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.현랑귀랑",
     "attack_script": null,
     "die_script": "scripts/mob/현랑귀랑.lua"
@@ -11318,7 +11318,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 157595,
     "damage_max": 157605,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.폭염왕",
     "attack_script": "scripts/mob/폭염왕.lua",
     "die_script": "scripts/mob/폭염왕.lua"
@@ -11337,7 +11337,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 9995,
     "damage_max": 10005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.진여왕지주",
     "attack_script": null,
     "die_script": "scripts/mob/진여왕지주.lua"
@@ -11356,7 +11356,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 11045,
     "damage_max": 11055,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.독사여왕",
     "attack_script": null,
     "die_script": "scripts/mob/독사여왕.lua"
@@ -11375,7 +11375,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 395,
     "damage_max": 405,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/아귀.lua"
@@ -11394,7 +11394,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 495,
     "damage_max": 505,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.어전",
     "attack_script": null,
     "die_script": "scripts/mob/어전.lua"
@@ -11413,7 +11413,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 545,
     "damage_max": 555,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": "scripts/mob/멧돼지.lua"
@@ -11432,7 +11432,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 295,
     "damage_max": 305,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -11451,7 +11451,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1995,
     "damage_max": 2005,
-    "speed": 950,
+    "speed": "00:00:00.9500000",
     "drop": "드롭.만월늑대인간",
     "attack_script": null,
     "die_script": null
@@ -11470,7 +11470,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 25515,
     "damage_max": 25525,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": "드롭.유성지",
     "attack_script": "scripts/mob/유성지.lua",
     "die_script": "scripts/mob/유성지.lua"
@@ -11489,7 +11489,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 83515,
     "damage_max": 83525,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.파괴왕",
     "attack_script": "scripts/mob/파괴왕.lua",
     "die_script": "scripts/mob/파괴왕.lua"
@@ -11508,7 +11508,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.파연",
     "attack_script": null,
     "die_script": "scripts/mob/파연.lua"
@@ -11527,7 +11527,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.파성",
     "attack_script": null,
     "die_script": "scripts/mob/파성.lua"
@@ -11546,7 +11546,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.파단",
     "attack_script": null,
     "die_script": "scripts/mob/파단.lua"
@@ -11565,7 +11565,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.파염",
     "attack_script": null,
     "die_script": "scripts/mob/파염.lua"
@@ -11584,7 +11584,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.월연",
     "attack_script": null,
     "die_script": "scripts/mob/월연.lua"
@@ -11603,7 +11603,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.월지",
     "attack_script": null,
     "die_script": "scripts/mob/월지.lua"
@@ -11622,7 +11622,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.월선",
     "attack_script": null,
     "die_script": "scripts/mob/월선.lua"
@@ -11641,7 +11641,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.월정",
     "attack_script": null,
     "die_script": "scripts/mob/월정.lua"
@@ -11660,7 +11660,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -11679,7 +11679,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4515,
     "damage_max": 4525,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -11698,7 +11698,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 33515,
     "damage_max": 33525,
-    "speed": 700,
+    "speed": "00:00:00.7000000",
     "drop": "드롭.해골왕",
     "attack_script": "scripts/mob/해골왕.lua",
     "die_script": "scripts/mob/해골왕.lua"
@@ -11717,7 +11717,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 15000,
     "damage_max": 20000,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.선비대장군",
     "attack_script": null,
     "die_script": "scripts/mob/선비대장군.lua"
@@ -11736,7 +11736,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 66995,
     "damage_max": 67005,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/영격참.lua",
     "die_script": null
@@ -11755,7 +11755,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 71995,
     "damage_max": 72005,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/진격참.lua",
     "die_script": null
@@ -11774,7 +11774,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 109995,
     "damage_max": 110005,
-    "speed": 750,
+    "speed": "00:00:00.7500000",
     "drop": null,
     "attack_script": "scripts/mob/무성운파.lua",
     "die_script": null
@@ -11793,7 +11793,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1199995,
     "damage_max": 1200005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.선우",
     "attack_script": "scripts/mob/선우.lua",
     "die_script": "scripts/mob/선우.lua"
@@ -11812,7 +11812,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1199995,
     "damage_max": 1200005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.선중",
     "attack_script": "scripts/mob/선중.lua",
     "die_script": "scripts/mob/선중.lua"
@@ -11831,7 +11831,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1199995,
     "damage_max": 1200005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.선백",
     "attack_script": "scripts/mob/선백.lua",
     "die_script": "scripts/mob/선백.lua"
@@ -11850,7 +11850,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1199995,
     "damage_max": 1200005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.선궁",
     "attack_script": "scripts/mob/선궁.lua",
     "die_script": "scripts/mob/선궁.lua"
@@ -11869,7 +11869,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1199995,
     "damage_max": 1200005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": "드롭.선계",
     "attack_script": "scripts/mob/선계.lua",
     "die_script": "scripts/mob/선계.lua"
@@ -11888,7 +11888,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 225,
     "damage_max": 235,
-    "speed": 950,
+    "speed": "00:00:00.9500000",
     "drop": "드롭.서현거미",
     "attack_script": null,
     "die_script": "scripts/mob/서현거미.lua"
@@ -11907,7 +11907,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 380,
     "damage_max": 420,
-    "speed": 950,
+    "speed": "00:00:00.9500000",
     "drop": "드롭.초급유령",
     "attack_script": null,
     "die_script": "scripts/mob/초급유령.lua"
@@ -11926,7 +11926,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 35,
     "damage_max": 45,
-    "speed": 950,
+    "speed": "00:00:00.9500000",
     "drop": "드롭.날쌘해골",
     "attack_script": null,
     "die_script": "scripts/mob/날쌘해골.lua"
@@ -11945,7 +11945,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 265,
     "damage_max": 275,
-    "speed": 950,
+    "speed": "00:00:00.9500000",
     "drop": "드롭.쾌도해골",
     "attack_script": null,
     "die_script": "scripts/mob/쾌도해골.lua"
@@ -11964,7 +11964,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 999995,
     "damage_max": 1000005,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/반고.lua",
     "die_script": "scripts/mob/반고.lua"
@@ -11983,7 +11983,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 699995,
     "damage_max": 700005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.순제",
     "attack_script": "scripts/mob/순제.lua",
     "die_script": "scripts/mob/순제.lua"
@@ -12002,7 +12002,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 699995,
     "damage_max": 700005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.요제",
     "attack_script": "scripts/mob/요제.lua",
     "die_script": "scripts/mob/요제.lua"
@@ -12021,7 +12021,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 149995,
     "damage_max": 150005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12040,7 +12040,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 99995,
     "damage_max": 100005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12059,7 +12059,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 699995,
     "damage_max": 700005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": null,
     "attack_script": "scripts/mob/제곡.lua",
     "die_script": "scripts/mob/제곡.lua"
@@ -12078,7 +12078,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 149995,
     "damage_max": 150005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12097,7 +12097,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 99995,
     "damage_max": 100005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12116,7 +12116,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 699995,
     "damage_max": 700005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.전욱",
     "attack_script": "scripts/mob/전욱.lua",
     "die_script": "scripts/mob/전욱.lua"
@@ -12135,7 +12135,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 149995,
     "damage_max": 150005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12154,7 +12154,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 99995,
     "damage_max": 100005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12173,7 +12173,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 699995,
     "damage_max": 700005,
-    "speed": 650,
+    "speed": "00:00:00.6500000",
     "drop": "드롭.소호",
     "attack_script": "scripts/mob/소호.lua",
     "die_script": "scripts/mob/소호.lua"
@@ -12192,7 +12192,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 149995,
     "damage_max": 150005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12211,7 +12211,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 99995,
     "damage_max": 100005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12230,7 +12230,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 9500,
     "damage_max": 10000,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12249,7 +12249,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 30000,
     "damage_max": 40000,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": "scripts/mob/변태죽음.lua",
     "die_script": "scripts/mob/변태죽음.lua"
@@ -12268,7 +12268,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12287,7 +12287,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12306,7 +12306,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12325,7 +12325,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12344,7 +12344,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12363,7 +12363,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12382,7 +12382,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12401,7 +12401,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12420,7 +12420,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 5000,
     "damage_max": 8000,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12439,7 +12439,7 @@
     "attack_type": "NO_MOVE",
     "damage_min": 5,
     "damage_max": 10,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12458,7 +12458,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2515,
     "damage_max": 2525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12477,7 +12477,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2515,
     "damage_max": 2525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12496,7 +12496,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 545,
     "damage_max": 555,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12515,7 +12515,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12534,7 +12534,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12553,7 +12553,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12572,7 +12572,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12591,7 +12591,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3995,
     "damage_max": 4005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.표신궁에주겐",
     "attack_script": null,
     "die_script": "scripts/mob/표신궁에주겐.lua"
@@ -12610,7 +12610,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12629,7 +12629,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12648,7 +12648,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12667,7 +12667,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 1295,
     "damage_max": 1305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12686,7 +12686,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 2895,
     "damage_max": 2905,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/문위마법.lua",
     "die_script": null
@@ -12705,7 +12705,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.표신궁문려",
     "attack_script": null,
     "die_script": "scripts/mob/표신궁문려.lua"
@@ -12724,7 +12724,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12743,7 +12743,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12762,7 +12762,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12781,7 +12781,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12800,7 +12800,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12819,7 +12819,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 995,
     "damage_max": 1005,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12838,7 +12838,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 145,
     "damage_max": 155,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12857,7 +12857,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 1495,
     "damage_max": 1505,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12876,7 +12876,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2295,
     "damage_max": 2305,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12895,7 +12895,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 2495,
     "damage_max": 2505,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.표신궁합연",
     "attack_script": null,
     "die_script": "scripts/mob/표신궁합연.lua"
@@ -12914,7 +12914,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 215,
     "damage_max": 225,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12933,7 +12933,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 315,
     "damage_max": 325,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": "scripts/mob/나막신던지기.lua",
     "die_script": null
@@ -12952,7 +12952,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 315,
     "damage_max": 325,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": null,
     "attack_script": null,
     "die_script": null
@@ -12971,7 +12971,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 3515,
     "damage_max": 3525,
-    "speed": 900,
+    "speed": "00:00:00.9000000",
     "drop": "드롭.표신궁백향",
     "attack_script": null,
     "die_script": "scripts/mob/표신궁백향.lua"
@@ -12990,7 +12990,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.동장군의망령",
     "attack_script": "scripts/mob/동장군의망령.lua",
     "die_script": "scripts/mob/동장군의망령.lua"
@@ -13009,7 +13009,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.서장군의망령",
     "attack_script": "scripts/mob/서장군의망령.lua",
     "die_script": "scripts/mob/서장군의망령.lua"
@@ -13028,7 +13028,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.남장군의망령",
     "attack_script": "scripts/mob/남장군의망령.lua",
     "die_script": "scripts/mob/남장군의망령.lua"
@@ -13047,7 +13047,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.북장군의망령",
     "attack_script": "scripts/mob/북장군의망령.lua",
     "die_script": "scripts/mob/북장군의망령.lua"
@@ -13066,7 +13066,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 23515,
     "damage_max": 23525,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.중앙장군의망령",
     "attack_script": "scripts/mob/중앙장군의망령.lua",
     "die_script": "scripts/mob/중앙장군의망령.lua"
@@ -13085,7 +13085,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 27995,
     "damage_max": 38005,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": "드롭.상어장수",
     "attack_script": null,
     "die_script": "scripts/mob/상어장수.lua"
@@ -13104,7 +13104,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 4000,
     "damage_max": 4500,
-    "speed": 1000,
+    "speed": "00:00:01",
     "drop": "드롭.지네",
     "attack_script": null,
     "die_script": "scripts/mob/지네.lua"
@@ -13123,7 +13123,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 109000,
     "damage_max": 109001,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13142,7 +13142,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 78500,
     "damage_max": 78501,
-    "speed": 800,
+    "speed": "00:00:00.8000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13161,7 +13161,7 @@
     "attack_type": "RUN_AWAY",
     "damage_min": 75335,
     "damage_max": 75336,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13180,7 +13180,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 164800,
     "damage_max": 164801,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": null,
     "attack_script": "scripts/mob/수로보스.lua",
     "die_script": "scripts/mob/수로보스.lua"
@@ -13199,7 +13199,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 164800,
     "damage_max": 164801,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13218,7 +13218,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 100000,
     "damage_max": 100000,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13237,7 +13237,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 103000,
     "damage_max": 103000,
-    "speed": 600,
+    "speed": "00:00:00.6000000",
     "drop": null,
     "attack_script": "scripts/mob/수로몬스터.lua",
     "die_script": "scripts/mob/수로몬스터.lua"
@@ -13256,7 +13256,7 @@
     "attack_type": "CONTAINMENT",
     "damage_min": 280000,
     "damage_max": 280001,
-    "speed": 500,
+    "speed": "00:00:00.5000000",
     "drop": null,
     "attack_script": "scripts/mob/수로보스.lua",
     "die_script": "scripts/mob/수로보스.lua"

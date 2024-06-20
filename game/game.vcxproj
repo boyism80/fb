@@ -226,6 +226,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.item.cpp" />
     <ClCompile Include="model.life.cpp" />
+    <ClCompile Include="model.mob.cpp" />
+    <ClCompile Include="model.npc.cpp" />
     <ClCompile Include="model.object.cpp" />
   </ItemGroup>
   <ItemGroup>

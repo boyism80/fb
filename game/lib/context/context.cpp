@@ -44,6 +44,10 @@ IMPLEMENT_LUA_EXTENSION(fb::game::mob::model, "fb.game.mob.core")
 {"speed",               fb::game::mob::model::builtin_speed},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
+{"speed",               fb::model::mob::builtin_speed},
+END_LUA_EXTENSION
+
 IMPLEMENT_LUA_EXTENSION(fb::game::mob, "fb.game.mob")
 {"__eq",                fb::game::object::builtin_eq},
 END_LUA_EXTENSION
@@ -64,21 +68,23 @@ IMPLEMENT_LUA_EXTENSION(fb::game::npc::model, "fb.game.npc.core")
 {"rename_weapon",       fb::game::npc::builtin_rename_weapon},
 END_LUA_EXTENSION
 
+IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
+{"input",               fb::model::npc::builtin_input},
+{"menu",                fb::model::npc::builtin_menu},
+{"item",                fb::model::npc::builtin_item},
+{"slot",                fb::model::npc::builtin_slot},
+{"sell",                fb::model::npc::builtin_sell},
+{"buy",                 fb::model::npc::builtin_buy},
+{"repair",              fb::model::npc::builtin_repair},
+{"repair_all",          fb::model::npc::builtin_repair_all},
+{"hold_money",          fb::model::npc::builtin_hold_money},
+{"hold_item",           fb::model::npc::builtin_hold_item},
+{"return_money",        fb::model::npc::builtin_return_money},
+{"return_item",         fb::model::npc::builtin_return_item},
+{"rename_weapon",       fb::model::npc::builtin_rename_weapon},
+END_LUA_EXTENSION
+
 IMPLEMENT_LUA_EXTENSION(fb::game::npc, "fb.game.npc")
-{"__eq",                fb::game::object::builtin_eq},
-{"input",               fb::game::npc::builtin_input},
-{"menu",                fb::game::npc::builtin_menu},
-{"item",                fb::game::npc::builtin_item},
-{"slot",                fb::game::npc::builtin_slot},
-{"sell",                fb::game::npc::builtin_sell},
-{"buy",                 fb::game::npc::builtin_buy},
-{"repair",              fb::game::npc::builtin_repair},
-{"repair_all",          fb::game::npc::builtin_repair_all},
-{"hold_money",          fb::game::npc::builtin_hold_money},
-{"hold_item",           fb::game::npc::builtin_hold_item},
-{"return_money",        fb::game::npc::builtin_return_money},
-{"return_item",         fb::game::npc::builtin_return_item},
-{"rename_weapon",       fb::game::npc::builtin_rename_weapon},
 END_LUA_EXTENSION
 
 

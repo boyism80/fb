@@ -1765,7 +1765,7 @@ public:
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const uint32_t damage_min;
     const uint32_t damage_max;
-    const uint32_t speed;
+    const std::chrono::milliseconds speed;
     const std::string drop;
     const std::string attack_script;
     const std::string die_script;
@@ -1777,7 +1777,7 @@ public:
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage_min(fb::model::build<uint32_t>(json["damage_min"])),
         damage_max(fb::model::build<uint32_t>(json["damage_max"])),
-        speed(fb::model::build<uint32_t>(json["speed"])),
+        speed(fb::model::build<std::chrono::milliseconds>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
