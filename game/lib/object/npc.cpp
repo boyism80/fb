@@ -3,7 +3,7 @@
 
 using namespace fb::game;
 
-fb::game::npc::npc(fb::game::context& context, const fb::model::npc* model) : 
+fb::game::npc::npc(fb::game::context& context, const fb::model::npc& model) : 
     fb::game::object(context, model, fb::game::object::config())
 { }
 
@@ -14,23 +14,23 @@ fb::game::npc::npc(const npc& right) :
 fb::game::npc::~npc()
 { }
 
-bool fb::game::npc::buy(fb::game::session& session, fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
+bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if(model->buy.has_value() == false)
+        auto& model = this->based<fb::model::npc>();
+        if(model.buy.has_value() == false)
             return false;
 
         if (item_model == nullptr)
             throw std::runtime_error("뭘 팔아?");
 
-        auto slots = session.items.index_all(item_model);
+        auto slots = session.items.index_all(*item_model);
         if(slots.size() == 0)
             throw std::runtime_error("가지고 있지도 않으면서...");
 
         auto price = uint32_t(0);
-        if (model->contains_buy(*item_model, price) == false)
+        if (model.contains_buy(*item_model, price) == false)
             throw std::runtime_error("그런 물건은 안 삽니다.");
 
         if (item_model->attr(ITEM_ATTRIBUTE::BUNDLE))
@@ -91,19 +91,19 @@ bool fb::game::npc::buy(fb::game::session& session, fb::model::item* item_model,
     }
 }
 
-bool fb::game::npc::sell(fb::game::session& session, fb::model::item* item_model, uint16_t count, bool sold)
+bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item_model, uint16_t count, bool sold)
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if(model->sell.size() == 0)
+        auto& model = this->based<fb::model::npc>();
+        if(model.sell.size() == 0)
             return false;
 
         if(item_model == nullptr)
             throw std::runtime_error("뭘 사?");
 
         auto sell_price = uint32_t(0);
-        if(model->contains_sell(*item_model, sell_price) == false)
+        if(model.contains_sell(*item_model, sell_price) == false)
             throw std::runtime_error("그런 물건은 안 팝니다.");
 
         if(sold)
@@ -151,12 +151,12 @@ bool fb::game::npc::sell(fb::game::session& session, fb::model::item* item_model
     }
 }
 
-bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_model, bool done)
+bool fb::game::npc::repair(fb::game::session& session, const fb::model::item* item_model, bool done)
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if (model->repair == false)
+        auto& model = this->based<fb::model::npc>();
+        if (model.repair == false)
             return false;
 
         auto equipments = std::vector<fb::game::equipment*>();
@@ -168,11 +168,11 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
                 if (equipment == nullptr)
                     continue;
 
-                auto equipment_model = equipment->based<fb::model::equipment>();
-                if (equipment_model->repair.has_value() == false)
+                auto& equipment_model = equipment->based<fb::model::equipment>();
+                if (equipment_model.repair.has_value() == false)
                     continue;
 
-                if (equipment->durability() >= equipment_model->durability)
+                if (equipment->durability() >= equipment_model.durability)
                     continue;
 
                 equipments.push_back(static_cast<fb::game::equipment*>(equipment));
@@ -184,15 +184,15 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
                 if (item == nullptr)
                     continue;
 
-                if (item->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
+                if (item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
                     continue;
 
-                auto equipment_model = item->based<fb::model::equipment>();
-                if (equipment_model->repair.has_value() == false)
+                auto& equipment_model = item->based<fb::model::equipment>();
+                if (equipment_model.repair.has_value() == false)
                     continue;
 
                 auto equipment = static_cast<fb::game::equipment*>(item);
-                if (equipment->durability() >= equipment_model->durability)
+                if (equipment->durability() >= equipment_model.durability)
                     continue;
 
                 equipments.push_back(equipment);
@@ -210,12 +210,12 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
             if (item == nullptr)
                 throw std::runtime_error("가지고 있지 않은데요");
 
-            auto equipment_model = static_cast<fb::game::equipment::model*>(item_model);
-            if(equipment_model->repair.has_value() == false)
+            auto& equipment_model = static_cast<const fb::model::equipment&>(*item_model);
+            if(equipment_model.repair.has_value() == false)
                 throw std::runtime_error(fb::format("%s 고칠 수 없습니다.", name_with(item_model->name).c_str()));
 
             auto equipment = static_cast<fb::game::equipment*>(item);
-            if (equipment->durability() >= equipment_model->durability)
+            if (equipment->durability() >= equipment_model.durability)
                 throw std::runtime_error("이미 고쳐져 있습니다.");
 
             equipments.push_back(equipment);
@@ -228,8 +228,8 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
         auto price = 0;
         for (auto equipment : equipments)
         {
-            auto equipment_model = equipment->based<fb::model::equipment>();
-            price += (uint32_t)(equipment_model->repair.value() * (equipment_model->durability - equipment->durability().value()));
+            auto& equipment_model = equipment->based<fb::model::equipment>();
+            price += (uint32_t)(equipment_model.repair.value() * (equipment_model.durability - equipment->durability().value()));
         }
 
         if (session.money() < price)
@@ -238,8 +238,8 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
         session.money_reduce(price);
         for (auto equipment : equipments)
         {
-            auto equipment_model = equipment->based<fb::model::equipment>();
-            equipment->durability(equipment_model->durability);
+            auto& equipment_model = equipment->based<fb::model::equipment>();
+            equipment->durability(equipment_model.durability);
         }
 
         if (price == 0)
@@ -264,8 +264,8 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if (model->hold_money == false)
+        auto& model = this->based<fb::model::npc>();
+        if (model.hold_money == false)
             return false;
 
         if (money.has_value() == false)
@@ -298,8 +298,8 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if (model->hold_money == false)
+        auto& model = this->based<fb::model::npc>();
+        if (model.hold_money == false)
             return false;
 
         if(session.deposited_money() == 0)
@@ -328,12 +328,12 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
     }
 }
 
-bool fb::game::npc::hold_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count)
+bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if (model->hold_item == false)
+        auto& model = this->based<fb::model::npc>();
+        if (model.hold_item == false)
             return false;
 
         if (item == nullptr)
@@ -382,12 +382,12 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::model::item* item,
     }
 }
 
-bool fb::game::npc::return_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count)
+bool fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
-        auto model = this->based<fb::model::npc>();
-        if (model->hold_item == false)
+        auto& model = this->based<fb::model::npc>();
+        if (model.hold_item == false)
             return false;
 
         if (item == nullptr)
@@ -437,20 +437,21 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::model::item* ite
 
 void fb::game::npc::sell_list()
 {
-    auto model = this->based<fb::model::npc>();
-    if(model->sell.size() == 0)
+    auto& model = this->based<fb::model::npc>();
+    if(model.sell.size() == 0)
         return;
 
     auto overflow = 0;
     auto items = std::vector<std::string>();
-    for (auto& [_, pursuit] : model->sell)
+    for (auto& pursuit : model.sell)
     {
-        for (auto& [item, price] : *fb::game::old_model::sell[pursuit])
+        for (auto& [_, x] : this->context.model.sell[pursuit])
         {
+            auto& item = this->context.model.item[x.item];
             if (items.size() >= 3)
                 overflow++;
             else
-                items.push_back(item->name);
+                items.push_back(item.name);
         }
     }
 
@@ -467,18 +468,19 @@ void fb::game::npc::sell_list()
 
 void fb::game::npc::buy_list()
 {
-    auto model = this->based<fb::model::npc>();
-    if(model->buy.has_value() == false)
+    auto& model = this->based<fb::model::npc>();
+    if(model.buy.has_value() == false)
         return;
 
     auto overflow = 0;
     auto items = std::vector<std::string>();
-    for (auto& [item, price] : *fb::game::old_model::buy[model->buy.value()])
+    for (auto& [_, x] : this->context.model.buy[model.buy.value()])
     {
+        auto& item = this->context.model.item[x.item];
         if (items.size() >= 3)
             overflow++;
         else
-            items.push_back(item->name);
+            items.push_back(item.name);
     }
 
     auto sstream = std::stringstream();
@@ -494,14 +496,14 @@ void fb::game::npc::buy_list()
 
 void fb::game::npc::sell_price(const fb::model::item* item)
 {
-    auto model = this->based<fb::model::npc>();
-    if (model->sell.size() == 0)
+    auto& model = this->based<fb::model::npc>();
+    if (model.sell.size() == 0)
         return;
 
     try
     {
         auto price = uint32_t(0);
-        if (item == nullptr || model->contains_sell(*item, price) == false)
+        if (item == nullptr || model.contains_sell(*item, price) == false)
             throw std::runtime_error("그런 물건은 안 팝니다.");
 
         this->chat(fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
@@ -514,14 +516,14 @@ void fb::game::npc::sell_price(const fb::model::item* item)
 
 void fb::game::npc::buy_price(const fb::model::item* item)
 {
-    auto model = this->based<fb::model::npc>();
-    if (model->buy.has_value() == false)
+    auto& model = this->based<fb::model::npc>();
+    if (model.buy.has_value() == false)
         return;
 
     try
     {
         auto price = uint32_t(0);
-        if (item == nullptr || model->contains_buy(*item, price) == false)
+        if (item == nullptr || model.contains_buy(*item, price) == false)
             throw std::runtime_error("그런 물건은 안 삽니다.");
 
         this->chat(fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
@@ -534,8 +536,8 @@ void fb::game::npc::buy_price(const fb::model::item* item)
 
 bool fb::game::npc::deposited_money(const fb::game::session& session)
 {
-    auto model = this->based<fb::model::npc>();
-    if(model->hold_money == false)
+    auto& model = this->based<fb::model::npc>();
+    if(model.hold_money == false)
         return false;
 
     auto money = session.deposited_money();
@@ -549,8 +551,8 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
 
 bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::item* item, const std::string& name)
 {
-    auto model = this->based<fb::model::npc>();
-    if(model->rename == false)
+    auto& model = this->based<fb::model::npc>();
+    if(model.rename == false)
         return false;
 
     try
@@ -565,13 +567,13 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
         if (weapon == nullptr)
             throw std::runtime_error(fb::format("%s 가지고 있지 않습니다.", name_with(item->name).c_str()));
 
-        auto weapon_model = static_cast<const fb::game::weapon::model*>(item);
-        if (weapon_model->rename.has_value() == false)
+        auto& weapon_model = static_cast<const fb::model::weapon&>(*item);
+        if (weapon_model.rename.has_value() == false)
             throw std::runtime_error(fb::format("%s 별칭을 부여할 수 없습니다.", name_with(item->name, {"은", "는"})));
 
         auto money = session.money();
-        if (weapon_model->rename.value() > money)
-            throw std::runtime_error(fb::format("돈이 모자랍니다. %s에 별칭을 부여하려면 %d전이 필요합니다.", item->name.c_str(), weapon_model->rename.value()));
+        if (weapon_model.rename.value() > money)
+            throw std::runtime_error(fb::format("돈이 모자랍니다. %s에 별칭을 부여하려면 %d전이 필요합니다.", item->name.c_str(), weapon_model.rename.value()));
 
         auto cp949 = CP949(name);
         if(cp949.size() < 4)
@@ -584,7 +586,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
             throw std::runtime_error("그렇게 바꿀 수 없습니다.");
 
         static_cast<fb::game::weapon*>(weapon)->custom_name(name);
-        session.money_reduce(weapon_model->rename.value());
+        session.money_reduce(weapon_model.rename.value());
         this->chat(fb::format("%s의 이름을 %s로 변경했습니다.", item->name.c_str(), name_with(name, { "으", "" }).c_str()));
     }
     catch(std::runtime_error& e)
@@ -598,8 +600,8 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
 
 bool fb::game::npc::hold_item_list(const fb::game::session& session)
 {
-    auto model = this->based<fb::model::npc>();
-    if (model->hold_item == false)
+    auto& model = this->based<fb::model::npc>();
+    if (model.hold_item == false)
         return false;
 
     try
@@ -610,12 +612,12 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
 
         auto overflow = 0;
         auto items = std::vector<std::string>();
-        for (auto& item : deposited_items)
+        for (auto item : deposited_items)
         {
             if (items.size() >= 3)
                 overflow++;
             else
-                items.push_back(item->based<fb::model::item>()->name);
+                items.push_back(item->based<fb::model::item>().name);
         }
 
         auto sstream = std::stringstream();
@@ -639,8 +641,8 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
 
 bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::model::item* item)
 {
-    auto model = this->based<fb::model::npc>();
-    if (model->hold_item == false)
+    auto& model = this->based<fb::model::npc>();
+    if (model.hold_item == false)
         return false;
 
     try
@@ -661,54 +663,4 @@ bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::
     }
 
     return true;
-}
-
-fb::model::npc::model(const fb::model::npc::config& config) : 
-    fb::model::object(config),
-    script(config.script),
-    sell(config.sell),
-    buy(config.buy),
-    repair(config.repair),
-    hold_money(config.hold_money),
-    hold_item(config.hold_item),
-    rename(config.rename)
-{ }
-
-fb::model::npc::~model()
-{ }
-
-bool fb::model::npc::contains_sell(const fb::model::item& item, uint32_t& price) const
-{
-    for (auto& [msg, i] : this->sell)
-    {
-        for (auto& sell : *fb::game::old_model::sell[i])
-        {
-            if (sell.first == &item)
-            {
-                price = sell.second.has_value() ? sell.second.value() : sell.first->price;
-                return true;
-            }
-        }
-    }
-
-    price = 0;
-    return false;
-}
-
-bool fb::model::npc::contains_buy(const fb::model::item& item, uint32_t& price) const
-{
-    if (this->buy.has_value() == false)
-        return false;
-
-    for (auto& buy : *fb::game::old_model::buy[this->buy.value()])
-    {
-        if (buy.first == &item)
-        {
-            price = buy.second.has_value() ? buy.second.value() : buy.first->price / 2;
-            return true;
-        }
-    }
-
-    price = 0;
-    return false;
 }

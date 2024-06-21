@@ -159,7 +159,7 @@ public:
     bool                        transferring() const;
 
     void                        attack();
-    void                        action(ACTION action, fb::game::DURATION duration, uint8_t sound = 0x00);
+    void                        action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
     const std::string&          name() const final;
     void                        name(const std::string& value);
@@ -264,9 +264,9 @@ public:
     uint32_t                    regenerative() const;
     void                        regenerative(uint8_t value);
 
-    bool                        option(OPTION key) const;
-    void                        option(OPTION key, bool value);
-    bool                        option_toggle(OPTION key);
+    bool                        option(CUSTOM_SETTING key) const;
+    void                        option(CUSTOM_SETTING key, bool value);
+    bool                        option_toggle(CUSTOM_SETTING key);
 
     const std::string&          title() const;
     void                        title(const std::string& value);
@@ -348,11 +348,11 @@ public:
     virtual void                on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                on_hold(session& me) = 0;
     virtual void                on_die(session& me, object* you) = 0;
-    virtual void                on_action(session& me, ACTION action, fb::game::DURATION duration, uint8_t sound) = 0;
+    virtual void                on_action(session& me, ACTION action, DURATION duration, uint8_t sound) = 0;
     virtual void                on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
     virtual void                on_money_changed(session& me, uint32_t value) = 0;
     virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
-    virtual void                on_option(session& me, fb::game::OPTION option, bool enabled) = 0;
+    virtual void                on_option(session& me, CUSTOM_SETTING option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
     virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;

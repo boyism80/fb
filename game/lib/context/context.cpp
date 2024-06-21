@@ -937,7 +937,7 @@ fb::task<bool> fb::game::context::handle_in_message(fb::internal::socket<>& sock
 {
     auto to = this->find(response.to);
     if(to != nullptr)
-        this->send(*to, fb::protocol::game::response::message(response.contents, (fb::game::MESSAGE_TYPE)response.type), scope::SELF);
+        this->send(*to, fb::protocol::game::response::message(response.contents, (MESSAGE_TYPE)response.type), scope::SELF);
 
     co_return true;
 }
@@ -1246,9 +1246,9 @@ fb::task<bool> fb::game::context::handle_option_changed(fb::socket<fb::game::ses
     if (session->inited() == false)
         co_return true;
 
-    auto option = OPTION(request.option);
+    auto option = CUSTOM_SETTING(request.option);
 
-    if(option == OPTION::RIDE)
+    if(option == CUSTOM_SETTING::RIDE)
     {
         if(session->state() == STATE::RIDING)
             session->unride();
@@ -1422,12 +1422,12 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             throw std::runtime_error(fb::game::message::group::CANNOT_FIND_TARGET);
         }
 
-        if(me->option(OPTION::GROUP) == false)
+        if(me->option(CUSTOM_SETTING::GROUP) == false)
         {
             throw std::runtime_error(fb::game::message::group::DISABLED_MINE);
         }
 
-        if(you->option(OPTION::GROUP) == false)
+        if(you->option(CUSTOM_SETTING::GROUP) == false)
         {
             throw std::runtime_error(fb::game::message::group::DISABLED_TARGET);
         }
@@ -1876,14 +1876,14 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
         else
             sstream << response.to << "님은 바람의나라에 없습니다.";
 
-        session->send(fb::protocol::game::response::message(sstream.str(), fb::game::MESSAGE_TYPE::NOTIFY));
+        session->send(fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::NOTIFY));
     }
     catch(std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        session->send(fb::protocol::game::response::message("서버 오류", fb::game::MESSAGE_TYPE::NOTIFY));
+        session->send(fb::protocol::game::response::message("서버 오류", MESSAGE_TYPE::NOTIFY));
     }
     co_return true;
 }

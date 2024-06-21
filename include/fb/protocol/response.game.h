@@ -33,10 +33,10 @@ class message : public fb::protocol::base::header
 public:
 #ifdef BOT
     std::string                             text;
-    fb::game::MESSAGE_TYPE                  type;
+    MESSAGE_TYPE                  type;
 #else
     const std::string                       text;
-    const fb::game::MESSAGE_TYPE            type;
+    const MESSAGE_TYPE            type;
 #endif
 
 public:
@@ -44,7 +44,7 @@ public:
     message() : fb::protocol::base::header(0x0A)
     { }
 #else
-    message(const std::string& text, fb::game::MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
+    message(const std::string& text, MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
 #endif
@@ -60,7 +60,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->type = (fb::game::MESSAGE_TYPE)in_stream.read_u8();
+        this->type = (MESSAGE_TYPE)in_stream.read_u8();
         this->text = in_stream.readstr_u16();
     }
 #endif
@@ -107,16 +107,16 @@ public:
 #ifndef BOT
     const fb::game::object&     me;
     const std::string           text;
-    const fb::game::CHAT_TYPE   type;
+    const CHAT_TYPE   type;
 #else
     uint32_t                    sequence;
     std::string                 text;
-    fb::game::CHAT_TYPE         type;
+    CHAT_TYPE         type;
 #endif
 
 public:
 #ifndef BOT
-    chat(const fb::game::object& me, const std::string& text, fb::game::CHAT_TYPE type) : fb::protocol::base::header(0x0D),
+    chat(const fb::game::object& me, const std::string& text, CHAT_TYPE type) : fb::protocol::base::header(0x0D),
         me(me), text(text), type(type)
     { }
 #else
@@ -136,7 +136,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->type = (fb::game::CHAT_TYPE)in_stream.read_u8();
+        this->type = (CHAT_TYPE)in_stream.read_u8();
         this->sequence = in_stream.read_u32();
         this->text = in_stream.readstr_u8();
     }
@@ -184,10 +184,10 @@ public:
 class weather : public fb::protocol::base::header
 {
 public:
-    const fb::game::WEATHER_TYPE    value;
+    const WEATHER_TYPE    value;
 
 public:
-    weather(fb::game::WEATHER_TYPE value) : fb::protocol::base::header(0x1F),
+    weather(WEATHER_TYPE value) : fb::protocol::base::header(0x1F),
         value(value)
     { }
 
@@ -223,10 +223,10 @@ class timer : public fb::protocol::base::header
 {
 public:
     const uint32_t                  time;
-    const fb::game::TIMER_TYPE      type;
+    const TIMER_TYPE      type;
 
 public:
-    timer(uint32_t time, fb::game::TIMER_TYPE type = fb::game::TIMER_TYPE::DECREASE) : fb::protocol::base::header(0x67),
+    timer(uint32_t time, TIMER_TYPE type = TIMER_TYPE::DECREASE) : fb::protocol::base::header(0x67),
         time(time), type(type)
     { }
 

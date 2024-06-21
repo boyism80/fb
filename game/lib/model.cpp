@@ -81,7 +81,7 @@ fb::model::npc* container::npc::name2npc(const std::string& name)
     return i != this->end() ? i->second.get() : nullptr;
 }
 
-fb::game::mob::model* container::mob::name2mob(const std::string& name)
+fb::model::mob* container::mob::name2mob(const std::string& name)
 {
     auto i = std::find_if(this->begin(), this->end(), 
         [&name](auto& pair)
@@ -732,13 +732,13 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
     return true;
 }
 
-fb::game::mob::sizes container::mob::to_size(const std::string& size)
+MOB_SIZE container::mob::to_size(const std::string& size)
 {
     if(size == "small")
-        return fb::game::mob::sizes::SMALL;
+        return MOB_SIZE::SMALL;
 
     if(size == "large")
-        return fb::game::mob::sizes::LARGE;
+        return MOB_SIZE::LARGE;
 
     throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_SIZE);
 }
@@ -788,7 +788,7 @@ bool container::mob::load(const std::string& path, fb::table::handle_callback ca
                 /* exp       */ (uint32_t)data["experience"].asInt()
             };
 
-            auto                config = fb::game::mob::model::config
+            auto                config = fb::model::mob::config
             {
                 life_config,
                 /* damage        */ fb::game::mob::damage(data["damage"]["min"].asInt(), data["damage"]["max"].asInt()),
@@ -821,7 +821,7 @@ bool container::mob::load(const std::string& path, fb::table::handle_callback ca
             });
             lua::load(config.script_die);
 
-            auto                mob = std::make_unique<fb::game::mob::model>(config);
+            auto                mob = std::make_unique<fb::model::mob>(config);
             {
                 auto _ = std::lock_guard(*mutex);
                 this->insert({id, std::move(mob)});

@@ -40,7 +40,7 @@ fb::task<bool> fb::game::context::handle_command_sound(fb::game::session& sessio
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::object::sound(session, fb::game::SOUND_TYPE(value)), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::object::sound(session, SOUND(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -125,7 +125,7 @@ fb::task<bool> fb::game::context::handle_command_disguise(fb::game::session& ses
     session.disguise(mob->look);
     this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
     this->send(session, fb::protocol::game::response::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::object::sound(session, SOUND_TYPE(0x0019)), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
 

@@ -226,10 +226,10 @@ public:
     void                    on_hold(session& me) final;
     void                    on_die(session& me, object* you) final;
     void                    on_action(session& me, ACTION action, DURATION duration, uint8_t sound) final;
-    void                    on_updated(session& me, fb::game::STATE_LEVEL level) final;
+    void                    on_updated(session& me, STATE_LEVEL level) final;
     void                    on_money_changed(session& me, uint32_t value) final;
     void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type) final;
-    void                    on_option(session& me, fb::game::OPTION option, bool enabled) final;
+    void                    on_option(session& me, CUSTOM_SETTING option, bool enabled) final;
     void                    on_level_up(session& me) final;
     void                    on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) final;
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;

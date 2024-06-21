@@ -134,11 +134,11 @@ class chat : public fb::protocol::base::header
 {
 public:
     const fb::game::object&     me;
-    const fb::game::CHAT_TYPE   type;
+    const CHAT_TYPE   type;
     const std::string           message;
 
 public:
-    chat(const fb::game::object& me, const fb::game::CHAT_TYPE type, const std::string message) : fb::protocol::base::header(0x0D),
+    chat(const fb::game::object& me, const CHAT_TYPE type, const std::string message) : fb::protocol::base::header(0x0D),
         me(me), type(type), message(message)
     { }
 
@@ -203,10 +203,10 @@ class sound : public fb::protocol::base::header
 {
 public:
     const fb::game::object&         me;
-    const fb::game::SOUND_TYPE      value;
+    const SOUND      value;
 
 public:
-    sound(const fb::game::object& me, fb::game::SOUND_TYPE value) : fb::protocol::base::header(0x19),
+    sound(const fb::game::object& me, SOUND value) : fb::protocol::base::header(0x19),
         me(me), value(value)
     { }
 

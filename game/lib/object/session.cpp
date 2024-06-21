@@ -110,7 +110,7 @@ void fb::game::session::on_update()
 {
     auto listener = this->get_listener<fb::game::session>();
     if(listener != nullptr)
-        listener->on_updated(*this, fb::game::STATE_LEVEL::LEVEL_MIDDLE);
+        listener->on_updated(*this, STATE_LEVEL::LEVEL_MIDDLE);
 }
 
 uint32_t fb::game::session::on_calculate_damage(bool critical) const
@@ -265,7 +265,7 @@ void fb::game::session::attack()
     }
 }
 
-void fb::game::session::action(ACTION action, fb::game::DURATION duration, uint8_t sound)
+void fb::game::session::action(ACTION action, DURATION duration, uint8_t sound)
 {
     auto listener = this->get_listener<fb::game::session>();
 
@@ -1028,7 +1028,7 @@ void fb::game::session::regenerative(uint8_t value)
     this->_regenerative = value;
 }
 
-bool fb::game::session::option(OPTION key) const
+bool fb::game::session::option(CUSTOM_SETTING key) const
 {
     if(static_cast<int>(key) > 0x1B)
         return false;
@@ -1036,7 +1036,7 @@ bool fb::game::session::option(OPTION key) const
     return this->_options[static_cast<int>(key)];
 }
 
-void fb::game::session::option(OPTION key, bool value)
+void fb::game::session::option(CUSTOM_SETTING key, bool value)
 {
     if(static_cast<int>(key) > 0x1B)
         return;
@@ -1054,7 +1054,7 @@ void fb::game::session::option(OPTION key, bool value)
     this->_options[static_cast<int>(key)] = value;
 }
 
-bool fb::game::session::option_toggle(OPTION key)
+bool fb::game::session::option_toggle(CUSTOM_SETTING key)
 {
     if(static_cast<int>(key) > 0x1B)
         return false;

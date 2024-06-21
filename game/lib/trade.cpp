@@ -37,12 +37,12 @@ bool fb::game::trade::begin(session& you)
             return false;
         }
 
-        if(this->_owner.option(OPTION::TRADE) == false)
+        if(this->_owner.option(CUSTOM_SETTING::TRADE) == false)
         {
             throw std::runtime_error(message::trade::REFUSED_BY_ME);
         }
 
-        if(you.option(OPTION::TRADE) == false)
+        if(you.option(CUSTOM_SETTING::TRADE) == false)
         {
             // 상대방이 교환 거부중
             std::stringstream sstream;

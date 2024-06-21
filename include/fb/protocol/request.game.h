@@ -325,7 +325,7 @@ public:
 class change_option : public fb::protocol::base::header
 {
 public:
-    fb::game::OPTION        option;
+    CUSTOM_SETTING        option;
 
 public:
     change_option() : fb::protocol::base::header(0x1B)
@@ -334,7 +334,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->option = fb::game::OPTION(in_stream.read_u8());
+        this->option = CUSTOM_SETTING(in_stream.read_u8());
     }
 };
 
@@ -473,7 +473,7 @@ public:
 class swap : public fb::protocol::base::header
 {
 public:
-    fb::game::SWAP_TYPE     type;
+    SWAP_TYPE     type;
     uint8_t                 src;
     uint8_t                 dst;
 
@@ -484,7 +484,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->type = fb::game::SWAP_TYPE(in_stream.read_u8());
+        this->type = SWAP_TYPE(in_stream.read_u8());
         this->src = in_stream.read_u8();
         this->dst = in_stream.read_u8();
     }

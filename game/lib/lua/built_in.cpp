@@ -95,8 +95,9 @@ int fb::game::context::builtin_name2item(lua_State* lua)
     if(thread == nullptr)
         return 0;
     
+    auto context = thread->env<fb::game::context>("context");
     auto name = thread->tostring(1);
-    auto item = fb::game::old_model::items.name2item(name);
+    auto item = context->model.item.name2item(name);
 
     if(item == nullptr) { thread->pushnil(); }
     else                { thread->pushobject(item); }
@@ -109,20 +110,23 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    auto sell = fb::game::old_model::sell[pursuit];
+
     thread->new_table();
-    if(sell != nullptr)
+    if(context->model.sell.contains(pursuit))
     {
-        for (int i = 0, size = sell->size(); i < size; i++)
+        auto& sell = context->model.sell[pursuit];
+        for (int i = 0, size = sell.size(); i < size; i++)
         {
-            auto& [k, v] = sell->at(i);
-            auto price = v.has_value() ? v.value() : k->price;
+            auto& x = sell[i];
+            auto& item = context->model.item[x.item];
+            auto price = x.price.value_or(item.price);
             thread->pushinteger(i+1);
             thread->new_table();
             {
                 thread->pushinteger(1);
-                thread->pushobject(k);
+                thread->pushobject(item);
                 lua_settable(*thread, -3);
 
                 thread->pushinteger(2);
@@ -142,20 +146,21 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    auto buy = fb::game::old_model::buy[pursuit];
     thread->new_table();
-    if(buy != nullptr)
+    if(context->model.buy.contains(pursuit))
     {
-        for (int i = 0, size = buy->size(); i < size; i++)
+        auto& buy = context->model.buy[pursuit];
+        for (int i = 0, size = buy.size(); i < size; i++)
         {
-            auto& [k, v] = buy->at(i);
-            auto price = v.has_value() ? v.value() : k->price;
+            auto& x = buy[i];
+            auto price = x.price.value_or(context->model.item[x.item].price);
             thread->pushinteger(i+1);
             thread->new_table();
             {
                 thread->pushinteger(1);
-                thread->pushobject(k);
+                thread->pushobject(context->model.item[x.item]);
                 lua_settable(*thread, -3);
 
                 thread->pushinteger(2);
@@ -175,20 +180,21 @@ int fb::game::context::builtin_sell_price(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    if(fb::game::old_model::sell.contains(pursuit) == false)
+    if(context->model.sell.contains(pursuit) == false)
     {
         thread->pushnil();
         return 1;
     }
-    auto sell = fb::game::old_model::sell[pursuit];
     
     auto name = thread->tostring(2);
-    for(auto& [k, v] : *sell)
+    for(auto& [_, x] : context->model.sell[pursuit])
     {
-        if(k->name == name)
+        auto& item = context->model.item[x.item];
+        if(item.name == name)
         {
-            auto price = v.has_value() ? v.value() : k->price;
+            auto price = x.price.value_or(item.price);
             thread->pushinteger(price);
             return 1;
         }
@@ -204,20 +210,22 @@ int fb::game::context::builtin_buy_price(lua_State* lua)
     if(thread == nullptr)
         return 0;
 
+    auto context = thread->env<fb::game::context>("context");
     auto pursuit = thread->tointeger(1);
-    if(fb::game::old_model::buy.contains(pursuit) == false)
+    if(context->model.buy.contains(pursuit) == false)
     {
         thread->pushnil();
         return 1;
     }
-    auto buy = fb::game::old_model::buy[pursuit];
-    
+
+    auto& buy = context->model.buy[pursuit];
     auto name = thread->tostring(2);
-    for(auto& [k, v] : *buy)
+    for(auto& [_, x] : buy)
     {
-        if(k->name == name)
+        auto& item = context->model.item[x.item];
+        if(item.name == name)
         {
-            auto price = v.has_value() ? v.value() : k->price;
+            auto price = x.price.value_or(item.price);
             thread->pushinteger(price);
             return 1;
         }

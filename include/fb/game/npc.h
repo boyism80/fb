@@ -26,13 +26,13 @@ public:
 
 public:
     npc*                        make(fb::game::context& context);
-    bool                        buy(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count, bool bought);
-    bool                        sell(fb::game::session& session, fb::model::item* item, uint16_t count, bool sold);
-    bool                        repair(fb::game::session& session, fb::model::item* item, bool done);
+    bool                        buy(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
+    bool                        sell(fb::game::session& session, const fb::model::item* item, uint16_t count, bool sold);
+    bool                        repair(fb::game::session& session, const fb::model::item* item, bool done);
     bool                        hold_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
-    bool                        hold_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count);
-    bool                        return_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count);
+    bool                        hold_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count);
+    bool                        return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count);
     void                        sell_list();
     void                        buy_list();
     void                        sell_price(const fb::model::item* item);

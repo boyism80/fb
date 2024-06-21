@@ -15,10 +15,10 @@ class message : public fb::protocol::base::header
 {
 public:
     const std::string               text;
-    const fb::game::MESSAGE_TYPE    type;
+    const MESSAGE_TYPE    type;
 
 public:
-    message(const std::string& text, fb::game::MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
+    message(const std::string& text, MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
 
@@ -201,7 +201,7 @@ class state : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    fb::game::STATE_LEVEL       STATE_LEVEL;
+    STATE_LEVEL       STATE_LEVEL;
     uint8_t                     nation       = 0;
     uint8_t                     creature     = 0;
     uint8_t                     level        = 0;
@@ -219,7 +219,7 @@ public:
     uint8_t                     fast_move    = 0;
 #else
     const fb::game::session&    session;
-    const fb::game::STATE_LEVEL level;
+    const STATE_LEVEL level;
 #endif
 
 public:
@@ -227,7 +227,7 @@ public:
     state() : fb::protocol::base::header(0x08)
     { }
 #else
-    state(const fb::game::session& session, fb::game::STATE_LEVEL level) : fb::protocol::base::header(0x08),
+    state(const fb::game::session& session, STATE_LEVEL level) : fb::protocol::base::header(0x08),
         session(session), level(level)
     { }
 #endif
@@ -285,7 +285,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->STATE_LEVEL = (fb::game::STATE_LEVEL)in_stream.read_u8();
+        this->STATE_LEVEL = (STATE_LEVEL)in_stream.read_u8();
         if(enum_in(this->STATE_LEVEL, STATE_LEVEL::BASED))
         {
             this->nation = in_stream.read_u8();
@@ -446,7 +446,7 @@ public:
         {
             out_stream.write("그룹 없음.");
         }
-        out_stream.write_u8(this->session.option(OPTION::GROUP));
+        out_stream.write_u8(this->session.option(CUSTOM_SETTING::GROUP));
 
 
         uint32_t                remained_exp = this->session.experience_remained();
@@ -471,8 +471,8 @@ public:
         }
 
         out_stream.write_u8(0x00) // fixed;
-                  .write_u8(this->session.option(OPTION::TRADE))
-                  .write_u8(this->session.option(OPTION::PK));
+                  .write_u8(this->session.option(CUSTOM_SETTING::TRADE))
+                  .write_u8(this->session.option(CUSTOM_SETTING::PK));
 
         out_stream.write_u8((uint8_t)this->session.legends.size());
         for(auto legend : this->session.legends)
@@ -573,8 +573,8 @@ public:
 
 
         out_stream.write_u32(this->session.sequence())
-                  .write_u8(this->session.option(fb::game::OPTION::GROUP))
-                  .write_u8(this->session.option(fb::game::OPTION::TRADE))
+                  .write_u8(this->session.option(CUSTOM_SETTING::GROUP))
+                  .write_u8(this->session.option(CUSTOM_SETTING::TRADE))
                   .write_u32(0x00000000); // unknown
 
                                     // 업적
@@ -617,11 +617,11 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u8(this->session.option(OPTION::WEATHER_EFFECT)) // weather
-                  .write_u8(this->session.option(OPTION::MAGIC_EFFECT)) // magic effect
-                  .write_u8(this->session.option(OPTION::ROAR_WORLDS)) // listen news
-                  .write_u8(this->session.option(OPTION::FAST_MOVE)) // fast move
-                  .write_u8(this->session.option(OPTION::EFFECT_SOUND)) // effect sound
+        out_stream.write_u8(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)) // weather
+                  .write_u8(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT)) // magic effect
+                  .write_u8(this->session.option(CUSTOM_SETTING::ROAR_WORLDS)) // listen news
+                  .write_u8(this->session.option(CUSTOM_SETTING::FAST_MOVE)) // fast move
+                  .write_u8(this->session.option(CUSTOM_SETTING::EFFECT_SOUND)) // effect sound
                   .write_u8(0x00);
     }
 #else
@@ -672,11 +672,11 @@ class action : public fb::protocol::base::header
 public:
     const fb::game::session&        me;
     const ACTION     value;
-    const fb::game::DURATION        duration;
+    const DURATION        duration;
     const uint8_t                   sound;
 
 public:
-    action(const fb::game::session& me, ACTION value, fb::game::DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+    action(const fb::game::session& me, ACTION value, DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 

@@ -330,8 +330,8 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "SEX_MAN");
     lua_pushinteger(*this, SEX::WOMAN);
     lua_setglobal(*this, "SEX_WOMAN");
-    lua_pushinteger(*this, SEX::BOTH);
-    lua_setglobal(*this, "SEX_BOTH");
+    lua_pushinteger(*this, SEX::ALL);
+    lua_setglobal(*this, "SEX_ALL");
 
     lua_pushinteger(*this, ACTION::ATTACK);
     lua_setglobal(*this, "ACTION_ATTACK");
@@ -365,12 +365,12 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "STATE_CLOACK");
 
 
-    lua_pushinteger(*this, DEATH_PENALTY_TYPE::NONE);
-    lua_setglobal(*this, "ITEM_PENALTY_NONE");
-    lua_pushinteger(*this, DEATH_PENALTY_TYPE::DROP);
-    lua_setglobal(*this, "ITEM_PENALTY_DROP");
-    lua_pushinteger(*this, DEATH_PENALTY_TYPE::DESTRUCTION);
-    lua_setglobal(*this, "ITEM_PENALTY_DESTRUCTION");
+    lua_pushinteger(*this, DEATH_PENALTY::NONE);
+    lua_setglobal(*this, "DEATH_PENALTY_NONE");
+    lua_pushinteger(*this, DEATH_PENALTY::DROP);
+    lua_setglobal(*this, "DEATH_PENALTY_DROP");
+    lua_pushinteger(*this, DEATH_PENALTY::DESTROY);
+    lua_setglobal(*this, "DEATH_PENALTY_DESTROY");
 
 
     lua_pushinteger(*this, ITEM_DELETE_TYPE::REMOVED);
@@ -456,15 +456,15 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_AUX");
 
 
-    lua_pushinteger(*this, fb::game::weapon::types::NORMAL);
+    lua_pushinteger(*this, WEAPON_TYPE::NORMAL);
     lua_setglobal(*this, "WEAPON_TYPE_NORMAL");
-    lua_pushinteger(*this, fb::game::weapon::types::SPEAR);
+    lua_pushinteger(*this, WEAPON_TYPE::SPEAR);
     lua_setglobal(*this, "WEAPON_TYPE_SPEAR");
-    lua_pushinteger(*this, fb::game::weapon::types::BOW);
+    lua_pushinteger(*this, WEAPON_TYPE::BOW);
     lua_setglobal(*this, "WEAPON_TYPE_BOW");
-    lua_pushinteger(*this, fb::game::weapon::types::FAN);
+    lua_pushinteger(*this, WEAPON_TYPE::FAN);
     lua_setglobal(*this, "WEAPON_TYPE_FAN");
-    lua_pushinteger(*this, fb::game::weapon::types::UNKNOWN);
+    lua_pushinteger(*this, WEAPON_TYPE::UNKNOWN);
     lua_setglobal(*this, "WEAPON_TYPE_UNKNOWN");
 
 
@@ -474,26 +474,26 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "OFFENSIVE_COUNTER");
     lua_pushinteger(*this, MOB_ATTACK_TYPE::NONE);
     lua_setglobal(*this, "OFFENSIVE_NONE");
-    lua_pushinteger(*this, MOB_ATTACK_TYPE::NON_MOVE);
-    lua_setglobal(*this, "OFFENSIVE_NON_MOVE");
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::NO_MOVE);
+    lua_setglobal(*this, "NO_MOVE");
     lua_pushinteger(*this, MOB_ATTACK_TYPE::RUN_AWAY);
     lua_setglobal(*this, "OFFENSIVE_RUN_AWAY");
 
 
-    lua_pushinteger(*this, fb::game::mob::sizes::SMALL);
+    lua_pushinteger(*this, MOB_SIZE::SMALL);
     lua_setglobal(*this, "MOB_SIZE_SMALL");
-    lua_pushinteger(*this, fb::game::mob::sizes::LARGE);
+    lua_pushinteger(*this, MOB_SIZE::LARGE);
     lua_setglobal(*this, "MOB_SIZE_LARGE");
 
-    lua_pushinteger(*this, fb::game::SOUND_TYPE::SWING);
+    lua_pushinteger(*this, SOUND::SWING);
     lua_setglobal(*this, "SOUND_SWING");
-    lua_pushinteger(*this, fb::game::SOUND_TYPE::EAT);
+    lua_pushinteger(*this, SOUND::EAT);
     lua_setglobal(*this, "SOUND_EAT");
-    lua_pushinteger(*this, fb::game::SOUND_TYPE::EQUIPMENT_OFF);
+    lua_pushinteger(*this, SOUND::EQUIPMENT_OFF);
     lua_setglobal(*this, "SOUND_EQUIPMENT_OFF");
-    lua_pushinteger(*this, fb::game::SOUND_TYPE::EQUIPMENT_ON);
+    lua_pushinteger(*this, SOUND::EQUIPMENT_ON);
     lua_setglobal(*this, "SOUND_EQUIPMENT_ON");
-    lua_pushinteger(*this, fb::game::SOUND_TYPE::DAMAGE);
+    lua_pushinteger(*this, SOUND::DAMAGE);
     lua_setglobal(*this, "SOUND_DAMAGE");
 
     lua_pushinteger(*this, 0);
@@ -619,7 +619,7 @@ thread::~thread()
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
 }
 
-container::container()
+fb::game::lua:container::container()
 {
     this->init_fn([this] (main& m)
     {
@@ -628,10 +628,10 @@ container::container()
     });
 }
 
-container::~container()
+fb::game::lua::container::~container()
 { }
 
-main& container::get()
+main& fb::game::lua::container::get()
 {
     std::lock_guard gd(this->_mutex);
 
@@ -649,12 +649,12 @@ main& container::get()
     return *this->_mains[id];
 }
 
-void container::init_fn(init_func&& fn)
+void fb::game::lua::container::init_fn(init_func&& fn)
 {
     this->_init_funcs.push_back(fn);
 }
 
-void container::load(const std::string& path)
+void fb::game::lua::container::load(const std::string& path)
 {
     std::lock_guard gd(this->_mutex);
     
@@ -664,7 +664,7 @@ void container::load(const std::string& path)
     this->_scripts.push_back(path);
 }
 
-container& container::ist()
+container& fb::game::lua::container::ist()
 {
     static std::once_flag               _flag;
     static std::unique_ptr<container>   _ist;

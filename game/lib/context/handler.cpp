@@ -126,7 +126,7 @@ void fb::game::context::on_action(session& me, ACTION action, DURATION duration,
     this->send(me, fb::protocol::game::response::session::action(me, action, duration), scope::PIVOT);
 }
 
-void fb::game::context::on_updated(session& me, fb::game::STATE_LEVEL level)
+void fb::game::context::on_updated(session& me, STATE_LEVEL level)
 {
     this->send(me, fb::protocol::game::response::session::state(me, level), scope::SELF);
 }
@@ -141,7 +141,7 @@ void fb::game::context::on_attack(session& me, object* you)
     if (weapon != nullptr)
     {
         auto            sound = weapon->based<fb::model::weapon>().sound;
-        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::SOUND_TYPE(sound) : fb::game::SOUND_TYPE
+        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? SOUND(sound) : SOUND
 ::SWING), scope::PIVOT);
     }
 }
@@ -155,7 +155,7 @@ void fb::game::context::on_hit(session& me, life& you, uint32_t damage, bool cri
 
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
-        this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::DAMAGE), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::object::sound(me, SOUND::DAMAGE), scope::PIVOT);
 
     you.hp_down(damage, &me, critical);
 }
@@ -174,7 +174,7 @@ void fb::game::context::on_hold(session& me)
 void fb::game::context::on_die(session& me, object* you)
 { }
 
-void fb::game::context::on_notify(session& me, const std::string& message, fb::game::MESSAGE_TYPE type)
+void fb::game::context::on_notify(session& me, const std::string& message, MESSAGE_TYPE type)
 {
     this->send(me, fb::protocol::game::response::message(message, type), scope::SELF);
 }
@@ -182,7 +182,7 @@ void fb::game::context::on_notify(session& me, const std::string& message, fb::g
 void fb::game::context::on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts)
 {
     this->send(me, fb::protocol::game::response::item::update_slot(me, parts), scope::SELF);
-    this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_ON), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::object::sound(me, SOUND::EQUIPMENT_ON), scope::PIVOT);
 
     std::stringstream sstream;
     switch(parts)
@@ -230,7 +230,7 @@ void fb::game::context::on_equipment_on(session& me, item& item, EQUIPMENT_PARTS
 
 void fb::game::context::on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index)
 {
-    this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_OFF), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::object::sound(me, SOUND::EQUIPMENT_OFF), scope::PIVOT);
 }
 
 void fb::game::context::on_item_active(session& me, item& item)
@@ -251,7 +251,7 @@ void fb::game::context::on_item_throws(session& me, item& item, const point16_t&
     if(me.position() != to)
         this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
     else
-        this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, fb::game::DURATION::THROW), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }
 
 void fb::game::context::on_spell_update(life& me, uint8_t index)
@@ -345,17 +345,17 @@ void fb::game::context::on_trade_item(session& me, session& from, uint8_t index)
     this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
 }
 
-void fb::game::context::on_option(session& me, fb::game::OPTION option, bool enabled)
+void fb::game::context::on_option(session& me, CUSTOM_SETTING option, bool enabled)
 {
     std::stringstream sstream;
 
     switch(option)
     {
-    case OPTION::WHISPER:
+    case CUSTOM_SETTING::WHISPER:
         sstream << "귓속말듣기  ";
         break;
 
-    case OPTION::GROUP:
+    case CUSTOM_SETTING::GROUP:
     {
         auto group = me.group();
         if(group != nullptr)
@@ -378,39 +378,39 @@ void fb::game::context::on_option(session& me, fb::game::OPTION option, bool ena
         break;
     }
 
-    case OPTION::ROAR:
+    case CUSTOM_SETTING::ROAR:
         sstream << "외치기듣기  ";
         break;
 
-    case OPTION::ROAR_WORLDS:
+    case CUSTOM_SETTING::ROAR_WORLDS:
         sstream << "세계후      ";
         break;
 
-    case OPTION::MAGIC_EFFECT:
+    case CUSTOM_SETTING::MAGIC_EFFECT:
         sstream << "마법이펙트  ";
         break;
 
-    case OPTION::WEATHER_EFFECT:
+    case CUSTOM_SETTING::WEATHER_EFFECT:
         sstream << "날씨변화    ";
         break;
 
-    case OPTION::FIXED_MOVE:
+    case CUSTOM_SETTING::FIXED_MOVE:
         sstream << "고정이동    ";
         break;
 
-    case OPTION::TRADE:
+    case CUSTOM_SETTING::TRADE:
         sstream << "교환가능    ";
         break;
 
-    case OPTION::FAST_MOVE:
+    case CUSTOM_SETTING::FAST_MOVE:
         sstream << "빠른이동    ";
         break;
 
-    case OPTION::EFFECT_SOUND:
+    case CUSTOM_SETTING::EFFECT_SOUND:
         sstream << "소리듣기    ";
         break;
 
-    case OPTION::PK:
+    case CUSTOM_SETTING::PK:
         sstream << "PK보호      ";
         break;
 
@@ -512,7 +512,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         auto message = e.what();
         auto session = client->data();
         session->refresh_map();
-        this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
+        this->on_notify(*session, message, MESSAGE_TYPE::STATE);
 
         if(awaiter != nullptr)
         {
@@ -537,7 +537,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         auto message = "비바람이 휘몰아치고 있습니다.";
         auto session = client->data();
         session->refresh_map();
-        this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
+        this->on_notify(*session, message, MESSAGE_TYPE::STATE);
 
         if(awaiter != nullptr)
         {

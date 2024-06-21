@@ -350,6 +350,10 @@ public:                                                                         
     LUA_PROTOTYPE                                                                             \
                                                                                               \
 public:                                                                                       \
+    bool contains_sell(const fb::model::item& item, uint32_t& price) const;                   \
+    bool contains_buy(const fb::model::item& item, uint32_t& price) const;                    \
+                                                                                              \
+public:                                                                                       \
     static int                  builtin_input(lua_State* lua);                                \
     static int                  builtin_menu(lua_State* lua);                                 \
     static int                  builtin_item(lua_State* lua);                                 \

@@ -23,10 +23,10 @@ bool fb::game::consume::active()
     if(listener != nullptr)
     {
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
-        listener->on_action(*this->_owner, ACTION::EAT, fb::game::DURATION::EAT, static_cast<uint8_t>(fb::game::SOUND_TYPE::EAT));
+        listener->on_action(*this->_owner, ACTION::EAT, DURATION::EAT, static_cast<uint8_t>(SOUND::EAT));
     }
 
     if(this->empty())
-        this->_owner->items.remove(*this, -1, DELETE_TYPE::EAT);
+        this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
     return true;
 }

@@ -14,18 +14,18 @@ public:
 #ifndef BOT
     const fb::game::life&       me;
     const ACTION                value;
-    const fb::game::DURATION    duration;
+    const DURATION    duration;
     const uint8_t               sound;
 #else
     uint32_t                    sequence;
     ACTION       value;
-    fb::game::DURATION          duration;
+    DURATION          duration;
     uint8_t                     sound;
 #endif
 
 public:
 #ifndef BOT
-    action(const fb::game::life& me, ACTION value, fb::game::DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+    action(const fb::game::life& me, ACTION value, DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 #else
@@ -48,7 +48,7 @@ public:
     {
         this->sequence = in_stream.read_u32();
         this->value    = (ACTION)in_stream.read_u8();
-        this->duration = (fb::game::DURATION)in_stream.read_u16();
+        this->duration = (DURATION)in_stream.read_u16();
         this->sound    = in_stream.read_u8();
     }
 #endif
