@@ -199,6 +199,9 @@
     <ClCompile Include="model.spell.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="model.door.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

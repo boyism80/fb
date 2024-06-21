@@ -279,6 +279,15 @@ public:                                                                         
 public:                                                                                       \
     fb::model::map*                 name2map(const std::string& name) const;
 
+#define DECLARE_DOOR_EXTENSION                                                                \
+public:                                                                                       \
+    const uint16_t width;                                                                     \
+public:                                                                                       \
+    bool matched(const fb::game::map& map, const point16_t& position, bool is_open) const;    \
+    bool find(const fb::game::map& map, point16_t& position, bool is_open) const;
+
+#define DECLARE_DOOR_INITIALIZER ,                                                            \
+    width(this->pairs.size())
 
 #define DECLARE_SPELL_CONTAINER_EXTENSION                                                     \
 public:                                                                                       \

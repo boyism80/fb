@@ -114,7 +114,7 @@ void fb::game::mob::spawn_point(const fb::game::point16_t point)
     this->_spawn_point = point;
 }
 
-const fb::game::size16_t& fb::game::mob::spawn_size() const
+const size16_t& fb::game::mob::spawn_size() const
 {
     return this->_spawn_size;
 }
@@ -175,7 +175,7 @@ bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
     if((now - this->_dead_time) / 1000 < this->_respawn_time)
         return false;
 
-    this->direction(fb::game::DIRECTION_TYPE(std::rand() % 4));
+    this->direction(DIRECTION(std::rand() % 4));
     this->hp_up(this->base_hp());
 
     while(true)
@@ -254,11 +254,11 @@ fb::game::life* fb::game::mob::find_target()
     return this->_target;
 }
 
-bool fb::game::mob::near_target(fb::game::DIRECTION_TYPE& out) const
+bool fb::game::mob::near_target(DIRECTION& out) const
 {
     for(int i = 0; i < 4; i++)
     {
-        auto                direction = fb::game::DIRECTION_TYPE(i);
+        auto                direction = DIRECTION(i);
         if(this->side(direction, OBJECT_TYPE::SESSION) != this->_target)
             continue;
 
@@ -278,10 +278,10 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
-        auto direction = fb::game::DIRECTION_TYPE::BOTTOM;
+        auto direction = DIRECTION::BOTTOM;
         if(this->fix() == nullptr)
         {
-            this->move(fb::game::DIRECTION_TYPE(std::rand() % 4));
+            this->move(DIRECTION(std::rand() % 4));
         }
         else if(this->near_target(direction))
         {
@@ -293,17 +293,17 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             auto                    x_axis = bool(std::rand()%2);
             if(x_axis)
             {
-                if(this->_position.x > this->_target->x() && this->move(fb::game::DIRECTION_TYPE::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(fb::game::DIRECTION_TYPE::RIGHT))  throw nullptr;
-                if(this->_position.y > this->_target->y() && this->move(fb::game::DIRECTION_TYPE::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(fb::game::DIRECTION_TYPE::BOTTOM)) throw nullptr;
+                if(this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))  throw nullptr;
+                if(this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM)) throw nullptr;
             }
             else
             {
-                if(this->_position.y > this->_target->y() && this->move(fb::game::DIRECTION_TYPE::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(fb::game::DIRECTION_TYPE::BOTTOM)) throw nullptr;
-                if(this->_position.x > this->_target->x() && this->move(fb::game::DIRECTION_TYPE::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(fb::game::DIRECTION_TYPE::RIGHT))  throw nullptr;
+                if(this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))    throw nullptr;
+                if(this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM)) throw nullptr;
+                if(this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))   throw nullptr;
+                if(this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))  throw nullptr;
             }
 
 
@@ -311,7 +311,7 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
             auto                    random_direction = std::rand() % 4;
             for(int i = 0; i < 4; i++)
             {
-                if(this->move(fb::game::DIRECTION_TYPE((random_direction + i) % 4)))
+                if(this->move(DIRECTION((random_direction + i) % 4)))
                     throw nullptr;
             }
         }

@@ -26,7 +26,7 @@ public:
 
 protected:
     uint32_t                    _hp = 0, _mp = 0;
-    fb::game::CONDITION_TYPE    _condition = fb::game::CONDITION_TYPE::NONE;
+    CONDITION                   _condition = CONDITION::NONE;
 
 public:
     fb::game::spells            spells;
@@ -60,10 +60,10 @@ public:
     virtual uint32_t            mp_up(uint32_t value, fb::game::object* from = nullptr);
     virtual uint32_t            mp_down(uint32_t value, fb::game::object* from = nullptr);
 
-    fb::game::CONDITION_TYPE    condition() const;
-    fb::game::CONDITION_TYPE    condition_add(fb::game::CONDITION_TYPE value);
-    fb::game::CONDITION_TYPE    condition_remove(fb::game::CONDITION_TYPE value);
-    bool                        condition_contains(fb::game::CONDITION_TYPE value) const;
+    CONDITION                   condition() const;
+    CONDITION                   condition_add(CONDITION value);
+    CONDITION                   condition_remove(CONDITION value);
+    bool                        condition_contains(CONDITION value) const;
 
     virtual bool                alive() const;
     void                        kill();

@@ -286,82 +286,82 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "OBJECT");
 
 
-    lua_pushinteger(*this, fb::game::NATION_TYPE::GOGURYEO);
+    lua_pushinteger(*this, NATION::GOGURYEO);
     lua_setglobal(*this, "NATION_GOGURYEO");
-    lua_pushinteger(*this, fb::game::NATION_TYPE::BUYEO);
+    lua_pushinteger(*this, NATION::BUYEO);
     lua_setglobal(*this, "NATION_BUYEO");
 
 
-    lua_pushinteger(*this, fb::game::CREATURE_TYPE::PHOENIX);
+    lua_pushinteger(*this, CREATURE::PHOENIX);
     lua_setglobal(*this, "CREATURE_PHOENIX");
-    lua_pushinteger(*this, fb::game::CREATURE_TYPE::TIGER);
+    lua_pushinteger(*this, CREATURE::TIGER);
     lua_setglobal(*this, "CREATURE_TIGER");
-    lua_pushinteger(*this, fb::game::CREATURE_TYPE::TURTLE);
+    lua_pushinteger(*this, CREATURE::TURTLE);
     lua_setglobal(*this, "CREATURE_TURTLE");
-    lua_pushinteger(*this, fb::game::CREATURE_TYPE::DRAGON);
+    lua_pushinteger(*this, CREATURE::DRAGON);
     lua_setglobal(*this, "CREATURE_DRAGON");
 
 
-    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::TOP);
+    lua_pushinteger(*this, DIRECTION::TOP);
     lua_setglobal(*this, "DIRECTION_TOP");
-    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::RIGHT);
+    lua_pushinteger(*this, DIRECTION::RIGHT);
     lua_setglobal(*this, "DIRECTION_RIGHT");
-    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::BOTTOM);
+    lua_pushinteger(*this, DIRECTION::BOTTOM);
     lua_setglobal(*this, "DIRECTION_BOTTOM");
-    lua_pushinteger(*this, fb::game::DIRECTION_TYPE::LEFT);
+    lua_pushinteger(*this, DIRECTION::LEFT);
     lua_setglobal(*this, "DIRECTION_LEFT");
 
 
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::NONE);
+    lua_pushinteger(*this, CONDITION::NONE);
     lua_setglobal(*this, "CONDITION_NONE");
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::MOVE);
+    lua_pushinteger(*this, CONDITION::MOVE);
     lua_setglobal(*this, "CONDITION_MOVE");
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::SIGHT);
+    lua_pushinteger(*this, CONDITION::SIGHT);
     lua_setglobal(*this, "CONDITION_SIGHT");
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::HEAR);
+    lua_pushinteger(*this, CONDITION::HEAR);
     lua_setglobal(*this, "CONDITION_HEAR");
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::ORAL);
+    lua_pushinteger(*this, CONDITION::ORAL);
     lua_setglobal(*this, "CONDITION_ORAL");
-    lua_pushinteger(*this, fb::game::CONDITION_TYPE::MAP);
+    lua_pushinteger(*this, CONDITION::MAP);
     lua_setglobal(*this, "CONDITION_MAP");
 
 
-    lua_pushinteger(*this, fb::game::SEX_TYPE::MAN);
+    lua_pushinteger(*this, SEX::MAN);
     lua_setglobal(*this, "SEX_MAN");
-    lua_pushinteger(*this, fb::game::SEX_TYPE::WOMAN);
+    lua_pushinteger(*this, SEX::WOMAN);
     lua_setglobal(*this, "SEX_WOMAN");
-    lua_pushinteger(*this, fb::game::SEX_TYPE::BOTH);
+    lua_pushinteger(*this, SEX::BOTH);
     lua_setglobal(*this, "SEX_BOTH");
 
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::ATTACK);
+    lua_pushinteger(*this, ACTION::ATTACK);
     lua_setglobal(*this, "ACTION_ATTACK");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::ARROW);
+    lua_pushinteger(*this, ACTION::ARROW);
     lua_setglobal(*this, "ACTION_ARROW");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::EMOTION);
+    lua_pushinteger(*this, ACTION::EMOTION);
     lua_setglobal(*this, "ACTION_EMOTION");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::PICKUP);
+    lua_pushinteger(*this, ACTION::PICKUP);
     lua_setglobal(*this, "ACTION_PICKUP");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::PICKUP_SILENT);
+    lua_pushinteger(*this, ACTION::PICKUP_SILENT);
     lua_setglobal(*this, "ACTION_PICKUP_SILENT");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::CAST_SPELL);
+    lua_pushinteger(*this, ACTION::CAST_SPELL);
     lua_setglobal(*this, "ACTION_CAST_SPELL");
-    lua_pushinteger(*this, fb::game::ACTION_TYPE::EAT);
+    lua_pushinteger(*this, ACTION::EAT);
     lua_setglobal(*this, "ACTION_EAT");
 
 
-    lua_pushinteger(*this, fb::game::STATE_TYPE::NORMAL);
+    lua_pushinteger(*this, STATE::NORMAL);
     lua_setglobal(*this, "STATE_NORMAL");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::GHOST);
+    lua_pushinteger(*this, STATE::GHOST);
     lua_setglobal(*this, "STATE_GHOST");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::TRANSLUCENCY);
+    lua_pushinteger(*this, STATE::TRANSLUCENCY);
     lua_setglobal(*this, "STATE_TRANSLUCENCY");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::RIDING);
+    lua_pushinteger(*this, STATE::RIDING);
     lua_setglobal(*this, "STATE_RIDING");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::DISGUISE);
+    lua_pushinteger(*this, STATE::DISGUISE);
     lua_setglobal(*this, "STATE_DISGUISE");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::HALF_CLOACK);
+    lua_pushinteger(*this, STATE::HALF_CLOACK);
     lua_setglobal(*this, "STATE_HALF_CLOACK");
-    lua_pushinteger(*this, fb::game::STATE_TYPE::CLOACK);
+    lua_pushinteger(*this, STATE::CLOACK);
     lua_setglobal(*this, "STATE_CLOACK");
 
 

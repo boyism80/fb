@@ -7,6 +7,7 @@
 #include <fb/core/stream.h>
 #include <fb/game/model.h>
 
+using namespace fb::model;
 using namespace fb::model::enum_value;
 
 namespace fb { namespace game {
@@ -44,8 +45,8 @@ protected:
     const fb::model::object&            _model;
     bool                                _map_lock   = false;
 
-    point16_t                           _position   = point16_t(0, 0);
-    DIRECTION_TYPE                      _direction  = DIRECTION_TYPE::BOTTOM;
+    point16_t                _position   = point16_t(0, 0);
+    DIRECTION                           _direction  = DIRECTION::BOTTOM;
     fb::game::map*                      _map        = nullptr;
 
 public:
@@ -84,13 +85,13 @@ public:
     virtual OBJECT_TYPE                 type() const;
 
     void                                chat(const std::string& message, bool shout = false);
-    const point16_t&                    position() const;
-    const point16_t                     position_forward() const;
-    const point16_t                     position_forward(DIRECTION_TYPE direction) const;
+    const point16_t&         position() const;
+    const point16_t          position_forward() const;
+    const point16_t          position_forward(DIRECTION direction) const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
-    bool                                move(DIRECTION_TYPE direction);
+    bool                                move(DIRECTION direction);
 
     uint16_t                            x() const;
     bool                                x(uint16_t value);
@@ -98,8 +99,8 @@ public:
     uint16_t                            y() const;
     bool                                y(uint16_t value);
 
-    DIRECTION_TYPE                      direction() const;
-    bool                                direction(DIRECTION_TYPE value);
+    DIRECTION                           direction() const;
+    bool                                direction(DIRECTION value);
 
     virtual fb::awaiter<bool>           co_map(fb::model::map* map, const point16_t& position);
     virtual fb::awaiter<bool>           co_map(fb::model::map* map);
@@ -113,8 +114,8 @@ public:
     bool                                sight(const point16_t& position) const;
     bool                                sight(const fb::game::object& object) const;
 
-    object*                             side(DIRECTION_TYPE direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*>                sides(DIRECTION_TYPE direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    object*                             side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     object*                             forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>                forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
@@ -189,10 +190,10 @@ interface object::listener
 struct object::config
 {
 public:
-    uint32_t            id          = 0xFFFFFFFF;
-    const point16_t     position    = fb::game::point16_t();
-    DIRECTION_TYPE      direction   = DIRECTION_TYPE::BOTTOM;
-    fb::game::map*      map         = nullptr;
+    uint32_t                        id          = 0xFFFFFFFF;
+    const point16_t      position    = point16_t();
+    DIRECTION                       direction   = DIRECTION::BOTTOM;
+    fb::game::map*                  map         = nullptr;
 };
 
 } }

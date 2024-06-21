@@ -223,6 +223,7 @@
     <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model.door.cpp" />
     <ClCompile Include="model.item.cpp" />
     <ClCompile Include="model.life.cpp" />
     <ClCompile Include="model.map.cpp" />

@@ -224,7 +224,7 @@ public:
     void                    on_damaged(session& me, object* you, uint32_t damage, bool critical) final;
     void                    on_hold(session& me) final;
     void                    on_die(session& me, object* you) final;
-    void                    on_action(session& me, ACTION_TYPE action, DURATION duration, uint8_t sound) final;
+    void                    on_action(session& me, ACTION action, DURATION duration, uint8_t sound) final;
     void                    on_updated(session& me, fb::game::STATE_LEVEL level) final;
     void                    on_money_changed(session& me, uint32_t value) final;
     void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type) final;

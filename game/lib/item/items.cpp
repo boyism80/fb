@@ -170,7 +170,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
 
     try
     {
-        this->_owner.assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
+        this->_owner.assert_state({STATE::RIDING, STATE::GHOST});
 
         auto                    item = this->at(index);
         if(item == nullptr)
@@ -484,7 +484,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 
     try
     {
-        owner.assert_state({STATE_TYPE::RIDING, STATE_TYPE::GHOST});
+        owner.assert_state({STATE::RIDING, STATE::GHOST});
         auto                    item = this->at(index);
         if (item == nullptr)
             return nullptr;
@@ -497,7 +497,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         if(dropped != nullptr)
         {
             dropped->map(owner.map(), owner.position());
-            owner.action(ACTION_TYPE::PICKUP, DURATION::PICKUP);
+            owner.action(ACTION::PICKUP, DURATION::PICKUP);
         }
 
         return dropped;
@@ -521,7 +521,7 @@ void fb::game::items::pickup(bool boost)
         if(map == nullptr)
             return;
 
-        owner.action(ACTION_TYPE::PICKUP, DURATION::PICKUP);
+        owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
 
         std::string         message;

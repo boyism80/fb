@@ -121,7 +121,7 @@ void fb::game::context::on_hp(life& me, uint32_t before, uint32_t current)
 void fb::game::context::on_mp(life& me, uint32_t before, uint32_t current)
 { }
 
-void fb::game::context::on_action(session& me, ACTION_TYPE action, DURATION duration, uint8_t sound)
+void fb::game::context::on_action(session& me, ACTION action, DURATION duration, uint8_t sound)
 {
     this->send(me, fb::protocol::game::response::session::action(me, action, duration), scope::PIVOT);
 }
@@ -136,7 +136,7 @@ void fb::game::context::on_money_changed(session& me, uint32_t value)
 
 void fb::game::context::on_attack(session& me, object* you)
 {
-    this->send(me, fb::protocol::game::response::session::action(me, ACTION_TYPE::ATTACK, DURATION::ATTACK), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
     {
@@ -251,7 +251,7 @@ void fb::game::context::on_item_throws(session& me, item& item, const point16_t&
     if(me.position() != to)
         this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
     else
-        this->send(me, fb::protocol::game::response::session::action(me, fb::game::ACTION_TYPE::ATTACK, fb::game::DURATION::THROW), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, fb::game::DURATION::THROW), scope::PIVOT);
 }
 
 void fb::game::context::on_spell_update(life& me, uint8_t index)
@@ -563,7 +563,7 @@ void fb::game::context::on_item_lost(session& me, const std::vector<uint8_t>& sl
 
 void fb::game::context::on_attack(mob& me, object* you)
 {
-    this->send(me, fb::protocol::game::response::life::action(me, ACTION_TYPE::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
+    this->send(me, fb::protocol::game::response::life::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
 }
 
 void fb::game::context::on_hit(mob& me, life& you, uint32_t damage, bool critical)

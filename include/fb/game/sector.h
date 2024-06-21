@@ -4,6 +4,8 @@
 #include <fb/game/object.h>
 #include <set>
 
+using namespace fb::model;
+
 namespace fb { namespace game {
 
 class map;

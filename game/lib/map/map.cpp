@@ -96,15 +96,12 @@ fb::game::object* fb::game::objects::operator[](uint32_t seq) const
 
 
 
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::OPTION option, fb::game::map::EFFECT effect, uint32_t group, const void* data, size_t size) :
-    _id(id),
-    _parent(parent),
-    _bgm(bgm),
-    _name(name),
-    _option(option),
-    _effect(effect),
+fb::game::map::map(const fb::game::context& context, const fb::model::map& model, uint32_t group, const void* data, size_t size) :
+    context(context),
+    model(model),
     group(group),
-    active(fb::config::get()["group"].asUInt() == group)
+    active(fb::config::get()["group"].asUInt() == group),
+    doors(*this)
 {
     if (this->active == false)
         return;
@@ -134,20 +131,20 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
     // compare linear doors
     point16_t position;
-    for(const auto& door : fb::game::old_model::doors)
+    for(auto& [id, door] : context.model.door)
     {
         position.x = position.y = 0;
-        while(door->find(*this, position, true))
+        while (door.find(*this, position, true))
         {
-            this->doors.add(this, *door, position, true);
-            position.x += (uint16_t)door->size();
+            this->doors.add(position, door, true);
+            position.x += (uint16_t)door.width;
         }
 
         position.x = position.y = 0;
-        while(door->find(*this, position, false))
+        while (door.find(*this, position, false))
         {
-            this->doors.add(this, *door, position, false);
-            position.x += (uint16_t)door->size();
+            this->doors.add(position, door, true);
+            position.x += (uint16_t)door.width;
         }
     }
 
@@ -158,19 +155,17 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 fb::game::map::~map()
 { }
 
-uint16_t fb::game::map::id() const
+uint64_t fb::game::map::index(const point16_t& p) const
 {
-    return this->_id;
+    return (uint64_t)p.y * (uint64_t)this->_size.width + (uint64_t)p.x;
 }
 
-uint16_t fb::game::map::parent() const
+point16_t fb::game::map::point(uint64_t i) const
 {
-    return this->_parent;
-}
+    auto y = uint16_t(i / this->_size.width);
+    auto x = uint16_t(i % this->_size.width);
 
-const std::string& fb::game::map::name() const
-{
-    return this->_name;
+    return point16_t(x, y);
 }
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
@@ -199,15 +194,15 @@ bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
     return true;
 }
 
-fb::game::map::EFFECT fb::game::map::effect() const
-{
-    return this->_effect;
-}
+// fb::game::map::EFFECT fb::game::map::effect() const
+// {
+//     return this->_effect;
+// }
 
-fb::game::map::OPTION fb::game::map::option() const
-{
-    return this->_option;
-}
+// MAP_OPTION fb::game::map::option() const
+// {
+//     return this->_option;
+// }
 
 uint16_t fb::game::map::width() const
 {
@@ -219,15 +214,15 @@ uint16_t fb::game::map::height() const
     return this->_size.height;
 }
 
-fb::game::size16_t fb::game::map::size() const
+size16_t fb::game::map::size() const
 {
     return this->_size;
 }
 
-uint8_t fb::game::map::bgm() const
-{
-    return this->_bgm;
-}
+// uint8_t fb::game::map::bgm() const
+// {
+//     return this->_bgm;
+// }
 
 bool fb::game::map::loaded() const
 {
@@ -262,25 +257,25 @@ bool fb::game::map::movable(const point16_t position) const
     return true;
 }
 
-bool fb::game::map::movable(const fb::game::object& object, fb::game::DIRECTION_TYPE direction) const
+bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction) const
 {
     point16_t               position = object.position();
 
     switch(direction)
     {
-    case fb::game::DIRECTION_TYPE::BOTTOM:
+    case DIRECTION::BOTTOM:
         position.y++;
         break;
 
-    case fb::game::DIRECTION_TYPE::TOP:
+    case DIRECTION::TOP:
         position.y--;
         break;
 
-    case fb::game::DIRECTION_TYPE::LEFT:
+    case DIRECTION::LEFT:
         position.x--;
         break;
 
-    case fb::game::DIRECTION_TYPE::RIGHT:
+    case DIRECTION::RIGHT:
         position.x++;
         break;
     }
@@ -394,7 +389,8 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     if(y > this->_size.height)
         return nullptr;
 
-    return &this->_tiles[y * this->_size.width + x];
+    auto i = this->index(point16_t(x, y));
+    return &this->_tiles[i];
 }
 
 int fb::game::map::builtin_objects(lua_State* lua)
@@ -498,7 +494,7 @@ int fb::game::map::builtin_doors(lua_State* lua)
     auto i = 0;
     for(const auto& door : map->doors)
     {
-        thread->pushobject(*door);
+        thread->pushobject(door.second);
         lua_rawseti(lua, -2, i+1);
     }
     

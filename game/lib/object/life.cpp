@@ -170,24 +170,24 @@ uint32_t fb::game::life::defensive_magical() const
     return static_cast<const model*>(this->_model)->defensive.magical;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition() const
+CONDITION fb::game::life::condition() const
 {
     return this->_condition;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition_add(fb::game::CONDITION_TYPE value)
+CONDITION fb::game::life::condition_add(CONDITION value)
 {
-    this->_condition = fb::game::CONDITION_TYPE(this->_condition | value);
+    this->_condition = CONDITION(this->_condition | value);
     return this->_condition;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition_remove(fb::game::CONDITION_TYPE value)
+CONDITION fb::game::life::condition_remove(CONDITION value)
 {
-    this->_condition = fb::game::CONDITION_TYPE(this->_condition & ~value);
+    this->_condition = CONDITION(this->_condition & ~value);
     return this->_condition;
 }
 
-bool fb::game::life::condition_contains(fb::game::CONDITION_TYPE value) const
+bool fb::game::life::condition_contains(CONDITION value) const
 {
     return uint32_t(this->_condition) & uint32_t(value);
 }

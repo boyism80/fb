@@ -36,6 +36,138 @@ public:
     {}
     ~date_range() = default;
 };
+
+struct point8_t
+{
+public:
+    uint8_t x = 0;
+    uint8_t y = 0;
+
+public:
+    point8_t() = default;
+    point8_t(uint8_t x, uint8_t y) : x(x), y(y)
+    { }
+
+};
+
+struct size8_t
+{
+public:
+    uint8_t width  = 0;
+    uint8_t height = 0;
+
+public:
+    size8_t() = default;
+    size8_t(uint8_t width, uint8_t height) : width(width), height(height)
+    { }
+
+public:
+    bool empty() { return this->width == 0 || this->height == 0; }
+};
+
+struct point16_t
+{
+public:
+    uint16_t x = 0;
+    uint16_t y = 0;
+
+public:
+    point16_t() = default;
+    point16_t(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
+
+public:
+    bool operator == (const struct point16_t& right) const
+    {
+        return (this->x == right.x) && (this->y == right.y);
+    }
+
+    bool operator != (const struct point16_t& right) const
+    {
+        return !(this->operator==(right));
+    }
+};
+
+struct size16_t
+{
+public:
+    uint16_t width  = 0;
+    uint16_t height = 0;
+
+public:
+    size16_t() = default;
+    size16_t(uint16_t width, uint16_t height) : width(width), height(height)
+    { }
+    size16_t(const struct size16_t& right) : width(right.width), height(right.height)
+    { }
+
+public:
+    bool empty() { return this->width == 0 || this->height == 0; }
+
+};
+
+struct mutable_uint16_t
+{
+public:
+    uint16_t model  = 0;
+    uint16_t current = 0;
+
+public:
+    mutable_uint16_t() = default;
+    mutable_uint16_t(uint16_t value) : model(value), current(value) 
+    { }
+    mutable_uint16_t(uint16_t model, uint16_t current) : model(model), current(current)
+    { }
+};
+
+struct mutable_uint32_t
+{
+public:
+    uint32_t model  = 0;
+    uint32_t current = 0;
+
+public:
+    mutable_uint32_t() = default;
+    mutable_uint32_t(uint32_t value) : model(value), current(value)
+    { }
+    mutable_uint32_t(uint32_t model, uint32_t current) : model(model), current(current)
+    { }
+};
+
+struct range8_t
+{
+public:
+    uint8_t min = 0;
+    uint8_t max = 0;
+
+public:
+    range8_t() = default;
+    range8_t(uint8_t min, uint8_t max) : min(min), max(max)
+    { }
+};
+
+struct range16_t
+{
+public:
+    uint16_t min = 0;
+    uint16_t max = 0;
+
+public:
+    range16_t() = default;
+    range16_t(uint16_t min, uint16_t max) : min(min), max(max)
+    { }
+};
+
+struct range32_t
+{
+public:
+    uint32_t min = 0;
+    uint32_t max = 0;
+
+public:
+    range32_t() = default;
+    range32_t(uint32_t min, uint32_t max) : min(min), max(max)
+    { }
+};
 #pragma endregion
 
 #pragma region enum
@@ -45,6 +177,38 @@ template <typename T>
 inline T enum_parse(const std::string k)
 {
     throw std::runtime_error("cannot parse enum value");
+}
+
+enum class ACTION
+{
+    ATTACK = 0x01, 
+    ARROW = 0x03, 
+    PICKUP = 0x04, 
+    PICKUP_SILENT = 0x05, 
+    CAST_SPELL = 0x06, 
+    EAT = 0x08, 
+    EMOTION = 0x0B
+};
+
+template <>
+inline ACTION enum_parse<ACTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, ACTION> enums
+    {
+        { "ATTACK", ACTION::ATTACK }, 
+        { "ARROW", ACTION::ARROW }, 
+        { "PICKUP", ACTION::PICKUP }, 
+        { "PICKUP_SILENT", ACTION::PICKUP_SILENT }, 
+        { "CAST_SPELL", ACTION::CAST_SPELL }, 
+        { "EAT", ACTION::EAT }, 
+        { "EMOTION", ACTION::EMOTION }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
 }
 
 enum class BUNDLE_TYPE
@@ -90,6 +254,62 @@ inline CLASS enum_parse<CLASS>(const std::string k)
         { "THIEF", CLASS::THIEF }, 
         { "MAGICION", CLASS::MAGICION }, 
         { "ASCETIC", CLASS::ASCETIC }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CONDITION
+{
+    NONE = 0x00, 
+    MOVE = 0x01, 
+    SIGHT = 0x02, 
+    HEAR = 0x04, 
+    ORAL = 0x08, 
+    MAP = 0x10
+};
+
+template <>
+inline CONDITION enum_parse<CONDITION>(const std::string k)
+{
+    static const std::unordered_map<std::string, CONDITION> enums
+    {
+        { "NONE", CONDITION::NONE }, 
+        { "MOVE", CONDITION::MOVE }, 
+        { "SIGHT", CONDITION::SIGHT }, 
+        { "HEAR", CONDITION::HEAR }, 
+        { "ORAL", CONDITION::ORAL }, 
+        { "MAP", CONDITION::MAP }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CREATURE
+{
+    PHOENIX = 0x00, 
+    TIGER = 0x01, 
+    TURTLE = 0x02, 
+    DRAGON = 0x03
+};
+
+template <>
+inline CREATURE enum_parse<CREATURE>(const std::string k)
+{
+    static const std::unordered_map<std::string, CREATURE> enums
+    {
+        { "PHOENIX", CREATURE::PHOENIX }, 
+        { "TIGER", CREATURE::TIGER }, 
+        { "TURTLE", CREATURE::TURTLE }, 
+        { "DRAGON", CREATURE::DRAGON }
     };
 
     auto i = enums.find(k);
@@ -391,6 +611,40 @@ inline MAP_EFFECT_TYPE enum_parse<MAP_EFFECT_TYPE>(const std::string k)
     return i->second;
 }
 
+enum class MAP_OPTION
+{
+    NONE = 0x00, 
+    BUILD_IN = 0x01, 
+    DISABLE_TALK = 0x02, 
+    DISABLE_WHISPER = 0x04, 
+    DISABLE_MAGIC = 0x08, 
+    HUNTING_GROUND = 0x10, 
+    ENABLE_PK = 0x20, 
+    DISABLE_DIE_PENALTY = 0x30
+};
+
+template <>
+inline MAP_OPTION enum_parse<MAP_OPTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, MAP_OPTION> enums
+    {
+        { "NONE", MAP_OPTION::NONE }, 
+        { "BUILD_IN", MAP_OPTION::BUILD_IN }, 
+        { "DISABLE_TALK", MAP_OPTION::DISABLE_TALK }, 
+        { "DISABLE_WHISPER", MAP_OPTION::DISABLE_WHISPER }, 
+        { "DISABLE_MAGIC", MAP_OPTION::DISABLE_MAGIC }, 
+        { "HUNTING_GROUND", MAP_OPTION::HUNTING_GROUND }, 
+        { "ENABLE_PK", MAP_OPTION::ENABLE_PK }, 
+        { "DISABLE_DIE_PENALTY", MAP_OPTION::DISABLE_DIE_PENALTY }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class MOB_ATTACK_TYPE
 {
     NONE = 0, 
@@ -434,6 +688,28 @@ inline MOB_SIZE enum_parse<MOB_SIZE>(const std::string k)
         { "SMALL", MOB_SIZE::SMALL }, 
         { "LARGE", MOB_SIZE::LARGE }, 
         { "ALL", MOB_SIZE::ALL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class NATION
+{
+    GOGURYEO = 0x01, 
+    BUYEO = 0x02
+};
+
+template <>
+inline NATION enum_parse<NATION>(const std::string k)
+{
+    static const std::unordered_map<std::string, NATION> enums
+    {
+        { "GOGURYEO", NATION::GOGURYEO }, 
+        { "BUYEO", NATION::BUYEO }
     };
 
     auto i = enums.find(k);
@@ -568,6 +844,38 @@ inline SPELL_TYPE enum_parse<SPELL_TYPE>(const std::string k)
         { "UNKNOWN1", SPELL_TYPE::UNKNOWN1 }, 
         { "UNKNOWN2", SPELL_TYPE::UNKNOWN2 }, 
         { "UNKNOWN3", SPELL_TYPE::UNKNOWN3 }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class STATE
+{
+    NORMAL = 0x00, 
+    GHOST = 0x01, 
+    TRANSLUCENCY = 0x02, 
+    RIDING = 0x03, 
+    DISGUISE = 0x04, 
+    HALF_CLOACK = 0x05, 
+    CLOACK = 0x06
+};
+
+template <>
+inline STATE enum_parse<STATE>(const std::string k)
+{
+    static const std::unordered_map<std::string, STATE> enums
+    {
+        { "NORMAL", STATE::NORMAL }, 
+        { "GHOST", STATE::GHOST }, 
+        { "TRANSLUCENCY", STATE::TRANSLUCENCY }, 
+        { "RIDING", STATE::RIDING }, 
+        { "DISGUISE", STATE::DISGUISE }, 
+        { "HALF_CLOACK", STATE::HALF_CLOACK }, 
+        { "CLOACK", STATE::CLOACK }
     };
 
     auto i = enums.find(k);
@@ -1078,6 +1386,9 @@ DECLARE_ABILITY_CONSTRUCTOR
         exp(fb::model::build<uint32_t>(json["exp"])),
         hp(fb::model::build<uint32_t>(json["hp"])),
         mp(fb::model::build<uint32_t>(json["mp"]))
+#ifdef DECLARE_ABILITY_INITIALIZER
+DECLARE_ABILITY_INITIALIZER
+#endif
     { }
     ability(const ability&) = delete;
     virtual ~ability()
@@ -1100,6 +1411,9 @@ public:
 DECLARE_ABILITY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
+#ifdef DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
+DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
+#endif
     { }
     ability_attribute(const ability_attribute&) = delete;
     virtual ~ability_attribute()
@@ -1130,6 +1444,9 @@ DECLARE_BOARD_CONSTRUCTOR
         min_level(fb::model::build<uint8_t>(json["min_level"])),
         max_level(fb::model::build<uint8_t>(json["max_level"])),
         admin(fb::model::build<bool>(json["admin"]))
+#ifdef DECLARE_BOARD_INITIALIZER
+DECLARE_BOARD_INITIALIZER
+#endif
     { }
     board(const board&) = delete;
     virtual ~board()
@@ -1156,6 +1473,9 @@ DECLARE_BUY_CONSTRUCTOR
         parent(fb::model::build<uint32_t>(json["parent"])),
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
+#ifdef DECLARE_BUY_INITIALIZER
+DECLARE_BUY_INITIALIZER
+#endif
     { }
     buy(const buy&) = delete;
     virtual ~buy()
@@ -1178,6 +1498,9 @@ public:
 DECLARE_BUY_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
+#ifdef DECLARE_BUY_ATTRIBUTE_INITIALIZER
+DECLARE_BUY_ATTRIBUTE_INITIALIZER
+#endif
     { }
     buy_attribute(const buy_attribute&) = delete;
     virtual ~buy_attribute()
@@ -1206,6 +1529,9 @@ DECLARE_COMBINE_CONSTRUCTOR
         success(fb::model::build<std::vector<fb::model::dsl>>(json["success"])),
         failed(fb::model::build<std::vector<fb::model::dsl>>(json["failed"])),
         percent(fb::model::build<double>(json["percent"]))
+#ifdef DECLARE_COMBINE_INITIALIZER
+DECLARE_COMBINE_INITIALIZER
+#endif
     { }
     combine(const combine&) = delete;
     virtual ~combine()
@@ -1230,6 +1556,9 @@ DECLARE_DOOR_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"])),
         pairs(fb::model::build<std::vector<uint32_t>>(json["pairs"]))
+#ifdef DECLARE_DOOR_INITIALIZER
+DECLARE_DOOR_INITIALIZER
+#endif
     { }
     door(const door&) = delete;
     virtual ~door()
@@ -1256,6 +1585,9 @@ DECLARE_DOOR_PAIR_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         open(fb::model::build<uint32_t>(json["open"])),
         close(fb::model::build<uint32_t>(json["close"]))
+#ifdef DECLARE_DOOR_PAIR_INITIALIZER
+DECLARE_DOOR_PAIR_INITIALIZER
+#endif
     { }
     door_pair(const door_pair&) = delete;
     virtual ~door_pair()
@@ -1280,6 +1612,9 @@ DECLARE_DROP_CONSTRUCTOR
 #endif
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
+#ifdef DECLARE_DROP_INITIALIZER
+DECLARE_DROP_INITIALIZER
+#endif
     { }
     drop(const drop&) = delete;
     virtual ~drop()
@@ -1307,6 +1642,7 @@ public:
     const bool enable_whisper;
     const bool enable_pk;
     const bool enable_spell;
+    const fb::model::enum_value::MAP_OPTION option;
 
 public:
     map(const Json::Value& json) : 
@@ -1325,7 +1661,11 @@ DECLARE_MAP_CONSTRUCTOR
         building(fb::model::build<bool>(json["building"])),
         enable_whisper(fb::model::build<bool>(json["enable_whisper"])),
         enable_pk(fb::model::build<bool>(json["enable_pk"])),
-        enable_spell(fb::model::build<bool>(json["enable_spell"]))
+        enable_spell(fb::model::build<bool>(json["enable_spell"])),
+        option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"]))
+#ifdef DECLARE_MAP_INITIALIZER
+DECLARE_MAP_INITIALIZER
+#endif
     { }
     map(const map&) = delete;
     virtual ~map()
@@ -1362,6 +1702,9 @@ DECLARE_MOB_SPAWN_CONSTRUCTOR
         count(fb::model::build<uint32_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
         rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
+#ifdef DECLARE_MOB_SPAWN_INITIALIZER
+DECLARE_MOB_SPAWN_INITIALIZER
+#endif
     { }
     mob_spawn(const mob_spawn&) = delete;
     virtual ~mob_spawn()
@@ -1384,6 +1727,9 @@ public:
 DECLARE_MOB_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"]))
+#ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_INITIALIZER
+DECLARE_MOB_SPAWN_ATTRIBUTE_INITIALIZER
+#endif
     { }
     mob_spawn_attribute(const mob_spawn_attribute&) = delete;
     virtual ~mob_spawn_attribute()
@@ -1414,6 +1760,9 @@ DECLARE_NPC_SPAWN_CONSTRUCTOR
         x(fb::model::build<uint32_t>(json["x"])),
         y(fb::model::build<uint32_t>(json["y"])),
         direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
+#ifdef DECLARE_NPC_SPAWN_INITIALIZER
+DECLARE_NPC_SPAWN_INITIALIZER
+#endif
     { }
     npc_spawn(const npc_spawn&) = delete;
     virtual ~npc_spawn()
@@ -1436,6 +1785,9 @@ public:
 DECLARE_NPC_SPAWN_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
+#ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_INITIALIZER
+DECLARE_NPC_SPAWN_ATTRIBUTE_INITIALIZER
+#endif
     { }
     npc_spawn_attribute(const npc_spawn_attribute&) = delete;
     virtual ~npc_spawn_attribute()
@@ -1462,6 +1814,9 @@ DECLARE_OBJECT_CONSTRUCTOR
         name(fb::model::build<std::string>(json["name"])),
         look(fb::model::build<uint16_t>(json["look"])),
         color(fb::model::build<uint8_t>(json["color"]))
+#ifdef DECLARE_OBJECT_INITIALIZER
+DECLARE_OBJECT_INITIALIZER
+#endif
     { }
     object(const object&) = delete;
     virtual ~object()
@@ -1488,6 +1843,9 @@ DECLARE_PROMOTION_CONSTRUCTOR
         parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         step(fb::model::build<uint8_t>(json["step"])),
         name(fb::model::build<std::string>(json["name"]))
+#ifdef DECLARE_PROMOTION_INITIALIZER
+DECLARE_PROMOTION_INITIALIZER
+#endif
     { }
     promotion(const promotion&) = delete;
     virtual ~promotion()
@@ -1510,6 +1868,9 @@ public:
 DECLARE_PROMOTION_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::CLASS>(json["id"]))
+#ifdef DECLARE_PROMOTION_ATTRIBUTE_INITIALIZER
+DECLARE_PROMOTION_ATTRIBUTE_INITIALIZER
+#endif
     { }
     promotion_attribute(const promotion_attribute&) = delete;
     virtual ~promotion_attribute()
@@ -1534,6 +1895,9 @@ DECLARE_REWARD_CONSTRUCTOR
 #endif
         id(fb::model::build<std::string>(json["id"])),
         dsl(fb::model::build<std::vector<fb::model::dsl>>(json["dsl"]))
+#ifdef DECLARE_REWARD_INITIALIZER
+DECLARE_REWARD_INITIALIZER
+#endif
     { }
     reward(const reward&) = delete;
     virtual ~reward()
@@ -1560,6 +1924,9 @@ DECLARE_SELL_CONSTRUCTOR
         parent(fb::model::build<uint32_t>(json["parent"])),
         item(fb::model::build<uint32_t>(json["item"])),
         price(fb::model::build<std::optional<uint32_t>>(json["price"]))
+#ifdef DECLARE_SELL_INITIALIZER
+DECLARE_SELL_INITIALIZER
+#endif
     { }
     sell(const sell&) = delete;
     virtual ~sell()
@@ -1584,6 +1951,9 @@ DECLARE_SELL_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"])),
         group(fb::model::build<std::string>(json["group"]))
+#ifdef DECLARE_SELL_ATTRIBUTE_INITIALIZER
+DECLARE_SELL_ATTRIBUTE_INITIALIZER
+#endif
     { }
     sell_attribute(const sell_attribute&) = delete;
     virtual ~sell_attribute()
@@ -1618,6 +1988,9 @@ DECLARE_SPELL_CONSTRUCTOR
         uncast(fb::model::build<std::string>(json["uncast"])),
         concast(fb::model::build<std::string>(json["concast"])),
         message(fb::model::build<std::string>(json["message"]))
+#ifdef DECLARE_SPELL_INITIALIZER
+DECLARE_SPELL_INITIALIZER
+#endif
     { }
     spell(const spell&) = delete;
     virtual ~spell()
@@ -1654,6 +2027,9 @@ DECLARE_WARP_CONSTRUCTOR
         next_x(fb::model::build<uint32_t>(json["next_x"])),
         next_y(fb::model::build<uint32_t>(json["next_y"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
+#ifdef DECLARE_WARP_INITIALIZER
+DECLARE_WARP_INITIALIZER
+#endif
     { }
     warp(const warp&) = delete;
     virtual ~warp()
@@ -1676,6 +2052,9 @@ public:
 DECLARE_WARP_ATTRIBUTE_CONSTRUCTOR
 #endif
         map(fb::model::build<uint32_t>(json["map"]))
+#ifdef DECLARE_WARP_ATTRIBUTE_INITIALIZER
+DECLARE_WARP_ATTRIBUTE_INITIALIZER
+#endif
     { }
     warp_attribute(const warp_attribute&) = delete;
     virtual ~warp_attribute()
@@ -1700,6 +2079,9 @@ DECLARE_WORLD_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint16_t>(json["parent"])),
         group(fb::model::build<std::string>(json["group"]))
+#ifdef DECLARE_WORLD_INITIALIZER
+DECLARE_WORLD_INITIALIZER
+#endif
     { }
     world(const world&) = delete;
     virtual ~world()
@@ -1724,6 +2106,9 @@ DECLARE_WORLD_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint16_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"]))
+#ifdef DECLARE_WORLD_ATTRIBUTE_INITIALIZER
+DECLARE_WORLD_ATTRIBUTE_INITIALIZER
+#endif
     { }
     world_attribute(const world_attribute&) = delete;
     virtual ~world_attribute()
@@ -1760,6 +2145,9 @@ DECLARE_WORLD_GROUP_CONSTRUCTOR
         y(fb::model::build<uint32_t>(json["y"])),
         world_x(fb::model::build<uint16_t>(json["world_x"])),
         world_y(fb::model::build<uint16_t>(json["world_y"]))
+#ifdef DECLARE_WORLD_GROUP_INITIALIZER
+DECLARE_WORLD_GROUP_INITIALIZER
+#endif
     { }
     world_group(const world_group&) = delete;
     virtual ~world_group()
@@ -1782,6 +2170,9 @@ public:
 DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<std::string>(json["id"]))
+#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_INITIALIZER
+DECLARE_WORLD_GROUP_ATTRIBUTE_INITIALIZER
+#endif
     { }
     world_group_attribute(const world_group_attribute&) = delete;
     virtual ~world_group_attribute()
@@ -1816,6 +2207,9 @@ public:
         capacity(fb::model::build<uint16_t>(json["capacity"])),
         script_active(fb::model::build<std::string>(json["script_active"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
+#ifdef DECLARE_ITEM_INITIALIZER
+DECLARE_ITEM_INITIALIZER
+#endif
     { }
     item(const item&) = delete;
     virtual ~item()
@@ -1840,6 +2234,9 @@ public:
         exp(fb::model::build<uint32_t>(json["exp"])),
         defensive_physical(fb::model::build<int>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int>(json["defensive_magical"]))
+#ifdef DECLARE_LIFE_INITIALIZER
+DECLARE_LIFE_INITIALIZER
+#endif
     { }
     life(const life&) = delete;
     virtual ~life()
@@ -1870,6 +2267,9 @@ public:
         hold_money(fb::model::build<bool>(json["hold_money"])),
         hold_item(fb::model::build<bool>(json["hold_item"])),
         rename(fb::model::build<bool>(json["rename"]))
+#ifdef DECLARE_NPC_INITIALIZER
+DECLARE_NPC_INITIALIZER
+#endif
     { }
     npc(const npc&) = delete;
     virtual ~npc()
@@ -1882,6 +2282,9 @@ class cash : public fb::model::item
 {
 public:
     cash(const Json::Value& json) : fb::model::item(json)
+#ifdef DECLARE_CASH_INITIALIZER
+DECLARE_CASH_INITIALIZER
+#endif
     { }
     cash(const cash&) = delete;
     virtual ~cash()
@@ -1894,6 +2297,9 @@ class consume : public fb::model::item
 {
 public:
     consume(const Json::Value& json) : fb::model::item(json)
+#ifdef DECLARE_CONSUME_INITIALIZER
+DECLARE_CONSUME_INITIALIZER
+#endif
     { }
     consume(const consume&) = delete;
     virtual ~consume()
@@ -1942,6 +2348,9 @@ public:
         healing_cycle(fb::model::build<uint8_t>(json["healing_cycle"])),
         defensive_physical(fb::model::build<int16_t>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int16_t>(json["defensive_magical"]))
+#ifdef DECLARE_EQUIPMENT_INITIALIZER
+DECLARE_EQUIPMENT_INITIALIZER
+#endif
     { }
     equipment(const equipment&) = delete;
     virtual ~equipment()
@@ -1974,6 +2383,9 @@ public:
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
+#ifdef DECLARE_MOB_INITIALIZER
+DECLARE_MOB_INITIALIZER
+#endif
     { }
     mob(const mob&) = delete;
     virtual ~mob()
@@ -1990,6 +2402,9 @@ public:
 public:
     pack(const Json::Value& json) : fb::model::item(json),
         durability(fb::model::build<uint16_t>(json["durability"]))
+#ifdef DECLARE_PACK_INITIALIZER
+DECLARE_PACK_INITIALIZER
+#endif
     { }
     pack(const pack&) = delete;
     virtual ~pack()
@@ -2002,6 +2417,9 @@ class armor : public fb::model::equipment
 {
 public:
     armor(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_ARMOR_INITIALIZER
+DECLARE_ARMOR_INITIALIZER
+#endif
     { }
     armor(const armor&) = delete;
     virtual ~armor()
@@ -2014,6 +2432,9 @@ class auxiliary : public fb::model::equipment
 {
 public:
     auxiliary(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_AUXILIARY_INITIALIZER
+DECLARE_AUXILIARY_INITIALIZER
+#endif
     { }
     auxiliary(const auxiliary&) = delete;
     virtual ~auxiliary()
@@ -2026,6 +2447,9 @@ class bow : public fb::model::equipment
 {
 public:
     bow(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_BOW_INITIALIZER
+DECLARE_BOW_INITIALIZER
+#endif
     { }
     bow(const bow&) = delete;
     virtual ~bow()
@@ -2038,6 +2462,9 @@ class helmet : public fb::model::equipment
 {
 public:
     helmet(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_HELMET_INITIALIZER
+DECLARE_HELMET_INITIALIZER
+#endif
     { }
     helmet(const helmet&) = delete;
     virtual ~helmet()
@@ -2050,6 +2477,9 @@ class ring : public fb::model::equipment
 {
 public:
     ring(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_RING_INITIALIZER
+DECLARE_RING_INITIALIZER
+#endif
     { }
     ring(const ring&) = delete;
     virtual ~ring()
@@ -2062,6 +2492,9 @@ class shield : public fb::model::equipment
 {
 public:
     shield(const Json::Value& json) : fb::model::equipment(json)
+#ifdef DECLARE_SHIELD_INITIALIZER
+DECLARE_SHIELD_INITIALIZER
+#endif
     { }
     shield(const shield&) = delete;
     virtual ~shield()
@@ -2090,6 +2523,9 @@ public:
         sound(fb::model::build<uint16_t>(json["sound"])),
         spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
         rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))
+#ifdef DECLARE_WEAPON_INITIALIZER
+DECLARE_WEAPON_INITIALIZER
+#endif
     { }
     weapon(const weapon&) = delete;
     virtual ~weapon()
@@ -2210,18 +2646,18 @@ template <typename K, typename V>
 class kv_container<K,V>::iterator : public std::unordered_map<K, std::unique_ptr<V>>::iterator
 {
 private:
-    std::unique_ptr<std::pair<K, V&>> _pair;
+    std::optional<std::pair<K, V&>> _pair;
 
 public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
-        _pair(i != container->end() ? std::make_unique<std::pair<K, V&>>(i->first, *i->second) : nullptr)
+    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
+        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~iterator() = default;
 
 public:
     std::pair<K,V&>& operator * ()
     {
-        return *this->_pair;
+        return this->_pair.value();
     }
 };
 
@@ -2229,43 +2665,43 @@ template <typename K, typename V>
 class kv_container<K,V>::const_iterator : public std::unordered_map<K, std::unique_ptr<V>>::const_iterator
 {
 private:
-    const std::unique_ptr<std::pair<K, V&>> _pair;
+    const std::optional<std::pair<K, V&>> _pair;
 
 public:
-    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
-        _pair(i != container->end() ? std::make_unique<std::pair<K, V&>>(i->first, *i->second) : nullptr)
+    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
+        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~const_iterator() = default;
 
 public:
     const std::pair<K,V&>& operator * () const
     {
-        return *this->_pair;
+        return this->_pair.value();
     }
 };
 
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::begin()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), *this);
 }
 
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::end()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), *this);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), *this);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), *this);
 }
 
 template <typename T>

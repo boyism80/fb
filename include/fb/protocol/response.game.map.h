@@ -61,10 +61,10 @@ public:
     {
         base::header::serialize(out_stream);
 
-        if(this->map.effect() == fb::game::map::EFFECT::NONE)
+        if(this->map.model.effect == MAP_EFFECT_TYPE::NONE)
             out_stream.write_u8(0x00);
         else
-            out_stream.write_u8(0x04).write_u8(this->map.effect());
+            out_stream.write_u8(0x04).write_u8(this->map.model.effect);
 
         out_stream.write_u16(this->position.x)
             .write_u16(this->position.y)
@@ -114,8 +114,8 @@ public:
 
         out_stream.write_u8(0x01)
                   .write_u8(0x05)
-                  .write_u16(this->map.id())
-                  .write_u16(this->map.id())
+                  .write_u16(this->map.model.id)
+                  .write_u16(this->map.model.id)
                   .write_u8(volume) // volume
                   .write_u16(512)
                   .write_u16(512)
@@ -153,11 +153,11 @@ public:
     {
         base::header::serialize(out_stream);
 
-        out_stream.write_u16(this->map.id()) // id
+        out_stream.write_u16(this->map.model.id) // id
                   .write_u16(this->map.width()) // width
                   .write_u16(this->map.height()) // height
-                  .write_u8(enum_in(this->map.option(), fb::game::map::OPTION::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
-                  .write(this->map.name(), true);
+                  .write_u8(enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
+                  .write(this->map.model.name, true);
     }
 #else
     void deserialize(fb::istream& in_stream)

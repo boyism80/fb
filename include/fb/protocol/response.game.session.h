@@ -84,18 +84,18 @@ public:
         }
 
         out_stream.write_u32(this->session.sequence())
-                  .write_u8(this->session.state() == fb::game::STATE_TYPE::DISGUISE) // 변신유무
+                  .write_u8(this->session.state() == STATE::DISGUISE) // 변신유무
                   .write_u8(this->session.sex()); // sex
 
 
         switch(this->session.state())
         {
-        case fb::game::STATE_TYPE::HALF_CLOACK:
+        case STATE::HALF_CLOACK:
         {
             if(this->clock_visible())
-                out_stream.write_8(fb::game::STATE_TYPE::HALF_CLOACK);
+                out_stream.write_8(STATE::HALF_CLOACK);
             else
-                out_stream.write_8(fb::game::STATE_TYPE::CLOACK);
+                out_stream.write_8(STATE::CLOACK);
         } break;
         default:
         {
@@ -103,7 +103,7 @@ public:
         } break;
         }
 
-        if(this->session.state() == fb::game::STATE_TYPE::DISGUISE)
+        if(this->session.state() == STATE::DISGUISE)
         {
             out_stream.write_u16(this->session.disguise().value())
                       .write_u8(this->session.current_armor_color());
@@ -271,11 +271,11 @@ public:
 
         if(enum_in(this->level, STATE_LEVEL::CONDITION))
         {
-            out_stream.write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::MOVE))  // condition::move
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::SIGHT))  // condition::sight
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::HEAR))  // condition::hear?
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::ORAL))  // condition:oral
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::MAP)); // condition:map?
+            out_stream.write_u8(this->session.condition_contains(CONDITION::MOVE))  // condition::move
+                      .write_u8(this->session.condition_contains(CONDITION::SIGHT))  // condition::sight
+                      .write_u8(this->session.condition_contains(CONDITION::HEAR))  // condition::hear?
+                      .write_u8(this->session.condition_contains(CONDITION::ORAL))  // condition:oral
+                      .write_u8(this->session.condition_contains(CONDITION::MAP)); // condition:map?
         }
 
         out_stream.write_u8(0x00)  // mail count
@@ -319,15 +319,15 @@ public:
         if(enum_in(this->STATE_LEVEL, STATE_LEVEL::CONDITION))
         {
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::MOVE;
+                this->condition |= (uint32_t)CONDITION::MOVE;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::SIGHT;
+                this->condition |= (uint32_t)CONDITION::SIGHT;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::HEAR;
+                this->condition |= (uint32_t)CONDITION::HEAR;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::ORAL;
+                this->condition |= (uint32_t)CONDITION::ORAL;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::MAP;
+                this->condition |= (uint32_t)CONDITION::MAP;
         }
 
         this->mail = in_stream.read_u8();
@@ -509,7 +509,7 @@ public:
         out_stream.write(class_name)  // 직업
                   .write(this->session.name());    // 이름
 
-        auto                    disguised = (this->session.state() == fb::game::STATE_TYPE::DISGUISE);
+        auto                    disguised = (this->session.state() == STATE::DISGUISE);
         out_stream.write_u8(disguised)
                   .write_u8(this->session.sex())
                   .write_u8(this->session.state());
@@ -671,12 +671,12 @@ class action : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;
-    const fb::game::ACTION_TYPE     value;
+    const ACTION     value;
     const fb::game::DURATION        duration;
     const uint8_t                   sound;
 
 public:
-    action(const fb::game::session& me, fb::game::ACTION_TYPE value, fb::game::DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+    action(const fb::game::session& me, ACTION value, fb::game::DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 

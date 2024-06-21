@@ -33,8 +33,8 @@ public:
 
 private:
     listener*                               _listener      = nullptr;
-    point16_t                               _spawn_point   = point16_t(0, 0);
-    size16_t                                _spawn_size    = size16_t(0, 0);
+    point16_t                    _spawn_point   = point16_t(0, 0);
+    size16_t                     _spawn_size    = size16_t(0, 0);
                                                            
     std::chrono::milliseconds               _action_time   = 0ms; // ms
     std::chrono::milliseconds               _dead_time     = 0ms; // ms
@@ -50,13 +50,13 @@ public:
 
 private:
     fb::game::life*                         find_target();
-    bool                                    near_target(fb::game::DIRECTION_TYPE& out) const;
+    bool                                    near_target(DIRECTION& out) const;
 
 public:
     bool                                    action();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
-    const point16_t&                        spawn_point() const;
+    const point16_t&             spawn_point() const;
     void                                    spawn_point(uint16_t x, uint16_t y);
     void                                    spawn_point(const point16_t point);
 

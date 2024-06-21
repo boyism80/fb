@@ -421,7 +421,7 @@ int fb::game::session::builtin_state(lua_State* lua)
     }
     else
     {
-        auto value = fb::game::STATE_TYPE(thread->tointeger(2));
+        auto value = STATE(thread->tointeger(2));
         session->state(value);
         return 0;
     }
@@ -561,11 +561,11 @@ int fb::game::session::builtin_assert(lua_State* lua)
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     auto size = thread->rawlen(2);
-    std::vector<fb::game::STATE_TYPE> values;
+    std::vector<STATE> values;
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(2, i+1);
-        values.push_back((fb::game::STATE_TYPE)thread->tointeger(-1));
+        values.push_back((STATE)thread->tointeger(-1));
     }
 
     try

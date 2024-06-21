@@ -165,39 +165,39 @@ uint32_t container::cls::exp(uint8_t class_id, uint8_t level)
 fb::game::map::EFFECT container::map::to_effect(const std::string& effect)
 {
     if(effect == "fire")
-        return fb::game::map::EFFECT::FIRE;
+        return MAP_EFFECT_TYPE::FIRE;
 
     if(effect == "water")
-        return fb::game::map::EFFECT::WATER;
+        return MAP_EFFECT_TYPE::WATER;
 
-    return fb::game::map::EFFECT::NONE;
+    return MAP_EFFECT_TYPE::NONE;
 }
 
-fb::game::map::OPTION container::map::to_option(const Json::Value& data)
+MAP_OPTION container::map::to_option(const Json::Value& data)
 {
-    auto                    flags = fb::game::map::OPTION::NO_OPTION;
+    auto                    flags = MAP_OPTION::NO_OPTION;
     auto&                   option = data["option"];
 
     if(option["build in"].asBool())
-        flags |= fb::game::map::OPTION::BUILD_IN;
+        flags |= MAP_OPTION::BUILD_IN;
 
     if(option["enabled talk"].asBool() == false)
-        flags |= fb::game::map::OPTION::DISABLE_TALK;
+        flags |= MAP_OPTION::DISABLE_TALK;
 
     if(option["enabled whisper"].asBool() == false)
-        flags |= fb::game::map::OPTION::DISABLE_WHISPER;
+        flags |= MAP_OPTION::DISABLE_WHISPER;
 
     if(option["enabled magic"].asBool() == false)
-        flags |= fb::game::map::OPTION::DISABLE_MAGIC;
+        flags |= MAP_OPTION::DISABLE_MAGIC;
 
     if(option["hunting ground"].asBool())
-        flags |= fb::game::map::OPTION::HUNTING_GROUND;
+        flags |= MAP_OPTION::HUNTING_GROUND;
 
     if(option["enabled pk"].asBool())
-        flags |= fb::game::map::OPTION::ENABLE_PK;
+        flags |= MAP_OPTION::ENABLE_PK;
 
     if(option["enabled die penalty"].asBool())
-        flags |= fb::game::map::OPTION::DISABLE_DIE_PENALTY;
+        flags |= MAP_OPTION::DISABLE_DIE_PENALTY;
 
     return flags;
 }
@@ -365,15 +365,15 @@ fb::model::item* container::item::create(uint32_t id, const Json::Value& data)
 
 fb::game::item::conditions container::item::to_condition(const Json::Value& data)
 {
-    auto sex = fb::game::SEX_TYPE::BOTH;
+    auto sex = SEX::BOTH;
 
     if(data["condition"].isMember("sex"))
     {
         auto value = CP949(data["condition"]["sex"].asString(), PLATFORM::Windows);
         if(value == "man")
-            sex = fb::game::SEX_TYPE::MAN;
+            sex = SEX::MAN;
         else if(value == "woman")
-            sex = fb::game::SEX_TYPE::WOMAN;
+            sex = SEX::WOMAN;
         else
             throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_SEX);
     }
@@ -697,15 +697,15 @@ bool container::npc::load_spawn(const std::string& path, fb::game::context& cont
 
                 point16_t       position(spawn["position"]["x"].asInt(), spawn["position"]["y"].asInt());
                 auto            direction_str   = CP949(spawn["direction"].asString(), PLATFORM::Windows);
-                auto            direction       = fb::game::DIRECTION_TYPE::BOTTOM;
+                auto            direction       = DIRECTION::BOTTOM;
                 if (direction_str == "top")
-                    direction = fb::game::DIRECTION_TYPE::TOP;
+                    direction = DIRECTION::TOP;
                 else if (direction_str == "right")
-                    direction = fb::game::DIRECTION_TYPE::RIGHT;
+                    direction = DIRECTION::RIGHT;
                 else if (direction_str == "bottom")
-                    direction = fb::game::DIRECTION_TYPE::BOTTOM;
+                    direction = DIRECTION::BOTTOM;
                 else if (direction_str == "left")
-                    direction = fb::game::DIRECTION_TYPE::LEFT;
+                    direction = DIRECTION::LEFT;
                 else
                     throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_NPC_DIRECTION);
 

@@ -178,7 +178,7 @@ fb::task<void> game_bot::pattern_attack()
 
 fb::task<void> game_bot::pattern_direction()
 {
-    static std::vector<fb::game::DIRECTION_TYPE> directions{ fb::game::DIRECTION_TYPE::LEFT, fb::game::DIRECTION_TYPE::TOP, fb::game::DIRECTION_TYPE::RIGHT, fb::game::DIRECTION_TYPE::BOTTOM };
+    static std::vector<DIRECTION> directions{ DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM };
     static std::random_device device;
     static std::mt19937 gen(device());
     static std::uniform_int_distribution<> dist(0, directions.size() - 1);
@@ -190,7 +190,7 @@ fb::task<void> game_bot::pattern_direction()
 
 fb::task<void> game_bot::pattern_move()
 {
-    static std::vector<fb::game::DIRECTION_TYPE> directions{ fb::game::DIRECTION_TYPE::LEFT, fb::game::DIRECTION_TYPE::TOP, fb::game::DIRECTION_TYPE::RIGHT, fb::game::DIRECTION_TYPE::BOTTOM };
+    static std::vector<DIRECTION> directions{ DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM };
     static std::random_device device;
     static std::mt19937 gen(device());
     static std::uniform_int_distribution<> dist(0, directions.size() - 1);
@@ -200,19 +200,19 @@ fb::task<void> game_bot::pattern_move()
 
     switch (direction)
     {
-    case fb::game::DIRECTION_TYPE::LEFT:
+    case DIRECTION::LEFT:
         this->_position.x--;
         break;
 
-    case fb::game::DIRECTION_TYPE::TOP:
+    case DIRECTION::TOP:
         this->_position.y--;
         break;
 
-    case fb::game::DIRECTION_TYPE::RIGHT:
+    case DIRECTION::RIGHT:
         this->_position.x++;
         break;
 
-    case fb::game::DIRECTION_TYPE::BOTTOM:
+    case DIRECTION::BOTTOM:
         this->_position.y++;
         break;
     }

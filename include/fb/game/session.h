@@ -91,10 +91,10 @@ private:
     uint8_t                     _hit             = 0; // 명중수정
     uint8_t                     _regenerative    = 0; // 재생력
 
-    fb::game::NATION_TYPE       _nation          = NATION_TYPE::GOGURYEO;
-    fb::game::CREATURE_TYPE     _creature        = CREATURE_TYPE::DRAGON;
-    fb::game::SEX_TYPE          _sex             = fb::game::SEX_TYPE::BOTH;
-    fb::game::STATE_TYPE        _state           = STATE_TYPE::NORMAL;
+    NATION                      _nation          = NATION::GOGURYEO;
+    CREATURE                    _creature        = CREATURE::DRAGON;
+    SEX                         _sex             = SEX::ALL;
+    STATE                       _state           = STATE::NORMAL;
     uint8_t                     _level           = 1;
     CLASS                       _class           = CLASS::NONE;
     uint8_t                     _promotion       = 0;
@@ -159,7 +159,7 @@ public:
     bool                        transferring() const;
 
     void                        attack();
-    void                        action(fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound = 0x00);
+    void                        action(ACTION action, fb::game::DURATION duration, uint8_t sound = 0x00);
 
     const std::string&          name() const final;
     void                        name(const std::string& value);
@@ -193,22 +193,22 @@ public:
     uint32_t                    base_hp() const;
     uint32_t                    base_mp() const;
 
-    fb::game::NATION_TYPE       nation() const;
-    bool                        nation(fb::game::NATION_TYPE value);
+    NATION       nation() const;
+    bool                        nation(NATION value);
 
-    fb::game::CREATURE_TYPE     creature() const;
-    bool                        creature(fb::game::CREATURE_TYPE value);
+    CREATURE     creature() const;
+    bool                        creature(CREATURE value);
 
     uint8_t                     level() const;
     void                        level(uint8_t value);
     bool                        level_up();
     bool                        max_level() const;
 
-    fb::game::SEX_TYPE          sex() const;
-    void                        sex(fb::game::SEX_TYPE value);
+    SEX          sex() const;
+    void                        sex(SEX value);
 
-    fb::game::STATE_TYPE        state() const;
-    void                        state(fb::game::STATE_TYPE value);
+    STATE        state() const;
+    void                        state(STATE value);
 
     CLASS                       cls() const;
     void                        cls(CLASS value);
@@ -274,11 +274,11 @@ public:
     fb::game::group*            group() const;
     fb::game::clan*             clan() const;
 
-    void                        assert_state(fb::game::STATE_TYPE value) const;
-    void                        assert_state(const std::vector<fb::game::STATE_TYPE>& values) const;
+    void                        assert_state(STATE value) const;
+    void                        assert_state(const std::vector<STATE>& values) const;
 
     bool                        move(const point16_t& before);
-    bool                        move(fb::game::DIRECTION_TYPE direction, const point16_t& before);
+    bool                        move(DIRECTION direction, const point16_t& before);
 
     void                        ride(fb::game::mob& horse);
     void                        ride();
@@ -347,7 +347,7 @@ public:
     virtual void                on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                on_hold(session& me) = 0;
     virtual void                on_die(session& me, object* you) = 0;
-    virtual void                on_action(session& me, fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound) = 0;
+    virtual void                on_action(session& me, ACTION action, fb::game::DURATION duration, uint8_t sound) = 0;
     virtual void                on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
     virtual void                on_money_changed(session& me, uint32_t value) = 0;
     virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;

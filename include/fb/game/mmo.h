@@ -7,7 +7,6 @@
 #include <type_traits>
 #include <fb/core/socket.h>
 #include <fb/core/stream.h>
-#include <fb/core/type.h>
 
 #ifndef interface
 #define interface struct

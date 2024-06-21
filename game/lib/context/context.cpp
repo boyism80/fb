@@ -598,17 +598,17 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     session.id(id);
     session.admin(admin);
     session.color(color);
-    session.direction(fb::game::DIRECTION_TYPE(direction));
+    session.direction(DIRECTION(direction));
     session.look(look);
     session.money(money);
     session.deposited_money(deposited_money);
-    session.sex(fb::game::SEX_TYPE(sex));
+    session.sex(SEX(sex));
     session.base_hp(base_hp);
     session.hp(hp);
     session.base_mp(base_mp);
     session.mp(mp);
     session.experience(exp);
-    session.state(fb::game::STATE_TYPE(state));
+    session.state(STATE(state));
     session.armor_color(armor_color);
 
     if(disguise.has_value())
@@ -1126,7 +1126,7 @@ fb::task<bool> fb::game::context::handle_emotion(fb::socket<fb::game::session>& 
     if (session->inited() == false)
         co_return true;
 
-    session->action(ACTION_TYPE(static_cast<int>(ACTION_TYPE::EMOTION) + request.value), DURATION::EMOTION);
+    session->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
     co_return true;
 }
 
@@ -1248,7 +1248,7 @@ fb::task<bool> fb::game::context::handle_option_changed(fb::socket<fb::game::ses
 
     if(option == OPTION::RIDE)
     {
-        if(session->state() == STATE_TYPE::RIDING)
+        if(session->state() == STATE::RIDING)
             session->unride();
         else
             session->ride();

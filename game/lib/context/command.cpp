@@ -51,7 +51,7 @@ fb::task<bool> fb::game::context::handle_command_action(fb::game::session& sessi
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::session::action(session, fb::game::ACTION_TYPE(value), DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -122,7 +122,7 @@ fb::task<bool> fb::game::context::handle_command_disguise(fb::game::session& ses
 
     session.disguise(mob->look);
     this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::session::action(session, ACTION_TYPE::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb::protocol::game::response::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
     this->send(session, fb::protocol::game::response::object::sound(session, SOUND_TYPE(0x0019)), scope::PIVOT);
     co_return true;
 }

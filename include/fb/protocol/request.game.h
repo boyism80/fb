@@ -17,8 +17,8 @@ public:
     struct transfer_param
     {
     public:
-        uint16_t            map;
-        point16_t           position;
+        uint16_t                    map;
+        point16_t        position;
     };
 
 public:
@@ -96,9 +96,9 @@ class direction : public fb::protocol::base::header
 {
 public:
 #ifndef BOT
-    fb::game::DIRECTION_TYPE         value;
+    DIRECTION         value;
 #else
-    const fb::game::DIRECTION_TYPE   value;
+    const DIRECTION   value;
 #endif
 
 public:
@@ -106,7 +106,7 @@ public:
     direction() : fb::protocol::base::header(0x11)
     { }
 #else
-    direction(fb::game::DIRECTION_TYPE value) : fb::protocol::base::header(0x11), value(value)
+    direction(DIRECTION value) : fb::protocol::base::header(0x11), value(value)
     { }
 #endif
 
@@ -120,7 +120,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->value = fb::game::DIRECTION_TYPE(in_stream.read_u8());
+        this->value = DIRECTION(in_stream.read_u8());
     }
 #endif
 };
@@ -139,7 +139,7 @@ public:
 class move : public fb::protocol::base::header
 {
 public:
-    fb::game::DIRECTION_TYPE direction;
+    DIRECTION direction;
     uint8_t                  sequence;
     point16_t                position;
 
@@ -152,7 +152,7 @@ public:
     move() : fb::protocol::base::header(0x32)
     { }
 #else
-    move(fb::game::DIRECTION_TYPE direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
+    move(DIRECTION direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
         direction(direction), sequence(sequence), position(position)
     { }
 #endif
@@ -170,7 +170,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->direction = fb::game::DIRECTION_TYPE(in_stream.read_u8());
+        this->direction = DIRECTION(in_stream.read_u8());
         this->sequence = in_stream.read_u8();
         this->position.x = in_stream.read_u16();
         this->position.y = in_stream.read_u16();
@@ -182,8 +182,8 @@ public:
 class update_move : public move
 {
 public:
-    point16_t               begin;
-    size8_t                 size;
+    point16_t    begin;
+    fb::model::size8_t      size;
     uint16_t                crc;
 
 public:

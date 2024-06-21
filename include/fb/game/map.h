@@ -18,6 +18,7 @@ class object;
 class map;
 class mob;
 class session;
+class context;
 
 namespace wm {
 
@@ -160,24 +161,6 @@ public:
     LUA_PROTOTYPE
 
 public:
-    enum class OPTION : uint8_t 
-    { 
-        NO_OPTION                   = 0x00,
-        BUILD_IN                    = 0x01,
-        DISABLE_TALK                = 0x02,
-        DISABLE_WHISPER             = 0x04,
-        DISABLE_MAGIC               = 0x08,
-        HUNTING_GROUND              = 0x10,
-        ENABLE_PK                   = 0x20,
-        DISABLE_DIE_PENALTY         = 0x30 
-    };
-    enum class EFFECT : uint8_t 
-    { 
-        NONE                        = 0x00,
-        FIRE                        = 0x01,
-        WATER                       = 0x02 
-    };
-
     static constexpr uint32_t       MAX_SCREEN_WIDTH   = 17;
     static constexpr uint32_t       HALF_SCREEN_WIDTH  = uint32_t(MAX_SCREEN_WIDTH / 2);
     static constexpr uint32_t       MAX_SCREEN_HEIGHT  = 15;
@@ -193,44 +176,37 @@ public:
     using unique_sector             = std::unique_ptr<fb::game::sectors>;
 
 private:
-    uint16_t                        _id       = 0;
-    uint16_t                        _parent   = 0;
-    size16_t                        _size     = size16_t(0, 0);
+    size16_t             _size     = size16_t(0, 0);
     unique_tiles                    _tiles    = nullptr;
-    std::string                     _name;
-    OPTION                          _option   = OPTION::NO_OPTION;
-    EFFECT                          _effect   = EFFECT::NONE;
-    uint8_t                         _bgm      = 0;
     unique_warps                    _warps;
     unique_sector                   _sectors;
 
 public:
+    const fb::game::context&        context;
+    const fb::model::map&           model;
     fb::game::objects               objects = fb::game::objects(this);
     fb::game::doors                 doors;
     const uint32_t                  group;
     const bool                      active;
 
 public:
-    map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, OPTION option, EFFECT effect, uint32_t group, const void* data, size_t size);
+    map(const fb::game::context& context, const fb::model::map& model, uint32_t group, const void* data, size_t size);
     ~map();
 
 public:
-    uint16_t                        id() const;
-    uint16_t                        parent() const;
-    const std::string&              name() const;
+    uint64_t                        index(const point16_t& p) const;
+    point16_t                       point(uint64_t i) const;
+
     bool                            blocked(uint16_t x, uint16_t y) const;
     bool                            block(uint16_t x, uint16_t y, bool option);
-    EFFECT                          effect() const;
-    OPTION                          option() const;
     uint16_t                        width() const;
     uint16_t                        height() const;
     size16_t                        size() const;
-    uint8_t                         bgm() const;
     bool                            loaded() const;
 
     bool                            existable(const point16_t position) const;
     bool                            movable(const point16_t position) const;
-    bool                            movable(const fb::game::object& object, fb::game::DIRECTION_TYPE direction) const;
+    bool                            movable(const fb::game::object& object, DIRECTION direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
     void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition);
@@ -270,8 +246,8 @@ struct map::warp
 public:
     // default warp
     fb::game::map*                  map;
-    const point16_t                 before, after;
-    const range8_t                  condition;
+    const point16_t      before, after;
+    const range8_t       condition;
 
     // world warp
     const fb::game::wm::offset*     offset;
