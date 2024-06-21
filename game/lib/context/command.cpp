@@ -215,7 +215,7 @@ fb::task<bool> fb::game::context::handle_command_item(fb::game::session& session
         co_return false;
 
     auto name = parameters[0].asString();
-    auto core = fb::game::old_model::items.name2item(name);
+    auto core = this->model.item.name2item(name);
     if(core == nullptr)
         co_return false;
 

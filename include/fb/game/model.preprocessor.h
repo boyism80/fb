@@ -1,6 +1,10 @@
 #ifndef __MODEL_PREPROCESSOR_H__
 #define __MODEL_PREPROCESSOR_H__
 
+#ifdef DELETE
+#undef DELETE
+#endif
+
 #define ROOT_PREPROCESSOR                                                                     \
 namespace fb { namespace model { namespace enum_value {                                       \
                                                                                               \

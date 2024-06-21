@@ -241,12 +241,12 @@ fb::task<void> game_bot::pattern_board_sections()
     std::mt19937 gen(device());
     std::uniform_int_distribution<> dist(0, 1);
 
-    this->send(fb::protocol::game::request::board::board(board::action::SECTIONS));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(fb::protocol::game::request::board::board(board::action::ARTICLES, section));
-    this->send(fb::protocol::game::request::board::board(board::action::ARTICLE, section, 0));
-    this->send(fb::protocol::game::request::board::board(board::action::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(fb::protocol::game::request::board::board(board::action::DELETE, section, 0));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLES, section));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLE, section, 0));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::DELETE, section, 0));
     co_return;
 }

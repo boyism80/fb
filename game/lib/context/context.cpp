@@ -1543,12 +1543,12 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     auto fd = session->fd();
     switch(request.action)
     {
-    case fb::game::board::action::SECTIONS:
+    case BOARD_ACTION::SECTIONS:
     {
         this->send(*session, fb::protocol::game::response::board::sections(), scope::SELF);
     } break;
 
-    case fb::game::board::action::ARTICLES:
+    case BOARD_ACTION::ARTICLES:
     {
         try
         {
@@ -1569,9 +1569,9 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
                 return true;
             });
 
-            auto button_flags = fb::game::board::button_enabled::UP;
+            auto button_flags = BOARD_BUTTON_ENABLE::UP;
             if (section->writable(session->level(), session->admin()))
-                button_flags |= fb::game::board::button_enabled::WRITE;
+                button_flags |= BOARD_BUTTON_ENABLE::WRITE;
             this->send(*session, fb::protocol::game::response::board::articles(*section, articles, button_flags), scope::SELF);
         }
         catch (std::exception& e)
@@ -1580,7 +1580,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case fb::game::board::action::ARTICLE:
+    case BOARD_ACTION::ARTICLE:
     {
         try
         {
@@ -1600,13 +1600,13 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             }
 
             auto created_date = results[0].get_value<daotk::mysql::datetime>(5);
-            auto button_flags = fb::game::board::button_enabled::NONE;
+            auto button_flags = BOARD_BUTTON_ENABLE::NONE;
              auto next = results[1].get_value<bool>(0);
              if(next)
-                 button_flags |= fb::game::board::button_enabled::NEXT;
+                 button_flags |= BOARD_BUTTON_ENABLE::NEXT;
 
              if (section->writable(session->level(), session->admin()))
-                 button_flags |= fb::game::board::button_enabled::WRITE;
+                 button_flags |= BOARD_BUTTON_ENABLE::WRITE;
             
             this->send(*session, fb::protocol::game::response::board::article(fb::game::board::article
             {
@@ -1625,7 +1625,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case fb::game::board::action::WRITE:
+    case BOARD_ACTION::WRITE:
     {
         try
         {
@@ -1654,7 +1654,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
         }
     } break;
 
-    case fb::game::board::action::DELETE:
+    case BOARD_ACTION::DELETE:
     {
         try
         {

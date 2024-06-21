@@ -6,29 +6,7 @@
 #include <ctime>
 #include <fb/game/session.h>
 
-#ifdef DELETE
-#undef DELETE
-#endif
-
 namespace fb { namespace game { namespace board {
-
-enum class button_enabled : uint8_t
-{
-    NONE      = 0x00,
-    NEXT      = 0x01,
-    UP        = 0x01,
-    WRITE     = 0x02,
-};
-
-enum class action : uint8_t
-{
-    NONE      = 0x00,
-    SECTIONS  = 0x01,
-    ARTICLES  = 0x02,
-    ARTICLE   = 0x03,
-    WRITE     = 0x04,
-    DELETE    = 0x05
-};
 
 class section
 {

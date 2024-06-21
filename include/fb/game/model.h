@@ -304,6 +304,62 @@ inline ACTION enum_parse<ACTION>(const std::string k)
     return i->second;
 }
 
+enum class BOARD_ACTION
+{
+    NONE = 0x00, 
+    SECTIONS = 0x01, 
+    ARTICLES = 0x02, 
+    ARTICLE = 0x03, 
+    WRITE = 0x04, 
+    DELETE = 0x05
+};
+
+template <>
+inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, BOARD_ACTION> enums
+    {
+        { "NONE", BOARD_ACTION::NONE }, 
+        { "SECTIONS", BOARD_ACTION::SECTIONS }, 
+        { "ARTICLES", BOARD_ACTION::ARTICLES }, 
+        { "ARTICLE", BOARD_ACTION::ARTICLE }, 
+        { "WRITE", BOARD_ACTION::WRITE }, 
+        { "DELETE", BOARD_ACTION::DELETE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class BOARD_BUTTON_ENABLE
+{
+    NONE = 0x00, 
+    NEXT = 0x01, 
+    UP = 0x01, 
+    WRITE = 0x02
+};
+
+template <>
+inline BOARD_BUTTON_ENABLE enum_parse<BOARD_BUTTON_ENABLE>(const std::string k)
+{
+    static const std::unordered_map<std::string, BOARD_BUTTON_ENABLE> enums
+    {
+        { "NONE", BOARD_BUTTON_ENABLE::NONE }, 
+        { "NEXT", BOARD_BUTTON_ENABLE::NEXT }, 
+        { "UP", BOARD_BUTTON_ENABLE::UP }, 
+        { "WRITE", BOARD_BUTTON_ENABLE::WRITE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class BUNDLE_TYPE
 {
     NONE = 0, 

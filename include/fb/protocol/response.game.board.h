@@ -16,7 +16,10 @@ public:
 #endif
 
 public:
-    sections(fb::game::context& ctx, const fb::model::container& model) : fb::protocol::base::header(0x31), model(model)
+    sections(fb::game::context& ctx, const fb::model::container& model) : fb::protocol::base::header(0x31)
+#ifndef BOT
+, model(model)
+#endif
     { }
 
 public:
@@ -56,10 +59,10 @@ class articles : public fb::protocol::base::header
 public:
     const fb::game::board::section&                 section;
     const std::list<fb::game::board::article>&      article_list;
-    const fb::game::board::button_enabled           button_flags;
+    const BOARD_BUTTON_ENABLE           button_flags;
 
 public:
-    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
         section(section), article_list(article_list), button_flags(button_flags)
     { }
 
@@ -93,10 +96,10 @@ class article : public fb::protocol::base::header
 {
 public:
     const fb::game::board::article&            value;
-    const fb::game::board::button_enabled      button_flags;
+    const BOARD_BUTTON_ENABLE      button_flags;
 
 public:
-    article(const fb::game::board::article& value, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+    article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
         value(value), button_flags(button_flags)
     { }
 
