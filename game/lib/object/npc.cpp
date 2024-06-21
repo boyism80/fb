@@ -18,7 +18,7 @@ bool fb::game::npc::buy(fb::game::session& session, fb::model::item* item_model,
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if(model->buy.has_value() == false)
             return false;
 
@@ -95,7 +95,7 @@ bool fb::game::npc::sell(fb::game::session& session, fb::model::item* item_model
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if(model->sell.size() == 0)
             return false;
 
@@ -155,7 +155,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if (model->repair == false)
             return false;
 
@@ -168,7 +168,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
                 if (equipment == nullptr)
                     continue;
 
-                auto equipment_model = equipment->based<fb::game::equipment>();
+                auto equipment_model = equipment->based<fb::model::equipment>();
                 if (equipment_model->repair.has_value() == false)
                     continue;
 
@@ -187,7 +187,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
                 if (item->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
                     continue;
 
-                auto equipment_model = item->based<fb::game::equipment>();
+                auto equipment_model = item->based<fb::model::equipment>();
                 if (equipment_model->repair.has_value() == false)
                     continue;
 
@@ -228,7 +228,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
         auto price = 0;
         for (auto equipment : equipments)
         {
-            auto equipment_model = equipment->based<fb::game::equipment>();
+            auto equipment_model = equipment->based<fb::model::equipment>();
             price += (uint32_t)(equipment_model->repair.value() * (equipment_model->durability - equipment->durability().value()));
         }
 
@@ -238,7 +238,7 @@ bool fb::game::npc::repair(fb::game::session& session, fb::model::item* item_mod
         session.money_reduce(price);
         for (auto equipment : equipments)
         {
-            auto equipment_model = equipment->based<fb::game::equipment>();
+            auto equipment_model = equipment->based<fb::model::equipment>();
             equipment->durability(equipment_model->durability);
         }
 
@@ -264,7 +264,7 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if (model->hold_money == false)
             return false;
 
@@ -298,7 +298,7 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if (model->hold_money == false)
             return false;
 
@@ -332,7 +332,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, fb::model::item* item,
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if (model->hold_item == false)
             return false;
 
@@ -386,7 +386,7 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::model::item* ite
 {
     try
     {
-        auto model = this->based<fb::game::npc>();
+        auto model = this->based<fb::model::npc>();
         if (model->hold_item == false)
             return false;
 
@@ -437,7 +437,7 @@ bool fb::game::npc::return_item(fb::game::session& session, fb::model::item* ite
 
 void fb::game::npc::sell_list()
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if(model->sell.size() == 0)
         return;
 
@@ -467,7 +467,7 @@ void fb::game::npc::sell_list()
 
 void fb::game::npc::buy_list()
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if(model->buy.has_value() == false)
         return;
 
@@ -494,7 +494,7 @@ void fb::game::npc::buy_list()
 
 void fb::game::npc::sell_price(const fb::model::item* item)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if (model->sell.size() == 0)
         return;
 
@@ -514,7 +514,7 @@ void fb::game::npc::sell_price(const fb::model::item* item)
 
 void fb::game::npc::buy_price(const fb::model::item* item)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if (model->buy.has_value() == false)
         return;
 
@@ -534,7 +534,7 @@ void fb::game::npc::buy_price(const fb::model::item* item)
 
 bool fb::game::npc::deposited_money(const fb::game::session& session)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if(model->hold_money == false)
         return false;
 
@@ -549,7 +549,7 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
 
 bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::item* item, const std::string& name)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if(model->rename == false)
         return false;
 
@@ -598,7 +598,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
 
 bool fb::game::npc::hold_item_list(const fb::game::session& session)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if (model->hold_item == false)
         return false;
 
@@ -615,7 +615,7 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
             if (items.size() >= 3)
                 overflow++;
             else
-                items.push_back(item->based<fb::game::item>()->name);
+                items.push_back(item->based<fb::model::item>()->name);
         }
 
         auto sstream = std::stringstream();
@@ -639,7 +639,7 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
 
 bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::model::item* item)
 {
-    auto model = this->based<fb::game::npc>();
+    auto model = this->based<fb::model::npc>();
     if (model->hold_item == false)
         return false;
 

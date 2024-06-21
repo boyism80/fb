@@ -118,7 +118,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         if(item == nullptr)
             continue;
 
-        auto exists = item->attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(*item->based<fb::game::item>()) : nullptr;
+        auto exists = item->attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(*item->based<fb::model::item>()) : nullptr;
         if(exists != nullptr)
         {
             exists->merge(*item);
@@ -209,7 +209,7 @@ uint8_t fb::game::items::index(const fb::model::item* item) const
         if(now == nullptr)
             continue;
 
-        if(now->based<fb::game::item>() == item)
+        if(now->based<fb::model::item>() == item)
             return i;
     }
 
@@ -238,7 +238,7 @@ std::vector<uint8_t> fb::game::items::index_all(const fb::model::item* item) con
         if(now == nullptr)
             continue;
 
-        if(now->based<fb::game::item>() == item)
+        if(now->based<fb::model::item>() == item)
             result.push_back(i);
     }
 
@@ -453,7 +453,7 @@ fb::game::item* fb::game::items::find(const fb::model::item& base) const
         if(item == nullptr)
             continue;
 
-        if (item->based<fb::game::item>() == &base)
+        if (item->based<fb::model::item>() == &base)
             return item;
     }
 
@@ -462,7 +462,7 @@ fb::game::item* fb::game::items::find(const fb::model::item& base) const
         if (equipment == nullptr)
             continue;
 
-        if (equipment->based<fb::game::item>() == &base)
+        if (equipment->based<fb::model::item>() == &base)
             return equipment;
     }
 
@@ -489,7 +489,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         if (item == nullptr)
             return nullptr;
 
-        auto                    model = item->based<fb::game::item>();
+        auto                    model = item->based<fb::model::item>();
         if (model->trade == false)
             throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
@@ -582,7 +582,7 @@ bool fb::game::items::throws(uint8_t index)
         if(item == nullptr)
             return false;
 
-        auto                    model = item->based<fb::game::item>();
+        auto                    model = item->based<fb::model::item>();
         if(model->trade == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 

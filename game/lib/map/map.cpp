@@ -392,6 +392,51 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     return &this->_tiles[i];
 }
 
+int fb::game::map::builtin_width(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
+    thread->pushinteger(map->width());
+    return 1;
+}
+
+int fb::game::map::builtin_height(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
+
+    thread->pushinteger(map->height());
+    return 1;
+}
+
+int fb::game::map::builtin_area(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
+
+    thread->pushinteger(map->width());
+    thread->pushinteger(map->height());
+    return 2;
+}
+
 int fb::game::map::builtin_objects(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);

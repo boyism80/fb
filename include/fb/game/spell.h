@@ -15,6 +15,9 @@ class life;
 class spell : public lua::luable
 {
 public:
+    using model_type = fb::model::spell;
+
+public:
     LUA_PROTOTYPE
 
 public:
@@ -24,7 +27,7 @@ public:
     const fb::model::spell&     model;
 
 public:
-    spell(const fb::model::spell& spell);
+    spell(const fb::model::spell& model);
     ~spell();
 };
 
@@ -36,7 +39,7 @@ interface spell::listener
 };
 
 
-class spells : public fb::game::base_container<fb::model::spell>
+class spells : public fb::game::base_container<fb::game::spell>
 {
 public:
     spells(life& owner);
@@ -44,10 +47,10 @@ public:
 
     // override
 public:
-    uint8_t                     add(fb::model::spell& element);
-    uint8_t                     add(fb::model::spell& element, uint8_t index);
-    uint8_t                     add(fb::model::spell* element);
-    uint8_t                     add(fb::model::spell* element, uint8_t index);
+    uint8_t                     add(fb::game::spell& element);
+    uint8_t                     add(fb::game::spell& element, uint8_t index);
+    uint8_t                     add(fb::game::spell* element);
+    uint8_t                     add(fb::game::spell* element, uint8_t index);
     bool                        remove(uint8_t index);
     bool                        swap(uint8_t src, uint8_t dst);
 };
@@ -103,9 +106,9 @@ private:
 
 public:
     bool                        contains(const buff* buff) const;
-    bool                        contains(const fb::model::spell* spell) const;
+    bool                        contains(const fb::model::spell& model) const;
     bool                        contains(const std::string& name) const;
-    buff*                       push_back(const fb::model::spell* spell, uint32_t seconds);
+    buff*                       push_back(const fb::model::spell& spell, uint32_t seconds);
     bool                        remove(const std::string& name);
     bool                        remove(const fb::model::spell* spell);
     void                        remove(buff* buff);

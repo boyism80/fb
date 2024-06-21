@@ -369,7 +369,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(item == nullptr)
                 throw std::exception();
 
-            index = session->items.index(item->based<fb::game::item>());
+            index = session->items.index(item->based<fb::model::item>());
         }
         else if(lua_isnumber(lua, 2))
         {
@@ -669,7 +669,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
                 auto name = thread->tostring(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [&name](fb::game::item* deposited_item)
                 {
-                    return deposited_item->based<fb::game::item>()->name == name;
+                    return deposited_item->based<fb::model::item>()->name == name;
                 });
 
                 if (found == deposited_items.cend())
@@ -682,7 +682,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
                 auto model = thread->touserdata<fb::model::item>(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [model](fb::game::item* deposited_item) 
                 {
-                    return deposited_item->based<fb::game::item>() == model;
+                    return deposited_item->based<fb::model::item>() == model;
                 });
 
                 if (found == deposited_items.cend())

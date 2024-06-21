@@ -16,6 +16,9 @@ IMPLEMENT_LUA_EXTENSION(fb::model::spell, "fb.model.spell")
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
+{"width",               fb::game::map::builtin_width},
+{"height",              fb::game::map::builtin_height},
+{"area",                fb::game::map::builtin_area},
 {"objects",             fb::game::map::builtin_objects},
 {"movable",             fb::game::map::builtin_movable},
 {"door",                fb::game::map::builtin_door},
@@ -24,9 +27,6 @@ END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"name",                fb::model::map::builtin_name},
-{"width",               fb::model::map::builtin_width},
-{"height",              fb::model::map::builtin_height},
-{"area",                fb::model::map::builtin_area},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
@@ -171,22 +171,23 @@ END_LUA_EXTENSION
 
 fb::game::context::context(boost::asio::io_context& context, uint16_t port) : 
     fb::acceptor<fb::game::session>(context, port, std::thread::hardware_concurrency()),
-    _db(*this, 4)
+    _db(*this, 4),
+    _maps(*this, fb::config::get()["group"].asUInt())
 {
     const auto& config = fb::config::get();
 
     lua::env<fb::game::context>("context", this);
     lua::bind_class<lua::luable>();
-    lua::bind_class<spell, lua::luable>();
-    lua::bind_class<map, lua::luable>();
-    lua::bind_class<door, lua::luable>();
-    lua::bind_class<group, lua::luable>();
-    lua::bind_class<object::model, lua::luable>();    lua::bind_class<object, lua::luable>();
-    lua::bind_class<life::model, object::model>();    lua::bind_class<life, object>();
-    lua::bind_class<mob::model, life::model>();       lua::bind_class<mob, life>();
-    lua::bind_class<npc::model, object::model>();     lua::bind_class<npc, object>();
-    lua::bind_class<item::model, object::model>();    lua::bind_class<item, object>();
-    lua::bind_class<fb::game::session, life>();
+    lua::bind_class<fb::game::spell,   lua::luable>();
+    lua::bind_class<fb::game::map,     lua::luable>();
+    lua::bind_class<fb::game::door,    lua::luable>();
+    lua::bind_class<fb::game::group,   lua::luable>();
+    lua::bind_class<fb::model::object, lua::luable>();          lua::bind_class<fb::game::object, lua::luable>();
+    lua::bind_class<fb::model::life,   fb::model::object>();    lua::bind_class<fb::game::life,   fb::game::object>();
+    lua::bind_class<fb::model::mob,    fb::model::life>();      lua::bind_class<fb::game::mob,    fb::game::life>();
+    lua::bind_class<fb::model::npc,    fb::model::object>();    lua::bind_class<fb::game::npc,    fb::game::object>();
+    lua::bind_class<fb::model::item,   fb::model::object>();    lua::bind_class<fb::game::item,   fb::game::object>();
+    lua::bind_class<fb::game::session, fb::game::life>();
 
     lua::bind_function("seed",              builtin_seed);
     lua::bind_function("sleep",             builtin_sleep);
@@ -451,8 +452,8 @@ void fb::game::context::handle_internal_connected()
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto& [key, value] : fb::game::old_model::maps)
-        value->on_timer(elapsed_milliseconds);
+    for(auto& [key, value] : this->_maps)
+        value.on_timer(elapsed_milliseconds);
 }
 
 bool fb::game::context::destroy(fb::game::object& obj)
@@ -616,7 +617,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     else
         session.undisguise();
 
-    if(fb::game::old_model::maps[map] == nullptr)
+    if (this->_maps.contains(map) == false)
         return false;
 
     if(transfer != std::nullopt)
@@ -625,7 +626,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
         position_x = uint32_t(transfer.value().position.x);
         position_y = uint32_t(transfer.value().position.y);
     }
-    session.map(fb::game::old_model::maps[map], point16_t(position_x, position_y));    
+    session.map(&this->_maps[map], point16_t(position_x, position_y));    
     return true;
 }
 
@@ -643,7 +644,7 @@ void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::se
         if(model.has_value() == false)
             return true;
 
-        auto item = fb::game::old_model::items[model.value()]->make(*this);
+        auto item = this->model.item[model.value()].make(*this);
         if(item == nullptr)
             return true;
 
@@ -651,7 +652,7 @@ void fb::game::context::fetch_item(daotk::mysql::result& db_result, fb::game::se
         if (durability.has_value())
             item->durability(durability.value());
 
-        if (custom_name.has_value() && item->attr(ITEM_ATTRIBUTE::WEAPON))
+        if (custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<fb::game::weapon*>(item)->custom_name(custom_name.value());
 
         if(deposited != -1)
@@ -672,10 +673,11 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
         if(id.has_value() == false)
             return true;
 
-        auto spell = fb::game::old_model::spells[id.value()];
-        if(spell == nullptr)
+        if (this->model.spell.contains(id.value()) == false)
             return true;
 
+        auto& model = this->model.spell[id.value()];
+        auto spell = this->make<fb::game::spell>(model);
         session.spells.add(spell, slot);
         return true;
     });
@@ -889,7 +891,7 @@ uint8_t fb::game::context::thread_index(const fb::game::map* map) const
     if(map == nullptr)
         return 0;
 
-    return map->id() % count;
+    return map->model.id % count;
 }
 
 fb::thread* fb::game::context::thread(const fb::game::object& obj) const
@@ -917,14 +919,14 @@ void fb::game::context::handle_click_mob(fb::game::session& session, fb::game::m
 
 void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
 {
-    auto model = npc.based<fb::game::npc>();
-    if(model->script.empty())
+    auto& model = npc.based<fb::model::npc>();
+    if(model.script.empty())
         return;
 
     session.dialog.release();
 
     session.dialog
-        .from(model->script.c_str())
+        .from(model.script.c_str())
         .func("on_interact")
         .pushobject(session)
         .pushobject(npc)
@@ -1231,7 +1233,7 @@ fb::task<bool> fb::game::context::handle_self_info(fb::socket<fb::game::session>
     if (session->inited() == false)
         co_return true;
 
-    this->send(*session, fb::protocol::game::response::session::internal_info(*session), scope::SELF);
+    this->send(*session, fb::protocol::game::response::session::internal_info(*session, this->model), scope::SELF);
     
     for(auto& buff : session->buffs)
         this->send(*session, fb::protocol::game::response::spell::buff(*buff), scope::SELF);
@@ -1290,7 +1292,7 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
         switch(you->type())
         {
         case OBJECT_TYPE::SESSION:
-            this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you)), scope::SELF);
+            this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you), this->model), scope::SELF);
             break;
 
         case OBJECT_TYPE::MOB:
@@ -1545,17 +1547,17 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     {
     case BOARD_ACTION::SECTIONS:
     {
-        this->send(*session, fb::protocol::game::response::board::sections(), scope::SELF);
+        this->send(*session, fb::protocol::game::response::board::sections(this->model), scope::SELF);
     } break;
 
     case BOARD_ACTION::ARTICLES:
     {
         try
         {
-            auto section = fb::game::old_model::boards[request.section];
-            if (section == nullptr)
+            if(this->model.board.contains(request.section) == false)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
+            auto section = &this->model.board[request.section];
             auto offset = request.offset;
             auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
             if (this->sockets.contains(fd) == false)
@@ -1570,7 +1572,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             });
 
             auto button_flags = BOARD_BUTTON_ENABLE::UP;
-            if (section->writable(session->level(), session->admin()))
+            if (session->condition(section->condition) == false)
                 button_flags |= BOARD_BUTTON_ENABLE::WRITE;
             this->send(*session, fb::protocol::game::response::board::articles(*section, articles, button_flags), scope::SELF);
         }
@@ -1584,10 +1586,10 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     {
         try
         {
-            auto section = fb::game::old_model::boards[request.section];
-            if (section == nullptr)
+            if(this->model.board.contains(request.section) == false)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
+            auto section = &this->model.board[request.section]; // 코루틴땜시 포인터로
             auto article = request.article;
             auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET(%d, %d)", section->id, article);
             if (this->sockets.contains(fd) == false)
@@ -1605,7 +1607,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
              if(next)
                  button_flags |= BOARD_BUTTON_ENABLE::NEXT;
 
-             if (section->writable(session->level(), session->admin()))
+             if(session->condition(section->condition) == false)
                  button_flags |= BOARD_BUTTON_ENABLE::WRITE;
             
             this->send(*session, fb::protocol::game::response::board::article(fb::game::board::article
@@ -1629,11 +1631,11 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     {
         try
         {
-            auto section = fb::game::old_model::boards[request.section];
-            if (section == nullptr)
+            if (this->model.board.contains(request.section) == false)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
-            if (section->writable(session->level(), session->admin()) == false)
+            auto section = &this->model.board[request.section];
+            if (session->condition(section->condition) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
             if (request.title.length() > 64)
@@ -1658,11 +1660,11 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
     {
         try
         {
-            auto section = fb::game::old_model::boards[request.section];
-            if (section == nullptr)
+            if (this->model.board.contains(request.section) == false)
                 throw std::runtime_error(fb::game::message::board::SECTION_NOT_EXIST);
 
-            if (section->writable(session->level(), session->admin()) == false)
+            auto section = &this->model.board[request.section];
+            if (session->condition(section->condition) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
             auto delete_result = co_await this->_db.co_exec_f("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
@@ -1817,19 +1819,20 @@ fb::task<bool> fb::game::context::handle_spell(fb::socket<fb::game::session>& so
     if(spell == nullptr)
         co_return false;
 
-    request.parse(spell->type);
-    switch(spell->type)
+    auto& model = spell->model;
+    request.parse(model.type);
+    switch(model.type)
     {
-    case spell::types::INPUT:
-        session->active(*spell, request.message);
+    case SPELL_TYPE::INPUT:
+        session->active(model, request.message);
         break;
 
-    case spell::types::TARGET:
-        session->active(*spell, request.fd);
+    case SPELL_TYPE::TARGET:
+        session->active(model, request.fd);
         break;
 
-    case spell::types::NORMAL:
-        session->active(*spell);
+    case SPELL_TYPE::NORMAL:
+        session->active(model);
         break;
     }
 
@@ -1887,43 +1890,43 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
 
 fb::task<bool> fb::game::context::handle_world(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::map::world& request)
 {
-    auto session = socket.data();
-    if (session->inited() == false)
-        co_return true;
+    // TODO: 다시작업
+    //auto session = socket.data();
+    //if (session->inited() == false)
+    //    co_return true;
 
-    auto world = fb::game::old_model::worlds[request.value];
-    if(world == nullptr)
-        co_return false;
+    //auto world = fb::game::old_model::worlds[request.value];
+    //if(world == nullptr)
+    //    co_return false;
 
-    const auto& offsets = world->offsets();
-    const auto before = offsets[request.before]->dst;
-    const auto after = offsets[request.after]->dst;
+    //const auto& offsets = world->offsets();
+    //const auto before = offsets[request.before]->dst;
+    //const auto after = offsets[request.after]->dst;
 
-    if(session->map() == after.map)
-    {
-        session->refresh_map();
-    }
-    else
-    {
-        co_await session->co_map(after.map, after.position);
-        this->save(*session);
-    }
-    co_return true;
+    //if(session->map() == after.map)
+    //{
+    //    session->refresh_map();
+    //}
+    //else
+    //{
+    //    co_await session->co_map(after.map, after.position);
+    //    this->save(*session);
+    //}
+    //co_return true;
 }
 
 void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [key, value] : fb::game::old_model::maps)
+    for(auto& [_, map] : this->_maps)
     {
-        auto&               map = value;
-        if(map->activated() == false)
+        if(map.active == false)
             continue;
 
-        auto thread = this->thread(map.get());
+        auto thread = this->thread(&map);
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        const auto mobs = map->activateds(OBJECT_TYPE::MOB);
+        const auto mobs = map.activateds(OBJECT_TYPE::MOB);
 
         for(auto x : mobs)
         {
@@ -1947,17 +1950,16 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*> spawned_mobs;
-    for(auto& [key, value] : fb::game::old_model::maps)
+    for(auto& [_, map] : this->_maps)
     {
-        auto& map = value;
-        if(map->activated() == false)
+        if(map.active == false)
             continue;
 
-        auto thread = this->thread(map.get());
+        auto thread = this->thread(&map);
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        for(auto& [key, value] : map->objects)
+        for(auto& [key, value] : map.objects)
         {
             if(value->type() != OBJECT_TYPE::MOB)
                 continue;
@@ -1979,20 +1981,19 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
 void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [key, value] : fb::game::old_model::maps)
+    for(auto& [_, map] : this->_maps)
     {
-        auto& map = value;
-        if(map->activated() == false)
+        if(map.active == false)
             continue;
 
-        auto thread = this->thread(map.get());
+        auto thread = this->thread(&map);
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        if(map->objects.size() == 0)
+        if(map.objects.size() == 0)
             continue;
 
-        for(auto& [key, value] : map->objects)
+        for(auto& [key, value] : map.objects)
         {
             if(value->buffs.size() == 0)
                 continue;
@@ -2015,20 +2016,19 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 {
     auto& c = console::get();
 
-    for(auto& [key, value] : fb::game::old_model::maps)
+    for(auto& [_, map] : this->_maps)
     {
-        auto& map = value;
-        if(map->activated() == false)
+        if(map.active == false)
             continue;
 
-        auto thread = this->thread(map.get());
+        auto thread = this->thread(&map);
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        if(map->objects.size() == 0)
+        if(map.objects.size() == 0)
             continue;
 
-        for(auto& [key, value] : map->objects)
+        for(auto& [_, value] : map.objects)
         {
             if(value->is(OBJECT_TYPE::SESSION) == false)
                 continue;

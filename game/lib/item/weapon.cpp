@@ -54,7 +54,7 @@ fb::game::weapon::~weapon()
 std::string fb::game::weapon::mid_message() const
 {
     std::stringstream       sstream;
-    auto                    model = this->based<fb::game::weapon>();
+    auto                    model = this->based<fb::model::weapon>();
     
     sstream << "파괴력: 　　 S:　" << std::to_string(model->damage_range.small.min) << 'm' << std::to_string(model->damage_range.small.max) << std::endl;
     sstream << "　　　  　 　L:　" << std::to_string(model->damage_range.large.min) << 'm' << std::to_string(model->damage_range.large.max) << std::endl;

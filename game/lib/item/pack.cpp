@@ -36,7 +36,7 @@ std::optional<uint16_t> fb::game::pack::durability() const
 
 void fb::game::pack::durability(uint16_t value)
 {
-    auto model = this->based<fb::game::pack>();
+    auto model = this->based<fb::model::pack>();
     this->_durability = std::max(uint16_t(0), std::min(model->durability, value));
 }
 

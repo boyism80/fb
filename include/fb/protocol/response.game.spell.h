@@ -76,17 +76,17 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        auto                    spell = this->me.spells.at(index);
+        auto spell = this->me.spells.at(index);
         if(spell == nullptr)
             return;
 
         base::header::serialize(out_stream);
         out_stream.write_u8(this->index + 1)
-                  .write_u8(spell->type)
-                  .write(spell->name);
+                  .write_u8(spell->model.type)
+                  .write(spell->model.name);
 
-        if(static_cast<int>(spell->type) < 3)
-            out_stream.write(spell->message);
+        if(static_cast<int>(spell->model.type) < 3)
+            out_stream.write(spell->model.message);
     }
 #else
     void deserialize(fb::istream& in_stream)

@@ -65,7 +65,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         if (item == nullptr)
             continue;
 
-        auto model = item->based<fb::game::item>();
+        auto model = item->based<fb::model::item>();
         auto durability = item->durability();
         auto custom_name = (item->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
@@ -87,7 +87,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
         if (equipment == nullptr)
             continue;
 
-        auto model = equipment->based<fb::game::equipment>();
+        auto model = equipment->based<fb::model::equipment>();
         auto durability = equipment->durability();
         auto custom_name = (equipment->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(equipment)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>
@@ -109,7 +109,7 @@ std::string fb::game::query::make_update_item(fb::game::session& session)
     for(int i = 0; i < deposited_items.size(); i++)
     {
         auto item = deposited_items.at(i);
-        auto model = item->based<fb::game::item>();
+        auto model = item->based<fb::model::item>();
         auto durability = item->durability();
         auto custom_name = (item->attr(ITEM_ATTRIBUTE::WEAPON)) ? static_cast<fb::game::weapon*>(item)->custom_name() : std::optional<std::string>();
         auto parameter = std::vector<std::string>

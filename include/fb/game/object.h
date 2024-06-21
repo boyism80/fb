@@ -132,6 +132,7 @@ public:
 
     double                              distance(const object& right) const;
     uint32_t                            distance_sqrt(const object& right) const;
+    virtual bool                        condition(const std::vector<fb::model::dsl>& conditions) const;
 
     // 유효한 오브젝트인지
     virtual bool                        available() const { return true; }

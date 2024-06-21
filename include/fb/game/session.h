@@ -193,10 +193,10 @@ public:
     uint32_t                    base_hp() const;
     uint32_t                    base_mp() const;
 
-    NATION       nation() const;
+    NATION                      nation() const;
     bool                        nation(NATION value);
 
-    CREATURE     creature() const;
+    CREATURE                    creature() const;
     bool                        creature(CREATURE value);
 
     uint8_t                     level() const;
@@ -204,10 +204,10 @@ public:
     bool                        level_up();
     bool                        max_level() const;
 
-    SEX          sex() const;
+    SEX                         sex() const;
     void                        sex(SEX value);
 
-    STATE        state() const;
+    STATE                       state() const;
     void                        state(STATE value);
 
     CLASS                       cls() const;
@@ -285,6 +285,7 @@ public:
     void                        unride();
     bool                        alive() const;
     void                        refresh_map();
+    bool                        condition(const std::vector<fb::model::dsl>& conditions) const final;
 
 private:
     bool                        inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);

@@ -26,18 +26,24 @@ public:
         std::unordered_map<K, std::unique_ptr<V>>::insert({ key, std::unique_ptr<V>(value) });
     }
 
-	V* find(const K& k) const
+    bool contains(K key) const
     {
-        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(k);
-        if (i == std::unordered_map<K, std::unique_ptr<V>>::cend())
+        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(key);
+        return (i != std::unordered_map<K, std::unique_ptr<V>>::cend());
+    }
+
+	V* find(const K& key) const
+    {
+        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(key);
+        if(i == std::unordered_map<K, std::unique_ptr<V>>::cend())
             return nullptr;
 
         return i->second.get();
     }
 
-    V& operator [] (const K& k) const 
+    V& operator [] (const K& key) const 
     {
-        auto found = this->find(k);
+        auto found = this->find(key);
         if(found == nullptr)
             throw std::runtime_error("does not exists");
 

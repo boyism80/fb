@@ -47,7 +47,7 @@ fb::game::equipment::~equipment()
 const std::string fb::game::equipment::name_trade() const
 {
     std::stringstream       sstream;
-    auto                    model = this->based<fb::game::equipment>();
+    auto                    model = this->based<fb::model::equipment>();
     float                   percentage = this->_durability / float(model->durability) * 100;
     sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
 
@@ -131,7 +131,7 @@ std::optional<uint16_t> fb::game::equipment::durability() const
 
 void fb::game::equipment::durability(uint16_t value)
 {
-    auto model = this->based<fb::game::equipment>();
+    auto model = this->based<fb::model::equipment>();
     this->_durability = std::max(uint16_t(0), std::min(model->durability, value));
 }
 
@@ -143,7 +143,7 @@ std::string fb::game::equipment::mid_message() const
 std::string fb::game::equipment::tip_message() const
 {
     std::stringstream           sstream;
-    auto                        model = this->based<fb::game::equipment>();
+    auto                        model = this->based<fb::model::equipment>();
 
     sstream << this->name() << std::endl;
     sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model->durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)model->durability) * 100 << '%' << std::endl;

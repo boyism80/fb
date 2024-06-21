@@ -714,6 +714,11 @@ uint32_t fb::game::object::distance_sqrt(const object& right) const
         (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
+bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) const
+{
+    return true;
+}
+
 bool fb::game::object::operator==(const object& right) const
 {
     return this->_map == right._map &&

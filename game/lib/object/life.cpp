@@ -195,7 +195,7 @@ void fb::game::life::kill()
         listener->on_hide(*this);
 }
 
-bool fb::game::life::active(fb::model::spell& spell, const std::string& message)
+bool fb::game::life::active(const fb::model::spell& spell, const std::string& message)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -214,7 +214,7 @@ bool fb::game::life::active(fb::model::spell& spell, const std::string& message)
     return true;
 }
 
-bool fb::game::life::active(fb::model::spell& spell, uint32_t fd)
+bool fb::game::life::active(const fb::model::spell& spell, uint32_t fd)
 {
     if(this->_map == nullptr)
         return false;
@@ -226,7 +226,7 @@ bool fb::game::life::active(fb::model::spell& spell, uint32_t fd)
     return this->active(spell, *to);
 }
 
-bool fb::game::life::active(fb::model::spell& spell, fb::game::object& to)
+bool fb::game::life::active(const fb::model::spell& spell, fb::game::object& to)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -255,7 +255,7 @@ bool fb::game::life::active(fb::model::spell& spell, fb::game::object& to)
     return true;
 }
 
-bool fb::game::life::active(fb::model::spell& spell)
+bool fb::game::life::active(const fb::model::spell& spell)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)

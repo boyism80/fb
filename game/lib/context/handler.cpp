@@ -140,7 +140,7 @@ void fb::game::context::on_attack(session& me, object* you)
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
     {
-        auto            sound = weapon->based<fb::game::weapon>()->sound;
+        auto            sound = weapon->based<fb::model::weapon>()->sound;
         this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::SOUND_TYPE(sound) : fb::game::SOUND_TYPE
 ::SWING), scope::PIVOT);
     }
@@ -239,7 +239,7 @@ void fb::game::context::on_item_active(session& me, item& item)
     if(thread == nullptr)
         return;
 
-    thread->from(item.based<fb::game::item>()->active_script.c_str())
+    thread->from(item.based<fb::model::item>()->active_script.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)

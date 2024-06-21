@@ -10,15 +10,16 @@ class sections : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    std::vector<fb::game::board::section>       section_list;
+    std::list<fb::model::board&>       section_list;
 #else
     const fb::model::container& model;
 #endif
 
 public:
-    sections(fb::game::context& ctx, const fb::model::container& model) : fb::protocol::base::header(0x31)
-#ifndef BOT
-, model(model)
+#ifdef BOT
+    sections() : fb::protocol::base::header(0x31)
+#else
+    sections(const fb::model::container& model) : fb::protocol::base::header(0x31), model(model)
 #endif
     { }
 
@@ -47,7 +48,7 @@ public:
         {
             auto id = in_stream.read_u16();
             auto title = in_stream.readstr_u8();
-            this->section_list.push_back(fb::game::board::section{id, title});
+            this->section_list.push_back(fb::model::board{id, title});
         }
     }
 #endif
@@ -57,12 +58,12 @@ public:
 class articles : public fb::protocol::base::header
 {
 public:
-    const fb::game::board::section&                 section;
+    const fb::model::board&                 section;
     const std::list<fb::game::board::article>&      article_list;
     const BOARD_BUTTON_ENABLE           button_flags;
 
 public:
-    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
+    articles(const fb::model::board& section, const std::list<fb::game::board::article>& article_list, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
         section(section), article_list(article_list), button_flags(button_flags)
     { }
 
@@ -73,7 +74,7 @@ public:
         out_stream.write_u8(0x02)
                   .write_u8(button_flags)
                   .write_u16(section.id)
-                  .write(section.title);
+                  .write(section.name);
 
         auto                    count = this->article_list.size();
         out_stream.write_u8((uint8_t)count);

@@ -49,16 +49,16 @@ int fb::model::spell::builtin_message(lua_State* lua)
     return 1;
 }
 
-fb::model::spells::spells(life& owner) : base_container(owner)
+fb::game::spells::spells(life& owner) : base_container(owner)
 { }
 
-fb::model::spells::~spells()
+fb::game::spells::~spells()
 { }
 
-uint8_t fb::model::spells::add(spell& element)
+uint8_t fb::game::spells::add(spell& element)
 {
-    auto index = fb::game::base_container<fb::model::spell>::add(element);
-    auto listener = this->owner().get_listener<fb::model::spell>();
+    auto index = fb::game::base_container<fb::game::spell>::add(element);
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(index != 0xFF)
         if(listener != nullptr)
@@ -67,18 +67,22 @@ uint8_t fb::model::spells::add(spell& element)
     return index;
 }
 
-uint8_t fb::model::spells::add(spell& element, uint8_t index)
+uint8_t fb::game::spells::add(spell& element, uint8_t index)
 {
-    auto listener = this->owner().get_listener<fb::model::spell>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
-    if(fb::game::base_container<fb::model::spell>::add(element, index) != 0xFF)
+    if(fb::game::base_container<fb::game::spell>::add(element, index) != 0xFF)
+    {
         if(listener != nullptr)
+        {
             listener->on_spell_update(this->owner(), index);
+        }
+    }
 
     return index;
 }
 
-uint8_t fb::model::spells::add(spell* element)
+uint8_t fb::game::spells::add(spell* element)
 {
     if(element == nullptr)
         return 0xFF;
@@ -86,7 +90,7 @@ uint8_t fb::model::spells::add(spell* element)
     return this->add(*element);
 }
 
-uint8_t fb::model::spells::add(spell* element, uint8_t index)
+uint8_t fb::game::spells::add(spell* element, uint8_t index)
 {
     if(element == nullptr)
         return 0xFF;
@@ -94,10 +98,10 @@ uint8_t fb::model::spells::add(spell* element, uint8_t index)
     return this->add(*element, index);
 }
 
-bool fb::model::spells::remove(uint8_t index)
+bool fb::game::spells::remove(uint8_t index)
 {
-    auto success = fb::game::base_container<fb::model::spell>::remove(index);
-    auto listener = this->owner().get_listener<fb::model::spell>();
+    auto success = fb::game::base_container<fb::game::spell>::remove(index);
+    auto listener = this->owner().get_listener<fb::game::spell>();
 
     if(success)
         if(listener != nullptr)
@@ -106,12 +110,12 @@ bool fb::model::spells::remove(uint8_t index)
     return success;
 }
 
-bool fb::model::spells::swap(uint8_t src, uint8_t dst)
+bool fb::game::spells::swap(uint8_t src, uint8_t dst)
 {
-    if(fb::game::base_container<fb::model::spell>::swap(src, dst) == false)
+    if(fb::game::base_container<fb::game::spell>::swap(src, dst) == false)
         return false;
 
-    auto listener = this->owner().get_listener<fb::model::spell>();
+    auto listener = this->owner().get_listener<fb::game::spell>();
     if(listener != nullptr)
     {
         const auto              right = this->at(src);
@@ -176,9 +180,9 @@ bool fb::game::buffs::contains(const buff* buff) const
     return this->contains(buff->spell.name);
 }
 
-bool fb::game::buffs::contains(const spell* spell) const
+bool fb::game::buffs::contains(const fb::model::spell& model) const
 {
-    return this->contains(spell->name);
+    return this->contains(model.name);
 }
 
 fb::game::buff* fb::game::buffs::operator[](int index) const
@@ -201,12 +205,12 @@ bool fb::game::buffs::push_back(std::unique_ptr<buff>&&  buff)
     return true;
 }
 
-fb::game::buff* fb::game::buffs::push_back(const fb::model::spell* spell, uint32_t seconds)
+fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& spell, uint32_t seconds)
 {
     if(this->contains(spell))
         return nullptr;
 
-    auto created = std::make_unique<buff>(*spell, seconds);
+    auto created = std::make_unique<buff>(spell, seconds);
     auto ptr = created.get();
     this->push_back(std::move(created));
     return ptr;

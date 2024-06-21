@@ -1221,6 +1221,84 @@ void fb::game::session::refresh_map()
         listener->on_map_changed(*this, this->_map, this->_map);
 }
 
+bool fb::game::session::condition(const std::vector<fb::model::dsl>& conditions) const
+{
+    for(auto& dsl : conditions)
+    {
+        switch (dsl.header)
+        {
+            case DSL::level:
+                {
+                auto params = dsl::level(dsl.params);
+                if (params.min.has_value() && *params.min > this->_level)
+                    return false;
+
+                if (params.max.has_value() && *params.max < this->_level)
+                    return false;
+                }
+                break;
+                
+            case DSL::sex:
+                {
+                auto params = dsl::sex(dsl.params);
+                if (enum_in(params.value, this->_sex) == false)
+                    return false;
+                }
+                break;
+                
+            case DSL::strength:
+                {
+                auto params = dsl::strength(dsl.params);
+                if (params.value > this->_strength)
+                    return false;
+                }
+                break;
+                
+            case DSL::intelligence:
+                {
+                auto params = dsl::intelligence(dsl.params);
+                if (params.value > this->_intelligence)
+                    return false;
+                }
+                break;
+                
+            case DSL::dexteritry:
+                {
+                auto params = dsl::dexteritry(dsl.params);
+                if (params.value > this->_dexteritry)
+                    return false;
+                }
+                break;
+                
+            case DSL::promotion:
+                {
+                auto params = dsl::promotion(dsl.params);
+                if (params.value > this->_promotion)
+                    return false;
+                }
+                break;
+
+            case DSL::class_t:
+                {
+                auto params = dsl::class_t(dsl.params);
+                if (enum_in(params.value, this->_class) == false)
+                    return false;
+                }
+                
+            case DSL::admin:
+                {
+                auto params = dsl::admin(dsl.params);
+                if (params.value != this->_admin)
+                    return false;
+                }
+                break;
+                
+        }
+    }
+
+    return true;
+}
+
 bool fb::game::session::inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto model = static_cast<fb::model::item*>(nullptr);

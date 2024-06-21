@@ -95,7 +95,7 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    auto model = object->based<fb::game::life>();
+    auto model = object->based<fb::model::life>();
 
     thread->pushinteger(model->hp);
     return 1;
@@ -112,7 +112,7 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    auto model = object->based<fb::game::life>();
+    auto model = object->based<fb::model::life>();
 
     thread->pushinteger(model->mp);
     return 1;

@@ -526,7 +526,9 @@ enum class DSL
     strength = 3, 
     intelligence = 4, 
     dexteritry = 5, 
-    promotion = 6
+    promotion = 6, 
+    class_t = 7, 
+    admin = 8
 };
 
 template <>
@@ -540,7 +542,9 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "strength", DSL::strength }, 
         { "intelligence", DSL::intelligence }, 
         { "dexteritry", DSL::dexteritry }, 
-        { "promotion", DSL::promotion }
+        { "promotion", DSL::promotion }, 
+        { "class_t", DSL::class_t }, 
+        { "admin", DSL::admin }
     };
 
     auto i = enums.find(k);
@@ -1301,6 +1305,8 @@ template <> static struct range64_t build<range64_t>(const Json::Value& json);
 class dsl
 {
 public:
+    class admin;
+    class class_t;
     class dexteritry;
     class intelligence;
     class item;
@@ -1324,6 +1330,54 @@ public:
     ~dsl()
     { }
 };
+
+class fb::model::dsl::admin
+{
+public:
+    const bool value;
+
+public:
+    admin(bool value) : 
+        value(value)
+    { }
+    admin(const Json::Value& json) : 
+        value(fb::model::build<bool>(json[0]))
+    { }
+    admin(const std::vector<std::any>& parameters) : 
+        value(any_cast<bool>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::admin, {value});
+    }
+};
+
+
+class fb::model::dsl::class_t
+{
+public:
+    const fb::model::enum_value::CLASS value;
+
+public:
+    class_t(fb::model::enum_value::CLASS value) : 
+        value(value)
+    { }
+    class_t(const Json::Value& json) : 
+        value(fb::model::build<fb::model::enum_value::CLASS>(json[0]))
+    { }
+    class_t(const std::vector<std::any>& parameters) : 
+        value(any_cast<fb::model::enum_value::CLASS>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::class_t, {value});
+    }
+};
+
 
 class fb::model::dsl::dexteritry
 {
@@ -1509,6 +1563,8 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
 {
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
+        { fb::model::enum_value::DSL::admin, [](const Json::Value& json) { return fb::model::dsl::admin(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::class_t, [](const Json::Value& json) { return fb::model::dsl::class_t(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::dexteritry, [](const Json::Value& json) { return fb::model::dsl::dexteritry(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
@@ -1600,9 +1656,7 @@ DECLARE_BOARD_INHERIT
 public:
     const uint32_t id;
     const std::string name;
-    const uint8_t min_level;
-    const uint8_t max_level;
-    const bool admin;
+    const std::vector<fb::model::dsl> condition;
 
 public:
     board(const Json::Value& json) : 
@@ -1611,9 +1665,7 @@ DECLARE_BOARD_CONSTRUCTOR
 #endif
         id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
-        min_level(fb::model::build<uint8_t>(json["min_level"])),
-        max_level(fb::model::build<uint8_t>(json["max_level"])),
-        admin(fb::model::build<bool>(json["admin"]))
+        condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
 #ifdef DECLARE_BOARD_INITIALIZER
 DECLARE_BOARD_INITIALIZER
 #endif
@@ -2776,6 +2828,11 @@ public:
     void load()
     {
         this->load(this->_fname);
+    }
+
+    bool contains(const K& k) const
+    {
+        return std::unordered_map<K, std::unique_ptr<V>>::find(k) != std::unordered_map<K, std::unique_ptr<V>>::cend();
     }
 
     const V* find(const K& k) const

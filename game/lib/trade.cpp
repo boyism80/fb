@@ -116,7 +116,7 @@ bool fb::game::trade::trading() const
 bool fb::game::trade::up(fb::game::item& item)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    auto model = item.based<fb::game::item>();
+    auto model = item.based<fb::model::item>();
 
     try
     {
@@ -206,7 +206,7 @@ bool fb::game::trade::count(uint16_t count)
         if(this->_selected == nullptr)
             throw std::runtime_error(message::trade::NOT_SELECTED);
 
-        auto model = _selected->based<fb::game::item>();
+        auto model = _selected->based<fb::model::item>();
         if(model->trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 

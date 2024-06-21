@@ -228,6 +228,9 @@ public:
     tile*                           operator () (uint16_t x, uint16_t y) const;
 
 public:
+    static int                      builtin_width(lua_State* lua);
+    static int                      builtin_height(lua_State* lua);
+    static int                      builtin_area(lua_State* lua);
     static int                      builtin_objects(lua_State* lua);
     static int                      builtin_movable(lua_State* lua);
     static int                      builtin_door(lua_State* lua);
