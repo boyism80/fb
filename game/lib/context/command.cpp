@@ -11,8 +11,8 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
         co_return false;
 
     auto name = parameters[0].asString();
-    auto map = this->model.map.name2map(name);
-    if(map == nullptr)
+    auto model = this->model.map.name2map(name);
+    if(model == nullptr)
         co_return false;
 
     auto x = 0;
@@ -25,7 +25,9 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
         if(parameters[2].isNumeric())
             y = parameters[2].asInt();
     }
-    co_await session.co_map(map, point16_t(x, y));
+
+    auto& map = this->_maps[model->id];
+    co_await session.co_map(&map, point16_t(x, y));
     co_return true;
 }
 
@@ -146,7 +148,7 @@ fb::task<bool> fb::game::context::handle_command_mob(fb::game::session& session,
     if(model == nullptr)
         co_return true;
 
-    auto mob = this->make<fb::game::mob>(*model, fb::game::mob::config { .alive = true });
+    auto mob = model->make<fb::game::mob>(*this, fb::game::mob::config{ .alive = true });
     auto map = session.map();
     co_await mob->co_map(map, session.position());
     co_return true;
@@ -161,11 +163,12 @@ fb::task<bool> fb::game::context::handle_command_class(fb::game::session& sessio
         co_return false;
 
     auto name = parameters[0].asString();
-    uint8_t cls, promotion;
-    if(fb::game::old_model::classes.name2class(name, &cls, &promotion) == false)
+    auto class_type = CLASS::NONE;
+    auto promotion = uint8_t(0);
+    if(this->model.promotion.name2class(name, class_type, promotion) == false)
         co_return true;
 
-    session.cls(cls);
+    session.cls(class_type);
     session.promotion(promotion);
     this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
     this->send(session, fb::protocol::game::response::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
@@ -215,14 +218,14 @@ fb::task<bool> fb::game::context::handle_command_item(fb::game::session& session
         co_return false;
 
     auto name = parameters[0].asString();
-    auto core = this->model.item.name2item(name);
-    if(core == nullptr)
+    auto model = this->model.item.name2item(name);
+    if(model == nullptr)
         co_return false;
 
     auto count = parameters.size() > 1 && parameters[1].isInt() ? 
         parameters[1].asInt() : 1;
 
-    auto item = core->make(*this, count);
+    auto item = model->make(*this, count);
     co_await item->co_map(session.map(), session.position());
     co_return true;
 }
@@ -359,17 +362,17 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
 {
     static std::vector<fb::game::map*>  maps;
     static std::once_flag               flag;
-    std::call_once(flag, [] 
+    std::call_once(flag, [this] 
         { 
             std::srand(std::time(nullptr));
-            for(auto& [id, map] : fb::game::old_model::maps)
+            for(auto& [id, map] : this->_maps)
             {
-                maps.push_back(map.get());
+                maps.push_back(&map);
             }
         });
 
     auto index = std::rand() % maps.size();
-    auto map = maps[index];
+    auto& map = maps[index];
     auto x = map->width() > 0 ? std::rand() % map->width() : 0;
     auto y = map->height() > 0 ? std::rand() % map->height() : 0;
 
@@ -387,7 +390,7 @@ fb::task<bool> fb::game::context::handle_command_npc(fb::game::session& session,
 
     auto name = parameters[0].asString();
 
-    auto model = fb::game::old_model::npcs.name2npc(name);
+    auto model = this->model.npc.name2npc(name);
     if(model == nullptr)
         co_return false;
 
@@ -413,7 +416,8 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
         if (item == nullptr)
             continue;
 
-        if (item->attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
+        auto& model = item->based<fb::model::item>();
+        if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT) == false)
             continue;
 
         auto equipment = static_cast<fb::game::equipment*>(item);
@@ -431,8 +435,8 @@ fb::task<bool> fb::game::context::handle_command_durability(fb::game::session& s
 
     for (auto equipment : equipments)
     {
-        auto model = equipment->based<fb::game::equipment>();
-        equipment->durability(uint16_t(model->durability * (percent / 100.0f)));
+        auto& model = equipment->based<fb::model::equipment>();
+        equipment->durability(uint16_t(model.durability * (percent / 100.0f)));
     }
 
     co_return true;

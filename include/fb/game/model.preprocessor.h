@@ -148,9 +148,10 @@ public:                                                                         
                                                                                               \
 public:                                                                                       \
     template <typename T, typename... Args>                                                   \
-    T* make(fb::game::context& context, Args... args) const                                   \
+    T* make(fb::game::context& context, Args&& ... args) const                                \
     {                                                                                         \
-        return new T(context, static_cast<const typename T::model*>(this), args...);          \
+        auto& model = static_cast<const typename T::model_type&>(*this);                      \
+        return context.template make<T>(model, std::forward<Args>(args)...);                  \
     }                                                                                         \
                                                                                               \
 protected:                                                                                    \
@@ -180,7 +181,7 @@ public:                                                                         
     LUA_PROTOTYPE                                                                             \
                                                                                               \
 public:                                                                                       \
-    virtual enum_value::ITEM_ATTRIBUTE           attr() const;                                \
+    virtual enum_value::ITEM_ATTRIBUTE      attr() const;                                \
     bool                                    attr(enum_value::ITEM_ATTRIBUTE flag) const;      \
                                                                                               \
 public:                                                                                       \
@@ -386,6 +387,10 @@ public:                                                                         
 public:                                                                                       \
     fb::model::npc*             name2npc(const std::string& name) const;
 
+#define DECLARE_ITEM_CONTAINER_EXTENSION                                                      \
+public:                                                                                       \
+    fb::model::item*            name2item(const std::string& name) const;
+
 
 #define DECLARE_MAP_INHERIT : public fb::game::lua::luable
 
@@ -430,4 +435,9 @@ public:                                                                         
     static int                  builtin_name(lua_State* lua);                                 \
     static int                  builtin_message(lua_State* lua);
 
+
+#define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                 \
+public:                                                                                       \
+    const promotion* operator () (enum_value::CLASS cls, uint8_t promotion) const;            \
+    bool name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const;
 #endif

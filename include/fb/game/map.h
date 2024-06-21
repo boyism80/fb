@@ -11,6 +11,7 @@
 #include <fb/game/sector.h>
 #include <fb/core/stream.h>
 #include <fb/core/config.h>
+#include <fb/core/container.h>
 
 namespace fb { namespace game {
 
@@ -176,7 +177,7 @@ public:
     using unique_sector             = std::unique_ptr<fb::game::sectors>;
 
 private:
-    size16_t             _size     = size16_t(0, 0);
+    size16_t                        _size     = size16_t(0, 0);
     unique_tiles                    _tiles    = nullptr;
     unique_warps                    _warps;
     unique_sector                   _sectors;
@@ -186,11 +187,11 @@ public:
     const fb::model::map&           model;
     fb::game::objects               objects = fb::game::objects(this);
     fb::game::doors                 doors;
-    const uint32_t                  group;
     const bool                      active;
 
 public:
-    map(const fb::game::context& context, const fb::model::map& model, uint32_t group, const void* data, size_t size);
+    map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
+    map(const map&) = delete;
     ~map();
 
 public:
@@ -262,6 +263,28 @@ public:
         map(right.map), before(right.before), after(right.after), condition(right.condition), offset(right.offset)
     { }
     ~warp() { }
+};
+
+class maps : public fb::kv_container<uint32_t, fb::game::map>
+{
+private:
+    std::mutex              _mutex;
+
+public:
+    const fb::game::context& context;
+    const uint32_t host;
+
+public:
+    maps(const fb::game::context& context, uint32_t host);
+    ~maps();
+
+private:
+    static bool             load_data(uint32_t id, std::vector<char>& buffer);
+    static bool             load_block(uint32_t id, Json::Value& buffer);
+
+public:
+    void                    load(const fb::model::map& moel);
+    fb::game::map*          name2map(const std::string& name) const;
 };
 
 } }

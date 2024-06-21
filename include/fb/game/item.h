@@ -19,12 +19,14 @@ class items;
 
 class item : public object
 {
+public:
+    using model_type = fb::model::item;
+
+public:
     friend class items;
 
 public:
     interface listener;
-
-public:
     struct conditions;
 
 public:

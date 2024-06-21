@@ -14,6 +14,9 @@ class session;
 class npc : public object
 {
 public:
+    using model_type = fb::model::npc;
+
+public:
     LUA_PROTOTYPE
 
 public:

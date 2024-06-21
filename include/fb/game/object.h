@@ -45,7 +45,7 @@ protected:
     const fb::model::object&            _model;
     bool                                _map_lock   = false;
 
-    point16_t                _position   = point16_t(0, 0);
+    point16_t                           _position   = point16_t(0, 0);
     DIRECTION                           _direction  = DIRECTION::BOTTOM;
     fb::game::map*                      _map        = nullptr;
 

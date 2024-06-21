@@ -44,6 +44,7 @@ private:
     commands                 _commands;
     std::mutex               _hash_mutex;
     object_set               _objects;
+    maps                     _maps;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
 
@@ -71,9 +72,9 @@ public:
     bool                    exists(const fb::game::object& object) const;
 
     template <typename T, typename... Args>
-    T*                      make(Args... args)
+    T*                      make(Args&&... args)
     {
-        return new T(*this, args...);
+        return new T(*this, std::forward<Args>(args)...);
     }
     bool                    destroy(fb::game::object& obj);
 

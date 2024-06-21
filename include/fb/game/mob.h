@@ -14,6 +14,9 @@ class session;
 class mob : public life
 {
 public:
+    using model_type = fb::model::mob;
+
+public:
     LUA_PROTOTYPE
 
 public:
