@@ -129,8 +129,14 @@ public:                                                                         
         return this->move(newdir, step);                                                      \
     }
 
+#define DECLARE_SIZE_EXTENSION                                                                \
+public:                                                                                       \
+    bool empty() const { return this->width == 0 && this->height == 0; }
+
 
 #define DECLARE_OBJECT_INHERIT  : public fb::game::lua::luable
+
+#define DECLARE_SPELL_INHERIT  : public fb::game::lua::luable
 
 #define DECLARE_OBJECT_EXTENSION                                                              \
 public:                                                                                       \

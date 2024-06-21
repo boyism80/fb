@@ -105,9 +105,33 @@ with open('source.txt', 'r', encoding='utf8') as f:
 
 with open('result.txt', 'w', encoding='utf8') as f:
 
-    for id, map in maps.items():
-        effect = map['effect'].upper() if 'effect' in map else 'NONE'
-        f.write(f'{effect}\n')
+    for id, item in items.items():
+        type = item['type']
+        if type != 'weapon':
+            continue
+
+        equipment_option = item['equipment option'] if 'equipment option' else None
+        if not equipment_option:
+            print(item['name'])
+            continue
+
+        damage_range = equipment_option['damage range'] if 'damage range' in equipment_option else None
+        if not damage_range:
+            print(item['name'])
+            continue
+
+        damage_range_s = damage_range['small'] if 'small' in damage_range else None
+        damage_s_min = damage_range_s['min'] if damage_range_s else 0
+        damage_s_max = damage_range_s['max'] if damage_range_s else 0
+
+        damage_range_l = damage_range['large'] if 'large' in damage_range else None
+        damage_l_min = damage_range_l['min'] if damage_range_l else 0
+        damage_l_max = damage_range_l['max'] if damage_range_l else 0
+
+        f.write(f"{damage_s_min} ~ {damage_s_max}\t{damage_l_min} ~ {damage_l_max}\n")
+    # for id, map in maps.items():
+    #     effect = map['effect'].upper() if 'effect' in map else 'NONE'
+    #     f.write(f'{effect}\n')
 
     # for wm, arr in worlds.items():
     #     for i in range(len(arr)):
@@ -205,7 +229,9 @@ with open('result.txt', 'w', encoding='utf8') as f:
     #         count = s['count']
     #         mob = mob_id(s['name'])
     #         rezen = timespan_from_seconds(s['rezen time'])
-    #         f.write(f"\t{x0}\t{x1}\t{y0}\t{y1}\t{count}\t{mob}\t{rezen}\n")
+    #         begin = f'{x0}, {y0}'
+    #         end = f'{x1}, {y1}'
+    #         f.write(f"\t{x0}\t{x1}\t{y0}\t{y1}\t{count}\t{mob}\t{rezen}\t{begin}\t{end}\n")
 
 
     # result = []

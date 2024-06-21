@@ -2,27 +2,9 @@
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
 #include <fb/core/thread.h>
+#include <fb/game/context.h>
 
-fb::game::mob::model::model(const fb::game::mob::model::config& config) : 
-    fb::game::life::model(config),
-    damage(config.damage),
-    offensive(config.offensive),
-    size(config.size),
-    speed(config.speed),
-    script_attack(config.script_attack),
-    script_die(config.script_die),
-    items(_items)
-{ }
-
-fb::game::mob::model::~model()
-{ }
-
-void fb::game::mob::model::push_drop(const drop& drop)
-{
-    this->_items.push_back(drop);
-}
-
-fb::game::mob::mob(fb::game::context& context, const mob::model* model, const fb::game::mob::config& config) : 
+fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) : 
     life(context, model, config)
 {
     this->visible(config.alive);
@@ -50,8 +32,8 @@ bool fb::game::mob::action()
 {
     this->fix();
 
-    auto model = this->based<fb::game::mob>();
-    if(model->script_attack.empty())
+    auto& model = this->based<fb::model::mob>();
+    if(model.attack_script.empty())
         return false;
 
     if(this->_attack_thread == nullptr)
@@ -60,7 +42,7 @@ bool fb::game::mob::action()
         if(this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->from(model->script_attack.c_str())
+        this->_attack_thread->from(model.attack_script.c_str())
             .func("on_attack")
             .pushobject(this);
 
@@ -221,8 +203,8 @@ fb::game::life* fb::game::mob::fix()
     }
     catch(...)
     {
-        auto model = this->based<fb::game::mob>();
-        if(model->offensive == mob::offensive_type::CONTAINMENT)
+        auto& model = this->based<fb::model::mob>();
+        if(model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
             this->_target = this->find_target();
         else
             this->_target = nullptr;
@@ -273,8 +255,8 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 {
     try
     {
-        auto model = this->based<fb::game::mob>();
-        if(now < this->_action_time + model->speed)
+        auto& model = this->based<fb::model::mob>();
+        if(now < this->_action_time + model.speed)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
@@ -326,9 +308,9 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
-    auto model = this->based<fb::game::mob>();
-    auto difference = std::abs(model->damage.max - model->damage.min);
-    return model->damage.min + (std::rand() % difference);
+    auto& model = this->based<fb::model::mob>();
+    auto difference = std::abs<uint32_t>(model.damage.max - model.damage.min);
+    return model.damage.min + (std::rand() % difference);
 }
 
 void fb::game::mob::on_attack(fb::game::object* target)
@@ -362,8 +344,8 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
 {
     fb::game::life::on_damaged(from, damage, critical);
 
-    auto model = this->based<fb::game::mob>();
-    if(model->offensive != fb::game::mob::offensive_type::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
+    auto& model = this->based<fb::model::mob>();
+    if(model.attack_type != MOB_ATTACK_TYPE::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
     {
         this->target(static_cast<fb::game::life*>(from));
     }
@@ -375,8 +357,8 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
 
 uint32_t fb::game::mob::on_exp() const
 {
-    auto model = this->based<fb::game::mob>();
-    return model->experience;
+    auto& model = this->based<fb::model::mob>();
+    return model.exp;
 }
 
 void fb::game::mob::on_die(fb::game::object* from)
@@ -386,13 +368,24 @@ void fb::game::mob::on_die(fb::game::object* from)
     this->dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
 
     // 드롭 아이템 떨구기
-    for(auto& candidate : this->based<fb::game::mob>()->items)
-    {
-        if(std::rand() % 100 > candidate.percentage)
-            continue;
+    auto& model = this->based<fb::model::mob>();
+    auto& drop = this->context.model.drop[model.drop];
 
-        auto item = candidate.item->make(this->context);
-        item->map(this->map(), this->position());
+    for (auto& dsl : drop.dsl)
+    {
+        switch (dsl.header)
+        {
+        case DSL::item:
+        {
+            auto params = fb::model::dsl::item(dsl.params);
+            if (std::rand() % 100 > params.percent)
+                continue;
+
+            auto item = this->context.model.item[params.id].make(this->context);
+            item->map(this->map(), this->position());
+        }
+            break;
+        }
     }
 
     auto listener = this->get_listener<fb::game::mob>();

@@ -2,18 +2,7 @@
 #include <fb/game/map.h>
 #include <fb/game/life.h>
 
-fb::game::life::model::model(const fb::game::life::model::config& config) : 
-    object::model(config),
-    defensive(config.defensive),
-    hp(config.hp),
-    mp(config.mp),
-    experience(config.exp)
-{ }
-
-fb::game::life::model::~model()
-{ }
-
-fb::game::life::life(fb::game::context& context, const model* model, const fb::game::life::config& config) : 
+fb::game::life::life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config) : 
     object(context, model, config),
     _hp(config.hp),
     _mp(config.mp),
@@ -147,27 +136,27 @@ void fb::game::life::mp(uint32_t value)
 
 uint32_t fb::game::life::base_hp() const
 {
-    return static_cast<const model*>(this->_model)->hp;
+    return static_cast<const fb::model::life&>(this->_model).hp;
 }
 
 uint32_t fb::game::life::base_mp() const
 {
-    return static_cast<const model*>(this->_model)->mp;
+    return static_cast<const fb::model::life&>(this->_model).mp;
 }
 
 uint32_t fb::game::life::experience() const
 {
-    return static_cast<const model*>(this->_model)->experience;
+    return static_cast<const fb::model::life&>(this->_model).exp;
 }
 
 uint32_t fb::game::life::defensive_physical() const
 {
-    return static_cast<const model*>(this->_model)->defensive.physical;
+    return static_cast<const fb::model::life&>(this->_model).defensive_physical;
 }
 
 uint32_t fb::game::life::defensive_magical() const
 {
-    return static_cast<const model*>(this->_model)->defensive.magical;
+    return static_cast<const fb::model::life&>(this->_model).defensive_magical;
 }
 
 CONDITION fb::game::life::condition() const

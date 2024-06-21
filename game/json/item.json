@@ -1,4 +1,36 @@
 {
+  "10183": {
+    "id": 10183,
+    "name": "나무화살통",
+    "look": 313,
+    "color": 0,
+    "price": 500,
+    "deposit_price": 0,
+    "trade": true,
+    "type": "BOW",
+    "desc": null,
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
   "2200": {
     "id": 2200,
     "name": "동동주",
@@ -174,38 +206,6 @@
     "script_active": "scripts/item/청심사주.lua",
     "condition": [],
     "durability": 20
-  },
-  "10183": {
-    "id": 10183,
-    "name": "나무화살통",
-    "look": 313,
-    "color": 0,
-    "price": 500,
-    "deposit_price": 0,
-    "trade": true,
-    "type": "BOW",
-    "desc": null,
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
   },
   "14": {
     "id": 14,
@@ -813,6 +813,1134 @@
     "mp_percentage": 0.0,
     "healing_cycle": 0,
     "defensive_physical": -3,
+    "defensive_magical": 0
+  },
+  "16": {
+    "id": 16,
+    "name": "초심자의노리개",
+    "look": 2834,
+    "color": 12,
+    "price": 10,
+    "deposit_price": 100,
+    "trade": false,
+    "type": "AUXILIARY",
+    "desc": "일정기간동안 신규유저에게 주는 아이템으로, 착용하고 있으면 일정시간마다 체력이조금씩 증가한다.",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "1635": {
+    "id": 1635,
+    "name": "승리의증표",
+    "look": 2287,
+    "color": 29,
+    "price": 10,
+    "deposit_price": 35000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": null,
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "1637": {
+    "id": 1637,
+    "name": "강건부",
+    "look": 2273,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 50000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "신체건강을 기원하는 부적",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2118": {
+    "id": 2118,
+    "name": "해골목걸이",
+    "look": 2309,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "여러 개의 해골을 이어 만든 불길한 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 1
+  },
+  "2119": {
+    "id": 2119,
+    "name": "정령인형",
+    "look": 2307,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "누구도 본 적은 없는 정령의 모습을 상상하며 만든 인형",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 1
+  },
+  "2120": {
+    "id": 2120,
+    "name": "빨간고무신",
+    "look": 2064,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "화려한 빨간 고무신",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2121": {
+    "id": 2121,
+    "name": "검정나막신",
+    "look": 2063,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "수수한 검은 나막신",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2122": {
+    "id": 2122,
+    "name": "강철의구두",
+    "look": 2057,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": null,
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2123": {
+    "id": 2123,
+    "name": "투명구두",
+    "look": 2056,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "무엇이건 보이지 않게 만드는 주술이 걸려 있는 신비한 구두",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2124": {
+    "id": 2124,
+    "name": "묘족의귀걸이",
+    "look": 2040,
+    "color": 0,
+    "price": 15000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "주황색 보석이 박혀 있는 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2125": {
+    "id": 2125,
+    "name": "한족의귀걸이",
+    "look": 2039,
+    "color": 0,
+    "price": 15000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "초록색 보석이 박혀 있는 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2126": {
+    "id": 2126,
+    "name": "적월의귀걸이",
+    "look": 2038,
+    "color": 0,
+    "price": 15000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "황금을 얇게 입힌 후 붉은 무늬를 새겨 넣은 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2127": {
+    "id": 2127,
+    "name": "일월의귀걸이",
+    "look": 2037,
+    "color": 0,
+    "price": 15000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "황금을 얇게 입혀 만든 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2128": {
+    "id": 2128,
+    "name": "봉마의귀걸이",
+    "look": 2036,
+    "color": 0,
+    "price": 15000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "악령이 봉인되어 있다고 전해지는 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -5,
+    "defensive_magical": 0
+  },
+  "2129": {
+    "id": 2129,
+    "name": "해독의귀걸이",
+    "look": 2035,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "모든 독을 자연히 해독하는 주술이 걸려 있는 신비한 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2130": {
+    "id": 2130,
+    "name": "수정의귀걸이",
+    "look": 2034,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "푸른 수정으로 만들어진 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2131": {
+    "id": 2131,
+    "name": "시력회복의귀걸이",
+    "look": 2033,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 100000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "장님의 눈도 뜨게 만드는 주술이 걸린 신비한 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2132": {
+    "id": 2132,
+    "name": "청옥의귀걸이",
+    "look": 2032,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "작은 초록색 보석을 꿰어 만든 귀걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2133": {
+    "id": 2133,
+    "name": "금격의목걸이",
+    "look": 2031,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "노란색 구슬을 엮어 만든 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2134": {
+    "id": 2134,
+    "name": "혈충의목걸이",
+    "look": 2030,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "노란색 구슬과 보라색 구슬을 엮어 만든 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2135": {
+    "id": 2135,
+    "name": "보무의목걸이",
+    "look": 2029,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "무장, 보호의 주술이 걸려 있는 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  },
+  "2136": {
+    "id": 2136,
+    "name": "봉마의목걸이",
+    "look": 2036,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "악령이 봉인되어 있다고 전해지는 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          56,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 10,
+    "defensive_magical": 0
+  },
+  "2137": {
+    "id": 2137,
+    "name": "주홍의목걸이",
+    "look": 2027,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "주홍색 보석이 박혀 있는 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2138": {
+    "id": 2138,
+    "name": "수정의목걸이",
+    "look": 2026,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "푸른 수정으로 만들어진 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          60,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2139": {
+    "id": 2139,
+    "name": "비취의목걸이",
+    "look": 2025,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "작은 비취를 꿰어 만든 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          60,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2140": {
+    "id": 2140,
+    "name": "적막의목걸이",
+    "look": 2024,
+    "color": 0,
+    "price": 20000,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "붉은 보석이 박혀 있는 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2141": {
+    "id": 2141,
+    "name": "금편의목걸이",
+    "look": 2023,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "고급스러운 금 장식이 붙어 있는 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          70,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -2,
+    "defensive_magical": 0
+  },
+  "2142": {
+    "id": 2142,
+    "name": "청옥의목걸이",
+    "look": 2022,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 10000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "커다란 초록색 보석을 꿰어 만든 목걸이",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": -1,
+    "defensive_magical": 0
+  },
+  "2143": {
+    "id": 2143,
+    "name": "마반경",
+    "look": 1163,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 100000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "어떠한 마력도 튕겨낸다는 신비한 거울",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          50,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 3
+  },
+  "2144": {
+    "id": 2144,
+    "name": "명석부",
+    "look": 2097,
+    "color": 0,
+    "price": 10,
+    "deposit_price": 50000,
+    "trade": true,
+    "type": "AUXILIARY",
+    "desc": "귀신을 쫓는 부적 머리가 맑아진다고한다.",
+    "death_penalty": "DROP",
+    "capacity": 1,
+    "script_active": null,
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          30,
+          null
+        ]
+      }
+    ],
+    "dress": 0,
+    "durability": 0,
+    "repair": null,
+    "dress_script": null,
+    "undress_script": null,
+    "hit": 0,
+    "damage": 0,
+    "strength": 0,
+    "intelligence": 0,
+    "dexteritry": 0,
+    "base_hp": 0,
+    "base_mp": 0,
+    "hp_percentage": 0.0,
+    "mp_percentage": 0.0,
+    "healing_cycle": 0,
+    "defensive_physical": 0,
     "defensive_magical": 0
   },
   "9": {
@@ -2344,1134 +3472,6 @@
     "capacity": 1,
     "script_active": "scripts/item/자양강장요리.lua",
     "condition": []
-  },
-  "16": {
-    "id": 16,
-    "name": "초심자의노리개",
-    "look": 2834,
-    "color": 12,
-    "price": 10,
-    "deposit_price": 100,
-    "trade": false,
-    "type": "AUXILIARY",
-    "desc": "일정기간동안 신규유저에게 주는 아이템으로, 착용하고 있으면 일정시간마다 체력이조금씩 증가한다.",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "1635": {
-    "id": 1635,
-    "name": "승리의증표",
-    "look": 2287,
-    "color": 29,
-    "price": 10,
-    "deposit_price": 35000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": null,
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "1637": {
-    "id": 1637,
-    "name": "강건부",
-    "look": 2273,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 50000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "신체건강을 기원하는 부적",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2118": {
-    "id": 2118,
-    "name": "해골목걸이",
-    "look": 2309,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "여러 개의 해골을 이어 만든 불길한 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 1
-  },
-  "2119": {
-    "id": 2119,
-    "name": "정령인형",
-    "look": 2307,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "누구도 본 적은 없는 정령의 모습을 상상하며 만든 인형",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 1
-  },
-  "2120": {
-    "id": 2120,
-    "name": "빨간고무신",
-    "look": 2064,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "화려한 빨간 고무신",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2121": {
-    "id": 2121,
-    "name": "검정나막신",
-    "look": 2063,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "수수한 검은 나막신",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2122": {
-    "id": 2122,
-    "name": "강철의구두",
-    "look": 2057,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": null,
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2123": {
-    "id": 2123,
-    "name": "투명구두",
-    "look": 2056,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "무엇이건 보이지 않게 만드는 주술이 걸려 있는 신비한 구두",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2124": {
-    "id": 2124,
-    "name": "묘족의귀걸이",
-    "look": 2040,
-    "color": 0,
-    "price": 15000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "주황색 보석이 박혀 있는 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2125": {
-    "id": 2125,
-    "name": "한족의귀걸이",
-    "look": 2039,
-    "color": 0,
-    "price": 15000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "초록색 보석이 박혀 있는 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2126": {
-    "id": 2126,
-    "name": "적월의귀걸이",
-    "look": 2038,
-    "color": 0,
-    "price": 15000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "황금을 얇게 입힌 후 붉은 무늬를 새겨 넣은 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2127": {
-    "id": 2127,
-    "name": "일월의귀걸이",
-    "look": 2037,
-    "color": 0,
-    "price": 15000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "황금을 얇게 입혀 만든 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2128": {
-    "id": 2128,
-    "name": "봉마의귀걸이",
-    "look": 2036,
-    "color": 0,
-    "price": 15000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "악령이 봉인되어 있다고 전해지는 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -5,
-    "defensive_magical": 0
-  },
-  "2129": {
-    "id": 2129,
-    "name": "해독의귀걸이",
-    "look": 2035,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "모든 독을 자연히 해독하는 주술이 걸려 있는 신비한 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2130": {
-    "id": 2130,
-    "name": "수정의귀걸이",
-    "look": 2034,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "푸른 수정으로 만들어진 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2131": {
-    "id": 2131,
-    "name": "시력회복의귀걸이",
-    "look": 2033,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 100000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "장님의 눈도 뜨게 만드는 주술이 걸린 신비한 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2132": {
-    "id": 2132,
-    "name": "청옥의귀걸이",
-    "look": 2032,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "작은 초록색 보석을 꿰어 만든 귀걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2133": {
-    "id": 2133,
-    "name": "금격의목걸이",
-    "look": 2031,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "노란색 구슬을 엮어 만든 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2134": {
-    "id": 2134,
-    "name": "혈충의목걸이",
-    "look": 2030,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "노란색 구슬과 보라색 구슬을 엮어 만든 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2135": {
-    "id": 2135,
-    "name": "보무의목걸이",
-    "look": 2029,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "무장, 보호의 주술이 걸려 있는 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
-  },
-  "2136": {
-    "id": 2136,
-    "name": "봉마의목걸이",
-    "look": 2036,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "악령이 봉인되어 있다고 전해지는 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          56,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 10,
-    "defensive_magical": 0
-  },
-  "2137": {
-    "id": 2137,
-    "name": "주홍의목걸이",
-    "look": 2027,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "주홍색 보석이 박혀 있는 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2138": {
-    "id": 2138,
-    "name": "수정의목걸이",
-    "look": 2026,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "푸른 수정으로 만들어진 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          60,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2139": {
-    "id": 2139,
-    "name": "비취의목걸이",
-    "look": 2025,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "작은 비취를 꿰어 만든 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          60,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2140": {
-    "id": 2140,
-    "name": "적막의목걸이",
-    "look": 2024,
-    "color": 0,
-    "price": 20000,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "붉은 보석이 박혀 있는 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2141": {
-    "id": 2141,
-    "name": "금편의목걸이",
-    "look": 2023,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "고급스러운 금 장식이 붙어 있는 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          70,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -2,
-    "defensive_magical": 0
-  },
-  "2142": {
-    "id": 2142,
-    "name": "청옥의목걸이",
-    "look": 2022,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 10000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "커다란 초록색 보석을 꿰어 만든 목걸이",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": -1,
-    "defensive_magical": 0
-  },
-  "2143": {
-    "id": 2143,
-    "name": "마반경",
-    "look": 1163,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 100000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "어떠한 마력도 튕겨낸다는 신비한 거울",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          50,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 3
-  },
-  "2144": {
-    "id": 2144,
-    "name": "명석부",
-    "look": 2097,
-    "color": 0,
-    "price": 10,
-    "deposit_price": 50000,
-    "trade": true,
-    "type": "AUXILIARY",
-    "desc": "귀신을 쫓는 부적 머리가 맑아진다고한다.",
-    "death_penalty": "DROP",
-    "capacity": 1,
-    "script_active": null,
-    "condition": [
-      {
-        "Type": "level",
-        "Parameters": [
-          30,
-          null
-        ]
-      }
-    ],
-    "dress": 0,
-    "durability": 0,
-    "repair": null,
-    "dress_script": null,
-    "undress_script": null,
-    "hit": 0,
-    "damage": 0,
-    "strength": 0,
-    "intelligence": 0,
-    "dexteritry": 0,
-    "base_hp": 0,
-    "base_mp": 0,
-    "hp_percentage": 0.0,
-    "mp_percentage": 0.0,
-    "healing_cycle": 0,
-    "defensive_physical": 0,
-    "defensive_magical": 0
   },
   "12": {
     "id": 12,
@@ -33529,10 +33529,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 5,
-    "damage_s_max": 10,
-    "damage_l_min": 5,
-    "damage_l_max": 10,
+    "damage_small": {
+      "min": 5,
+      "max": 10
+    },
+    "damage_large": {
+      "min": 5,
+      "max": 10
+    },
     "sound": 0,
     "spell": null,
     "rename": 10
@@ -33568,10 +33572,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 5,
-    "damage_s_max": 10,
-    "damage_l_min": 5,
-    "damage_l_max": 10,
+    "damage_small": {
+      "min": 5,
+      "max": 10
+    },
+    "damage_large": {
+      "min": 5,
+      "max": 10
+    },
     "sound": 0,
     "spell": null,
     "rename": 10
@@ -33614,10 +33622,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 13,
-    "damage_l_max": 16,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 13,
+      "max": 16
+    },
     "sound": 0,
     "spell": null,
     "rename": 10
@@ -33660,10 +33672,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 15,
-    "damage_s_max": 25,
-    "damage_l_min": 15,
-    "damage_l_max": 25,
+    "damage_small": {
+      "min": 15,
+      "max": 25
+    },
+    "damage_large": {
+      "min": 15,
+      "max": 25
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -33706,10 +33722,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 35,
-    "damage_l_min": 20,
-    "damage_l_max": 35,
+    "damage_small": {
+      "min": 20,
+      "max": 35
+    },
+    "damage_large": {
+      "min": 20,
+      "max": 35
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -33752,10 +33772,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 25,
-    "damage_s_max": 50,
-    "damage_l_min": 25,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 25,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 25,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 250
@@ -33798,10 +33822,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 60,
-    "damage_l_min": 30,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 30,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 400
@@ -33844,10 +33872,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 35,
-    "damage_s_max": 70,
-    "damage_l_min": 35,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 35,
+      "max": 70
+    },
+    "damage_large": {
+      "min": 35,
+      "max": 70
+    },
     "sound": 0,
     "spell": null,
     "rename": 800
@@ -33897,10 +33929,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 75,
-    "damage_l_min": 50,
-    "damage_l_max": 75,
+    "damage_small": {
+      "min": 50,
+      "max": 75
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 75
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -33943,10 +33979,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 85,
-    "damage_l_min": 50,
-    "damage_l_max": 85,
+    "damage_small": {
+      "min": 50,
+      "max": 85
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 85
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -33989,10 +34029,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 55,
-    "damage_s_max": 90,
-    "damage_l_min": 55,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 55,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 55,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 5000
@@ -34042,10 +34086,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 55,
-    "damage_l_min": 35,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 30,
+      "max": 55
+    },
+    "damage_large": {
+      "min": 35,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 9900
@@ -34089,10 +34137,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 40,
-    "damage_s_max": 60,
-    "damage_l_min": 40,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 40,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -34136,10 +34188,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 200,
-    "damage_l_min": 150,
-    "damage_l_max": 200,
+    "damage_small": {
+      "min": 150,
+      "max": 200
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 200
+    },
     "sound": 336,
     "spell": null,
     "rename": 1000
@@ -34182,10 +34238,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 95,
-    "damage_l_max": 105,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 95,
+      "max": 105
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -34229,10 +34289,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 90,
-    "damage_l_min": 50,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 50,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 7000
@@ -34276,10 +34340,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 100,
-    "damage_l_min": 60,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 60,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 7000
@@ -34329,10 +34397,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 333,
     "spell": null,
     "rename": 10000
@@ -34382,10 +34454,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 150,
-    "damage_l_min": 100,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 100,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 150
+    },
     "sound": 333,
     "spell": null,
     "rename": 10000
@@ -34435,10 +34511,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 130,
-    "damage_l_min": 120,
-    "damage_l_max": 130,
+    "damage_small": {
+      "min": 120,
+      "max": 130
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 130
+    },
     "sound": 333,
     "spell": null,
     "rename": 10000
@@ -34488,10 +34568,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 240,
-    "damage_s_max": 280,
-    "damage_l_min": 240,
-    "damage_l_max": 310,
+    "damage_small": {
+      "min": 240,
+      "max": 280
+    },
+    "damage_large": {
+      "min": 240,
+      "max": 310
+    },
     "sound": 0,
     "spell": null,
     "rename": 15000
@@ -34541,10 +34625,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 100,
-    "damage_l_min": 50,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 50,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -34594,10 +34682,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 240,
-    "damage_s_max": 260,
-    "damage_l_min": 260,
-    "damage_l_max": 270,
+    "damage_small": {
+      "min": 240,
+      "max": 260
+    },
+    "damage_large": {
+      "min": 260,
+      "max": 270
+    },
     "sound": 333,
     "spell": null,
     "rename": 10000
@@ -34640,10 +34732,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 95,
-    "damage_l_min": 60,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 60,
+      "max": 95
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -34687,10 +34783,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 100,
-    "damage_l_min": 900,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 80,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 900,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -34734,10 +34834,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 105,
-    "damage_s_max": 120,
-    "damage_l_min": 105,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 105,
+      "max": 120
+    },
+    "damage_large": {
+      "min": 105,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -34781,10 +34885,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 115,
-    "damage_l_min": 110,
-    "damage_l_max": 125,
+    "damage_small": {
+      "min": 100,
+      "max": 115
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 125
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -34828,10 +34936,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 115,
-    "damage_l_min": 110,
-    "damage_l_max": 125,
+    "damage_small": {
+      "min": 100,
+      "max": 115
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 125
+    },
     "sound": 0,
     "spell": null,
     "rename": 800
@@ -34875,10 +34987,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 85,
-    "damage_l_min": 40,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 50,
+      "max": 85
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 80
+    },
     "sound": 336,
     "spell": null,
     "rename": 1500
@@ -34922,10 +35038,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 110,
-    "damage_s_max": 160,
-    "damage_l_min": 110,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 110,
+      "max": 160
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 160
+    },
     "sound": 336,
     "spell": null,
     "rename": 10000
@@ -34969,10 +35089,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 65,
-    "damage_l_min": 40,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 60,
+      "max": 65
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 70
+    },
     "sound": 335,
     "spell": null,
     "rename": 500
@@ -35016,10 +35140,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 4,
-    "damage_s_max": 14,
-    "damage_l_min": 36,
-    "damage_l_max": 45,
+    "damage_small": {
+      "min": 4,
+      "max": 14
+    },
+    "damage_large": {
+      "min": 36,
+      "max": 45
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -35063,10 +35191,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 4,
-    "damage_s_max": 4,
-    "damage_l_min": 9,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 4,
+      "max": 4
+    },
+    "damage_large": {
+      "min": 9,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35110,10 +35242,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 80,
-    "damage_l_min": 70,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 70,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -35157,10 +35293,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 4,
-    "damage_s_max": 10,
-    "damage_l_min": 39,
-    "damage_l_max": 45,
+    "damage_small": {
+      "min": 4,
+      "max": 10
+    },
+    "damage_large": {
+      "min": 39,
+      "max": 45
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -35204,10 +35344,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 80,
-    "damage_l_min": 80,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 70,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35251,10 +35395,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 80,
-    "damage_l_min": 70,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 70,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 80
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -35298,10 +35446,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 90,
-    "damage_l_min": 80,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 80,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -35345,10 +35497,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 62,
-    "damage_s_max": 86,
-    "damage_l_min": 68,
-    "damage_l_max": 86,
+    "damage_small": {
+      "min": 62,
+      "max": 86
+    },
+    "damage_large": {
+      "min": 68,
+      "max": 86
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -35384,10 +35540,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 60,
-    "damage_l_min": 35,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 30,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 35,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 5000
@@ -35431,10 +35591,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 160,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 160
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -35478,10 +35642,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 570,
-    "damage_s_max": 630,
-    "damage_l_min": 570,
-    "damage_l_max": 600,
+    "damage_small": {
+      "min": 570,
+      "max": 630
+    },
+    "damage_large": {
+      "min": 570,
+      "max": 600
+    },
     "sound": 0,
     "spell": null,
     "rename": 600000
@@ -35525,10 +35693,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 940,
-    "damage_s_max": 1000,
-    "damage_l_min": 940,
-    "damage_l_max": 1000,
+    "damage_small": {
+      "min": 940,
+      "max": 1000
+    },
+    "damage_large": {
+      "min": 940,
+      "max": 1000
+    },
     "sound": 0,
     "spell": null,
     "rename": 600000
@@ -35572,10 +35744,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 140,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35619,10 +35795,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 140,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35666,10 +35846,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 110,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35713,10 +35897,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 140,
-    "damage_l_min": 140,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 140,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35766,10 +35954,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 40,
-    "damage_s_max": 80,
-    "damage_l_min": 40,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 40,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 80
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35819,10 +36011,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 100,
-    "damage_l_min": 50,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 50,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35872,10 +36068,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 100,
-    "damage_l_min": 50,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 50,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35925,10 +36125,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 70,
-    "damage_l_min": 70,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 70,
+      "max": 70
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 70
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -35978,10 +36182,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 110,
-    "damage_l_min": 20,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 20,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 20,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36025,10 +36233,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 220,
-    "damage_l_min": 50,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 50,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -36072,10 +36284,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 500,
-    "damage_l_min": 300,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 300,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36125,10 +36341,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 50,
-    "damage_l_min": 30,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 30,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36178,10 +36398,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 62,
-    "damage_s_max": 99,
-    "damage_l_min": 62,
-    "damage_l_max": 99,
+    "damage_small": {
+      "min": 62,
+      "max": 99
+    },
+    "damage_large": {
+      "min": 62,
+      "max": 99
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -36231,10 +36455,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 88,
-    "damage_s_max": 100,
-    "damage_l_min": 88,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 88,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 88,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -36278,10 +36506,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 180,
-    "damage_l_min": 120,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 120,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 180
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -36325,10 +36557,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 300,
-    "damage_l_min": 200,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 200,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 300
+    },
     "sound": 333,
     "spell": null,
     "rename": 30000
@@ -36372,10 +36608,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 95,
-    "damage_l_min": 70,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 60,
+      "max": 95
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 90
+    },
     "sound": 336,
     "spell": null,
     "rename": 100000
@@ -36419,10 +36659,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 340,
-    "damage_s_max": 560,
-    "damage_l_min": 340,
-    "damage_l_max": 560,
+    "damage_small": {
+      "min": 340,
+      "max": 560
+    },
+    "damage_large": {
+      "min": 340,
+      "max": 560
+    },
     "sound": 336,
     "spell": null,
     "rename": 10000
@@ -36466,10 +36710,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 8,
-    "damage_s_max": 8,
-    "damage_l_min": 10,
-    "damage_l_max": 19,
+    "damage_small": {
+      "min": 8,
+      "max": 8
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 19
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36513,10 +36761,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 8,
-    "damage_s_max": 8,
-    "damage_l_min": 10,
-    "damage_l_max": 19,
+    "damage_small": {
+      "min": 8,
+      "max": 8
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 19
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -36560,10 +36812,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 90,
-    "damage_l_min": 80,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 80,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36607,10 +36863,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 95,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 95
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36654,10 +36914,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 570,
-    "damage_s_max": 630,
-    "damage_l_min": 570,
-    "damage_l_max": 600,
+    "damage_small": {
+      "min": 570,
+      "max": 630
+    },
+    "damage_large": {
+      "min": 570,
+      "max": 600
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36701,10 +36965,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 75,
-    "damage_s_max": 100,
-    "damage_l_min": 75,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 75,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 75,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -36748,10 +37016,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 65,
-    "damage_s_max": 98,
-    "damage_l_min": 65,
-    "damage_l_max": 98,
+    "damage_small": {
+      "min": 65,
+      "max": 98
+    },
+    "damage_large": {
+      "min": 65,
+      "max": 98
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -36795,10 +37067,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 90,
-    "damage_l_min": 60,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 60,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -36842,10 +37118,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 90,
-    "damage_l_min": 60,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 60,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 3000
@@ -36889,10 +37169,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 700,
-    "damage_s_max": 800,
-    "damage_l_min": 700,
-    "damage_l_max": 800,
+    "damage_small": {
+      "min": 700,
+      "max": 800
+    },
+    "damage_large": {
+      "min": 700,
+      "max": 800
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -36936,10 +37220,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 700,
-    "damage_s_max": 800,
-    "damage_l_min": 700,
-    "damage_l_max": 800,
+    "damage_small": {
+      "min": 700,
+      "max": 800
+    },
+    "damage_large": {
+      "min": 700,
+      "max": 800
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -36983,10 +37271,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 600,
-    "damage_s_max": 700,
-    "damage_l_min": 600,
-    "damage_l_max": 700,
+    "damage_small": {
+      "min": 600,
+      "max": 700
+    },
+    "damage_large": {
+      "min": 600,
+      "max": 700
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -37030,10 +37322,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1300,
-    "damage_s_max": 1800,
-    "damage_l_min": 1300,
-    "damage_l_max": 1800,
+    "damage_small": {
+      "min": 1300,
+      "max": 1800
+    },
+    "damage_large": {
+      "min": 1300,
+      "max": 1800
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -37077,10 +37373,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 400,
-    "damage_s_max": 500,
-    "damage_l_min": 400,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 400,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 400,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -37124,10 +37424,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 210,
-    "damage_s_max": 280,
-    "damage_l_min": 210,
-    "damage_l_max": 280,
+    "damage_small": {
+      "min": 210,
+      "max": 280
+    },
+    "damage_large": {
+      "min": 210,
+      "max": 280
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37171,10 +37475,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37218,10 +37526,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1400,
-    "damage_s_max": 1800,
-    "damage_l_min": 1400,
-    "damage_l_max": 1800,
+    "damage_small": {
+      "min": 1400,
+      "max": 1800
+    },
+    "damage_large": {
+      "min": 1400,
+      "max": 1800
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37265,10 +37577,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1400,
-    "damage_s_max": 1800,
-    "damage_l_min": 1400,
-    "damage_l_max": 1800,
+    "damage_small": {
+      "min": 1400,
+      "max": 1800
+    },
+    "damage_large": {
+      "min": 1400,
+      "max": 1800
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37312,10 +37628,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 800,
-    "damage_s_max": 1000,
-    "damage_l_min": 800,
-    "damage_l_max": 1000,
+    "damage_small": {
+      "min": 800,
+      "max": 1000
+    },
+    "damage_large": {
+      "min": 800,
+      "max": 1000
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37359,10 +37679,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37406,10 +37730,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 500,
-    "damage_l_min": 300,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 300,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 500000
@@ -37453,10 +37781,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -37500,10 +37832,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -37547,10 +37883,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -37594,10 +37934,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -37641,10 +37985,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 800,
-    "damage_s_max": 1000,
-    "damage_l_min": 800,
-    "damage_l_max": 1000,
+    "damage_small": {
+      "min": 800,
+      "max": 1000
+    },
+    "damage_large": {
+      "min": 800,
+      "max": 1000
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -37688,10 +38036,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 35,
-    "damage_s_max": 70,
-    "damage_l_min": 35,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 35,
+      "max": 70
+    },
+    "damage_large": {
+      "min": 35,
+      "max": 70
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -37735,10 +38087,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 670,
-    "damage_s_max": 1000,
-    "damage_l_min": 670,
-    "damage_l_max": 1000,
+    "damage_small": {
+      "min": 670,
+      "max": 1000
+    },
+    "damage_large": {
+      "min": 670,
+      "max": 1000
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37782,10 +38138,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 75,
-    "damage_l_min": 60,
-    "damage_l_max": 75,
+    "damage_small": {
+      "min": 60,
+      "max": 75
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 75
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -37829,10 +38189,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 75,
-    "damage_l_min": 50,
-    "damage_l_max": 75,
+    "damage_small": {
+      "min": 50,
+      "max": 75
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 75
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -37876,10 +38240,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 300,
-    "damage_l_min": 200,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 200,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 300
+    },
     "sound": 336,
     "spell": null,
     "rename": 20000
@@ -37923,10 +38291,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 400,
-    "damage_l_min": 300,
-    "damage_l_max": 400,
+    "damage_small": {
+      "min": 300,
+      "max": 400
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 400
+    },
     "sound": 0,
     "spell": null,
     "rename": 200000
@@ -37970,10 +38342,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 400,
-    "damage_l_min": 300,
-    "damage_l_max": 400,
+    "damage_small": {
+      "min": 300,
+      "max": 400
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 400
+    },
     "sound": 0,
     "spell": null,
     "rename": 200000
@@ -38017,10 +38393,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 340,
-    "damage_s_max": 460,
-    "damage_l_min": 340,
-    "damage_l_max": 460,
+    "damage_small": {
+      "min": 340,
+      "max": 460
+    },
+    "damage_large": {
+      "min": 340,
+      "max": 460
+    },
     "sound": 0,
     "spell": null,
     "rename": 200000
@@ -38064,10 +38444,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 340,
-    "damage_s_max": 460,
-    "damage_l_min": 340,
-    "damage_l_max": 460,
+    "damage_small": {
+      "min": 340,
+      "max": 460
+    },
+    "damage_large": {
+      "min": 340,
+      "max": 460
+    },
     "sound": 0,
     "spell": null,
     "rename": 200000
@@ -38111,10 +38495,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 75,
-    "damage_l_min": 50,
-    "damage_l_max": 75,
+    "damage_small": {
+      "min": 50,
+      "max": 75
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 75
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -38158,10 +38546,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 150,
-    "damage_l_min": 100,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 100,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -38205,10 +38597,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 140,
-    "damage_l_min": 90,
-    "damage_l_max": 140,
+    "damage_small": {
+      "min": 90,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 140
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -38252,10 +38648,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 250,
-    "damage_l_min": 150,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 150,
+      "max": 250
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -38299,10 +38699,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 650,
-    "damage_l_min": 30,
-    "damage_l_max": 650,
+    "damage_small": {
+      "min": 30,
+      "max": 650
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 650
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -38346,10 +38750,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 150,
-    "damage_l_min": 10,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 10,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -38393,10 +38801,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 80,
-    "damage_l_min": 10,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 10,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 80
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -38440,10 +38852,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 55,
-    "damage_l_min": 30,
-    "damage_l_max": 55,
+    "damage_small": {
+      "min": 30,
+      "max": 55
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 55
+    },
     "sound": 0,
     "spell": null,
     "rename": 4000
@@ -38479,10 +38895,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 5,
-    "damage_s_max": 15,
-    "damage_l_min": 5,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 5,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 5,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38526,10 +38946,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38573,10 +38997,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38620,10 +39048,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38667,10 +39099,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38714,10 +39150,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38761,10 +39201,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38808,10 +39252,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38855,10 +39303,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38902,10 +39354,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38949,10 +39405,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -38996,10 +39456,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39043,10 +39507,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -39090,10 +39558,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39137,10 +39609,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39184,10 +39660,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39231,10 +39711,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39278,10 +39762,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39325,10 +39813,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39372,10 +39864,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39419,10 +39915,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39466,10 +39966,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39513,10 +40017,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39560,10 +40068,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39607,10 +40119,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 160,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 160
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -39654,10 +40170,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39701,10 +40221,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39748,10 +40272,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39795,10 +40323,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39842,10 +40374,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39889,10 +40425,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39936,10 +40476,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -39983,10 +40527,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40030,10 +40578,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40077,10 +40629,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40124,10 +40680,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40171,10 +40731,14 @@
     "healing_cycle": 0,
     "defensive_physical": -1,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 100,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -40218,10 +40782,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40265,10 +40833,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40312,10 +40884,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40359,10 +40935,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40406,10 +40986,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40453,10 +41037,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40500,10 +41088,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40547,10 +41139,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40594,10 +41190,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40641,10 +41241,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40688,10 +41292,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -40735,10 +41343,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 300,
-    "damage_l_min": 250,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 250,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 30000
@@ -40782,10 +41394,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 160,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 130,
+      "max": 160
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -40829,10 +41445,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 400,
-    "damage_s_max": 500,
-    "damage_l_min": 400,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 400,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 400,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -40876,10 +41496,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 400,
-    "damage_s_max": 500,
-    "damage_l_min": 400,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 400,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 400,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -40923,10 +41547,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 400,
-    "damage_s_max": 500,
-    "damage_l_min": 400,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 400,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 400,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -40970,10 +41598,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 400,
-    "damage_s_max": 500,
-    "damage_l_min": 400,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 400,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 400,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2000
@@ -41023,10 +41655,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 150,
-    "damage_l_min": 100,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 100,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -41076,10 +41712,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 150,
-    "damage_l_min": 100,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 100,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -41129,10 +41769,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 250,
-    "damage_l_min": 200,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 200,
+      "max": 250
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -41182,10 +41826,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 250,
-    "damage_l_min": 200,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 200,
+      "max": 250
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -41229,10 +41877,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 180,
-    "damage_l_min": 130,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 130,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 180
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -41276,10 +41928,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 230,
-    "damage_s_max": 270,
-    "damage_l_min": 230,
-    "damage_l_max": 270,
+    "damage_small": {
+      "min": 230,
+      "max": 270
+    },
+    "damage_large": {
+      "min": 230,
+      "max": 270
+    },
     "sound": 0,
     "spell": null,
     "rename": 50000
@@ -41323,10 +41979,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 60,
-    "damage_l_min": 30,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 30,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41370,10 +42030,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 60,
-    "damage_l_min": 30,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 30,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41417,10 +42081,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 75,
-    "damage_s_max": 95,
-    "damage_l_min": 75,
-    "damage_l_max": 95,
+    "damage_small": {
+      "min": 75,
+      "max": 95
+    },
+    "damage_large": {
+      "min": 75,
+      "max": 95
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41464,10 +42132,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 100,
-    "damage_l_min": 80,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 80,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41503,10 +42175,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 45,
-    "damage_l_min": 20,
-    "damage_l_max": 45,
+    "damage_small": {
+      "min": 20,
+      "max": 45
+    },
+    "damage_large": {
+      "min": 20,
+      "max": 45
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -41550,10 +42226,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 50,
-    "damage_l_min": 30,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 30,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41597,10 +42277,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 50,
-    "damage_l_min": 30,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 30,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41644,10 +42328,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 240,
-    "damage_l_min": 80,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 80,
+      "max": 240
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41691,10 +42379,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 130,
-    "damage_l_min": 70,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 70,
+      "max": 130
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -41738,10 +42430,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 62,
-    "damage_s_max": 99,
-    "damage_l_min": 62,
-    "damage_l_max": 99,
+    "damage_small": {
+      "min": 62,
+      "max": 99
+    },
+    "damage_large": {
+      "min": 62,
+      "max": 99
+    },
     "sound": 356,
     "spell": null,
     "rename": 7000
@@ -41785,10 +42481,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 76,
-    "damage_s_max": 110,
-    "damage_l_min": 76,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 76,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 76,
+      "max": 110
+    },
     "sound": 355,
     "spell": null,
     "rename": 7000
@@ -41832,10 +42532,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 140,
-    "damage_s_max": 290,
-    "damage_l_min": 140,
-    "damage_l_max": 290,
+    "damage_small": {
+      "min": 140,
+      "max": 290
+    },
+    "damage_large": {
+      "min": 140,
+      "max": 290
+    },
     "sound": 354,
     "spell": null,
     "rename": 7000
@@ -41879,10 +42583,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 180,
-    "damage_l_min": 100,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 100,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 180
+    },
     "sound": 353,
     "spell": null,
     "rename": 7000
@@ -41926,10 +42634,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 180,
-    "damage_s_max": 680,
-    "damage_l_min": 180,
-    "damage_l_max": 680,
+    "damage_small": {
+      "min": 180,
+      "max": 680
+    },
+    "damage_large": {
+      "min": 180,
+      "max": 680
+    },
     "sound": 350,
     "spell": null,
     "rename": 10000
@@ -41973,10 +42685,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 75,
-    "damage_s_max": 100,
-    "damage_l_min": 750,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 75,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 750,
+      "max": 100
+    },
     "sound": 337,
     "spell": null,
     "rename": 15000
@@ -42020,10 +42736,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 75,
-    "damage_s_max": 100,
-    "damage_l_min": 750,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 75,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 750,
+      "max": 100
+    },
     "sound": 337,
     "spell": null,
     "rename": 15000
@@ -42059,10 +42779,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42098,10 +42822,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42137,10 +42865,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42176,10 +42908,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42215,10 +42951,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42254,10 +42994,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42293,10 +43037,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42332,10 +43080,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42371,10 +43123,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42410,10 +43166,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42449,10 +43209,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42488,10 +43252,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42527,10 +43295,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20000
@@ -42574,10 +43346,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 5,
-    "damage_s_max": 100,
-    "damage_l_min": 5,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 5,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 5,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -42621,10 +43397,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 80,
-    "damage_l_min": 50,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 50,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 80
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42668,10 +43448,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 180,
-    "damage_l_min": 150,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 150,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 180
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42715,10 +43499,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 120,
-    "damage_l_min": 100,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 100,
+      "max": 120
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42762,10 +43550,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 220,
-    "damage_l_min": 200,
-    "damage_l_max": 220,
+    "damage_small": {
+      "min": 200,
+      "max": 220
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 220
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42809,10 +43601,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 150,
-    "damage_l_min": 120,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 120,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42856,10 +43652,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 180,
-    "damage_l_min": 150,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 150,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 180
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42903,10 +43703,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 80,
-    "damage_l_min": 50,
-    "damage_l_max": 80,
+    "damage_small": {
+      "min": 50,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 80
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42950,10 +43754,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 180,
-    "damage_s_max": 200,
-    "damage_l_min": 180,
-    "damage_l_max": 200,
+    "damage_small": {
+      "min": 180,
+      "max": 200
+    },
+    "damage_large": {
+      "min": 180,
+      "max": 200
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -42997,10 +43805,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 40,
-    "damage_s_max": 60,
-    "damage_l_min": 40,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 40,
+      "max": 60
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43044,10 +43856,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 100,
-    "damage_l_min": 80,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 80,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43091,10 +43907,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 150,
-    "damage_l_min": 120,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 120,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43138,10 +43958,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 350,
-    "damage_l_min": 300,
-    "damage_l_max": 350,
+    "damage_small": {
+      "min": 300,
+      "max": 350
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 350
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43185,10 +44009,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 220,
-    "damage_s_max": 250,
-    "damage_l_min": 220,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 220,
+      "max": 250
+    },
+    "damage_large": {
+      "min": 220,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43232,10 +44060,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 120,
-    "damage_l_min": 100,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 100,
+      "max": 120
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000
@@ -43279,10 +44111,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 120,
-    "damage_l_min": 50,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 100,
+      "max": 120
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43326,10 +44162,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 25,
-    "damage_s_max": 30,
-    "damage_l_min": 50,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 25,
+      "max": 30
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -43373,10 +44213,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 25,
-    "damage_l_min": 10,
-    "damage_l_max": 13,
+    "damage_small": {
+      "min": 20,
+      "max": 25
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 13
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -43420,10 +44264,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 25,
-    "damage_l_min": 10,
-    "damage_l_max": 13,
+    "damage_small": {
+      "min": 20,
+      "max": 25
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 13
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -43467,10 +44315,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 110,
-    "damage_l_min": 80,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 80,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 7000
@@ -43514,10 +44366,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1000,
-    "damage_s_max": 1100,
-    "damage_l_min": 1000,
-    "damage_l_max": 1100,
+    "damage_small": {
+      "min": 1000,
+      "max": 1100
+    },
+    "damage_large": {
+      "min": 1000,
+      "max": 1100
+    },
     "sound": 0,
     "spell": 6018,
     "rename": 50000
@@ -43561,10 +44417,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1000,
-    "damage_s_max": 1100,
-    "damage_l_min": 1000,
-    "damage_l_max": 1100,
+    "damage_small": {
+      "min": 1000,
+      "max": 1100
+    },
+    "damage_large": {
+      "min": 1000,
+      "max": 1100
+    },
     "sound": 0,
     "spell": 6017,
     "rename": 50000
@@ -43608,10 +44468,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1000,
-    "damage_s_max": 1100,
-    "damage_l_min": 1000,
-    "damage_l_max": 1100,
+    "damage_small": {
+      "min": 1000,
+      "max": 1100
+    },
+    "damage_large": {
+      "min": 1000,
+      "max": 1100
+    },
     "sound": 0,
     "spell": 6020,
     "rename": 50000
@@ -43655,10 +44519,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1000,
-    "damage_s_max": 1100,
-    "damage_l_min": 1000,
-    "damage_l_max": 1100,
+    "damage_small": {
+      "min": 1000,
+      "max": 1100
+    },
+    "damage_large": {
+      "min": 1000,
+      "max": 1100
+    },
     "sound": 0,
     "spell": 6019,
     "rename": 50000
@@ -43702,10 +44570,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 300,
-    "damage_s_max": 1400,
-    "damage_l_min": 300,
-    "damage_l_max": 1400,
+    "damage_small": {
+      "min": 300,
+      "max": 1400
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 1400
+    },
     "sound": 333,
     "spell": null,
     "rename": 30000
@@ -43749,10 +44621,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 700,
-    "damage_l_min": 150,
-    "damage_l_max": 700,
+    "damage_small": {
+      "min": 150,
+      "max": 700
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 700
+    },
     "sound": 333,
     "spell": null,
     "rename": 20000
@@ -43796,10 +44672,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 840,
-    "damage_s_max": 940,
-    "damage_l_min": 780,
-    "damage_l_max": 760,
+    "damage_small": {
+      "min": 840,
+      "max": 940
+    },
+    "damage_large": {
+      "min": 780,
+      "max": 760
+    },
     "sound": 0,
     "spell": null,
     "rename": 150
@@ -43843,10 +44723,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 720,
-    "damage_s_max": 920,
-    "damage_l_min": 850,
-    "damage_l_max": 1200,
+    "damage_small": {
+      "min": 720,
+      "max": 920
+    },
+    "damage_large": {
+      "min": 850,
+      "max": 1200
+    },
     "sound": 0,
     "spell": null,
     "rename": 150
@@ -43890,10 +44774,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 240,
-    "damage_s_max": 310,
-    "damage_l_min": 300,
-    "damage_l_max": 350,
+    "damage_small": {
+      "min": 240,
+      "max": 310
+    },
+    "damage_large": {
+      "min": 300,
+      "max": 350
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -43936,10 +44824,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 349,
     "spell": null,
     "rename": 20
@@ -43983,10 +44875,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 75,
-    "damage_l_min": 60,
-    "damage_l_max": 75,
+    "damage_small": {
+      "min": 60,
+      "max": 75
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 75
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000000
@@ -44030,10 +44926,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1000,
-    "damage_s_max": 1200,
-    "damage_l_min": 5000,
-    "damage_l_max": 10000,
+    "damage_small": {
+      "min": 1000,
+      "max": 1200
+    },
+    "damage_large": {
+      "min": 5000,
+      "max": 10000
+    },
     "sound": 0,
     "spell": null,
     "rename": 100000000
@@ -44077,10 +44977,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 70,
-    "damage_s_max": 95,
-    "damage_l_min": 70,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 70,
+      "max": 95
+    },
+    "damage_large": {
+      "min": 70,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 5000
@@ -44116,10 +45020,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 2,
-    "damage_l_min": 1,
-    "damage_l_max": 2,
+    "damage_small": {
+      "min": 1,
+      "max": 2
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 2
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -44163,10 +45071,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 20,
-    "damage_l_min": 10,
-    "damage_l_max": 20,
+    "damage_small": {
+      "min": 10,
+      "max": 20
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 20
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -44210,10 +45122,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 210,
-    "damage_s_max": 250,
-    "damage_l_min": 210,
-    "damage_l_max": 250,
+    "damage_small": {
+      "min": 210,
+      "max": 250
+    },
+    "damage_large": {
+      "min": 210,
+      "max": 250
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -44249,10 +45165,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 1,
-    "damage_s_max": 1,
-    "damage_l_min": 1,
-    "damage_l_max": 1,
+    "damage_small": {
+      "min": 1,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 1,
+      "max": 1
+    },
     "sound": 336,
     "spell": null,
     "rename": 20000
@@ -44288,10 +45208,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 13,
-    "damage_l_max": 16,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 13,
+      "max": 16
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -44327,10 +45251,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 20,
-    "damage_l_min": 10,
-    "damage_l_max": 20,
+    "damage_small": {
+      "min": 10,
+      "max": 20
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 20
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -44374,10 +45302,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 14,
-    "damage_s_max": 20,
-    "damage_l_min": 49,
-    "damage_l_max": 55,
+    "damage_small": {
+      "min": 14,
+      "max": 20
+    },
+    "damage_large": {
+      "min": 49,
+      "max": 55
+    },
     "sound": 0,
     "spell": null,
     "rename": 5000
@@ -44427,10 +45359,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44480,10 +45416,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44533,10 +45473,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44586,10 +45530,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44639,10 +45587,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44692,10 +45644,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44745,10 +45701,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44798,10 +45758,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44851,10 +45815,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44898,10 +45866,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44945,10 +45917,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -44992,10 +45968,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45039,10 +46019,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45086,10 +46070,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45133,10 +46121,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45180,10 +46172,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45227,10 +46223,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45274,10 +46274,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45321,10 +46325,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45368,10 +46376,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45415,10 +46427,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45462,10 +46478,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45509,10 +46529,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45556,10 +46580,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45603,10 +46631,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45650,10 +46682,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45697,10 +46733,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45744,10 +46784,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45791,10 +46835,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45838,10 +46886,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45885,10 +46937,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45932,10 +46988,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -45979,10 +47039,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -46026,10 +47090,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -46073,10 +47141,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -46120,10 +47192,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 1000
@@ -46173,10 +47249,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46226,10 +47306,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46279,10 +47363,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46332,10 +47420,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 100,
-    "damage_l_min": 90,
-    "damage_l_max": 100,
+    "damage_small": {
+      "min": 90,
+      "max": 100
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 100
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46379,10 +47471,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46426,10 +47522,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46473,10 +47573,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46520,10 +47624,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 500,
-    "damage_l_min": 40,
-    "damage_l_max": 500,
+    "damage_small": {
+      "min": 50,
+      "max": 500
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 500
+    },
     "sound": 0,
     "spell": null,
     "rename": 2500
@@ -46567,10 +47675,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 130,
-    "damage_l_min": 60,
-    "damage_l_max": 130,
+    "damage_small": {
+      "min": 60,
+      "max": 130
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 130
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46614,10 +47726,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 75,
-    "damage_s_max": 150,
-    "damage_l_min": 75,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 75,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 75,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46661,10 +47777,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 180,
-    "damage_l_min": 90,
-    "damage_l_max": 180,
+    "damage_small": {
+      "min": 90,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 180
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46708,10 +47828,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 210,
-    "damage_l_min": 100,
-    "damage_l_max": 210,
+    "damage_small": {
+      "min": 100,
+      "max": 210
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 210
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46755,10 +47879,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 110,
-    "damage_s_max": 210,
-    "damage_l_min": 110,
-    "damage_l_max": 210,
+    "damage_small": {
+      "min": 110,
+      "max": 210
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 210
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46802,10 +47930,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 155,
-    "damage_s_max": 230,
-    "damage_l_min": 155,
-    "damage_l_max": 230,
+    "damage_small": {
+      "min": 155,
+      "max": 230
+    },
+    "damage_large": {
+      "min": 155,
+      "max": 230
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46849,10 +47981,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 140,
-    "damage_s_max": 300,
-    "damage_l_min": 140,
-    "damage_l_max": 300,
+    "damage_small": {
+      "min": 140,
+      "max": 300
+    },
+    "damage_large": {
+      "min": 140,
+      "max": 300
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46896,10 +48032,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 150,
-    "damage_s_max": 330,
-    "damage_l_min": 150,
-    "damage_l_max": 330,
+    "damage_small": {
+      "min": 150,
+      "max": 330
+    },
+    "damage_large": {
+      "min": 150,
+      "max": 330
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46943,10 +48083,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 290,
-    "damage_s_max": 700,
-    "damage_l_min": 290,
-    "damage_l_max": 700,
+    "damage_small": {
+      "min": 290,
+      "max": 700
+    },
+    "damage_large": {
+      "min": 290,
+      "max": 700
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -46990,10 +48134,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 95,
-    "damage_l_min": 80,
-    "damage_l_max": 95,
+    "damage_small": {
+      "min": 80,
+      "max": 95
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 95
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47037,10 +48185,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 110,
-    "damage_l_min": 80,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 80,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47084,10 +48236,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 90,
-    "damage_s_max": 125,
-    "damage_l_min": 90,
-    "damage_l_max": 125,
+    "damage_small": {
+      "min": 90,
+      "max": 125
+    },
+    "damage_large": {
+      "min": 90,
+      "max": 125
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47131,10 +48287,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 110,
-    "damage_s_max": 120,
-    "damage_l_min": 110,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 110,
+      "max": 120
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47178,10 +48338,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 115,
-    "damage_s_max": 145,
-    "damage_l_min": 115,
-    "damage_l_max": 145,
+    "damage_small": {
+      "min": 115,
+      "max": 145
+    },
+    "damage_large": {
+      "min": 115,
+      "max": 145
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47225,10 +48389,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 175,
-    "damage_l_min": 130,
-    "damage_l_max": 175,
+    "damage_small": {
+      "min": 130,
+      "max": 175
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 175
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47272,10 +48440,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 146,
-    "damage_s_max": 195,
-    "damage_l_min": 146,
-    "damage_l_max": 195,
+    "damage_small": {
+      "min": 146,
+      "max": 195
+    },
+    "damage_large": {
+      "min": 146,
+      "max": 195
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47319,10 +48491,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 161,
-    "damage_s_max": 219,
-    "damage_l_min": 161,
-    "damage_l_max": 219,
+    "damage_small": {
+      "min": 161,
+      "max": 219
+    },
+    "damage_large": {
+      "min": 161,
+      "max": 219
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47366,10 +48542,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 250,
-    "damage_s_max": 450,
-    "damage_l_min": 250,
-    "damage_l_max": 450,
+    "damage_small": {
+      "min": 250,
+      "max": 450
+    },
+    "damage_large": {
+      "min": 250,
+      "max": 450
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47413,10 +48593,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 30,
-    "damage_l_min": 10,
-    "damage_l_max": 30,
+    "damage_small": {
+      "min": 10,
+      "max": 30
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 30
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47460,10 +48644,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 50,
-    "damage_l_min": 20,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 20,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 20,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47507,10 +48695,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 70,
-    "damage_l_min": 30,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 30,
+      "max": 70
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 70
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47554,10 +48746,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 40,
-    "damage_s_max": 90,
-    "damage_l_min": 40,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 40,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47601,10 +48797,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 110,
-    "damage_l_min": 50,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 50,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47648,10 +48848,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 140,
-    "damage_l_min": 60,
-    "damage_l_max": 140,
+    "damage_small": {
+      "min": 60,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 140
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47695,10 +48899,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 170,
-    "damage_l_min": 80,
-    "damage_l_max": 170,
+    "damage_small": {
+      "min": 80,
+      "max": 170
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 170
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47742,10 +48950,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 200,
-    "damage_l_min": 100,
-    "damage_l_max": 200,
+    "damage_small": {
+      "min": 100,
+      "max": 200
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 200
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47789,10 +49001,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 350,
-    "damage_l_min": 200,
-    "damage_l_max": 350,
+    "damage_small": {
+      "min": 200,
+      "max": 350
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 350
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47836,10 +49052,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 30,
-    "damage_l_min": 10,
-    "damage_l_max": 30,
+    "damage_small": {
+      "min": 10,
+      "max": 30
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 30
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47883,10 +49103,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 20,
-    "damage_s_max": 50,
-    "damage_l_min": 20,
-    "damage_l_max": 50,
+    "damage_small": {
+      "min": 20,
+      "max": 50
+    },
+    "damage_large": {
+      "min": 20,
+      "max": 50
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47930,10 +49154,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 30,
-    "damage_s_max": 70,
-    "damage_l_min": 30,
-    "damage_l_max": 70,
+    "damage_small": {
+      "min": 30,
+      "max": 70
+    },
+    "damage_large": {
+      "min": 30,
+      "max": 70
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -47977,10 +49205,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 40,
-    "damage_s_max": 90,
-    "damage_l_min": 40,
-    "damage_l_max": 90,
+    "damage_small": {
+      "min": 40,
+      "max": 90
+    },
+    "damage_large": {
+      "min": 40,
+      "max": 90
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48024,10 +49256,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 110,
-    "damage_l_min": 50,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 50,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48071,10 +49307,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 140,
-    "damage_l_min": 60,
-    "damage_l_max": 140,
+    "damage_small": {
+      "min": 60,
+      "max": 140
+    },
+    "damage_large": {
+      "min": 60,
+      "max": 140
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48118,10 +49358,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 170,
-    "damage_l_min": 80,
-    "damage_l_max": 170,
+    "damage_small": {
+      "min": 80,
+      "max": 170
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 170
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48165,10 +49409,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 200,
-    "damage_l_min": 100,
-    "damage_l_max": 200,
+    "damage_small": {
+      "min": 100,
+      "max": 200
+    },
+    "damage_large": {
+      "min": 100,
+      "max": 200
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48212,10 +49460,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 200,
-    "damage_s_max": 350,
-    "damage_l_min": 200,
-    "damage_l_max": 350,
+    "damage_small": {
+      "min": 200,
+      "max": 350
+    },
+    "damage_large": {
+      "min": 200,
+      "max": 350
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48251,10 +49503,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 10,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -48290,10 +49546,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 10,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -48329,10 +49589,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 10,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -48368,10 +49632,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 10,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -48407,10 +49675,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 10,
-    "damage_s_max": 15,
-    "damage_l_min": 10,
-    "damage_l_max": 15,
+    "damage_small": {
+      "min": 10,
+      "max": 15
+    },
+    "damage_large": {
+      "min": 10,
+      "max": 15
+    },
     "sound": 0,
     "spell": null,
     "rename": 20
@@ -48446,10 +49718,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 9998,
-    "damage_s_max": 9999,
-    "damage_l_min": 9998,
-    "damage_l_max": 9999,
+    "damage_small": {
+      "min": 9998,
+      "max": 9999
+    },
+    "damage_large": {
+      "min": 9998,
+      "max": 9999
+    },
     "sound": 701,
     "spell": null,
     "rename": 0
@@ -48493,10 +49769,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 60,
-    "damage_s_max": 80,
-    "damage_l_min": 65,
-    "damage_l_max": 89,
+    "damage_small": {
+      "min": 60,
+      "max": 80
+    },
+    "damage_large": {
+      "min": 65,
+      "max": 89
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -48540,10 +49820,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 25,
-    "damage_s_max": 30,
-    "damage_l_min": 50,
-    "damage_l_max": 60,
+    "damage_small": {
+      "min": 25,
+      "max": 30
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 60
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -48587,10 +49871,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 130,
-    "damage_s_max": 180,
-    "damage_l_min": 180,
-    "damage_l_max": 200,
+    "damage_small": {
+      "min": 130,
+      "max": 180
+    },
+    "damage_large": {
+      "min": 180,
+      "max": 200
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -48634,10 +49922,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 140,
-    "damage_s_max": 170,
-    "damage_l_min": 130,
-    "damage_l_max": 160,
+    "damage_small": {
+      "min": 140,
+      "max": 170
+    },
+    "damage_large": {
+      "min": 130,
+      "max": 160
+    },
     "sound": 0,
     "spell": null,
     "rename": 500
@@ -48681,10 +49973,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 260,
-    "damage_s_max": 290,
-    "damage_l_min": 240,
-    "damage_l_max": 270,
+    "damage_small": {
+      "min": 260,
+      "max": 290
+    },
+    "damage_large": {
+      "min": 240,
+      "max": 270
+    },
     "sound": 0,
     "spell": null,
     "rename": 1500
@@ -48720,10 +50016,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 5,
-    "damage_s_max": 10,
-    "damage_l_min": 5,
-    "damage_l_max": 10,
+    "damage_small": {
+      "min": 5,
+      "max": 10
+    },
+    "damage_large": {
+      "min": 5,
+      "max": 10
+    },
     "sound": 0,
     "spell": null,
     "rename": 10
@@ -48767,10 +50067,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 150,
-    "damage_l_min": 120,
-    "damage_l_max": 150,
+    "damage_small": {
+      "min": 120,
+      "max": 150
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 150
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -48814,10 +50118,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 50,
-    "damage_s_max": 170,
-    "damage_l_min": 50,
-    "damage_l_max": 170,
+    "damage_small": {
+      "min": 50,
+      "max": 170
+    },
+    "damage_large": {
+      "min": 50,
+      "max": 170
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -48861,10 +50169,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 80,
-    "damage_s_max": 110,
-    "damage_l_min": 80,
-    "damage_l_max": 110,
+    "damage_small": {
+      "min": 80,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 80,
+      "max": 110
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -48908,10 +50220,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 120,
-    "damage_s_max": 260,
-    "damage_l_min": 120,
-    "damage_l_max": 260,
+    "damage_small": {
+      "min": 120,
+      "max": 260
+    },
+    "damage_large": {
+      "min": 120,
+      "max": 260
+    },
     "sound": 0,
     "spell": null,
     "rename": 50
@@ -48955,10 +50271,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 14,
-    "damage_s_max": 20,
-    "damage_l_min": 49,
-    "damage_l_max": 55,
+    "damage_small": {
+      "min": 14,
+      "max": 20
+    },
+    "damage_large": {
+      "min": 49,
+      "max": 55
+    },
     "sound": 0,
     "spell": null,
     "rename": 5000
@@ -49002,10 +50322,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 110,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -49049,10 +50373,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 100,
-    "damage_s_max": 110,
-    "damage_l_min": 110,
-    "damage_l_max": 120,
+    "damage_small": {
+      "min": 100,
+      "max": 110
+    },
+    "damage_large": {
+      "min": 110,
+      "max": 120
+    },
     "sound": 0,
     "spell": null,
     "rename": 10000
@@ -49088,10 +50416,14 @@
     "healing_cycle": 0,
     "defensive_physical": 0,
     "defensive_magical": 0,
-    "damage_s_min": 0,
-    "damage_s_max": 0,
-    "damage_l_min": 0,
-    "damage_l_max": 0,
+    "damage_small": {
+      "min": 0,
+      "max": 1
+    },
+    "damage_large": {
+      "min": 0,
+      "max": 1
+    },
     "sound": 0,
     "spell": null,
     "rename": 0

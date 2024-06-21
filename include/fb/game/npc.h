@@ -23,21 +23,21 @@ public:
 
 public:
     npc*                        make(fb::game::context& context);
-    bool                        buy(fb::game::session& session, fb::model::item& item, std::optional<uint16_t> count, bool bought);
-    bool                        sell(fb::game::session& session, fb::model::item& item, uint16_t count, bool sold);
-    bool                        repair(fb::game::session& session, fb::model::item& item, bool done);
+    bool                        buy(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count, bool bought);
+    bool                        sell(fb::game::session& session, fb::model::item* item, uint16_t count, bool sold);
+    bool                        repair(fb::game::session& session, fb::model::item* item, bool done);
     bool                        hold_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
-    bool                        hold_item(fb::game::session& session, fb::model::item& item, std::optional<uint16_t> count);
-    bool                        return_item(fb::game::session& session, fb::model::item& item, std::optional<uint16_t> count);
+    bool                        hold_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count);
+    bool                        return_item(fb::game::session& session, fb::model::item* item, std::optional<uint16_t> count);
     void                        sell_list();
     void                        buy_list();
-    void                        sell_price(const fb::model::item& item);
-    void                        buy_price(const fb::model::item& item);
+    void                        sell_price(const fb::model::item* item);
+    void                        buy_price(const fb::model::item* item);
     bool                        deposited_money(const fb::game::session& session);
-    bool                        rename_weapon(fb::game::session& session, const fb::model::item& item, const std::string& name);
+    bool                        rename_weapon(fb::game::session& session, const fb::model::item* item, const std::string& name);
     bool                        hold_item_list(const fb::game::session& session);
-    bool                        hold_item_count(const fb::game::session& session, const fb::model::item& item);
+    bool                        hold_item_count(const fb::game::session& session, const fb::model::item* item);
 
 public:
     static int                  builtin_input(lua_State* lua);

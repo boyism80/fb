@@ -1012,6 +1012,15 @@ inline WEAPON_TYPE enum_parse<WEAPON_TYPE>(const std::string k)
 #pragma region const
 namespace const_value {
 
+class mob
+{
+public:
+    inline static constexpr const uint32_t horse = 301;
+
+private:
+    mob() = default;
+    ~mob() = default;
+};
 class regex
 {
 public:
@@ -1219,6 +1228,18 @@ template <> static boost::posix_time::ptime build<boost::posix_time::ptime>(cons
 template <> static std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
 template <> static fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
 template <> static fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
+template <> static struct point8_t build<point8_t>(const Json::Value& json);
+template <> static struct point16_t build<point16_t>(const Json::Value& json);
+template <> static struct point32_t build<point32_t>(const Json::Value& json);
+template <> static struct point64_t build<point64_t>(const Json::Value& json);
+template <> static struct size8_t build<size8_t>(const Json::Value& json);
+template <> static struct size16_t build<size16_t>(const Json::Value& json);
+template <> static struct size32_t build<size32_t>(const Json::Value& json);
+template <> static struct size64_t build<size64_t>(const Json::Value& json);
+template <> static struct range8_t build<range8_t>(const Json::Value& json);
+template <> static struct range16_t build<range16_t>(const Json::Value& json);
+template <> static struct range32_t build<range32_t>(const Json::Value& json);
+template <> static struct range64_t build<range64_t>(const Json::Value& json);
 
 #pragma region dsl
 class dsl
@@ -1774,10 +1795,8 @@ DECLARE_MOB_SPAWN_INHERIT
 {
 public:
     const uint32_t parent;
-    const uint32_t x0;
-    const uint32_t x1;
-    const uint32_t y0;
-    const uint32_t y1;
+    const point16_t begin;
+    const point16_t end;
     const uint32_t count;
     const uint32_t mob;
     const std::chrono::milliseconds rezen;
@@ -1788,10 +1807,8 @@ public:
 DECLARE_MOB_SPAWN_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
-        x0(fb::model::build<uint32_t>(json["x0"])),
-        x1(fb::model::build<uint32_t>(json["x1"])),
-        y0(fb::model::build<uint32_t>(json["y0"])),
-        y1(fb::model::build<uint32_t>(json["y1"])),
+        begin(fb::model::build<point16_t>(json["begin"])),
+        end(fb::model::build<point16_t>(json["end"])),
         count(fb::model::build<uint32_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
         rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
@@ -2458,8 +2475,7 @@ public:
     const uint32_t id;
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
-    const uint32_t damage_min;
-    const uint32_t damage_max;
+    const range32_t damage;
     const std::chrono::milliseconds speed;
     const std::string drop;
     const std::string attack_script;
@@ -2470,8 +2486,7 @@ public:
         id(fb::model::build<uint32_t>(json["id"])),
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
-        damage_min(fb::model::build<uint32_t>(json["damage_min"])),
-        damage_max(fb::model::build<uint32_t>(json["damage_max"])),
+        damage(fb::model::build<range32_t>(json["damage"])),
         speed(fb::model::build<std::chrono::milliseconds>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
@@ -2599,20 +2614,16 @@ DECLARE_SHIELD_EXTENSION
 class weapon : public fb::model::equipment
 {
 public:
-    const uint32_t damage_s_min;
-    const uint32_t damage_s_max;
-    const uint32_t damage_l_min;
-    const uint32_t damage_l_max;
+    const range32_t damage_small;
+    const range32_t damage_large;
     const uint16_t sound;
     const std::optional<uint32_t> spell;
     const std::optional<uint32_t> rename;
 
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
-        damage_s_min(fb::model::build<uint32_t>(json["damage_s_min"])),
-        damage_s_max(fb::model::build<uint32_t>(json["damage_s_max"])),
-        damage_l_min(fb::model::build<uint32_t>(json["damage_l_min"])),
-        damage_l_max(fb::model::build<uint32_t>(json["damage_l_max"])),
+        damage_small(fb::model::build<range32_t>(json["damage_small"])),
+        damage_large(fb::model::build<range32_t>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),
         spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
         rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))
@@ -3623,6 +3634,90 @@ template <> dsl build<dsl>(const Json::Value& json)
 template <> date_range build<date_range>(const Json::Value& json)
 {
     return date_range(build<std::optional<boost::posix_time::ptime>>(json["Begin"]), build<std::optional<boost::posix_time::ptime>>(json["End"]));
+}
+
+template <> struct point8_t build<point8_t>(const Json::Value& json)
+{
+    auto x = build<uint8_t>(json["x"]);
+    auto y = build<uint8_t>(json["y"]);
+    return point8_t(x, y);
+}
+
+template <> struct point16_t build<point16_t>(const Json::Value& json)
+{
+    auto x = build<uint16_t>(json["x"]);
+    auto y = build<uint16_t>(json["y"]);
+    return point16_t(x, y);
+}
+
+template <> struct point32_t build<point32_t>(const Json::Value& json)
+{
+    auto x = build<uint32_t>(json["x"]);
+    auto y = build<uint32_t>(json["y"]);
+    return point32_t(x, y);
+}
+
+template <> struct point64_t build<point64_t>(const Json::Value& json)
+{
+    auto x = build<uint64_t>(json["x"]);
+    auto y = build<uint64_t>(json["y"]);
+    return point64_t(x, y);
+}
+
+template <> struct size8_t build<size8_t>(const Json::Value& json)
+{
+    auto width = build<uint8_t>(json["width"]);
+    auto height = build<uint8_t>(json["height"]);
+    return size8_t(width, height);
+}
+
+template <> struct size16_t build<size16_t>(const Json::Value& json)
+{
+    auto width = build<uint16_t>(json["width"]);
+    auto height = build<uint16_t>(json["height"]);
+    return size16_t(width, height);
+}
+
+template <> struct size32_t build<size32_t>(const Json::Value& json)
+{
+    auto width = build<uint32_t>(json["width"]);
+    auto height = build<uint32_t>(json["height"]);
+    return size32_t(width, height);
+}
+
+template <> struct size64_t build<size64_t>(const Json::Value& json)
+{
+    auto width = build<uint64_t>(json["width"]);
+    auto height = build<uint64_t>(json["height"]);
+    return size64_t(width, height);
+}
+
+template <> struct range8_t build<range8_t>(const Json::Value& json)
+{
+    auto min = build<uint8_t>(json["min"]);
+    auto max = build<uint8_t>(json["max"]);
+    return range8_t(min, max);
+}
+
+template <> struct range16_t build<range16_t>(const Json::Value& json)
+{
+    auto min = build<uint16_t>(json["min"]);
+    auto max = build<uint16_t>(json["max"]);
+    return range16_t(min, max);
+}
+
+template <> struct range32_t build<range32_t>(const Json::Value& json)
+{
+    auto min = build<uint32_t>(json["min"]);
+    auto max = build<uint32_t>(json["max"]);
+    return range32_t(min, max);
+}
+
+template <> struct range64_t build<range64_t>(const Json::Value& json)
+{
+    auto min = build<uint64_t>(json["min"]);
+    auto max = build<uint64_t>(json["max"]);
+    return range64_t(min, max);
 }
 #pragma endregion
 

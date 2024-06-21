@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "name": "system_session",
+    "look": 0,
+    "color": 0,
+    "hp": 0,
+    "mp": 0,
+    "exp": 0,
+    "defensive_physical": 0,
+    "defensive_magical": 0
+  }
+]

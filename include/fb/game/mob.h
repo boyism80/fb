@@ -26,15 +26,10 @@ public:
         const bool alive = false;
     };
 
-public:
-    enum class offensive_type : uint8_t { CONTAINMENT, COUNTER, NONE, NON_MOVE, RUN_AWAY};
-
-    enum class sizes : uint8_t { SMALL = 0x00, LARGE = 0x01 };
-
 private:
     listener*                               _listener      = nullptr;
-    point16_t                    _spawn_point   = point16_t(0, 0);
-    size16_t                     _spawn_size    = size16_t(0, 0);
+    point16_t                               _spawn_point   = point16_t(0, 0);
+    size16_t                                _spawn_size    = size16_t(0, 0);
                                                            
     std::chrono::milliseconds               _action_time   = 0ms; // ms
     std::chrono::milliseconds               _dead_time     = 0ms; // ms
@@ -44,7 +39,7 @@ private:
     lua::context*                           _attack_thread = nullptr;
 
 public:
-    mob(fb::game::context& context, const mob::model* model, const fb::game::mob::config& config);
+    mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config);
     mob(const mob& right);
     ~mob();
 
@@ -56,7 +51,7 @@ public:
     bool                                    action();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
-    const point16_t&             spawn_point() const;
+    const point16_t&                        spawn_point() const;
     void                                    spawn_point(uint16_t x, uint16_t y);
     void                                    spawn_point(const point16_t point);
 

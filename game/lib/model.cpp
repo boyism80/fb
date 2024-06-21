@@ -743,22 +743,22 @@ fb::game::mob::sizes container::mob::to_size(const std::string& size)
     throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_SIZE);
 }
 
-fb::game::mob::offensive_type container::mob::to_offensive(const std::string& offensive)
+MOB_ATTACK_TYPE container::mob::to_offensive(const std::string& offensive)
 {
     if(offensive == "containment")
-        return fb::game::mob::offensive_type::CONTAINMENT;
+        return MOB_ATTACK_TYPE::CONTAINMENT;
 
     if(offensive == "counter")
-        return fb::game::mob::offensive_type::COUNTER;
+        return MOB_ATTACK_TYPE::COUNTER;
 
     if(offensive == "none")
-        return fb::game::mob::offensive_type::NONE;
+        return MOB_ATTACK_TYPE::NONE;
 
     if(offensive == "non move")
-        return fb::game::mob::offensive_type::NON_MOVE;
+        return MOB_ATTACK_TYPE::NON_MOVE;
 
     if(offensive == "run away")
-        return fb::game::mob::offensive_type::RUN_AWAY;
+        return MOB_ATTACK_TYPE::RUN_AWAY;
 
     throw std::runtime_error(fb::model::const_value::string::MESSAGE_ASSET_INVALID_MOB_OFFENSIVE);
 }

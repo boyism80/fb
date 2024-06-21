@@ -468,15 +468,15 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "WEAPON_TYPE_UNKNOWN");
 
 
-    lua_pushinteger(*this, fb::game::mob::offensive_type::CONTAINMENT);
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::CONTAINMENT);
     lua_setglobal(*this, "OFFENSIVE_CONTAINMENT");
-    lua_pushinteger(*this, fb::game::mob::offensive_type::COUNTER);
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::COUNTER);
     lua_setglobal(*this, "OFFENSIVE_COUNTER");
-    lua_pushinteger(*this, fb::game::mob::offensive_type::NONE);
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::NONE);
     lua_setglobal(*this, "OFFENSIVE_NONE");
-    lua_pushinteger(*this, fb::game::mob::offensive_type::NON_MOVE);
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::NON_MOVE);
     lua_setglobal(*this, "OFFENSIVE_NON_MOVE");
-    lua_pushinteger(*this, fb::game::mob::offensive_type::RUN_AWAY);
+    lua_pushinteger(*this, MOB_ATTACK_TYPE::RUN_AWAY);
     lua_setglobal(*this, "OFFENSIVE_RUN_AWAY");
 
 

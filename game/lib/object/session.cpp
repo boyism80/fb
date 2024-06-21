@@ -5,7 +5,7 @@
 using namespace fb::game;
 
 session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
-    life(context, nullptr, fb::game::life::config { { .id = (uint32_t)socket.fd()} }),
+    life(context, context.model.life[0], fb::game::life::config{{.id = (uint32_t)socket.fd()}}),
     _socket(socket)
 {
     inline_interaction_funcs.push_back(std::bind(&session::inline_sell,                    this, std::placeholders::_1, std::placeholders::_2));
@@ -118,18 +118,20 @@ uint32_t fb::game::session::on_calculate_damage(bool critical) const
     auto                    weapon = this->items.weapon();
     auto                    model = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
 
+    // TODO: 이거 크리터졌을때가 아니라 때리는 몹 타입으로 small, large 써야함
+
     if(weapon == nullptr) // no weapon
     {
         return 1 + std::rand() % 5;
     }
     else if(critical)
     {
-        auto                range = model->damage_range.large;
+        auto&               range = model->damage_small;
         return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
     }
     else // normal
     {
-        auto                range = model->damage_range.small;
+        auto&               range = model->damage_large;
         return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
     }
 }
@@ -172,7 +174,7 @@ void fb::game::session::on_kill(fb::game::life& you)
     auto exp = you.on_exp();
     if(exp > 0)
     {
-        auto                    range = fb::game::old_model::classes.exp(this->cls(), this->level());
+        auto range = this->context.model.ability[this->_class][this->_level].exp;
 #if defined DEBUG | defined _DEBUG
         exp *= 100;
 #else
@@ -468,15 +470,15 @@ bool fb::game::session::level_up()
     if(this->max_level())
         return false;
 
-    if(this->_class == 0 && this->_level >= 5)
+    if(this->_class == CLASS::NONE && this->_level >= 5)
         return false;
 
-    this->strength_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->strength);
-    this->intelligence_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->intelligence);
-    this->dexteritry_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->dexteritry);
-
-    this->base_hp_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->base_hp + std::rand() % 10);
-    this->base_mp_up(fb::game::old_model::classes[this->_class]->abilities[this->_level]->base_mp + std::rand() % 10);
+    auto& ability = this->context.model.ability[this->_class][this->_level];
+    this->strength_up(ability.strength);
+    this->intelligence_up(ability.intelligence);
+    this->dexteritry_up(ability.dexteritry);
+    this->base_hp_up(ability.hp + std::rand() % 10);
+    this->base_mp_up(ability.mp + std::rand() % 10);
 
     this->hp(this->base_hp());
     this->mp(this->base_mp());
@@ -617,9 +619,9 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
     try
     {
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
-        if(this->_class == 0)
+        if(this->_class == CLASS::NONE)
         {
-            auto require = fb::game::old_model::classes.exp(0, 5 - 1);
+            auto require = this->context.model.ability[CLASS::NONE][5].exp;
             if(this->_experience > require)
                 value = 0;
 
@@ -653,7 +655,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             if(this->max_level())
                 break;
 
-            auto require = fb::game::old_model::classes.exp(this->_class, this->_level);
+            auto require = this->context.model.ability[this->_class][this->_level].exp;
             if(require == 0)
                 break;
 
@@ -664,7 +666,7 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
                 break;
         }
 
-        if(this->_class == 0 && this->_level >= 5)
+        if(this->_class == CLASS::NONE && this->_level >= 5)
             throw require_class_exception();
     }
     catch(std::exception& e)
@@ -697,18 +699,18 @@ uint32_t fb::game::session::experience_remained() const
     if(this->max_level())
         return 0;
 
-    if(this->_class == 0 && this->_level >= 5)
+    if(this->_class == CLASS::NONE && this->_level >= 5)
         return 0;
 
-    return fb::game::old_model::classes.exp(this->_class, this->_level) - this->experience();
+    return this->context.model.ability[this->_class][this->_level].exp - this->experience();
 }
 
 float fb::game::session::experience_percent() const
 {
     auto                    current_level = this->level();
-    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : fb::game::old_model::classes.exp(this->cls(), current_level);
+    auto                    next_exp = this->max_level() ? 0xFFFFFFFF : this->context.model.ability[this->_class][current_level].exp;
     auto                    prev_exp = current_level > 1 ? 
-                                       (this->max_level() ? 0x00000000 : fb::game::old_model::classes.exp(this->cls(), current_level - 1)) : 0;
+                                       (this->max_level() ? 0x00000000 : this->context.model.ability[this->_class][current_level - 1].exp) : 0;
     auto                    exp_range = next_exp - prev_exp;
 
     return std::min(100.0f, ((this->_experience - prev_exp) / float(exp_range)) * 100.0f);
@@ -840,12 +842,12 @@ uint32_t fb::game::session::withdraw_money(uint32_t value)
 
 bool fb::game::session::deposit_item(fb::game::item& item)
 {
-    if (item.attr(ITEM_ATTRIBUTE::BUNDLE))
+    if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
         auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
         {
-            auto model = deposited_item->based<fb::model::item>();
-            return item.based<fb::game::item>() == model;
+            auto& model = deposited_item->based<fb::model::item>();
+            return item.based<fb::model::item>() == model;
         });
 
         if (found == this->_deposited_items.end())
@@ -904,7 +906,7 @@ fb::game::item* fb::game::session::deposited_item(const fb::model::item& item) c
 {
     auto found = std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](fb::game::item* deposited_item)
     {
-        return deposited_item->based<fb::model::item>() == &item;
+        return deposited_item->based<fb::model::item>() == item;
     });
 
     if(found == this->_deposited_items.cend())
@@ -931,15 +933,15 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
     if (deposited_count < count)
         return nullptr;
 
-    auto model = deposited_item->based<fb::model::item>();
-    auto exists = model->attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(*model) : nullptr;
+    auto& model = deposited_item->based<fb::model::item>();
+    auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(model) : nullptr;
     if(exists != nullptr)
     {
-        if(exists->count() + count > model->capacity)
+        if(exists->count() + count > model.capacity)
             return nullptr;
 
         deposited_item->count(deposited_count - count);
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>()->make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
         if (deposited_item->empty())
         {
             auto i = this->_deposited_items.begin() + index;
@@ -960,7 +962,7 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
             this->_deposited_items.erase(i);
         }
 
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>()->make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
 
         return this->items.at(added_slot);
     }
@@ -970,8 +972,8 @@ fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](fb::game::item* deposited_item)
     {
-        auto model = deposited_item->based<fb::model::item>();
-        return model->name == name;
+        auto& model = deposited_item->based<fb::model::item>();
+        return model.name == name;
     });
 
     if (found == this->_deposited_items.end())
@@ -985,8 +987,8 @@ fb::game::item* fb::game::session::withdraw_item(const fb::model::item& item, ui
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
     {
-        auto model = deposited_item->based<fb::model::item>();
-        return model == &item;
+        auto& model = deposited_item->based<fb::model::item>();
+        return model == item;
     });
 
     if (found == this->_deposited_items.end())
@@ -1138,7 +1140,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(this->state() == STATE::RIDING)
             throw std::runtime_error(message::ride::ALREADY_RIDE);
 
-        if(horse.based<fb::game::mob>() != fb::game::old_model::mobs.name2mob("말"))
+        if(horse.based<fb::model::mob>() != this->context.model.mob[fb::model::const_value::mob::horse])
             throw session::no_conveyance_exception();
 
         if(horse.map() != this->_map)
@@ -1189,7 +1191,7 @@ void fb::game::session::unride()
         if(this->state() != STATE::RIDING)
             throw std::runtime_error(message::ride::UNRIDE);
 
-        auto model = fb::game::old_model::mobs.name2mob("말");
+        auto& model = this->context.model.mob[const_value::mob::horse];
         auto horse = this->context.make<fb::game::mob>(model, fb::game::mob::config { .alive = true });
         horse->map(this->_map, this->position_forward());
         

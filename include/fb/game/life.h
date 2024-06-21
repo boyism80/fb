@@ -13,9 +13,6 @@ public:
 public:
     interface listener;
 
-public:
-    class model;
-
 struct config : public fb::game::object::config
 {
 public:
@@ -32,7 +29,7 @@ public:
     fb::game::spells            spells;
 
 protected:
-    life(fb::game::context& context, const model* model, const fb::game::life::config& config);
+    life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config);
     virtual ~life();
 
 protected:
