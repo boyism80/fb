@@ -37,137 +37,230 @@ public:
     ~date_range() = default;
 };
 
-struct point8_t
+template <typename T>
+struct point
 {
 public:
-    uint8_t x = 0;
-    uint8_t y = 0;
+    T x = 0;
+    T y = 0;
 
-public:
-    point8_t() = default;
-    point8_t(uint8_t x, uint8_t y) : x(x), y(y)
-    { }
-
-};
-
-struct size8_t
-{
-public:
-    uint8_t width  = 0;
-    uint8_t height = 0;
-
-public:
-    size8_t() = default;
-    size8_t(uint8_t width, uint8_t height) : width(width), height(height)
+protected:
+    point() = default;
+    point(T x, T y) : x(x), y(y)
     { }
 
 public:
-    bool empty() { return this->width == 0 || this->height == 0; }
-};
-
-struct point16_t
-{
-public:
-    uint16_t x = 0;
-    uint16_t y = 0;
-
-public:
-    point16_t() = default;
-    point16_t(uint16_t x, uint16_t y) { this->x = x; this->y = y; }
-
-public:
-    bool operator == (const struct point16_t& right) const
+    bool operator == (const point<T>& r) const
     {
-        return (this->x == right.x) && (this->y == right.y);
+        return this->x == r.x && this->y == r.y;
     }
 
-    bool operator != (const struct point16_t& right) const
+    bool operator != (const point<T>& r) const
     {
-        return !(this->operator==(right));
+        return this->x != r.x || this->y != r.y;
     }
+#ifdef DECLARE_POINT_EXTENSION
+DECLARE_POINT_EXTENSION
+#endif
 };
 
-struct size16_t
+template <typename T>
+struct size
 {
 public:
-    uint16_t width  = 0;
-    uint16_t height = 0;
+    T width = 0;
+    T height = 0;
 
-public:
-    size16_t() = default;
-    size16_t(uint16_t width, uint16_t height) : width(width), height(height)
-    { }
-    size16_t(const struct size16_t& right) : width(right.width), height(right.height)
+protected:
+    size() = default;
+    size(T width, T height) : width(width), height(height)
     { }
 
 public:
-    bool empty() { return this->width == 0 || this->height == 0; }
+    bool operator == (const size<T>& r) const
+    {
+        return this->width == r.width && this->height == r.height;
+    }
 
+    bool operator != (const size<T>& r) const
+    {
+        return this->width != r.width || this->height != r.height;
+    }
+#ifdef DECLARE_SIZE_EXTENSION
+DECLARE_SIZE_EXTENSION
+#endif
 };
 
-struct mutable_uint16_t
+template <typename T>
+struct range
 {
 public:
-    uint16_t model  = 0;
-    uint16_t current = 0;
+    T min = 0;
+    T max = 0;
+
+protected:
+    range() = default;
+    range(T min, T max) : min(min), max(max)
+    { }
 
 public:
-    mutable_uint16_t() = default;
-    mutable_uint16_t(uint16_t value) : model(value), current(value) 
-    { }
-    mutable_uint16_t(uint16_t model, uint16_t current) : model(model), current(current)
-    { }
+    bool operator == (const range<T>& r) const
+    {
+        return this->min == r.min && this->max == r.max;
+    }
+
+    bool operator != (const range<T>& r) const
+    {
+        return this->min != r.min || this->max != r.max;
+    }
+#ifdef DECLARE_RANGE_EXTENSION
+DECLARE_RANGE_EXTENSION
+#endif
 };
 
-struct mutable_uint32_t
+struct point8_t : public point<uint8_t>
 {
 public:
-    uint32_t model  = 0;
-    uint32_t current = 0;
-
-public:
-    mutable_uint32_t() = default;
-    mutable_uint32_t(uint32_t value) : model(value), current(value)
+    point8_t()
     { }
-    mutable_uint32_t(uint32_t model, uint32_t current) : model(model), current(current)
+    point8_t(uint8_t x,  uint8_t y) : point<uint8_t>(x, y)
     { }
+#ifdef DECLARE_POINT8_T_EXTENSION
+DECLARE_POINT8_T_EXTENSION
+#endif
 };
 
-struct range8_t
+struct point16_t : public point<uint16_t>
 {
 public:
-    uint8_t min = 0;
-    uint8_t max = 0;
-
-public:
-    range8_t() = default;
-    range8_t(uint8_t min, uint8_t max) : min(min), max(max)
+    point16_t()
     { }
+    point16_t(uint16_t x,  uint16_t y) : point<uint16_t>(x, y)
+    { }
+#ifdef DECLARE_POINT16_T_EXTENSION
+DECLARE_POINT16_T_EXTENSION
+#endif
 };
 
-struct range16_t
+struct point32_t : public point<uint32_t>
 {
 public:
-    uint16_t min = 0;
-    uint16_t max = 0;
-
-public:
-    range16_t() = default;
-    range16_t(uint16_t min, uint16_t max) : min(min), max(max)
+    point32_t()
     { }
+    point32_t(uint32_t x,  uint32_t y) : point<uint32_t>(x, y)
+    { }
+#ifdef DECLARE_POINT32_T_EXTENSION
+DECLARE_POINT32_T_EXTENSION
+#endif
 };
 
-struct range32_t
+struct point64_t : public point<uint64_t>
 {
 public:
-    uint32_t min = 0;
-    uint32_t max = 0;
-
-public:
-    range32_t() = default;
-    range32_t(uint32_t min, uint32_t max) : min(min), max(max)
+    point64_t()
     { }
+    point64_t(uint64_t x,  uint64_t y) : point<uint64_t>(x, y)
+    { }
+#ifdef DECLARE_POINT64_T_EXTENSION
+DECLARE_POINT64_T_EXTENSION
+#endif
 };
+struct size8_t : public size<uint8_t>
+{
+public:
+    size8_t()
+    { }
+    size8_t(uint8_t width,  uint8_t height) : size<uint8_t>(width, height)
+    { }
+#ifdef DECLARE_SIZE8_T_EXTENSION
+DECLARE_SIZE8_T_EXTENSION
+#endif
+};
+
+struct size16_t : public size<uint16_t>
+{
+public:
+    size16_t()
+    { }
+    size16_t(uint16_t width,  uint16_t height) : size<uint16_t>(width, height)
+    { }
+#ifdef DECLARE_SIZE16_T_EXTENSION
+DECLARE_SIZE16_T_EXTENSION
+#endif
+};
+
+struct size32_t : public size<uint32_t>
+{
+public:
+    size32_t()
+    { }
+    size32_t(uint32_t width,  uint32_t height) : size<uint32_t>(width, height)
+    { }
+#ifdef DECLARE_SIZE32_T_EXTENSION
+DECLARE_SIZE32_T_EXTENSION
+#endif
+};
+
+struct size64_t : public size<uint64_t>
+{
+public:
+    size64_t()
+    { }
+    size64_t(uint64_t width,  uint64_t height) : size<uint64_t>(width, height)
+    { }
+#ifdef DECLARE_SIZE64_T_EXTENSION
+DECLARE_SIZE64_T_EXTENSION
+#endif
+};
+struct range8_t : public range<uint8_t>
+{
+public:
+    range8_t()
+    { }
+    range8_t(uint8_t min,  uint8_t max) : range<uint8_t>(min, max)
+    { }
+#ifdef DECLARE_RANGE8_T_EXTENSION
+DECLARE_RANGE8_T_EXTENSION
+#endif
+};
+
+struct range16_t : public range<uint16_t>
+{
+public:
+    range16_t()
+    { }
+    range16_t(uint16_t min,  uint16_t max) : range<uint16_t>(min, max)
+    { }
+#ifdef DECLARE_RANGE16_T_EXTENSION
+DECLARE_RANGE16_T_EXTENSION
+#endif
+};
+
+struct range32_t : public range<uint32_t>
+{
+public:
+    range32_t()
+    { }
+    range32_t(uint32_t min,  uint32_t max) : range<uint32_t>(min, max)
+    { }
+#ifdef DECLARE_RANGE32_T_EXTENSION
+DECLARE_RANGE32_T_EXTENSION
+#endif
+};
+
+struct range64_t : public range<uint64_t>
+{
+public:
+    range64_t()
+    { }
+    range64_t(uint64_t min,  uint64_t max) : range<uint64_t>(min, max)
+    { }
+#ifdef DECLARE_RANGE64_T_EXTENSION
+DECLARE_RANGE64_T_EXTENSION
+#endif
+};
+
+
 #pragma endregion
 
 #pragma region enum
@@ -2649,8 +2742,8 @@ private:
     std::optional<std::pair<K, V&>> _pair;
 
 public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
-        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
+    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
+        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~iterator() = default;
 
@@ -2668,8 +2761,8 @@ private:
     const std::optional<std::pair<K, V&>> _pair;
 
 public:
-    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
-        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
+    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
+        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~const_iterator() = default;
 
@@ -2683,25 +2776,25 @@ public:
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::begin()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), *this);
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
 }
 
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::end()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), *this);
+    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), *this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), *this);
+    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
 }
 
 template <typename T>

@@ -81,7 +81,7 @@ void fb::game::object::chat(const std::string& message, bool shout)
             this->_listener->on_chat(*this, message, shout);
 }
 
-const fb::game::point16_t& fb::game::object::position() const
+const point16_t& fb::game::object::position() const
 {
     return this->_position;
 }
@@ -224,12 +224,12 @@ bool fb::game::object::move(DIRECTION direction)
     return true;
 }
 
-const fb::game::point16_t fb::game::object::position_forward() const
+const point16_t fb::game::object::position_forward() const
 {
     return this->position_forward(this->_direction);
 }
 
-const fb::game::point16_t fb::game::object::position_forward(DIRECTION direction) const
+const point16_t fb::game::object::position_forward(DIRECTION direction) const
 {
     auto current = point16_t(this->_position);
     auto forward = point16_t(current);
@@ -384,7 +384,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-fb::task<bool> fb::game::object::__map(fb::model::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
+fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
 {
     try
     {
@@ -491,7 +491,7 @@ fb::task<bool> fb::game::object::__map(fb::model::map* map, const point16_t posi
     }
 }
 
-fb::awaiter<bool> fb::game::object::co_map(fb::model::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
 {
     return fb::awaiter<bool>([this, map, position](auto& awaiter)
     {
@@ -499,12 +499,12 @@ fb::awaiter<bool> fb::game::object::co_map(fb::model::map* map, const point16_t&
     });
 }
 
-fb::awaiter<bool> fb::game::object::co_map(fb::model::map* map)
+fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }
 
-bool fb::game::object::map(fb::model::map* map, const point16_t& position)
+bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     auto task = this->__map(map, position);
     if (task.done())
@@ -513,7 +513,7 @@ bool fb::game::object::map(fb::model::map* map, const point16_t& position)
     return true;
 }
 
-bool fb::game::object::map(fb::model::map* map)
+bool fb::game::object::map(fb::game::map* map)
 {
     return this->map(map, point16_t(0, 0));
 }
@@ -655,7 +655,7 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
     return std::move(objects);
 }
 
-std::vector<object*> fb::game::object::showings(OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showings(OBJECT_TYPE type) const
 {
     if(this->_map == nullptr)
         return std::vector<object*> { };
@@ -663,7 +663,7 @@ std::vector<object*> fb::game::object::showings(OBJECT_TYPE type) const
         return this->showings(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     if(this->_map == nullptr)

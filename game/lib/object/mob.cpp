@@ -98,7 +98,7 @@ uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool cri
     return value;
 }
 
-const fb::game::point16_t& fb::game::mob::spawn_point() const
+const point16_t& fb::game::mob::spawn_point() const
 {
     return this->_spawn_point;
 }
@@ -109,7 +109,7 @@ void fb::game::mob::spawn_point(uint16_t x, uint16_t y)
     this->_spawn_point.y = y;
 }
 
-void fb::game::mob::spawn_point(const fb::game::point16_t point)
+void fb::game::mob::spawn_point(const point16_t point)
 {
     this->_spawn_point = point;
 }

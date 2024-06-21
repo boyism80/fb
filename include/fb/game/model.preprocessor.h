@@ -2,6 +2,12 @@
 #define __MODEL_PREPROCESSOR_H__
 
 #define ROOT_PREPROCESSOR                                                                     \
+namespace fb { namespace model { namespace enum_value {                                       \
+                                                                                              \
+enum class DIRECTION;                                                                         \
+                                                                                              \
+} } }                                                                                         \
+                                                                                              \
 namespace fb { namespace game {                                                               \
                                                                                               \
 class context;                                                                                \
@@ -16,6 +22,112 @@ class sectors;                                                                  
 class listener;                                                                               \
                                                                                               \
 } }
+
+#define DECLARE_POINT_EXTENSION                                                               \
+public:                                                                                       \
+    struct point<T>& move(fb::model::enum_value::DIRECTION direction, T step = 1)             \
+    {                                                                                         \
+        switch(direction)                                                                     \
+        {                                                                                     \
+        case fb::model::enum_value::DIRECTION::TOP:                                           \
+            this->y -= step;                                                                  \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                        \
+            this->y += step;                                                                  \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::LEFT:                                          \
+            this->x -= step;                                                                  \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                         \
+            this->x += step;                                                                  \
+            break;                                                                            \
+        }                                                                                     \
+                                                                                              \
+        return *this;                                                                         \
+    }                                                                                         \
+                                                                                              \
+    struct point<T>& forward(fb::model::enum_value::DIRECTION direction, T step = 1)          \
+    {                                                                                         \
+        return this->move(direction, step);                                                   \
+    }                                                                                         \
+                                                                                              \
+    struct point<T>& backward(fb::model::enum_value::DIRECTION direction, T step = 1)         \
+    {                                                                                         \
+        auto newdir = direction;                                                              \
+        switch(direction)                                                                     \
+        {                                                                                     \
+        case fb::model::enum_value::DIRECTION::TOP:                                           \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                                \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                        \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                   \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::LEFT:                                          \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                                 \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                         \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                  \
+            break;                                                                            \
+        }                                                                                     \
+                                                                                              \
+        return this->move(newdir, step);                                                      \
+    }                                                                                         \
+                                                                                              \
+    struct point<T>& left(fb::model::enum_value::DIRECTION direction, T step = 1)             \
+    {                                                                                         \
+        auto newdir = direction;                                                              \
+        switch(direction)                                                                     \
+        {                                                                                     \
+        case fb::model::enum_value::DIRECTION::TOP:                                           \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                  \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                        \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                                 \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::LEFT:                                          \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                                \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                         \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                   \
+            break;                                                                            \
+        }                                                                                     \
+                                                                                              \
+        return this->move(newdir, step);                                                      \
+    }                                                                                         \
+                                                                                              \
+    struct point<T>& right(fb::model::enum_value::DIRECTION direction, T step = 1)            \
+    {                                                                                         \
+        auto newdir = direction;                                                              \
+        switch(direction)                                                                     \
+        {                                                                                     \
+        case fb::model::enum_value::DIRECTION::TOP:                                           \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                                 \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                        \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                  \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::LEFT:                                          \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                   \
+            break;                                                                            \
+                                                                                              \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                         \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                                \
+            break;                                                                            \
+        }                                                                                     \
+                                                                                              \
+        return this->move(newdir, step);                                                      \
+    }
 
 
 #define DECLARE_OBJECT_INHERIT  : public fb::game::lua::luable

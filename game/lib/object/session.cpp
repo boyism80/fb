@@ -1,6 +1,5 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
-#include <fb/game/old_model.h>
 #include <fb/game/regex.h>
 
 using namespace fb::game;
@@ -50,7 +49,7 @@ OBJECT_TYPE fb::game::session::type() const
     return OBJECT_TYPE::SESSION;
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::model::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
 {
     if (this->_map_lock)
         return fb::awaiter<bool>([this, map, position](auto& awaiter) { return false; });
@@ -71,7 +70,7 @@ fb::awaiter<bool> fb::game::session::co_map(fb::model::map* map, const point16_t
     }
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::model::map* map)
+fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map)
 {
     return this->co_map(map, point16_t(0, 0));
 }
@@ -117,7 +116,7 @@ void fb::game::session::on_update()
 uint32_t fb::game::session::on_calculate_damage(bool critical) const
 {
     auto                    weapon = this->items.weapon();
-    auto                    model = weapon != nullptr ? weapon->based<fb::game::weapon>() : nullptr;
+    auto                    model = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
 
     if(weapon == nullptr) // no weapon
     {
@@ -845,7 +844,7 @@ bool fb::game::session::deposit_item(fb::game::item& item)
     {
         auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
         {
-            auto model = deposited_item->based<fb::game::item>();
+            auto model = deposited_item->based<fb::model::item>();
             return item.based<fb::game::item>() == model;
         });
 
@@ -905,7 +904,7 @@ fb::game::item* fb::game::session::deposited_item(const fb::model::item& item) c
 {
     auto found = std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](fb::game::item* deposited_item)
     {
-        return deposited_item->based<fb::game::item>() == &item;
+        return deposited_item->based<fb::model::item>() == &item;
     });
 
     if(found == this->_deposited_items.cend())
@@ -932,7 +931,7 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
     if (deposited_count < count)
         return nullptr;
 
-    auto model = deposited_item->based<fb::game::item>();
+    auto model = deposited_item->based<fb::model::item>();
     auto exists = model->attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(*model) : nullptr;
     if(exists != nullptr)
     {
@@ -940,7 +939,7 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
             return nullptr;
 
         deposited_item->count(deposited_count - count);
-        auto added_slot = this->items.add(deposited_item->based<fb::game::item>()->make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>()->make(this->context, count));
         if (deposited_item->empty())
         {
             auto i = this->_deposited_items.begin() + index;
@@ -961,7 +960,7 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
             this->_deposited_items.erase(i);
         }
 
-        auto added_slot = this->items.add(deposited_item->based<fb::game::item>()->make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>()->make(this->context, count));
 
         return this->items.at(added_slot);
     }
@@ -971,7 +970,7 @@ fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](fb::game::item* deposited_item)
     {
-        auto model = deposited_item->based<fb::game::item>();
+        auto model = deposited_item->based<fb::model::item>();
         return model->name == name;
     });
 
@@ -986,7 +985,7 @@ fb::game::item* fb::game::session::withdraw_item(const fb::model::item& item, ui
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
     {
-        auto model = deposited_item->based<fb::game::item>();
+        auto model = deposited_item->based<fb::model::item>();
         return model == &item;
     });
 
