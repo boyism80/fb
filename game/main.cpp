@@ -34,6 +34,8 @@ bool load_db(fb::console& c, fb::game::context& context)
         {
         case ITEM_TYPE::STUFF:
             return fb::model::build<fb::model::item*>(json);
+        case ITEM_TYPE::CASH:
+            return fb::model::build<fb::model::cash*>(json);
         case ITEM_TYPE::CONSUME:
             return fb::model::build<fb::model::consume*>(json);
         case ITEM_TYPE::WEAPON:

@@ -198,10 +198,11 @@ fb::task<bool> fb::game::context::handle_command_spell(fb::game::session& sessio
         co_return false;
 
     auto name = parameters[0].asString();
-    auto spell = this->model.spell.name2spell(name);
-    if(spell == nullptr)
+    auto model = this->model.spell.name2spell(name);
+    if(model == nullptr)
         co_return false;
 
+    auto spell = this->make<fb::game::spell>(model);
     auto slot = session.spells.add(spell);
     if(slot == 0xFF)
         co_return false;

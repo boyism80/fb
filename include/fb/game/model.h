@@ -705,15 +705,16 @@ inline ITEM_DELETE_TYPE enum_parse<ITEM_DELETE_TYPE>(const std::string k)
 enum class ITEM_TYPE
 {
     STUFF = 1, 
-    CONSUME = 2, 
-    WEAPON = 3, 
-    ARMOR = 4, 
-    HELMET = 5, 
-    RING = 6, 
-    SHIELD = 7, 
-    AUXILIARY = 8, 
-    BOW = 9, 
-    PACKAGE = 10
+    CASH = 2, 
+    CONSUME = 3, 
+    WEAPON = 4, 
+    ARMOR = 5, 
+    HELMET = 6, 
+    RING = 7, 
+    SHIELD = 8, 
+    AUXILIARY = 9, 
+    BOW = 10, 
+    PACKAGE = 11
 };
 
 template <>
@@ -722,6 +723,7 @@ inline ITEM_TYPE enum_parse<ITEM_TYPE>(const std::string k)
     static const std::unordered_map<std::string, ITEM_TYPE> enums
     {
         { "STUFF", ITEM_TYPE::STUFF }, 
+        { "CASH", ITEM_TYPE::CASH }, 
         { "CONSUME", ITEM_TYPE::CONSUME }, 
         { "WEAPON", ITEM_TYPE::WEAPON }, 
         { "ARMOR", ITEM_TYPE::ARMOR }, 
@@ -1072,6 +1074,20 @@ inline WEAPON_TYPE enum_parse<WEAPON_TYPE>(const std::string k)
 #pragma region const
 namespace const_value {
 
+class item
+{
+public:
+    inline static constexpr const uint32_t BRONZE = 60000;
+    inline static constexpr const uint32_t BRONZE_BUNDLE = 60001;
+    inline static constexpr const uint32_t SILVER = 60002;
+    inline static constexpr const uint32_t SILVER_BUNDLE = 60003;
+    inline static constexpr const uint32_t GOLD = 60004;
+    inline static constexpr const uint32_t GOLD_BUNDLE = 60005;
+
+private:
+    item() = default;
+    ~item() = default;
+};
 class mob
 {
 public:
@@ -2782,6 +2798,7 @@ public:
     {
         this->load(json);
     }
+    kv_container(const kv_container&) = delete;
     ~kv_container() = default;
 
 private:
@@ -2946,6 +2963,7 @@ public:
     {
         this->load(json);
     }
+    array_container(const array_container&) = delete;
     ~array_container() = default;
 
 private:
@@ -3077,8 +3095,8 @@ class __ability : public fb::model::kv_container<fb::model::enum_value::CLASS, f
 public:
     __ability() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>(std::string("json/ability.json"))
     { }
-    ~__ability()
-    { }
+    __ability(const __ability&) = delete;
+    ~__ability() = default;
 #ifdef DECLARE_ABILITY_CONTAINER_EXTENSION
 DECLARE_ABILITY_CONTAINER_EXTENSION
 #endif
@@ -3089,8 +3107,8 @@ class __ability_attribute : public fb::model::kv_container<fb::model::enum_value
 public:
     __ability_attribute() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::ability_attribute>(std::string("json/ability_attribute.json"))
     { }
-    ~__ability_attribute()
-    { }
+    __ability_attribute(const __ability_attribute&) = delete;
+    ~__ability_attribute() = default;
 #ifdef DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3101,8 +3119,8 @@ class __board : public fb::model::kv_container<uint32_t, fb::model::board>
 public:
     __board() : fb::model::kv_container<uint32_t, fb::model::board>(std::string("json/board.json"))
     { }
-    ~__board()
-    { }
+    __board(const __board&) = delete;
+    ~__board() = default;
 #ifdef DECLARE_BOARD_CONTAINER_EXTENSION
 DECLARE_BOARD_CONTAINER_EXTENSION
 #endif
@@ -3113,8 +3131,8 @@ class __buy : public fb::model::kv_container<uint32_t, fb::model::kv_container<u
 public:
     __buy() : fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::buy>>(std::string("json/buy.json"))
     { }
-    ~__buy()
-    { }
+    __buy(const __buy&) = delete;
+    ~__buy() = default;
 #ifdef DECLARE_BUY_CONTAINER_EXTENSION
 DECLARE_BUY_CONTAINER_EXTENSION
 #endif
@@ -3125,8 +3143,8 @@ class __buy_attribute : public fb::model::kv_container<uint32_t, fb::model::buy_
 public:
     __buy_attribute() : fb::model::kv_container<uint32_t, fb::model::buy_attribute>(std::string("json/buy_attribute.json"))
     { }
-    ~__buy_attribute()
-    { }
+    __buy_attribute(const __buy_attribute&) = delete;
+    ~__buy_attribute() = default;
 #ifdef DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3137,8 +3155,8 @@ class __combine : public fb::model::array_container<fb::model::combine>
 public:
     __combine() : fb::model::array_container<fb::model::combine>(std::string("json/combine.json"))
     { }
-    ~__combine()
-    { }
+    __combine(const __combine&) = delete;
+    ~__combine() = default;
 #ifdef DECLARE_COMBINE_CONTAINER_EXTENSION
 DECLARE_COMBINE_CONTAINER_EXTENSION
 #endif
@@ -3149,8 +3167,8 @@ class __door : public fb::model::kv_container<uint32_t, fb::model::door>
 public:
     __door() : fb::model::kv_container<uint32_t, fb::model::door>(std::string("json/door.json"))
     { }
-    ~__door()
-    { }
+    __door(const __door&) = delete;
+    ~__door() = default;
 #ifdef DECLARE_DOOR_CONTAINER_EXTENSION
 DECLARE_DOOR_CONTAINER_EXTENSION
 #endif
@@ -3161,8 +3179,8 @@ class __door_pair : public fb::model::kv_container<uint32_t, fb::model::door_pai
 public:
     __door_pair() : fb::model::kv_container<uint32_t, fb::model::door_pair>(std::string("json/door_pair.json"))
     { }
-    ~__door_pair()
-    { }
+    __door_pair(const __door_pair&) = delete;
+    ~__door_pair() = default;
 #ifdef DECLARE_DOOR_PAIR_CONTAINER_EXTENSION
 DECLARE_DOOR_PAIR_CONTAINER_EXTENSION
 #endif
@@ -3173,8 +3191,8 @@ class __drop : public fb::model::kv_container<std::string, fb::model::drop>
 public:
     __drop() : fb::model::kv_container<std::string, fb::model::drop>(std::string("json/drop.json"))
     { }
-    ~__drop()
-    { }
+    __drop(const __drop&) = delete;
+    ~__drop() = default;
 #ifdef DECLARE_DROP_CONTAINER_EXTENSION
 DECLARE_DROP_CONTAINER_EXTENSION
 #endif
@@ -3185,8 +3203,8 @@ class __equipment : public fb::model::kv_container<uint32_t, fb::model::equipmen
 public:
     __equipment() : fb::model::kv_container<uint32_t, fb::model::equipment>(std::string("json/equipment.json"))
     { }
-    ~__equipment()
-    { }
+    __equipment(const __equipment&) = delete;
+    ~__equipment() = default;
 #ifdef DECLARE_EQUIPMENT_CONTAINER_EXTENSION
 DECLARE_EQUIPMENT_CONTAINER_EXTENSION
 #endif
@@ -3197,8 +3215,8 @@ class __item : public fb::model::kv_container<uint32_t, fb::model::item>
 public:
     __item() : fb::model::kv_container<uint32_t, fb::model::item>(std::string("json/item.json"))
     { }
-    ~__item()
-    { }
+    __item(const __item&) = delete;
+    ~__item() = default;
 #ifdef DECLARE_ITEM_CONTAINER_EXTENSION
 DECLARE_ITEM_CONTAINER_EXTENSION
 #endif
@@ -3209,8 +3227,8 @@ class __life : public fb::model::array_container<fb::model::life>
 public:
     __life() : fb::model::array_container<fb::model::life>(std::string("json/life.json"))
     { }
-    ~__life()
-    { }
+    __life(const __life&) = delete;
+    ~__life() = default;
 #ifdef DECLARE_LIFE_CONTAINER_EXTENSION
 DECLARE_LIFE_CONTAINER_EXTENSION
 #endif
@@ -3221,8 +3239,8 @@ class __map : public fb::model::kv_container<uint32_t, fb::model::map>
 public:
     __map() : fb::model::kv_container<uint32_t, fb::model::map>(std::string("json/map.json"))
     { }
-    ~__map()
-    { }
+    __map(const __map&) = delete;
+    ~__map() = default;
 #ifdef DECLARE_MAP_CONTAINER_EXTENSION
 DECLARE_MAP_CONTAINER_EXTENSION
 #endif
@@ -3233,8 +3251,8 @@ class __mob : public fb::model::kv_container<uint32_t, fb::model::mob>
 public:
     __mob() : fb::model::kv_container<uint32_t, fb::model::mob>(std::string("json/mob.json"))
     { }
-    ~__mob()
-    { }
+    __mob(const __mob&) = delete;
+    ~__mob() = default;
 #ifdef DECLARE_MOB_CONTAINER_EXTENSION
 DECLARE_MOB_CONTAINER_EXTENSION
 #endif
@@ -3245,8 +3263,8 @@ class __mob_spawn : public fb::model::kv_container<uint32_t, fb::model::array_co
 public:
     __mob_spawn() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::mob_spawn>>(std::string("json/mob_spawn.json"))
     { }
-    ~__mob_spawn()
-    { }
+    __mob_spawn(const __mob_spawn&) = delete;
+    ~__mob_spawn() = default;
 #ifdef DECLARE_MOB_SPAWN_CONTAINER_EXTENSION
 DECLARE_MOB_SPAWN_CONTAINER_EXTENSION
 #endif
@@ -3257,8 +3275,8 @@ class __mob_spawn_attribute : public fb::model::kv_container<uint32_t, fb::model
 public:
     __mob_spawn_attribute() : fb::model::kv_container<uint32_t, fb::model::mob_spawn_attribute>(std::string("json/mob_spawn_attribute.json"))
     { }
-    ~__mob_spawn_attribute()
-    { }
+    __mob_spawn_attribute(const __mob_spawn_attribute&) = delete;
+    ~__mob_spawn_attribute() = default;
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_MOB_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3269,8 +3287,8 @@ class __npc : public fb::model::kv_container<uint32_t, fb::model::npc>
 public:
     __npc() : fb::model::kv_container<uint32_t, fb::model::npc>(std::string("json/npc.json"))
     { }
-    ~__npc()
-    { }
+    __npc(const __npc&) = delete;
+    ~__npc() = default;
 #ifdef DECLARE_NPC_CONTAINER_EXTENSION
 DECLARE_NPC_CONTAINER_EXTENSION
 #endif
@@ -3281,8 +3299,8 @@ class __npc_spawn : public fb::model::kv_container<uint32_t, fb::model::array_co
 public:
     __npc_spawn() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::npc_spawn>>(std::string("json/npc_spawn.json"))
     { }
-    ~__npc_spawn()
-    { }
+    __npc_spawn(const __npc_spawn&) = delete;
+    ~__npc_spawn() = default;
 #ifdef DECLARE_NPC_SPAWN_CONTAINER_EXTENSION
 DECLARE_NPC_SPAWN_CONTAINER_EXTENSION
 #endif
@@ -3293,8 +3311,8 @@ class __npc_spawn_attribute : public fb::model::kv_container<uint32_t, fb::model
 public:
     __npc_spawn_attribute() : fb::model::kv_container<uint32_t, fb::model::npc_spawn_attribute>(std::string("json/npc_spawn_attribute.json"))
     { }
-    ~__npc_spawn_attribute()
-    { }
+    __npc_spawn_attribute(const __npc_spawn_attribute&) = delete;
+    ~__npc_spawn_attribute() = default;
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_NPC_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3305,8 +3323,8 @@ class __object : public fb::model::array_container<fb::model::object>
 public:
     __object() : fb::model::array_container<fb::model::object>(std::string("json/object.json"))
     { }
-    ~__object()
-    { }
+    __object(const __object&) = delete;
+    ~__object() = default;
 #ifdef DECLARE_OBJECT_CONTAINER_EXTENSION
 DECLARE_OBJECT_CONTAINER_EXTENSION
 #endif
@@ -3317,8 +3335,8 @@ class __promotion : public fb::model::kv_container<fb::model::enum_value::CLASS,
 public:
     __promotion() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::promotion>>(std::string("json/promotion.json"))
     { }
-    ~__promotion()
-    { }
+    __promotion(const __promotion&) = delete;
+    ~__promotion() = default;
 #ifdef DECLARE_PROMOTION_CONTAINER_EXTENSION
 DECLARE_PROMOTION_CONTAINER_EXTENSION
 #endif
@@ -3329,8 +3347,8 @@ class __promotion_attribute : public fb::model::kv_container<fb::model::enum_val
 public:
     __promotion_attribute() : fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::promotion_attribute>(std::string("json/promotion_attribute.json"))
     { }
-    ~__promotion_attribute()
-    { }
+    __promotion_attribute(const __promotion_attribute&) = delete;
+    ~__promotion_attribute() = default;
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_PROMOTION_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3341,8 +3359,8 @@ class __reward : public fb::model::kv_container<std::string, fb::model::reward>
 public:
     __reward() : fb::model::kv_container<std::string, fb::model::reward>(std::string("json/reward.json"))
     { }
-    ~__reward()
-    { }
+    __reward(const __reward&) = delete;
+    ~__reward() = default;
 #ifdef DECLARE_REWARD_CONTAINER_EXTENSION
 DECLARE_REWARD_CONTAINER_EXTENSION
 #endif
@@ -3353,8 +3371,8 @@ class __sell : public fb::model::kv_container<uint32_t, fb::model::kv_container<
 public:
     __sell() : fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>(std::string("json/sell.json"))
     { }
-    ~__sell()
-    { }
+    __sell(const __sell&) = delete;
+    ~__sell() = default;
 #ifdef DECLARE_SELL_CONTAINER_EXTENSION
 DECLARE_SELL_CONTAINER_EXTENSION
 #endif
@@ -3365,8 +3383,8 @@ class __sell_attribute : public fb::model::kv_container<uint32_t, fb::model::sel
 public:
     __sell_attribute() : fb::model::kv_container<uint32_t, fb::model::sell_attribute>(std::string("json/sell_attribute.json"))
     { }
-    ~__sell_attribute()
-    { }
+    __sell_attribute(const __sell_attribute&) = delete;
+    ~__sell_attribute() = default;
 #ifdef DECLARE_SELL_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_SELL_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3377,8 +3395,8 @@ class __spell : public fb::model::kv_container<uint32_t, fb::model::spell>
 public:
     __spell() : fb::model::kv_container<uint32_t, fb::model::spell>(std::string("json/spell.json"))
     { }
-    ~__spell()
-    { }
+    __spell(const __spell&) = delete;
+    ~__spell() = default;
 #ifdef DECLARE_SPELL_CONTAINER_EXTENSION
 DECLARE_SPELL_CONTAINER_EXTENSION
 #endif
@@ -3389,8 +3407,8 @@ class __warp : public fb::model::kv_container<uint32_t, fb::model::array_contain
 public:
     __warp() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>(std::string("json/warp.json"))
     { }
-    ~__warp()
-    { }
+    __warp(const __warp&) = delete;
+    ~__warp() = default;
 #ifdef DECLARE_WARP_CONTAINER_EXTENSION
 DECLARE_WARP_CONTAINER_EXTENSION
 #endif
@@ -3401,8 +3419,8 @@ class __warp_attribute : public fb::model::kv_container<uint32_t, fb::model::war
 public:
     __warp_attribute() : fb::model::kv_container<uint32_t, fb::model::warp_attribute>(std::string("json/warp_attribute.json"))
     { }
-    ~__warp_attribute()
-    { }
+    __warp_attribute(const __warp_attribute&) = delete;
+    ~__warp_attribute() = default;
 #ifdef DECLARE_WARP_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_WARP_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3413,8 +3431,8 @@ class __world : public fb::model::kv_container<uint16_t, fb::model::array_contai
 public:
     __world() : fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>(std::string("json/world.json"))
     { }
-    ~__world()
-    { }
+    __world(const __world&) = delete;
+    ~__world() = default;
 #ifdef DECLARE_WORLD_CONTAINER_EXTENSION
 DECLARE_WORLD_CONTAINER_EXTENSION
 #endif
@@ -3425,8 +3443,8 @@ class __world_attribute : public fb::model::kv_container<uint16_t, fb::model::wo
 public:
     __world_attribute() : fb::model::kv_container<uint16_t, fb::model::world_attribute>(std::string("json/world_attribute.json"))
     { }
-    ~__world_attribute()
-    { }
+    __world_attribute(const __world_attribute&) = delete;
+    ~__world_attribute() = default;
 #ifdef DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3437,8 +3455,8 @@ class __world_group : public fb::model::kv_container<std::string, fb::model::kv_
 public:
     __world_group() : fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>(std::string("json/world_group.json"))
     { }
-    ~__world_group()
-    { }
+    __world_group(const __world_group&) = delete;
+    ~__world_group() = default;
 #ifdef DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
 DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
 #endif
@@ -3449,8 +3467,8 @@ class __world_group_attribute : public fb::model::kv_container<std::string, fb::
 public:
     __world_group_attribute() : fb::model::kv_container<std::string, fb::model::world_group_attribute>(std::string("json/world_group_attribute.json"))
     { }
-    ~__world_group_attribute()
-    { }
+    __world_group_attribute(const __world_group_attribute&) = delete;
+    ~__world_group_attribute() = default;
 #ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
@@ -3492,6 +3510,11 @@ public:
     fb::model::__world_attribute world_attribute;
     fb::model::__world_group world_group;
     fb::model::__world_group_attribute world_group_attribute;
+
+public:
+    container() = default;
+    container(const container&) = delete;
+    ~container() = default;
 
 public:
     void load(const std::function<void(float)>& callback, const std::function<void(const std::string&)>& error)

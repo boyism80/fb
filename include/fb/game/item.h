@@ -105,20 +105,22 @@ interface item::listener : public virtual fb::game::object::listener
 
 class cash : public item
 {
-private:
-    uint32_t                            _chunk = 0;
+public:
+    const uint32_t                      value = 0;
 
 public:
     cash(fb::game::context& context, uint32_t chunk);
     ~cash();
 
+private:
+    static const fb::model::cash&       match_model(fb::game::context& context, uint32_t value);
+
 public:
     virtual const std::string           name_styled() const;
 
 public:
-    uint32_t                            chunk() const;
-    fb::game::cash*                     chunk(uint32_t value);
-    uint32_t                            chunk_reduce(uint32_t value);
+    fb::game::cash*                     replace(uint32_t value);
+    uint32_t                            reduce(uint32_t value);
 
     bool                                empty() const;
 };

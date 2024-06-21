@@ -14,7 +14,7 @@ public:
     const fb::model::container&     model;
 
 public:
-    dialog(const fb::game::session& me, const fb::model::container model) : fb::protocol::base::header(0x42),
+    dialog(const fb::game::session& me, const fb::model::container& model) : fb::protocol::base::header(0x42),
         me(me), model(model)
     { }
 

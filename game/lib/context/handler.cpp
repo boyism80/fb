@@ -140,7 +140,7 @@ void fb::game::context::on_attack(session& me, object* you)
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
     {
-        auto            sound = weapon->based<fb::model::weapon>()->sound;
+        auto            sound = weapon->based<fb::model::weapon>().sound;
         this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::SOUND_TYPE(sound) : fb::game::SOUND_TYPE
 ::SWING), scope::PIVOT);
     }
@@ -239,7 +239,7 @@ void fb::game::context::on_item_active(session& me, item& item)
     if(thread == nullptr)
         return;
 
-    thread->from(item.based<fb::model::item>()->active_script.c_str())
+    thread->from(item.based<fb::model::item>().script_active.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)
@@ -266,7 +266,7 @@ void fb::game::context::on_spell_remove(life& me, uint8_t index)
 
 void fb::game::context::on_trade_begin(session& me, session& you)
 {
-    this->send(me, fb::protocol::game::response::trade::dialog(you), scope::SELF);
+    this->send(me, fb::protocol::game::response::trade::dialog(you, this->model), scope::SELF);
 }
 
 void fb::game::context::on_trade_bundle(session& me)
@@ -455,7 +455,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
 
     auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
     auto  fd       = socket.native_handle();
-    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
+    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
     
     try
     {
