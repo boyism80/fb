@@ -333,8 +333,8 @@ public:
     fb::game::auxiliary*                auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position);
 
     fb::game::item*                     find(const std::string& name) const;
-    fb::game::item*                     find(const fb::model::item& base) const;
-    fb::game::item*                     find_bundle(const fb::model::item& base) const;
+    fb::game::item*                     find(const fb::model::item& model) const;
+    fb::game::item*                     find_bundle(const fb::model::item& model) const;
     fb::game::item*                     drop(uint8_t index, uint8_t count);
     void                                pickup(bool boost);
     bool                                throws(uint8_t index);
@@ -342,7 +342,7 @@ public:
     fb::game::item*                     remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
 
-    std::map<EQUIPMENT_PARTS, item*>   equipments() const;
+    std::map<EQUIPMENT_PARTS, item*>    equipments() const;
     
     bool                                swap(uint8_t src, uint8_t dst) override;
 };

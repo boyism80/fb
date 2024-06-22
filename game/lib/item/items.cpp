@@ -118,7 +118,9 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         if(item == nullptr)
             continue;
 
-        auto exists = item->attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(*item->based<fb::model::item>()) : nullptr;
+        auto& model = item->based<fb::model::item>();
+
+        auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
         if(exists != nullptr)
         {
             exists->merge(*item);
@@ -200,7 +202,7 @@ uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
     return this->equipment_off(parts);
 }
 
-uint8_t fb::game::items::index(const fb::model::item* item) const
+uint8_t fb::game::items::index(const fb::model::item& item) const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -228,7 +230,7 @@ uint8_t fb::game::items::index(const fb::game::item& item) const
     return 0xFF;
 }
 
-std::vector<uint8_t> fb::game::items::index_all(const fb::model::item* item) const
+std::vector<uint8_t> fb::game::items::index_all(const fb::model::item& item) const
 {
     auto result = std::vector<uint8_t>();
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -445,7 +447,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
     return nullptr;
 }
 
-fb::game::item* fb::game::items::find(const fb::model::item& base) const
+fb::game::item* fb::game::items::find(const fb::model::item& model) const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -453,7 +455,7 @@ fb::game::item* fb::game::items::find(const fb::model::item& base) const
         if(item == nullptr)
             continue;
 
-        if (item->based<fb::model::item>() == &base)
+        if (item->based<fb::model::item>() == model)
             return item;
     }
 
@@ -462,7 +464,7 @@ fb::game::item* fb::game::items::find(const fb::model::item& base) const
         if (equipment == nullptr)
             continue;
 
-        if (equipment->based<fb::model::item>() == &base)
+        if (equipment->based<fb::model::item>() == model)
             return equipment;
     }
 
@@ -489,8 +491,8 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         if (item == nullptr)
             return nullptr;
 
-        auto                    model = item->based<fb::model::item>();
-        if (model->trade == false)
+        auto&                   model = item->based<fb::model::item>();
+        if (model.trade == false)
             throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
 
         auto                    dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
@@ -532,11 +534,12 @@ void fb::game::items::pickup(bool boost)
         {
             auto            object = belows[i];
             auto            below = static_cast<fb::game::item*>(object);
-            if(below->attr(ITEM_ATTRIBUTE::CASH))
+            auto&           model = below->based<fb::model::item>();
+            if(model.attr(ITEM_ATTRIBUTE::CASH))
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
-                auto        remain = owner.money_add(cash->chunk());
-                cash->chunk(remain); // 먹고 남은 돈으로 설정
+                auto        remain = owner.money_add(cash->value);
+                cash = cash = cash->replace(remain); // 먹고 남은 돈으로 설정
 
                 if(listener != nullptr)
                 {
@@ -582,8 +585,8 @@ bool fb::game::items::throws(uint8_t index)
         if(item == nullptr)
             return false;
 
-        auto                    model = item->based<fb::model::item>();
-        if(model->trade == false)
+        auto&                   model = item->based<fb::model::item>();
+        if(model.trade == false)
             throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
 
         auto                    map = this->_owner.map();

@@ -94,21 +94,6 @@ bool fb::game::itemmix::contains(const item* item) const
     return false;
 }
 
-void fb::game::itemmix::require_add(fb::model::item* item, uint32_t count)
-{
-    this->require.push_back(element(item, count));
-}
-
-void fb::game::itemmix::success_add(fb::model::item* item, uint32_t count)
-{
-    this->success.push_back(element(item, count));
-}
-
-void fb::game::itemmix::failed_add(fb::model::item* item, uint32_t count)
-{
-    this->failed.push_back(element(item, count));
-}
-
 bool fb::game::itemmix::matched(const std::vector<item*>& items) const
 {
     if(this->require.size() != items.size())

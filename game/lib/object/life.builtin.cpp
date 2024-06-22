@@ -2,36 +2,6 @@
 #include <fb/game/map.h>
 #include <fb/game/life.h>
 
-int fb::game::life::model::builtin_hp(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto object = thread->touserdata<fb::game::life::model>(1);
-    if(object == nullptr)
-        return 0;
-    
-
-    thread->pushinteger(object->hp);
-    return 1;
-}
-
-int fb::game::life::model::builtin_mp(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto object = thread->touserdata<fb::game::life::model>(1);
-    if(object == nullptr)
-        return 0;
-    
-
-    thread->pushinteger(object->mp);
-    return 1;
-}
-
 int fb::game::life::builtin_hp(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -95,9 +65,9 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    auto model = object->based<fb::model::life>();
+    auto& model = object->based<fb::model::life>();
 
-    thread->pushinteger(model->hp);
+    thread->pushinteger(model.hp);
     return 1;
 }
 
@@ -112,9 +82,9 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    auto model = object->based<fb::model::life>();
+    auto& model = object->based<fb::model::life>();
 
-    thread->pushinteger(model->mp);
+    thread->pushinteger(model.mp);
     return 1;
 }
 
@@ -268,7 +238,7 @@ int fb::game::life::builtin_cast(lua_State* lua)
         you = nullptr;
 
     auto name = thread->tostring(3);
-    auto spell = fb::game::old_model::spells.name2spell(name);
+    auto spell = context->model.spell.name2spell(name);
     if(spell == nullptr)
         return 0;
 

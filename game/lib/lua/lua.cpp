@@ -619,7 +619,7 @@ thread::~thread()
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
 }
 
-fb::game::lua:container::container()
+fb::game::lua::container::container()
 {
     this->init_fn([this] (main& m)
     {
@@ -664,7 +664,7 @@ void fb::game::lua::container::load(const std::string& path)
     this->_scripts.push_back(path);
 }
 
-container& fb::game::lua::container::ist()
+fb::game::lua::container& fb::game::lua::container::ist()
 {
     static std::once_flag               _flag;
     static std::unique_ptr<container>   _ist;

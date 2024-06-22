@@ -135,7 +135,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
             switch(lua_type(*thread, -1))
             {
                 case LUA_TSTRING:
-                    item = fb::game::old_model::items.name2item(thread->tostring(-1));
+                    item = context->model.item.name2item(thread->tostring(-1));
                     break;
 
                 case LUA_TUSERDATA:
@@ -160,7 +160,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
         if (item == nullptr)
             continue;
 
-        items.push_back({ item, price });
+        items.push_back({ *item, price });
         thread->pop(1);
     }
 
@@ -452,11 +452,11 @@ int fb::model::npc::builtin_rename_weapon(lua_State* lua)
 
 fb::model::npc* fb::model::__npc::name2npc(const std::string& name) const
 {
-    auto i = std::find_if(this->begin(), this->end(), 
-        [&name](auto& pair)
-        {
-            return pair.second->name == name;
-        });
+    for (auto& npc : *this)
+    {
+        if (npc.second.name == name)
+            return &npc.second;
+    }
 
-    return i != this->end() ? i->second.get() : nullptr;
+    return nullptr;
 }
