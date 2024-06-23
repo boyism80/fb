@@ -1,42 +1,6 @@
 #include <fb/game/model.h>
 #include <fb/game/context.h>
 
-bool fb::model::npc::contains_sell(const fb::model::item& item, uint32_t& price) const
-{
-    for (auto& [msg, i] : this->sell)
-    {
-        for (auto& sell : *fb::game::old_model::sell[i])
-        {
-            if (sell.first == &item)
-            {
-                price = sell.second.has_value() ? sell.second.value() : sell.first->price;
-                return true;
-            }
-        }
-    }
-
-    price = 0;
-    return false;
-}
-
-bool fb::model::npc::contains_buy(const fb::model::item& item, uint32_t& price) const
-{
-    if (this->buy.has_value() == false)
-        return false;
-
-    for (auto& buy : *fb::game::old_model::buy[this->buy.value()])
-    {
-        if (buy.first == &item)
-        {
-            price = buy.second.has_value() ? buy.second.value() : buy.first->price / 2;
-            return true;
-        }
-    }
-
-    price = 0;
-    return false;
-}
-
 int fb::model::npc::builtin_input(lua_State* lua)
 {
     // Ex) npc::input(session, "message")

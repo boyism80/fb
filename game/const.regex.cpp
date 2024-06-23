@@ -1,21 +1,19 @@
-#include <fb/game/regex.h>
+#include <fb/game/model.h>
 
-bool fb::game::regex::match_sell_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
+bool fb::model::const_value::regex::match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL);
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    auto name = what["name"].str();
-    item = fb::game::old_model::items.name2item(name);
-
+    item = what["name"].str();
     if (what["count"].matched)
     {
         try
         {
             count = std::stoi(what["count"].str());
-            if(count > 0xFFFF)
+            if (count > 0xFFFF)
                 throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
         }
         catch (std::out_of_range&)
@@ -35,16 +33,14 @@ bool fb::game::regex::match_sell_message(const std::string& message, const fb::m
     return true;
 }
 
-bool fb::game::regex::match_buy_message(const std::string& message, const fb::model::item* item, uint16_t& count)
+bool fb::model::const_value::regex::match_buy_message(const std::string& message, std::string& item, uint16_t& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY);
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    auto name = what["name"].str();
-    item = fb::game::old_model::items.name2item(name);
-
+    item = what["name"].str();
     if (what["count"].matched)
     {
         try
@@ -66,7 +62,7 @@ bool fb::game::regex::match_buy_message(const std::string& message, const fb::mo
     return true;
 }
 
-bool fb::game::regex::match_repair_message(const std::string& message, const fb::model::item* item)
+bool fb::model::const_value::regex::match_repair_message(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::REPAIR);
     auto what = boost::xpressive::smatch();
@@ -76,17 +72,17 @@ bool fb::game::regex::match_repair_message(const std::string& message, const fb:
     auto all = what["all"].matched;
     if (all)
     {
-        item = nullptr;
+        item = std::string();
     }
     else
     {
-        item = fb::game::old_model::items.name2item(what["name"].str());
+        item = what["name"].str();
     }
 
     return true;
 }
 
-bool fb::game::regex::match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money)
+bool fb::model::const_value::regex::match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_MONEY);
     auto what = boost::xpressive::smatch();
@@ -96,7 +92,7 @@ bool fb::game::regex::match_deposit_money_message(const std::string& message, st
     try
     {
         auto all = what["all"].matched;
-        if(all)
+        if (all)
         {
             money.reset();
         }
@@ -115,7 +111,7 @@ bool fb::game::regex::match_deposit_money_message(const std::string& message, st
     return true;
 }
 
-bool fb::game::regex::match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money)
+bool fb::model::const_value::regex::match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::WITHDRAW_MONEY);
     auto what = boost::xpressive::smatch();
@@ -125,7 +121,7 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
     try
     {
         auto all = what["all"].matched;
-        if(all)
+        if (all)
         {
             money.reset();
         }
@@ -144,7 +140,7 @@ bool fb::game::regex::match_withdraw_money_message(const std::string& message, s
     return true;
 }
 
-bool fb::game::regex::match_deposit_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
+bool fb::model::const_value::regex::match_deposit_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_ITEM);
     auto what = boost::xpressive::smatch();
@@ -153,7 +149,7 @@ bool fb::game::regex::match_deposit_item_message(const std::string& message, con
 
     try
     {
-        if(what["all"].matched)
+        if (what["all"].matched)
         {
             count.reset();
         }
@@ -168,18 +164,18 @@ bool fb::game::regex::match_deposit_item_message(const std::string& message, con
             count = 1;
         }
 
-        item = fb::game::old_model::items.name2item(what["name"].str());
+        item = what["name"].str();
     }
     catch (std::out_of_range&)
     {
-        item = nullptr;
+        item = std::string();
         count.reset();
         return false;
     }
     return true;
 }
 
-bool fb::game::regex::match_withdraw_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count)
+bool fb::model::const_value::regex::match_withdraw_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::WITHDRAW_ITEM);
     auto what = boost::xpressive::smatch();
@@ -203,18 +199,18 @@ bool fb::game::regex::match_withdraw_item_message(const std::string& message, co
             count = 1;
         }
 
-        item = fb::game::old_model::items.name2item(what["name"].str());
+        item = what["name"].str();
     }
     catch (std::out_of_range&)
     {
-        item = nullptr;
+        item = std::string();
         count.reset();
         return false;
     }
     return true;
 }
 
-bool fb::game::regex::match_sell_list(const std::string& message)
+bool fb::model::const_value::regex::match_sell_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_LIST);
     auto what = boost::xpressive::smatch();
@@ -224,7 +220,7 @@ bool fb::game::regex::match_sell_list(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_buy_list(const std::string& message)
+bool fb::model::const_value::regex::match_buy_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY_LIST);
     auto what = boost::xpressive::smatch();
@@ -234,29 +230,29 @@ bool fb::game::regex::match_buy_list(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_sell_price(const std::string& message, const fb::model::item* item)
+bool fb::model::const_value::regex::match_sell_price(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_PRICE);
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    item = fb::game::old_model::items.name2item(what["name"].str());
+    item = what["name"].str();
     return true;
 }
 
-bool fb::game::regex::match_buy_price(const std::string& message, const fb::model::item* item)
+bool fb::model::const_value::regex::match_buy_price(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY_PRICE);
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    item = fb::game::old_model::items.name2item(what["name"].str());
+    item = what["name"].str();
     return true;
 }
 
-bool fb::game::regex::match_deposited_money(const std::string& message)
+bool fb::model::const_value::regex::match_deposited_money(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSITED_MONEY);
     auto what = boost::xpressive::smatch();
@@ -266,19 +262,19 @@ bool fb::game::regex::match_deposited_money(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_rename_weapon(const std::string& message, const fb::model::item* item, std::string& name)
+bool fb::model::const_value::regex::match_rename_weapon(const std::string& message, std::string& weapon, std::string& name)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::RENAME_WEAPON);
     auto what = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
-    item = fb::game::old_model::items.name2item(what["weapon"].str());
+    weapon = what["weapon"].str();
     name = what["name"].str();
     return true;
 }
 
-bool fb::game::regex::match_hold_item_list(const std::string& message)
+bool fb::model::const_value::regex::match_hold_item_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::HOLD_ITEM_LIST);
     auto what = boost::xpressive::smatch();
@@ -288,7 +284,7 @@ bool fb::game::regex::match_hold_item_list(const std::string& message)
     return true;
 }
 
-bool fb::game::regex::match_hold_item_count(const std::string& message, const fb::model::item* item)
+bool fb::model::const_value::regex::match_hold_item_count(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::HOLD_ITEM_COUNT);
     auto what = boost::xpressive::smatch();
@@ -297,12 +293,11 @@ bool fb::game::regex::match_hold_item_count(const std::string& message, const fb
 
     try
     {
-        auto name = what["name"].str();
-        item = fb::game::old_model::items.name2item(what["name"].str());
+        item = what["name"].str();
     }
     catch (std::out_of_range&)
     {
-        item = nullptr;
+        item = std::string();
         return false;
     }
 

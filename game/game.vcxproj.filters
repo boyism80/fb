@@ -172,9 +172,6 @@
     <ClCompile Include="..\core\format.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="lib\regex.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\mst.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -203,6 +200,15 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="model.promotion.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="const.regex.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="model.sell.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="model.buy.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

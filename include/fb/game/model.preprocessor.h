@@ -350,10 +350,6 @@ public:                                                                         
     LUA_PROTOTYPE                                                                             \
                                                                                               \
 public:                                                                                       \
-    bool contains_sell(const fb::model::item& item, uint32_t& price) const;                   \
-    bool contains_buy(const fb::model::item& item, uint32_t& price) const;                    \
-                                                                                              \
-public:                                                                                       \
     static int                  builtin_input(lua_State* lua);                                \
     static int                  builtin_menu(lua_State* lua);                                 \
     static int                  builtin_item(lua_State* lua);                                 \
@@ -448,4 +444,33 @@ public:                                                                         
 public:                                                                                       \
     const promotion* operator () (enum_value::CLASS cls, uint8_t promotion) const;            \
     bool name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const;
+
+#define DECLARE_CONST_REGEX_EXTENSION                                                                                           \
+public:                                                                                                                         \
+    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);              \
+    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                              \
+    static bool match_repair_message(const std::string& message, std::string& item);                                            \
+    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);                        \
+    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);                       \
+    static bool match_deposit_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);      \
+    static bool match_withdraw_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);     \
+    static bool match_sell_list(const std::string& message);                                                                    \
+    static bool match_buy_list(const std::string& message);                                                                     \
+    static bool match_sell_price(const std::string& message, std::string& item);                                                \
+    static bool match_buy_price(const std::string& message, std::string& item);                                                 \
+    static bool match_deposited_money(const std::string& message);                                                              \
+    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);                        \
+    static bool match_hold_item_list(const std::string& message);                                                               \
+    static bool match_hold_item_count(const std::string& message, std::string& item);
+
+#define DECLARE_SELL_CONTAINER_EXTENSION                                                                                        \
+public:                                                                                                                         \
+    const fb::model::sell* find(uint32_t pursuit, const fb::model::item& item) const;                                           \
+    const fb::model::sell* find(const fb::model::npc& npc, const fb::model::item& item) const;
+
+#define DECLARE_BUY_CONTAINER_EXTENSION                                                                                         \
+public:                                                                                                                         \
+    const fb::model::buy* find(uint32_t pursuit, const fb::model::item& item) const;                                            \
+    const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
+
 #endif

@@ -1,6 +1,5 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
-#include <fb/game/old_model.h>
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
@@ -322,7 +321,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(store == false)
         return object::builtin_mkitem(lua);
 
-    auto model = fb::game::old_model::items.name2item(name);
+    auto model = context->model.item.name2item(name);
     if(model == nullptr)
     {
         thread->pushnil();
@@ -381,11 +380,11 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(name.empty())
                 throw std::exception();
 
-            auto model = fb::game::old_model::items.name2item(name);
+            auto model = context->model.item.name2item(name);
             if(model == nullptr)
                 throw std::exception();
 
-            index = session->items.index(model);
+            index = session->items.index(*model);
         }
         else
         {
@@ -473,21 +472,22 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls = session->_class;
         auto promotion = session->_promotion;
 
-        auto cls_name = fb::game::old_model::classes.class2name(cls, promotion);
-        if(cls_name == nullptr)
+        auto promo_model = context->model.promotion(cls, promotion);
+        if(promo_model == nullptr)
         {
             thread->pushnil();
         }
         else
         {
-            thread->pushstring(*cls_name);
+            thread->pushstring(promo_model->name);
         }
     }
     else
     {
         auto cls_name = thread->tostring(2);
-        uint8_t cls, promotion;
-        if(fb::game::old_model::classes.name2class(cls_name, &cls, &promotion) == false)
+        auto cls = CLASS::NONE;
+        auto promotion = uint8_t(0);
+        if(context->model.promotion.name2class(cls_name, cls, promotion) == false)
         {
             thread->pushboolean(false);
         }
@@ -669,7 +669,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
                 auto name = thread->tostring(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [&name](fb::game::item* deposited_item)
                 {
-                    return deposited_item->based<fb::model::item>()->name == name;
+                    return deposited_item->based<fb::model::item>().name == name;
                 });
 
                 if (found == deposited_items.cend())
@@ -682,7 +682,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
                 auto model = thread->touserdata<fb::model::item>(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [model](fb::game::item* deposited_item) 
                 {
-                    return deposited_item->based<fb::model::item>() == model;
+                    return deposited_item->based<fb::model::item>() == *model;
                 });
 
                 if (found == deposited_items.cend())

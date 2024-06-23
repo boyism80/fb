@@ -115,17 +115,17 @@ bool fb::game::trade::trading() const
 bool fb::game::trade::up(fb::game::item& item)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
-    auto model = item.based<fb::model::item>();
+    auto& model = item.based<fb::model::item>();
 
     try
     {
         if(this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
-        if(model->trade == false)
+        if(model.trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
-        if(enum_in(item.attr(), ITEM_ATTRIBUTE::BUNDLE) && item.count() > 1)
+        if(enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item.count() > 1)
         {
             // 묶음 단위의 아이템 형식 거래 시도
             this->_selected = &item;
@@ -205,8 +205,8 @@ bool fb::game::trade::count(uint16_t count)
         if(this->_selected == nullptr)
             throw std::runtime_error(message::trade::NOT_SELECTED);
 
-        auto model = _selected->based<fb::model::item>();
-        if(model->trade == false)
+        auto& model = _selected->based<fb::model::item>();
+        if(model.trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
         if(this->_selected->count() < count)
@@ -263,7 +263,8 @@ bool fb::game::trade::cancel()
 
 uint8_t fb::game::trade::add(fb::game::item& item)
 {
-    if(enum_in(item.attr(), ITEM_ATTRIBUTE::BUNDLE))
+    auto& model = item.based<fb::model::item>();
+    if(enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE))
     {
         auto exists = this->find(item);
         if(exists != 0xFF)
@@ -311,7 +312,8 @@ bool fb::game::trade::flushable() const
         if(item == nullptr)
             continue;
 
-        if(enum_in(item->attr(), ITEM_ATTRIBUTE::BUNDLE) == false)
+        auto&               model = item->based<fb::model::item>();
+        if(enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
         auto index = this->find(*item);

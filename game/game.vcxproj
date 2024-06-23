@@ -180,6 +180,7 @@
     <ClCompile Include="..\core\table.cpp" />
     <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="..\core\time.cpp" />
+    <ClCompile Include="const.regex.cpp" />
     <ClCompile Include="lib\board.cpp" />
     <ClCompile Include="lib\clan.cpp" />
     <ClCompile Include="lib\context\command.cpp" />
@@ -217,12 +218,12 @@
     <ClCompile Include="lib\object\object.cpp" />
     <ClCompile Include="lib\object\session.builtin.cpp" />
     <ClCompile Include="lib\object\session.cpp" />
-    <ClCompile Include="lib\regex.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\query_game.cpp" />
     <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model.buy.cpp" />
     <ClCompile Include="model.door.cpp" />
     <ClCompile Include="model.item.cpp" />
     <ClCompile Include="model.life.cpp" />
@@ -231,6 +232,7 @@
     <ClCompile Include="model.npc.cpp" />
     <ClCompile Include="model.object.cpp" />
     <ClCompile Include="model.promotion.cpp" />
+    <ClCompile Include="model.sell.cpp" />
     <ClCompile Include="model.spell.cpp" />
   </ItemGroup>
   <ItemGroup>

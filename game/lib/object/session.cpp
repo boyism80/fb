@@ -1301,11 +1301,12 @@ bool fb::game::session::condition(const std::vector<fb::model::dsl>& conditions)
 
 bool fb::game::session::inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
     auto count = std::optional<uint16_t>();
-    if (fb::game::regex::match_sell_message(message, model, count) == false)
+    auto name = std::string();
+    if (fb::model::const_value::regex::match_sell_message(message, name, count) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     auto bought = false;
     for (auto npc : npcs)
     {
@@ -1318,11 +1319,12 @@ bool fb::game::session::inline_sell(const std::string& message, const std::vecto
 
 bool fb::game::session::inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
+    auto name = std::string();
     auto count = uint16_t(0);
-    if (fb::game::regex::match_buy_message(message, model, count) == false)
+    if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     auto sold = false;
     for (auto npc : npcs)
     {
@@ -1335,10 +1337,11 @@ bool fb::game::session::inline_buy(const std::string& message, const std::vector
 
 bool fb::game::session::inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
-    if (fb::game::regex::match_repair_message(message, model) == false)
+    auto name = std::string();
+    if (fb::model::const_value::regex::match_repair_message(message, name) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     auto done = false;
     for (auto npc : npcs)
     {
@@ -1352,7 +1355,7 @@ bool fb::game::session::inline_repair(const std::string& message, const std::vec
 bool fb::game::session::inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
-    if (fb::game::regex::match_deposit_money_message(message, money) == false)
+    if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1367,7 +1370,7 @@ bool fb::game::session::inline_deposit_money(const std::string& message, const s
 bool fb::game::session::inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
-    if (fb::game::regex::match_withdraw_money_message(message, money) == false)
+    if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1381,11 +1384,12 @@ bool fb::game::session::inline_withdraw_money(const std::string& message, const 
 
 bool fb::game::session::inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
+    auto name = std::string();
     auto count = std::optional<uint16_t>(0);
-    if (fb::game::regex::match_deposit_item_message(message, model, count) == false)
+    if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if (npc->hold_item(*this, model, count))
@@ -1397,11 +1401,12 @@ bool fb::game::session::inline_deposit_item(const std::string& message, const st
 
 bool fb::game::session::inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
+    auto name = std::string();
     auto count = std::optional<uint16_t>(0);
-    if (fb::game::regex::match_withdraw_item_message(message, model, count) == false)
+    if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if (npc->return_item(*this, model, count))
@@ -1413,7 +1418,7 @@ bool fb::game::session::inline_withdraw_item(const std::string& message, const s
 
 bool fb::game::session::inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    if (fb::game::regex::match_sell_list(message) == false)
+    if (fb::model::const_value::regex::match_sell_list(message) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1426,7 +1431,7 @@ bool fb::game::session::inline_sell_list(const std::string& message, const std::
 
 bool fb::game::session::inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    if (fb::game::regex::match_buy_list(message) == false)
+    if (fb::model::const_value::regex::match_buy_list(message) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1439,10 +1444,11 @@ bool fb::game::session::inline_buy_list(const std::string& message, const std::v
 
 bool fb::game::session::inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
-    if (fb::game::regex::match_sell_price(message, model) == false)
+    auto name = std::string();
+    if (fb::model::const_value::regex::match_sell_price(message, name) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         npc->sell_price(model);
@@ -1453,10 +1459,11 @@ bool fb::game::session::inline_sell_price(const std::string& message, const std:
 
 bool fb::game::session::inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto model = static_cast<fb::model::item*>(nullptr);
-    if (fb::game::regex::match_buy_price(message, model) == false)
+    auto name = std::string();
+    if (fb::model::const_value::regex::match_buy_price(message, name) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         npc->buy_price(model);
@@ -1467,7 +1474,7 @@ bool fb::game::session::inline_buy_price(const std::string& message, const std::
 
 bool fb::game::session::inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    if (fb::game::regex::match_deposited_money(message) == false)
+    if (fb::model::const_value::regex::match_deposited_money(message) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1481,14 +1488,14 @@ bool fb::game::session::inline_show_deposited_money(const std::string& message, 
 
 bool fb::game::session::inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto item = static_cast<fb::model::item*>(nullptr);
-    auto name = std::string();
-    if (fb::game::regex::match_rename_weapon(message, item, name) == false)
+    std::string model_name, custom_name;
+    if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(model_name);
     for (auto npc : npcs)
     {
-        if(npc->rename_weapon(*this, item, name))
+        if(npc->rename_weapon(*this, model, custom_name))
             return true;
     }
 
@@ -1497,7 +1504,7 @@ bool fb::game::session::inline_rename_weapon(const std::string& message, const s
 
 bool fb::game::session::inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    if (fb::game::regex::match_hold_item_list(message) == false)
+    if (fb::model::const_value::regex::match_hold_item_list(message) == false)
         return false;
 
     for (auto npc : npcs)
@@ -1511,13 +1518,14 @@ bool fb::game::session::inline_hold_item_list(const std::string& message, const 
 
 bool fb::game::session::inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
-    auto item = static_cast<fb::model::item*>(nullptr);
-    if (fb::game::regex::match_hold_item_count(message, item) == false)
+    auto name = std::string();
+    if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
         return false;
 
+    auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
-        if(npc->hold_item_count(*this, item))
+        if(npc->hold_item_count(*this, model))
             return true;
     }
 

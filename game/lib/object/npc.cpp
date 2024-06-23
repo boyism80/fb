@@ -29,10 +29,11 @@ bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_
         if(slots.size() == 0)
             throw std::runtime_error("가지고 있지도 않으면서...");
 
-        auto price = uint32_t(0);
-        if (model.contains_buy(*item_model, price) == false)
+        auto buy = this->context.model.buy.find(model, *item_model);
+        if(buy == nullptr)
             throw std::runtime_error("그런 물건은 안 삽니다.");
 
+        auto price = buy->price.value_or(item_model->price / 2);
         if (item_model->attr(ITEM_ATTRIBUTE::BUNDLE))
         {
             auto item = session.items.at(slots[0]);
@@ -102,8 +103,8 @@ bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item
         if(item_model == nullptr)
             throw std::runtime_error("뭘 사?");
 
-        auto sell_price = uint32_t(0);
-        if(model.contains_sell(*item_model, sell_price) == false)
+        auto sell = this->context.model.sell.find(model, *item_model);
+        if(sell == nullptr)
             throw std::runtime_error("그런 물건은 안 팝니다.");
 
         if(sold)
@@ -111,7 +112,7 @@ bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item
 
         auto exist = session.items.find(*item_model);
         auto exist_count = exist != nullptr ? exist->count() : 0;
-        auto price = sell_price * count;
+        auto price = sell->price.value_or(item_model->price) * count;
 
         if (count <= 0)
         {
@@ -502,11 +503,17 @@ void fb::game::npc::sell_price(const fb::model::item* item)
 
     try
     {
-        auto price = uint32_t(0);
-        if (item == nullptr || model.contains_sell(*item, price) == false)
-            throw std::runtime_error("그런 물건은 안 팝니다.");
+        if (item != nullptr)
+        {
+            auto sell = this->context.model.sell.find(model, *item);
+            if (sell != nullptr)
+            {
+                auto price = sell->price.value_or(item->price);
+                this->chat(fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+            }
+        }
 
-        this->chat(fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+        throw std::runtime_error("그런 물건은 안 팝니다.");
     }
     catch (std::runtime_error& e)
     {
@@ -522,11 +529,17 @@ void fb::game::npc::buy_price(const fb::model::item* item)
 
     try
     {
-        auto price = uint32_t(0);
-        if (item == nullptr || model.contains_buy(*item, price) == false)
-            throw std::runtime_error("그런 물건은 안 삽니다.");
+        if (item != nullptr)
+        {
+            auto sell = this->context.model.buy.find(model, *item);
+            if (sell != nullptr)
+            {
+                auto price = sell->price.value_or(item->price / 2);
+                this->chat(fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+            }
+        }
 
-        this->chat(fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+        throw std::runtime_error("그런 물건은 안 삽니다.");
     }
     catch (std::runtime_error& e)
     {
