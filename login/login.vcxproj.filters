@@ -77,5 +77,8 @@
     <ClCompile Include="..\core\mst.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\dead_lock.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
