@@ -179,6 +179,7 @@
     <ClCompile Include="..\core\console.cpp" />
     <ClCompile Include="..\core\cryptor.cpp" />
     <ClCompile Include="..\core\db.cpp" />
+    <ClCompile Include="..\core\dead_lock.cpp" />
     <ClCompile Include="..\core\encoding.cpp" />
     <ClCompile Include="..\core\format.cpp" />
     <ClCompile Include="..\core\logger.cpp" />

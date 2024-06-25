@@ -105,7 +105,7 @@ public:
 
 private:
     template <typename T>
-    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, std::shared_ptr<fb::mst> current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
+    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector> current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
     {
         try
         {
@@ -155,7 +155,7 @@ private:
     }
 
     template <typename T>
-    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::mst>& trans)
+    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::dead_lock_detector>& trans)
     {
         auto current = concurrent::alloc(key, trans);
 
@@ -220,7 +220,7 @@ private:
 
 public:
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn, std::shared_ptr<fb::mst>& trans)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector>& trans)
     {
         return fb::awaiter<T>([this, key, &fn, trans](auto& awaiter) mutable
         {
@@ -243,9 +243,9 @@ public:
     }
 
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::mst>&)>& fn)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn)
     {
-        auto empty_ptr = std::shared_ptr<fb::mst>(nullptr);
+        auto empty_ptr = std::shared_ptr<fb::dead_lock_detector>(nullptr);
         return this->sync(key, fn, empty_ptr);
     }
 

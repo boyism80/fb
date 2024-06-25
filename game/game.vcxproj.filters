@@ -211,6 +211,9 @@
     <ClCompile Include="model.buy.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\core\dead_lock.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
