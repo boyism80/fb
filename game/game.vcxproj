@@ -235,6 +235,7 @@
     <ClCompile Include="model.promotion.cpp" />
     <ClCompile Include="model.sell.cpp" />
     <ClCompile Include="model.spell.cpp" />
+    <ClCompile Include="mst.recipe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

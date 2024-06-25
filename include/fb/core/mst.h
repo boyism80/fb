@@ -44,12 +44,18 @@ public:
     void                        add(const std::shared_ptr<fb::mst<T>>& node);
     const mst<T>*               root() const;
     fb::mst<T>*                 search(const fb::mst<T>* node) const;
+
+public:
+    node_list::iterator         begin() const;
+    node_list::iterator         end() const;
+    node_list::const_iterator   begin() const;
+    node_list::const_iterator   end() const;
 };
 
 }
 
 template <typename T>
-fb::mst<T>::mst(const T& data, const std::shared_ptr<mst>& parent) : data(data), parent(parent)
+fb::mst<T>::mst(const T& data, const std::shared_ptr<mst<T>>& parent) : data(data), parent(parent)
 {}
 
 template <typename T>
@@ -175,6 +181,30 @@ fb::mst<T>* fb::mst<T>::search(const fb::mst<T>* node) const
     }
 
     return nullptr;
+}
+
+template <typename T>
+fb::mst<T>::node_list::iterator fb::mst<T>::begin() const
+{
+    return _nodes.begin();
+}
+
+template <typename T>
+fb::mst<T>::node_list::iterator fb::mst<T>::end() const
+{
+    return _nodes.end();
+}
+
+template <typename T>
+fb::mst<T>::node_list::const_iterator fb::mst<T>::cbegin() const
+{
+    return _nodes.cbegin();
+}
+
+template <typename T>
+fb::mst<T>::node_list::const_iterator fb::mst<T>::cend() const
+{
+    return _nodes.cend();
 }
 
 #endif
