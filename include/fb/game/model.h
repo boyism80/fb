@@ -1353,6 +1353,9 @@ public:
 private:
     item() = default;
     ~item() = default;
+#ifdef DECLARE_CONST_ITEM_EXTENSION
+DECLARE_CONST_ITEM_EXTENSION
+#endif
 };
 class mob
 {
@@ -1362,6 +1365,9 @@ public:
 private:
     mob() = default;
     ~mob() = default;
+#ifdef DECLARE_CONST_MOB_EXTENSION
+DECLARE_CONST_MOB_EXTENSION
+#endif
 };
 class regex
 {
@@ -1385,6 +1391,9 @@ public:
 private:
     regex() = default;
     ~regex() = default;
+#ifdef DECLARE_CONST_REGEX_EXTENSION
+DECLARE_CONST_REGEX_EXTENSION
+#endif
 };
 class string
 {
@@ -1504,6 +1513,9 @@ public:
 private:
     string() = default;
     ~string() = default;
+#ifdef DECLARE_CONST_STRING_EXTENSION
+DECLARE_CONST_STRING_EXTENSION
+#endif
 };
 
 }
@@ -3283,7 +3295,7 @@ public:
         if (i > std::vector<std::unique_ptr<T>>::size() - 1)
             return nullptr;
 
-        return &std::vector<std::unique_ptr<T>>::at(i);
+        return std::vector<std::unique_ptr<T>>::at(i).get();
     }
 
     const T& operator [] (uint32_t i) const

@@ -68,6 +68,20 @@ fb::model::recipe_node* fb::model::recipe_node::add(const fb::model::dsl::item& 
     }
 }
 
+void fb::model::recipe_node::add(const fb::model::combine& mix)
+{
+    auto node = this;
+    for(auto& dsl : mix.source)
+    {
+        if (dsl.header != DSL::item)
+            continue;
+
+        auto params = fb::model::dsl::item(dsl.params);
+        node = node->add(params);
+    }
+    node->_recipes.push_back(mix);
+}
+
 fb::generator<std::reference_wrapper<const fb::model::combine>> fb::model::recipe_node::find(const std::vector<std::reference_wrapper<fb::model::dsl::item>>& mix, int i)
 {
     if (mix.size() <= i)

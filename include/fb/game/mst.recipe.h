@@ -6,6 +6,8 @@
 #include <list>
 #include <fb/core/coroutine.h>
 
+using namespace fb::model::enum_value;
+
 namespace fb { namespace model {
 
 class recipe_node : public fb::mst<std::reference_wrapper<const fb::model::dsl::item>>
@@ -30,6 +32,7 @@ public:
     recipe_node* find(uint32_t id) const;
     recipe_node* find(const fb::model::dsl::item& item) const;
     recipe_node* add(const fb::model::dsl::item& item);
+    void add(const fb::model::combine& mix);
 
     fb::generator<std::reference_wrapper<const fb::model::combine>> find(const std::vector<std::reference_wrapper<fb::model::dsl::item>>& mix);
 
