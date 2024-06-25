@@ -1,6 +1,9 @@
 #include <fb/core/dead_lock.h>
 
-fb::dead_lock_detector::dead_lock_detector(const std::string& data, const std::shared_ptr<fb::dead_lock_detector>& parent) : fb::mst<std::string>(data, parent)
+fb::dead_lock_detector::dead_lock_detector() : fb::mst<std::string>(dead_lock_detector::initializer, dead_lock_detector::comparer)
+{}
+
+fb::dead_lock_detector::dead_lock_detector(const std::string& data, const dead_lock_detector* parent) : fb::mst<std::string>(data, parent)
 { }
 
 void fb::dead_lock_detector::assert_circulated_lock() const
@@ -85,4 +88,14 @@ void fb::dead_lock_detector::assert_dead_lock(const fb::dead_lock_detector* node
          sstream << "DeadLock detected : " << boost::algorithm::join(errors, ", ");
          throw std::runtime_error(sstream.str());
      }
+}
+
+const std::string& fb::dead_lock_detector::initializer()
+{
+    return dead_lock_detector::DUMMY;
+}
+
+bool fb::dead_lock_detector::comparer(const std::string& val1, const std::string& val2)
+{
+    return val1 == val2;
 }

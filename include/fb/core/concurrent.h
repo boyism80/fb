@@ -16,35 +16,36 @@ public:
 class concurrent
 {
 private:
-    std::shared_ptr<fb::dead_lock_detector>            _root;
+    fb::dead_lock_detector            _root;
 
 protected:
-    concurrent() : _root(std::make_shared<fb::dead_lock_detector>())
+    concurrent()
     {}
     ~concurrent()
     {}
 
 protected:
-    void add(std::shared_ptr<fb::dead_lock_detector>& node)
+    // void add(fb::dead_lock_detector* node)
+    // {
+    //     if (node->parent == nullptr)
+    //         this->_root->add(node);
+    // }
+
+    fb::dead_lock_detector* alloc(const std::string& key, fb::dead_lock_detector* trans)
     {
-        if (node->parent == nullptr)
-            this->_root->add(node);
+        return trans->add<fb::dead_lock_detector>(key);
+        // auto current = std::make_shared<fb::dead_lock_detector>(key, trans);
+        // if(trans != nullptr)
+        //     trans->add(current);
+
+        // return current;
     }
 
-    std::shared_ptr<fb::dead_lock_detector> alloc(const std::string& key, std::shared_ptr<fb::dead_lock_detector>& trans)
-    {
-        auto current = std::make_shared<fb::dead_lock_detector>(key, trans);
-        if(trans != nullptr)
-            trans->add(current);
-
-        return current;
-    }
-
-    void assert_dead_lock(std::shared_ptr<fb::dead_lock_detector>& node)
+    void assert_dead_lock(fb::dead_lock_detector* node)
     {
         auto root = static_cast<const dead_lock_detector*>(node->root());
         root->assert_circulated_lock();
-        this->_root->assert_dead_lock(root);
+        this->_root.assert_dead_lock(root);
     }
 };
 

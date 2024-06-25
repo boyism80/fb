@@ -450,7 +450,7 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
 
     try
     {
-        co_await this->_mutex.try_sync<bool>(key, [this, &session, seconds]() -> fb::task<bool>
+        co_await this->_mutex.sync<bool>(key, [this, &session, seconds](auto trans) -> fb::task<bool>
         {
             for (int i = 0; i < seconds; i++)
             {
