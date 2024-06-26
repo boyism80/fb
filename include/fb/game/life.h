@@ -101,7 +101,7 @@ public:
 };
 
 interface life::listener : public virtual fb::game::object::listener,
-    public virtual fb::game::spell::listener
+                           public virtual fb::game::spells::listener
 {
     virtual void                on_attack(life& me, object* you) = 0;
     virtual void                on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;

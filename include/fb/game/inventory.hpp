@@ -1,20 +1,23 @@
-#include <fb/game/container.h>
+#include <fb/game/inventory.h>
 
 template<typename T>
-inline fb::game::base_container<T>::base_container(life& owner) : _owner(owner)
+inline fb::game::inventory<T>::inventory(life& owner) : _owner(owner)
 { }
+
 template<typename T>
-inline fb::game::base_container<T>::~base_container()
+inline fb::game::inventory<T>::~inventory()
 { }
+
 template<typename T>
-inline T* fb::game::base_container<T>::set(T* element, int position)
+inline T* fb::game::inventory<T>::set(T* element, int position)
 {
     auto before = this->_elements[position];
     this->_elements[position] = element;
     return before;
 }
+
 template<typename T>
-inline uint8_t fb::game::base_container<T>::next() const
+inline uint8_t fb::game::inventory<T>::next() const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -24,26 +27,30 @@ inline uint8_t fb::game::base_container<T>::next() const
 
     return 0xFF;
 }
+
 template<typename T>
-inline fb::game::life& fb::game::base_container<T>::owner()
+inline fb::game::life& fb::game::inventory<T>::owner()
 {
     return this->_owner;
 }
+
 template<typename T>
-inline const fb::game::life& fb::game::base_container<T>::owner() const
+inline const fb::game::life& fb::game::inventory<T>::owner() const
 {
     return this->_owner;
 }
+
 template<typename T>
-inline T* fb::game::base_container<T>::at(uint8_t index) const
+inline T* fb::game::inventory<T>::at(uint8_t index) const
 {
     if(index > CONTAINER_CAPACITY - 1)
         return nullptr;
 
     return this->_elements[index];
 }
+
 template<typename T>
-inline uint8_t fb::game::base_container<T>::add(T& element)
+inline uint8_t fb::game::inventory<T>::add(T& element)
 {
     auto next = this->next();
     if(next != 0xFF)
@@ -53,8 +60,9 @@ inline uint8_t fb::game::base_container<T>::add(T& element)
 
     return next;
 }
+
 template<typename T>
-inline uint8_t fb::game::base_container<T>::add(T& element, uint8_t index)
+inline uint8_t fb::game::inventory<T>::add(T& element, uint8_t index)
 {
     if(this->_elements[index] != nullptr)
         return 0xFF;
@@ -62,18 +70,9 @@ inline uint8_t fb::game::base_container<T>::add(T& element, uint8_t index)
     this->_elements[index] = &element;
     return index;
 }
+
 template<typename T>
-inline uint8_t fb::game::base_container<T>::add(T* element, uint8_t index)
-{
-    return this->add(*element, index);
-}
-template<typename T>
-inline uint8_t fb::game::base_container<T>::add(T* element)
-{
-    return this->add(*element);
-}
-template<typename T>
-inline bool fb::game::base_container<T>::remove(uint8_t index)
+inline bool fb::game::inventory<T>::remove(uint8_t index)
 {
     auto                    element = this->at(index);
     if(element == nullptr)
@@ -82,8 +81,9 @@ inline bool fb::game::base_container<T>::remove(uint8_t index)
     this->_elements[index] = nullptr;
     return true;
 }
+
 template<typename T>
-inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
+inline bool fb::game::inventory<T>::swap(uint8_t src, uint8_t dst)
 {
     if(src == dst)
         return false;
@@ -94,8 +94,9 @@ inline bool fb::game::base_container<T>::swap(uint8_t src, uint8_t dst)
     std::swap(this->_elements[src], this->_elements[dst]);
     return true;
 }
+
 template<typename T>
-inline bool fb::game::base_container<T>::free() const
+inline bool fb::game::inventory<T>::free() const
 {
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -105,8 +106,9 @@ inline bool fb::game::base_container<T>::free() const
 
     return false;
 }
+
 template<typename T>
-inline uint8_t fb::game::base_container<T>::free_size() const
+inline uint8_t fb::game::inventory<T>::free_size() const
 {
     uint8_t                 count = 0;
     for(int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -117,13 +119,15 @@ inline uint8_t fb::game::base_container<T>::free_size() const
 
     return count;
 }
+
 template<typename T>
-inline T* fb::game::base_container<T>::operator[](int index)
+inline T* fb::game::inventory<T>::operator[](int index)
 {
     return this->at(index);
 }
+
 template<typename T>
-inline const T* fb::game::base_container<T>::operator[](int index) const
+inline const T* fb::game::inventory<T>::operator[](int index) const
 {
     return this->at(index);
 }

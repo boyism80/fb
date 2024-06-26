@@ -14,6 +14,17 @@ bool fb::model::item::attr(ITEM_ATTRIBUTE flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
+fb::model::item* fb::model::__item::name2item(const std::string& name) const
+{
+    for (auto& [k, v] : *this)
+    {
+        if (v.name == name)
+            return &v;
+    }
+
+    return nullptr;
+}
+
 int fb::model::item::builtin_make(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -168,15 +179,4 @@ int fb::model::item::builtin_deposit_price(lua_State* lua)
         thread->pushnil();
     }
     return 1;
-}
-
-fb::model::item* fb::model::__item::name2item(const std::string& name) const
-{
-    for (auto& [k, v] : *this)
-    {
-        if (v.name == name)
-            return &v;
-    }
-
-    return nullptr;
 }

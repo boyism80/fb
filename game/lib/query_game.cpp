@@ -185,7 +185,7 @@ std::string fb::game::query::make_update_spell(fb::game::session& session)
         {
             std::to_string(session.id()),
             std::to_string(i),
-            std::to_string(spell->model.id),
+            std::to_string(spell->id),
         }));
     }
 

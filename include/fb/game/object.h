@@ -85,9 +85,9 @@ public:
     virtual OBJECT_TYPE                 type() const;
 
     void                                chat(const std::string& message, bool shout = false);
-    const point16_t&         position() const;
-    const point16_t          position_forward() const;
-    const point16_t          position_forward(DIRECTION direction) const;
+    const point16_t&                    position() const;
+    const point16_t                     position_forward() const;
+    const point16_t                     position_forward(DIRECTION direction) const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
@@ -154,7 +154,6 @@ public:
     static int                          builtin_eq(lua_State* lua);
     static int                          builtin_tostring(lua_State* lua);
     static int                          builtin_name(lua_State* lua);
-    static int                          builtin_dialog(lua_State* lua);
     static int                          builtin_sound(lua_State* lua);
     static int                          builtin_position(lua_State* lua);
     static int                          builtin_direction(lua_State* lua);
@@ -192,7 +191,7 @@ struct object::config
 {
 public:
     uint32_t                        id          = 0xFFFFFFFF;
-    const point16_t      position    = point16_t();
+    const point16_t                 position    = point16_t();
     DIRECTION                       direction   = DIRECTION::BOTTOM;
     fb::game::map*                  map         = nullptr;
 };

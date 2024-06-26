@@ -422,9 +422,6 @@ public:                                                                         
 
 #define DECLARE_SPELL_CONTAINER_EXTENSION                                                     \
 public:                                                                                       \
-    LUA_PROTOTYPE                                                                             \
-                                                                                              \
-public:                                                                                       \
     fb::model::spell*               name2spell(const std::string& name) const;
 
 

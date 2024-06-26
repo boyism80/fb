@@ -15,8 +15,8 @@ public:
 
 class concurrent
 {
-private:
-    fb::dead_lock_detector            _root;
+protected:
+    fb::dead_lock_detector            root;
 
 protected:
     concurrent()
@@ -25,27 +25,17 @@ protected:
     {}
 
 protected:
-    // void add(fb::dead_lock_detector* node)
-    // {
-    //     if (node->parent == nullptr)
-    //         this->_root->add(node);
-    // }
-
-    fb::dead_lock_detector* alloc(const std::string& key, fb::dead_lock_detector* trans)
+    void add(fb::dead_lock_detector& node)
     {
-        return trans->add<fb::dead_lock_detector>(key);
-        // auto current = std::make_shared<fb::dead_lock_detector>(key, trans);
-        // if(trans != nullptr)
-        //     trans->add(current);
-
-        // return current;
+        if (node.parent == nullptr)
+            this->root.add(node);
     }
 
-    void assert_dead_lock(fb::dead_lock_detector* node)
+    void assert_dead_lock(const fb::dead_lock_detector& node)
     {
-        auto root = static_cast<const dead_lock_detector*>(node->root());
-        root->assert_circulated_lock();
-        this->_root.assert_dead_lock(root);
+        auto& root = static_cast<const dead_lock_detector&>(node.root());
+        root.assert_circulated_lock();
+        this->root.assert_dead_lock(root);
     }
 };
 

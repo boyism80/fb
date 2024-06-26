@@ -26,7 +26,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
             y = parameters[2].asInt();
     }
 
-    auto& map = this->_maps[model->id];
+    auto& map = this->maps[model->id];
     co_await session.co_map(&map, point16_t(x, y));
     co_return true;
 }
@@ -202,8 +202,7 @@ fb::task<bool> fb::game::context::handle_command_spell(fb::game::session& sessio
     if(model == nullptr)
         co_return false;
 
-    auto spell = this->make<fb::game::spell>(model);
-    auto slot = session.spells.add(spell);
+    auto slot = session.spells.add(*model);
     if(slot == 0xFF)
         co_return false;
 
@@ -366,7 +365,7 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     std::call_once(flag, [this] 
         { 
             std::srand(std::time(nullptr));
-            for(auto& [id, map] : this->_maps)
+            for(auto& [id, map] : this->maps)
             {
                 maps.push_back(&map);
             }
@@ -450,7 +449,7 @@ fb::task<bool> fb::game::context::handle_concurrency(fb::game::session& session,
 
     try
     {
-        co_await this->_mutex.sync<bool>(key, [this, &session, seconds](auto trans) -> fb::task<bool>
+        co_await this->_mutex.sync<bool>(key, [this, &session, seconds](auto& trans) -> fb::task<bool>
         {
             for (int i = 0; i < seconds; i++)
             {

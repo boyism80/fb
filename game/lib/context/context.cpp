@@ -70,7 +70,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"__tostring",          fb::game::object::builtin_tostring},
 {"id",                  fb::game::object::builtin_id},
 {"name",                fb::game::object::builtin_name},
-{"dialog",              fb::game::object::builtin_dialog},
 {"sound",               fb::game::object::builtin_sound},
 {"position",            fb::game::object::builtin_position},
 {"direction",           fb::game::object::builtin_direction},
@@ -172,13 +171,12 @@ END_LUA_EXTENSION
 fb::game::context::context(boost::asio::io_context& context, uint16_t port) : 
     fb::acceptor<fb::game::session>(context, port, std::thread::hardware_concurrency()),
     _db(*this, 4),
-    _maps(*this, fb::config::get()["group"].asUInt())
+    maps(*this, fb::config::get()["group"].asUInt())
 {
     const auto& config = fb::config::get();
 
     lua::env<fb::game::context>("context", this);
     lua::bind_class<lua::luable>();
-    lua::bind_class<fb::game::spell,   lua::luable>();
     lua::bind_class<fb::game::map,     lua::luable>();
     lua::bind_class<fb::game::door,    lua::luable>();
     lua::bind_class<fb::game::group,   lua::luable>();
@@ -452,7 +450,7 @@ void fb::game::context::handle_internal_connected()
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for(auto& [key, value] : this->_maps)
+    for(auto& [key, value] : this->maps)
         value.on_timer(elapsed_milliseconds);
 }
 
@@ -617,7 +615,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
     else
         session.undisguise();
 
-    if (this->_maps.contains(map) == false)
+    if (this->maps.contains(map) == false)
         return false;
 
     if(transfer != std::nullopt)
@@ -626,7 +624,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
         position_x = uint32_t(transfer.value().position.x);
         position_y = uint32_t(transfer.value().position.y);
     }
-    session.map(&this->_maps[map], point16_t(position_x, position_y));    
+    session.map(&this->maps[map], point16_t(position_x, position_y));    
     return true;
 }
 
@@ -677,8 +675,7 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
             return true;
 
         auto& model = this->model.spell[id.value()];
-        auto spell = this->make<fb::game::spell>(model);
-        session.spells.add(spell, slot);
+        session.spells.add(model, slot);
         return true;
     });
 }
@@ -1815,24 +1812,23 @@ fb::task<bool> fb::game::context::handle_spell(fb::socket<fb::game::session>& so
     if(request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    auto spell = session->spells[request.slot];
-    if(spell == nullptr)
+    auto model = session->spells[request.slot];
+    if(model == nullptr)
         co_return false;
 
-    auto& model = spell->model;
-    request.parse(model.type);
-    switch(model.type)
+    request.parse(model->type);
+    switch(model->type)
     {
     case SPELL_TYPE::INPUT:
-        session->active(model, request.message);
+        session->active(*model, request.message);
         break;
 
     case SPELL_TYPE::TARGET:
-        session->active(model, request.fd);
+        session->active(*model, request.fd);
         break;
 
     case SPELL_TYPE::NORMAL:
-        session->active(model);
+        session->active(*model);
         break;
     }
 
@@ -1913,11 +1909,12 @@ fb::task<bool> fb::game::context::handle_world(fb::socket<fb::game::session>& so
     //    this->save(*session);
     //}
     //co_return true;
+    co_return true;
 }
 
 void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [_, map] : this->_maps)
+    for(auto& [_, map] : this->maps)
     {
         if(map.active == false)
             continue;
@@ -1950,7 +1947,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 {
     // 리젠된 전체 몹을 저장
     std::vector<object*> spawned_mobs;
-    for(auto& [_, map] : this->_maps)
+    for(auto& [_, map] : this->maps)
     {
         if(map.active == false)
             continue;
@@ -1981,7 +1978,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
 void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    for(auto& [_, map] : this->_maps)
+    for(auto& [_, map] : this->maps)
     {
         if(map.active == false)
             continue;
@@ -1998,16 +1995,16 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             if(value->buffs.size() == 0)
                 continue;
 
-            std::vector<std::unique_ptr<buff>*> finishes;
-            for(auto& buff : value->buffs)
+            auto ended_buffs = std::vector<std::reference_wrapper<fb::game::buff>>();
+            for (auto& buff : value->buffs)
             {
                 buff->time_dec(1);
-                if(buff->time() <= 0ms)
-                    finishes.push_back(&buff);
+                if (buff->time() <= 0ms)
+                    ended_buffs.push_back(*buff);
             }
 
-            for(auto finish : finishes)
-                value->buffs.remove((*finish)->spell.name);
+            for (auto& buff : ended_buffs)
+                value->buffs.remove(buff.get().model.name);
         }
     }
 }
@@ -2016,7 +2013,7 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
 {
     auto& c = console::get();
 
-    for(auto& [_, map] : this->_maps)
+    for(auto& [_, map] : this->maps)
     {
         if(map.active == false)
             continue;

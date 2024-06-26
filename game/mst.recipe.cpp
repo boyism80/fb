@@ -45,9 +45,7 @@ fb::model::recipe_node* fb::model::recipe_node::add(const fb::model::dsl::item& 
             if (child != nullptr)
                 return child;
             
-            
-            auto raw = static_cast<fb::mst<std::reference_wrapper<const fb::model::dsl::item>>*>(child);
-            return raw->add<recipe_node>(std::ref(item));
+            return child->add(item);
         }
         else
         {
@@ -60,8 +58,7 @@ fb::model::recipe_node* fb::model::recipe_node::add(const fb::model::dsl::item& 
         if (child == nullptr)
         {
             this->_dummy_dsl = std::make_unique<fb::model::dsl::item>(item.id, 0, 0.0);
-            auto raw = static_cast<fb::mst<std::reference_wrapper<const fb::model::dsl::item>>*>(this);
-            child = raw->add<recipe_node>(std::ref(*_dummy_dsl.get()));
+            child = this->add(item);
         }
 
         return child->add(item);

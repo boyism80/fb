@@ -18,7 +18,7 @@ public:
 
 public:
     void                        assert_circulated_lock() const;
-    void                        assert_dead_lock(const dead_lock_detector* node) const;
+    void                        assert_dead_lock(const dead_lock_detector& node) const;
 
 public:
     static const std::string&   initializer();

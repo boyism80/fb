@@ -3,7 +3,7 @@
 #include <fb/game/map.h>
 
 fb::game::items::items(session& owner) :
-    base_container(owner),
+    inventory(owner),
     _owner(static_cast<fb::game::session&>(owner))
 { }
 
@@ -154,7 +154,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
 
 uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
 {
-    if(fb::game::base_container<fb::game::item>::add(item, index) == 0xFF)
+    if(fb::game::inventory<fb::game::item>::add(item, index) == 0xFF)
         return 0xFF;
 
     item.owner(&this->_owner);
@@ -630,7 +630,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     auto                    splitted = item->split(count);
     if(splitted == item)
     {
-        fb::game::base_container<fb::game::item>::remove(index);
+        fb::game::inventory<fb::game::item>::remove(index);
         if(listener != nullptr)
             listener->on_item_remove(this->_owner, index, attr);
     }
@@ -660,7 +660,7 @@ fb::game::item* fb::game::items::remove(fb::game::item& item, uint16_t count, IT
 
 bool fb::game::items::swap(uint8_t src, uint8_t dst)
 {
-    if(fb::game::base_container<fb::game::item>::swap(src, dst) == false)
+    if(fb::game::inventory<fb::game::item>::swap(src, dst) == false)
         return false;
     
     auto listener = this->_owner.get_listener<fb::game::session>();

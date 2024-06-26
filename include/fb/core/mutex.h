@@ -26,7 +26,7 @@ public:
 
 private:
     template <typename T>
-    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector> current, const std::string key, std::mutex& mutex)
+    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
     {
         mutex.lock();
         try
@@ -70,7 +70,7 @@ private:
     }
 
     template <typename T>
-    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, fb::thread* thread, std::shared_ptr<fb::dead_lock_detector>& trans)
+    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::thread* thread, fb::dead_lock_detector& trans)
     {
         std::mutex* mutex = nullptr;
         {
@@ -81,7 +81,7 @@ private:
             mutex = this->_pool[key].get();
         }
 
-        auto current = concurrent::alloc(key, trans);
+        auto& current = trans.add<fb::dead_lock_detector>(key);
         try
         {
             concurrent::assert_dead_lock(current);
@@ -95,7 +95,7 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, &awaiter, &fn, current, key, mutex](uint8_t) mutable 
+            thread->dispatch([this, &awaiter, &fn, &current, key, mutex](uint8_t) mutable 
             {
                 this->handle_locked(awaiter, fn, current, key, *mutex);
             });
@@ -135,9 +135,9 @@ private:
 
 public:
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector>& trans)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& trans)
     {
-        return fb::awaiter<T>([this, key, &fn, trans](auto& awaiter) mutable
+        return fb::awaiter<T>([this, key, &fn, &trans](auto& awaiter) mutable
         {
             auto thread = this->_owner.current_thread();
             this->lock(key, awaiter, fn, thread, trans);
@@ -145,10 +145,9 @@ public:
     }
 
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn)
     {
-        auto empty_ptr = std::shared_ptr<fb::dead_lock_detector>(nullptr);
-        return this->sync(key, fn, empty_ptr);
+        return this->sync(key, fn, this->root);
     }
 
     template <typename T>

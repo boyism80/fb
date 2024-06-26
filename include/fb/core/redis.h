@@ -105,7 +105,7 @@ public:
 
 private:
     template <typename T>
-    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector> current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
+    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
     {
         try
         {
@@ -155,9 +155,9 @@ private:
     }
 
     template <typename T>
-    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, std::shared_ptr<fb::dead_lock_detector>& trans)
+    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, fb::dead_lock_detector& trans)
     {
-        auto current = concurrent::alloc(key, trans);
+        auto& current = trans.add<fb::dead_lock_detector>(key);
 
         try
         {
@@ -170,7 +170,7 @@ private:
             return false;
         }
 
-        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn, trans, current](cpp_redis::reply& v) mutable
+        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn, &current](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
@@ -178,7 +178,7 @@ private:
 
             if (thread != nullptr)
             {
-                thread->dispatch([this, &awaiter, &fn, current, key, uuid, conn, subs](uint8_t) mutable 
+                thread->dispatch([this, &awaiter, &fn, &current, key, uuid, conn, subs](uint8_t) mutable
                 {
                     this->handle_locked(awaiter, fn, current, key, uuid, conn, subs);
                 });
@@ -220,15 +220,15 @@ private:
 
 public:
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn, std::shared_ptr<fb::dead_lock_detector>& trans)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& trans)
     {
-        return fb::awaiter<T>([this, key, &fn, trans](auto& awaiter) mutable
+        return fb::awaiter<T>([this, key, &fn, &trans](auto& awaiter) mutable
         {
             auto conn = this->conn.get();
             auto subs = this->subs.get();
             auto thread = this->_owner.current_thread();
             auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-            subs->subscribe(key, [this, key, uuid, conn, subs, &awaiter, &fn, thread, trans](const std::string& chan, const std::string& msg) mutable
+            subs->subscribe(key, [this, key, uuid, conn, subs, &awaiter, &fn, thread, &trans](const std::string& chan, const std::string& msg) mutable
             {
                 if (chan != key)
                     return;
@@ -243,10 +243,9 @@ public:
     }
 
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(std::shared_ptr<fb::dead_lock_detector>&)>& fn)
+    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn)
     {
-        auto empty_ptr = std::shared_ptr<fb::dead_lock_detector>(nullptr);
-        return this->sync(key, fn, empty_ptr);
+        return this->sync(key, fn, this->root);
     }
 
     template <typename T>

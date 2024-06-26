@@ -44,12 +44,12 @@ private:
     commands                 _commands;
     std::mutex               _hash_mutex;
     object_set               _objects;
-    maps                     _maps;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
 
 public:
-    fb::model::container    model;
+    fb::model::container     model;
+    maps                     maps;
 
 public:
     context(boost::asio::io_context& context, uint16_t port);

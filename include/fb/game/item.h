@@ -279,7 +279,7 @@ public:
 };
 
 
-class items : public fb::game::base_container<fb::game::item>
+class items : public fb::game::inventory<fb::game::item>
 {
 private:
     fb::game::session&                  _owner;

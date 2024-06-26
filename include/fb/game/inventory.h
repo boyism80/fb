@@ -11,7 +11,7 @@ static constexpr uint8_t CONTAINER_CAPACITY = 52;
 class life;
 
 template <typename T>
-class base_container
+class inventory
 {
 public:
     using unique_set = std::array<T*, CONTAINER_CAPACITY>;
@@ -21,8 +21,8 @@ private:
     unique_set              _elements = { nullptr, };
 
 protected:
-    base_container(life& owner);
-    ~base_container();
+    inventory(life& owner);
+    ~inventory();
 
 protected:
     T*                      set(T* element, int position);
@@ -33,9 +33,7 @@ public:
     const life&             owner() const;
     virtual T*              at(uint8_t index) const;
     virtual uint8_t         add(T& element);
-    virtual uint8_t         add(T* element);
     virtual uint8_t         add(T& element, uint8_t index);
-    virtual uint8_t         add(T* element, uint8_t index);
     virtual bool            remove(uint8_t index);
     virtual bool            swap(uint8_t src, uint8_t dst);
 
@@ -47,7 +45,7 @@ public:
     const T*                operator [] (int index) const;
 };
 
-#include "container.hpp"
+#include "inventory.hpp"
 
 } }
 

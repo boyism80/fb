@@ -78,16 +78,16 @@ void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
 
 void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
-    if(buff.spell.uncast.empty())
+    if(buff.model.uncast.empty())
         return;
 
      auto thread = lua::get();
      if(thread == nullptr)
          return;
-     thread->from(buff.spell.uncast.c_str())
+     thread->from(buff.model.uncast.c_str())
          .func("on_uncast")
          .pushobject(me)
-         .pushobject(buff.spell)
+         .pushobject(buff.model)
          .resume(2);
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
