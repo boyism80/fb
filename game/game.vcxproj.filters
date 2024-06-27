@@ -223,6 +223,9 @@
     <ClCompile Include="lib\worker\worker.model.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="lib\worker\worker.map.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

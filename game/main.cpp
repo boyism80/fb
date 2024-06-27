@@ -60,8 +60,19 @@ bool load_db(fb::console& c, fb::game::context& context)
         }
     };
 
-    auto loader = fb::game::model_loader(context.model);
-    loader.run();
+    fb::game::model_loader(context).run();
+
+    for (fb::model::__map::iterator i = context.model.map.begin(); i != context.model.map.end(); i++)
+    {
+        auto&& pair = *i;
+        std::cout << pair.second.id << std::endl;
+    }
+
+    for (auto&& [k, v] : context.model.map)
+    {
+        std::cout << v.id << std::endl;
+    }
+    fb::game::map_loader(context).run();
 
     return true;
 }
