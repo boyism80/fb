@@ -6,8 +6,9 @@
 
 using namespace fb::model::enum_value;
 
-bool load_db(fb::console& c, fb::game::context& context)
+int main(int argc, const char** argv)
 {
+    auto& c = fb::console::get();
     auto& config = fb::config::get();
 
     auto height = 8;
@@ -63,13 +64,6 @@ bool load_db(fb::console& c, fb::game::context& context)
     fb::game::model_loader(context).run();
     fb::game::map_loader(context).run();
 
-    return true;
-}
-
-int main(int argc, const char** argv)
-{
-    auto& c = fb::console::get();
-
     try
     {
         //_CrtSetBreakAlloc(12722647);
@@ -83,8 +77,6 @@ int main(int argc, const char** argv)
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
 
-        load_db(c, *context);
-        
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
 
