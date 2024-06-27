@@ -87,7 +87,7 @@ public:
         };
 
         auto tasks = std::vector<std::future<void>>();
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < std::thread::hardware_concurrency(); i++)
         {
             tasks.push_back(std::async(std::launch::async, fn));
         }
@@ -172,7 +172,7 @@ public:
         };
 
         auto tasks = std::vector<std::future<void>>();
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < std::thread::hardware_concurrency(); i++)
         {
             tasks.push_back(std::async(std::launch::async, fn));
         }

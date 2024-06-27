@@ -21,7 +21,39 @@ ROOT_PREPROCESSOR
 
 namespace fb { namespace model {
 
-static inline std::function<std::string(const std::string&)> string_encoding_func;
+class option
+{
+public:
+    using encoding_func_type = std::function<std::string(const std::string&)>;
+
+public:
+    encoding_func_type                      encoding_func;
+
+private:
+    option() = default;
+
+public:
+    ~option() = default;
+
+public:
+    static option& get()
+    {
+        static std::once_flag               flag;
+        static std::unique_ptr<option>      ist;
+
+        std::call_once(flag, [] 
+        {
+            ist = std::unique_ptr<option>(new option());
+        });
+        return *ist;
+    }
+
+    static void encoding(const encoding_func_type& fn)
+    {
+        auto& ist = get();
+        ist.encoding_func = fn;
+    }
+};
 
 #pragma region base type
 class date_range
@@ -3062,12 +3094,13 @@ template <typename K, typename V>
 class kv_container : public container
 {
 public:
-    class iterator;
-    class const_iterator;
+    using iterator          = std::unordered_map<K,V&>::iterator;
+    using const_iterator    = std::unordered_map<K,V&>::const_iterator;
 
 private:
-    std::unordered_map<K, std::unique_ptr<V>> _data;
-    const std::string _fname;
+    std::vector<std::unique_ptr<V>>     _ptrs;
+    std::unordered_map<K,V&>            _pairs;
+    const std::string                   _fname;
 
 public:
     hook_funcs<V> hook;
@@ -3120,7 +3153,9 @@ private:
             if (ptr == nullptr)
                 ptr = fb::model::build<std::unique_ptr<V>>(*i);
 
-            this->_data.insert({ fb::model::build<K>(i.key()), std::move(ptr)});
+            auto raw = ptr.get();
+            this->_ptrs.push_back(std::move(ptr));
+            this->_pairs.insert({ fb::model::build<K>(i.key()), *raw });
         }
     }
 
@@ -3132,21 +3167,21 @@ public:
 
     bool contains(const K& k) const
     {
-        return this->_data.find(k) != this->_data.cend();
+        return this->_pairs.find(k) != this->_pairs.cend();
     }
 
     const V* find(const K& k) const
     {
-        auto i = this->_data.find(k);
-        if (i == this->_data.cend())
+        auto i = this->_pairs.find(k);
+        if (i == this->_pairs.cend())
             return nullptr;
 
-        return i->second.get();
+        return &i->second;
     }
 
     uint32_t size() const
     {
-        return this->_data.size();
+        return this->_pairs.size();
     }
 
     const V& operator [] (const K& k) const 
@@ -3158,75 +3193,25 @@ public:
         return *found;
     }
 
-    iterator begin();
-    iterator end();
-    const const_iterator begin() const;
-    const const_iterator end() const;
-};
-
-template <typename K, typename V>
-class kv_container<K,V>::iterator : public std::unordered_map<K, std::unique_ptr<V>>::iterator
-{
-private:
-    std::optional<std::pair<K, V&>> _pair;
-
-public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : 
-        std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
-        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
-    { }
-    ~iterator() = default;
-
-public:
-    std::pair<K,V&>& operator * ()
+    iterator begin()
     {
-        return this->_pair.value();
+        return this->_pairs.begin();
+    }
+
+    iterator end()
+    {
+        return this->_pairs.end();
+    }
+
+    const const_iterator begin() const
+    {
+        return this->_pairs.begin();
+    }
+    const const_iterator end() const
+    {
+        return this->_pairs.end();
     }
 };
-
-template <typename K, typename V>
-class kv_container<K,V>::const_iterator : public std::unordered_map<K, std::unique_ptr<V>>::const_iterator
-{
-private:
-    const std::optional<std::pair<K, V&>> _pair;
-
-public:
-    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : 
-        std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
-        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
-    { }
-    ~const_iterator() = default;
-
-public:
-    const std::pair<K,V&>& operator * () const
-    {
-        return this->_pair.value();
-    }
-};
-
-template <typename K, typename V>
-kv_container<K,V>::iterator kv_container<K,V>::begin()
-{
-    return kv_container<K,V>::iterator(this->_data.begin(), this->_data);
-}
-
-template <typename K, typename V>
-kv_container<K,V>::iterator kv_container<K,V>::end()
-{
-    return kv_container<K,V>::iterator(this->_data.end(), this->_data);
-}
-
-template <typename K, typename V>
-const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
-{
-    return kv_container<K,V>::const_iterator(this->_data.begin(), this->_data);
-}
-
-template <typename K, typename V>
-const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
-{
-    return kv_container<K,V>::const_iterator(this->_data.end(), this->_data);
-}
 
 template <typename T>
 class array_container : public container
@@ -3960,10 +3945,12 @@ template <> uint64_t build<uint64_t>(const Json::Value& json)
 
 template <> std::string build<std::string>(const Json::Value& json)
 {
+    auto& encoding_func = fb::model::option::get().encoding_func;
+
     if (json.isNull())
         return "";
-    else if (string_encoding_func != nullptr)
-        return string_encoding_func(json.asString());
+    else if (encoding_func != nullptr)
+        return encoding_func(json.asString());
     else
         return json.asString();
 }

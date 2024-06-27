@@ -25,7 +25,7 @@ bool load_db(fb::console& c, fb::game::context& context)
     c.cursor(0, height + 1);
 
 #if _WIN32
-    fb::model::string_encoding_func = cp949;
+    fb::model::option::encoding(cp949);
 #endif
 
     context.model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
@@ -61,17 +61,6 @@ bool load_db(fb::console& c, fb::game::context& context)
     };
 
     fb::game::model_loader(context).run();
-
-    for (fb::model::__map::iterator i = context.model.map.begin(); i != context.model.map.end(); i++)
-    {
-        auto&& pair = *i;
-        std::cout << pair.second.id << std::endl;
-    }
-
-    for (auto&& [k, v] : context.model.map)
-    {
-        std::cout << v.id << std::endl;
-    }
     fb::game::map_loader(context).run();
 
     return true;
