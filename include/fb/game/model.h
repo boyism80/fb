@@ -3051,21 +3051,26 @@ public:
     std::function<T*(const Json::Value&)> build;
 };
 
+class container
+{
+public:
+    virtual uint32_t size() const = 0;
+    virtual void load() = 0;
+};
+
 template <typename K, typename V>
-class kv_container : private std::unordered_map<K, std::unique_ptr<V>>
+class kv_container : public container
 {
 public:
     class iterator;
     class const_iterator;
 
 private:
+    std::unordered_map<K, std::unique_ptr<V>> _data;
     const std::string _fname;
 
 public:
     hook_funcs<V> hook;
-
-public:
-    using std::unordered_map<K,std::unique_ptr<V>>::size;
 
 protected:
     kv_container(const std::string& fname) : _fname(fname)
@@ -3115,7 +3120,7 @@ private:
             if (ptr == nullptr)
                 ptr = fb::model::build<std::unique_ptr<V>>(*i);
 
-            std::unordered_map<K, std::unique_ptr<V>>::insert({ fb::model::build<K>(i.key()), std::move(ptr)});
+            this->_data.insert({ fb::model::build<K>(i.key()), std::move(ptr)});
         }
     }
 
@@ -3127,16 +3132,21 @@ public:
 
     bool contains(const K& k) const
     {
-        return std::unordered_map<K, std::unique_ptr<V>>::find(k) != std::unordered_map<K, std::unique_ptr<V>>::cend();
+        return this->_data.find(k) != this->_data.cend();
     }
 
     const V* find(const K& k) const
     {
-        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(k);
-        if (i == std::unordered_map<K, std::unique_ptr<V>>::cend())
+        auto i = this->_data.find(k);
+        if (i == this->_data.cend())
             return nullptr;
 
         return i->second.get();
+    }
+
+    uint32_t size() const
+    {
+        return this->_data.size();
     }
 
     const V& operator [] (const K& k) const 
@@ -3161,8 +3171,9 @@ private:
     std::optional<std::pair<K, V&>> _pair;
 
 public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
-        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
+    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : 
+        std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
+        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~iterator() = default;
 
@@ -3180,8 +3191,9 @@ private:
     const std::optional<std::pair<K, V&>> _pair;
 
 public:
-    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
-        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
+    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>& container) : 
+        std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
+        _pair(i != container.end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
     { }
     ~const_iterator() = default;
 
@@ -3195,42 +3207,40 @@ public:
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::begin()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
+    return kv_container<K,V>::iterator(this->_data.begin(), this->_data);
 }
 
 template <typename K, typename V>
 kv_container<K,V>::iterator kv_container<K,V>::end()
 {
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
+    return kv_container<K,V>::iterator(this->_data.end(), this->_data);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
+    return kv_container<K,V>::const_iterator(this->_data.begin(), this->_data);
 }
 
 template <typename K, typename V>
 const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
 {
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
+    return kv_container<K,V>::const_iterator(this->_data.end(), this->_data);
 }
 
 template <typename T>
-class array_container : private std::vector<std::unique_ptr<T>>
+class array_container : public container
 {
 public:
     class iterator;
     class const_iterator;
 
 private:
+    std::vector<std::unique_ptr<T>> _data;
     const std::string _fname;
 
 public:
     hook_funcs<T> hook;
-
-public:
-    using std::vector<std::unique_ptr<T>>::size;
 
 protected:
     array_container(const std::string& fname) : _fname(fname)
@@ -3280,7 +3290,7 @@ private:
             if (ptr == nullptr)
                 ptr = fb::model::build<std::unique_ptr<T>>(*i);
 
-            std::vector<std::unique_ptr<T>>::push_back(std::move(ptr));
+            this->_data.push_back(std::move(ptr));
         }
     }
 
@@ -3292,10 +3302,15 @@ public:
 
     const T* find(uint32_t i) const
     {
-        if (i > std::vector<std::unique_ptr<T>>::size() - 1)
+        if (i > this->_data.size() - 1)
             return nullptr;
 
-        return std::vector<std::unique_ptr<T>>::at(i).get();
+        return this->_data.at(i).get();
+    }
+
+    uint32_t size() const
+    {
+        return this->_data.size();
     }
 
     const T& operator [] (uint32_t i) const
@@ -3325,7 +3340,7 @@ public:
 public:
     T& operator * ()
     {
-        return std::vector<std::unique_ptr<T>>::iterator::operator*();
+        return this->_data.iterator::operator*();
     }
 };
 
@@ -3340,32 +3355,32 @@ public:
 public:
     const T& operator * () const
     {
-        return std::vector<std::unique_ptr<T>>::const_iterator::operator*();
+        return this->_data.const_iterator::operator*();
     }
 };
 
 template <typename T>
 array_container<T>::iterator array_container<T>::begin()
 {
-    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::begin());
+    return array_container<T>::iterator(this->_data.begin());
 }
 
 template <typename T>
 array_container<T>::iterator array_container<T>::end()
 {
-    return array_container<T>::iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::end());
+    return array_container<T>::iterator(this->_data.end());
 }
 
 template <typename T>
 const typename array_container<T>::const_iterator array_container<T>::begin() const
 {
-    return array_container<T>::const_iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cbegin());
+    return array_container<T>::const_iterator(this->_data.cbegin());
 }
 
 template <typename T>
 const typename array_container<T>::const_iterator array_container<T>::end() const
 {
-    return array_container<T>::const_iterator(std::vector<std::unique_ptr<std::unique_ptr<T>>>::cend());
+    return array_container<T>::const_iterator(this->_data.cend());
 }
 
 class __ability : public fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>
@@ -3753,7 +3768,7 @@ DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
 };
 
 
-class container
+class model
 {
 public:
     fb::model::__ability ability;
@@ -3789,92 +3804,54 @@ public:
     fb::model::__world_group world_group;
     fb::model::__world_group_attribute world_group_attribute;
 
-public:
-    container() = default;
-    container(const container&) = delete;
-    ~container() = default;
-
-public:
-    void load(const std::function<void(float)>& callback, const std::function<void(const std::string&)>& error)
+private:
+    const std::vector<fb::model::container*> _containers = 
     {
-        std::queue<std::function<void()>> queue;
-#pragma region enqueue
-        queue.push([this]() { this->ability.load(); });
-        queue.push([this]() { this->ability_attribute.load(); });
-        queue.push([this]() { this->board.load(); });
-        queue.push([this]() { this->buy.load(); });
-        queue.push([this]() { this->buy_attribute.load(); });
-        queue.push([this]() { this->combine.load(); });
-        queue.push([this]() { this->door.load(); });
-        queue.push([this]() { this->door_pair.load(); });
-        queue.push([this]() { this->drop.load(); });
-        queue.push([this]() { this->equipment.load(); });
-        queue.push([this]() { this->item.load(); });
-        queue.push([this]() { this->life.load(); });
-        queue.push([this]() { this->map.load(); });
-        queue.push([this]() { this->mob.load(); });
-        queue.push([this]() { this->mob_spawn.load(); });
-        queue.push([this]() { this->mob_spawn_attribute.load(); });
-        queue.push([this]() { this->npc.load(); });
-        queue.push([this]() { this->npc_spawn.load(); });
-        queue.push([this]() { this->npc_spawn_attribute.load(); });
-        queue.push([this]() { this->object.load(); });
-        queue.push([this]() { this->promotion.load(); });
-        queue.push([this]() { this->promotion_attribute.load(); });
-        queue.push([this]() { this->reward.load(); });
-        queue.push([this]() { this->sell.load(); });
-        queue.push([this]() { this->sell_attribute.load(); });
-        queue.push([this]() { this->spell.load(); });
-        queue.push([this]() { this->warp.load(); });
-        queue.push([this]() { this->warp_attribute.load(); });
-        queue.push([this]() { this->world.load(); });
-        queue.push([this]() { this->world_attribute.load(); });
-        queue.push([this]() { this->world_group.load(); });
-        queue.push([this]() { this->world_group_attribute.load(); });
-#pragma endregion
+        &ability,
+        &ability_attribute,
+        &board,
+        &buy,
+        &buy_attribute,
+        &combine,
+        &door,
+        &door_pair,
+        &drop,
+        &equipment,
+        &item,
+        &life,
+        &map,
+        &mob,
+        &mob_spawn,
+        &mob_spawn_attribute,
+        &npc,
+        &npc_spawn,
+        &npc_spawn_attribute,
+        &object,
+        &promotion,
+        &promotion_attribute,
+        &reward,
+        &sell,
+        &sell_attribute,
+        &spell,
+        &warp,
+        &warp_attribute,
+        &world,
+        &world_attribute,
+        &world_group,
+        &world_group_attribute
+    };
 
-        auto size = queue.size();
-        auto process = 0;
-        auto mutex = std::mutex();
-        auto fn = [&]() 
+public:
+    model() = default;
+    model(const model&) = delete;
+    ~model() = default;
+
+public:
+    void foreach(const std::function<void(fb::model::container&)>& fn)
+    {
+        for (auto container : this->_containers)
         {
-            while (true)
-            {
-                std::function<void()> job;
-                {
-                    auto _ = std::lock_guard(mutex);
-                    if(queue.empty())
-                        break;
-
-                    job = queue.front();
-                    queue.pop();
-                }
-                
-                try
-                {
-                    job();
-                }
-                catch(std::exception& e)
-                {
-                    error(e.what());
-                }
-                catch(...)
-                {
-                    error("unhandled exception");
-                }
-
-                {
-                    auto _ = std::lock_guard(mutex);
-                    auto percent = (++process * 100) / float(size);
-                    callback(percent);
-                }
-            }
-        };
-
-        auto tasks = std::queue<std::future<void>>();
-        for(int i = 0; i < std::thread::hardware_concurrency(); i++)
-        {
-            tasks.push(std::async(std::launch::async, fn));
+            fn(*container);
         }
     }
 };

@@ -402,10 +402,10 @@ class internal_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
-    const fb::model::container& model;
+    const fb::model::model& model;
 
 public:
-    internal_info(const fb::game::session& session, const fb::model::container& model) : fb::protocol::base::header(0x39),
+    internal_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x39),
         session(session), model(model)
     { }
 
@@ -489,10 +489,10 @@ class external_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
-    const fb::model::container& model;
+    const fb::model::model& model;
 
 public:
-    external_info(const fb::game::session& session, const fb::model::container& model) : fb::protocol::base::header(0x34),
+    external_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x34),
         session(session), model(model)
     { }
 

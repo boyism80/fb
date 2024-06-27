@@ -12,14 +12,14 @@ public:
 #ifdef BOT
     std::list<fb::model::board&>       section_list;
 #else
-    const fb::model::container& model;
+    const fb::model::model& model;
 #endif
 
 public:
 #ifdef BOT
     sections() : fb::protocol::base::header(0x31)
 #else
-    sections(const fb::model::container& model) : fb::protocol::base::header(0x31), model(model)
+    sections(const fb::model::model& model) : fb::protocol::base::header(0x31), model(model)
 #endif
     { }
 

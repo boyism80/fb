@@ -250,8 +250,8 @@ struct map::warp
 public:
     // default warp
     fb::game::map*                  map;
-    const point16_t      before, after;
-    const range8_t       condition;
+    const point16_t                 before, after;
+    const range8_t                  condition;
 
     // world warp
     const fb::game::wm::offset*     offset;

@@ -11,10 +11,10 @@ class dialog : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;
-    const fb::model::container&     model;
+    const fb::model::model&     model;
 
 public:
-    dialog(const fb::game::session& me, const fb::model::container& model) : fb::protocol::base::header(0x42),
+    dialog(const fb::game::session& me, const fb::model::model& model) : fb::protocol::base::header(0x42),
         me(me), model(model)
     { }
 

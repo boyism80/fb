@@ -48,7 +48,7 @@ private:
     tm*                      _time = fb::now();
 
 public:
-    fb::model::container     model;
+    fb::model::model         model;
     maps                     maps;
 
 public:
