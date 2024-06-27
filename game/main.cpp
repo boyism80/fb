@@ -25,50 +25,12 @@ int main(int argc, const char** argv)
 
     c.cursor(0, height + 1);
 
-#if _WIN32
-    fb::model::option::encoding(cp949);
-#endif
-
-    context.model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
-    {
-        auto type = fb::model::build<ITEM_TYPE>(json["type"]);
-        switch (type)
-        {
-        case ITEM_TYPE::STUFF:
-            return fb::model::build<fb::model::item*>(json);
-        case ITEM_TYPE::CASH:
-            return fb::model::build<fb::model::cash*>(json);
-        case ITEM_TYPE::CONSUME:
-            return fb::model::build<fb::model::consume*>(json);
-        case ITEM_TYPE::WEAPON:
-            return fb::model::build<fb::model::weapon*>(json);
-        case ITEM_TYPE::ARMOR:
-            return fb::model::build<fb::model::armor*>(json);
-        case ITEM_TYPE::HELMET:
-            return fb::model::build<fb::model::helmet*>(json);
-        case ITEM_TYPE::RING:
-            return fb::model::build<fb::model::ring*>(json);
-        case ITEM_TYPE::SHIELD:
-            return fb::model::build<fb::model::shield*>(json);
-        case ITEM_TYPE::AUXILIARY:
-            return fb::model::build<fb::model::auxiliary*>(json);
-        case ITEM_TYPE::BOW:
-            return fb::model::build<fb::model::bow*>(json);
-        case ITEM_TYPE::PACKAGE:
-            return fb::model::build<fb::model::pack*>(json);
-        default:
-            return nullptr;
-        }
-    };
-
-    fb::game::model_loader(context).run();
-    fb::game::map_loader(context).run();
-
     try
     {
         //_CrtSetBreakAlloc(12722647);
 
 #ifdef _WIN32
+        fb::model::option::encoding(cp949);
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
@@ -76,6 +38,44 @@ int main(int argc, const char** argv)
         boost::asio::io_context io_context;
         auto& config = fb::config::get();
         auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
+        context->model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
+        {
+            auto type = fb::model::build<ITEM_TYPE>(json["type"]);
+            switch (type)
+            {
+            case ITEM_TYPE::STUFF:
+                return fb::model::build<fb::model::item*>(json);
+            case ITEM_TYPE::CASH:
+                return fb::model::build<fb::model::cash*>(json);
+            case ITEM_TYPE::CONSUME:
+                return fb::model::build<fb::model::consume*>(json);
+            case ITEM_TYPE::WEAPON:
+                return fb::model::build<fb::model::weapon*>(json);
+            case ITEM_TYPE::ARMOR:
+                return fb::model::build<fb::model::armor*>(json);
+            case ITEM_TYPE::HELMET:
+                return fb::model::build<fb::model::helmet*>(json);
+            case ITEM_TYPE::RING:
+                return fb::model::build<fb::model::ring*>(json);
+            case ITEM_TYPE::SHIELD:
+                return fb::model::build<fb::model::shield*>(json);
+            case ITEM_TYPE::AUXILIARY:
+                return fb::model::build<fb::model::auxiliary*>(json);
+            case ITEM_TYPE::BOW:
+                return fb::model::build<fb::model::bow*>(json);
+            case ITEM_TYPE::PACKAGE:
+                return fb::model::build<fb::model::pack*>(json);
+            default:
+                return nullptr;
+            }
+        };
+        context->model.combine.hook.build = [](const Json::Value& json)
+        {
+            return nullptr;
+        };
+
+        fb::game::model_loader(*context).run();
+        fb::game::map_loader(*context).run();
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
