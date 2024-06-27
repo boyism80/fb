@@ -2,8 +2,10 @@
 #define __COROUTINE_H__
 
 #include <exception>
+#include <stdexcept>
 #include <optional>
 #include <coroutine>
+#include <functional>
 
 namespace fb {
 

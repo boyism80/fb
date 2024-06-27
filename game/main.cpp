@@ -2,6 +2,7 @@
 #include <fb/game/context.h>
 #include <fb/core/leak.h>
 #include <fb/core/mst.h>
+#include <fb/game/worker.h>
 
 using namespace fb::model::enum_value;
 
@@ -59,20 +60,8 @@ bool load_db(fb::console& c, fb::game::context& context)
         }
     };
 
-    context.model.foreach([&](auto& container)
-    {
-        container.load();
-    });
-
-    //context.model.load([&](float percent)
-    //{
-    //    c.put("* [%0.2lf%%] 데이터를 읽었습니다.", percent);
-    //},
-    //[&](const std::string& err)
-    //{
-    //    c.comment("    - %s", err.c_str());
-    //});
-    c.next();
+    auto loader = fb::game::model_loader(context.model);
+    loader.run();
 
     return true;
 }

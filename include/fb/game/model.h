@@ -3847,7 +3847,7 @@ public:
     ~model() = default;
 
 public:
-    void foreach(const std::function<void(fb::model::container&)>& fn)
+    void foreach(const std::function<void(fb::model::container&)>& fn) const
     {
         for (auto container : this->_containers)
         {

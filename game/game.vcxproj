@@ -224,6 +224,7 @@
     <ClCompile Include="lib\query_game.cpp" />
     <ClCompile Include="lib\model.cpp" />
     <ClCompile Include="lib\trade.cpp" />
+    <ClCompile Include="lib\worker\worker.model.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.buy.cpp" />
     <ClCompile Include="model.door.cpp" />
