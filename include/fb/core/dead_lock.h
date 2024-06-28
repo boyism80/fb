@@ -17,6 +17,9 @@ public:
     ~dead_lock_detector() = default;
 
 public:
+    fb::mst<std::string>&       add(fb::mst<std::string>& node);
+
+public:
     void                        assert_circulated_lock() const;
     void                        assert_dead_lock(const dead_lock_detector& node) const;
 

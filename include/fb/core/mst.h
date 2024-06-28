@@ -47,7 +47,7 @@ protected:
 public:
     template <typename R>
     R&                          add(const T& data);
-    void                        add(fb::mst<T>& node);
+    virtual fb::mst<T>&         add(fb::mst<T>& node);
     const mst<T>&               root() const;
     fb::mst<T>*                 search(const fb::mst<T>& node) const;
 
@@ -162,22 +162,10 @@ R& fb::mst<T>::add(const T& data)
 }
 
 template <typename T>
-void fb::mst<T>::add(fb::mst<T>& node)
+fb::mst<T>& fb::mst<T>::add(fb::mst<T>& node)
 {
-    auto found = this->search(node);
-    if (found == nullptr)
-    {
-        this->_nodes.push_back(&node);
-    }
-    else
-    {
-        for (auto i = node._nodes.cbegin(); i != node._nodes.cend(); i++)
-        {
-            auto n = *i;
-            if (n != nullptr)
-                found->add(*n);
-        }
-    }
+    this->_nodes.push_back(&node);
+    return *this;
 }
 
 template <typename T>
@@ -195,6 +183,9 @@ const fb::mst<T>& fb::mst<T>::root() const
 template <typename T>
 fb::mst<T>* fb::mst<T>::search(const fb::mst<T>& node) const
 {
+    if (this->comparer == nullptr)
+        throw std::runtime_error("compare function is empty");
+
     if(this->comparer(this->data, node.data))
         return const_cast<fb::mst<T>*>(this);
 

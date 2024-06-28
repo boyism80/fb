@@ -3,6 +3,7 @@
 #include <fb/core/leak.h>
 #include <fb/core/mst.h>
 #include <fb/game/worker.h>
+#include <fb/game/mst.recipe.h>
 
 using namespace fb::model::enum_value;
 
@@ -69,12 +70,15 @@ int main(int argc, const char** argv)
                 return nullptr;
             }
         };
-        context->model.combine.hook.build = [](const Json::Value& json)
-        {
-            return nullptr;
-        };
 
         fb::game::model_loader(*context).run();
+        
+        auto recipes = fb::model::recipe_node();
+        for (auto& x : context->model.recipe)
+        {
+            recipes.add(x);
+        }
+
         fb::game::map_loader(*context).run();
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();

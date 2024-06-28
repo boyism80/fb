@@ -1776,6 +1776,7 @@ public:
         count(any_cast<uint32_t>(parameters[1])),
         percent(any_cast<double>(parameters[2]))
     { }
+    item(item&&) = default;
 
 public:
     fb::model::dsl to_dsl()
@@ -2055,37 +2056,6 @@ DECLARE_BUY_ATTRIBUTE_INITIALIZER
     { }
 #ifdef DECLARE_BUY_ATTRIBUTE_EXTENSION
 DECLARE_BUY_ATTRIBUTE_EXTENSION
-#endif
-};
-class combine
-#ifdef DECLARE_COMBINE_INHERIT
-DECLARE_COMBINE_INHERIT
-#endif
-{
-public:
-    const std::vector<fb::model::dsl> source;
-    const std::vector<fb::model::dsl> success;
-    const std::vector<fb::model::dsl> failed;
-    const double percent;
-
-public:
-    combine(const Json::Value& json) : 
-#ifdef DECLARE_COMBINE_CONSTRUCTOR
-DECLARE_COMBINE_CONSTRUCTOR
-#endif
-        source(fb::model::build<std::vector<fb::model::dsl>>(json["source"])),
-        success(fb::model::build<std::vector<fb::model::dsl>>(json["success"])),
-        failed(fb::model::build<std::vector<fb::model::dsl>>(json["failed"])),
-        percent(fb::model::build<double>(json["percent"]))
-#ifdef DECLARE_COMBINE_INITIALIZER
-DECLARE_COMBINE_INITIALIZER
-#endif
-    { }
-    combine(const combine&) = delete;
-    virtual ~combine()
-    { }
-#ifdef DECLARE_COMBINE_EXTENSION
-DECLARE_COMBINE_EXTENSION
 #endif
 };
 class door
@@ -2421,6 +2391,37 @@ DECLARE_PROMOTION_ATTRIBUTE_INITIALIZER
     { }
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
 DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
+#endif
+};
+class recipe
+#ifdef DECLARE_RECIPE_INHERIT
+DECLARE_RECIPE_INHERIT
+#endif
+{
+public:
+    const std::vector<fb::model::dsl> source;
+    const std::vector<fb::model::dsl> success;
+    const std::vector<fb::model::dsl> failed;
+    const double percent;
+
+public:
+    recipe(const Json::Value& json) : 
+#ifdef DECLARE_RECIPE_CONSTRUCTOR
+DECLARE_RECIPE_CONSTRUCTOR
+#endif
+        source(fb::model::build<std::vector<fb::model::dsl>>(json["source"])),
+        success(fb::model::build<std::vector<fb::model::dsl>>(json["success"])),
+        failed(fb::model::build<std::vector<fb::model::dsl>>(json["failed"])),
+        percent(fb::model::build<double>(json["percent"]))
+#ifdef DECLARE_RECIPE_INITIALIZER
+DECLARE_RECIPE_INITIALIZER
+#endif
+    { }
+    recipe(const recipe&) = delete;
+    virtual ~recipe()
+    { }
+#ifdef DECLARE_RECIPE_EXTENSION
+DECLARE_RECIPE_EXTENSION
 #endif
 };
 class reward
@@ -3315,32 +3316,32 @@ public:
 };
 
 template <typename T>
-class array_container<T>::iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator
+class array_container<T>::iterator : public std::vector<std::unique_ptr<T>>::iterator
 {
 public:
-    iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator& i) : std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator(i)
+    iterator(const typename std::vector<std::unique_ptr<T>>::iterator& i) : std::vector<std::unique_ptr<T>>::iterator(i)
     {}
     ~iterator() = default;
 
 public:
     T& operator * ()
     {
-        return this->_data.iterator::operator*();
+        return *(std::vector<std::unique_ptr<T>>::iterator::operator*()).get();
     }
 };
 
 template <typename T>
-class array_container<T>::const_iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator
+class array_container<T>::const_iterator : public std::vector<std::unique_ptr<T>>::const_iterator
 {
 public:
-    const_iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator& i) : std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator(i)
+    const_iterator(const typename std::vector<std::unique_ptr<T>>::const_iterator& i) : std::vector<std::unique_ptr<T>>::const_iterator(i)
     {}
     ~const_iterator() = default;
 
 public:
     const T& operator * () const
     {
-        return this->_data.const_iterator::operator*();
+        return *(std::vector<std::unique_ptr<T>>::iterator::operator*()).get();
     }
 };
 
@@ -3425,18 +3426,6 @@ public:
     ~__buy_attribute() = default;
 #ifdef DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_BUY_ATTRIBUTE_CONTAINER_EXTENSION
-#endif
-};
-
-class __combine : public fb::model::array_container<fb::model::combine>
-{
-public:
-    __combine() : fb::model::array_container<fb::model::combine>(std::string("json/combine.json"))
-    { }
-    __combine(const __combine&) = delete;
-    ~__combine() = default;
-#ifdef DECLARE_COMBINE_CONTAINER_EXTENSION
-DECLARE_COMBINE_CONTAINER_EXTENSION
 #endif
 };
 
@@ -3632,6 +3621,18 @@ DECLARE_PROMOTION_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
+class __recipe : public fb::model::array_container<fb::model::recipe>
+{
+public:
+    __recipe() : fb::model::array_container<fb::model::recipe>(std::string("json/recipe.json"))
+    { }
+    __recipe(const __recipe&) = delete;
+    ~__recipe() = default;
+#ifdef DECLARE_RECIPE_CONTAINER_EXTENSION
+DECLARE_RECIPE_CONTAINER_EXTENSION
+#endif
+};
+
 class __reward : public fb::model::kv_container<std::string, fb::model::reward>
 {
 public:
@@ -3761,7 +3762,6 @@ public:
     fb::model::__board board;
     fb::model::__buy buy;
     fb::model::__buy_attribute buy_attribute;
-    fb::model::__combine combine;
     fb::model::__door door;
     fb::model::__door_pair door_pair;
     fb::model::__drop drop;
@@ -3778,6 +3778,7 @@ public:
     fb::model::__object object;
     fb::model::__promotion promotion;
     fb::model::__promotion_attribute promotion_attribute;
+    fb::model::__recipe recipe;
     fb::model::__reward reward;
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
@@ -3797,7 +3798,6 @@ private:
         &board,
         &buy,
         &buy_attribute,
-        &combine,
         &door,
         &door_pair,
         &drop,
@@ -3814,6 +3814,7 @@ private:
         &object,
         &promotion,
         &promotion_attribute,
+        &recipe,
         &reward,
         &sell,
         &sell_attribute,

@@ -10,13 +10,18 @@ using namespace fb::model::enum_value;
 
 namespace fb { namespace model {
 
-class recipe_node : public fb::mst<std::reference_wrapper<const fb::model::dsl::item>>
+class recipe_node : public fb::mst<const fb::model::dsl::item&>
 {
-private:
-    inline static fb::model::dsl::item DUMMY = fb::model::dsl::item(0, 0, 0);
+public:
+    using recipe_ref_type = std::reference_wrapper<const fb::model::recipe>;
+    using dsl_ref_type = std::reference_wrapper<fb::model::dsl::item>;
 
 private:
-    std::list<std::reference_wrapper<const fb::model::combine>> _recipes;
+    inline static fb::model::dsl::item DUMMY = fb::model::dsl::item(0, 0, 0);
+    std::vector<std::unique_ptr<fb::model::dsl::item>> _allocated_list;
+
+private:
+    std::list<recipe_ref_type> _recipes;
     std::unique_ptr<fb::model::dsl::item> _dummy_dsl;
 
 public:
@@ -26,19 +31,20 @@ public:
     ~recipe_node() = default;
 
 private:
-    fb::generator<std::reference_wrapper<const fb::model::combine>> find(const std::vector<std::reference_wrapper<fb::model::dsl::item>>& mix, int i);
-
-public:
+    fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source, int i);
     recipe_node* find(uint32_t id) const;
     recipe_node* find(const fb::model::dsl::item& item) const;
     recipe_node* add(const fb::model::dsl::item& item);
-    void add(const fb::model::combine& mix);
-
-    fb::generator<std::reference_wrapper<const fb::model::combine>> find(const std::vector<std::reference_wrapper<fb::model::dsl::item>>& mix);
+    void compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
 
 public:
-    static const std::reference_wrapper<const fb::model::dsl::item>& initializer();
-    static bool comprare(const std::reference_wrapper<const fb::model::dsl::item>& val1, const std::reference_wrapper<const fb::model::dsl::item>& val2);
+    void add(const fb::model::recipe& recipe);
+
+    fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source);
+
+public:
+    static const fb::model::dsl::item& initializer();
+    static bool comprare(const fb::model::dsl::item& val1, const fb::model::dsl::item& val2);
 };
 
 } }

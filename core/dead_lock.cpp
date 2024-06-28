@@ -49,6 +49,28 @@ void fb::dead_lock_detector::assert_circulated_lock() const
     }
 }
 
+fb::mst<std::string>& fb::dead_lock_detector::add(fb::mst<std::string>& node)
+{
+    auto found = static_cast<fb::dead_lock_detector*>(this->search(node));
+    if (found == nullptr)
+    {
+        auto& base = static_cast<fb::mst<std::string>&>(*this);
+        return base.add(node);
+    }
+    else
+    {
+        // µð¹ö±ëÇØºÁ¾ßÇÔ
+        for (auto n : *this)
+        {
+            if (n == nullptr)
+                continue;
+
+            found->add(*n);
+        }
+    }
+    return *this;
+}
+
 void fb::dead_lock_detector::assert_dead_lock(const fb::dead_lock_detector& node) const
 {
     auto errors = std::vector<std::string>();

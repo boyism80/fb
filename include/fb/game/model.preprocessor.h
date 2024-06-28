@@ -470,4 +470,12 @@ public:                                                                         
     const fb::model::buy* find(uint32_t pursuit, const fb::model::item& item) const;                                            \
     const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
 
+#define DECLARE_RECIPE_EXTENSION                                                                                                \
+public:                                                                                                                         \
+    recipe(const std::vector<fb::model::dsl>& source,                                                                           \
+        const std::vector<fb::model::dsl>& success,                                                                             \
+        const std::vector<fb::model::dsl>& failed,                                                                              \
+        double percent) : source(source), success(success), failed(failed), percent(percent)                                    \
+    { }
+
 #endif
