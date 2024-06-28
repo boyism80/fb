@@ -34,7 +34,7 @@ private:
     fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source, int i);
     recipe_node* find(uint32_t id) const;
     recipe_node* find(const fb::model::dsl::item& item) const;
-    recipe_node* add(const fb::model::dsl::item& item);
+    recipe_node& add(const fb::model::dsl::item& item);
     void compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
 
 public:

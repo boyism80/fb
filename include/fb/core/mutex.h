@@ -81,7 +81,7 @@ private:
             mutex = this->_pool[key].get();
         }
 
-        auto& current = trans.add<fb::dead_lock_detector>(key);
+        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key);
         try
         {
             concurrent::assert_dead_lock(current);

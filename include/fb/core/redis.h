@@ -157,7 +157,7 @@ private:
     template <typename T>
     bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, fb::dead_lock_detector& trans)
     {
-        auto& current = trans.add<fb::dead_lock_detector>(key);
+        auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key);
 
         try
         {

@@ -34,7 +34,7 @@ fb::model::recipe_node* fb::model::recipe_node::find(const fb::model::dsl::item&
     return nullptr;
 }
 
-fb::model::recipe_node* fb::model::recipe_node::add(const fb::model::dsl::item& item)
+fb::model::recipe_node& fb::model::recipe_node::add(const fb::model::dsl::item& item)
 {
     auto& data = this->data;
     if(data.id == item.id)
@@ -43,9 +43,10 @@ fb::model::recipe_node* fb::model::recipe_node::add(const fb::model::dsl::item& 
         {
             auto child = this->find(item);
             if (child != nullptr)
-                return child;
+                return *child;
             
-            return child->add(item);
+            auto& based = static_cast<fb::mst<const fb::model::dsl::item&>&>(*this);
+            return based.add<recipe_node>(item);
         }
         else
         {
@@ -121,7 +122,7 @@ void fb::model::recipe_node::add(const fb::model::recipe& recipe)
     auto node = this;
     for (auto ptr : source)
     {
-        node = node->add(*ptr);
+        node = &node->add(*ptr);
     }
     node->_recipes.push_back(recipe);
 }

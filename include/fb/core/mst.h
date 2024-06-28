@@ -47,7 +47,7 @@ protected:
 public:
     template <typename R>
     R&                          add(const T& data);
-    virtual fb::mst<T>&         add(fb::mst<T>& node);
+    fb::mst<T>&                 add(fb::mst<T>& node);
     const mst<T>&               root() const;
     fb::mst<T>*                 search(const fb::mst<T>& node) const;
 
