@@ -20,7 +20,6 @@ public:
     using node_list = std::vector<mst<T>*>;
     using node_route = std::list<std::reference_wrapper<const mst<T>>>;
     using init_fn = std::function<const T&()>;
-    using compare_fn = std::function<bool(const T&, const T&)>;
 
 private:
     std::vector<std::unique_ptr<fb::mst<T>>> _allocated;
@@ -29,10 +28,8 @@ private:
 public:
     const T                     data;
     const fb::mst<T>*           parent = nullptr;
-    const compare_fn            comparer;
 
 protected:
-    mst(const init_fn intializer, const compare_fn& comparer);
     mst(const mst<T>&) = delete;
     mst(const T& data, const mst<T>* parent);
 
@@ -45,9 +42,10 @@ protected:
     void                        travel(const std::function<bool(const node_route&)>& fn) const;
 
 public:
+    template <typename R, typename... Args>
+    R&                          add(Args&&... args);
     template <typename R>
-    R&                          add(const T& data);
-    fb::mst<T>&                 add(fb::mst<T>& node);
+    R&                          add(R& node);
     const mst<T>&               root() const;
     fb::mst<T>*                 search(const fb::mst<T>& node) const;
 
@@ -56,16 +54,13 @@ public:
     node_list::iterator         end();
     node_list::const_iterator   begin() const;
     node_list::const_iterator   end() const;
+    virtual bool                compare(const T&) const = 0;
 };
 
 }
 
 template <typename T>
-fb::mst<T>::mst(const std::function<const T&()> initializer, const std::function<bool(const T&, const T&)>& comparer) : data(initializer()), comparer(comparer)
-{ }
-
-template <typename T>
-fb::mst<T>::mst(const T& data, const mst<T>* parent) : data(data), parent(parent), comparer(parent->comparer)
+fb::mst<T>::mst(const T& data, const mst<T>* parent) : data(data), parent(parent)
 { }
 
 template <typename T>
@@ -150,10 +145,10 @@ void fb::mst<T>::travel(const std::function<bool(const node_route&)>& fn) const
 }
 
 template <typename T>
-template <typename R>
-R& fb::mst<T>::add(const T& data)
+template <typename R, typename... Args>
+R& fb::mst<T>::add(Args&&... args)
 {
-    auto ptr = std::unique_ptr<fb::mst<T>>(new R(data, static_cast<R*>(this)));
+    auto ptr = std::unique_ptr<fb::mst<T>>(new R(std::forward<Args>(args)...));
     auto node = ptr.get();
     this->_allocated.push_back(std::move(ptr));
 
@@ -162,10 +157,11 @@ R& fb::mst<T>::add(const T& data)
 }
 
 template <typename T>
-fb::mst<T>& fb::mst<T>::add(fb::mst<T>& node)
+template <typename R>
+R& fb::mst<T>::add(R& node)
 {
     this->_nodes.push_back(&node);
-    return *this;
+    return static_cast<R&>(*this);
 }
 
 template <typename T>
@@ -183,10 +179,7 @@ const fb::mst<T>& fb::mst<T>::root() const
 template <typename T>
 fb::mst<T>* fb::mst<T>::search(const fb::mst<T>& node) const
 {
-    if (this->comparer == nullptr)
-        throw std::runtime_error("compare function is empty");
-
-    if(this->comparer(this->data, node.data))
+    if(this->compare(node.data))
         return const_cast<fb::mst<T>*>(this);
 
     for (auto i = this->_nodes.cbegin(); i != this->_nodes.cend(); i++)

@@ -1,9 +1,13 @@
 #include <fb/game/mst.recipe.h>
 
-fb::model::recipe_node::recipe_node() : fb::mst<const fb::model::dsl::item&>(fb::model::recipe_node::initializer, fb::model::recipe_node::comparer)
+fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_node* parent) : 
+    _dsl(id, count, 0.0),
+    fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
-fb::model::recipe_node::recipe_node(const fb::model::dsl::item& data, const recipe_node* parent) : fb::mst<const fb::model::dsl::item&>(data, parent)
+fb::model::recipe_node::recipe_node(const fb::model::dsl::item& data, const recipe_node* parent) : 
+    _dsl(data.id, data.count, data.percent),
+    fb::mst<const fb::model::dsl::item&>(_dsl, parent)
 { }
 
 fb::model::recipe_node* fb::model::recipe_node::find(uint32_t id) const
@@ -46,7 +50,7 @@ fb::model::recipe_node& fb::model::recipe_node::add(const fb::model::dsl::item& 
                 return *child;
             
             auto& based = static_cast<fb::mst<const fb::model::dsl::item&>&>(*this);
-            return based.add<recipe_node>(item);
+            return based.add<recipe_node>(item.id, item.count, this);
         }
         else
         {
@@ -58,11 +62,8 @@ fb::model::recipe_node& fb::model::recipe_node::add(const fb::model::dsl::item& 
         auto child = this->find(item.id);
         if (child == nullptr)
         {
-            this->_dummy_dsl = std::make_unique<fb::model::dsl::item>(item.id, 0, 0.0);
-            const auto& dummy = *this->_dummy_dsl.get();
-
             auto& based = static_cast<fb::mst<const fb::model::dsl::item&>&>(*this);
-            child = &based.add<recipe_node>(dummy);
+            child = &based.add<recipe_node>(item.id, 0, this);
         }
 
         return child->add(item);
@@ -71,17 +72,17 @@ fb::model::recipe_node& fb::model::recipe_node::add(const fb::model::dsl::item& 
 
 void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest)
 {
-    auto dict = std::unordered_map<uint32_t, uint32_t>();
+    auto buffer = std::unordered_map<uint32_t, uint32_t>();
     for (auto& params : source)
     {
-        if (dict.contains(params.id))
-            dict[params.id] += params.count;
+        if (buffer.contains(params.id))
+            buffer[params.id] += params.count;
         else
-            dict.insert({ params.id, params.count });
+            buffer.insert({ params.id, params.count });
     }
 
     auto keys = std::vector<uint32_t>();
-    for (auto& [k, v] : dict)
+    for (auto& [k, v] : buffer)
     {
         keys.push_back(k);
     }
@@ -90,37 +91,41 @@ void fb::model::recipe_node::compact(const std::vector<fb::model::dsl::item>& so
     dest.clear();
     for (auto k : keys)
     {
-        dest.push_back(fb::model::dsl::item(k, dict.at(k), 0.0));
+        dest.push_back(fb::model::dsl::item(k, buffer.at(k), 0.0));
     }
 }
 
 void fb::model::recipe_node::add(const fb::model::recipe& recipe)
 {
-    auto dict = std::unordered_map<uint32_t, uint32_t>();
+    auto buffer = std::unordered_map<uint32_t, uint32_t>();
     for (auto& dsl : recipe.source)
     {
         auto params = fb::model::dsl::item(dsl.params);
-        if (dict.contains(params.id))
-            dict[params.id] += params.count;
+        if (buffer.contains(params.id))
+            buffer[params.id] += params.count;
         else
-            dict.insert({ params.id, params.count });
+            buffer.insert({ params.id, params.count });
     }
 
-    auto source = std::vector<fb::model::dsl::item*>();
-    for (auto& [id, count] : dict)
+    auto dsls = std::vector<fb::model::dsl::item>();
+    for (auto& [id, count] : buffer)
     {
-        auto allocated = new fb::model::dsl::item(id, count, 0.0);
-        source.push_back(allocated);
-        this->_allocated_list.push_back(std::unique_ptr<fb::model::dsl::item>(allocated));
+        dsls.push_back(fb::model::dsl::item(id, count, 0.0));
     }
 
-    std::sort(source.begin(), source.end(), [](auto x1, auto x2)
+    auto ptrs = std::vector<fb::model::dsl::item*>();
+    for (auto& dsl : dsls)
+    {
+        ptrs.push_back(&dsl);
+    }
+
+    std::sort(ptrs.begin(), ptrs.end(), [](auto x1, auto x2)
     {
         return x1->id < x2->id;
     });
 
     auto node = this;
-    for (auto ptr : source)
+    for (auto& ptr : ptrs)
     {
         node = &node->add(*ptr);
     }
@@ -158,13 +163,13 @@ fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::f
 
 fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source)
 {
-    auto dict = std::unordered_map<uint32_t, uint32_t>();
+    auto buffer = std::unordered_map<uint32_t, uint32_t>();
     for (auto& params : source)
     {
-        if (dict.contains(params.id))
-            dict[params.id] += params.count;
+        if (buffer.contains(params.id))
+            buffer[params.id] += params.count;
         else
-            dict.insert({ params.id, params.count });
+            buffer.insert({ params.id, params.count });
     }
 
     auto compact = std::vector<fb::model::dsl::item>();
@@ -178,15 +183,7 @@ fb::generator<fb::model::recipe_node::recipe_ref_type> fb::model::recipe_node::f
     }
 }
 
-const fb::model::dsl::item& fb::model::recipe_node::initializer()
+bool fb::model::recipe_node::compare(const fb::model::dsl::item& val) const
 {
-    return std::ref(fb::model::recipe_node::DUMMY);
-}
-
-bool fb::model::recipe_node::comprare(const fb::model::dsl::item& val1, const fb::model::dsl::item& val2)
-{
-    auto& dsl1 = val1;
-    auto& dsl2 = val2;
-
-    return dsl1.id == dsl2.id && dsl1.count == dsl2.count;
+    return this->data.id == val.id && this->data.count == val.count;
 }

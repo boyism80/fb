@@ -12,6 +12,10 @@ enum class DIRECTION;                                                           
                                                                                               \
 } } }                                                                                         \
                                                                                               \
+namespace fb { namespace model {                                                              \
+class recipe_node;                                                                            \
+} }                                                                                           \
+                                                                                              \
 namespace fb { namespace game {                                                               \
                                                                                               \
 class context;                                                                                \
@@ -477,5 +481,17 @@ public:                                                                         
         const std::vector<fb::model::dsl>& failed,                                                                              \
         double percent) : source(source), success(success), failed(failed), percent(percent)                                    \
     { }
+
+#define DECLARE_RECIPE_CONTAINER_CUSTOM_CONSTRUCTOR                                                                             \
+    __recipe();                                                                                                                 \
+    __recipe(const __recipe&) = delete;                                                                                         \
+    ~__recipe();
+
+#define DECLARE_RECIPE_CONTAINER_EXTENSION                                                                                      \
+private:                                                                                                                        \
+    fb::model::recipe_node* _root;                                                                                              \
+                                                                                                                                \
+public:                                                                                                                         \
+    const fb::model::recipe* find(const std::vector<fb::model::dsl::item>& dsl) const;
 
 #endif

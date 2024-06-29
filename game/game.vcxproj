@@ -236,6 +236,7 @@
     <ClCompile Include="model.npc.cpp" />
     <ClCompile Include="model.object.cpp" />
     <ClCompile Include="model.promotion.cpp" />
+    <ClCompile Include="model.recipe.cpp" />
     <ClCompile Include="model.sell.cpp" />
     <ClCompile Include="model.spell.cpp" />
     <ClCompile Include="mst.recipe.cpp" />

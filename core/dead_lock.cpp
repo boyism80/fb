@@ -1,8 +1,5 @@
 #include <fb/core/dead_lock.h>
 
-fb::dead_lock_detector::dead_lock_detector() : fb::mst<std::string>(dead_lock_detector::initializer, dead_lock_detector::comparer)
-{}
-
 fb::dead_lock_detector::dead_lock_detector(const std::string& data, const dead_lock_detector* parent) : fb::mst<std::string>(data, parent)
 { }
 
@@ -49,7 +46,7 @@ void fb::dead_lock_detector::assert_circulated_lock() const
     }
 }
 
-void fb::dead_lock_detector::add(fb::mst<std::string>& node)
+void fb::dead_lock_detector::add(fb::dead_lock_detector& node)
 {
     auto found = static_cast<fb::dead_lock_detector*>(this->search(node));
     if (found == nullptr)
@@ -65,7 +62,7 @@ void fb::dead_lock_detector::add(fb::mst<std::string>& node)
             if (n == nullptr)
                 continue;
 
-            found->add(*n);
+            found->add(static_cast<fb::dead_lock_detector&>(*n));
         }
     }
 }
@@ -113,12 +110,7 @@ void fb::dead_lock_detector::assert_dead_lock(const fb::dead_lock_detector& node
      }
 }
 
-const std::string& fb::dead_lock_detector::initializer()
+bool fb::dead_lock_detector::compare(const std::string& val) const
 {
-    return dead_lock_detector::DUMMY;
-}
-
-bool fb::dead_lock_detector::comparer(const std::string& val1, const std::string& val2)
-{
-    return val1 == val2;
+    return this->data == val;
 }

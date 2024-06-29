@@ -70,15 +70,7 @@ int main(int argc, const char** argv)
                 return nullptr;
             }
         };
-
         fb::game::model_loader(*context).run();
-        
-        auto recipes = fb::model::recipe_node();
-        for (auto& x : context->model.recipe)
-        {
-            recipes.add(x);
-        }
-
         fb::game::map_loader(*context).run();
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();

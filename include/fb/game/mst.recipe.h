@@ -3,8 +3,8 @@
 
 #include <fb/game/model.h>
 #include <fb/core/mst.h>
-#include <list>
 #include <fb/core/coroutine.h>
+#include <fb/game/item.h>
 
 using namespace fb::model::enum_value;
 
@@ -17,34 +17,27 @@ public:
     using dsl_ref_type = std::reference_wrapper<fb::model::dsl::item>;
 
 private:
-    inline static fb::model::dsl::item DUMMY = fb::model::dsl::item(0, 0, 0);
-    std::vector<std::unique_ptr<fb::model::dsl::item>> _allocated_list;
-
-private:
-    std::list<recipe_ref_type> _recipes;
-    std::unique_ptr<fb::model::dsl::item> _dummy_dsl;
+    const fb::model::dsl::item              _dsl;
+    std::list<recipe_ref_type>              _recipes;
 
 public:
-    recipe_node();
+    recipe_node(uint32_t id = 0, uint32_t count = 0, const recipe_node* parent = nullptr);
     recipe_node(const recipe_node&) = delete;
     recipe_node(const fb::model::dsl::item& data, const recipe_node* parent);
     ~recipe_node() = default;
 
 private:
-    fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source, int i);
-    recipe_node* find(uint32_t id) const;
-    recipe_node* find(const fb::model::dsl::item& item) const;
-    recipe_node& add(const fb::model::dsl::item& item);
-    void compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
+    const fb::model::dsl::item&             init(uint32_t id, uint32_t count);
+    fb::generator<recipe_ref_type>          find(const std::vector<fb::model::dsl::item>& source, int i);
+    recipe_node*                            find(uint32_t id) const;
+    recipe_node*                            find(const fb::model::dsl::item& item) const;
+    recipe_node&                            add(const fb::model::dsl::item& item);
+    void                                    compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
 
 public:
-    void add(const fb::model::recipe& recipe);
-
-    fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source);
-
-public:
-    static const fb::model::dsl::item& initializer();
-    static bool comprare(const fb::model::dsl::item& val1, const fb::model::dsl::item& val2);
+    void                                    add(const fb::model::recipe& recipe);
+    fb::generator<recipe_ref_type>          find(const std::vector<fb::model::dsl::item>& source);
+    bool                                    compare(const fb::model::dsl::item&) const;
 };
 
 } }
