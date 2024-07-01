@@ -200,7 +200,6 @@
     <ClCompile Include="lib\item\helmet.cpp" />
     <ClCompile Include="lib\item\item.builtin.cpp" />
     <ClCompile Include="lib\item\item.cpp" />
-    <ClCompile Include="lib\item\itemmix.cpp" />
     <ClCompile Include="lib\item\items.cpp" />
     <ClCompile Include="lib\item\pack.cpp" />
     <ClCompile Include="lib\item\ring.cpp" />

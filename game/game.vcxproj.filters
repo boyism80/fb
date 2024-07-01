@@ -54,9 +54,6 @@
     <ClCompile Include="lib\item\item.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="lib\item\itemmix.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="lib\item\items.cpp">
       <Filter>source</Filter>
     </ClCompile>

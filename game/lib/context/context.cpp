@@ -1329,11 +1329,69 @@ fb::task<bool> fb::game::context::handle_itemmix(fb::socket<fb::game::session>& 
     if(request.indices.size() > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    itemmix::builder builder(*session);
-    for(auto x : request.indices)
-        builder.push(x - 1);
 
-    builder.mix();
+    auto dsl = std::vector<fb::model::dsl::item>();
+    for (auto index : request.indices)
+    {
+        auto item = session->items[index];
+        if (item == nullptr)
+            continue;
+
+        auto& model = item->based<fb::model::item>();
+        dsl.push_back(fb::model::dsl::item(model.id, item->count(), 0.0));
+    }
+
+    auto found = this->model.recipe.find(dsl);
+    if(found == nullptr)
+        throw std::runtime_error("no match exception");
+
+    if(found->success.size() - found->source.size() > session->items.free_size())
+        throw std::runtime_error("full inven exception");
+
+    for (auto& x : found->source)
+    {
+        auto params = fb::model::dsl::item(x.params);
+        auto deleted_count = 0;
+        while (deleted_count <= params.count)
+        {
+            auto item = session->items.find(this->model.item[params.id]);
+            auto index = session->items.index(this->model.item[params.id]);
+            if (item == nullptr)
+                throw std::runtime_error("no match exception");
+
+            auto count = item->count();
+            auto deleted = session->items.remove(*item, count);
+            if (deleted != nullptr)
+                deleted->destroy();
+
+            deleted_count += count;
+        }
+    }
+
+    auto listener = session->get_listener<fb::game::session>();
+    auto success = (std::rand() % 100) < found->percent;
+    auto& result = success ? found->success : found->failed;
+    for (auto& dsl : result)
+    {
+        auto params = fb::model::dsl::item(dsl.params);
+        auto& model = this->model.item[params.id];
+        auto remain = params.count;
+        while (remain > 0)
+        {
+            auto item = this->make<fb::game::item>(this->model.item[params.id]);
+            auto count = std::min<uint16_t>(model.capacity, remain);
+            item->count(count);
+            session->items.add(item);
+            remain -= count;
+        }
+    }
+
+    if (listener != nullptr)
+    {
+        auto& message = success ? fb::game::message::mix::SUCCESS : fb::game::message::mix::FAILED;
+        listener->on_notify(*session, message);
+    }
+
     co_return true;
 }
 

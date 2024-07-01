@@ -347,69 +347,6 @@ public:
     bool                                swap(uint8_t src, uint8_t dst) override;
 };
 
-
-class itemmix
-{
-private:
-    struct element;
-
-public:
-    class builder;
-
-public:
-    DECLARE_EXCEPTION(no_match_exception, "조합할 수 없습니다.")
-
-public:
-    std::vector<element>                require;   // 재료 아이템
-    std::vector<element>                success;   // 성공시 얻는 아이템
-    std::vector<element>                failed;    // 실패시 얻는 아이템
-    float                               percentage = 0.0f;
-
-public:
-    itemmix(float percentage = 100.0f) : percentage(percentage) { }
-    itemmix(const class itemmix& right) : 
-        require(right.require.begin(), right.require.end()),
-        success(right.success.begin(), right.success.end()),
-        failed(right.failed.begin(), right.failed.end()),
-        percentage(right.percentage)
-    { }
-
-private:
-    bool                                contains(const item* item) const;
-
-public:
-    void                                require_add(fb::model::item& item, uint32_t count);
-    void                                success_add(fb::model::item& item, uint32_t count);
-    void                                failed_add(fb::model::item& item, uint32_t count);
-    bool                                matched(const std::vector<item*>& items) const;
-};
-
-
-class itemmix::builder : private std::vector<fb::game::item*>
-{
-private:
-    session&                            _owner;
-
-public:
-    builder(session& owner);
-    ~builder();
-
-public:
-    builder&                            push(uint8_t index);
-    bool                                mix();
-};
-
-struct itemmix::element
-{
-public:
-    fb::model::item&                    item;       // 재료 아이템
-    uint32_t                            count;      // 갯수
-
-public:
-    element(fb::model::item& item, uint32_t count) : item(item), count(count) { }
-    element(const element& right) : item(right.item), count(right.count) { }
-};
-
 } }
 
 #endif // !__ITEM_H__

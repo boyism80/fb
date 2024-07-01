@@ -594,10 +594,10 @@ inline DEATH_PENALTY enum_parse<DEATH_PENALTY>(const std::string k)
 
 enum class DIRECTION
 {
-    LEFT = 1, 
-    TOP = 2, 
-    RIGHT = 3, 
-    BOTTOM = 4
+    TOP = 0, 
+    RIGHT = 1, 
+    BOTTOM = 2, 
+    LEFT = 3
 };
 
 template <>
@@ -605,10 +605,10 @@ inline DIRECTION enum_parse<DIRECTION>(const std::string k)
 {
     static const std::unordered_map<std::string, DIRECTION> enums
     {
-        { "LEFT", DIRECTION::LEFT }, 
         { "TOP", DIRECTION::TOP }, 
         { "RIGHT", DIRECTION::RIGHT }, 
-        { "BOTTOM", DIRECTION::BOTTOM }
+        { "BOTTOM", DIRECTION::BOTTOM }, 
+        { "LEFT", DIRECTION::LEFT }
     };
 
     auto i = enums.find(k);
