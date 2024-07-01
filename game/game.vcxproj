@@ -225,6 +225,7 @@
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="lib\worker\worker.map.cpp" />
     <ClCompile Include="lib\worker\worker.model.cpp" />
+    <ClCompile Include="lib\worker\worker.npc.spawn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="model.buy.cpp" />
     <ClCompile Include="model.door.cpp" />

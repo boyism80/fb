@@ -539,7 +539,10 @@ void fb::game::items::pickup(bool boost)
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = owner.money_add(cash->value);
-                cash = cash = cash->replace(remain); // 먹고 남은 돈으로 설정
+                if (remain > 0)
+                    cash = cash->replace(remain); // 먹고 남은 돈으로 설정
+                else
+                    cash->destroy();
 
                 if(listener != nullptr)
                 {

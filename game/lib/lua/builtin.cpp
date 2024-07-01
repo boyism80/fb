@@ -117,12 +117,13 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
     if(context->model.sell.contains(pursuit))
     {
         auto& sell = context->model.sell[pursuit];
-        for (int i = 0, size = sell.size(); i < size; i++)
+        auto i = 0;
+        for (auto& [k, v] : sell)
         {
-            auto& x = sell[i];
-            auto& item = context->model.item[x.item];
-            auto price = x.price.value_or(item.price);
-            thread->pushinteger(i+1);
+            auto& item = context->model.item[k];
+            auto price = v.price.value_or(item.price);
+
+            thread->pushinteger(++i);
             thread->new_table();
             {
                 thread->pushinteger(1);
@@ -152,15 +153,17 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
     if(context->model.buy.contains(pursuit))
     {
         auto& buy = context->model.buy[pursuit];
-        for (int i = 0, size = buy.size(); i < size; i++)
+        auto i = 0;
+        for (auto& [k, v] : buy)
         {
-            auto& x = buy[i];
-            auto price = x.price.value_or(context->model.item[x.item].price);
-            thread->pushinteger(i+1);
+            auto& item = context->model.item[k];
+            auto price = v.price.value_or(item.price);
+
+            thread->pushinteger(++i);
             thread->new_table();
             {
                 thread->pushinteger(1);
-                thread->pushobject(context->model.item[x.item]);
+                thread->pushobject(item);
                 lua_settable(*thread, -3);
 
                 thread->pushinteger(2);

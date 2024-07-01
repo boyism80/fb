@@ -17,19 +17,19 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
 
     if(value == 1)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::BRONZE]);
-    
-    if(value < 100)
+
+    if (value < 50)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::BRONZE_BUNDLE]);
 
-    if(value == 100)
+    if (value == 50)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER]);
 
-    if(value < 1000)
-        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER_BUNDLE]);
-
-    if(value == 1000)
+    if (value == 100)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD]);
 
+    if (value < 1000)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER_BUNDLE]);
+    
     return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
@@ -43,15 +43,14 @@ const std::string fb::game::cash::name_styled() const
 
 fb::game::cash* fb::game::cash::replace(uint32_t value)
 {
-    this->destroy();
+    fb::game::cash* result = nullptr;
     if(this->empty())
     {
-        return nullptr;
+        result = nullptr;
     }
     else
     {
-        auto cash = this->context.make<fb::game::cash>(value);
-        return cash;
+        result = this->context.make<fb::game::cash>(value);
 
         //auto listener = this->get_listener<fb::game::object>();
         //if(listener != nullptr)
@@ -59,6 +58,8 @@ fb::game::cash* fb::game::cash::replace(uint32_t value)
 
         //return this;
     }
+    this->destroy();
+    return result;
 }
 
 uint32_t fb::game::cash::reduce(uint32_t value)

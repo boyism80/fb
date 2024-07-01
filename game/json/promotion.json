@@ -1,4 +1,11 @@
 {
+  "NONE": {
+    "0": {
+      "step": 0,
+      "name": "평민",
+      "parent": "NONE"
+    }
+  },
   "WARRIOR": {
     "0": {
       "step": 0,

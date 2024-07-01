@@ -1376,10 +1376,10 @@ class item
 {
 public:
     inline static constexpr const uint32_t BRONZE = 60000;
-    inline static constexpr const uint32_t BRONZE_BUNDLE = 60001;
-    inline static constexpr const uint32_t SILVER = 60002;
-    inline static constexpr const uint32_t SILVER_BUNDLE = 60003;
-    inline static constexpr const uint32_t GOLD = 60004;
+    inline static constexpr const uint32_t SILVER = 60001;
+    inline static constexpr const uint32_t GOLD = 60002;
+    inline static constexpr const uint32_t BRONZE_BUNDLE = 60003;
+    inline static constexpr const uint32_t SILVER_BUNDLE = 60004;
     inline static constexpr const uint32_t GOLD_BUNDLE = 60005;
 
 private:
@@ -2259,8 +2259,7 @@ DECLARE_NPC_SPAWN_INHERIT
 public:
     const uint32_t parent;
     const uint32_t npc;
-    const uint32_t x;
-    const uint32_t y;
+    const point16_t position;
     const fb::model::enum_value::DIRECTION direction;
 
 public:
@@ -2270,8 +2269,7 @@ DECLARE_NPC_SPAWN_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
         npc(fb::model::build<uint32_t>(json["npc"])),
-        x(fb::model::build<uint32_t>(json["x"])),
-        y(fb::model::build<uint32_t>(json["y"])),
+        position(fb::model::build<point16_t>(json["position"])),
         direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
 #ifdef DECLARE_NPC_SPAWN_INITIALIZER
 DECLARE_NPC_SPAWN_INITIALIZER

@@ -2,8 +2,10 @@
   "1": [
     {
       "npc": 0,
-      "x": 10,
-      "y": 9,
+      "position": {
+        "x": 10,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 1
     }
@@ -11,8 +13,10 @@
   "315": [
     {
       "npc": 0,
-      "x": 10,
-      "y": 9,
+      "position": {
+        "x": 10,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 315
     }
@@ -20,29 +24,37 @@
   "15": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 15
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 15
     },
     {
       "npc": 172,
-      "x": 24,
-      "y": 4,
+      "position": {
+        "x": 24,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 15
     },
     {
       "npc": 105,
-      "x": 25,
-      "y": 8,
+      "position": {
+        "x": 25,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 15
     }
@@ -50,8 +62,10 @@
   "16": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 16
     }
@@ -59,8 +73,10 @@
   "17": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 17
     }
@@ -68,8 +84,10 @@
   "2": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 2
     }
@@ -77,8 +95,10 @@
   "3": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 3
     }
@@ -86,8 +106,10 @@
   "610": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 610
     }
@@ -95,15 +117,19 @@
   "4": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 4
     },
     {
       "npc": 237,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 4
     }
@@ -111,15 +137,19 @@
   "7": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7
     },
     {
       "npc": 239,
-      "x": 7,
-      "y": 4,
+      "position": {
+        "x": 7,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7
     }
@@ -127,8 +157,10 @@
   "5": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 5
     }
@@ -136,15 +168,19 @@
   "6": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 6
     },
     {
       "npc": 17,
-      "x": 4,
-      "y": 4,
+      "position": {
+        "x": 4,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 6
     }
@@ -152,127 +188,163 @@
   "14": [
     {
       "npc": 57,
-      "x": 110,
-      "y": 88,
+      "position": {
+        "x": 110,
+        "y": 88
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 135,
-      "x": 79,
-      "y": 153,
+      "position": {
+        "x": 79,
+        "y": 153
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 189,
-      "x": 75,
-      "y": 54,
+      "position": {
+        "x": 75,
+        "y": 54
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 238,
-      "x": 54,
-      "y": 122,
+      "position": {
+        "x": 54,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 34,
-      "x": 29,
-      "y": 40,
+      "position": {
+        "x": 29,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 35,
-      "x": 13,
-      "y": 78,
+      "position": {
+        "x": 13,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 36,
-      "x": 38,
-      "y": 28,
+      "position": {
+        "x": 38,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 37,
-      "x": 30,
-      "y": 46,
+      "position": {
+        "x": 30,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 38,
-      "x": 39,
-      "y": 144,
+      "position": {
+        "x": 39,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 39,
-      "x": 122,
-      "y": 144,
+      "position": {
+        "x": 122,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 40,
-      "x": 17,
-      "y": 141,
+      "position": {
+        "x": 17,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 42,
-      "x": 86,
-      "y": 26,
+      "position": {
+        "x": 86,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 44,
-      "x": 105,
-      "y": 23,
+      "position": {
+        "x": 105,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 46,
-      "x": 127,
-      "y": 48,
+      "position": {
+        "x": 127,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 48,
-      "x": 97,
-      "y": 113,
+      "position": {
+        "x": 97,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 51,
-      "x": 89,
-      "y": 143,
+      "position": {
+        "x": 89,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 14
     },
     {
       "npc": 49,
-      "x": 71,
-      "y": 127,
+      "position": {
+        "x": 71,
+        "y": 127
+      },
       "direction": "BOTTOM",
       "parent": 14
     }
@@ -280,8 +352,10 @@
   "12": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 12
     }
@@ -289,8 +363,10 @@
   "13": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 13
     }
@@ -298,8 +374,10 @@
   "19": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 19
     }
@@ -307,8 +385,10 @@
   "18": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 18
     }
@@ -316,8 +396,10 @@
   "1492": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1492
     }
@@ -325,8 +407,10 @@
   "6518": [
     {
       "npc": 62,
-      "x": 3,
-      "y": 4,
+      "position": {
+        "x": 3,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 6518
     }
@@ -334,113 +418,145 @@
   "3204": [
     {
       "npc": 180,
-      "x": 37,
-      "y": 77,
+      "position": {
+        "x": 37,
+        "y": 77
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 34,
-      "x": 30,
-      "y": 41,
+      "position": {
+        "x": 30,
+        "y": 41
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 79,
+      "position": {
+        "x": 14,
+        "y": 79
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 29,
+      "position": {
+        "x": 41,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 47,
+      "position": {
+        "x": 31,
+        "y": 47
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 24,
+      "position": {
+        "x": 102,
+        "y": 24
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 49,
+      "position": {
+        "x": 128,
+        "y": 49
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 121,
+      "position": {
+        "x": 68,
+        "y": 121
+      },
       "direction": "BOTTOM",
       "parent": 3204
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3204
     }
@@ -448,22 +564,28 @@
   "1822": [
     {
       "npc": 136,
-      "x": 26,
-      "y": 4,
+      "position": {
+        "x": 26,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 1822
     },
     {
       "npc": 53,
-      "x": 41,
-      "y": 8,
+      "position": {
+        "x": 41,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1822
     },
     {
       "npc": 204,
-      "x": 58,
-      "y": 16,
+      "position": {
+        "x": 58,
+        "y": 16
+      },
       "direction": "BOTTOM",
       "parent": 1822
     }
@@ -471,8 +593,10 @@
   "2393": [
     {
       "npc": 159,
-      "x": 23,
-      "y": 35,
+      "position": {
+        "x": 23,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 2393
     }
@@ -480,22 +604,28 @@
   "608": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 608
     },
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 608
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 608
     }
@@ -503,8 +633,10 @@
   "2390": [
     {
       "npc": 213,
-      "x": 28,
-      "y": 5,
+      "position": {
+        "x": 28,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 2390
     }
@@ -512,22 +644,28 @@
   "632": [
     {
       "npc": 250,
-      "x": 32,
-      "y": 10,
+      "position": {
+        "x": 32,
+        "y": 10
+      },
       "direction": "BOTTOM",
       "parent": 632
     },
     {
       "npc": 72,
-      "x": 29,
-      "y": 53,
+      "position": {
+        "x": 29,
+        "y": 53
+      },
       "direction": "BOTTOM",
       "parent": 632
     },
     {
       "npc": 73,
-      "x": 30,
-      "y": 53,
+      "position": {
+        "x": 30,
+        "y": 53
+      },
       "direction": "BOTTOM",
       "parent": 632
     }
@@ -535,8 +673,10 @@
   "2045": [
     {
       "npc": 89,
-      "x": 10,
-      "y": 4,
+      "position": {
+        "x": 10,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 2045
     }
@@ -544,8 +684,10 @@
   "23": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 23
     }
@@ -553,8 +695,10 @@
   "24": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 24
     }
@@ -562,29 +706,37 @@
   "30": [
     {
       "npc": 172,
-      "x": 24,
-      "y": 4,
+      "position": {
+        "x": 24,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 30
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 30
     },
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 30
     },
     {
       "npc": 105,
-      "x": 25,
-      "y": 8,
+      "position": {
+        "x": 25,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 30
     }
@@ -592,8 +744,10 @@
   "2310": [
     {
       "npc": 208,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 2310
     }
@@ -601,8 +755,10 @@
   "2311": [
     {
       "npc": 87,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 2311
     }
@@ -610,106 +766,136 @@
   "22": [
     {
       "npc": 175,
-      "x": 56,
-      "y": 39,
+      "position": {
+        "x": 56,
+        "y": 39
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 35,
-      "x": 46,
-      "y": 114,
+      "position": {
+        "x": 46,
+        "y": 114
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 37,
-      "x": 194,
-      "y": 124,
+      "position": {
+        "x": 194,
+        "y": 124
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 38,
-      "x": 101,
-      "y": 71,
+      "position": {
+        "x": 101,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 50,
-      "x": 197,
-      "y": 140,
+      "position": {
+        "x": 197,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 42,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 44,
-      "x": 29,
-      "y": 27,
+      "position": {
+        "x": 29,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 46,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 48,
-      "x": 41,
-      "y": 25,
+      "position": {
+        "x": 41,
+        "y": 25
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 135,
-      "x": 112,
-      "y": 217,
+      "position": {
+        "x": 112,
+        "y": 217
+      },
       "direction": "BOTTOM",
       "parent": 22
     },
     {
       "npc": 189,
-      "x": 112,
-      "y": 93,
+      "position": {
+        "x": 112,
+        "y": 93
+      },
       "direction": "BOTTOM",
       "parent": 22
     }
@@ -717,8 +903,10 @@
   "10263": [
     {
       "npc": 89,
-      "x": 10,
-      "y": 4,
+      "position": {
+        "x": 10,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 10263
     }
@@ -726,22 +914,28 @@
   "1809": [
     {
       "npc": 169,
-      "x": 35,
-      "y": 3,
+      "position": {
+        "x": 35,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 1809
     },
     {
       "npc": 136,
-      "x": 26,
-      "y": 4,
+      "position": {
+        "x": 26,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 1809
     },
     {
       "npc": 206,
-      "x": 58,
-      "y": 16,
+      "position": {
+        "x": 58,
+        "y": 16
+      },
       "direction": "BOTTOM",
       "parent": 1809
     }
@@ -749,8 +943,10 @@
   "2309": [
     {
       "npc": 159,
-      "x": 23,
-      "y": 34,
+      "position": {
+        "x": 23,
+        "y": 34
+      },
       "direction": "BOTTOM",
       "parent": 2309
     }
@@ -758,15 +954,19 @@
   "614": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 614
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 614
     }
@@ -774,15 +974,19 @@
   "25": [
     {
       "npc": 217,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 25
     },
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 25
     }
@@ -790,15 +994,19 @@
   "2385": [
     {
       "npc": 221,
-      "x": 22,
-      "y": 7,
+      "position": {
+        "x": 22,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 2385
     },
     {
       "npc": 222,
-      "x": 15,
-      "y": 6,
+      "position": {
+        "x": 15,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 2385
     }
@@ -806,246 +1014,316 @@
   "889": [
     {
       "npc": 70,
-      "x": 18,
-      "y": 9,
+      "position": {
+        "x": 18,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 10,
-      "y": 9,
+      "position": {
+        "x": 10,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 11,
+      "position": {
+        "x": 20,
+        "y": 11
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 11,
+      "position": {
+        "x": 21,
+        "y": 11
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 14,
+      "position": {
+        "x": 20,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 14,
+      "position": {
+        "x": 21,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 17,
+      "position": {
+        "x": 20,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 17,
+      "position": {
+        "x": 21,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 20,
+      "position": {
+        "x": 20,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 20,
+      "position": {
+        "x": 21,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 23,
+      "position": {
+        "x": 20,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 23,
+      "position": {
+        "x": 21,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 26,
+      "position": {
+        "x": 20,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 26,
+      "position": {
+        "x": 21,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 29,
+      "position": {
+        "x": 20,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 29,
+      "position": {
+        "x": 21,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 20,
-      "y": 32,
+      "position": {
+        "x": 20,
+        "y": 32
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 21,
-      "y": 32,
+      "position": {
+        "x": 21,
+        "y": 32
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 11,
+      "position": {
+        "x": 7,
+        "y": 11
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 11,
+      "position": {
+        "x": 8,
+        "y": 11
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 14,
+      "position": {
+        "x": 7,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 14,
+      "position": {
+        "x": 8,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 17,
+      "position": {
+        "x": 7,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 17,
+      "position": {
+        "x": 8,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 20,
+      "position": {
+        "x": 7,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 20,
+      "position": {
+        "x": 8,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 23,
+      "position": {
+        "x": 7,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 23,
+      "position": {
+        "x": 8,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 26,
+      "position": {
+        "x": 7,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 26,
+      "position": {
+        "x": 8,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 29,
+      "position": {
+        "x": 7,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 29,
+      "position": {
+        "x": 8,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 7,
-      "y": 32,
+      "position": {
+        "x": 7,
+        "y": 32
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 70,
-      "x": 8,
-      "y": 32,
+      "position": {
+        "x": 8,
+        "y": 32
+      },
       "direction": "BOTTOM",
       "parent": 889
     },
     {
       "npc": 31,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 889
     }
@@ -1053,36 +1331,46 @@
   "621": [
     {
       "npc": 2,
-      "x": 11,
-      "y": 11,
+      "position": {
+        "x": 11,
+        "y": 11
+      },
       "direction": "BOTTOM",
       "parent": 621
     },
     {
       "npc": 5,
-      "x": 1,
-      "y": 1,
+      "position": {
+        "x": 1,
+        "y": 1
+      },
       "direction": "BOTTOM",
       "parent": 621
     },
     {
       "npc": 3,
-      "x": 21,
-      "y": 21,
+      "position": {
+        "x": 21,
+        "y": 21
+      },
       "direction": "BOTTOM",
       "parent": 621
     },
     {
       "npc": 6,
-      "x": 1,
-      "y": 21,
+      "position": {
+        "x": 1,
+        "y": 21
+      },
       "direction": "BOTTOM",
       "parent": 621
     },
     {
       "npc": 4,
-      "x": 21,
-      "y": 1,
+      "position": {
+        "x": 21,
+        "y": 1
+      },
       "direction": "BOTTOM",
       "parent": 621
     }
@@ -1090,15 +1378,19 @@
   "1748": [
     {
       "npc": 90,
-      "x": 10,
-      "y": 13,
+      "position": {
+        "x": 10,
+        "y": 13
+      },
       "direction": "BOTTOM",
       "parent": 1748
     },
     {
       "npc": 96,
-      "x": 10,
-      "y": 10,
+      "position": {
+        "x": 10,
+        "y": 10
+      },
       "direction": "BOTTOM",
       "parent": 1748
     }
@@ -1106,8 +1398,10 @@
   "661": [
     {
       "npc": 98,
-      "x": 65,
-      "y": 6,
+      "position": {
+        "x": 65,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 661
     }
@@ -1115,8 +1409,10 @@
   "1948": [
     {
       "npc": 18,
-      "x": 29,
-      "y": 31,
+      "position": {
+        "x": 29,
+        "y": 31
+      },
       "direction": "BOTTOM",
       "parent": 1948
     }
@@ -1124,22 +1420,28 @@
   "670": [
     {
       "npc": 155,
-      "x": 31,
-      "y": 2,
+      "position": {
+        "x": 31,
+        "y": 2
+      },
       "direction": "BOTTOM",
       "parent": 670
     },
     {
       "npc": 186,
-      "x": 29,
-      "y": 2,
+      "position": {
+        "x": 29,
+        "y": 2
+      },
       "direction": "BOTTOM",
       "parent": 670
     },
     {
       "npc": 183,
-      "x": 34,
-      "y": 21,
+      "position": {
+        "x": 34,
+        "y": 21
+      },
       "direction": "BOTTOM",
       "parent": 670
     }
@@ -1147,8 +1449,10 @@
   "2958": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 2958
     }
@@ -1156,8 +1460,10 @@
   "2959": [
     {
       "npc": 139,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 2959
     }
@@ -1165,8 +1471,10 @@
   "2951": [
     {
       "npc": 156,
-      "x": 15,
-      "y": 17,
+      "position": {
+        "x": 15,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 2951
     }
@@ -1174,22 +1482,28 @@
   "1840": [
     {
       "npc": 84,
-      "x": 11,
-      "y": 6,
+      "position": {
+        "x": 11,
+        "y": 6
+      },
       "direction": "RIGHT",
       "parent": 1840
     },
     {
       "npc": 63,
-      "x": 12,
-      "y": 3,
+      "position": {
+        "x": 12,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 1840
     },
     {
       "npc": 28,
-      "x": 4,
-      "y": 4,
+      "position": {
+        "x": 4,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 1840
     }
@@ -1197,8 +1511,10 @@
   "1841": [
     {
       "npc": 85,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 1841
     }
@@ -1206,15 +1522,19 @@
   "1835": [
     {
       "npc": 86,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1835
     },
     {
       "npc": 161,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1835
     }
@@ -1222,8 +1542,10 @@
   "1839": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 1839
     }
@@ -1231,8 +1553,10 @@
   "1838": [
     {
       "npc": 19,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1838
     }
@@ -1240,8 +1564,10 @@
   "1842": [
     {
       "npc": 93,
-      "x": 14,
-      "y": 3,
+      "position": {
+        "x": 14,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 1842
     }
@@ -1249,8 +1575,10 @@
   "2535": [
     {
       "npc": 181,
-      "x": 10,
-      "y": 15,
+      "position": {
+        "x": 10,
+        "y": 15
+      },
       "direction": "BOTTOM",
       "parent": 2535
     }
@@ -1258,8 +1586,10 @@
   "2534": [
     {
       "npc": 185,
-      "x": 9,
-      "y": 12,
+      "position": {
+        "x": 9,
+        "y": 12
+      },
       "direction": "BOTTOM",
       "parent": 2534
     }
@@ -1267,8 +1597,10 @@
   "1844": [
     {
       "npc": 229,
-      "x": 37,
-      "y": 6,
+      "position": {
+        "x": 37,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1844
     }
@@ -1276,29 +1608,37 @@
   "925": [
     {
       "npc": 75,
-      "x": 12,
-      "y": 7,
+      "position": {
+        "x": 12,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 925
     },
     {
       "npc": 76,
-      "x": 9,
-      "y": 7,
+      "position": {
+        "x": 9,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 925
     },
     {
       "npc": 144,
-      "x": 17,
-      "y": 9,
+      "position": {
+        "x": 17,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 925
     },
     {
       "npc": 77,
-      "x": 15,
-      "y": 7,
+      "position": {
+        "x": 15,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 925
     }
@@ -1306,22 +1646,28 @@
   "986": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 986
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 986
     },
     {
       "npc": 107,
-      "x": 23,
-      "y": 7,
+      "position": {
+        "x": 23,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 986
     }
@@ -1329,8 +1675,10 @@
   "990": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 990
     }
@@ -1338,8 +1686,10 @@
   "991": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 991
     }
@@ -1347,22 +1697,28 @@
   "992": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 992
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 992
     },
     {
       "npc": 108,
-      "x": 22,
-      "y": 7,
+      "position": {
+        "x": 22,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 992
     }
@@ -1370,8 +1726,10 @@
   "996": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 996
     }
@@ -1379,8 +1737,10 @@
   "997": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 997
     }
@@ -1388,15 +1748,19 @@
   "998": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 998
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 998
     }
@@ -1404,8 +1768,10 @@
   "1002": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1002
     }
@@ -1413,8 +1779,10 @@
   "1003": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1003
     }
@@ -1422,15 +1790,19 @@
   "1004": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1004
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1004
     }
@@ -1438,8 +1810,10 @@
   "1008": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1008
     }
@@ -1447,8 +1821,10 @@
   "1009": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1009
     }
@@ -1456,8 +1832,10 @@
   "1005": [
     {
       "npc": 191,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1005
     }
@@ -1465,29 +1843,37 @@
   "1010": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1010
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1010
     },
     {
       "npc": 106,
-      "x": 23,
-      "y": 6,
+      "position": {
+        "x": 23,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1010
     },
     {
       "npc": 192,
-      "x": 25,
-      "y": 6,
+      "position": {
+        "x": 25,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1010
     }
@@ -1495,8 +1881,10 @@
   "1014": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1014
     }
@@ -1504,8 +1892,10 @@
   "1015": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1015
     }
@@ -1513,22 +1903,28 @@
   "1016": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1016
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1016
     },
     {
       "npc": 193,
-      "x": 23,
-      "y": 6,
+      "position": {
+        "x": 23,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1016
     }
@@ -1536,8 +1932,10 @@
   "1020": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1020
     }
@@ -1545,8 +1943,10 @@
   "1021": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1021
     }
@@ -1554,15 +1954,19 @@
   "1022": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1022
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1022
     }
@@ -1570,8 +1974,10 @@
   "1026": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1026
     }
@@ -1579,8 +1985,10 @@
   "1027": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1027
     }
@@ -1588,8 +1996,10 @@
   "1024": [
     {
       "npc": 190,
-      "x": 21,
-      "y": 12,
+      "position": {
+        "x": 21,
+        "y": 12
+      },
       "direction": "BOTTOM",
       "parent": 1024
     }
@@ -1597,15 +2007,19 @@
   "1028": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1028
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1028
     }
@@ -1613,8 +2027,10 @@
   "1032": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1032
     }
@@ -1622,8 +2038,10 @@
   "1033": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1033
     }
@@ -1631,15 +2049,19 @@
   "1034": [
     {
       "npc": 91,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1034
     },
     {
       "npc": 28,
-      "x": 5,
-      "y": 7,
+      "position": {
+        "x": 5,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1034
     }
@@ -1647,8 +2069,10 @@
   "1038": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1038
     }
@@ -1656,8 +2080,10 @@
   "1039": [
     {
       "npc": 19,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1039
     }
@@ -1665,8 +2091,10 @@
   "1030": [
     {
       "npc": 138,
-      "x": 6,
-      "y": 9,
+      "position": {
+        "x": 6,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 1030
     }
@@ -1674,8 +2102,10 @@
   "4001": [
     {
       "npc": 95,
-      "x": 11,
-      "y": 9,
+      "position": {
+        "x": 11,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 4001
     }
@@ -1683,8 +2113,10 @@
   "887": [
     {
       "npc": 100,
-      "x": 16,
-      "y": 7,
+      "position": {
+        "x": 16,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 887
     }
@@ -1692,8 +2124,10 @@
   "865": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 865
     }
@@ -1701,8 +2135,10 @@
   "864": [
     {
       "npc": 161,
-      "x": 19,
-      "y": 10,
+      "position": {
+        "x": 19,
+        "y": 10
+      },
       "direction": "BOTTOM",
       "parent": 864
     }
@@ -1710,8 +2146,10 @@
   "863": [
     {
       "npc": 230,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 863
     }
@@ -1719,8 +2157,10 @@
   "881": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 881
     }
@@ -1728,8 +2168,10 @@
   "871": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 871
     }
@@ -1737,8 +2179,10 @@
   "869": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 869
     }
@@ -1746,8 +2190,10 @@
   "875": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 875
     }
@@ -1755,8 +2201,10 @@
   "877": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 877
     }
@@ -1764,8 +2212,10 @@
   "883": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 883
     }
@@ -1773,15 +2223,19 @@
   "862": [
     {
       "npc": 143,
-      "x": 114,
-      "y": 142,
+      "position": {
+        "x": 114,
+        "y": 142
+      },
       "direction": "BOTTOM",
       "parent": 862
     },
     {
       "npc": 143,
-      "x": 114,
-      "y": 142,
+      "position": {
+        "x": 114,
+        "y": 142
+      },
       "direction": "BOTTOM",
       "parent": 862
     }
@@ -1789,8 +2243,10 @@
   "972": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 972
     }
@@ -1798,8 +2254,10 @@
   "931": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 931
     }
@@ -1807,8 +2265,10 @@
   "929": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 929
     }
@@ -1816,8 +2276,10 @@
   "945": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 945
     }
@@ -1825,8 +2287,10 @@
   "936": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 936
     }
@@ -1834,8 +2298,10 @@
   "941": [
     {
       "npc": 178,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 941
     }
@@ -1843,8 +2309,10 @@
   "946": [
     {
       "npc": 179,
-      "x": 14,
-      "y": 6,
+      "position": {
+        "x": 14,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 946
     }
@@ -1852,8 +2320,10 @@
   "974": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 974
     }
@@ -1861,8 +2331,10 @@
   "975": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 975
     }
@@ -1870,8 +2342,10 @@
   "879": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 879
     }
@@ -1879,8 +2353,10 @@
   "880": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 880
     }
@@ -1888,8 +2364,10 @@
   "938": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 938
     }
@@ -1897,8 +2375,10 @@
   "939": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 939
     }
@@ -1906,8 +2386,10 @@
   "933": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 933
     }
@@ -1915,8 +2397,10 @@
   "934": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 934
     }
@@ -1924,8 +2408,10 @@
   "885": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 885
     }
@@ -1933,8 +2419,10 @@
   "886": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 886
     }
@@ -1942,8 +2430,10 @@
   "873": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 873
     }
@@ -1951,8 +2441,10 @@
   "874": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 874
     }
@@ -1960,8 +2452,10 @@
   "867": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 867
     }
@@ -1969,8 +2463,10 @@
   "868": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 868
     }
@@ -1978,8 +2474,10 @@
   "927": [
     {
       "npc": 182,
-      "x": 137,
-      "y": 153,
+      "position": {
+        "x": 137,
+        "y": 153
+      },
       "direction": "BOTTOM",
       "parent": 927
     }
@@ -1987,15 +2485,19 @@
   "884": [
     {
       "npc": 184,
-      "x": 11,
-      "y": 5,
+      "position": {
+        "x": 11,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 884
     },
     {
       "npc": 240,
-      "x": 13,
-      "y": 5,
+      "position": {
+        "x": 13,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 884
     }
@@ -2003,8 +2505,10 @@
   "858": [
     {
       "npc": 176,
-      "x": 20,
-      "y": 30,
+      "position": {
+        "x": 20,
+        "y": 30
+      },
       "direction": "BOTTOM",
       "parent": 858
     }
@@ -2012,50 +2516,64 @@
   "957": [
     {
       "npc": 210,
-      "x": 32,
-      "y": 3,
+      "position": {
+        "x": 32,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 210,
-      "x": 33,
-      "y": 3,
+      "position": {
+        "x": 33,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 210,
-      "x": 34,
-      "y": 3,
+      "position": {
+        "x": 34,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 210,
-      "x": 32,
-      "y": 4,
+      "position": {
+        "x": 32,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 210,
-      "x": 33,
-      "y": 4,
+      "position": {
+        "x": 33,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 210,
-      "x": 34,
-      "y": 4,
+      "position": {
+        "x": 34,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 957
     },
     {
       "npc": 211,
-      "x": 33,
-      "y": 5,
+      "position": {
+        "x": 33,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 957
     }
@@ -2063,22 +2581,28 @@
   "890": [
     {
       "npc": 215,
-      "x": 12,
-      "y": 9,
+      "position": {
+        "x": 12,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 890
     },
     {
       "npc": 231,
-      "x": 6,
-      "y": 9,
+      "position": {
+        "x": 6,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 890
     },
     {
       "npc": 236,
-      "x": 8,
-      "y": 12,
+      "position": {
+        "x": 8,
+        "y": 12
+      },
       "direction": "BOTTOM",
       "parent": 890
     }
@@ -2086,8 +2610,10 @@
   "882": [
     {
       "npc": 218,
-      "x": 19,
-      "y": 9,
+      "position": {
+        "x": 19,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 882
     }
@@ -2095,8 +2621,10 @@
   "866": [
     {
       "npc": 219,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 866
     }
@@ -2104,8 +2632,10 @@
   "878": [
     {
       "npc": 220,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 878
     }
@@ -2113,15 +2643,19 @@
   "926": [
     {
       "npc": 233,
-      "x": 44,
-      "y": 63,
+      "position": {
+        "x": 44,
+        "y": 63
+      },
       "direction": "BOTTOM",
       "parent": 926
     },
     {
       "npc": 234,
-      "x": 43,
-      "y": 63,
+      "position": {
+        "x": 43,
+        "y": 63
+      },
       "direction": "BOTTOM",
       "parent": 926
     }
@@ -2129,8 +2663,10 @@
   "14500": [
     {
       "npc": 235,
-      "x": 62,
-      "y": 44,
+      "position": {
+        "x": 62,
+        "y": 44
+      },
       "direction": "BOTTOM",
       "parent": 14500
     }
@@ -2138,8 +2674,10 @@
   "969": [
     {
       "npc": 232,
-      "x": 28,
-      "y": 26,
+      "position": {
+        "x": 28,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 969
     }
@@ -2147,8 +2685,10 @@
   "10264": [
     {
       "npc": 241,
-      "x": 23,
-      "y": 8,
+      "position": {
+        "x": 23,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 10264
     }
@@ -2156,8 +2696,10 @@
   "937": [
     {
       "npc": 220,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 937
     }
@@ -2165,8 +2707,10 @@
   "1510": [
     {
       "npc": 200,
-      "x": 9,
-      "y": 9,
+      "position": {
+        "x": 9,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 1510
     }
@@ -2174,8 +2718,10 @@
   "1511": [
     {
       "npc": 201,
-      "x": 8,
-      "y": 6,
+      "position": {
+        "x": 8,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1511
     }
@@ -2183,8 +2729,10 @@
   "1531": [
     {
       "npc": 202,
-      "x": 9,
-      "y": 9,
+      "position": {
+        "x": 9,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 1531
     }
@@ -2192,8 +2740,10 @@
   "1532": [
     {
       "npc": 203,
-      "x": 8,
-      "y": 6,
+      "position": {
+        "x": 8,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1532
     }
@@ -2201,8 +2751,10 @@
   "1897": [
     {
       "npc": 101,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1897
     }
@@ -2210,8 +2762,10 @@
   "1898": [
     {
       "npc": 102,
-      "x": 9,
-      "y": 7,
+      "position": {
+        "x": 9,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1898
     }
@@ -2219,8 +2773,10 @@
   "1899": [
     {
       "npc": 103,
-      "x": 8,
-      "y": 6,
+      "position": {
+        "x": 8,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1899
     }
@@ -2228,8 +2784,10 @@
   "1900": [
     {
       "npc": 104,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1900
     }
@@ -2237,8 +2795,10 @@
   "53123": [
     {
       "npc": 209,
-      "x": 9,
-      "y": 9,
+      "position": {
+        "x": 9,
+        "y": 9
+      },
       "direction": "BOTTOM",
       "parent": 53123
     }
@@ -2246,8 +2806,10 @@
   "53124": [
     {
       "npc": 140,
-      "x": 2,
-      "y": 6,
+      "position": {
+        "x": 2,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 53124
     }
@@ -2255,8 +2817,10 @@
   "1912": [
     {
       "npc": 147,
-      "x": 9,
-      "y": 7,
+      "position": {
+        "x": 9,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1912
     }
@@ -2264,8 +2828,10 @@
   "1622": [
     {
       "npc": 128,
-      "x": 9,
-      "y": 7,
+      "position": {
+        "x": 9,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1622
     }
@@ -2273,8 +2839,10 @@
   "1610": [
     {
       "npc": 130,
-      "x": 7,
-      "y": 7,
+      "position": {
+        "x": 7,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1610
     }
@@ -2282,8 +2850,10 @@
   "1609": [
     {
       "npc": 132,
-      "x": 8,
-      "y": 7,
+      "position": {
+        "x": 8,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1609
     }
@@ -2291,15 +2861,19 @@
   "1636": [
     {
       "npc": 131,
-      "x": 10,
-      "y": 7,
+      "position": {
+        "x": 10,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1636
     },
     {
       "npc": 28,
-      "x": 17,
-      "y": 7,
+      "position": {
+        "x": 17,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1636
     }
@@ -2307,8 +2881,10 @@
   "1649": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1649
     }
@@ -2316,8 +2892,10 @@
   "1650": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1650
     }
@@ -2325,8 +2903,10 @@
   "1597": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1597
     }
@@ -2334,8 +2914,10 @@
   "1598": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1598
     }
@@ -2343,8 +2925,10 @@
   "1699": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1699
     }
@@ -2352,8 +2936,10 @@
   "1700": [
     {
       "npc": 18,
-      "x": 9,
-      "y": 8,
+      "position": {
+        "x": 9,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 1700
     }
@@ -2361,8 +2947,10 @@
   "1697": [
     {
       "npc": 177,
-      "x": 13,
-      "y": 7,
+      "position": {
+        "x": 13,
+        "y": 7
+      },
       "direction": "BOTTOM",
       "parent": 1697
     }
@@ -2370,36 +2958,46 @@
   "1648": [
     {
       "npc": 167,
-      "x": 101,
-      "y": 66,
+      "position": {
+        "x": 101,
+        "y": 66
+      },
       "direction": "BOTTOM",
       "parent": 1648
     },
     {
       "npc": 187,
-      "x": 18,
-      "y": 99,
+      "position": {
+        "x": 18,
+        "y": 99
+      },
       "direction": "BOTTOM",
       "parent": 1648
     },
     {
       "npc": 122,
-      "x": 121,
-      "y": 93,
+      "position": {
+        "x": 121,
+        "y": 93
+      },
       "direction": "BOTTOM",
       "parent": 1648
     },
     {
       "npc": 115,
-      "x": 109,
-      "y": 139,
+      "position": {
+        "x": 109,
+        "y": 139
+      },
       "direction": "BOTTOM",
       "parent": 1648
     },
     {
       "npc": 242,
-      "x": 21,
-      "y": 77,
+      "position": {
+        "x": 21,
+        "y": 77
+      },
       "direction": "BOTTOM",
       "parent": 1648
     }
@@ -2407,22 +3005,28 @@
   "1698": [
     {
       "npc": 168,
-      "x": 125,
-      "y": 74,
+      "position": {
+        "x": 125,
+        "y": 74
+      },
       "direction": "BOTTOM",
       "parent": 1698
     },
     {
       "npc": 121,
-      "x": 138,
-      "y": 82,
+      "position": {
+        "x": 138,
+        "y": 82
+      },
       "direction": "BOTTOM",
       "parent": 1698
     },
     {
       "npc": 113,
-      "x": 162,
-      "y": 182,
+      "position": {
+        "x": 162,
+        "y": 182
+      },
       "direction": "BOTTOM",
       "parent": 1698
     }
@@ -2430,15 +3034,19 @@
   "1611": [
     {
       "npc": 188,
-      "x": 17,
-      "y": 23,
+      "position": {
+        "x": 17,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 1611
     },
     {
       "npc": 117,
-      "x": 18,
-      "y": 17,
+      "position": {
+        "x": 18,
+        "y": 17
+      },
       "direction": "BOTTOM",
       "parent": 1611
     }
@@ -2446,8 +3054,10 @@
   "1691": [
     {
       "npc": 174,
-      "x": 16,
-      "y": 5,
+      "position": {
+        "x": 16,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1691
     }
@@ -2455,15 +3065,19 @@
   "1596": [
     {
       "npc": 118,
-      "x": 16,
-      "y": 120,
+      "position": {
+        "x": 16,
+        "y": 120
+      },
       "direction": "BOTTOM",
       "parent": 1596
     },
     {
       "npc": 120,
-      "x": 19,
-      "y": 147,
+      "position": {
+        "x": 19,
+        "y": 147
+      },
       "direction": "BOTTOM",
       "parent": 1596
     }
@@ -2471,8 +3085,10 @@
   "2532": [
     {
       "npc": 166,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 2532
     }
@@ -2480,15 +3096,19 @@
   "26": [
     {
       "npc": 14,
-      "x": 3,
-      "y": 3,
+      "position": {
+        "x": 3,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 26
     },
     {
       "npc": 173,
-      "x": 5,
-      "y": 3,
+      "position": {
+        "x": 5,
+        "y": 3
+      },
       "direction": "BOTTOM",
       "parent": 26
     }
@@ -2496,8 +3116,10 @@
   "29": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 29
     }
@@ -2505,8 +3127,10 @@
   "31": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 31
     }
@@ -2514,8 +3138,10 @@
   "27": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 27
     }
@@ -2523,8 +3149,10 @@
   "28": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 28
     }
@@ -2532,8 +3160,10 @@
   "33": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 33
     }
@@ -2541,8 +3171,10 @@
   "35": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 35
     }
@@ -2550,8 +3182,10 @@
   "37": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 37
     }
@@ -2559,8 +3193,10 @@
   "39": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 39
     }
@@ -2568,8 +3204,10 @@
   "2313": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 2313
     }
@@ -2577,8 +3215,10 @@
   "888": [
     {
       "npc": 30,
-      "x": 14,
-      "y": 5,
+      "position": {
+        "x": 14,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 888
     }
@@ -2586,8 +3226,10 @@
   "1647": [
     {
       "npc": 171,
-      "x": 8,
-      "y": 6,
+      "position": {
+        "x": 8,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 1647
     }
@@ -2595,92 +3237,118 @@
   "3170": [
     {
       "npc": 180,
-      "x": 21,
-      "y": 132,
+      "position": {
+        "x": 21,
+        "y": 132
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 27,
+      "position": {
+        "x": 32,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 47,
-      "x": 41,
-      "y": 24,
+      "position": {
+        "x": 41,
+        "y": 24
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3170
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3170
     }
@@ -2688,15 +3356,19 @@
   "7716": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7716
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7716
     }
@@ -2704,8 +3376,10 @@
   "7717": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7717
     }
@@ -2713,8 +3387,10 @@
   "7718": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7718
     }
@@ -2722,8 +3398,10 @@
   "7705": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7705
     }
@@ -2731,8 +3409,10 @@
   "7706": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7706
     }
@@ -2740,8 +3420,10 @@
   "7711": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7711
     }
@@ -2749,8 +3431,10 @@
   "7715": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7715
     }
@@ -2758,8 +3442,10 @@
   "7724": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7724
     }
@@ -2767,8 +3453,10 @@
   "7722": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7722
     }
@@ -2776,8 +3464,10 @@
   "7723": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7723
     }
@@ -2785,8 +3475,10 @@
   "7701": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7701
     }
@@ -2794,8 +3486,10 @@
   "7714": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7714
     }
@@ -2803,8 +3497,10 @@
   "7703": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7703
     }
@@ -2812,8 +3508,10 @@
   "7721": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7721
     }
@@ -2821,8 +3519,10 @@
   "7725": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7725
     }
@@ -2830,15 +3530,19 @@
   "7743": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7743
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7743
     }
@@ -2846,8 +3550,10 @@
   "7744": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7744
     }
@@ -2855,8 +3561,10 @@
   "7745": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7745
     }
@@ -2864,8 +3572,10 @@
   "7732": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7732
     }
@@ -2873,8 +3583,10 @@
   "7733": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7733
     }
@@ -2882,8 +3594,10 @@
   "7738": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7738
     }
@@ -2891,8 +3605,10 @@
   "7742": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7742
     }
@@ -2900,8 +3616,10 @@
   "7751": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7751
     }
@@ -2909,8 +3627,10 @@
   "7749": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7749
     }
@@ -2918,8 +3638,10 @@
   "7750": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7750
     }
@@ -2927,8 +3649,10 @@
   "7728": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7728
     }
@@ -2936,8 +3660,10 @@
   "7741": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7741
     }
@@ -2945,8 +3671,10 @@
   "7730": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7730
     }
@@ -2954,8 +3682,10 @@
   "7748": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7748
     }
@@ -2963,8 +3693,10 @@
   "7752": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7752
     }
@@ -2972,8 +3704,10 @@
   "7770": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7770
     }
@@ -2981,8 +3715,10 @@
   "7771": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7771
     }
@@ -2990,8 +3726,10 @@
   "7772": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7772
     }
@@ -2999,8 +3737,10 @@
   "7759": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7759
     }
@@ -3008,8 +3748,10 @@
   "7760": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7760
     }
@@ -3017,8 +3759,10 @@
   "7765": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7765
     }
@@ -3026,8 +3770,10 @@
   "7769": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7769
     }
@@ -3035,8 +3781,10 @@
   "7778": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7778
     }
@@ -3044,8 +3792,10 @@
   "7776": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7776
     }
@@ -3053,8 +3803,10 @@
   "7777": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7777
     }
@@ -3062,8 +3814,10 @@
   "7755": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7755
     }
@@ -3071,8 +3825,10 @@
   "7768": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7768
     }
@@ -3080,8 +3836,10 @@
   "7757": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7757
     }
@@ -3089,8 +3847,10 @@
   "7775": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7775
     }
@@ -3098,8 +3858,10 @@
   "7779": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7779
     }
@@ -3107,8 +3869,10 @@
   "7797": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7797
     }
@@ -3116,8 +3880,10 @@
   "7798": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7798
     }
@@ -3125,8 +3891,10 @@
   "7799": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7799
     }
@@ -3134,8 +3902,10 @@
   "7786": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7786
     }
@@ -3143,8 +3913,10 @@
   "7787": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7787
     }
@@ -3152,8 +3924,10 @@
   "7792": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7792
     }
@@ -3161,8 +3935,10 @@
   "7796": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7796
     }
@@ -3170,8 +3946,10 @@
   "7805": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7805
     }
@@ -3179,8 +3957,10 @@
   "7803": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7803
     }
@@ -3188,8 +3968,10 @@
   "7804": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7804
     }
@@ -3197,8 +3979,10 @@
   "7782": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7782
     }
@@ -3206,8 +3990,10 @@
   "7795": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7795
     }
@@ -3215,8 +4001,10 @@
   "7784": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7784
     }
@@ -3224,8 +4012,10 @@
   "7802": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7802
     }
@@ -3233,8 +4023,10 @@
   "7806": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7806
     }
@@ -3242,8 +4034,10 @@
   "7824": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7824
     }
@@ -3251,8 +4045,10 @@
   "7825": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7825
     }
@@ -3260,8 +4056,10 @@
   "7826": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7826
     }
@@ -3269,8 +4067,10 @@
   "7813": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7813
     }
@@ -3278,8 +4078,10 @@
   "7814": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7814
     }
@@ -3287,8 +4089,10 @@
   "7819": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7819
     }
@@ -3296,8 +4100,10 @@
   "7823": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7823
     }
@@ -3305,8 +4111,10 @@
   "7832": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7832
     }
@@ -3314,8 +4122,10 @@
   "7830": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7830
     }
@@ -3323,8 +4133,10 @@
   "7831": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7831
     }
@@ -3332,8 +4144,10 @@
   "7809": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7809
     }
@@ -3341,8 +4155,10 @@
   "7822": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7822
     }
@@ -3350,8 +4166,10 @@
   "7811": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7811
     }
@@ -3359,8 +4177,10 @@
   "7829": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7829
     }
@@ -3368,8 +4188,10 @@
   "7833": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7833
     }
@@ -3377,8 +4199,10 @@
   "7851": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7851
     }
@@ -3386,8 +4210,10 @@
   "7852": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7852
     }
@@ -3395,8 +4221,10 @@
   "7853": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7853
     }
@@ -3404,8 +4232,10 @@
   "7840": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7840
     }
@@ -3413,8 +4243,10 @@
   "7841": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7841
     }
@@ -3422,8 +4254,10 @@
   "7846": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7846
     }
@@ -3431,8 +4265,10 @@
   "7850": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7850
     }
@@ -3440,8 +4276,10 @@
   "7859": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7859
     }
@@ -3449,8 +4287,10 @@
   "7857": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7857
     }
@@ -3458,8 +4298,10 @@
   "7858": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7858
     }
@@ -3467,8 +4309,10 @@
   "7836": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7836
     }
@@ -3476,8 +4320,10 @@
   "7849": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7849
     }
@@ -3485,8 +4331,10 @@
   "7838": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7838
     }
@@ -3494,8 +4342,10 @@
   "7856": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7856
     }
@@ -3503,8 +4353,10 @@
   "7860": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7860
     }
@@ -3512,8 +4364,10 @@
   "7878": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7878
     }
@@ -3521,8 +4375,10 @@
   "7879": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7879
     }
@@ -3530,8 +4386,10 @@
   "7880": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7880
     }
@@ -3539,8 +4397,10 @@
   "7867": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7867
     }
@@ -3548,8 +4408,10 @@
   "7868": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7868
     }
@@ -3557,8 +4419,10 @@
   "7873": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7873
     }
@@ -3566,8 +4430,10 @@
   "7877": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7877
     }
@@ -3575,8 +4441,10 @@
   "7886": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7886
     }
@@ -3584,8 +4452,10 @@
   "7884": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7884
     }
@@ -3593,8 +4463,10 @@
   "7885": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7885
     }
@@ -3602,8 +4474,10 @@
   "7863": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7863
     }
@@ -3611,8 +4485,10 @@
   "7876": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7876
     }
@@ -3620,8 +4496,10 @@
   "7865": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7865
     }
@@ -3629,8 +4507,10 @@
   "7883": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7883
     }
@@ -3638,8 +4518,10 @@
   "7887": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7887
     }
@@ -3647,8 +4529,10 @@
   "7905": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7905
     }
@@ -3656,8 +4540,10 @@
   "7906": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7906
     }
@@ -3665,8 +4551,10 @@
   "7907": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7907
     }
@@ -3674,8 +4562,10 @@
   "7894": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7894
     }
@@ -3683,8 +4573,10 @@
   "7895": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7895
     }
@@ -3692,8 +4584,10 @@
   "7900": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7900
     }
@@ -3701,8 +4595,10 @@
   "7904": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7904
     }
@@ -3710,8 +4606,10 @@
   "7913": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7913
     }
@@ -3719,8 +4617,10 @@
   "7911": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7911
     }
@@ -3728,8 +4628,10 @@
   "7912": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7912
     }
@@ -3737,8 +4639,10 @@
   "7890": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7890
     }
@@ -3746,8 +4650,10 @@
   "7903": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7903
     }
@@ -3755,8 +4661,10 @@
   "7892": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7892
     }
@@ -3764,8 +4672,10 @@
   "7910": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7910
     }
@@ -3773,8 +4683,10 @@
   "7914": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7914
     }
@@ -3782,8 +4694,10 @@
   "7932": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7932
     }
@@ -3791,8 +4705,10 @@
   "7933": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7933
     }
@@ -3800,8 +4716,10 @@
   "7934": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7934
     }
@@ -3809,8 +4727,10 @@
   "7921": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7921
     }
@@ -3818,8 +4738,10 @@
   "7922": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7922
     }
@@ -3827,8 +4749,10 @@
   "7927": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7927
     }
@@ -3836,8 +4760,10 @@
   "7931": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7931
     }
@@ -3845,8 +4771,10 @@
   "7940": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7940
     }
@@ -3854,8 +4782,10 @@
   "7938": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7938
     }
@@ -3863,8 +4793,10 @@
   "7939": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7939
     }
@@ -3872,8 +4804,10 @@
   "7917": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7917
     }
@@ -3881,8 +4815,10 @@
   "7930": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7930
     }
@@ -3890,8 +4826,10 @@
   "7919": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7919
     }
@@ -3899,8 +4837,10 @@
   "7937": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7937
     }
@@ -3908,8 +4848,10 @@
   "7941": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7941
     }
@@ -3917,8 +4859,10 @@
   "7959": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7959
     }
@@ -3926,8 +4870,10 @@
   "7960": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7960
     }
@@ -3935,8 +4881,10 @@
   "7961": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 7961
     }
@@ -3944,8 +4892,10 @@
   "7948": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7948
     }
@@ -3953,8 +4903,10 @@
   "7949": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7949
     }
@@ -3962,8 +4914,10 @@
   "7954": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7954
     }
@@ -3971,8 +4925,10 @@
   "7958": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7958
     }
@@ -3980,8 +4936,10 @@
   "7967": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7967
     }
@@ -3989,8 +4947,10 @@
   "7965": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7965
     }
@@ -3998,8 +4958,10 @@
   "7966": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 7966
     }
@@ -4007,8 +4969,10 @@
   "7944": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7944
     }
@@ -4016,8 +4980,10 @@
   "7957": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7957
     }
@@ -4025,8 +4991,10 @@
   "7946": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7946
     }
@@ -4034,8 +5002,10 @@
   "7964": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 7964
     }
@@ -4043,8 +5013,10 @@
   "7968": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 7968
     }
@@ -4052,15 +5024,19 @@
   "8016": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8016
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8016
     }
@@ -4068,8 +5044,10 @@
   "8017": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8017
     }
@@ -4077,8 +5055,10 @@
   "8018": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8018
     }
@@ -4086,8 +5066,10 @@
   "8005": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8005
     }
@@ -4095,8 +5077,10 @@
   "8006": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8006
     }
@@ -4104,15 +5088,19 @@
   "8011": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8011
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8011
     }
@@ -4120,8 +5108,10 @@
   "8015": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8015
     }
@@ -4129,8 +5119,10 @@
   "8024": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8024
     }
@@ -4138,8 +5130,10 @@
   "8022": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8022
     }
@@ -4147,8 +5141,10 @@
   "8023": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8023
     }
@@ -4156,8 +5152,10 @@
   "8000": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8000
     }
@@ -4165,8 +5163,10 @@
   "8014": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8014
     }
@@ -4174,8 +5174,10 @@
   "8003": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8003
     }
@@ -4183,8 +5185,10 @@
   "8021": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8021
     }
@@ -4192,8 +5196,10 @@
   "8025": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8025
     }
@@ -4201,15 +5207,19 @@
   "8043": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8043
     },
     {
       "npc": 63,
-      "x": 6,
-      "y": 4,
+      "position": {
+        "x": 6,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8043
     }
@@ -4217,8 +5227,10 @@
   "8044": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8044
     }
@@ -4226,8 +5238,10 @@
   "8045": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8045
     }
@@ -4235,8 +5249,10 @@
   "8032": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8032
     }
@@ -4244,8 +5260,10 @@
   "8033": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8033
     }
@@ -4253,15 +5271,19 @@
   "8038": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8038
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8038
     }
@@ -4269,8 +5291,10 @@
   "8042": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8042
     }
@@ -4278,8 +5302,10 @@
   "8051": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8051
     }
@@ -4287,8 +5313,10 @@
   "8049": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8049
     }
@@ -4296,8 +5324,10 @@
   "8050": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8050
     }
@@ -4305,8 +5335,10 @@
   "8028": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8028
     }
@@ -4314,8 +5346,10 @@
   "8041": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8041
     }
@@ -4323,8 +5357,10 @@
   "8030": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8030
     }
@@ -4332,8 +5368,10 @@
   "8048": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8048
     }
@@ -4341,8 +5379,10 @@
   "8052": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8052
     }
@@ -4350,8 +5390,10 @@
   "8070": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8070
     }
@@ -4359,8 +5401,10 @@
   "8071": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8071
     }
@@ -4368,8 +5412,10 @@
   "8072": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8072
     }
@@ -4377,8 +5423,10 @@
   "8059": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8059
     }
@@ -4386,8 +5434,10 @@
   "8060": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8060
     }
@@ -4395,15 +5445,19 @@
   "8065": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8065
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8065
     }
@@ -4411,8 +5465,10 @@
   "8069": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8069
     }
@@ -4420,8 +5476,10 @@
   "8078": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8078
     }
@@ -4429,8 +5487,10 @@
   "8076": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8076
     }
@@ -4438,8 +5498,10 @@
   "8077": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8077
     }
@@ -4447,8 +5509,10 @@
   "8055": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8055
     }
@@ -4456,8 +5520,10 @@
   "8068": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8068
     }
@@ -4465,8 +5531,10 @@
   "8057": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8057
     }
@@ -4474,8 +5542,10 @@
   "8075": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8075
     }
@@ -4483,8 +5553,10 @@
   "8079": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8079
     }
@@ -4492,8 +5564,10 @@
   "8097": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8097
     }
@@ -4501,8 +5575,10 @@
   "8098": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8098
     }
@@ -4510,8 +5586,10 @@
   "8099": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8099
     }
@@ -4519,8 +5597,10 @@
   "8086": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8086
     }
@@ -4528,8 +5608,10 @@
   "8087": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8087
     }
@@ -4537,15 +5619,19 @@
   "8092": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8092
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8092
     }
@@ -4553,8 +5639,10 @@
   "8096": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8096
     }
@@ -4562,8 +5650,10 @@
   "8105": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8105
     }
@@ -4571,8 +5661,10 @@
   "8103": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8103
     }
@@ -4580,8 +5672,10 @@
   "8104": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8104
     }
@@ -4589,8 +5683,10 @@
   "8082": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8082
     }
@@ -4598,8 +5694,10 @@
   "8095": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8095
     }
@@ -4607,8 +5705,10 @@
   "8084": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8084
     }
@@ -4616,8 +5716,10 @@
   "8102": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8102
     }
@@ -4625,8 +5727,10 @@
   "8106": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8106
     }
@@ -4634,8 +5738,10 @@
   "8124": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8124
     }
@@ -4643,8 +5749,10 @@
   "8125": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8125
     }
@@ -4652,8 +5760,10 @@
   "8126": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8126
     }
@@ -4661,8 +5771,10 @@
   "8113": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8113
     }
@@ -4670,8 +5782,10 @@
   "8114": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8114
     }
@@ -4679,15 +5793,19 @@
   "8119": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8119
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8119
     }
@@ -4695,8 +5813,10 @@
   "8123": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8123
     }
@@ -4704,8 +5824,10 @@
   "8132": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8132
     }
@@ -4713,8 +5835,10 @@
   "8130": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8130
     }
@@ -4722,8 +5846,10 @@
   "8131": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8131
     }
@@ -4731,8 +5857,10 @@
   "8109": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8109
     }
@@ -4740,8 +5868,10 @@
   "8122": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8122
     }
@@ -4749,8 +5879,10 @@
   "8111": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8111
     }
@@ -4758,8 +5890,10 @@
   "8129": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8129
     }
@@ -4767,8 +5901,10 @@
   "8133": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8133
     }
@@ -4776,8 +5912,10 @@
   "8151": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8151
     }
@@ -4785,8 +5923,10 @@
   "8152": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8152
     }
@@ -4794,8 +5934,10 @@
   "8153": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8153
     }
@@ -4803,8 +5945,10 @@
   "8140": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8140
     }
@@ -4812,8 +5956,10 @@
   "8141": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8141
     }
@@ -4821,15 +5967,19 @@
   "8146": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8146
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8146
     }
@@ -4837,8 +5987,10 @@
   "8150": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8150
     }
@@ -4846,8 +5998,10 @@
   "8159": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8159
     }
@@ -4855,8 +6009,10 @@
   "8157": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8157
     }
@@ -4864,8 +6020,10 @@
   "8158": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8158
     }
@@ -4873,8 +6031,10 @@
   "8136": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8136
     }
@@ -4882,8 +6042,10 @@
   "8149": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8149
     }
@@ -4891,8 +6053,10 @@
   "8138": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8138
     }
@@ -4900,8 +6064,10 @@
   "8156": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8156
     }
@@ -4909,8 +6075,10 @@
   "8160": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8160
     }
@@ -4918,8 +6086,10 @@
   "8178": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8178
     }
@@ -4927,8 +6097,10 @@
   "8179": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8179
     }
@@ -4936,8 +6108,10 @@
   "8180": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8180
     }
@@ -4945,8 +6119,10 @@
   "8167": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8167
     }
@@ -4954,8 +6130,10 @@
   "8168": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8168
     }
@@ -4963,15 +6141,19 @@
   "8173": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8173
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8173
     }
@@ -4979,8 +6161,10 @@
   "8177": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8177
     }
@@ -4988,8 +6172,10 @@
   "8186": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8186
     }
@@ -4997,8 +6183,10 @@
   "8184": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8184
     }
@@ -5006,8 +6194,10 @@
   "8185": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8185
     }
@@ -5015,8 +6205,10 @@
   "8163": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8163
     }
@@ -5024,8 +6216,10 @@
   "8176": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8176
     }
@@ -5033,8 +6227,10 @@
   "8165": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8165
     }
@@ -5042,8 +6238,10 @@
   "8183": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8183
     }
@@ -5051,8 +6249,10 @@
   "8187": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8187
     }
@@ -5060,8 +6260,10 @@
   "8205": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8205
     }
@@ -5069,8 +6271,10 @@
   "8206": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8206
     }
@@ -5078,8 +6282,10 @@
   "8207": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8207
     }
@@ -5087,8 +6293,10 @@
   "8194": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8194
     }
@@ -5096,8 +6304,10 @@
   "8195": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8195
     }
@@ -5105,15 +6315,19 @@
   "8200": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8200
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8200
     }
@@ -5121,8 +6335,10 @@
   "8204": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8204
     }
@@ -5130,8 +6346,10 @@
   "8213": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8213
     }
@@ -5139,8 +6357,10 @@
   "8211": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8211
     }
@@ -5148,8 +6368,10 @@
   "8212": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8212
     }
@@ -5157,8 +6379,10 @@
   "8190": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8190
     }
@@ -5166,8 +6390,10 @@
   "8203": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8203
     }
@@ -5175,8 +6401,10 @@
   "8192": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8192
     }
@@ -5184,8 +6412,10 @@
   "8210": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8210
     }
@@ -5193,8 +6423,10 @@
   "8214": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8214
     }
@@ -5202,8 +6434,10 @@
   "8232": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8232
     }
@@ -5211,8 +6445,10 @@
   "8233": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8233
     }
@@ -5220,8 +6456,10 @@
   "8234": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8234
     }
@@ -5229,8 +6467,10 @@
   "8221": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8221
     }
@@ -5238,8 +6478,10 @@
   "8222": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8222
     }
@@ -5247,15 +6489,19 @@
   "8227": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8227
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8227
     }
@@ -5263,8 +6509,10 @@
   "8231": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8231
     }
@@ -5272,8 +6520,10 @@
   "8240": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8240
     }
@@ -5281,8 +6531,10 @@
   "8238": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8238
     }
@@ -5290,8 +6542,10 @@
   "8239": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8239
     }
@@ -5299,8 +6553,10 @@
   "8217": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8217
     }
@@ -5308,8 +6564,10 @@
   "8230": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8230
     }
@@ -5317,8 +6575,10 @@
   "8219": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8219
     }
@@ -5326,8 +6586,10 @@
   "8237": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8237
     }
@@ -5335,8 +6597,10 @@
   "8241": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8241
     }
@@ -5344,8 +6608,10 @@
   "8259": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8259
     }
@@ -5353,8 +6619,10 @@
   "8260": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8260
     }
@@ -5362,8 +6630,10 @@
   "8261": [
     {
       "npc": 8,
-      "x": 6,
-      "y": 8,
+      "position": {
+        "x": 6,
+        "y": 8
+      },
       "direction": "RIGHT",
       "parent": 8261
     }
@@ -5371,8 +6641,10 @@
   "8248": [
     {
       "npc": 18,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8248
     }
@@ -5380,8 +6652,10 @@
   "8249": [
     {
       "npc": 19,
-      "x": 2,
-      "y": 4,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8249
     }
@@ -5389,15 +6663,19 @@
   "8254": [
     {
       "npc": 19,
-      "x": 3,
-      "y": 5,
+      "position": {
+        "x": 3,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8254
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8254
     }
@@ -5405,8 +6683,10 @@
   "8258": [
     {
       "npc": 9,
-      "x": 5,
-      "y": 5,
+      "position": {
+        "x": 5,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8258
     }
@@ -5414,8 +6694,10 @@
   "8267": [
     {
       "npc": 11,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8267
     }
@@ -5423,8 +6705,10 @@
   "8265": [
     {
       "npc": 13,
-      "x": 4,
-      "y": 5,
+      "position": {
+        "x": 4,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8265
     }
@@ -5432,8 +6716,10 @@
   "8266": [
     {
       "npc": 15,
-      "x": 5,
-      "y": 4,
+      "position": {
+        "x": 5,
+        "y": 4
+      },
       "direction": "BOTTOM",
       "parent": 8266
     }
@@ -5441,8 +6727,10 @@
   "8244": [
     {
       "npc": 22,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8244
     }
@@ -5450,8 +6738,10 @@
   "8257": [
     {
       "npc": 20,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8257
     }
@@ -5459,8 +6749,10 @@
   "8246": [
     {
       "npc": 24,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8246
     }
@@ -5468,8 +6760,10 @@
   "8264": [
     {
       "npc": 26,
-      "x": 6,
-      "y": 6,
+      "position": {
+        "x": 6,
+        "y": 6
+      },
       "direction": "BOTTOM",
       "parent": 8264
     }
@@ -5477,8 +6771,10 @@
   "8268": [
     {
       "npc": 28,
-      "x": 6,
-      "y": 5,
+      "position": {
+        "x": 6,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 8268
     }
@@ -5486,106 +6782,136 @@
   "2263": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 2263
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 2263
     }
@@ -5593,106 +6919,136 @@
   "3199": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 3199
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3199
     }
@@ -5700,106 +7056,136 @@
   "3201": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 3201
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3201
     }
@@ -5807,106 +7193,136 @@
   "3205": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 3205
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3205
     }
@@ -5914,106 +7330,136 @@
   "3206": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 3206
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3206
     }
@@ -6021,99 +7467,127 @@
   "3207": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 35,
-      "x": 11,
-      "y": 78,
+      "position": {
+        "x": 11,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 123,
+      "position": {
+        "x": 68,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3207
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3207
     }
@@ -6121,106 +7595,136 @@
   "3200": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 35,
-      "x": 11,
-      "y": 78,
+      "position": {
+        "x": 11,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 28,
+      "position": {
+        "x": 41,
+        "y": 28
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 123,
+      "position": {
+        "x": 68,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3200
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3200
     }
@@ -6228,106 +7732,136 @@
   "3202": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 78,
+      "position": {
+        "x": 14,
+        "y": 78
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 29,
+      "position": {
+        "x": 41,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 38,
-      "x": 40,
-      "y": 144,
+      "position": {
+        "x": 40,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 40,
-      "x": 18,
-      "y": 141,
+      "position": {
+        "x": 18,
+        "y": 141
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 24,
+      "position": {
+        "x": 102,
+        "y": 24
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 49,
+      "position": {
+        "x": 128,
+        "y": 49
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 113,
+      "position": {
+        "x": 98,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 121,
+      "position": {
+        "x": 68,
+        "y": 121
+      },
       "direction": "BOTTOM",
       "parent": 3202
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3202
     }
@@ -6335,106 +7869,136 @@
   "3203": [
     {
       "npc": 34,
-      "x": 30,
-      "y": 40,
+      "position": {
+        "x": 30,
+        "y": 40
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 35,
-      "x": 14,
-      "y": 79,
+      "position": {
+        "x": 14,
+        "y": 79
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 36,
-      "x": 41,
-      "y": 29,
+      "position": {
+        "x": 41,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 37,
-      "x": 31,
-      "y": 46,
+      "position": {
+        "x": 31,
+        "y": 46
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 38,
-      "x": 43,
-      "y": 146,
+      "position": {
+        "x": 43,
+        "y": 146
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 39,
-      "x": 123,
-      "y": 144,
+      "position": {
+        "x": 123,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 40,
-      "x": 21,
-      "y": 144,
+      "position": {
+        "x": 21,
+        "y": 144
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 50,
-      "x": 110,
-      "y": 126,
+      "position": {
+        "x": 110,
+        "y": 126
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 42,
-      "x": 87,
-      "y": 26,
+      "position": {
+        "x": 87,
+        "y": 26
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 44,
-      "x": 102,
-      "y": 23,
+      "position": {
+        "x": 102,
+        "y": 23
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 46,
-      "x": 128,
-      "y": 48,
+      "position": {
+        "x": 128,
+        "y": 48
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 48,
-      "x": 98,
-      "y": 114,
+      "position": {
+        "x": 98,
+        "y": 114
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 51,
-      "x": 86,
-      "y": 143,
+      "position": {
+        "x": 86,
+        "y": 143
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 49,
-      "x": 68,
-      "y": 122,
+      "position": {
+        "x": 68,
+        "y": 122
+      },
       "direction": "BOTTOM",
       "parent": 3203
     },
     {
       "npc": 34,
-      "x": 32,
-      "y": 117,
+      "position": {
+        "x": 32,
+        "y": 117
+      },
       "direction": "BOTTOM",
       "parent": 3203
     }
@@ -6442,85 +8006,109 @@
   "3178": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 72,
+      "position": {
+        "x": 198,
+        "y": 72
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 44,
-      "x": 29,
-      "y": 27,
+      "position": {
+        "x": 29,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 47,
-      "x": 41,
-      "y": 25,
+      "position": {
+        "x": 41,
+        "y": 25
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3178
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3178
     }
@@ -6528,92 +8116,118 @@
   "3176": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 36,
-      "x": 129,
-      "y": 25,
+      "position": {
+        "x": 129,
+        "y": 25
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 27,
+      "position": {
+        "x": 32,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 47,
-      "x": 41,
-      "y": 24,
+      "position": {
+        "x": 41,
+        "y": 24
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3176
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3176
     }
@@ -6621,85 +8235,109 @@
   "3174": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 165,
+      "position": {
+        "x": 18,
+        "y": 165
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 44,
-      "x": 29,
-      "y": 27,
+      "position": {
+        "x": 29,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 47,
-      "x": 41,
-      "y": 25,
+      "position": {
+        "x": 41,
+        "y": 25
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3174
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3174
     }
@@ -6707,71 +8345,91 @@
   "3173": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 39,
-      "x": 21,
-      "y": 165,
+      "position": {
+        "x": 21,
+        "y": 165
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 44,
-      "x": 29,
-      "y": 27,
+      "position": {
+        "x": 29,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3173
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 63,
+      "position": {
+        "x": 37,
+        "y": 63
+      },
       "direction": "BOTTOM",
       "parent": 3173
     }
@@ -6779,85 +8437,109 @@
   "3177": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 35,
-      "x": 45,
-      "y": 113,
+      "position": {
+        "x": 45,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 27,
+      "position": {
+        "x": 32,
+        "y": 27
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 36,
+      "position": {
+        "x": 78,
+        "y": 36
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 47,
-      "x": 41,
-      "y": 24,
+      "position": {
+        "x": 41,
+        "y": 24
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3177
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 59,
+      "position": {
+        "x": 37,
+        "y": 59
+      },
       "direction": "BOTTOM",
       "parent": 3177
     }
@@ -6865,78 +8547,100 @@
   "3172": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 35,
-      "x": 46,
-      "y": 111,
+      "position": {
+        "x": 46,
+        "y": 111
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 72,
+      "position": {
+        "x": 198,
+        "y": 72
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 31,
+      "position": {
+        "x": 32,
+        "y": 31
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3172
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3172
     }
@@ -6944,85 +8648,109 @@
   "3175": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 31,
+      "position": {
+        "x": 32,
+        "y": 31
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 44,
-      "x": 44,
-      "y": 29,
+      "position": {
+        "x": 44,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3175
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3175
     }
@@ -7030,85 +8758,109 @@
   "3179": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 35,
-      "x": 44,
-      "y": 113,
+      "position": {
+        "x": 44,
+        "y": 113
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 37,
-      "x": 193,
-      "y": 123,
+      "position": {
+        "x": 193,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 164,
+      "position": {
+        "x": 18,
+        "y": 164
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 31,
+      "position": {
+        "x": 32,
+        "y": 31
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 44,
-      "x": 44,
-      "y": 29,
+      "position": {
+        "x": 44,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3179
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3179
     }
@@ -7116,78 +8868,100 @@
   "3171": [
     {
       "npc": 34,
-      "x": 37,
-      "y": 173,
+      "position": {
+        "x": 37,
+        "y": 173
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 37,
-      "x": 192,
-      "y": 123,
+      "position": {
+        "x": 192,
+        "y": 123
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 38,
-      "x": 198,
-      "y": 71,
+      "position": {
+        "x": 198,
+        "y": 71
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 39,
-      "x": 18,
-      "y": 165,
+      "position": {
+        "x": 18,
+        "y": 165
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 50,
-      "x": 194,
-      "y": 140,
+      "position": {
+        "x": 194,
+        "y": 140
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 41,
-      "x": 149,
-      "y": 18,
+      "position": {
+        "x": 149,
+        "y": 18
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 44,
-      "x": 32,
-      "y": 31,
+      "position": {
+        "x": 32,
+        "y": 31
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 45,
-      "x": 78,
-      "y": 35,
+      "position": {
+        "x": 78,
+        "y": 35
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 44,
-      "x": 44,
-      "y": 29,
+      "position": {
+        "x": 44,
+        "y": 29
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 51,
-      "x": 136,
-      "y": 204,
+      "position": {
+        "x": 136,
+        "y": 204
+      },
       "direction": "BOTTOM",
       "parent": 3171
     },
     {
       "npc": 49,
-      "x": 37,
-      "y": 65,
+      "position": {
+        "x": 37,
+        "y": 65
+      },
       "direction": "BOTTOM",
       "parent": 3171
     }
@@ -7195,8 +8969,10 @@
   "15205": [
     {
       "npc": 8,
-      "x": 14,
-      "y": 8,
+      "position": {
+        "x": 14,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 15205
     }
@@ -7204,8 +8980,10 @@
   "15206": [
     {
       "npc": 8,
-      "x": 14,
-      "y": 8,
+      "position": {
+        "x": 14,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 15206
     }
@@ -7213,15 +8991,19 @@
   "1744": [
     {
       "npc": 194,
-      "x": 17,
-      "y": 36,
+      "position": {
+        "x": 17,
+        "y": 36
+      },
       "direction": "BOTTOM",
       "parent": 1744
     },
     {
       "npc": 199,
-      "x": 20,
-      "y": 20,
+      "position": {
+        "x": 20,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 1744
     }
@@ -7229,8 +9011,10 @@
   "1745": [
     {
       "npc": 195,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1745
     }
@@ -7238,15 +9022,19 @@
   "1746": [
     {
       "npc": 198,
-      "x": 9,
-      "y": 20,
+      "position": {
+        "x": 9,
+        "y": 20
+      },
       "direction": "BOTTOM",
       "parent": 1746
     },
     {
       "npc": 196,
-      "x": 17,
-      "y": 36,
+      "position": {
+        "x": 17,
+        "y": 36
+      },
       "direction": "BOTTOM",
       "parent": 1746
     }
@@ -7254,8 +9042,10 @@
   "1747": [
     {
       "npc": 197,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 1747
     }
@@ -7263,8 +9053,10 @@
   "6490": [
     {
       "npc": 205,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 6490
     }
@@ -7272,8 +9064,10 @@
   "6491": [
     {
       "npc": 207,
-      "x": 7,
-      "y": 5,
+      "position": {
+        "x": 7,
+        "y": 5
+      },
       "direction": "BOTTOM",
       "parent": 6491
     }
@@ -7281,8 +9075,10 @@
   "906": [
     {
       "npc": 145,
-      "x": 30,
-      "y": 2,
+      "position": {
+        "x": 30,
+        "y": 2
+      },
       "direction": "BOTTOM",
       "parent": 906
     }
@@ -7290,15 +9086,19 @@
   "7707": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7707
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7707
     }
@@ -7306,15 +9106,19 @@
   "7734": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7734
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7734
     }
@@ -7322,15 +9126,19 @@
   "7761": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7761
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7761
     }
@@ -7338,15 +9146,19 @@
   "7788": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7788
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7788
     }
@@ -7354,15 +9166,19 @@
   "7815": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7815
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7815
     }
@@ -7370,15 +9186,19 @@
   "7842": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7842
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7842
     }
@@ -7386,15 +9206,19 @@
   "7869": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7869
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7869
     }
@@ -7402,15 +9226,19 @@
   "7896": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7896
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7896
     }
@@ -7418,29 +9246,37 @@
   "7923": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7923
     },
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7923
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7923
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7923
     }
@@ -7448,15 +9284,19 @@
   "7950": [
     {
       "npc": 157,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7950
     },
     {
       "npc": 214,
-      "x": 7,
-      "y": 8,
+      "position": {
+        "x": 7,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 7950
     }
@@ -7464,8 +9304,10 @@
   "616": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 616
     }
@@ -7473,8 +9315,10 @@
   "8007": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8007
     }
@@ -7482,8 +9326,10 @@
   "8034": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8034
     }
@@ -7491,8 +9337,10 @@
   "8061": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8061
     }
@@ -7500,8 +9348,10 @@
   "8088": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8088
     }
@@ -7509,8 +9359,10 @@
   "8115": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8115
     }
@@ -7518,8 +9370,10 @@
   "8142": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8142
     }
@@ -7527,8 +9381,10 @@
   "8169": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8169
     }
@@ -7536,8 +9392,10 @@
   "8196": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8196
     }
@@ -7545,8 +9403,10 @@
   "8223": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8223
     }
@@ -7554,8 +9414,10 @@
   "8250": [
     {
       "npc": 158,
-      "x": 12,
-      "y": 8,
+      "position": {
+        "x": 12,
+        "y": 8
+      },
       "direction": "BOTTOM",
       "parent": 8250
     }
@@ -7563,15 +9425,19 @@
   "2244": [
     {
       "npc": 212,
-      "x": 29,
-      "y": 33,
+      "position": {
+        "x": 29,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2244
     },
     {
       "npc": 226,
-      "x": 27,
-      "y": 33,
+      "position": {
+        "x": 27,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2244
     }
@@ -7579,15 +9445,19 @@
   "2245": [
     {
       "npc": 212,
-      "x": 29,
-      "y": 33,
+      "position": {
+        "x": 29,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2245
     },
     {
       "npc": 224,
-      "x": 27,
-      "y": 33,
+      "position": {
+        "x": 27,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2245
     }
@@ -7595,15 +9465,19 @@
   "2246": [
     {
       "npc": 212,
-      "x": 29,
-      "y": 33,
+      "position": {
+        "x": 29,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2246
     },
     {
       "npc": 223,
-      "x": 27,
-      "y": 33,
+      "position": {
+        "x": 27,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2246
     }
@@ -7611,15 +9485,19 @@
   "2247": [
     {
       "npc": 212,
-      "x": 29,
-      "y": 33,
+      "position": {
+        "x": 29,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2247
     },
     {
       "npc": 225,
-      "x": 27,
-      "y": 33,
+      "position": {
+        "x": 27,
+        "y": 33
+      },
       "direction": "BOTTOM",
       "parent": 2247
     }
@@ -7627,15 +9505,19 @@
   "25225": [
     {
       "npc": 154,
-      "x": 11,
-      "y": 14,
+      "position": {
+        "x": 11,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 25225
     },
     {
       "npc": 251,
-      "x": 19,
-      "y": 14,
+      "position": {
+        "x": 19,
+        "y": 14
+      },
       "direction": "BOTTOM",
       "parent": 25225
     }

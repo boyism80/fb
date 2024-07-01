@@ -226,6 +226,9 @@
     <ClCompile Include="model.recipe.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="lib\worker\worker.npc.spawn.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

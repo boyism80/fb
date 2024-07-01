@@ -72,6 +72,7 @@ int main(int argc, const char** argv)
         };
         fb::game::model_loader(*context).run();
         fb::game::map_loader(*context).run();
+        fb::game::npc_spawner(*context).run();
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);

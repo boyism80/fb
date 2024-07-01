@@ -585,8 +585,9 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
             if(fn(socket) == false)
                 return true;
         }
-        catch(std::exception&)
+        catch(std::exception& e)
         {
+            fb::logger::fatal(e.what());
             in_stream.clear();
             break;
         }

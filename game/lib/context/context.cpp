@@ -928,7 +928,7 @@ void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::n
         .from(model.script.c_str())
         .func("on_interact")
         .pushobject(session)
-        .pushobject(npc)
+        .pushobject(npc.based<fb::model::npc>())
         .resume(2);
 }
 
