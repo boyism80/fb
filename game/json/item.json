@@ -103,8 +103,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 313,
+    "durability": 200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -311,8 +311,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -343,8 +343,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 27,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -383,8 +383,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 25,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -423,8 +423,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -463,8 +463,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 23,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -503,8 +503,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 22,
+    "durability": 60000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -543,8 +543,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 21,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -575,8 +575,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -615,8 +615,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -655,8 +655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 17,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -687,8 +687,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -727,8 +727,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -767,8 +767,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -807,8 +807,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -847,8 +847,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -888,7 +888,7 @@
       }
     ],
     "dress": 0,
-    "durability": 0,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -919,8 +919,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2834,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -951,8 +951,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2287,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -991,8 +991,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2273,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1031,8 +1031,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2309,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1071,8 +1071,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2307,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1111,8 +1111,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2064,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1151,8 +1151,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2063,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1191,8 +1191,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2057,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1223,8 +1223,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2056,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1263,8 +1263,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2040,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1303,8 +1303,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2039,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1343,8 +1343,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2038,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1383,8 +1383,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2037,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1423,8 +1423,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2036,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1455,8 +1455,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2035,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1487,8 +1487,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2034,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1519,8 +1519,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2033,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1551,8 +1551,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2032,
+    "durability": 60000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1591,8 +1591,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2031,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1631,8 +1631,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2030,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1663,8 +1663,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2029,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1703,8 +1703,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2036,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1743,8 +1743,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2027,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1783,8 +1783,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2026,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1823,8 +1823,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2025,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1863,8 +1863,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2024,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1903,8 +1903,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2023,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1935,8 +1935,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2022,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -1975,8 +1975,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1163,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -2015,8 +2015,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2097,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3578,7 +3578,7 @@
     "script_active": null,
     "condition": [],
     "dress": 0,
-    "durability": 0,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3617,8 +3617,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 45,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3657,8 +3657,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 43,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3697,8 +3697,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 38,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3737,8 +3737,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 37,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3777,8 +3777,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 36,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3817,8 +3817,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 35,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3857,8 +3857,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 33,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3897,8 +3897,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 31,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3943,8 +3943,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -3989,8 +3989,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 29,
+    "durability": 35000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4029,8 +4029,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 28,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4069,8 +4069,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 27,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4109,8 +4109,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 26,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4149,8 +4149,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 25,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4189,8 +4189,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4229,8 +4229,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4269,8 +4269,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4309,8 +4309,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4349,8 +4349,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4389,8 +4389,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4429,8 +4429,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4469,8 +4469,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4509,8 +4509,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4549,8 +4549,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 23,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4589,8 +4589,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 22,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4629,8 +4629,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 21,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4669,8 +4669,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 21,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4709,8 +4709,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4749,8 +4749,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4789,8 +4789,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 19,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4829,8 +4829,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 19,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4869,8 +4869,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4909,8 +4909,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4949,8 +4949,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 17,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -4981,8 +4981,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 17,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5021,8 +5021,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5053,8 +5053,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5085,8 +5085,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5117,8 +5117,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5149,8 +5149,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5181,8 +5181,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5213,8 +5213,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5245,8 +5245,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5277,8 +5277,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5309,8 +5309,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5341,8 +5341,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5373,8 +5373,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5405,8 +5405,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5437,8 +5437,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5469,8 +5469,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5501,8 +5501,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5533,8 +5533,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5565,8 +5565,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5597,8 +5597,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5629,8 +5629,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5661,8 +5661,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5693,8 +5693,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5725,8 +5725,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5757,8 +5757,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5789,8 +5789,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5821,8 +5821,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5853,8 +5853,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5885,8 +5885,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5925,8 +5925,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -5964,8 +5964,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6003,8 +6003,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 2500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6042,8 +6042,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 1800,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6081,8 +6081,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6120,8 +6120,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 2500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6159,8 +6159,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 1800,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6199,8 +6199,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 33,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6239,8 +6239,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 32,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6279,8 +6279,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6319,8 +6319,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6359,8 +6359,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6399,8 +6399,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6439,8 +6439,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6479,8 +6479,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6519,8 +6519,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6559,8 +6559,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 706,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6591,8 +6591,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 241,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6631,8 +6631,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2305,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6671,8 +6671,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2297,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6711,8 +6711,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2296,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6751,8 +6751,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2295,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6791,8 +6791,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2294,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6831,8 +6831,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2293,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6871,8 +6871,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2292,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6911,8 +6911,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2291,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6951,8 +6951,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2290,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -6983,8 +6983,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2288,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7015,8 +7015,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2287,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7055,8 +7055,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7095,8 +7095,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7135,8 +7135,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7175,8 +7175,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7215,8 +7215,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7255,8 +7255,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7295,8 +7295,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7335,8 +7335,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7375,8 +7375,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7415,8 +7415,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7455,8 +7455,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7495,8 +7495,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7535,8 +7535,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7575,8 +7575,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7615,8 +7615,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7655,8 +7655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7695,8 +7695,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7735,8 +7735,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7775,8 +7775,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7815,8 +7815,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7855,8 +7855,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7895,8 +7895,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7935,8 +7935,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -7975,8 +7975,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8015,8 +8015,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8055,8 +8055,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8095,8 +8095,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8135,8 +8135,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8175,8 +8175,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8215,8 +8215,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8255,8 +8255,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8295,8 +8295,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8335,8 +8335,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8375,8 +8375,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8415,8 +8415,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8455,8 +8455,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8495,8 +8495,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1609,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8535,8 +8535,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1587,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8575,8 +8575,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1586,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8615,8 +8615,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1222,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8655,8 +8655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1221,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8695,8 +8695,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1220,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8735,8 +8735,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1220,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8775,8 +8775,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1219,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8815,8 +8815,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1219,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8847,8 +8847,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1218,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8887,8 +8887,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1218,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8927,8 +8927,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1217,
+    "durability": 8000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8967,8 +8967,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1217,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -8999,8 +8999,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1215,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9039,8 +9039,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1215,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9079,8 +9079,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1214,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9119,8 +9119,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1213,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9159,8 +9159,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1212,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9199,8 +9199,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1212,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9239,8 +9239,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1211,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9279,8 +9279,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1211,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9311,8 +9311,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1210,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9351,8 +9351,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1210,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9391,8 +9391,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1209,
+    "durability": 8000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9431,8 +9431,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1208,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9471,8 +9471,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1206,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9511,8 +9511,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1205,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9551,8 +9551,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1204,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9591,8 +9591,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1203,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9631,8 +9631,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1203,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9671,8 +9671,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1202,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9711,8 +9711,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1202,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9743,8 +9743,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1201,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9783,8 +9783,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1201,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9823,8 +9823,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1200,
+    "durability": 8000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9863,8 +9863,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1199,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9903,8 +9903,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1198,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9943,8 +9943,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1197,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -9983,8 +9983,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1196,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10023,8 +10023,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1195,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10063,8 +10063,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1195,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10103,8 +10103,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1194,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10143,8 +10143,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1194,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10175,8 +10175,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1193,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10215,8 +10215,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1193,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10255,8 +10255,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1192,
+    "durability": 8000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10295,8 +10295,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1191,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10327,8 +10327,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1190,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10367,8 +10367,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1190,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10407,8 +10407,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1196,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10439,8 +10439,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 953,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10471,8 +10471,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 952,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10503,8 +10503,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 951,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10535,8 +10535,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 950,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10567,8 +10567,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 949,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10599,8 +10599,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 948,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10631,8 +10631,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 947,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10671,8 +10671,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 491,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10711,8 +10711,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 490,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10751,8 +10751,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 246,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10783,8 +10783,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 244,
+    "durability": 20000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10815,8 +10815,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 245,
+    "durability": 20000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10855,8 +10855,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 243,
+    "durability": 1200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10895,8 +10895,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 243,
+    "durability": 5200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10935,8 +10935,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 243,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -10975,8 +10975,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 242,
+    "durability": 3200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11015,8 +11015,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 241,
+    "durability": 1200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11055,8 +11055,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 241,
+    "durability": 1200,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11095,8 +11095,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 43,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11135,8 +11135,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11175,8 +11175,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11215,8 +11215,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11255,8 +11255,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1888,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11295,8 +11295,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11335,8 +11335,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11375,8 +11375,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11415,8 +11415,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1887,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11455,8 +11455,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11495,8 +11495,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11535,8 +11535,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11575,8 +11575,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1886,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11615,8 +11615,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11655,8 +11655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11695,8 +11695,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11735,8 +11735,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1885,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11767,8 +11767,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11799,8 +11799,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11831,8 +11831,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11863,8 +11863,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11895,8 +11895,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11927,8 +11927,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11959,8 +11959,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -11991,8 +11991,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12023,8 +12023,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12055,8 +12055,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12087,8 +12087,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12119,8 +12119,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12151,8 +12151,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12183,8 +12183,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12215,8 +12215,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12247,8 +12247,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12279,8 +12279,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12311,8 +12311,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 690,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12343,8 +12343,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12375,8 +12375,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12407,8 +12407,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12439,8 +12439,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 711,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12471,8 +12471,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 712,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12503,8 +12503,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 696,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12543,8 +12543,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 709,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12583,8 +12583,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1586,
+    "durability": 100,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -12623,8 +12623,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1586,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -20813,8 +20813,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -20852,8 +20852,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -20891,8 +20891,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -20930,8 +20930,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -20969,8 +20969,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21008,8 +21008,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21047,8 +21047,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21086,8 +21086,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21125,8 +21125,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21164,8 +21164,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21203,8 +21203,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21242,8 +21242,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21281,8 +21281,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21320,8 +21320,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21359,8 +21359,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21398,8 +21398,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21437,8 +21437,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21476,8 +21476,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21515,8 +21515,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21554,8 +21554,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21593,8 +21593,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21632,8 +21632,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21671,8 +21671,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21710,8 +21710,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21749,8 +21749,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21788,8 +21788,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21827,8 +21827,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21866,8 +21866,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21905,8 +21905,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21944,8 +21944,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -21983,8 +21983,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22022,8 +22022,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22061,8 +22061,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22100,8 +22100,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22139,8 +22139,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22178,8 +22178,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22217,8 +22217,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22256,8 +22256,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22295,8 +22295,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22334,8 +22334,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22373,8 +22373,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22412,8 +22412,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22451,8 +22451,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22490,8 +22490,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22529,8 +22529,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22568,8 +22568,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22607,8 +22607,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22646,8 +22646,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22685,8 +22685,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22724,8 +22724,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22763,8 +22763,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22802,8 +22802,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22841,8 +22841,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22880,8 +22880,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 99999,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22919,8 +22919,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22958,8 +22958,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -22997,8 +22997,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23036,8 +23036,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23075,8 +23075,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23114,8 +23114,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23153,8 +23153,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23192,8 +23192,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23231,8 +23231,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23270,8 +23270,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23309,8 +23309,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23348,8 +23348,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23387,8 +23387,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23426,8 +23426,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23465,8 +23465,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23504,8 +23504,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23543,8 +23543,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23582,8 +23582,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 15,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23621,8 +23621,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23660,8 +23660,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23699,8 +23699,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23738,8 +23738,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23777,8 +23777,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23816,8 +23816,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23855,8 +23855,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23894,8 +23894,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23933,8 +23933,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23965,8 +23965,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 17,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -23997,8 +23997,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 19,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24043,8 +24043,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 37,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24089,8 +24089,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 36,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24135,8 +24135,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 38,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24181,8 +24181,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 39,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24227,8 +24227,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 40,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24273,8 +24273,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 41,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24319,8 +24319,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 42,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24365,8 +24365,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 43,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24417,8 +24417,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 44,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24469,8 +24469,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 45,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24521,8 +24521,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 47,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24573,8 +24573,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 46,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24625,8 +24625,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 49,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24677,8 +24677,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 48,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24729,8 +24729,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 50,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24781,8 +24781,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 51,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24820,8 +24820,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 55,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24859,8 +24859,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 56,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24899,8 +24899,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 59,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24939,8 +24939,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 61,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -24979,8 +24979,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 62,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25025,8 +25025,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 63,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25071,8 +25071,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 64,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25117,8 +25117,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 66,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25156,8 +25156,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 67,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25195,8 +25195,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 68,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25241,8 +25241,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 71,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25287,8 +25287,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 72,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25333,8 +25333,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 73,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25379,8 +25379,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 74,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25418,8 +25418,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 75,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25457,8 +25457,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 76,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25496,8 +25496,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 77,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25542,8 +25542,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 78,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25588,8 +25588,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 79,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25634,8 +25634,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 80,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25680,8 +25680,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 81,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25726,8 +25726,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25772,8 +25772,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 86,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25818,8 +25818,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 84,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25864,8 +25864,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 85,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25910,8 +25910,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 83,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -25956,8 +25956,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 88,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26002,8 +26002,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 87,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26048,8 +26048,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 89,
+    "durability": 90000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26094,8 +26094,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 90,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26140,8 +26140,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 91,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26186,8 +26186,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 92,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26232,8 +26232,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 93,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26278,8 +26278,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 94,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26324,8 +26324,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 95,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26370,8 +26370,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 96,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26416,8 +26416,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 97,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26462,8 +26462,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 98,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26508,8 +26508,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 99,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26554,8 +26554,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 100,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26600,8 +26600,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 101,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26646,8 +26646,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 102,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26692,8 +26692,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 103,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26738,8 +26738,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 104,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26784,8 +26784,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 105,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26830,8 +26830,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 106,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26869,8 +26869,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 107,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26908,8 +26908,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -26954,8 +26954,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 111,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27000,8 +27000,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 112,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27046,8 +27046,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 113,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27092,8 +27092,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 114,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27138,8 +27138,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 115,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27184,8 +27184,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 116,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27230,8 +27230,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 126,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27276,8 +27276,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 127,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27322,8 +27322,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 117,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27368,8 +27368,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 118,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27414,8 +27414,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 119,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27460,8 +27460,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 120,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27506,8 +27506,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 121,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27552,8 +27552,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 122,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27598,8 +27598,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 123,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27644,8 +27644,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 124,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27690,8 +27690,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27736,8 +27736,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27782,8 +27782,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27828,8 +27828,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27874,8 +27874,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 21000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27920,8 +27920,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 33000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -27966,8 +27966,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 55000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28012,8 +28012,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 82000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28058,8 +28058,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28104,8 +28104,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 6000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28150,8 +28150,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28196,8 +28196,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 11000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28242,8 +28242,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 22000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28288,8 +28288,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 34000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28334,8 +28334,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 56000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28380,8 +28380,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 83000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28426,8 +28426,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 101000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28472,8 +28472,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 131000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28518,8 +28518,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28564,8 +28564,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28610,8 +28610,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28656,8 +28656,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28702,8 +28702,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 21000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28748,8 +28748,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 33000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28794,8 +28794,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 55000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28840,8 +28840,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 82000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28886,8 +28886,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28932,8 +28932,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 6000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -28978,8 +28978,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29024,8 +29024,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 11000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29070,8 +29070,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 22000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29116,8 +29116,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 34000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29162,8 +29162,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 56000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29208,8 +29208,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 83000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29254,8 +29254,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 101000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29300,8 +29300,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 131000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29346,8 +29346,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29392,8 +29392,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29438,8 +29438,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29484,8 +29484,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29530,8 +29530,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 16500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29576,8 +29576,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29622,8 +29622,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 41000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29668,8 +29668,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 65000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29714,8 +29714,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 95000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29760,8 +29760,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29806,8 +29806,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29852,8 +29852,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29898,8 +29898,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 16500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29944,8 +29944,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -29990,8 +29990,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 41000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30036,8 +30036,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 65000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30082,8 +30082,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30128,8 +30128,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 95000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30174,8 +30174,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30220,8 +30220,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30266,8 +30266,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30312,8 +30312,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30358,8 +30358,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 16500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30404,8 +30404,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30450,8 +30450,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 41000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30496,8 +30496,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 65000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30542,8 +30542,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 95000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30588,8 +30588,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30634,8 +30634,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30680,8 +30680,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30726,8 +30726,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 16500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30772,8 +30772,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30818,8 +30818,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 41000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30864,8 +30864,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 65000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30910,8 +30910,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 80000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -30956,8 +30956,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 95000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31002,8 +31002,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31048,8 +31048,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31094,8 +31094,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31140,8 +31140,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 16000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31186,8 +31186,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 26000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31232,8 +31232,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 42000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31278,8 +31278,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 67000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31324,8 +31324,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 82000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31370,8 +31370,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 3,
+    "durability": 96000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31416,8 +31416,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31462,8 +31462,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31508,8 +31508,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31554,8 +31554,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 19000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31600,8 +31600,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 29000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31646,8 +31646,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31692,8 +31692,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 69000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31738,8 +31738,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 85000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31784,8 +31784,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31830,8 +31830,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31876,8 +31876,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31922,8 +31922,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -31968,8 +31968,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 16000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32014,8 +32014,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 26000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32060,8 +32060,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 42000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32106,8 +32106,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 67000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32152,8 +32152,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 82000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32198,8 +32198,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 96000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32244,8 +32244,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32290,8 +32290,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32336,8 +32336,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32382,8 +32382,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 19000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32428,8 +32428,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 29000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32474,8 +32474,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32520,8 +32520,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 69000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32566,8 +32566,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 85000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32612,8 +32612,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32658,8 +32658,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32704,8 +32704,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32750,8 +32750,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 9000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32796,8 +32796,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 11000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32842,8 +32842,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 29000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32888,8 +32888,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32934,8 +32934,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 69000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -32980,8 +32980,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 85000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33026,8 +33026,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33072,8 +33072,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33118,8 +33118,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 7000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33164,8 +33164,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33210,8 +33210,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 11000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33256,8 +33256,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 13000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33302,8 +33302,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33348,8 +33348,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 17000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33394,8 +33394,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 19000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33440,8 +33440,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 21000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33480,8 +33480,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 60,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33512,8 +33512,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33555,8 +33555,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33605,8 +33605,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33655,8 +33655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 6000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33705,8 +33705,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 8000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33755,8 +33755,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33805,8 +33805,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10000,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33855,8 +33855,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 104,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33912,8 +33912,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 104,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -33962,8 +33962,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34012,8 +34012,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 6000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34069,8 +34069,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 104,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34120,8 +34120,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34171,8 +34171,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 23,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34221,8 +34221,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10012,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34272,8 +34272,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 19,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34323,8 +34323,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10010,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34380,8 +34380,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34437,8 +34437,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34494,8 +34494,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34551,8 +34551,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10009,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34608,8 +34608,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 18,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34665,8 +34665,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 60,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34715,8 +34715,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 22,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34766,8 +34766,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 5,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34817,8 +34817,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34868,8 +34868,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 8,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34919,8 +34919,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 104,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -34970,8 +34970,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 17,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35021,8 +35021,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 67,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35072,8 +35072,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 16,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35123,8 +35123,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10004,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35174,8 +35174,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10002,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35225,8 +35225,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10007,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35276,8 +35276,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10034,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35327,8 +35327,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10003,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35378,8 +35378,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10007,
+    "durability": 3000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35429,8 +35429,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10007,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35480,8 +35480,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 1,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35523,8 +35523,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10001,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35574,8 +35574,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10031,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35625,8 +35625,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10032,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35676,8 +35676,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 101,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35727,8 +35727,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35778,8 +35778,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35829,8 +35829,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 25,
+    "durability": 20,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35880,8 +35880,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 25,
+    "durability": 20,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35937,8 +35937,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10024,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -35994,8 +35994,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10025,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36051,8 +36051,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10028,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36108,8 +36108,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10020,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36165,8 +36165,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10019,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36216,8 +36216,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10023,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36267,8 +36267,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 70,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36324,8 +36324,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30000,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36381,8 +36381,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30001,
+    "durability": 35000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36438,8 +36438,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30002,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36489,8 +36489,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 66,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36540,8 +36540,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 68,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36591,8 +36591,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 6,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36642,8 +36642,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 69,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36693,8 +36693,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10021,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36744,8 +36744,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10026,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36795,8 +36795,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10022,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36846,8 +36846,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10027,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36897,8 +36897,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 86,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36948,8 +36948,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 84,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -36999,8 +36999,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 83,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37050,8 +37050,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 87,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37101,8 +37101,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 89,
+    "durability": 600000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37152,8 +37152,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 139,
+    "durability": 8000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37203,8 +37203,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10049,
+    "durability": 8000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37254,8 +37254,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10050,
+    "durability": 8000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37305,8 +37305,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 140,
+    "durability": 8000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37356,8 +37356,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 116,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37407,8 +37407,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10038,
+    "durability": 250000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37458,8 +37458,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 119,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37509,8 +37509,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 115,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37560,8 +37560,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 118,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37611,8 +37611,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10037,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37662,8 +37662,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37713,8 +37713,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37764,8 +37764,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37815,8 +37815,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37866,8 +37866,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37917,8 +37917,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 82,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -37968,8 +37968,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30004,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38019,8 +38019,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 36,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38070,8 +38070,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 46,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38121,8 +38121,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 26,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38172,8 +38172,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10045,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38223,8 +38223,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 29,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38274,8 +38274,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10048,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38325,8 +38325,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10047,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38376,8 +38376,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 138,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38427,8 +38427,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 137,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38478,8 +38478,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10046,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38529,8 +38529,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 136,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38580,8 +38580,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 135,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38631,8 +38631,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 134,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38682,8 +38682,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 144,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38733,8 +38733,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 141,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38784,8 +38784,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10057,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38835,8 +38835,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 154,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38878,8 +38878,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10040,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38929,8 +38929,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -38980,8 +38980,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39031,8 +39031,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39082,8 +39082,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39133,8 +39133,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39184,8 +39184,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39235,8 +39235,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39286,8 +39286,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39337,8 +39337,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39388,8 +39388,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39439,8 +39439,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39490,8 +39490,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 108,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39541,8 +39541,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39592,8 +39592,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39643,8 +39643,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39694,8 +39694,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39745,8 +39745,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39796,8 +39796,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39847,8 +39847,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39898,8 +39898,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -39949,8 +39949,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40000,8 +40000,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40051,8 +40051,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40102,8 +40102,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10036,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40153,8 +40153,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40204,8 +40204,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40255,8 +40255,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40306,8 +40306,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40357,8 +40357,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40408,8 +40408,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40459,8 +40459,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40510,8 +40510,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40561,8 +40561,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40612,8 +40612,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40663,8 +40663,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40714,8 +40714,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10035,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40765,8 +40765,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40816,8 +40816,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40867,8 +40867,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40918,8 +40918,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -40969,8 +40969,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41020,8 +41020,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41071,8 +41071,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41122,8 +41122,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41173,8 +41173,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41224,8 +41224,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41275,8 +41275,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41326,8 +41326,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 109,
+    "durability": 2000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41377,8 +41377,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 3000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41428,8 +41428,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30003,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41479,8 +41479,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 93,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41530,8 +41530,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10029,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41581,8 +41581,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 88,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41638,8 +41638,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 131,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41695,8 +41695,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 126,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41752,8 +41752,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 120,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41809,8 +41809,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 122,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41860,8 +41860,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 121,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41911,8 +41911,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10044,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -41962,8 +41962,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10043,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42013,8 +42013,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10042,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42064,8 +42064,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 133,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42115,8 +42115,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 132,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42158,8 +42158,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10041,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42209,8 +42209,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10056,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42260,8 +42260,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10055,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42311,8 +42311,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 152,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42362,8 +42362,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 153,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42413,8 +42413,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10060,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42464,8 +42464,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10059,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42515,8 +42515,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 160,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42566,8 +42566,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 159,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42617,8 +42617,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 156,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42668,8 +42668,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30006,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42719,8 +42719,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30006,
+    "durability": 45000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42762,8 +42762,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 166,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42805,8 +42805,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 164,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42848,8 +42848,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 165,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42891,8 +42891,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 163,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42934,8 +42934,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 162,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -42977,8 +42977,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43020,8 +43020,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43063,8 +43063,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43106,8 +43106,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43149,8 +43149,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43192,8 +43192,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43235,8 +43235,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43278,8 +43278,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43329,8 +43329,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10040,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43380,8 +43380,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43431,8 +43431,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10020,
+    "durability": 150000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43482,8 +43482,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43533,8 +43533,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10020,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43584,8 +43584,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43635,8 +43635,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43686,8 +43686,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30000,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43737,8 +43737,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 2,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43788,8 +43788,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10033,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43839,8 +43839,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30000,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43890,8 +43890,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10020,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43941,8 +43941,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 21,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -43992,8 +43992,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 60,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44043,8 +44043,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 14,
+    "durability": 7500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44094,8 +44094,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 72,
+    "durability": 5000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44145,8 +44145,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 57,
+    "durability": 2000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44196,8 +44196,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10015,
+    "durability": 1000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44247,8 +44247,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10018,
+    "durability": 1500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44298,8 +44298,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10011,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44349,8 +44349,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 64,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44400,8 +44400,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 62,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44451,8 +44451,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 65,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44502,8 +44502,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 61,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44553,8 +44553,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 43,
+    "durability": 600000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44604,8 +44604,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 42,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44655,8 +44655,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 145,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44706,8 +44706,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 63,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44757,8 +44757,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10008,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44807,8 +44807,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10006,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44858,8 +44858,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10061,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44909,8 +44909,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 168,
+    "durability": 1000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -44960,8 +44960,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 47,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45003,8 +45003,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10030,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45054,8 +45054,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 110,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45105,8 +45105,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 4,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45148,8 +45148,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 147,
+    "durability": 50,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45191,8 +45191,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 100,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45234,8 +45234,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 155,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45285,8 +45285,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10014,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45342,8 +45342,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45399,8 +45399,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45456,8 +45456,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 11,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45513,8 +45513,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 49,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45570,8 +45570,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 49,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45627,8 +45627,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 49,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45684,8 +45684,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 76,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45741,8 +45741,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 77,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45798,8 +45798,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 78,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45849,8 +45849,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45900,8 +45900,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -45951,8 +45951,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 9,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46002,8 +46002,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 48,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46053,8 +46053,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 48,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46104,8 +46104,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 48,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46155,8 +46155,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 79,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46206,8 +46206,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 80,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46257,8 +46257,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 81,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46308,8 +46308,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46359,8 +46359,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46410,8 +46410,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 13,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46461,8 +46461,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 50,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46512,8 +46512,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 50,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46563,8 +46563,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 50,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46614,8 +46614,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 73,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46665,8 +46665,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 74,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46716,8 +46716,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 75,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46767,8 +46767,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 3000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46818,8 +46818,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 15000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46869,8 +46869,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 12,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46920,8 +46920,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 51,
+    "durability": 25000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -46971,8 +46971,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 51,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47022,8 +47022,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 51,
+    "durability": 30000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47073,8 +47073,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 90,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47124,8 +47124,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 91,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47175,8 +47175,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 92,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47232,8 +47232,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 76,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47289,8 +47289,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 77,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47346,8 +47346,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 79,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47403,8 +47403,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 80,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47454,8 +47454,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 73,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47505,8 +47505,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 74,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47556,8 +47556,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 91,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47607,8 +47607,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 92,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47658,8 +47658,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47709,8 +47709,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47760,8 +47760,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47811,8 +47811,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47862,8 +47862,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47913,8 +47913,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -47964,8 +47964,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48015,8 +48015,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48066,8 +48066,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 148,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48117,8 +48117,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48168,8 +48168,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48219,8 +48219,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48270,8 +48270,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48321,8 +48321,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48372,8 +48372,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48423,8 +48423,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48474,8 +48474,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48525,8 +48525,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 149,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48576,8 +48576,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48627,8 +48627,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48678,8 +48678,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48729,8 +48729,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48780,8 +48780,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48831,8 +48831,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48882,8 +48882,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48933,8 +48933,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -48984,8 +48984,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10058,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49035,8 +49035,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49086,8 +49086,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49137,8 +49137,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 100000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49188,8 +49188,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49239,8 +49239,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49290,8 +49290,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 200000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49341,8 +49341,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49392,8 +49392,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 300000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49443,8 +49443,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10052,
+    "durability": 500000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49486,8 +49486,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 95,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49529,8 +49529,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 96,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49572,8 +49572,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 97,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49615,8 +49615,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 98,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49658,8 +49658,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 99,
+    "durability": 4000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49701,8 +49701,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 142,
+    "durability": 50000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49752,8 +49752,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 26,
+    "durability": 400000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49803,8 +49803,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10005,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49854,8 +49854,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 28,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49905,8 +49905,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 7,
+    "durability": 20000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49956,8 +49956,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 53,
+    "durability": 40000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -49999,8 +49999,8 @@
     "capacity": 1,
     "script_active": null,
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 20000,
+    "durability": 500,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50050,8 +50050,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 30,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50101,8 +50101,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 41,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50152,8 +50152,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10011,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50203,8 +50203,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 40,
+    "durability": 5000000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50254,8 +50254,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 10004,
+    "durability": 70000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50305,8 +50305,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 25,
+    "durability": 20,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50356,8 +50356,8 @@
         ]
       }
     ],
-    "dress": 0,
-    "durability": 0,
+    "dress": 24,
+    "durability": 40,
     "repair": null,
     "dress_script": null,
     "undress_script": null,
@@ -50399,8 +50399,8 @@
     "capacity": 1,
     "script_active": "scripts/item/쇠도끼.lua",
     "condition": [],
-    "dress": 0,
-    "durability": 0,
+    "dress": 19,
+    "durability": 10000,
     "repair": null,
     "dress_script": null,
     "undress_script": null,

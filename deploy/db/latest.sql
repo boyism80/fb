@@ -79,7 +79,7 @@ CREATE TABLE `item` (
   `deposited` smallint(6) NOT NULL DEFAULT '-1',
   `model` int(10) unsigned DEFAULT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
-  `durability` smallint(5) unsigned DEFAULT NULL,
+  `durability` int(10) unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
   KEY `item_owner_idx` (`owner`),
@@ -478,4 +478,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-07 23:50:23
+-- Dump completed on 2024-07-01 22:36:10

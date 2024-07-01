@@ -137,7 +137,7 @@ protected:
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
-    OBJECT_TYPE                 type() const final;
+    OBJECT_TYPE                 what() const final;
     fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position) final;
     fb::awaiter<bool>           co_map(fb::game::map* map) final;
     bool                        map(fb::game::map* map, const point16_t& position) final;

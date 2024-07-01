@@ -1879,5 +1879,41 @@
     "uncast": null,
     "concast": "scripts/spell/청의태자포획.lua",
     "message": null
+  },
+  "10000": {
+    "id": 10000,
+    "name": "강제이동(상)",
+    "type": "NORMAL",
+    "cast": "scripts/spell/강제이동(상).lua",
+    "uncast": null,
+    "concast": null,
+    "message": null
+  },
+  "10001": {
+    "id": 10001,
+    "name": "강제이동(하)",
+    "type": "NORMAL",
+    "cast": "scripts/spell/강제이동(하).lua",
+    "uncast": null,
+    "concast": null,
+    "message": null
+  },
+  "10002": {
+    "id": 10002,
+    "name": "강제이동(좌)",
+    "type": "NORMAL",
+    "cast": "scripts/spell/강제이동(좌).lua",
+    "uncast": null,
+    "concast": null,
+    "message": null
+  },
+  "10003": {
+    "id": 10003,
+    "name": "강제이동(우)",
+    "type": "NORMAL",
+    "cast": "scripts/spell/강제이동(우).lua",
+    "uncast": null,
+    "concast": null,
+    "message": null
   }
 }

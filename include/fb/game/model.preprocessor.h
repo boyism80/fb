@@ -5,6 +5,12 @@
 #undef DELETE
 #endif
 
+#define OVERRIDE_OBJECT_TYPE(v)                                                               \
+enum_value::OBJECT_TYPE what() const override                                                 \
+{                                                                                             \
+    return (v);                                                                               \
+}
+
 #define ROOT_PREPROCESSOR                                                                     \
 namespace fb { namespace model { namespace enum_value {                                       \
                                                                                               \
@@ -162,7 +168,7 @@ protected:                                                                      
     uint8_t                                 dialog_look_type() const;                         \
                                                                                               \
 public:                                                                                       \
-    virtual enum_value::OBJECT_TYPE         type() const;                                     \
+    virtual enum_value::OBJECT_TYPE         what() const;                                     \
     bool                                    operator == (const object&) const;                \
     bool                                    operator != (const object&) const;                \
                                                                                               \
@@ -185,14 +191,14 @@ public:                                                                         
     LUA_PROTOTYPE                                                                             \
                                                                                               \
 public:                                                                                       \
-    virtual enum_value::ITEM_ATTRIBUTE      attr() const;                                \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::ITEM)                                       \
+                                                                                              \
+public:                                                                                       \
+    virtual enum_value::ITEM_ATTRIBUTE      attr() const;                                     \
     bool                                    attr(enum_value::ITEM_ATTRIBUTE flag) const;      \
                                                                                               \
 public:                                                                                       \
-    virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const        \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const;       \
                                                                                               \
 public:                                                                                       \
     static int                              builtin_make(lua_State* lua);                     \
@@ -206,10 +212,7 @@ public:                                                                         
 
 #define DECLARE_CASH_EXTENSION                                                                \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
                                                                                               \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
@@ -218,10 +221,7 @@ public:                                                                         
 
 #define DECLARE_CONSUME_EXTENSION                                                             \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         auto attr = enum_value::ITEM_ATTRIBUTE::CONSUME;                                      \
@@ -233,10 +233,7 @@ public:                                                                         
 
 #define DECLARE_PACK_EXTENSION                                                                \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::PACK;                                              \
@@ -252,10 +249,7 @@ public:                                                                         
 
 #define DECLARE_WEAPON_EXTENSION                                                              \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE      attr() const                                      \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::WEAPON;                                            \
@@ -284,10 +278,7 @@ public:                                                                         
 
 #define DECLARE_ARMOR_EXTENSION                                                               \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::ARMOR;                                             \
@@ -296,10 +287,7 @@ public:                                                                         
 
 #define DECLARE_HELMET_EXTENSION                                                              \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::HELMET;                                            \
@@ -307,10 +295,7 @@ public:                                                                         
 
 #define DECLARE_SHIELD_EXTENSION                                                              \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::SHIELD;                                            \
@@ -318,10 +303,7 @@ public:                                                                         
 
 #define DECLARE_RING_EXTENSION                                                                \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::RING;                                              \
@@ -329,10 +311,7 @@ public:                                                                         
 
 #define DECLARE_AUXILIARY_EXTENSION                                                           \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                         \
@@ -340,10 +319,7 @@ public:                                                                         
 
 #define DECLARE_BOW_EXTENSION                                                                 \
 public:                                                                                       \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final          \
-    {                                                                                         \
-        return nullptr;                                                                       \
-    }                                                                                         \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final;         \
     virtual enum_value::ITEM_ATTRIBUTE       attr() const                                     \
     {                                                                                         \
         return enum_value::ITEM_ATTRIBUTE::ARROW;                                             \
@@ -352,6 +328,9 @@ public:                                                                         
 #define DECLARE_NPC_EXTENSION                                                                 \
 public:                                                                                       \
     LUA_PROTOTYPE                                                                             \
+                                                                                              \
+public:                                                                                       \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC)                                        \
                                                                                               \
 public:                                                                                       \
     static int                  builtin_input(lua_State* lua);                                \
@@ -373,10 +352,7 @@ public:                                                                         
     LUA_PROTOTYPE                                                                             \
                                                                                               \
 public:                                                                                       \
-    enum_value::OBJECT_TYPE     type() const                                                  \
-    {                                                                                         \
-        return enum_value::OBJECT_TYPE::MOB;                                                  \
-    }                                                                                         \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB)                                        \
                                                                                               \
 public:                                                                                       \
     static int                  builtin_speed(lua_State* lua);

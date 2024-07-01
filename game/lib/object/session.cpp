@@ -44,7 +44,7 @@ void fb::game::session::send(const fb::protocol::base::header& response, bool en
     this->_socket.send(response, encrypt, wrap);
 }
 
-OBJECT_TYPE fb::game::session::type() const
+OBJECT_TYPE fb::game::session::what() const
 {
     return OBJECT_TYPE::SESSION;
 }

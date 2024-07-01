@@ -21,7 +21,10 @@ const std::string fb::game::equipment::name_trade() const
     std::stringstream       sstream;
     auto&                   model = this->based<fb::model::equipment>();
     float                   percentage = this->_durability / float(model.durability) * 100;
-    sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
+    sstream << model.name 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
 
     return sstream.str();
 }
@@ -97,15 +100,15 @@ bool fb::game::equipment::active()
     return true;
 }
 
-std::optional<uint16_t> fb::game::equipment::durability() const
+std::optional<uint32_t> fb::game::equipment::durability() const
 {
     return this->_durability;
 }
 
-void fb::game::equipment::durability(uint16_t value)
+void fb::game::equipment::durability(uint32_t value)
 {
     auto& model = this->based<fb::model::equipment>();
-    this->_durability = std::max(uint16_t(0), std::min(model.durability, value));
+    this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
 std::string fb::game::equipment::mid_message() const

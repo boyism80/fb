@@ -246,7 +246,7 @@ bool fb::game::map::movable(const point16_t position) const
         if(value->visible() == false)
             continue;
 
-        if(value->type() == OBJECT_TYPE::ITEM)
+        if(value->is(OBJECT_TYPE::ITEM))
             continue;
 
         if(value->position() == position)

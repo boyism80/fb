@@ -30,12 +30,12 @@ const std::string fb::game::item::name_trade() const
     return this->name_styled();
 }
 
-std::optional<uint16_t> fb::game::item::durability() const
+std::optional<uint32_t> fb::game::item::durability() const
 {
     return std::nullopt;
 }
 
-void fb::game::item::durability(uint16_t value)
+void fb::game::item::durability(uint32_t value)
 { }
 
 

@@ -10,7 +10,7 @@ uint8_t fb::model::object::dialog_look_type() const
     return this->look > 0xBFFF ? 0x02 : 0x01;
 }
 
-fb::model::enum_value::OBJECT_TYPE fb::model::object::type() const
+fb::model::enum_value::OBJECT_TYPE fb::model::object::what() const
 {
     return fb::model::enum_value::OBJECT_TYPE::UNKNOWN;
 }

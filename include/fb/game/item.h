@@ -62,8 +62,8 @@ public:
 public:
     virtual const std::string               name_styled() const;
     virtual const std::string               name_trade() const;
-    virtual std::optional<uint16_t>         durability() const;
-    virtual void                            durability(uint16_t value);
+    virtual std::optional<uint32_t>         durability() const;
+    virtual void                            durability(uint32_t value);
 
 
 
@@ -141,7 +141,7 @@ public:
 class pack : public item
 {
 private:
-    uint16_t                            _durability = 0;
+    uint32_t                            _durability = 0;
 
 public:
     pack(fb::game::context& context, const fb::model::pack& model);
@@ -149,8 +149,8 @@ public:
     ~pack();
 
 public:
-    std::optional<uint16_t>             durability() const;
-    void                                durability(uint16_t value);
+    std::optional<uint32_t>             durability() const;
+    void                                durability(uint32_t value);
 
 public:
     const std::string                   name_styled() const final;
@@ -167,7 +167,7 @@ public:
     DECLARE_EXCEPTION(not_equipment_exception, "입을 수 없는 물건입니다.")
     
 protected:
-    uint16_t                            _durability = 0;
+    uint32_t                            _durability = 0;
 
 protected:
     equipment(fb::game::context& context, const fb::model::equipment& model);
@@ -180,8 +180,8 @@ public:
     bool                                active();
 
 public:
-    std::optional<uint16_t>             durability() const;
-    void                                durability(uint16_t value);
+    std::optional<uint32_t>             durability() const;
+    void                                durability(uint32_t value);
 
 
 protected:

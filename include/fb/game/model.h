@@ -2856,7 +2856,7 @@ class equipment : public fb::model::item
 {
 public:
     const uint16_t dress;
-    const uint16_t durability;
+    const uint32_t durability;
     const std::optional<double> repair;
     const std::string dress_script;
     const std::string undress_script;
@@ -2876,7 +2876,7 @@ public:
 public:
     equipment(const Json::Value& json) : fb::model::item(json),
         dress(fb::model::build<uint16_t>(json["dress"])),
-        durability(fb::model::build<uint16_t>(json["durability"])),
+        durability(fb::model::build<uint32_t>(json["durability"])),
         repair(fb::model::build<std::optional<double>>(json["repair"])),
         dress_script(fb::model::build<std::string>(json["dress_script"])),
         undress_script(fb::model::build<std::string>(json["undress_script"])),
@@ -2939,11 +2939,11 @@ DECLARE_MOB_EXTENSION
 class pack : public fb::model::item
 {
 public:
-    const uint16_t durability;
+    const uint32_t durability;
 
 public:
     pack(const Json::Value& json) : fb::model::item(json),
-        durability(fb::model::build<uint16_t>(json["durability"]))
+        durability(fb::model::build<uint32_t>(json["durability"]))
 #ifdef DECLARE_PACK_INITIALIZER
 DECLARE_PACK_INITIALIZER
 #endif

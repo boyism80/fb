@@ -18,15 +18,15 @@ fb::game::pack::~pack()
 { }
 
 
-std::optional<uint16_t> fb::game::pack::durability() const
+std::optional<uint32_t> fb::game::pack::durability() const
 {
     return this->_durability;
 }
 
-void fb::game::pack::durability(uint16_t value)
+void fb::game::pack::durability(uint32_t value)
 {
     auto& model = this->based<fb::model::pack>();
-    this->_durability = std::max(uint16_t(0), std::min(model.durability, value));
+    this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
 const std::string fb::game::pack::name_styled() const

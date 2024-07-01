@@ -46,7 +46,7 @@ const fb::model::object& fb::game::object::based() const
 
 bool fb::game::object::is(OBJECT_TYPE type) const
 {
-    auto mine = this->type();
+    auto mine = this->what();
     return (type & mine) == mine;
 }
 
@@ -65,9 +65,9 @@ uint8_t fb::game::object::color() const
     return this->_model.color;
 }
 
-OBJECT_TYPE fb::game::object::type() const
+OBJECT_TYPE fb::game::object::what() const
 {
-    return this->_model.type();
+    return this->_model.what();
 }
 
 void fb::game::object::destroy()
@@ -975,7 +975,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto message = thread->tostring(2);
     auto type = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
-    if(object->type() == OBJECT_TYPE::SESSION)
+    if(object->is(OBJECT_TYPE::SESSION))
         context->send(*object, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
 
     return 0;
@@ -1083,7 +1083,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
     
     auto effect = (uint8_t)thread->tointeger(2);
 
-    if(object->type() != OBJECT_TYPE::ITEM)
+    if(object->is(OBJECT_TYPE::ITEM) == false)
         context->send(*object, fb::protocol::game::response::object::effect(*object, effect), context::scope::PIVOT);
     return 0;
 }

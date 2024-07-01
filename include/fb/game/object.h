@@ -82,7 +82,7 @@ public:
     virtual const std::string&          name() const;
     virtual uint16_t                    look() const;
     virtual uint8_t                     color() const;
-    virtual OBJECT_TYPE                 type() const;
+    virtual OBJECT_TYPE                 what() const;
 
     void                                chat(const std::string& message, bool shout = false);
     const point16_t&                    position() const;

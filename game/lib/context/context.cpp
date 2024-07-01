@@ -180,6 +180,8 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_class<fb::game::map,     lua::luable>();
     lua::bind_class<fb::game::door,    lua::luable>();
     lua::bind_class<fb::game::group,   lua::luable>();
+    lua::bind_class<fb::model::spell,  lua::luable>();
+    lua::bind_class<fb::model::map,    lua::luable>();
     lua::bind_class<fb::model::object, lua::luable>();          lua::bind_class<fb::game::object, lua::luable>();
     lua::bind_class<fb::model::life,   fb::model::object>();    lua::bind_class<fb::game::life,   fb::game::object>();
     lua::bind_class<fb::model::mob,    fb::model::life>();      lua::bind_class<fb::game::mob,    fb::game::life>();
@@ -1286,7 +1288,7 @@ fb::task<bool> fb::game::context::handle_click_object(fb::socket<fb::game::sessi
         if(you == nullptr)
             co_return true;
 
-        switch(you->type())
+        switch(you->what())
         {
         case OBJECT_TYPE::SESSION:
             this->send(*session, fb::protocol::game::response::session::external_info(static_cast<fb::game::session&>(*you), this->model), scope::SELF);
@@ -2016,7 +2018,7 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
 
         for(auto& [key, value] : map.objects)
         {
-            if(value->type() != OBJECT_TYPE::MOB)
+            if(value->is(OBJECT_TYPE::MOB) == false)
                 continue;
 
             auto mob = static_cast<fb::game::mob*>(value);
