@@ -169,17 +169,14 @@ public:
 
 public:
     struct tile;
-    struct warp;
 
 public:
     using unique_tiles              = std::unique_ptr<tile[]>;
-    using unique_warps              = std::vector<std::unique_ptr<warp>>;
     using unique_sector             = std::unique_ptr<fb::game::sectors>;
 
 private:
     size<uint16_t>                  _size     = fb::model::size<uint16_t>(0, 0);
     unique_tiles                    _tiles    = nullptr;
-    unique_warps                    _warps;
     unique_sector                   _sectors;
 
 public:
@@ -212,7 +209,7 @@ public:
 
     void                            push_warp(fb::game::map* map, const fb::model::point<uint16_t>& before, const fb::model::point<uint16_t>& after);
     void                            push_warp(fb::game::wm::offset* offset, const fb::model::point<uint16_t>& before);
-    const fb::game::map::warp*      warpable(const fb::model::point<uint16_t>& position) const;
+    const fb::model::warp*          warpable(const fb::model::point<uint16_t>& position) const;
 
     bool                            update(fb::game::object& object);
     bool                            activated() const;
@@ -243,28 +240,6 @@ struct map::tile
     uint16_t                        id;
     uint16_t                        object;
     bool                            blocked;
-};
-
-struct map::warp
-{
-public:
-    // default warp
-    fb::game::map*                   map;
-    const fb::model::point<uint16_t> before, after;
-
-    // world warp
-    const fb::game::wm::offset*      offset;
-
-public:
-    warp(fb::game::map* map, const fb::model::point<uint16_t>& before, const fb::model::point<uint16_t>& after) :
-        map(map), before(before), after(after), offset(nullptr) { }
-    warp(const fb::game::wm::offset* offset, const fb::model::point<uint16_t>& before) : 
-        map(nullptr), before(before), after(0, 0), offset(offset)
-    { }
-    warp(const warp& right) : 
-        map(right.map), before(right.before), after(right.after), offset(right.offset)
-    { }
-    ~warp() { }
 };
 
 class maps : public fb::kv_container<uint32_t, fb::game::map>

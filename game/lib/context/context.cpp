@@ -1069,13 +1069,14 @@ fb::task<bool> fb::game::context::handle_move(fb::socket<fb::game::session>& soc
     const auto warp = map->warpable(forward);
     if(warp != nullptr)
     {
-        if(warp->offset != nullptr)
+        if(warp->world.empty() == false)
         {
-            session->send(fb::protocol::game::response::map::worlds(*warp->offset));
+            //session->send(fb::protocol::game::response::map::worlds(*warp->offset));
         }
         else
         {
-            co_await session->co_map(warp->map, warp->after);
+            auto& map = this->maps[warp->map.value()];
+            co_await session->co_map(&map, warp->after);
         }
     }
     else

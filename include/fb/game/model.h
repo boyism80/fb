@@ -2562,10 +2562,10 @@ DECLARE_WARP_FIELDS
 #else
 public:
     const uint32_t parent;
-    const point<uint32_t> position;
+    const point<uint16_t> before;
     const std::string world;
-    const std::optional<uint32_t> next;
-    const point<uint32_t> next_position;
+    const std::optional<uint32_t> map;
+    const point<uint16_t> after;
     const std::vector<fb::model::dsl> condition;
 #endif
 
@@ -2578,10 +2578,10 @@ public:
 DECLARE_WARP_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
-        position(fb::model::build<point<uint32_t>>(json["position"])),
+        before(fb::model::build<point<uint16_t>>(json["before"])),
         world(fb::model::build<std::string>(json["world"])),
-        next(fb::model::build<std::optional<uint32_t>>(json["next"])),
-        next_position(fb::model::build<point<uint32_t>>(json["next_position"])),
+        map(fb::model::build<std::optional<uint32_t>>(json["map"])),
+        after(fb::model::build<point<uint16_t>>(json["after"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
 #ifdef DECLARE_WARP_INITIALIZER
 DECLARE_WARP_INITIALIZER
@@ -3467,7 +3467,7 @@ public:
 public:
     const T& operator * () const
     {
-        return *(std::vector<std::unique_ptr<T>>::iterator::operator*()).get();
+        return *(std::vector<std::unique_ptr<T>>::const_iterator::operator*()).get();
     }
 };
 

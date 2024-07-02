@@ -290,24 +290,12 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-void fb::game::map::push_warp(fb::game::map* map, const fb::model::point<uint16_t>& before, const fb::model::point<uint16_t>& after)
+const fb::model::warp* fb::game::map::warpable(const fb::model::point<uint16_t>& position) const
 {
-    this->_warps.push_back(std::make_unique<warp>(map, before, after));
-}
-
-void fb::game::map::push_warp(fb::game::wm::offset* offset, const fb::model::point<uint16_t>& before)
-{
-    this->_warps.push_back(std::make_unique<warp>(offset, before));
-}
-
-const fb::game::map::warp* fb::game::map::warpable(const fb::model::point<uint16_t>& position) const
-{
-    for(const auto& warp : this->_warps)
+    for (auto& warp : this->context.model.warp[this->model.id])
     {
-        if(warp->before != position)
-            continue;
-
-        return warp.get();
+        if (warp.before == position)
+            return &warp;
     }
 
     return nullptr;
