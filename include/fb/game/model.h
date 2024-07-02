@@ -904,7 +904,7 @@ enum class MAP_OPTION
     BUILD_IN = 0x01, 
     DISABLE_TALK = 0x02, 
     DISABLE_WHISPER = 0x04, 
-    DISABLE_MAGIC = 0x08, 
+    DISABLE_SPELL = 0x08, 
     HUNTING_GROUND = 0x10, 
     ENABLE_PK = 0x20, 
     DISABLE_DIE_PENALTY = 0x30
@@ -919,7 +919,7 @@ inline MAP_OPTION enum_parse<MAP_OPTION>(const std::string k)
         { "BUILD_IN", MAP_OPTION::BUILD_IN }, 
         { "DISABLE_TALK", MAP_OPTION::DISABLE_TALK }, 
         { "DISABLE_WHISPER", MAP_OPTION::DISABLE_WHISPER }, 
-        { "DISABLE_MAGIC", MAP_OPTION::DISABLE_MAGIC }, 
+        { "DISABLE_SPELL", MAP_OPTION::DISABLE_SPELL }, 
         { "HUNTING_GROUND", MAP_OPTION::HUNTING_GROUND }, 
         { "ENABLE_PK", MAP_OPTION::ENABLE_PK }, 
         { "DISABLE_DIE_PENALTY", MAP_OPTION::DISABLE_DIE_PENALTY }
@@ -1915,6 +1915,9 @@ class ability
 DECLARE_ABILITY_INHERIT
 #endif
 {
+#ifdef DECLARE_ABILITY_FIELDS
+DECLARE_ABILITY_FIELDS
+#else
 public:
     const fb::model::enum_value::CLASS parent;
     const uint8_t level;
@@ -1924,7 +1927,11 @@ public:
     const uint32_t exp;
     const uint32_t hp;
     const uint32_t mp;
+#endif
 
+#ifdef DECLARE_ABILITY_CUSTOM_CONSTRUCTOR
+DECLARE_ABILITY_CUSTOM_CONSTRUCTOR
+#else
 public:
     ability(const Json::Value& json) : 
 #ifdef DECLARE_ABILITY_CONSTRUCTOR
@@ -1943,8 +1950,8 @@ DECLARE_ABILITY_INITIALIZER
 #endif
     { }
     ability(const ability&) = delete;
-    virtual ~ability()
-    { }
+    virtual ~ability() = default;
+#endif
 #ifdef DECLARE_ABILITY_EXTENSION
 DECLARE_ABILITY_EXTENSION
 #endif
@@ -1954,9 +1961,16 @@ class ability_attribute
 DECLARE_ABILITY_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_ABILITY_ATTRIBUTE_FIELDS
+DECLARE_ABILITY_ATTRIBUTE_FIELDS
+#else
 public:
     const fb::model::enum_value::CLASS id;
+#endif
 
+#ifdef DECLARE_ABILITY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_ABILITY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     ability_attribute(const Json::Value& json) : 
 #ifdef DECLARE_ABILITY_ATTRIBUTE_CONSTRUCTOR
@@ -1968,8 +1982,8 @@ DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
 #endif
     { }
     ability_attribute(const ability_attribute&) = delete;
-    virtual ~ability_attribute()
-    { }
+    virtual ~ability_attribute() = default;
+#endif
 #ifdef DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 #endif
@@ -1979,11 +1993,18 @@ class board
 DECLARE_BOARD_INHERIT
 #endif
 {
+#ifdef DECLARE_BOARD_FIELDS
+DECLARE_BOARD_FIELDS
+#else
 public:
     const uint32_t id;
     const std::string name;
     const std::vector<fb::model::dsl> condition;
+#endif
 
+#ifdef DECLARE_BOARD_CUSTOM_CONSTRUCTOR
+DECLARE_BOARD_CUSTOM_CONSTRUCTOR
+#else
 public:
     board(const Json::Value& json) : 
 #ifdef DECLARE_BOARD_CONSTRUCTOR
@@ -1997,8 +2018,8 @@ DECLARE_BOARD_INITIALIZER
 #endif
     { }
     board(const board&) = delete;
-    virtual ~board()
-    { }
+    virtual ~board() = default;
+#endif
 #ifdef DECLARE_BOARD_EXTENSION
 DECLARE_BOARD_EXTENSION
 #endif
@@ -2008,11 +2029,18 @@ class buy
 DECLARE_BUY_INHERIT
 #endif
 {
+#ifdef DECLARE_BUY_FIELDS
+DECLARE_BUY_FIELDS
+#else
 public:
     const uint32_t parent;
     const uint32_t item;
     const std::optional<uint32_t> price;
+#endif
 
+#ifdef DECLARE_BUY_CUSTOM_CONSTRUCTOR
+DECLARE_BUY_CUSTOM_CONSTRUCTOR
+#else
 public:
     buy(const Json::Value& json) : 
 #ifdef DECLARE_BUY_CONSTRUCTOR
@@ -2026,8 +2054,8 @@ DECLARE_BUY_INITIALIZER
 #endif
     { }
     buy(const buy&) = delete;
-    virtual ~buy()
-    { }
+    virtual ~buy() = default;
+#endif
 #ifdef DECLARE_BUY_EXTENSION
 DECLARE_BUY_EXTENSION
 #endif
@@ -2037,9 +2065,16 @@ class buy_attribute
 DECLARE_BUY_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_BUY_ATTRIBUTE_FIELDS
+DECLARE_BUY_ATTRIBUTE_FIELDS
+#else
 public:
     const uint32_t id;
+#endif
 
+#ifdef DECLARE_BUY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_BUY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     buy_attribute(const Json::Value& json) : 
 #ifdef DECLARE_BUY_ATTRIBUTE_CONSTRUCTOR
@@ -2051,8 +2086,8 @@ DECLARE_BUY_ATTRIBUTE_INITIALIZER
 #endif
     { }
     buy_attribute(const buy_attribute&) = delete;
-    virtual ~buy_attribute()
-    { }
+    virtual ~buy_attribute() = default;
+#endif
 #ifdef DECLARE_BUY_ATTRIBUTE_EXTENSION
 DECLARE_BUY_ATTRIBUTE_EXTENSION
 #endif
@@ -2062,10 +2097,17 @@ class door
 DECLARE_DOOR_INHERIT
 #endif
 {
+#ifdef DECLARE_DOOR_FIELDS
+DECLARE_DOOR_FIELDS
+#else
 public:
     const uint32_t id;
     const std::vector<uint32_t> pairs;
+#endif
 
+#ifdef DECLARE_DOOR_CUSTOM_CONSTRUCTOR
+DECLARE_DOOR_CUSTOM_CONSTRUCTOR
+#else
 public:
     door(const Json::Value& json) : 
 #ifdef DECLARE_DOOR_CONSTRUCTOR
@@ -2078,8 +2120,8 @@ DECLARE_DOOR_INITIALIZER
 #endif
     { }
     door(const door&) = delete;
-    virtual ~door()
-    { }
+    virtual ~door() = default;
+#endif
 #ifdef DECLARE_DOOR_EXTENSION
 DECLARE_DOOR_EXTENSION
 #endif
@@ -2089,11 +2131,18 @@ class door_pair
 DECLARE_DOOR_PAIR_INHERIT
 #endif
 {
+#ifdef DECLARE_DOOR_PAIR_FIELDS
+DECLARE_DOOR_PAIR_FIELDS
+#else
 public:
     const uint32_t id;
     const uint32_t open;
     const uint32_t close;
+#endif
 
+#ifdef DECLARE_DOOR_PAIR_CUSTOM_CONSTRUCTOR
+DECLARE_DOOR_PAIR_CUSTOM_CONSTRUCTOR
+#else
 public:
     door_pair(const Json::Value& json) : 
 #ifdef DECLARE_DOOR_PAIR_CONSTRUCTOR
@@ -2107,8 +2156,8 @@ DECLARE_DOOR_PAIR_INITIALIZER
 #endif
     { }
     door_pair(const door_pair&) = delete;
-    virtual ~door_pair()
-    { }
+    virtual ~door_pair() = default;
+#endif
 #ifdef DECLARE_DOOR_PAIR_EXTENSION
 DECLARE_DOOR_PAIR_EXTENSION
 #endif
@@ -2118,10 +2167,17 @@ class drop
 DECLARE_DROP_INHERIT
 #endif
 {
+#ifdef DECLARE_DROP_FIELDS
+DECLARE_DROP_FIELDS
+#else
 public:
     const std::string id;
     const std::vector<fb::model::dsl> dsl;
+#endif
 
+#ifdef DECLARE_DROP_CUSTOM_CONSTRUCTOR
+DECLARE_DROP_CUSTOM_CONSTRUCTOR
+#else
 public:
     drop(const Json::Value& json) : 
 #ifdef DECLARE_DROP_CONSTRUCTOR
@@ -2134,8 +2190,8 @@ DECLARE_DROP_INITIALIZER
 #endif
     { }
     drop(const drop&) = delete;
-    virtual ~drop()
-    { }
+    virtual ~drop() = default;
+#endif
 #ifdef DECLARE_DROP_EXTENSION
 DECLARE_DROP_EXTENSION
 #endif
@@ -2145,6 +2201,9 @@ class map
 DECLARE_MAP_INHERIT
 #endif
 {
+#ifdef DECLARE_MAP_FIELDS
+DECLARE_MAP_FIELDS
+#else
 public:
     const uint32_t id;
     const std::string name;
@@ -2152,15 +2211,12 @@ public:
     const uint16_t bgm;
     const fb::model::enum_value::MAP_EFFECT_TYPE effect;
     const uint8_t host;
-    const bool hunting_ground;
-    const bool enable_die_penalty;
-    const bool enable_talk;
-    const bool building;
-    const bool enable_whisper;
-    const bool enable_pk;
-    const bool enable_spell;
     const fb::model::enum_value::MAP_OPTION option;
+#endif
 
+#ifdef DECLARE_MAP_CUSTOM_CONSTRUCTOR
+DECLARE_MAP_CUSTOM_CONSTRUCTOR
+#else
 public:
     map(const Json::Value& json) : 
 #ifdef DECLARE_MAP_CONSTRUCTOR
@@ -2172,21 +2228,14 @@ DECLARE_MAP_CONSTRUCTOR
         bgm(fb::model::build<uint16_t>(json["bgm"])),
         effect(fb::model::build<fb::model::enum_value::MAP_EFFECT_TYPE>(json["effect"])),
         host(fb::model::build<uint8_t>(json["host"])),
-        hunting_ground(fb::model::build<bool>(json["hunting_ground"])),
-        enable_die_penalty(fb::model::build<bool>(json["enable_die_penalty"])),
-        enable_talk(fb::model::build<bool>(json["enable_talk"])),
-        building(fb::model::build<bool>(json["building"])),
-        enable_whisper(fb::model::build<bool>(json["enable_whisper"])),
-        enable_pk(fb::model::build<bool>(json["enable_pk"])),
-        enable_spell(fb::model::build<bool>(json["enable_spell"])),
         option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"]))
 #ifdef DECLARE_MAP_INITIALIZER
 DECLARE_MAP_INITIALIZER
 #endif
     { }
     map(const map&) = delete;
-    virtual ~map()
-    { }
+    virtual ~map() = default;
+#endif
 #ifdef DECLARE_MAP_EXTENSION
 DECLARE_MAP_EXTENSION
 #endif
@@ -2196,6 +2245,9 @@ class mob_spawn
 DECLARE_MOB_SPAWN_INHERIT
 #endif
 {
+#ifdef DECLARE_MOB_SPAWN_FIELDS
+DECLARE_MOB_SPAWN_FIELDS
+#else
 public:
     const uint32_t parent;
     const point16_t begin;
@@ -2203,7 +2255,11 @@ public:
     const uint32_t count;
     const uint32_t mob;
     const std::chrono::milliseconds rezen;
+#endif
 
+#ifdef DECLARE_MOB_SPAWN_CUSTOM_CONSTRUCTOR
+DECLARE_MOB_SPAWN_CUSTOM_CONSTRUCTOR
+#else
 public:
     mob_spawn(const Json::Value& json) : 
 #ifdef DECLARE_MOB_SPAWN_CONSTRUCTOR
@@ -2220,8 +2276,8 @@ DECLARE_MOB_SPAWN_INITIALIZER
 #endif
     { }
     mob_spawn(const mob_spawn&) = delete;
-    virtual ~mob_spawn()
-    { }
+    virtual ~mob_spawn() = default;
+#endif
 #ifdef DECLARE_MOB_SPAWN_EXTENSION
 DECLARE_MOB_SPAWN_EXTENSION
 #endif
@@ -2231,9 +2287,16 @@ class mob_spawn_attribute
 DECLARE_MOB_SPAWN_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_FIELDS
+DECLARE_MOB_SPAWN_ATTRIBUTE_FIELDS
+#else
 public:
     const uint32_t id;
+#endif
 
+#ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_MOB_SPAWN_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     mob_spawn_attribute(const Json::Value& json) : 
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_CONSTRUCTOR
@@ -2245,8 +2308,8 @@ DECLARE_MOB_SPAWN_ATTRIBUTE_INITIALIZER
 #endif
     { }
     mob_spawn_attribute(const mob_spawn_attribute&) = delete;
-    virtual ~mob_spawn_attribute()
-    { }
+    virtual ~mob_spawn_attribute() = default;
+#endif
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
 DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
 #endif
@@ -2256,12 +2319,19 @@ class npc_spawn
 DECLARE_NPC_SPAWN_INHERIT
 #endif
 {
+#ifdef DECLARE_NPC_SPAWN_FIELDS
+DECLARE_NPC_SPAWN_FIELDS
+#else
 public:
     const uint32_t parent;
     const uint32_t npc;
     const point16_t position;
     const fb::model::enum_value::DIRECTION direction;
+#endif
 
+#ifdef DECLARE_NPC_SPAWN_CUSTOM_CONSTRUCTOR
+DECLARE_NPC_SPAWN_CUSTOM_CONSTRUCTOR
+#else
 public:
     npc_spawn(const Json::Value& json) : 
 #ifdef DECLARE_NPC_SPAWN_CONSTRUCTOR
@@ -2276,8 +2346,8 @@ DECLARE_NPC_SPAWN_INITIALIZER
 #endif
     { }
     npc_spawn(const npc_spawn&) = delete;
-    virtual ~npc_spawn()
-    { }
+    virtual ~npc_spawn() = default;
+#endif
 #ifdef DECLARE_NPC_SPAWN_EXTENSION
 DECLARE_NPC_SPAWN_EXTENSION
 #endif
@@ -2287,9 +2357,16 @@ class npc_spawn_attribute
 DECLARE_NPC_SPAWN_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_FIELDS
+DECLARE_NPC_SPAWN_ATTRIBUTE_FIELDS
+#else
 public:
     const uint32_t map;
+#endif
 
+#ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_NPC_SPAWN_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     npc_spawn_attribute(const Json::Value& json) : 
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_CONSTRUCTOR
@@ -2301,8 +2378,8 @@ DECLARE_NPC_SPAWN_ATTRIBUTE_INITIALIZER
 #endif
     { }
     npc_spawn_attribute(const npc_spawn_attribute&) = delete;
-    virtual ~npc_spawn_attribute()
-    { }
+    virtual ~npc_spawn_attribute() = default;
+#endif
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
 DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
 #endif
@@ -2312,11 +2389,18 @@ class object
 DECLARE_OBJECT_INHERIT
 #endif
 {
+#ifdef DECLARE_OBJECT_FIELDS
+DECLARE_OBJECT_FIELDS
+#else
 public:
     const std::string name;
     const uint16_t look;
     const uint8_t color;
+#endif
 
+#ifdef DECLARE_OBJECT_CUSTOM_CONSTRUCTOR
+DECLARE_OBJECT_CUSTOM_CONSTRUCTOR
+#else
 public:
     object(const Json::Value& json) : 
 #ifdef DECLARE_OBJECT_CONSTRUCTOR
@@ -2330,8 +2414,8 @@ DECLARE_OBJECT_INITIALIZER
 #endif
     { }
     object(const object&) = delete;
-    virtual ~object()
-    { }
+    virtual ~object() = default;
+#endif
 #ifdef DECLARE_OBJECT_EXTENSION
 DECLARE_OBJECT_EXTENSION
 #endif
@@ -2341,11 +2425,18 @@ class promotion
 DECLARE_PROMOTION_INHERIT
 #endif
 {
+#ifdef DECLARE_PROMOTION_FIELDS
+DECLARE_PROMOTION_FIELDS
+#else
 public:
     const fb::model::enum_value::CLASS parent;
     const uint8_t step;
     const std::string name;
+#endif
 
+#ifdef DECLARE_PROMOTION_CUSTOM_CONSTRUCTOR
+DECLARE_PROMOTION_CUSTOM_CONSTRUCTOR
+#else
 public:
     promotion(const Json::Value& json) : 
 #ifdef DECLARE_PROMOTION_CONSTRUCTOR
@@ -2359,8 +2450,8 @@ DECLARE_PROMOTION_INITIALIZER
 #endif
     { }
     promotion(const promotion&) = delete;
-    virtual ~promotion()
-    { }
+    virtual ~promotion() = default;
+#endif
 #ifdef DECLARE_PROMOTION_EXTENSION
 DECLARE_PROMOTION_EXTENSION
 #endif
@@ -2370,9 +2461,16 @@ class promotion_attribute
 DECLARE_PROMOTION_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_PROMOTION_ATTRIBUTE_FIELDS
+DECLARE_PROMOTION_ATTRIBUTE_FIELDS
+#else
 public:
     const fb::model::enum_value::CLASS id;
+#endif
 
+#ifdef DECLARE_PROMOTION_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_PROMOTION_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     promotion_attribute(const Json::Value& json) : 
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_CONSTRUCTOR
@@ -2384,8 +2482,8 @@ DECLARE_PROMOTION_ATTRIBUTE_INITIALIZER
 #endif
     { }
     promotion_attribute(const promotion_attribute&) = delete;
-    virtual ~promotion_attribute()
-    { }
+    virtual ~promotion_attribute() = default;
+#endif
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
 DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
 #endif
@@ -2395,12 +2493,19 @@ class recipe
 DECLARE_RECIPE_INHERIT
 #endif
 {
+#ifdef DECLARE_RECIPE_FIELDS
+DECLARE_RECIPE_FIELDS
+#else
 public:
     const std::vector<fb::model::dsl> source;
     const std::vector<fb::model::dsl> success;
     const std::vector<fb::model::dsl> failed;
     const double percent;
+#endif
 
+#ifdef DECLARE_RECIPE_CUSTOM_CONSTRUCTOR
+DECLARE_RECIPE_CUSTOM_CONSTRUCTOR
+#else
 public:
     recipe(const Json::Value& json) : 
 #ifdef DECLARE_RECIPE_CONSTRUCTOR
@@ -2415,8 +2520,8 @@ DECLARE_RECIPE_INITIALIZER
 #endif
     { }
     recipe(const recipe&) = delete;
-    virtual ~recipe()
-    { }
+    virtual ~recipe() = default;
+#endif
 #ifdef DECLARE_RECIPE_EXTENSION
 DECLARE_RECIPE_EXTENSION
 #endif
@@ -2426,10 +2531,17 @@ class reward
 DECLARE_REWARD_INHERIT
 #endif
 {
+#ifdef DECLARE_REWARD_FIELDS
+DECLARE_REWARD_FIELDS
+#else
 public:
     const std::string id;
     const std::vector<fb::model::dsl> dsl;
+#endif
 
+#ifdef DECLARE_REWARD_CUSTOM_CONSTRUCTOR
+DECLARE_REWARD_CUSTOM_CONSTRUCTOR
+#else
 public:
     reward(const Json::Value& json) : 
 #ifdef DECLARE_REWARD_CONSTRUCTOR
@@ -2442,8 +2554,8 @@ DECLARE_REWARD_INITIALIZER
 #endif
     { }
     reward(const reward&) = delete;
-    virtual ~reward()
-    { }
+    virtual ~reward() = default;
+#endif
 #ifdef DECLARE_REWARD_EXTENSION
 DECLARE_REWARD_EXTENSION
 #endif
@@ -2453,11 +2565,18 @@ class sell
 DECLARE_SELL_INHERIT
 #endif
 {
+#ifdef DECLARE_SELL_FIELDS
+DECLARE_SELL_FIELDS
+#else
 public:
     const uint32_t parent;
     const uint32_t item;
     const std::optional<uint32_t> price;
+#endif
 
+#ifdef DECLARE_SELL_CUSTOM_CONSTRUCTOR
+DECLARE_SELL_CUSTOM_CONSTRUCTOR
+#else
 public:
     sell(const Json::Value& json) : 
 #ifdef DECLARE_SELL_CONSTRUCTOR
@@ -2471,8 +2590,8 @@ DECLARE_SELL_INITIALIZER
 #endif
     { }
     sell(const sell&) = delete;
-    virtual ~sell()
-    { }
+    virtual ~sell() = default;
+#endif
 #ifdef DECLARE_SELL_EXTENSION
 DECLARE_SELL_EXTENSION
 #endif
@@ -2482,10 +2601,17 @@ class sell_attribute
 DECLARE_SELL_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_SELL_ATTRIBUTE_FIELDS
+DECLARE_SELL_ATTRIBUTE_FIELDS
+#else
 public:
     const uint32_t id;
     const std::string group;
+#endif
 
+#ifdef DECLARE_SELL_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_SELL_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     sell_attribute(const Json::Value& json) : 
 #ifdef DECLARE_SELL_ATTRIBUTE_CONSTRUCTOR
@@ -2498,8 +2624,8 @@ DECLARE_SELL_ATTRIBUTE_INITIALIZER
 #endif
     { }
     sell_attribute(const sell_attribute&) = delete;
-    virtual ~sell_attribute()
-    { }
+    virtual ~sell_attribute() = default;
+#endif
 #ifdef DECLARE_SELL_ATTRIBUTE_EXTENSION
 DECLARE_SELL_ATTRIBUTE_EXTENSION
 #endif
@@ -2509,6 +2635,9 @@ class spell
 DECLARE_SPELL_INHERIT
 #endif
 {
+#ifdef DECLARE_SPELL_FIELDS
+DECLARE_SPELL_FIELDS
+#else
 public:
     const uint32_t id;
     const std::string name;
@@ -2517,7 +2646,11 @@ public:
     const std::string uncast;
     const std::string concast;
     const std::string message;
+#endif
 
+#ifdef DECLARE_SPELL_CUSTOM_CONSTRUCTOR
+DECLARE_SPELL_CUSTOM_CONSTRUCTOR
+#else
 public:
     spell(const Json::Value& json) : 
 #ifdef DECLARE_SPELL_CONSTRUCTOR
@@ -2535,8 +2668,8 @@ DECLARE_SPELL_INITIALIZER
 #endif
     { }
     spell(const spell&) = delete;
-    virtual ~spell()
-    { }
+    virtual ~spell() = default;
+#endif
 #ifdef DECLARE_SPELL_EXTENSION
 DECLARE_SPELL_EXTENSION
 #endif
@@ -2546,6 +2679,9 @@ class warp
 DECLARE_WARP_INHERIT
 #endif
 {
+#ifdef DECLARE_WARP_FIELDS
+DECLARE_WARP_FIELDS
+#else
 public:
     const uint32_t parent;
     const uint32_t x;
@@ -2555,7 +2691,11 @@ public:
     const uint32_t next_x;
     const uint32_t next_y;
     const std::vector<fb::model::dsl> condition;
+#endif
 
+#ifdef DECLARE_WARP_CUSTOM_CONSTRUCTOR
+DECLARE_WARP_CUSTOM_CONSTRUCTOR
+#else
 public:
     warp(const Json::Value& json) : 
 #ifdef DECLARE_WARP_CONSTRUCTOR
@@ -2574,8 +2714,8 @@ DECLARE_WARP_INITIALIZER
 #endif
     { }
     warp(const warp&) = delete;
-    virtual ~warp()
-    { }
+    virtual ~warp() = default;
+#endif
 #ifdef DECLARE_WARP_EXTENSION
 DECLARE_WARP_EXTENSION
 #endif
@@ -2585,9 +2725,16 @@ class warp_attribute
 DECLARE_WARP_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_WARP_ATTRIBUTE_FIELDS
+DECLARE_WARP_ATTRIBUTE_FIELDS
+#else
 public:
     const uint32_t map;
+#endif
 
+#ifdef DECLARE_WARP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_WARP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     warp_attribute(const Json::Value& json) : 
 #ifdef DECLARE_WARP_ATTRIBUTE_CONSTRUCTOR
@@ -2599,8 +2746,8 @@ DECLARE_WARP_ATTRIBUTE_INITIALIZER
 #endif
     { }
     warp_attribute(const warp_attribute&) = delete;
-    virtual ~warp_attribute()
-    { }
+    virtual ~warp_attribute() = default;
+#endif
 #ifdef DECLARE_WARP_ATTRIBUTE_EXTENSION
 DECLARE_WARP_ATTRIBUTE_EXTENSION
 #endif
@@ -2610,10 +2757,17 @@ class world
 DECLARE_WORLD_INHERIT
 #endif
 {
+#ifdef DECLARE_WORLD_FIELDS
+DECLARE_WORLD_FIELDS
+#else
 public:
     const uint16_t parent;
     const std::string group;
+#endif
 
+#ifdef DECLARE_WORLD_CUSTOM_CONSTRUCTOR
+DECLARE_WORLD_CUSTOM_CONSTRUCTOR
+#else
 public:
     world(const Json::Value& json) : 
 #ifdef DECLARE_WORLD_CONSTRUCTOR
@@ -2626,8 +2780,8 @@ DECLARE_WORLD_INITIALIZER
 #endif
     { }
     world(const world&) = delete;
-    virtual ~world()
-    { }
+    virtual ~world() = default;
+#endif
 #ifdef DECLARE_WORLD_EXTENSION
 DECLARE_WORLD_EXTENSION
 #endif
@@ -2637,10 +2791,17 @@ class world_attribute
 DECLARE_WORLD_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_WORLD_ATTRIBUTE_FIELDS
+DECLARE_WORLD_ATTRIBUTE_FIELDS
+#else
 public:
     const uint16_t id;
     const std::string name;
+#endif
 
+#ifdef DECLARE_WORLD_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_WORLD_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     world_attribute(const Json::Value& json) : 
 #ifdef DECLARE_WORLD_ATTRIBUTE_CONSTRUCTOR
@@ -2653,8 +2814,8 @@ DECLARE_WORLD_ATTRIBUTE_INITIALIZER
 #endif
     { }
     world_attribute(const world_attribute&) = delete;
-    virtual ~world_attribute()
-    { }
+    virtual ~world_attribute() = default;
+#endif
 #ifdef DECLARE_WORLD_ATTRIBUTE_EXTENSION
 DECLARE_WORLD_ATTRIBUTE_EXTENSION
 #endif
@@ -2664,6 +2825,9 @@ class world_group
 DECLARE_WORLD_GROUP_INHERIT
 #endif
 {
+#ifdef DECLARE_WORLD_GROUP_FIELDS
+DECLARE_WORLD_GROUP_FIELDS
+#else
 public:
     const std::string parent;
     const std::string id;
@@ -2673,7 +2837,11 @@ public:
     const uint32_t y;
     const uint16_t world_x;
     const uint16_t world_y;
+#endif
 
+#ifdef DECLARE_WORLD_GROUP_CUSTOM_CONSTRUCTOR
+DECLARE_WORLD_GROUP_CUSTOM_CONSTRUCTOR
+#else
 public:
     world_group(const Json::Value& json) : 
 #ifdef DECLARE_WORLD_GROUP_CONSTRUCTOR
@@ -2692,8 +2860,8 @@ DECLARE_WORLD_GROUP_INITIALIZER
 #endif
     { }
     world_group(const world_group&) = delete;
-    virtual ~world_group()
-    { }
+    virtual ~world_group() = default;
+#endif
 #ifdef DECLARE_WORLD_GROUP_EXTENSION
 DECLARE_WORLD_GROUP_EXTENSION
 #endif
@@ -2703,9 +2871,16 @@ class world_group_attribute
 DECLARE_WORLD_GROUP_ATTRIBUTE_INHERIT
 #endif
 {
+#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_FIELDS
+DECLARE_WORLD_GROUP_ATTRIBUTE_FIELDS
+#else
 public:
     const std::string id;
+#endif
 
+#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_WORLD_GROUP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
 public:
     world_group_attribute(const Json::Value& json) : 
 #ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
@@ -2717,14 +2892,17 @@ DECLARE_WORLD_GROUP_ATTRIBUTE_INITIALIZER
 #endif
     { }
     world_group_attribute(const world_group_attribute&) = delete;
-    virtual ~world_group_attribute()
-    { }
+    virtual ~world_group_attribute() = default;
+#endif
 #ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
 DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
 #endif
 };
 class item : public fb::model::object
 {
+#ifdef DECLARE_ITEM_FIELDS
+DECLARE_ITEM_FIELDS
+#else
 public:
     const uint32_t id;
     const uint32_t price;
@@ -2736,7 +2914,11 @@ public:
     const uint16_t capacity;
     const std::string script_active;
     const std::vector<fb::model::dsl> condition;
+#endif
 
+#ifdef DECLARE_ITEM_CUSTOM_CONSTRUCTOR
+DECLARE_ITEM_CUSTOM_CONSTRUCTOR
+#else
 public:
     item(const Json::Value& json) : fb::model::object(json),
         id(fb::model::build<uint32_t>(json["id"])),
@@ -2754,21 +2936,28 @@ DECLARE_ITEM_INITIALIZER
 #endif
     { }
     item(const item&) = delete;
-    virtual ~item()
-    { }
+    virtual ~item() = default;
+#endif
 #ifdef DECLARE_ITEM_EXTENSION
 DECLARE_ITEM_EXTENSION
 #endif
 };
 class life : public fb::model::object
 {
+#ifdef DECLARE_LIFE_FIELDS
+DECLARE_LIFE_FIELDS
+#else
 public:
     const uint32_t hp;
     const uint32_t mp;
     const uint32_t exp;
     const int defensive_physical;
     const int defensive_magical;
+#endif
 
+#ifdef DECLARE_LIFE_CUSTOM_CONSTRUCTOR
+DECLARE_LIFE_CUSTOM_CONSTRUCTOR
+#else
 public:
     life(const Json::Value& json) : fb::model::object(json),
         hp(fb::model::build<uint32_t>(json["hp"])),
@@ -2781,14 +2970,17 @@ DECLARE_LIFE_INITIALIZER
 #endif
     { }
     life(const life&) = delete;
-    virtual ~life()
-    { }
+    virtual ~life() = default;
+#endif
 #ifdef DECLARE_LIFE_EXTENSION
 DECLARE_LIFE_EXTENSION
 #endif
 };
 class npc : public fb::model::object
 {
+#ifdef DECLARE_NPC_FIELDS
+DECLARE_NPC_FIELDS
+#else
 public:
     const uint32_t id;
     const std::string script;
@@ -2798,7 +2990,11 @@ public:
     const bool hold_money;
     const bool hold_item;
     const bool rename;
+#endif
 
+#ifdef DECLARE_NPC_CUSTOM_CONSTRUCTOR
+DECLARE_NPC_CUSTOM_CONSTRUCTOR
+#else
 public:
     npc(const Json::Value& json) : fb::model::object(json),
         id(fb::model::build<uint32_t>(json["id"])),
@@ -2814,14 +3010,17 @@ DECLARE_NPC_INITIALIZER
 #endif
     { }
     npc(const npc&) = delete;
-    virtual ~npc()
-    { }
+    virtual ~npc() = default;
+#endif
 #ifdef DECLARE_NPC_EXTENSION
 DECLARE_NPC_EXTENSION
 #endif
 };
 class cash : public fb::model::item
 {
+#ifdef DECLARE_CASH_CUSTOM_CONSTRUCTOR
+DECLARE_CASH_CUSTOM_CONSTRUCTOR
+#else
 public:
     cash(const Json::Value& json) : fb::model::item(json)
 #ifdef DECLARE_CASH_INITIALIZER
@@ -2829,14 +3028,17 @@ DECLARE_CASH_INITIALIZER
 #endif
     { }
     cash(const cash&) = delete;
-    virtual ~cash()
-    { }
+    virtual ~cash() = default;
+#endif
 #ifdef DECLARE_CASH_EXTENSION
 DECLARE_CASH_EXTENSION
 #endif
 };
 class consume : public fb::model::item
 {
+#ifdef DECLARE_CONSUME_CUSTOM_CONSTRUCTOR
+DECLARE_CONSUME_CUSTOM_CONSTRUCTOR
+#else
 public:
     consume(const Json::Value& json) : fb::model::item(json)
 #ifdef DECLARE_CONSUME_INITIALIZER
@@ -2844,14 +3046,17 @@ DECLARE_CONSUME_INITIALIZER
 #endif
     { }
     consume(const consume&) = delete;
-    virtual ~consume()
-    { }
+    virtual ~consume() = default;
+#endif
 #ifdef DECLARE_CONSUME_EXTENSION
 DECLARE_CONSUME_EXTENSION
 #endif
 };
 class equipment : public fb::model::item
 {
+#ifdef DECLARE_EQUIPMENT_FIELDS
+DECLARE_EQUIPMENT_FIELDS
+#else
 public:
     const uint16_t dress;
     const uint32_t durability;
@@ -2870,7 +3075,11 @@ public:
     const uint8_t healing_cycle;
     const int16_t defensive_physical;
     const int16_t defensive_magical;
+#endif
 
+#ifdef DECLARE_EQUIPMENT_CUSTOM_CONSTRUCTOR
+DECLARE_EQUIPMENT_CUSTOM_CONSTRUCTOR
+#else
 public:
     equipment(const Json::Value& json) : fb::model::item(json),
         dress(fb::model::build<uint16_t>(json["dress"])),
@@ -2895,14 +3104,17 @@ DECLARE_EQUIPMENT_INITIALIZER
 #endif
     { }
     equipment(const equipment&) = delete;
-    virtual ~equipment()
-    { }
+    virtual ~equipment() = default;
+#endif
 #ifdef DECLARE_EQUIPMENT_EXTENSION
 DECLARE_EQUIPMENT_EXTENSION
 #endif
 };
 class mob : public fb::model::life
 {
+#ifdef DECLARE_MOB_FIELDS
+DECLARE_MOB_FIELDS
+#else
 public:
     const uint32_t id;
     const fb::model::enum_value::MOB_SIZE size;
@@ -2912,7 +3124,11 @@ public:
     const std::string drop;
     const std::string attack_script;
     const std::string die_script;
+#endif
 
+#ifdef DECLARE_MOB_CUSTOM_CONSTRUCTOR
+DECLARE_MOB_CUSTOM_CONSTRUCTOR
+#else
 public:
     mob(const Json::Value& json) : fb::model::life(json),
         id(fb::model::build<uint32_t>(json["id"])),
@@ -2928,17 +3144,24 @@ DECLARE_MOB_INITIALIZER
 #endif
     { }
     mob(const mob&) = delete;
-    virtual ~mob()
-    { }
+    virtual ~mob() = default;
+#endif
 #ifdef DECLARE_MOB_EXTENSION
 DECLARE_MOB_EXTENSION
 #endif
 };
 class pack : public fb::model::item
 {
+#ifdef DECLARE_PACK_FIELDS
+DECLARE_PACK_FIELDS
+#else
 public:
     const uint32_t durability;
+#endif
 
+#ifdef DECLARE_PACK_CUSTOM_CONSTRUCTOR
+DECLARE_PACK_CUSTOM_CONSTRUCTOR
+#else
 public:
     pack(const Json::Value& json) : fb::model::item(json),
         durability(fb::model::build<uint32_t>(json["durability"]))
@@ -2947,14 +3170,17 @@ DECLARE_PACK_INITIALIZER
 #endif
     { }
     pack(const pack&) = delete;
-    virtual ~pack()
-    { }
+    virtual ~pack() = default;
+#endif
 #ifdef DECLARE_PACK_EXTENSION
 DECLARE_PACK_EXTENSION
 #endif
 };
 class armor : public fb::model::equipment
 {
+#ifdef DECLARE_ARMOR_CUSTOM_CONSTRUCTOR
+DECLARE_ARMOR_CUSTOM_CONSTRUCTOR
+#else
 public:
     armor(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_ARMOR_INITIALIZER
@@ -2962,14 +3188,17 @@ DECLARE_ARMOR_INITIALIZER
 #endif
     { }
     armor(const armor&) = delete;
-    virtual ~armor()
-    { }
+    virtual ~armor() = default;
+#endif
 #ifdef DECLARE_ARMOR_EXTENSION
 DECLARE_ARMOR_EXTENSION
 #endif
 };
 class auxiliary : public fb::model::equipment
 {
+#ifdef DECLARE_AUXILIARY_CUSTOM_CONSTRUCTOR
+DECLARE_AUXILIARY_CUSTOM_CONSTRUCTOR
+#else
 public:
     auxiliary(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_AUXILIARY_INITIALIZER
@@ -2977,14 +3206,17 @@ DECLARE_AUXILIARY_INITIALIZER
 #endif
     { }
     auxiliary(const auxiliary&) = delete;
-    virtual ~auxiliary()
-    { }
+    virtual ~auxiliary() = default;
+#endif
 #ifdef DECLARE_AUXILIARY_EXTENSION
 DECLARE_AUXILIARY_EXTENSION
 #endif
 };
 class bow : public fb::model::equipment
 {
+#ifdef DECLARE_BOW_CUSTOM_CONSTRUCTOR
+DECLARE_BOW_CUSTOM_CONSTRUCTOR
+#else
 public:
     bow(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_BOW_INITIALIZER
@@ -2992,14 +3224,17 @@ DECLARE_BOW_INITIALIZER
 #endif
     { }
     bow(const bow&) = delete;
-    virtual ~bow()
-    { }
+    virtual ~bow() = default;
+#endif
 #ifdef DECLARE_BOW_EXTENSION
 DECLARE_BOW_EXTENSION
 #endif
 };
 class helmet : public fb::model::equipment
 {
+#ifdef DECLARE_HELMET_CUSTOM_CONSTRUCTOR
+DECLARE_HELMET_CUSTOM_CONSTRUCTOR
+#else
 public:
     helmet(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_HELMET_INITIALIZER
@@ -3007,14 +3242,17 @@ DECLARE_HELMET_INITIALIZER
 #endif
     { }
     helmet(const helmet&) = delete;
-    virtual ~helmet()
-    { }
+    virtual ~helmet() = default;
+#endif
 #ifdef DECLARE_HELMET_EXTENSION
 DECLARE_HELMET_EXTENSION
 #endif
 };
 class ring : public fb::model::equipment
 {
+#ifdef DECLARE_RING_CUSTOM_CONSTRUCTOR
+DECLARE_RING_CUSTOM_CONSTRUCTOR
+#else
 public:
     ring(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_RING_INITIALIZER
@@ -3022,14 +3260,17 @@ DECLARE_RING_INITIALIZER
 #endif
     { }
     ring(const ring&) = delete;
-    virtual ~ring()
-    { }
+    virtual ~ring() = default;
+#endif
 #ifdef DECLARE_RING_EXTENSION
 DECLARE_RING_EXTENSION
 #endif
 };
 class shield : public fb::model::equipment
 {
+#ifdef DECLARE_SHIELD_CUSTOM_CONSTRUCTOR
+DECLARE_SHIELD_CUSTOM_CONSTRUCTOR
+#else
 public:
     shield(const Json::Value& json) : fb::model::equipment(json)
 #ifdef DECLARE_SHIELD_INITIALIZER
@@ -3037,21 +3278,28 @@ DECLARE_SHIELD_INITIALIZER
 #endif
     { }
     shield(const shield&) = delete;
-    virtual ~shield()
-    { }
+    virtual ~shield() = default;
+#endif
 #ifdef DECLARE_SHIELD_EXTENSION
 DECLARE_SHIELD_EXTENSION
 #endif
 };
 class weapon : public fb::model::equipment
 {
+#ifdef DECLARE_WEAPON_FIELDS
+DECLARE_WEAPON_FIELDS
+#else
 public:
     const range32_t damage_small;
     const range32_t damage_large;
     const uint16_t sound;
     const std::optional<uint32_t> spell;
     const std::optional<uint32_t> rename;
+#endif
 
+#ifdef DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
+DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
+#else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
         damage_small(fb::model::build<range32_t>(json["damage_small"])),
@@ -3064,8 +3312,8 @@ DECLARE_WEAPON_INITIALIZER
 #endif
     { }
     weapon(const weapon&) = delete;
-    virtual ~weapon()
-    { }
+    virtual ~weapon() = default;
+#endif
 #ifdef DECLARE_WEAPON_EXTENSION
 DECLARE_WEAPON_EXTENSION
 #endif

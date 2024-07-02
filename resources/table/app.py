@@ -1,47 +1,47 @@
 import json
 
-with open('item.mix.json', 'r', encoding='utf8') as f:
-    data = f.read()
+with open('item.mix.json', 'r', encoding='utf8') as f1:
+    data = f1.read()
     data = json.loads(data)
 
-with open('item.json', 'r', encoding='utf8') as f:
-    items = f.read()
+with open('item.json', 'r', encoding='utf8') as f1:
+    items = f1.read()
     items = json.loads(items)
 
-with open('item.drop.json', 'r', encoding='utf8') as f:
-    drops = f.read()
+with open('item.drop.json', 'r', encoding='utf8') as f1:
+    drops = f1.read()
     drops = json.loads(drops)
 
-with open('mob.json', 'r', encoding='utf8') as f:
-    mobs = f.read()
+with open('mob.json', 'r', encoding='utf8') as f1:
+    mobs = f1.read()
     mobs = json.loads(mobs)
 
-with open('mob.spawn.json', 'r', encoding='utf8') as f:
-    mob_spawns = f.read()
+with open('mob.spawn.json', 'r', encoding='utf8') as f1:
+    mob_spawns = f1.read()
     mob_spawns = json.loads(mob_spawns)
 
-with open('map.json', 'r', encoding='utf8') as f:
-    maps = f.read()
+with open('map.json', 'r', encoding='utf8') as f1:
+    maps = f1.read()
     maps = json.loads(maps)
 
-with open('npc.json', 'r', encoding='utf8') as f:
-    npcs = f.read()
+with open('npc.json', 'r', encoding='utf8') as f1:
+    npcs = f1.read()
     npcs = json.loads(npcs)
 
-with open('npc.spawn.json', 'r', encoding='utf8') as f:
-    npc_spawns = f.read()
+with open('npc.spawn.json', 'r', encoding='utf8') as f1:
+    npc_spawns = f1.read()
     npc_spawns = json.loads(npc_spawns)
 
-with open('spell.json', 'r', encoding='utf8') as f:
-    spells = f.read()
+with open('spell.json', 'r', encoding='utf8') as f1:
+    spells = f1.read()
     spells = json.loads(spells)
 
-with open('warp.json', 'r', encoding='utf8') as f:
-    warps = f.read()
+with open('warp.json', 'r', encoding='utf8') as f1:
+    warps = f1.read()
     warps = json.loads(warps)
 
-with open('world.json', 'r', encoding='utf8') as f:
-    worlds = f.read()
+with open('world.json', 'r', encoding='utf8') as f1:
+    worlds = f1.read()
     worlds = json.loads(worlds)
 
 def item_id(name):
@@ -81,178 +81,177 @@ def timespan_from_seconds(seconds):
 
     return f'{hours:02d}:{minutes:02d}:{seconds:02d}'
 
-with open('source.txt', 'r', encoding='utf8') as f:
-    lines = f.readlines()
+with open('source.txt', 'r', encoding='utf8') as f1:
+    with open('result.txt', 'w', encoding='utf8') as f2:
+        lines = f1.readlines()
+        for line in lines:
+            if not line:
+                continue
+            
+            line = line.rstrip()
+            hunting_ground, enable_die_penalty, enable_talk, building, enable_whisper, enable_pk, enable_spell = line.split('\t')
+            hunting_ground = 'HUNTING_GROUND' if hunting_ground == 'TRUE' else None
+            enable_die_penalty = 'DISABLE_DIE_PENALTY' if enable_die_penalty == 'FALSE' else None
+            enable_talk = 'DISABLE_TALK' if enable_talk == 'FALSE' else None
+            building = 'BUILD_IN' if building == 'TRUE' else None
+            enable_whisper = 'DISABLE_WHISPER' if enable_whisper == 'FALSE' else None
+            enable_pk = 'ENABLE_PK' if enable_pk == 'TRUE' else None
+            enable_spell = 'DISABLE_SPELL' if enable_spell == 'FALSE' else None
 
-    result = []
-    for line in lines:
-        split = line.split('\t')
-        if not split[0].isdigit():
-            result[len(result)-1] = f"{result[len(result)-1]}\n{line}"
-        else:
-            result.append(line)
-    
-    item_set = {}
-    for line in result:
-        item_type = line.split('\t')[7]
-        if item_type not in item_set:
-            item_set[item_type] = []
-        item_set[item_type].append(line)
+            values = [hunting_ground, enable_die_penalty, enable_talk, building, enable_whisper, enable_pk, enable_spell]
+            values = [x for x in values if x]
+            f2.write(f"{' | '.join(values)}\n")
 
-    for type, lines in item_set.items():
-        with open(f'result.{type}.txt', 'w', encoding='utf8') as f:
-            f.write('\n'.join(lines))
+# with open('result.txt', 'w', encoding='utf8') as f1:
 
-with open('result.txt', 'w', encoding='utf8') as f:
+#     for id, item in items.items():
+#         type = item['type']
+#         if type != 'weapon':
+#             continue
 
-    for id, item in items.items():
-        type = item['type']
-        if type != 'weapon':
-            continue
+#         equipment_option = item['equipment option'] if 'equipment option' else None
+#         if not equipment_option:
+#             print(item['name'])
+#             continue
 
-        equipment_option = item['equipment option'] if 'equipment option' else None
-        if not equipment_option:
-            print(item['name'])
-            continue
+#         damage_range = equipment_option['damage range'] if 'damage range' in equipment_option else None
+#         if not damage_range:
+#             print(item['name'])
+#             continue
 
-        damage_range = equipment_option['damage range'] if 'damage range' in equipment_option else None
-        if not damage_range:
-            print(item['name'])
-            continue
+#         damage_range_s = damage_range['small'] if 'small' in damage_range else None
+#         damage_s_min = damage_range_s['min'] if damage_range_s else 0
+#         damage_s_max = damage_range_s['max'] if damage_range_s else 0
 
-        damage_range_s = damage_range['small'] if 'small' in damage_range else None
-        damage_s_min = damage_range_s['min'] if damage_range_s else 0
-        damage_s_max = damage_range_s['max'] if damage_range_s else 0
+#         damage_range_l = damage_range['large'] if 'large' in damage_range else None
+#         damage_l_min = damage_range_l['min'] if damage_range_l else 0
+#         damage_l_max = damage_range_l['max'] if damage_range_l else 0
 
-        damage_range_l = damage_range['large'] if 'large' in damage_range else None
-        damage_l_min = damage_range_l['min'] if damage_range_l else 0
-        damage_l_max = damage_range_l['max'] if damage_range_l else 0
+#         f1.write(f"{damage_s_min} ~ {damage_s_max}\t{damage_l_min} ~ {damage_l_max}\n")
+#     # for id, map in maps.items():
+#     #     effect = map['effect'].upper() if 'effect' in map else 'NONE'
+#     #     f.write(f'{effect}\n')
 
-        f.write(f"{damage_s_min} ~ {damage_s_max}\t{damage_l_min} ~ {damage_l_max}\n")
-    # for id, map in maps.items():
-    #     effect = map['effect'].upper() if 'effect' in map else 'NONE'
-    #     f.write(f'{effect}\n')
-
-    # for wm, arr in worlds.items():
-    #     for i in range(len(arr)):
-    #         world_group_id = f'{wm}.{i}'
-    #         f.write(f'{world_group_id}\n')
-    #         for id, world_group in arr[i].items():
-    #             name = world_group['name']
-    #             map = map_id(world_group['destination']['map'])
-    #             if not map:
-    #                 raise Exception()
+#     # for wm, arr in worlds.items():
+#     #     for i in range(len(arr)):
+#     #         world_group_id = f'{wm}.{i}'
+#     #         f.write(f'{world_group_id}\n')
+#     #         for id, world_group in arr[i].items():
+#     #             name = world_group['name']
+#     #             map = map_id(world_group['destination']['map'])
+#     #             if not map:
+#     #                 raise Exception()
                 
-    #             x = world_group['destination']['x']
-    #             y = world_group['destination']['y']
-    #             world_x = world_group['position']['x']
-    #             world_y = world_group['position']['y']
+#     #             x = world_group['destination']['x']
+#     #             y = world_group['destination']['y']
+#     #             world_x = world_group['position']['x']
+#     #             world_y = world_group['position']['y']
 
-    #             f.write(f"\t{id}\t{name}\t{map}\t{x}\t{y}\t{world_x}\t{world_y}\n")
+#     #             f.write(f"\t{id}\t{name}\t{map}\t{x}\t{y}\t{world_x}\t{world_y}\n")
             
 
-    # for map_name, arr in warps.items():
-    #     mapid = map_id(map_name)
-    #     f.write(f"{mapid}\n")
+#     # for map_name, arr in warps.items():
+#     #     mapid = map_id(map_name)
+#     #     f.write(f"{mapid}\n")
 
-    #     for a in arr:
-    #         x = a['before']['x']
-    #         y = a['before']['y']
-    #         world = a['world'] if 'world' in a else ''
-    #         next_id = map_id(a['map']) if 'map' in a else ''
-    #         next_x = a['after']['x'] if 'after' in a else '0'
-    #         next_y = a['after']['y'] if 'after' in a else '0'
-    #         min_lv = a['limit']['min'] if 'limit' in a else 'null'
-    #         if min_lv == 0:
-    #             min_lv = 'null'
+#     #     for a in arr:
+#     #         x = a['before']['x']
+#     #         y = a['before']['y']
+#     #         world = a['world'] if 'world' in a else ''
+#     #         next_id = map_id(a['map']) if 'map' in a else ''
+#     #         next_x = a['after']['x'] if 'after' in a else '0'
+#     #         next_y = a['after']['y'] if 'after' in a else '0'
+#     #         min_lv = a['limit']['min'] if 'limit' in a else 'null'
+#     #         if min_lv == 0:
+#     #             min_lv = 'null'
 
-    #         max_lv = a['limit']['max'] if 'limit' in a else 'null'
-    #         if max_lv == 99:
-    #             max_lv = 'null'
+#     #         max_lv = a['limit']['max'] if 'limit' in a else 'null'
+#     #         if max_lv == 99:
+#     #             max_lv = 'null'
             
-    #         if min_lv == 'null' and max_lv == 'null':
-    #             dsl = ''
-    #         else:
-    #             dsl = f"level({min_lv}, {max_lv})"
-    #         f.write(f'\t{x}\t{y}\t{world}\t{next_id}\t{next_x}\t{next_y}\t{dsl}\n')
+#     #         if min_lv == 'null' and max_lv == 'null':
+#     #             dsl = ''
+#     #         else:
+#     #             dsl = f"level({min_lv}, {max_lv})"
+#     #         f.write(f'\t{x}\t{y}\t{world}\t{next_id}\t{next_x}\t{next_y}\t{dsl}\n')
 
-    # for id, spell in spells.items():
-    #     message = spell['message']
-    #     if message == '-':
-    #         message = ''
+#     # for id, spell in spells.items():
+#     #     message = spell['message']
+#     #     if message == '-':
+#     #         message = ''
         
-    #     name = spell['name']
-    #     type = spell['type']
-    #     cast = spell['cast'] if 'cast' in spell else ''
-    #     uncast = spell['uncast'] if 'uncast' in spell else ''
-    #     concast = spell['concast'] if 'concast' in spell else ''
-    #     f.write(f"{id}\t{name}\t{type}\t{cast}\t{uncast}\t{concast}\t{message}\n")
+#     #     name = spell['name']
+#     #     type = spell['type']
+#     #     cast = spell['cast'] if 'cast' in spell else ''
+#     #     uncast = spell['uncast'] if 'uncast' in spell else ''
+#     #     concast = spell['concast'] if 'concast' in spell else ''
+#     #     f.write(f"{id}\t{name}\t{type}\t{cast}\t{uncast}\t{concast}\t{message}\n")
 
-    # spawns = {}
-    # for spawn in npc_spawns:
-    #     mapid = map_id(spawn['map'])
-    #     direction = spawn['direction'].upper()
-    #     npcid = npc_id(spawn['npc'])
-    #     x = spawn['position']['x']
-    #     y = spawn['position']['y']
+#     # spawns = {}
+#     # for spawn in npc_spawns:
+#     #     mapid = map_id(spawn['map'])
+#     #     direction = spawn['direction'].upper()
+#     #     npcid = npc_id(spawn['npc'])
+#     #     x = spawn['position']['x']
+#     #     y = spawn['position']['y']
 
-    #     if mapid not in spawns:
-    #         spawns[mapid] = []
-    #     spawns[mapid].append({'map': mapid, 'npc': npcid, 'direction': direction, 'x': x, 'y': y})
+#     #     if mapid not in spawns:
+#     #         spawns[mapid] = []
+#     #     spawns[mapid].append({'map': mapid, 'npc': npcid, 'direction': direction, 'x': x, 'y': y})
 
-    # for map, spawn in spawns.items():
-    #     f.write(f"{map}\t\t\t\t\n")
-    #     for s in spawn:
-    #         f.write(f"\t{s['npc']}\t{s['x']}\t{s['y']}\t{s['direction']}\n")
+#     # for map, spawn in spawns.items():
+#     #     f.write(f"{map}\t\t\t\t\n")
+#     #     for s in spawn:
+#     #         f.write(f"\t{s['npc']}\t{s['x']}\t{s['y']}\t{s['direction']}\n")
 
-    # for id, npc in npcs.items():
-    #     script = npc['script'] if 'script' in npc else ''
-    #     sell = npc['sell'] if 'sell' in npc else ''
-    #     buy = npc['buy'] if 'buy' in npc else ''
-    #     repair = str(npc['repair'] if 'repair' in npc else 'false').upper()
-    #     hold_money = str(npc['hold_money'] if 'hold_money' in npc else 'false').upper()
-    #     hold_item = str(npc['hold_item'] if 'hold_item' in npc else 'false').upper()
-    #     rename = str(npc['rename'] if 'rename' in npc else 'false').upper()
-    #     f.write(f"{id}\t{npc['name']}\t{npc['look']}\t{npc['color']}\t{script}\t{sell}\t{buy}\t{repair}\t{hold_money}\t{hold_item}\t{rename}\n")
+#     # for id, npc in npcs.items():
+#     #     script = npc['script'] if 'script' in npc else ''
+#     #     sell = npc['sell'] if 'sell' in npc else ''
+#     #     buy = npc['buy'] if 'buy' in npc else ''
+#     #     repair = str(npc['repair'] if 'repair' in npc else 'false').upper()
+#     #     hold_money = str(npc['hold_money'] if 'hold_money' in npc else 'false').upper()
+#     #     hold_item = str(npc['hold_item'] if 'hold_item' in npc else 'false').upper()
+#     #     rename = str(npc['rename'] if 'rename' in npc else 'false').upper()
+#     #     f.write(f"{id}\t{npc['name']}\t{npc['look']}\t{npc['color']}\t{script}\t{sell}\t{buy}\t{repair}\t{hold_money}\t{hold_item}\t{rename}\n")
 
-    # for map_name, spawn in mob_spawns.items():
-    #     mid = map_id(map_name)
-    #     if not mid:
-    #         continue
+#     # for map_name, spawn in mob_spawns.items():
+#     #     mid = map_id(map_name)
+#     #     if not mid:
+#     #         continue
 
-    #     f.write(f"{mid}\t\t\t\t\t\t\t\n")
-    #     for s in spawn:
-    #         x0 = s['area']['x0']
-    #         x1 = s['area']['x1']
-    #         y0 = s['area']['y0']
-    #         y1 = s['area']['y1']
-    #         count = s['count']
-    #         mob = mob_id(s['name'])
-    #         rezen = timespan_from_seconds(s['rezen time'])
-    #         begin = f'{x0}, {y0}'
-    #         end = f'{x1}, {y1}'
-    #         f.write(f"\t{x0}\t{x1}\t{y0}\t{y1}\t{count}\t{mob}\t{rezen}\t{begin}\t{end}\n")
+#     #     f.write(f"{mid}\t\t\t\t\t\t\t\n")
+#     #     for s in spawn:
+#     #         x0 = s['area']['x0']
+#     #         x1 = s['area']['x1']
+#     #         y0 = s['area']['y0']
+#     #         y1 = s['area']['y1']
+#     #         count = s['count']
+#     #         mob = mob_id(s['name'])
+#     #         rezen = timespan_from_seconds(s['rezen time'])
+#     #         begin = f'{x0}, {y0}'
+#     #         end = f'{x1}, {y1}'
+#     #         f.write(f"\t{x0}\t{x1}\t{y0}\t{y1}\t{count}\t{mob}\t{rezen}\t{begin}\t{end}\n")
 
 
-    # result = []
-    # for x in data:
-    #     dsl = {}
-    #     for r in x['require']:
-    #         name = r['item']
-    #         count = r['count']
-    #         if name in dsl:
-    #             dsl[name] = dsl[name] + count
-    #         else:
-    #             dsl[name] = count
+#     # result = []
+#     # for x in data:
+#     #     dsl = {}
+#     #     for r in x['require']:
+#     #         name = r['item']
+#     #         count = r['count']
+#     #         if name in dsl:
+#     #             dsl[name] = dsl[name] + count
+#     #         else:
+#     #             dsl[name] = count
         
-    #     dsl_text = []
-    #     for name, count in dsl.items():
-    #         dsl_text.append(f"item({item_id(name)}, {count})")
+#     #     dsl_text = []
+#     #     for name, count in dsl.items():
+#     #         dsl_text.append(f"item({item_id(name)}, {count})")
         
-    #     text = '\n'.join(dsl_text)
-    #     if len(x['require']) > 1:
-    #         text = f"\"{text}\""
+#     #     text = '\n'.join(dsl_text)
+#     #     if len(x['require']) > 1:
+#     #         text = f"\"{text}\""
         
-    #     result.append(text)
-    # for line in result:
-    #     f.write(line + '\n')
+#     #     result.append(text)
+#     # for line in result:
+#     #     f.write(line + '\n')
