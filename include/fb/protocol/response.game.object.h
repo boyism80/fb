@@ -157,19 +157,19 @@ class move : public fb::protocol::base::header
 public:
 #ifndef BOT
     const uint32_t              id;
-    const point16_t             position;
+    const point<uint16_t>             position;
     const DIRECTION   direction;
 #else
     uint32_t                    id;
-    point16_t                   position;
+    point<uint16_t>                   position;
     DIRECTION         direction;
 #endif
 
 public:
 #ifndef BOT
-    move(const fb::game::object& object, const point16_t& position) : move(object.sequence(), object.direction(), position)
+    move(const fb::game::object& object, const point<uint16_t>& position) : move(object.sequence(), object.direction(), position)
     { }
-    move(const uint32_t id, DIRECTION direction, const point16_t& position) : fb::protocol::base::header(0x0C),
+    move(const uint32_t id, DIRECTION direction, const point<uint16_t>& position) : fb::protocol::base::header(0x0C),
         id(id), direction(direction), position(position)
     { }
 #else

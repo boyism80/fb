@@ -27,7 +27,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
     }
 
     auto& map = this->maps[model->id];
-    co_await session.co_map(&map, point16_t(x, y));
+    co_await session.co_map(&map, point<uint16_t>(x, y));
     co_return true;
 }
 
@@ -376,7 +376,7 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     auto x = map->width() > 0 ? std::rand() % map->width() : 0;
     auto y = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    co_await session.co_map(map, point16_t(x, y));
+    co_await session.co_map(map, point<uint16_t>(x, y));
     co_return true;
 }
 

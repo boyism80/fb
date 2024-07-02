@@ -62,7 +62,7 @@ bool fb::game::sector::activated() const
 
 
 // sectors
-fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) : 
+fb::game::sectors::sectors(const size<uint16_t>& map_size, const size<uint16_t>& size) : 
     _map_size(map_size),
     _size(size),
     _rows((map_size.height / size.height) + ((map_size.height % size.height) ? 1: 0)),
@@ -81,7 +81,7 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
         this->_pool.push_back(std::make_unique<sector>(i, callback));
 }
 
-uint32_t fb::game::sectors::index(const point16_t& position) const
+uint32_t fb::game::sectors::index(const point<uint16_t>& position) const
 {
     auto x = std::max(0, std::min((int)position.x, this->_map_size.width - 1));
     auto y = std::max(0, std::min((int)position.y, this->_map_size.height - 1));
@@ -101,7 +101,7 @@ std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
 }
 
 
-fb::game::sector* fb::game::sectors::at(const point16_t& position) const
+fb::game::sector* fb::game::sectors::at(const point<uint16_t>& position) const
 {
     auto index = this->index(position);
     return this->at(index);
@@ -195,12 +195,12 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
     return std::move(sectors);
 }
 
-std::vector<fb::game::sector*> fb::game::sectors::nears(const point16_t& pivot) const
+std::vector<fb::game::sector*> fb::game::sectors::nears(const point<uint16_t>& pivot) const
 {
     return this->nears(this->index(pivot));
 }
 
-std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::sectors::objects(const point<uint16_t>& pivot, OBJECT_TYPE type) const
 {
     auto&& sectors = this->nears(pivot);
     auto   objects = std::vector<fb::game::object*>();

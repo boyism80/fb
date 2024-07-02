@@ -128,7 +128,7 @@ private:
 
 private:
     uint32_t                                    _sequence = 0;
-    point16_t                                   _position;
+    point<uint16_t>                                   _position;
     fb::buffer                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
     std::chrono::steady_clock::duration         _next_action_time;

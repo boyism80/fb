@@ -80,7 +80,7 @@ uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool cri
     return value;
 }
 
-const point16_t& fb::game::mob::spawn_point() const
+const point<uint16_t>& fb::game::mob::spawn_point() const
 {
     return this->_spawn_point;
 }
@@ -91,12 +91,12 @@ void fb::game::mob::spawn_point(uint16_t x, uint16_t y)
     this->_spawn_point.y = y;
 }
 
-void fb::game::mob::spawn_point(const point16_t point)
+void fb::game::mob::spawn_point(const point<uint16_t> point)
 {
     this->_spawn_point = point;
 }
 
-const size16_t& fb::game::mob::spawn_size() const
+const size<uint16_t>& fb::game::mob::spawn_size() const
 {
     return this->_spawn_size;
 }
@@ -107,7 +107,7 @@ void fb::game::mob::spawn_size(uint16_t width, uint16_t height)
     this->_spawn_size.height = height;
 }
 
-void fb::game::mob::spawn_size(const size16_t size)
+void fb::game::mob::spawn_size(const size<uint16_t> size)
 {
     this->_spawn_size = size;
 }
@@ -162,7 +162,7 @@ bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
 
     while(true)
     {
-        point16_t position(this->_spawn_point.x + (std::rand() % this->_spawn_size.width), this->_spawn_point.y + (std::rand() % this->_spawn_size.height));
+        point<uint16_t> position(this->_spawn_point.x + (std::rand() % this->_spawn_size.width), this->_spawn_point.y + (std::rand() % this->_spawn_size.height));
 
         if(position.x > this->_map->width()-1 || position.y > this->_map->height()-1)
             continue;

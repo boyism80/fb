@@ -26,7 +26,7 @@ namespace wm {
 struct destination
 {
 public:
-    point16_t               position = point16_t(0, 0);
+    point<uint16_t>         position = point<uint16_t>(0, 0);
     fb::game::map*          map      = nullptr;
 
 public:
@@ -34,7 +34,7 @@ public:
         map(nullptr)
     { }
 
-    destination(const point16_t& position, fb::game::map* map) : 
+    destination(const point<uint16_t>& position, fb::game::map* map) : 
         position(position), map(map)
     { }
 };
@@ -44,11 +44,11 @@ struct offset
 public:
     const std::string       id;
     const std::string       name;
-    const point16_t         position = point16_t(0, 0);
+    const point<uint16_t>   position = point<uint16_t>(0, 0);
     const destination       dst;
 
 public:
-    offset(const std::string& id, const std::string& name, const point16_t& position, const destination& dst) : 
+    offset(const std::string& id, const std::string& name, const point<uint16_t>& position, const destination& dst) : 
         id(id), name(name), position(position), dst(dst)
     { }
 
@@ -145,12 +145,12 @@ public:
 private:
     uint16_t                        empty_seq();
     uint16_t                        add(fb::game::object& object);
-    uint16_t                        add(fb::game::object& object, const point16_t& position);
+    uint16_t                        add(fb::game::object& object, const point<uint16_t>& position);
     bool                            remove(fb::game::object& object);
 
 public:
     std::vector<object*>            filter(OBJECT_TYPE type) const;
-    fb::game::object*               exists(point16_t position) const;
+    fb::game::object*               exists(point<uint16_t> position) const;
 
 public:
     fb::game::object*               operator [] (uint32_t seq) const;
@@ -177,7 +177,7 @@ public:
     using unique_sector             = std::unique_ptr<fb::game::sectors>;
 
 private:
-    size16_t                        _size     = size16_t(0, 0);
+    size<uint16_t>                  _size     = fb::model::size<uint16_t>(0, 0);
     unique_tiles                    _tiles    = nullptr;
     unique_warps                    _warps;
     unique_sector                   _sectors;
@@ -195,30 +195,30 @@ public:
     ~map();
 
 public:
-    uint64_t                        index(const point16_t& p) const;
-    point16_t                       point(uint64_t i) const;
+    uint64_t                        index(const fb::model::point<uint16_t>& p) const;
+    fb::model::point<uint16_t>      point(uint64_t i) const;
 
     bool                            blocked(uint16_t x, uint16_t y) const;
     bool                            block(uint16_t x, uint16_t y, bool option);
     uint16_t                        width() const;
     uint16_t                        height() const;
-    size16_t                        size() const;
+    size<uint16_t>                  size() const;
     bool                            loaded() const;
 
-    bool                            existable(const point16_t position) const;
-    bool                            movable(const point16_t position) const;
+    bool                            existable(const fb::model::point<uint16_t> position) const;
+    bool                            movable(const fb::model::point<uint16_t> position) const;
     bool                            movable(const fb::game::object& object, DIRECTION direction) const;
     bool                            movable_forward(const fb::game::object& object, uint16_t step = 1) const;
 
-    void                            push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition);
-    void                            push_warp(fb::game::wm::offset* offset, const point16_t& before);
-    const fb::game::map::warp*      warpable(const point16_t& position) const;
+    void                            push_warp(fb::game::map* map, const fb::model::point<uint16_t>& before, const fb::model::point<uint16_t>& after);
+    void                            push_warp(fb::game::wm::offset* offset, const fb::model::point<uint16_t>& before);
+    const fb::game::map::warp*      warpable(const fb::model::point<uint16_t>& position) const;
 
     bool                            update(fb::game::object& object);
     bool                            activated() const;
     
-    std::vector<object*>            nears(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*>            belows(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>            nears(const fb::model::point<uint16_t>& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>            belows(const fb::model::point<uint16_t>& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>            activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);
 
 public:
@@ -249,21 +249,20 @@ struct map::warp
 {
 public:
     // default warp
-    fb::game::map*                  map;
-    const point16_t                 before, after;
-    const range8_t                  condition;
+    fb::game::map*                   map;
+    const fb::model::point<uint16_t> before, after;
 
     // world warp
-    const fb::game::wm::offset*     offset;
+    const fb::game::wm::offset*      offset;
 
 public:
-    warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t condition) : 
-        map(map), before(before), after(after), condition(condition), offset(nullptr) { }
-    warp(const fb::game::wm::offset* offset, const point16_t& before) : 
-        map(nullptr), before(before), after(0, 0), condition(0, 0), offset(offset)
+    warp(fb::game::map* map, const fb::model::point<uint16_t>& before, const fb::model::point<uint16_t>& after) :
+        map(map), before(before), after(after), offset(nullptr) { }
+    warp(const fb::game::wm::offset* offset, const fb::model::point<uint16_t>& before) : 
+        map(nullptr), before(before), after(0, 0), offset(offset)
     { }
     warp(const warp& right) : 
-        map(right.map), before(right.before), after(right.after), condition(right.condition), offset(right.offset)
+        map(right.map), before(right.before), after(right.after), offset(right.offset)
     { }
     ~warp() { }
 };

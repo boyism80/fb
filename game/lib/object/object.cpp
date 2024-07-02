@@ -82,7 +82,7 @@ void fb::game::object::chat(const std::string& message, bool shout)
             this->_listener->on_chat(*this, message, shout);
 }
 
-const point16_t& fb::game::object::position() const
+const point<uint16_t>& fb::game::object::position() const
 {
     return this->_position;
 }
@@ -176,7 +176,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     return true;
 }
 
-bool fb::game::object::position(const point16_t position, bool refresh)
+bool fb::game::object::position(const point<uint16_t> position, bool refresh)
 {
     return this->position(position.x, position.y, refresh);
 }
@@ -225,32 +225,32 @@ bool fb::game::object::move(DIRECTION direction)
     return true;
 }
 
-const point16_t fb::game::object::position_forward() const
+const point<uint16_t> fb::game::object::position_forward() const
 {
     return this->position_forward(this->_direction);
 }
 
-const point16_t fb::game::object::position_forward(DIRECTION direction) const
+const point<uint16_t> fb::game::object::position_forward(DIRECTION direction) const
 {
-    auto current = point16_t(this->_position);
-    auto forward = point16_t(current);
+    auto current = point<uint16_t>(this->_position);
+    auto forward = point<uint16_t>(current);
     forward.forward(direction);
     if(this->_map->movable(forward))
         return forward;
 
 
-    auto left = point16_t(current);
+    auto left = point<uint16_t>(current);
     left.left(this->_direction);
     if(this->_map->movable(left))
         return left;
 
 
-    auto right = point16_t(current);
+    auto right = point<uint16_t>(current);
     right.right(this->_direction);
     if(this->_map->movable(right))
         return right;
 
-    auto backward = point16_t(current);
+    auto backward = point<uint16_t>(current);
     backward.backward(this->_direction);
     if(this->_map->movable(backward))
         return backward;
@@ -306,7 +306,7 @@ fb::game::map* fb::game::object::map() const
     return this->_map;
 }
 
-bool fb::game::object::sight(const point16_t& position) const
+bool fb::game::object::sight(const point<uint16_t>& position) const
 {
     return fb::game::object::sight(this->_position, position, this->_map);
 }
@@ -344,9 +344,9 @@ fb::game::sector* fb::game::object::sector()
     return this->_sector;
 }
 
-bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::game::map* map)
+bool fb::game::object::sight(const point<uint16_t> me, const point<uint16_t> you, const fb::game::map* map)
 {
-    point16_t begin, end;
+    point<uint16_t> begin, end;
 
     if(me.x <= fb::game::map::HALF_SCREEN_WIDTH) // 최좌측
     {
@@ -385,7 +385,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
+fb::task<bool> fb::game::object::__map(fb::game::map* map, const point<uint16_t> position, fb::awaiter<bool>* awaiter)
 {
     try
     {
@@ -408,7 +408,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
 
                 this->_map = nullptr;
             }
-            this->_position = point16_t(1, 1); // 가상계 위치
+            this->_position = point<uint16_t>(1, 1); // 가상계 위치
             this->sector(nullptr);
             auto result = true;
             if(awaiter != nullptr)
@@ -492,7 +492,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
     }
 }
 
-fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point<uint16_t>& position)
 {
     return fb::awaiter<bool>([this, map, position](auto& awaiter)
     {
@@ -502,10 +502,10 @@ fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map, const point16_t& 
 
 fb::awaiter<bool> fb::game::object::co_map(fb::game::map* map)
 {
-    return this->co_map(map, point16_t(0, 0));
+    return this->co_map(map, point<uint16_t>(0, 0));
 }
 
-bool fb::game::object::map(fb::game::map* map, const point16_t& position)
+bool fb::game::object::map(fb::game::map* map, const point<uint16_t>& position)
 {
     auto task = this->__map(map, position);
     if (task.done())
@@ -516,7 +516,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 
 bool fb::game::object::map(fb::game::map* map)
 {
-    return this->map(map, point16_t(0, 0));
+    return this->map(map, point<uint16_t>(0, 0));
 }
 
 fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) const
@@ -526,7 +526,7 @@ fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) 
         return nullptr;
 
 
-    point16_t front = this->position();
+    point<uint16_t> front = this->position();
     switch(direction)
     {
     case DIRECTION::TOP:
@@ -629,7 +629,7 @@ std::vector<fb::game::object*> fb::game::object::showns(OBJECT_TYPE type) const
     return this->showns(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point<uint16_t>& position, OBJECT_TYPE type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     if(this->_map == nullptr)
@@ -664,7 +664,7 @@ std::vector<fb::game::object*> fb::game::object::showings(OBJECT_TYPE type) cons
         return this->showings(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const point<uint16_t>& position, OBJECT_TYPE type) const
 {
     auto                    objects = std::vector<fb::game::object*>();
     if(this->_map == nullptr)
@@ -1134,7 +1134,7 @@ int fb::game::object::builtin_map(lua_State* lua)
             throw std::exception();
         }
 
-        point16_t position;
+        point<uint16_t> position;
         if(thread->is_table(3))
         {
             thread->rawgeti(3, 1);

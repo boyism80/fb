@@ -99,7 +99,7 @@ interface item::listener : public virtual fb::game::object::listener
     virtual void on_item_update(session& me, uint8_t index) = 0;
     virtual void on_item_swap(session& me, uint8_t src, uint8_t dst) = 0;
     virtual void on_item_active(session& me, item& item) = 0;
-    virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
+    virtual void on_item_throws(session& me, item& item, const point<uint16_t>& to) = 0;
 };
 
 

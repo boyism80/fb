@@ -18,7 +18,7 @@ public:
     {
     public:
         uint16_t                    map;
-        point16_t        position;
+        point<uint16_t>        position;
     };
 
 public:
@@ -85,7 +85,7 @@ public:
             this->transfer = transfer_param
             {
                 .map = map,
-                .position = point16_t(x, y)
+                .position = point<uint16_t>(x, y)
             };
         }
     }
@@ -141,7 +141,7 @@ class move : public fb::protocol::base::header
 public:
     DIRECTION direction;
     uint8_t                  sequence;
-    point16_t                position;
+    point<uint16_t>                position;
 
 protected:
     move(int id) : fb::protocol::base::header(id)
@@ -152,7 +152,7 @@ public:
     move() : fb::protocol::base::header(0x32)
     { }
 #else
-    move(DIRECTION direction, uint32_t sequence, point16_t position) : fb::protocol::base::header(0x32),
+    move(DIRECTION direction, uint32_t sequence, point<uint16_t> position) : fb::protocol::base::header(0x32),
         direction(direction), sequence(sequence), position(position)
     { }
 #endif
@@ -182,9 +182,9 @@ public:
 class update_move : public move
 {
 public:
-    point16_t    begin;
-    fb::model::size8_t      size;
-    uint16_t                crc;
+    point<uint16_t>             begin;
+    fb::model::size<uint8_t>    size;
+    uint16_t                    crc;
 
 public:
     update_move() : move(0x06)

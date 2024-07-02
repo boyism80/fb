@@ -8,9 +8,9 @@ namespace fb { namespace protocol { namespace game { namespace request { namespa
 class update : public fb::protocol::base::header
 {
 public:
-    point16_t    position;
-    fb::model::size8_t      size;
-    uint16_t                crc;
+    point<uint16_t>             position;
+    fb::model::size<uint8_t>    size;
+    uint16_t                    crc;
 
 public:
     update() : fb::protocol::base::header(0x05)

@@ -477,7 +477,7 @@
 //             auto _ = std::lock_guard(*mutex);
 //             for(auto& js_warp : data)
 //             {
-//                 const point16_t before(js_warp["before"]["x"].asInt(), js_warp["before"]["y"].asInt());
+//                 const point<uint16_t> before(js_warp["before"]["x"].asInt(), js_warp["before"]["y"].asInt());
 
 //                 if(js_warp.isMember("world"))
 //                 {
@@ -493,8 +493,8 @@
 //                 }
 //                 else
 //                 {
-//                     const point16_t after(js_warp["after"]["x"].asInt(), js_warp["after"]["y"].asInt());
-//                     const range8_t  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
+//                     const point<uint16_t> after(js_warp["after"]["x"].asInt(), js_warp["after"]["y"].asInt());
+//                     const range<uint8_t>  condition(js_warp["limit"]["min"].asInt(), js_warp["limit"]["max"].asInt());
 
 //                     auto        next_map_id = js_warp["to"].asInt();
 //                     auto        next_map    = fb::game::old_model::maps[next_map_id];
@@ -695,7 +695,7 @@
 //                 if (core == nullptr)
 //                     continue;
 
-//                 point16_t       position(spawn["position"]["x"].asInt(), spawn["position"]["y"].asInt());
+//                 point<uint16_t>       position(spawn["position"]["x"].asInt(), spawn["position"]["y"].asInt());
 //                 auto            direction_str   = CP949(spawn["direction"].asString(), PLATFORM::Windows);
 //                 auto            direction       = DIRECTION::BOTTOM;
 //                 if (direction_str == "top")
@@ -1194,14 +1194,14 @@
 //                     (
 //                         id, 
 //                         CP949(js_offset["name"].asString(), PLATFORM::Windows),
-//                         point16_t
+//                         point<uint16_t>
 //                         (
 //                             js_offset["position"]["x"].asInt(), 
 //                             js_offset["position"]["y"].asInt()
 //                         ), 
 //                         fb::game::wm::destination
 //                         (
-//                             point16_t
+//                             point<uint16_t>
 //                             (
 //                                 js_offset["destination"]["x"].asInt(), 
 //                                 js_offset["destination"]["y"].asInt()

@@ -31,8 +31,8 @@ public:
 
 private:
     listener*                               _listener      = nullptr;
-    point16_t                               _spawn_point   = point16_t(0, 0);
-    size16_t                                _spawn_size    = size16_t(0, 0);
+    point<uint16_t>                         _spawn_point   = point<uint16_t>(0, 0);
+    size<uint16_t>                          _spawn_size    = size<uint16_t>(0, 0);
                                                            
     std::chrono::milliseconds               _action_time   = 0ms; // ms
     std::chrono::milliseconds               _dead_time     = 0ms; // ms
@@ -54,13 +54,13 @@ public:
     bool                                    action();
     uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
 
-    const point16_t&                        spawn_point() const;
+    const point<uint16_t>&                  spawn_point() const;
     void                                    spawn_point(uint16_t x, uint16_t y);
-    void                                    spawn_point(const point16_t point);
+    void                                    spawn_point(const point<uint16_t> point);
 
-    const size16_t&                         spawn_size() const;
+    const size<uint16_t>&                   spawn_size() const;
     void                                    spawn_size(uint16_t width, uint16_t height);
-    void                                    spawn_size(const size16_t size);
+    void                                    spawn_size(const size<uint16_t> size);
 
     std::chrono::milliseconds               action_time() const;
     void                                    action_time(std::chrono::milliseconds ms);

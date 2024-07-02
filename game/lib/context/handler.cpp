@@ -71,7 +71,7 @@ void fb::game::context::on_hide(fb::game::object& me, fb::game::object& you)
     this->send(me, fb::protocol::game::response::object::hide(you), scope::SELF);
 }
 
-void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
+void fb::game::context::on_move(fb::game::object& me, const point<uint16_t>& before)
 {
     this->send(me, fb::protocol::game::response::object::move(me, before), scope::PIVOT, true);
 }
@@ -246,7 +246,7 @@ void fb::game::context::on_item_active(session& me, item& item)
         .resume(2);
 }
 
-void fb::game::context::on_item_throws(session& me, item& item, const point16_t& to)
+void fb::game::context::on_item_throws(session& me, item& item, const point<uint16_t>& to)
 {
     if(me.position() != to)
         this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
@@ -448,7 +448,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
+fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point<uint16_t>& position, fb::awaiter<bool>* awaiter)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
@@ -547,7 +547,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
     }
 }
 
-void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
+void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point<uint16_t>& position, fb::awaiter<bool>* awaiter)
 {
     this->co_transfer(me, map, position, awaiter);
 }

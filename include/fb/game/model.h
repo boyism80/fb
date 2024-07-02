@@ -73,10 +73,13 @@ template <typename T>
 struct point
 {
 public:
+    using value_type = T;
+
+public:
     T x = 0;
     T y = 0;
 
-protected:
+public:
     point() = default;
     point(T x, T y) : x(x), y(y)
     { }
@@ -100,10 +103,13 @@ template <typename T>
 struct size
 {
 public:
+    using value_type = T;
+
+public:
     T width = 0;
     T height = 0;
 
-protected:
+public:
     size() = default;
     size(T width, T height) : width(width), height(height)
     { }
@@ -127,10 +133,13 @@ template <typename T>
 struct range
 {
 public:
+    using value_type = T;
+
+public:
     T min = 0;
     T max = 0;
 
-protected:
+public:
     range() = default;
     range(T min, T max) : min(min), max(max)
     { }
@@ -149,149 +158,6 @@ public:
 DECLARE_RANGE_EXTENSION
 #endif
 };
-
-struct point8_t : public point<uint8_t>
-{
-public:
-    point8_t()
-    { }
-    point8_t(uint8_t x,  uint8_t y) : point<uint8_t>(x, y)
-    { }
-#ifdef DECLARE_POINT8_T_EXTENSION
-DECLARE_POINT8_T_EXTENSION
-#endif
-};
-
-struct point16_t : public point<uint16_t>
-{
-public:
-    point16_t()
-    { }
-    point16_t(uint16_t x,  uint16_t y) : point<uint16_t>(x, y)
-    { }
-#ifdef DECLARE_POINT16_T_EXTENSION
-DECLARE_POINT16_T_EXTENSION
-#endif
-};
-
-struct point32_t : public point<uint32_t>
-{
-public:
-    point32_t()
-    { }
-    point32_t(uint32_t x,  uint32_t y) : point<uint32_t>(x, y)
-    { }
-#ifdef DECLARE_POINT32_T_EXTENSION
-DECLARE_POINT32_T_EXTENSION
-#endif
-};
-
-struct point64_t : public point<uint64_t>
-{
-public:
-    point64_t()
-    { }
-    point64_t(uint64_t x,  uint64_t y) : point<uint64_t>(x, y)
-    { }
-#ifdef DECLARE_POINT64_T_EXTENSION
-DECLARE_POINT64_T_EXTENSION
-#endif
-};
-struct size8_t : public size<uint8_t>
-{
-public:
-    size8_t()
-    { }
-    size8_t(uint8_t width,  uint8_t height) : size<uint8_t>(width, height)
-    { }
-#ifdef DECLARE_SIZE8_T_EXTENSION
-DECLARE_SIZE8_T_EXTENSION
-#endif
-};
-
-struct size16_t : public size<uint16_t>
-{
-public:
-    size16_t()
-    { }
-    size16_t(uint16_t width,  uint16_t height) : size<uint16_t>(width, height)
-    { }
-#ifdef DECLARE_SIZE16_T_EXTENSION
-DECLARE_SIZE16_T_EXTENSION
-#endif
-};
-
-struct size32_t : public size<uint32_t>
-{
-public:
-    size32_t()
-    { }
-    size32_t(uint32_t width,  uint32_t height) : size<uint32_t>(width, height)
-    { }
-#ifdef DECLARE_SIZE32_T_EXTENSION
-DECLARE_SIZE32_T_EXTENSION
-#endif
-};
-
-struct size64_t : public size<uint64_t>
-{
-public:
-    size64_t()
-    { }
-    size64_t(uint64_t width,  uint64_t height) : size<uint64_t>(width, height)
-    { }
-#ifdef DECLARE_SIZE64_T_EXTENSION
-DECLARE_SIZE64_T_EXTENSION
-#endif
-};
-struct range8_t : public range<uint8_t>
-{
-public:
-    range8_t()
-    { }
-    range8_t(uint8_t min,  uint8_t max) : range<uint8_t>(min, max)
-    { }
-#ifdef DECLARE_RANGE8_T_EXTENSION
-DECLARE_RANGE8_T_EXTENSION
-#endif
-};
-
-struct range16_t : public range<uint16_t>
-{
-public:
-    range16_t()
-    { }
-    range16_t(uint16_t min,  uint16_t max) : range<uint16_t>(min, max)
-    { }
-#ifdef DECLARE_RANGE16_T_EXTENSION
-DECLARE_RANGE16_T_EXTENSION
-#endif
-};
-
-struct range32_t : public range<uint32_t>
-{
-public:
-    range32_t()
-    { }
-    range32_t(uint32_t min,  uint32_t max) : range<uint32_t>(min, max)
-    { }
-#ifdef DECLARE_RANGE32_T_EXTENSION
-DECLARE_RANGE32_T_EXTENSION
-#endif
-};
-
-struct range64_t : public range<uint64_t>
-{
-public:
-    range64_t()
-    { }
-    range64_t(uint64_t min,  uint64_t max) : range<uint64_t>(min, max)
-    { }
-#ifdef DECLARE_RANGE64_T_EXTENSION
-DECLARE_RANGE64_T_EXTENSION
-#endif
-};
-
 
 #pragma endregion
 
@@ -1577,6 +1443,24 @@ struct is_map : std::false_type {};
 template <typename T>
 struct is_map<T, std::void_t<typename T::mapped_type>> : std::true_type{};
 
+template<class T>
+struct is_point : std::false_type {};
+
+template<class T>
+struct is_point<fb::model::point<T>> : std::true_type {};
+
+template<class T>
+struct is_size : std::false_type {};
+
+template<class T>
+struct is_size<fb::model::size<T>> : std::true_type {};
+
+template<class T>
+struct is_range : std::false_type {};
+
+template<class T>
+struct is_range<fb::model::range<T>> : std::true_type {};
+
 template <typename T>
 struct is_default
 {
@@ -1586,7 +1470,10 @@ struct is_default
         !fb::model::is_vector<T>::value &&
         !fb::model::is_map<T>::value &&
         !fb::model::is_optional<T>::value &&
-        !fb::model::is_unique<T>::value;
+        !fb::model::is_unique<T>::value &&
+        !fb::model::is_point<T>::value &&
+        !fb::model::is_size<T>::value &&
+        !fb::model::is_range<T>::value;
 };
 
 class dsl;
@@ -1598,6 +1485,9 @@ template <typename T> static typename std::enable_if<fb::model::is_vector<T>::va
 template <typename T> static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
 template <typename T> static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
+template <typename T> static typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json);
+template <typename T> static typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json);
+template <typename T> static typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json);
 template <> static int8_t build<int8_t>(const Json::Value& json);
 template <> static uint8_t build<uint8_t>(const Json::Value& json);
 template <> static int16_t build<int16_t>(const Json::Value& json);
@@ -1614,18 +1504,6 @@ template <> static boost::posix_time::ptime build<boost::posix_time::ptime>(cons
 template <> static std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
 template <> static fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
 template <> static fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
-template <> static struct point8_t build<point8_t>(const Json::Value& json);
-template <> static struct point16_t build<point16_t>(const Json::Value& json);
-template <> static struct point32_t build<point32_t>(const Json::Value& json);
-template <> static struct point64_t build<point64_t>(const Json::Value& json);
-template <> static struct size8_t build<size8_t>(const Json::Value& json);
-template <> static struct size16_t build<size16_t>(const Json::Value& json);
-template <> static struct size32_t build<size32_t>(const Json::Value& json);
-template <> static struct size64_t build<size64_t>(const Json::Value& json);
-template <> static struct range8_t build<range8_t>(const Json::Value& json);
-template <> static struct range16_t build<range16_t>(const Json::Value& json);
-template <> static struct range32_t build<range32_t>(const Json::Value& json);
-template <> static struct range64_t build<range64_t>(const Json::Value& json);
 
 #pragma region dsl
 class dsl
@@ -2250,9 +2128,9 @@ DECLARE_MOB_SPAWN_FIELDS
 #else
 public:
     const uint32_t parent;
-    const point16_t begin;
-    const point16_t end;
-    const uint32_t count;
+    const point<uint32_t> begin;
+    const point<uint16_t> end;
+    const uint16_t count;
     const uint32_t mob;
     const std::chrono::milliseconds rezen;
 #endif
@@ -2266,9 +2144,9 @@ public:
 DECLARE_MOB_SPAWN_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
-        begin(fb::model::build<point16_t>(json["begin"])),
-        end(fb::model::build<point16_t>(json["end"])),
-        count(fb::model::build<uint32_t>(json["count"])),
+        begin(fb::model::build<point<uint32_t>>(json["begin"])),
+        end(fb::model::build<point<uint16_t>>(json["end"])),
+        count(fb::model::build<uint16_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
         rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
 #ifdef DECLARE_MOB_SPAWN_INITIALIZER
@@ -2325,7 +2203,7 @@ DECLARE_NPC_SPAWN_FIELDS
 public:
     const uint32_t parent;
     const uint32_t npc;
-    const point16_t position;
+    const point<uint16_t> position;
     const fb::model::enum_value::DIRECTION direction;
 #endif
 
@@ -2339,7 +2217,7 @@ DECLARE_NPC_SPAWN_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
         npc(fb::model::build<uint32_t>(json["npc"])),
-        position(fb::model::build<point16_t>(json["position"])),
+        position(fb::model::build<point<uint16_t>>(json["position"])),
         direction(fb::model::build<fb::model::enum_value::DIRECTION>(json["direction"]))
 #ifdef DECLARE_NPC_SPAWN_INITIALIZER
 DECLARE_NPC_SPAWN_INITIALIZER
@@ -2684,12 +2562,10 @@ DECLARE_WARP_FIELDS
 #else
 public:
     const uint32_t parent;
-    const uint32_t x;
-    const uint32_t y;
+    const point<uint32_t> position;
     const std::string world;
     const std::optional<uint32_t> next;
-    const uint32_t next_x;
-    const uint32_t next_y;
+    const point<uint32_t> next_position;
     const std::vector<fb::model::dsl> condition;
 #endif
 
@@ -2702,12 +2578,10 @@ public:
 DECLARE_WARP_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
-        x(fb::model::build<uint32_t>(json["x"])),
-        y(fb::model::build<uint32_t>(json["y"])),
+        position(fb::model::build<point<uint32_t>>(json["position"])),
         world(fb::model::build<std::string>(json["world"])),
         next(fb::model::build<std::optional<uint32_t>>(json["next"])),
-        next_x(fb::model::build<uint32_t>(json["next_x"])),
-        next_y(fb::model::build<uint32_t>(json["next_y"])),
+        next_position(fb::model::build<point<uint32_t>>(json["next_position"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
 #ifdef DECLARE_WARP_INITIALIZER
 DECLARE_WARP_INITIALIZER
@@ -3119,7 +2993,7 @@ public:
     const uint32_t id;
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
-    const range32_t damage;
+    const range<uint32_t> damage;
     const std::chrono::milliseconds speed;
     const std::string drop;
     const std::string attack_script;
@@ -3134,7 +3008,7 @@ public:
         id(fb::model::build<uint32_t>(json["id"])),
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
-        damage(fb::model::build<range32_t>(json["damage"])),
+        damage(fb::model::build<range<uint32_t>>(json["damage"])),
         speed(fb::model::build<std::chrono::milliseconds>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
@@ -3290,8 +3164,8 @@ class weapon : public fb::model::equipment
 DECLARE_WEAPON_FIELDS
 #else
 public:
-    const range32_t damage_small;
-    const range32_t damage_large;
+    const range<uint32_t> damage_small;
+    const range<uint32_t> damage_large;
     const uint16_t sound;
     const std::optional<uint32_t> spell;
     const std::optional<uint32_t> rename;
@@ -3302,8 +3176,8 @@ DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
 #else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
-        damage_small(fb::model::build<range32_t>(json["damage_small"])),
-        damage_large(fb::model::build<range32_t>(json["damage_large"])),
+        damage_small(fb::model::build<range<uint32_t>>(json["damage_small"])),
+        damage_large(fb::model::build<range<uint32_t>>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),
         spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
         rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))
@@ -4395,88 +4269,26 @@ template <> date_range build<date_range>(const Json::Value& json)
     return date_range(build<std::optional<boost::posix_time::ptime>>(json["Begin"]), build<std::optional<boost::posix_time::ptime>>(json["End"]));
 }
 
-template <> struct point8_t build<point8_t>(const Json::Value& json)
+template <typename T> typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json)
 {
-    auto x = build<uint8_t>(json["x"]);
-    auto y = build<uint8_t>(json["y"]);
-    return point8_t(x, y);
-}
+    auto x = build<typename T::value_type>(json["x"]);
+    auto y = build<typename T::value_type>(json["y"]);
 
-template <> struct point16_t build<point16_t>(const Json::Value& json)
-{
-    auto x = build<uint16_t>(json["x"]);
-    auto y = build<uint16_t>(json["y"]);
-    return point16_t(x, y);
+    return point(x, y);
 }
-
-template <> struct point32_t build<point32_t>(const Json::Value& json)
+template <typename T> typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json)
 {
-    auto x = build<uint32_t>(json["x"]);
-    auto y = build<uint32_t>(json["y"]);
-    return point32_t(x, y);
+    auto width = build<typename T::value_type>(json["width"]);
+    auto height = build<typename T::value_type>(json["height"]);
+
+    return size(width, height);
 }
-
-template <> struct point64_t build<point64_t>(const Json::Value& json)
+template <typename T> typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json)
 {
-    auto x = build<uint64_t>(json["x"]);
-    auto y = build<uint64_t>(json["y"]);
-    return point64_t(x, y);
-}
+    auto min = build<typename T::value_type>(json["min"]);
+    auto max = build<typename T::value_type>(json["max"]);
 
-template <> struct size8_t build<size8_t>(const Json::Value& json)
-{
-    auto width = build<uint8_t>(json["width"]);
-    auto height = build<uint8_t>(json["height"]);
-    return size8_t(width, height);
-}
-
-template <> struct size16_t build<size16_t>(const Json::Value& json)
-{
-    auto width = build<uint16_t>(json["width"]);
-    auto height = build<uint16_t>(json["height"]);
-    return size16_t(width, height);
-}
-
-template <> struct size32_t build<size32_t>(const Json::Value& json)
-{
-    auto width = build<uint32_t>(json["width"]);
-    auto height = build<uint32_t>(json["height"]);
-    return size32_t(width, height);
-}
-
-template <> struct size64_t build<size64_t>(const Json::Value& json)
-{
-    auto width = build<uint64_t>(json["width"]);
-    auto height = build<uint64_t>(json["height"]);
-    return size64_t(width, height);
-}
-
-template <> struct range8_t build<range8_t>(const Json::Value& json)
-{
-    auto min = build<uint8_t>(json["min"]);
-    auto max = build<uint8_t>(json["max"]);
-    return range8_t(min, max);
-}
-
-template <> struct range16_t build<range16_t>(const Json::Value& json)
-{
-    auto min = build<uint16_t>(json["min"]);
-    auto max = build<uint16_t>(json["max"]);
-    return range16_t(min, max);
-}
-
-template <> struct range32_t build<range32_t>(const Json::Value& json)
-{
-    auto min = build<uint32_t>(json["min"]);
-    auto max = build<uint32_t>(json["max"]);
-    return range32_t(min, max);
-}
-
-template <> struct range64_t build<range64_t>(const Json::Value& json)
-{
-    auto min = build<uint64_t>(json["min"]);
-    auto max = build<uint64_t>(json["max"]);
-    return range64_t(min, max);
+    return range(min, max);
 }
 #pragma endregion
 

@@ -626,7 +626,7 @@ bool fb::game::context::fetch_user(daotk::mysql::result& db_result, fb::game::se
         position_x = uint32_t(transfer.value().position.x);
         position_y = uint32_t(transfer.value().position.y);
     }
-    session.map(&this->maps[map], point16_t(position_x, position_y));    
+    session.map(&this->maps[map], point<uint16_t>(position_x, position_y));    
     return true;
 }
 

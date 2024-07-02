@@ -49,7 +49,7 @@ OBJECT_TYPE fb::game::session::what() const
     return OBJECT_TYPE::SESSION;
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
+fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point<uint16_t>& position)
 {
     if (this->_map_lock)
         return fb::awaiter<bool>([this, map, position](auto& awaiter) { return false; });
@@ -72,10 +72,10 @@ fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t&
 
 fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map)
 {
-    return this->co_map(map, point16_t(0, 0));
+    return this->co_map(map, point<uint16_t>(0, 0));
 }
 
-bool fb::game::session::map(fb::game::map* map, const point16_t& position)
+bool fb::game::session::map(fb::game::map* map, const point<uint16_t>& position)
 {
     if(this->_map_lock)
         return false;
@@ -96,7 +96,7 @@ bool fb::game::session::map(fb::game::map* map, const point16_t& position)
 
 bool fb::game::session::map(fb::game::map* map)
 {
-    return this->map(map, point16_t(0, 0));
+    return this->map(map, point<uint16_t>(0, 0));
 }
 
 void fb::game::session::on_hold()
@@ -1102,12 +1102,12 @@ void fb::game::session::assert_state(const std::vector<STATE>& values) const
         this->assert_state(value);
 }
 
-bool fb::game::session::move(const point16_t& before)
+bool fb::game::session::move(const point<uint16_t>& before)
 {
     return this->move(this->_direction, before);
 }
 
-bool fb::game::session::move(DIRECTION direction, const point16_t& before)
+bool fb::game::session::move(DIRECTION direction, const point<uint16_t>& before)
 {
     auto listener = this->get_listener<fb::game::session>();
 
