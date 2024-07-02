@@ -1354,7 +1354,7 @@ fb::task<bool> fb::game::context::handle_itemmix(fb::socket<fb::game::session>& 
     for (auto& x : found->source)
     {
         auto params = fb::model::dsl::item(x.params);
-        auto deleted_count = 0;
+        auto deleted_count = uint32_t(0);
         while (deleted_count <= params.count)
         {
             auto item = session->items.find(this->model.item[params.id]);
@@ -1935,7 +1935,7 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
 
         session->send(fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::NOTIFY));
     }
-    catch(std::exception& e)
+    catch(std::exception& /*e*/)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;

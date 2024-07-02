@@ -26,7 +26,7 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write(this->name)
-                  .write_u32(this->time.count() / 1000);
+                  .write_u32(static_cast<uint32_t>(this->time.count() / 1000));
     }
 };
 

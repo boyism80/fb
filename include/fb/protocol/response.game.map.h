@@ -103,7 +103,7 @@ public:
     const uint8_t                   volume;
 
 public:
-    bgm(const fb::game::map& map, uint16_t volume = 100) : fb::protocol::base::header(0x19),
+    bgm(const fb::game::map& map, uint8_t volume = 100) : fb::protocol::base::header(0x19),
         map(map), volume(volume)
     { }
 

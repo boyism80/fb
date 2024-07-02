@@ -77,7 +77,7 @@ void fb::base::acceptor<S, T>::accept()
                 ptr->recv();
                 this->accept();
             }
-            catch(std::exception& e)
+            catch(std::exception& /*e*/)
             {
                 // std::cout << e.what() << std::endl;
             }
@@ -408,7 +408,7 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
             in_stream.shift(base_size + size);
             in_stream.flush();
         }
-        catch(std::exception& e)
+        catch(std::exception& /*e*/)
         {
             break;
         }

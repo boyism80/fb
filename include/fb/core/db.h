@@ -17,7 +17,7 @@
 namespace fb { namespace db {
 
 class connection;
-class task;
+struct task;
 class worker;
 
 using connection_ptr     = std::unique_ptr<daotk::mysql::connection>;

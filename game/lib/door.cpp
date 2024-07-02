@@ -8,7 +8,7 @@ fb::game::door::door(const fb::game::map& map, const fb::model::door& model, con
     model(model), 
     position(position), 
     _opened(opened),
-    width(model.pairs.size())
+    width(static_cast<uint16_t>(model.pairs.size()))
 { }
 
 fb::game::door::~door()

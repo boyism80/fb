@@ -454,7 +454,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
     parameter.write(me.name());
 
     auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
-    auto  fd       = socket.native_handle();
+    auto  fd       = static_cast<uint32_t>(socket.native_handle());
     auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
     
     try
@@ -520,7 +520,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
             awaiter->handler.resume();
         }
     }
-    catch(boost::system::error_code& e)
+    catch(boost::system::error_code& /*e*/)
     {
         auto result = false;
         auto client = this->sockets[fd];

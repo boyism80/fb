@@ -33,7 +33,7 @@ class item;                                                                     
 class items;                                                                                  \
 class sector;                                                                                 \
 class sectors;                                                                                \
-class listener;                                                                               \
+struct listener;                                                                              \
                                                                                               \
 } }
 

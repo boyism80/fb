@@ -65,7 +65,7 @@ public:
 public:
     show_hp(const fb::game::life& me, uint32_t damage, bool critical) : fb::protocol::base::header(0x13),
         me(me), damage(damage), critical(critical),
-        percentage(this->me.hp() / float(this->me.base_hp()) * 100)
+        percentage(static_cast<uint8_t>(this->me.hp() / float(this->me.base_hp()) * 100))
     { }
 
 public:
