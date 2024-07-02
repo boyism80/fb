@@ -485,7 +485,7 @@ uint32_t fb::game::context::elapsed_seconds(const daotk::mysql::datetime& dateti
     strptime(sstream.str().c_str(), "%Y-%m-%d %H:%M:%S", &tm);
 #endif
 
-    return std::difftime(std::time(nullptr), std::mktime(&tm));
+    return static_cast<uint32_t>(std::difftime(std::time(nullptr), std::mktime(&tm)));
 }
 
 std::string fb::game::context::elapsed_message(const daotk::mysql::datetime& datetime)
@@ -1016,7 +1016,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
         this->fetch_item(results[1], *session);
         this->fetch_spell(results[2], *session);
     }
-    catch(std::exception& e)
+    catch(std::exception& /*e*/)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;

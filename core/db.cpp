@@ -146,7 +146,7 @@ base_context::base_context(int pool_size)
 {
     auto& config = fb::config::get();
     auto& databases = config["database"];
-    auto  count = databases["shard"].size();
+    auto  count = static_cast<int>(databases["shard"].size());
     auto  global_exists = (databases["global"].isNull() == false);
 
     this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count + (global_exists ? 1 : 0));
@@ -198,7 +198,7 @@ void base_context::enqueue(uint32_t id, const task& t)
 
 void base_context::exit()
 {
-    std::lock_guard<std::mutex>(this->_mutex_exit);
+    auto _ = std::lock_guard(this->_mutex_exit);
 
     for(auto& worker : this->_workers)
     {
