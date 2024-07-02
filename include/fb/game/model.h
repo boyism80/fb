@@ -3305,7 +3305,7 @@ public:
 
     uint32_t size() const
     {
-        return this->_pairs.size();
+        return static_cast<uint32_t>(this->_pairs.size());
     }
 
     const V& operator [] (const K& k) const 
@@ -3422,7 +3422,7 @@ public:
 
     uint32_t size() const
     {
-        return this->_data.size();
+        return static_cast<uint32_t>(this->_data.size());
     }
 
     const T& operator [] (uint32_t i) const
@@ -4231,7 +4231,7 @@ template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json:
     {
         return boost::posix_time::time_from_string(build<std::string>(json));
     }
-    catch (std::exception& e)
+    catch (std::exception&)
     {
         return boost::posix_time::ptime();
     }
@@ -4239,7 +4239,7 @@ template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json:
 
 template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json)
 {
-    static const auto regex = boost::xpressive::sregex::compile("((?P<day>\\d+)\.)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
+    static const auto regex = boost::xpressive::sregex::compile("((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
     auto what = boost::xpressive::smatch();
     auto data = build<std::string>(json);
     if (boost::xpressive::regex_match(data, what, regex) == false)

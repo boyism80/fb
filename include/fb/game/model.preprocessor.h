@@ -398,7 +398,7 @@ public:                                                                         
     bool find(const fb::game::map& map, point<uint16_t>& position, bool is_open) const;
 
 #define DECLARE_DOOR_INITIALIZER ,                                                            \
-    width(this->pairs.size())
+    width(static_cast<uint16_t>(this->pairs.size()))
 
 #define DECLARE_SPELL_CONTAINER_EXTENSION                                                     \
 public:                                                                                       \
