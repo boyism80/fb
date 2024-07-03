@@ -238,14 +238,20 @@ fb::task<bool> fb::game::context::handle_command_world(fb::game::session& sessio
     if(parameters[0].isString() == false)
         co_return false;
 
-    auto id = parameters[0].asString();
-    auto response = fb::protocol::game::response::map::worlds(id);
-    if(response.offset == nullptr)
-        co_return false;
+    auto name = parameters[0].asString();
+    for (auto& [id, world] : this->model.world)
+    {
+        for (auto& [index, point] : world)
+        {
+            if (point.name == name)
+            {
+                session.send(fb::protocol::game::response::map::worlds(this->model, id, index));
+                co_return true;
+            }
+        }
+    }
 
-    // session.map(nullptr);
-    session.send(response);
-    co_return true;
+    co_return false;
 }
 
 fb::task<bool> fb::game::context::handle_command_script(fb::game::session& session, Json::Value& parameters)

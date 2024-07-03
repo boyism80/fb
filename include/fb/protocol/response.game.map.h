@@ -180,7 +180,7 @@ public:
     const uint16_t index;
 
 public:
-    worlds(const fb::model::model& container, uint32_t id, uint16_t index) : fb::protocol::base::header(0x2E), model(model), id(id), index(index)
+    worlds(const fb::model::model& model, uint32_t id, uint16_t index) : fb::protocol::base::header(0x2E), model(model), id(id), index(index)
     {
     }
 
