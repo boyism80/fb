@@ -157,7 +157,7 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
         for (auto& [k, v] : buy)
         {
             auto& item = context->model.item[k];
-            auto price = v.price.value_or(item.price);
+            auto price = v.price.value_or(item.price / 2);
 
             thread->pushinteger(++i);
             thread->new_table();
