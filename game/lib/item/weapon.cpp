@@ -22,12 +22,18 @@ std::string fb::game::weapon::mid_message() const
     return sstream.str();
 }
 
-const std::string& fb::game::weapon::name() const
+std::string fb::game::weapon::detailed_name() const
 {
-    if (this->_custom_name.has_value())
-        return this->_custom_name.value();
+    auto                    sstream = std::stringstream();
+    auto&                   model = this->based<fb::model::equipment>();
+    float                   percentage = this->_durability / float(model.durability) * 100;
 
-    return fb::game::item::name();
+    sstream << this->_custom_name.value_or(model.name) 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
+
+    return sstream.str();
 }
 
 const std::optional<std::string>& fb::game::weapon::custom_name() const

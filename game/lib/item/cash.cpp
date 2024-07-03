@@ -33,10 +33,14 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
     return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
-const std::string fb::game::cash::name_styled() const
+std::string fb::game::cash::detailed_name() const
 {
-    std::stringstream sstream;
-    sstream << this->name() << ' ' << this->value << "전";
+    auto& model = this->based<fb::model::cash>();
+    auto sstream = std::stringstream();
+    sstream << model.name 
+            << ' ' 
+            << this->value 
+            << "전";
 
     return sstream.str();
 }
@@ -51,12 +55,6 @@ fb::game::cash* fb::game::cash::replace(uint32_t value)
     else
     {
         result = this->context.make<fb::game::cash>(value);
-
-        //auto listener = this->get_listener<fb::game::object>();
-        //if(listener != nullptr)
-        //    listener->on_show(*this, true);
-
-        //return this;
     }
     this->destroy();
     return result;

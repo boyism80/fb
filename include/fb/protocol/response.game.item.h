@@ -52,7 +52,7 @@ public:
         out_stream.write_u8(this->index + 1)
                   .write_u16(item->look())
                   .write_u8(item->color())
-                  .write(item->name_styled(), false)
+                  .write(item->detailed_name(), false)
                   .write_u32(item->count())
                   .write_u8(0x00)
                   .write_u8(0x00);

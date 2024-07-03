@@ -13,23 +13,6 @@ fb::game::item::item(const fb::game::item& right) :
 fb::game::item::~item()
 { }
 
-const std::string fb::game::item::name_styled() const
-{
-    std::stringstream       sstream;
-    sstream << this->name();
-
-    auto& model = this->based<fb::model::item>();
-    if(model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > 1)
-        sstream << ' ' << this->_count << "개";
-
-    return sstream.str();
-}
-
-const std::string fb::game::item::name_trade() const
-{
-    return this->name_styled();
-}
-
 std::optional<uint32_t> fb::game::item::durability() const
 {
     return std::nullopt;
@@ -52,10 +35,22 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
-const std::string& fb::game::item::name() const
+std::string fb::game::item::detailed_name() const
 {
     auto& model = this->based<fb::model::item>();
-    return model.name;
+
+    if(model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > 1)
+    {
+        auto sstream = std::stringstream();
+        sstream << model.name
+                << ' ' << this->_count 
+                << "개";
+        return sstream.str();
+    }
+    else
+    {
+        return model.name;
+    }
 }
 
 uint16_t fb::game::item::fill(uint16_t count)

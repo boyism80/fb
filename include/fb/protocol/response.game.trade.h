@@ -57,7 +57,7 @@ public:
             .write_u8(this->index) // trade slot index
             .write_u16(item->look())
             .write_u8(item->color())
-            .write(item->name_trade())
+            .write(item->detailed_name())
             .write_u8(0x00);
     }
 };

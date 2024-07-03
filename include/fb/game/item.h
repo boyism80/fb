@@ -60,15 +60,13 @@ public:
     virtual std::string                     tip_message() const;
 
 public:
-    virtual const std::string               name_styled() const;
-    virtual const std::string               name_trade() const;
     virtual std::optional<uint32_t>         durability() const;
     virtual void                            durability(uint32_t value);
 
 
 
 public:
-    const std::string&                      name() const override;
+    virtual std::string                     detailed_name() const;
     uint16_t                                fill(uint16_t count);
     uint16_t                                free_space() const;
     uint16_t                                count() const;
@@ -116,13 +114,11 @@ private:
     static const fb::model::cash&       match_model(fb::game::context& context, uint32_t value);
 
 public:
-    virtual const std::string           name_styled() const;
-
-public:
     fb::game::cash*                     replace(uint32_t value);
     uint32_t                            reduce(uint32_t value);
 
     bool                                empty() const;
+    std::string                         detailed_name() const override;
 };
 
 
@@ -151,9 +147,9 @@ public:
 public:
     std::optional<uint32_t>             durability() const;
     void                                durability(uint32_t value);
+    std::string                         detailed_name() const override;
 
 public:
-    const std::string                   name_styled() const final;
     bool                                active() final;
 };
 
@@ -176,7 +172,6 @@ public:
     virtual ~equipment();
 
 public:
-    const std::string                   name_trade() const;
     bool                                active();
 
 public:
@@ -189,6 +184,7 @@ protected:
 
 public:
     virtual std::string                 tip_message() const;
+    virtual std::string                 detailed_name() const override;
 
 public:
     static const std::string            column(EQUIPMENT_PARTS parts);
@@ -219,7 +215,7 @@ protected:
     std::string                         mid_message() const final;
 
 public:
-    const std::string&                  name() const override;
+    std::string                         detailed_name() const override;
     const std::optional<std::string>&   custom_name() const;
     void                                custom_name(const std::string& name);
     void                                reset_custom_name();

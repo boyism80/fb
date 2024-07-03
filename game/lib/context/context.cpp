@@ -1218,7 +1218,7 @@ fb::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::session
     {
         auto object = *i;
         auto message = object->is(OBJECT_TYPE::ITEM) ? 
-            static_cast<fb::game::item*>(*i)->name_styled() : 
+            static_cast<fb::game::item*>(*i)->detailed_name() : 
             (*i)->name();
         
         this->send(*session, fb::protocol::game::response::message(message, MESSAGE_TYPE::STATE), scope::SELF);
