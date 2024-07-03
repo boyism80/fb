@@ -175,41 +175,13 @@ public:
 class worlds : public fb::protocol::base::header
 {
 public:
-    const fb::game::wm::offset*     offset;
+    const fb::model::model& model;
+    const uint32_t id;
+    const uint16_t index;
 
 public:
-    worlds(const fb::game::wm::offset& offset) : fb::protocol::base::header(0x2E),
-        offset(&offset)
-    { }
-    worlds(const std::string& id) : fb::protocol::base::header(0x2E)
+    worlds(const fb::model::model& container, uint32_t id, uint16_t index) : fb::protocol::base::header(0x2E), model(model), id(id), index(index)
     {
-        // TODO: 코드 분석 후 다시 구현
-        try
-        {
-            //auto  windex = fb::game::old_model::worlds.find(id);
-            //if(windex == -1)
-            //    throw nullptr;
-
-            //auto  world = fb::game::old_model::worlds[windex];
-            //auto& offsets = world->offsets();
-            //auto  found = std::find_if
-            //(
-            //    offsets.cbegin(), offsets.cend(),
-            //    [&] (auto offset)
-            //    {
-            //        return offset->id == id;
-            //    }
-            //);
-
-            //if(found == offsets.cend())
-            //    throw nullptr;
-
-            //this->offset = *found;
-        }
-        catch(...)
-        {
-            //this->offset = nullptr;
-        }
     }
 
 public:
@@ -218,58 +190,38 @@ public:
         // TODO: 코드 분석 후 다시 구현
         base::header::serialize(out_stream);
 
-        //if(this->offset == nullptr)
-        //    return;
+        auto& attr = this->model.world_attribute[this->id];
+        auto& points = this->model.world[this->id];
+        auto g = std::unordered_map<uint32_t, std::vector<uint16_t>>();
+        for (auto& [id, point] : points)
+        {
+            if (g.contains(point.group))
+                g[point.group].push_back(id);
+            else
+                g.insert({ point.group, std::vector<uint16_t> { id } });
+        }
 
-        //auto windex = fb::game::old_model::worlds.find(this->offset->id);
-        //if(windex == -1)
-        //    return;
+        out_stream.writestr_u8(attr.key)
+                  .write_u8(this->model.world[this->id].size())
+                  .write_u8(this->index);
 
-        //auto world = fb::game::old_model::worlds[windex];
-        //if(world == nullptr)
-        //    return;
+        for (int i = 0; i < points.size(); i++)
+        {
+            auto& point = this->model.world[this->id][i];
+            out_stream.write_u16(point.offset.x)
+                .write_u16(point.offset.y)
+                .writestr_u8(point.name)
+                .write_u16(0x0000)
+                .write_u16(this->id)
+                .write_u16(this->index)
+                .write_u16(i)
+                .write_u16(g[point.group].size());
 
-        //auto& offsets = world->offsets();
-        //auto current = -1;
-        //for(int i = 0; i < offsets.size(); i++)
-        //{
-        //    if(this->offset == offsets[i])
-        //    {
-        //        current = i;
-        //        break;
-        //    }
-        //}
-        //if(current == -1)
-        //    return;
-
-        //out_stream.writestr_u8(world->name)
-        //          .write_u8(offsets.size())
-        //          .write_u8(current);
-
-        //auto offset_id = 0;
-        //for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
-        //{
-        //    auto& group = (*world)[gropu_id];
-        //    for(auto& offset : *group)
-        //    {
-        //        out_stream.write_u16(offset->position.x)
-        //                  .write_u16(offset->position.y)
-        //                  .writestr_u8(offset->name)
-        //                  .write_u16(0x0000)
-        //                  .write_u16(windex)
-        //                  .write_u16(current)
-        //                  .write_u16(offset_id++)
-        //                  .write_u16(group->size());
-
-        //        for(int i = 0; i < offsets.size(); i++)
-        //        {
-        //            if(group->contains(*offsets[i]) == false)
-        //                continue;
-
-        //            out_stream.write_u16(i);
-        //        }
-        //    }
-        //}
+            for (auto x : g[point.group])
+            {
+                out_stream.write_u16(x);
+            }
+        }
     }
 };
 

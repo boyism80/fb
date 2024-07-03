@@ -260,8 +260,7 @@ void fb::game::session::attack()
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 }
 
@@ -277,8 +276,7 @@ void fb::game::session::action(ACTION action, DURATION duration, uint8_t sound)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 }
 
@@ -784,15 +782,13 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         cash->map(this->_map, this->_position);
 
         this->action(ACTION::PICKUP, DURATION::PICKUP);
-        if(listener != nullptr)
-            listener->on_notify(*this, message::money::DROP);
+        this->message(message::money::DROP);
 
         return lack;
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
         return 0;
     }
 }
@@ -1150,13 +1146,11 @@ void fb::game::session::ride(fb::game::mob& horse)
         this->state(STATE::RIDING);
         horse.kill();
         horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
-        if(listener != nullptr)
-            listener->on_notify(*this, message::ride::ON);
+        this->message(message::ride::ON);
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 }
 
@@ -1176,8 +1170,7 @@ void fb::game::session::ride()
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 }
 
@@ -1196,13 +1189,11 @@ void fb::game::session::unride()
         horse->map(this->_map, this->position_forward());
         
         this->state(STATE::NORMAL);
-        if(listener != nullptr)
-            listener->on_notify(*this, message::ride::OFF);
+        this->message(message::ride::OFF);
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 }
 
@@ -1297,6 +1288,13 @@ bool fb::game::session::condition(const std::vector<fb::model::dsl>& conditions)
     }
 
     return true;
+}
+
+void fb::game::session::message(const std::string& message, MESSAGE_TYPE type)
+{
+    auto listener = this->get_listener<fb::game::session>();
+    if(listener != nullptr)
+        listener->on_notify(*this, message, type);
 }
 
 bool fb::game::session::inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)

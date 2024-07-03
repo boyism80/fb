@@ -498,7 +498,9 @@ enum class DSL
     dexteritry = 5, 
     promotion = 6, 
     class_t = 7, 
-    admin = 8
+    admin = 8, 
+    world = 9, 
+    map = 10
 };
 
 template <>
@@ -514,7 +516,9 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "dexteritry", DSL::dexteritry }, 
         { "promotion", DSL::promotion }, 
         { "class_t", DSL::class_t }, 
-        { "admin", DSL::admin }
+        { "admin", DSL::admin }, 
+        { "world", DSL::world }, 
+        { "map", DSL::map }
     };
 
     auto i = enums.find(k);
@@ -1527,9 +1531,11 @@ public:
     class intelligence;
     class item;
     class level;
+    class map;
     class promotion;
     class sex;
     class strength;
+    class world;
 
 public:
     fb::model::enum_value::DSL header;
@@ -1703,6 +1709,38 @@ public:
 };
 
 
+class fb::model::dsl::map
+{
+public:
+    const uint32_t id;
+    const uint16_t x;
+    const uint16_t y;
+
+public:
+    map(uint32_t id, uint16_t x, uint16_t y) : 
+        id(id),
+        x(x),
+        y(y)
+    { }
+    map(const Json::Value& json) : 
+        id(fb::model::build<uint32_t>(json[0])),
+        x(fb::model::build<uint16_t>(json[1])),
+        y(fb::model::build<uint16_t>(json[2]))
+    { }
+    map(const std::vector<std::any>& parameters) : 
+        id(any_cast<uint32_t>(parameters[0])),
+        x(any_cast<uint16_t>(parameters[1])),
+        y(any_cast<uint16_t>(parameters[2]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::map, {id, x, y});
+    }
+};
+
+
 class fb::model::dsl::promotion
 {
 public:
@@ -1775,6 +1813,34 @@ public:
 };
 
 
+class fb::model::dsl::world
+{
+public:
+    const uint16_t id;
+    const uint16_t index;
+
+public:
+    world(uint16_t id, uint16_t index) : 
+        id(id),
+        index(index)
+    { }
+    world(const Json::Value& json) : 
+        id(fb::model::build<uint16_t>(json[0])),
+        index(fb::model::build<uint16_t>(json[1]))
+    { }
+    world(const std::vector<std::any>& parameters) : 
+        id(any_cast<uint16_t>(parameters[0])),
+        index(any_cast<uint16_t>(parameters[1]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::world, {id, index});
+    }
+};
+
+
 inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& json)
 {
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
@@ -1785,9 +1851,11 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
-        { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }}
+        { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::world, [](const Json::Value& json) { return fb::model::dsl::world(json).to_dsl().params; }}
     };
 
     auto header = build<fb::model::enum_value::DSL>(json["Type"]);
@@ -2575,9 +2643,7 @@ DECLARE_WARP_FIELDS
 public:
     const uint32_t parent;
     const point<uint16_t> before;
-    const std::string world;
-    const std::optional<uint32_t> map;
-    const point<uint16_t> after;
+    const fb::model::dsl dest;
     const std::vector<fb::model::dsl> condition;
 #endif
 
@@ -2591,9 +2657,7 @@ DECLARE_WARP_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
         before(fb::model::build<point<uint16_t>>(json["before"])),
-        world(fb::model::build<std::string>(json["world"])),
-        map(fb::model::build<std::optional<uint32_t>>(json["map"])),
-        after(fb::model::build<point<uint16_t>>(json["after"])),
+        dest(fb::model::build<dsl>(json["dest"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
 #ifdef DECLARE_WARP_INITIALIZER
 DECLARE_WARP_INITIALIZER
@@ -2648,7 +2712,12 @@ DECLARE_WORLD_FIELDS
 #else
 public:
     const uint16_t parent;
-    const std::string group;
+    const uint16_t id;
+    const std::string name;
+    const uint32_t group;
+    const point<uint16_t> offset;
+    const uint32_t map;
+    const point<uint16_t> position;
 #endif
 
 #ifdef DECLARE_WORLD_CUSTOM_CONSTRUCTOR
@@ -2660,7 +2729,12 @@ public:
 DECLARE_WORLD_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint16_t>(json["parent"])),
-        group(fb::model::build<std::string>(json["group"]))
+        id(fb::model::build<uint16_t>(json["id"])),
+        name(fb::model::build<std::string>(json["name"])),
+        group(fb::model::build<uint32_t>(json["group"])),
+        offset(fb::model::build<point<uint16_t>>(json["offset"])),
+        map(fb::model::build<uint32_t>(json["map"])),
+        position(fb::model::build<point<uint16_t>>(json["position"]))
 #ifdef DECLARE_WORLD_INITIALIZER
 DECLARE_WORLD_INITIALIZER
 #endif
@@ -2682,7 +2756,7 @@ DECLARE_WORLD_ATTRIBUTE_FIELDS
 #else
 public:
     const uint16_t id;
-    const std::string name;
+    const std::string key;
 #endif
 
 #ifdef DECLARE_WORLD_ATTRIBUTE_CUSTOM_CONSTRUCTOR
@@ -2694,7 +2768,7 @@ public:
 DECLARE_WORLD_ATTRIBUTE_CONSTRUCTOR
 #endif
         id(fb::model::build<uint16_t>(json["id"])),
-        name(fb::model::build<std::string>(json["name"]))
+        key(fb::model::build<std::string>(json["key"]))
 #ifdef DECLARE_WORLD_ATTRIBUTE_INITIALIZER
 DECLARE_WORLD_ATTRIBUTE_INITIALIZER
 #endif
@@ -2704,84 +2778,6 @@ DECLARE_WORLD_ATTRIBUTE_INITIALIZER
 #endif
 #ifdef DECLARE_WORLD_ATTRIBUTE_EXTENSION
 DECLARE_WORLD_ATTRIBUTE_EXTENSION
-#endif
-};
-class world_group
-#ifdef DECLARE_WORLD_GROUP_INHERIT
-DECLARE_WORLD_GROUP_INHERIT
-#endif
-{
-#ifdef DECLARE_WORLD_GROUP_FIELDS
-DECLARE_WORLD_GROUP_FIELDS
-#else
-public:
-    const std::string parent;
-    const std::string id;
-    const std::string name;
-    const uint32_t map;
-    const uint32_t x;
-    const uint32_t y;
-    const uint16_t world_x;
-    const uint16_t world_y;
-#endif
-
-#ifdef DECLARE_WORLD_GROUP_CUSTOM_CONSTRUCTOR
-DECLARE_WORLD_GROUP_CUSTOM_CONSTRUCTOR
-#else
-public:
-    world_group(const Json::Value& json) : 
-#ifdef DECLARE_WORLD_GROUP_CONSTRUCTOR
-DECLARE_WORLD_GROUP_CONSTRUCTOR
-#endif
-        parent(fb::model::build<std::string>(json["parent"])),
-        id(fb::model::build<std::string>(json["id"])),
-        name(fb::model::build<std::string>(json["name"])),
-        map(fb::model::build<uint32_t>(json["map"])),
-        x(fb::model::build<uint32_t>(json["x"])),
-        y(fb::model::build<uint32_t>(json["y"])),
-        world_x(fb::model::build<uint16_t>(json["world_x"])),
-        world_y(fb::model::build<uint16_t>(json["world_y"]))
-#ifdef DECLARE_WORLD_GROUP_INITIALIZER
-DECLARE_WORLD_GROUP_INITIALIZER
-#endif
-    { }
-    world_group(const world_group&) = delete;
-    virtual ~world_group() = default;
-#endif
-#ifdef DECLARE_WORLD_GROUP_EXTENSION
-DECLARE_WORLD_GROUP_EXTENSION
-#endif
-};
-class world_group_attribute
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_INHERIT
-DECLARE_WORLD_GROUP_ATTRIBUTE_INHERIT
-#endif
-{
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_FIELDS
-DECLARE_WORLD_GROUP_ATTRIBUTE_FIELDS
-#else
-public:
-    const std::string id;
-#endif
-
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
-DECLARE_WORLD_GROUP_ATTRIBUTE_CUSTOM_CONSTRUCTOR
-#else
-public:
-    world_group_attribute(const Json::Value& json) : 
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
-DECLARE_WORLD_GROUP_ATTRIBUTE_CONSTRUCTOR
-#endif
-        id(fb::model::build<std::string>(json["id"]))
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_INITIALIZER
-DECLARE_WORLD_GROUP_ATTRIBUTE_INITIALIZER
-#endif
-    { }
-    world_group_attribute(const world_group_attribute&) = delete;
-    virtual ~world_group_attribute() = default;
-#endif
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
-DECLARE_WORLD_GROUP_ATTRIBUTE_EXTENSION
 #endif
 };
 class item : public fb::model::object
@@ -3955,13 +3951,13 @@ DECLARE_WARP_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
-class __world : public fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>
+class __world : public fb::model::kv_container<uint16_t, fb::model::kv_container<uint16_t, fb::model::world>>
 {
 public:
 #ifdef DECLARE_WORLD_CONTAINER_CUSTOM_CONSTRUCTOR
 DECLARE_WORLD_CONTAINER_CUSTOM_CONSTRUCTOR
 #else
-    __world() : fb::model::kv_container<uint16_t, fb::model::array_container<fb::model::world>>(std::string("json/world.json"))
+    __world() : fb::model::kv_container<uint16_t, fb::model::kv_container<uint16_t, fb::model::world>>(std::string("json/world.json"))
     { }
     __world(const __world&) = delete;
     ~__world() = default;
@@ -3984,38 +3980,6 @@ DECLARE_WORLD_ATTRIBUTE_CONTAINER_CUSTOM_CONSTRUCTOR
 #endif
 #ifdef DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
 DECLARE_WORLD_ATTRIBUTE_CONTAINER_EXTENSION
-#endif
-};
-
-class __world_group : public fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>
-{
-public:
-#ifdef DECLARE_WORLD_GROUP_CONTAINER_CUSTOM_CONSTRUCTOR
-DECLARE_WORLD_GROUP_CONTAINER_CUSTOM_CONSTRUCTOR
-#else
-    __world_group() : fb::model::kv_container<std::string, fb::model::kv_container<std::string, fb::model::world_group>>(std::string("json/world_group.json"))
-    { }
-    __world_group(const __world_group&) = delete;
-    ~__world_group() = default;
-#endif
-#ifdef DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
-DECLARE_WORLD_GROUP_CONTAINER_EXTENSION
-#endif
-};
-
-class __world_group_attribute : public fb::model::kv_container<std::string, fb::model::world_group_attribute>
-{
-public:
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_CUSTOM_CONSTRUCTOR
-DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_CUSTOM_CONSTRUCTOR
-#else
-    __world_group_attribute() : fb::model::kv_container<std::string, fb::model::world_group_attribute>(std::string("json/world_group_attribute.json"))
-    { }
-    __world_group_attribute(const __world_group_attribute&) = delete;
-    ~__world_group_attribute() = default;
-#endif
-#ifdef DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
-DECLARE_WORLD_GROUP_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
@@ -4053,8 +4017,6 @@ public:
     fb::model::__warp_attribute warp_attribute;
     fb::model::__world world;
     fb::model::__world_attribute world_attribute;
-    fb::model::__world_group world_group;
-    fb::model::__world_group_attribute world_group_attribute;
 
 private:
     const std::vector<fb::model::container*> _containers = 
@@ -4088,9 +4050,7 @@ private:
         &warp,
         &warp_attribute,
         &world,
-        &world_attribute,
-        &world_group,
-        &world_group_attribute
+        &world_attribute
     };
 
 public:

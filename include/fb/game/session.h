@@ -286,6 +286,7 @@ public:
     bool                        alive() const;
     void                        refresh_map();
     bool                        condition(const std::vector<fb::model::dsl>& conditions) const final;
+    void                        message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
 
 private:
     bool                        inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);

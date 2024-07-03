@@ -925,7 +925,7 @@ fb::task<bool> fb::game::context::handle_in_message(fb::internal::socket<>& sock
 {
     auto to = this->find(response.to);
     if(to != nullptr)
-        this->send(*to, fb::protocol::game::response::message(response.contents, (MESSAGE_TYPE)response.type), scope::SELF);
+        to->message(response.contents, (MESSAGE_TYPE)response.type);
 
     co_return true;
 }
@@ -996,7 +996,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
         {
             auto msg = this->elapsed_message(last_login);
             if(msg.empty() == false)
-                this->send(*session, fb::protocol::game::response::message(msg, MESSAGE_TYPE::STATE), scope::SELF);
+                session->message(msg, MESSAGE_TYPE::STATE);
         }
 
         this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
@@ -1058,14 +1058,32 @@ fb::task<bool> fb::game::context::handle_move(fb::socket<fb::game::session>& soc
     const auto warp = map->warpable(forward);
     if(warp != nullptr)
     {
-        if(warp->world.empty() == false)
+        if (session->condition(warp->condition) == false)
         {
-            //session->send(fb::protocol::game::response::map::worlds(*warp->offset));
+            // 메시지 보냄
+            session->message("감히 접근할 수 없습니다.");
         }
-        else
+
+        switch (warp->dest.header)
         {
-            auto& map = this->maps[warp->map.value()];
-            co_await session->co_map(&map, warp->after);
+        case DSL::map:
+        {
+            auto params = dsl::map(warp->dest.params);
+            auto& map = this->maps[params.id];
+            co_await session->co_map(&map, point16_t(params.x, params.y));
+        }
+        break;
+
+        case DSL::world:
+        {
+            auto params = dsl::world(warp->dest.params);
+            auto& world = this->model.world[params.id][params.index];
+            session->send(fb::protocol::game::response::map::worlds(this->model, params.id, params.index));
+        }
+        break;
+
+        default:
+            throw std::runtime_error("invalid dsl header");
         }
     }
     else
@@ -1210,7 +1228,7 @@ fb::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::session
             static_cast<fb::game::item*>(*i)->detailed_name() : 
             (*i)->name();
         
-        this->send(*session, fb::protocol::game::response::message(message, MESSAGE_TYPE::STATE), scope::SELF);
+        session->message(message, MESSAGE_TYPE::STATE);
     }
     
     co_return true;
@@ -1922,14 +1940,14 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
         else
             sstream << response.to << "님은 바람의나라에 없습니다.";
 
-        session->send(fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::NOTIFY));
+        session->message(sstream.str(), MESSAGE_TYPE::NOTIFY);
     }
     catch(std::exception& /*e*/)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        session->send(fb::protocol::game::response::message("서버 오류", MESSAGE_TYPE::NOTIFY));
+        session->message("서버 오류", MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

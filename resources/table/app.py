@@ -81,26 +81,79 @@ def timespan_from_seconds(seconds):
 
     return f'{hours:02d}:{minutes:02d}:{seconds:02d}'
 
-with open('source.txt', 'r', encoding='utf8') as f1:
-    with open('result.txt', 'w', encoding='utf8') as f2:
-        lines = f1.readlines()
-        for line in lines:
-            if not line:
-                continue
-            
-            line = line.rstrip()
-            hunting_ground, enable_die_penalty, enable_talk, building, enable_whisper, enable_pk, enable_spell = line.split('\t')
-            hunting_ground = 'HUNTING_GROUND' if hunting_ground == 'TRUE' else None
-            enable_die_penalty = 'DISABLE_DIE_PENALTY' if enable_die_penalty == 'FALSE' else None
-            enable_talk = 'DISABLE_TALK' if enable_talk == 'FALSE' else None
-            building = 'BUILD_IN' if building == 'TRUE' else None
-            enable_whisper = 'DISABLE_WHISPER' if enable_whisper == 'FALSE' else None
-            enable_pk = 'ENABLE_PK' if enable_pk == 'TRUE' else None
-            enable_spell = 'DISABLE_SPELL' if enable_spell == 'FALSE' else None
+def find_world_point(name):
+    wm_index = 0
+    for id, arr in worlds.items():
+        p_index = 0
+        for points in arr:
+            for n, point in points.items():
+                if name == n:
+                    return wm_index, p_index
+                
+                p_index = p_index + 1
+        wm_index = wm_index + 1
+    
+    raise Exception(f'what? : {name}')
 
-            values = [hunting_ground, enable_die_penalty, enable_talk, building, enable_whisper, enable_pk, enable_spell]
-            values = [x for x in values if x]
-            f2.write(f"{' | '.join(values)}\n")
+with open('source.txt', 'r', encoding='utf8') as f1:
+    lines1 = f1.readlines()
+    with open('source2.txt', 'r', encoding='utf8') as f2:
+        lines2 = f2.readlines()
+        with open('result.txt', 'w', encoding='utf8') as f3:
+            for i in range(len(lines1)):
+                line1 = lines1[i].strip()
+                line2 = lines2[i].strip()
+                combine = f"{line1}{line2}"
+                f3.write(f"{combine}\n")
+
+# with open('source.txt', 'r', encoding='utf8') as f1:
+#     with open('result.txt', 'w', encoding='utf8') as f2:
+#         lines = f1.readlines()
+#         for line in lines:
+#             line = line.strip()
+#             if not line:
+#                 f2.write('\n')
+#                 continue
+
+#             wm_index, p_index = find_world_point(line)
+#             f2.write(f"world({wm_index}, {p_index})\n")
+
+
+            
+
+# with open('result.txt', 'w', encoding='utf8') as f:
+    # wm_index = 0
+    # for wm, arr in worlds.items():
+    #     f.write(f"{wm_index}\t{wm}\n")
+    #     wm_index = wm_index + 1
+
+    #     g_index = 0
+    #     p_index = 0
+    #     for points in arr:
+    #         for name, point in points.items():
+    #             dst = point['destination']
+    #             f.write(f"\t\t{p_index}\t{point['name']}\t{g_index}\t{point['position']['x']}, {point['position']['y']}\t{map_id(dst['map'])}\t{dst['x']}, {dst['y']}\n")
+    #             p_index = p_index + 1
+    #         g_index = g_index + 1
+
+
+        # for i in range(len(arr)):
+        #     world_group_id = f'{wm}.{i}'
+        #     f.write(f'{world_group_id}\n')
+        #     for id, world_group in arr[i].items():
+        #         name = world_group['name']
+        #         map = map_id(world_group['destination']['map'])
+        #         if not map:
+        #             raise Exception()
+                
+        #         x = world_group['destination']['x']
+        #         y = world_group['destination']['y']
+        #         world_x = world_group['position']['x']
+        #         world_y = world_group['position']['y']
+
+        #         f.write(f"\t{id}\t{name}\t{map}\t{x}\t{y}\t{world_x}\t{world_y}\n")
+
+
 
 # with open('result.txt', 'w', encoding='utf8') as f1:
 
@@ -131,23 +184,6 @@ with open('source.txt', 'r', encoding='utf8') as f1:
 #     # for id, map in maps.items():
 #     #     effect = map['effect'].upper() if 'effect' in map else 'NONE'
 #     #     f.write(f'{effect}\n')
-
-#     # for wm, arr in worlds.items():
-#     #     for i in range(len(arr)):
-#     #         world_group_id = f'{wm}.{i}'
-#     #         f.write(f'{world_group_id}\n')
-#     #         for id, world_group in arr[i].items():
-#     #             name = world_group['name']
-#     #             map = map_id(world_group['destination']['map'])
-#     #             if not map:
-#     #                 raise Exception()
-                
-#     #             x = world_group['destination']['x']
-#     #             y = world_group['destination']['y']
-#     #             world_x = world_group['position']['x']
-#     #             world_y = world_group['position']['y']
-
-#     #             f.write(f"\t{id}\t{name}\t{map}\t{x}\t{y}\t{world_x}\t{world_y}\n")
             
 
 #     # for map_name, arr in warps.items():

@@ -1,18 +1,18 @@
 {
   "0": {
     "id": 0,
-    "name": "wm"
+    "key": "wm"
   },
   "1": {
     "id": 1,
-    "name": "wm2"
+    "key": "wm2"
   },
   "2": {
     "id": 2,
-    "name": "wm3"
+    "key": "wm3"
   },
   "3": {
     "id": 3,
-    "name": "wm4"
+    "key": "wm4"
   }
 }
