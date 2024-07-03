@@ -164,9 +164,19 @@ std::string fb::game::equipment::tip_message() const
         }
     }
 
+    sstream << std::endl;
+    switch (cls)
+    {
+    case CLASS::NONE:
+        sstream << "직업제한무";
+        break;
 
-    class_stream << this->context.model.promotion[cls][0].name << "용";
-    sstream << class_stream.str() << "레벨 " << std::to_string(level) << " 이상";
+    default:
+        sstream << this->context.model.promotion[cls][0].name << "용";
+        break;
+    }
+
+    sstream << " 레벨 " << std::to_string(level) << " 이상";
 
     if(model.desc.empty() == false)
         sstream << std::endl << std::endl << model.desc;

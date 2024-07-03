@@ -1954,29 +1954,23 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
 
 fb::task<bool> fb::game::context::handle_world(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::map::world& request)
 {
-    // TODO: 다시작업
-    //auto session = socket.data();
-    //if (session->inited() == false)
-    //    co_return true;
+    auto session = socket.data();
+    if (session->inited() == false)
+        co_return true;
 
-    //auto world = fb::game::old_model::worlds[request.value];
-    //if(world == nullptr)
-    //    co_return false;
+    auto& world = this->model.world[request.value];
+    auto& before = world[request.before];
+    auto& after = world[request.after];
 
-    //const auto& offsets = world->offsets();
-    //const auto before = offsets[request.before]->dst;
-    //const auto after = offsets[request.after]->dst;
-
-    //if(session->map() == after.map)
-    //{
-    //    session->refresh_map();
-    //}
-    //else
-    //{
-    //    co_await session->co_map(after.map, after.position);
-    //    this->save(*session);
-    //}
-    //co_return true;
+    if(session->map() == &this->maps[after.map])
+    {
+        session->refresh_map();
+    }
+    else
+    {
+        co_await session->co_map(&this->maps[after.map], after.position);
+        this->save(*session);
+    }
     co_return true;
 }
 

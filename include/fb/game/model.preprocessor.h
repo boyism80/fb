@@ -11,7 +11,7 @@ enum_value::OBJECT_TYPE what() const override                                   
     return (v);                                                                               \
 }
 
-#define BEGIN_PREPROCESSOR                                                                     \
+#define BEGIN_PREPROCESSOR                                                                    \
 namespace fb { namespace model { namespace enum_value {                                       \
                                                                                               \
 enum class DIRECTION;                                                                         \
