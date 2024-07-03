@@ -25,6 +25,9 @@ namespace fb { namespace game {
 
 class context : public fb::acceptor<fb::game::session>, public fb::game::listener
 {
+private:
+    inline static const std::string PTR_CONTAINER_KEY = "smart-pointer-container";
+
 public:
     LUA_PROTOTYPE
 
@@ -39,11 +42,11 @@ public:
     using commands          = std::map<std::string, command>;
     using object_set        = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param    = fb::protocol::game::request::login::transfer_param;
+    using ptrs              = std::unordered_map<const void*, std::any>;
 
 private:
     commands                 _commands;
-    std::mutex               _hash_mutex;
-    object_set               _objects;
+    ptrs                     _ptrs;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
 
@@ -53,6 +56,7 @@ public:
 
 public:
     context(boost::asio::io_context& context, uint16_t port);
+    context(const context&) = delete;
     ~context();
 
 private:
@@ -74,9 +78,39 @@ public:
     template <typename T, typename... Args>
     T*                      make(Args&&... args)
     {
-        return new T(*this, std::forward<Args>(args)...);
+        auto ptr = new T(*this, std::forward<Args>(args)...);
+        return this->_mutex.sync<T*>(PTR_CONTAINER_KEY, [this, ptr] (auto&)
+        {
+            this->_ptrs.insert({ptr, std::shared_ptr<T>(ptr)});
+            return ptr;
+        });
     }
-    bool                    destroy(fb::game::object& obj);
+    template <typename T>
+    bool                    destroy(T& obj)
+    {
+        return this->_mutex.sync<bool>(PTR_CONTAINER_KEY, [this, &obj] (auto&) mutable
+        {
+            if(this->_ptrs.contains(&obj) == false)
+                return false;
+            
+            this->_ptrs.erase(&obj);
+            return true;
+        });
+    }
+
+    template <>
+    bool                    destroy<fb::game::object>(fb::game::object& obj)
+    {
+        return this->_mutex.sync<bool>(PTR_CONTAINER_KEY, [this, &obj] (auto&) mutable
+        {
+            if(this->_ptrs.contains(&obj) == false)
+                return false;
+            
+            obj.map(nullptr);
+            this->_ptrs.erase(&obj);
+            return true;
+        });
+    }
 
 public:
     void                    send(fb::game::object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self = false, bool encrypt = true);

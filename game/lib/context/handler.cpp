@@ -2,10 +2,6 @@
 
 void fb::game::context::on_create(fb::game::object& me)
 {
-    auto gd = std::lock_guard(this->_hash_mutex);
-
-    if(this->_objects.contains(&me) == false)
-        this->_objects.insert(std::make_pair(&me, std::unique_ptr<fb::game::object>(&me)));
 }
 
 void fb::game::context::on_destroy(fb::game::object& me)

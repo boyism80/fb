@@ -456,17 +456,6 @@ void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
         value.on_timer(elapsed_milliseconds);
 }
 
-bool fb::game::context::destroy(fb::game::object& obj)
-{
-    auto gd = std::lock_guard(this->_hash_mutex);
-    if(this->_objects.contains(&obj) == false)
-        return false;
-    
-    obj.map(nullptr);
-    this->_objects.erase(&obj);
-    return true;
-}
-
 uint32_t fb::game::context::elapsed_seconds(const daotk::mysql::datetime& datetime)
 {
     auto sstream = std::stringstream();
@@ -530,12 +519,12 @@ fb::game::session* fb::game::context::find(const std::string& name)
     return socket->data();
 }
 
-bool fb::game::context::exists(const fb::game::object& object) const
+bool fb::game::context::exists(const fb::game::object& obj) const
 {
-    if(this->_objects.contains(&object) == false)
+    if(this->_ptrs.contains(static_cast<const void*>(&obj)) == false)
         return false;
 
-    if(this->threads().valid(this->thread(object)) == false)
+    if(this->threads().valid(this->thread(obj)) == false)
         return false;
 
     return true;
@@ -1235,7 +1224,7 @@ fb::task<bool> fb::game::context::handle_self_info(fb::socket<fb::game::session>
 
     this->send(*session, fb::protocol::game::response::session::internal_info(*session, this->model), scope::SELF);
     
-    for(auto& buff : session->buffs)
+    for(auto& [id, buff] : session->buffs)
         this->send(*session, fb::protocol::game::response::spell::buff(*buff), scope::SELF);
     co_return true;
 }
@@ -2056,16 +2045,16 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             if(value->buffs.size() == 0)
                 continue;
 
-            auto ended_buffs = std::vector<std::reference_wrapper<fb::game::buff>>();
-            for (auto& buff : value->buffs)
+            auto ended_buffs = std::vector<fb::game::buff*>();
+            for (auto& [id, buff] : value->buffs)
             {
                 buff->time_dec(1);
                 if (buff->time() <= 0ms)
-                    ended_buffs.push_back(*buff);
+                    ended_buffs.push_back(buff);
             }
 
             for (auto& buff : ended_buffs)
-                value->buffs.remove(buff.get().model.name);
+                value->buffs.remove(buff->model);
         }
     }
 }

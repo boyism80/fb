@@ -43,9 +43,10 @@ private:
 
 public:
     const fb::model::spell&      model;
+    const fb::game::context&     context;
 
 public:
-    buff(const fb::model::spell& model, uint32_t seconds);
+    buff(const fb::game::context& context, const fb::model::spell& model, uint32_t seconds);
     ~buff();
 
 public:
@@ -57,39 +58,36 @@ public:
 };
 
 
-class buffs : private std::vector<std::unique_ptr<buff>>
+class buffs : private std::unordered_map<uint32_t, buff*>
 {
 private:
     fb::game::object&           _owner;
 
 public:
-    using std::vector<std::unique_ptr<buff>>::size;
-    using std::vector<std::unique_ptr<buff>>::begin;
-    using std::vector<std::unique_ptr<buff>>::end;
-    using std::vector<std::unique_ptr<buff>>::rbegin;
-    using std::vector<std::unique_ptr<buff>>::rend;
-    using std::vector<std::unique_ptr<buff>>::cbegin;
-    using std::vector<std::unique_ptr<buff>>::cend;
-    using std::vector<std::unique_ptr<buff>>::crbegin;
-    using std::vector<std::unique_ptr<buff>>::crend;
+    using std::unordered_map<uint32_t, buff*>::size;
+    using std::unordered_map<uint32_t, buff*>::begin;
+    using std::unordered_map<uint32_t, buff*>::end;
+    using std::unordered_map<uint32_t, buff*>::cbegin;
+    using std::unordered_map<uint32_t, buff*>::cend;
+    using std::unordered_map<uint32_t, buff*>::contains;
+    using std::unordered_map<uint32_t, buff*>::insert;
+    using std::unordered_map<uint32_t, buff*>::erase;
 
 public:
     buffs(fb::game::object& owner);
     ~buffs();
 
 private:
-    bool                        push_back(std::unique_ptr<buff>&& buff);
+    bool                        push_back(buff& buff);
 
 public:
     bool                        contains(const fb::model::spell& model) const;
-    bool                        contains(const std::string& name) const;
     buff*                       push_back(const fb::model::spell& spell, uint32_t seconds);
-    bool                        remove(const std::string& name);
+    bool                        remove(uint32_t id);
     bool                        remove(const fb::model::spell& spell);
 
 public:
-    buff*                       operator [] (int index) const;
-    buff*                       operator [] (const std::string& name) const;
+    buff*                       operator [] (uint32_t id) const;
 };
 
 } }

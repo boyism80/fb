@@ -1020,8 +1020,12 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 
     if(thread->is_str(2))
     {
-        auto buff_name = thread->tostring(2);
-        thread->pushboolean(object->buffs.remove(buff_name));
+        auto name = thread->tostring(2);
+        auto model = context->model.spell.name2spell(name);
+        if (model == nullptr)
+            thread->pushboolean(false);
+        else
+            thread->pushboolean(object->buffs.remove(*model));
     }
     else if(thread->is_obj(2))
     {
@@ -1029,7 +1033,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
         if(buff == nullptr)
             return 0;
         
-        thread->pushboolean(object->buffs.remove(buff->name));
+        thread->pushboolean(object->buffs.remove(*buff));
     }
     else
     {
@@ -1052,8 +1056,12 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
     
     if(thread->is_str(2))
     {
-        auto buff_name = thread->tostring(2);
-        thread->pushboolean(object->buffs.contains(buff_name));
+        auto name = thread->tostring(2);
+        auto model = context->model.spell.name2spell(name);
+        if(model == nullptr)
+            thread->pushboolean(false);
+        else
+            thread->pushboolean(object->buffs.contains(*model));
     }
     else if(thread->is_obj(2))
     {
