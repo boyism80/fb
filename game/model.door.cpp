@@ -2,7 +2,7 @@
 #include <fb/game/map.h>
 #include <fb/game/context.h>
 
-bool fb::model::door::matched(const fb::game::map& map, const point<uint16_t>& position, bool is_open) const
+bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const
 {
     for (int i = 0, n = this->width; i < n; i++)
     {
@@ -18,12 +18,12 @@ bool fb::model::door::matched(const fb::game::map& map, const point<uint16_t>& p
     return true;
 }
 
-bool fb::model::door::find(const fb::game::map& map, point<uint16_t>& position, bool is_open) const
+bool fb::model::door::find(const fb::game::map& map, point16_t& position, bool is_open) const
 {
     auto x = position.x / map.width();
     auto y = position.y + (position.x % map.width());
-    auto begin = point<uint16_t>(x, y);
-    auto end = point<uint16_t>(map.width() - 1, map.height() - 1);
+    auto begin = point16_t(x, y);
+    auto end = point16_t(map.width() - 1, map.height() - 1);
     for (uint64_t i = map.index(begin), n = map.index(end); i <= n; i++)
     {
         if (this->matched(map, map.point(i), is_open))

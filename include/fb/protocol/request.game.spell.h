@@ -15,7 +15,7 @@ public:
     mutable uint8_t                 slot;
     mutable std::string             message;
     mutable uint32_t                fd;
-    mutable point<uint16_t>               position;
+    mutable point16_t               position;
 
 public:
     use() : fb::protocol::base::header(0x0F)

@@ -45,10 +45,10 @@ std::vector<fb::game::object*> fb::game::objects::filter(OBJECT_TYPE type) const
 
 uint16_t fb::game::objects::add(fb::game::object& object)
 {
-    return add(object, fb::model::point<uint16_t>());
+    return add(object, point16_t());
 }
 
-uint16_t fb::game::objects::add(fb::game::object& object, const fb::model::point<uint16_t>& position)
+uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
 {
     auto                    seq = this->empty_seq();
     if(this->contains(seq))
@@ -68,7 +68,7 @@ bool fb::game::objects::remove(fb::game::object& object)
     return true;
 }
 
-fb::game::object* fb::game::objects::exists(point<uint16_t> position) const
+fb::game::object* fb::game::objects::exists(point16_t position) const
 {
     auto found = std::find_if
     (
@@ -129,7 +129,7 @@ fb::game::map::map(const fb::game::context& context, const fb::model::map& model
 
 
     // compare linear doors
-    fb::model::point<uint16_t> position;
+    point16_t position;
     for(auto& [id, door] : context.model.door)
     {
         position.x = position.y = 0;
@@ -148,23 +148,23 @@ fb::game::map::map(const fb::game::context& context, const fb::model::map& model
     }
 
     // sectors
-    this->_sectors = std::make_unique<fb::game::sectors>(this->_size, fb::model::size<uint16_t>(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->_sectors = std::make_unique<fb::game::sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
 }
 
 fb::game::map::~map()
 { }
 
-uint64_t fb::game::map::index(const fb::model::point<uint16_t>& p) const
+uint64_t fb::game::map::index(const point16_t& p) const
 {
     return (uint64_t)p.y * (uint64_t)this->_size.width + (uint64_t)p.x;
 }
 
-point<uint16_t> fb::game::map::point(uint64_t i) const
+point16_t fb::game::map::point(uint64_t i) const
 {
     auto y = uint16_t(i / this->_size.width);
     auto x = uint16_t(i % this->_size.width);
 
-    return fb::model::point<uint16_t>(x, y);
+    return point16_t(x, y);
 }
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
@@ -213,7 +213,7 @@ uint16_t fb::game::map::height() const
     return this->_size.height;
 }
 
-size<uint16_t> fb::game::map::size() const
+size16_t fb::game::map::size() const
 {
     return this->_size;
 }
@@ -228,12 +228,12 @@ bool fb::game::map::loaded() const
     return this->_size.width > 0 && this->_size.height > 0;
 }
 
-bool fb::game::map::existable(const fb::model::point<uint16_t> position) const
+bool fb::game::map::existable(const point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool fb::game::map::movable(const fb::model::point<uint16_t> position) const
+bool fb::game::map::movable(const point16_t position) const
 {
     if(this->existable(position) == false)
         return false;
@@ -258,7 +258,7 @@ bool fb::game::map::movable(const fb::model::point<uint16_t> position) const
 
 bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction) const
 {
-    fb::model::point<uint16_t>               position = object.position();
+    point16_t               position = object.position();
 
     switch(direction)
     {
@@ -290,7 +290,7 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-const fb::model::warp* fb::game::map::warpable(const fb::model::point<uint16_t>& position) const
+const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
 {
     for (auto& warp : this->context.model.warp[this->model.id])
     {
@@ -321,7 +321,7 @@ bool fb::game::map::activated() const
     return this->_sectors->activated();
 }
 
-std::vector<fb::game::object*> fb::game::map::nears(const fb::model::point<uint16_t>& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJECT_TYPE type) const
 {
     if(this->_sectors == nullptr)
         return std::vector<fb::game::object*> { };
@@ -329,7 +329,7 @@ std::vector<fb::game::object*> fb::game::map::nears(const fb::model::point<uint1
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> fb::game::map::belows(const fb::model::point<uint16_t>& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJECT_TYPE type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try
@@ -376,7 +376,7 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     if(y > this->_size.height)
         return nullptr;
 
-    auto i = this->index(fb::model:: point<uint16_t>(x, y));
+    auto i = this->index(fb::model:: point16_t(x, y));
     return &this->_tiles[i];
 }
 
@@ -458,7 +458,7 @@ int fb::game::map::builtin_movable(lua_State* lua)
     if(map == nullptr)
         return 0;
     
-    auto position = fb::model::point<uint16_t>();
+    auto position = point16_t();
 
     if(lua_istable(lua, 2))
     {

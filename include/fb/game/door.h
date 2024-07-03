@@ -28,11 +28,11 @@ private:
 public:
     const fb::game::map&        map;
     const fb::model::door&      model;
-    const point<uint16_t>       position;
+    const point16_t             position;
     const uint16_t              width;
 
 public:
-    door(const fb::game::map& map, const fb::model::door& model, const point<uint16_t>& position, bool opened);
+    door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened);
     door(const door&) = delete;
     ~door();
 
@@ -80,35 +80,35 @@ public:
     iterator                    end();
     const_iterator              begin() const;
     const_iterator              end() const;
-    void                        add(const point<uint16_t>& position, const fb::model::door& model, bool opened);
-    door*                       find(const point<uint16_t> position) const;
+    void                        add(const point16_t& position, const fb::model::door& model, bool opened);
+    door*                       find(const point16_t position) const;
     door*                       find(const session& session) const;
 };
 
 class doors::iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator
 {
 public:
-    std::optional<std::pair<point<uint16_t>, door&>> pair;
+    std::optional<std::pair<point16_t, door&>> pair;
 
 public:
     iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i, const doors& container);
     ~iterator() = default;
 
 public:
-    std::pair<point<uint16_t>, door&> operator * ();
+    std::pair<point16_t, door&> operator * ();
 };
 
 class doors::const_iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator
 {
 public:
-    const std::optional<std::pair<point<uint16_t>, door&>> pair;
+    const std::optional<std::pair<point16_t, door&>> pair;
 
 public:
     const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i, const doors& container);
     ~const_iterator() = default;
 
 public:
-    const std::pair<point<uint16_t>, door&> operator * () const;
+    const std::pair<point16_t, door&> operator * () const;
 };
 
 } }

@@ -343,8 +343,8 @@ public:
 #ifndef BOT
     const fb::game::session&    session;
 #else
-    point<uint16_t>                   abs;
-    point<uint16_t>                   rel;
+    point16_t                   abs;
+    point16_t                   rel;
 #endif
 
 public:
@@ -642,10 +642,10 @@ class throws : public fb::protocol::base::header
 public:
     const fb::game::session&    session;
     const fb::game::item&       item;
-    const point<uint16_t>             to;
+    const point16_t             to;
 
 public:
-    throws(const fb::game::session& session, const fb::game::item& item, const point<uint16_t>& to) : fb::protocol::base::header(0x16),
+    throws(const fb::game::session& session, const fb::game::item& item, const point16_t& to) : fb::protocol::base::header(0x16),
         session(session), item(item), to(to)
     { }
 

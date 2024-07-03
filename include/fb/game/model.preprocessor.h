@@ -11,7 +11,7 @@ enum_value::OBJECT_TYPE what() const override                                   
     return (v);                                                                               \
 }
 
-#define ROOT_PREPROCESSOR                                                                     \
+#define BEGIN_PREPROCESSOR                                                                     \
 namespace fb { namespace model { namespace enum_value {                                       \
                                                                                               \
 enum class DIRECTION;                                                                         \
@@ -36,6 +36,22 @@ class sectors;                                                                  
 struct listener;                                                                              \
                                                                                               \
 } }
+
+#define DECLARE_AFTER_TYPE                                                                    \
+using point8_t = point<uint8_t>;                                                              \
+using point16_t = point<uint16_t>;                                                            \
+using point32_t = point<uint32_t>;                                                            \
+using point64_t = point<uint64_t>;                                                            \
+                                                                                              \
+using size8_t = size<uint8_t>;                                                                \
+using size16_t = size<uint16_t>;                                                              \
+using size32_t = size<uint32_t>;                                                              \
+using size64_t = size<uint64_t>;                                                              \
+                                                                                              \
+using range8_t = range<uint8_t>;                                                              \
+using range16_t = range<uint16_t>;                                                            \
+using range32_t = range<uint32_t>;                                                            \
+using range64_t = range<uint64_t>;
 
 #define DECLARE_POINT_EXTENSION                                                               \
 public:                                                                                       \
@@ -394,8 +410,8 @@ public:                                                                         
 public:                                                                                       \
     const uint16_t width;                                                                     \
 public:                                                                                       \
-    bool matched(const fb::game::map& map, const point<uint16_t>& position, bool is_open) const;    \
-    bool find(const fb::game::map& map, point<uint16_t>& position, bool is_open) const;
+    bool matched(const fb::game::map& map, const point16_t& position, bool is_open) const;    \
+    bool find(const fb::game::map& map, point16_t& position, bool is_open) const;
 
 #define DECLARE_DOOR_INITIALIZER ,                                                            \
     width(static_cast<uint16_t>(this->pairs.size()))

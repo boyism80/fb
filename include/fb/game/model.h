@@ -15,8 +15,8 @@
 #include <fb/game/lua.h>
 #include <fb/game/model.preprocessor.h>
 
-#ifdef ROOT_PREPROCESSOR
-ROOT_PREPROCESSOR
+#ifdef BEGIN_PREPROCESSOR
+BEGIN_PREPROCESSOR
 #endif
 
 namespace fb { namespace model {
@@ -160,6 +160,10 @@ DECLARE_RANGE_EXTENSION
 };
 
 #pragma endregion
+
+#ifdef DECLARE_AFTER_TYPE
+DECLARE_AFTER_TYPE
+#endif
 
 #pragma region enum
 namespace enum_value {
@@ -1235,6 +1239,10 @@ inline WEATHER_TYPE enum_parse<WEATHER_TYPE>(const std::string k)
 }
 #pragma endregion
 
+#ifdef DECLARE_AFTER_ENUM
+DECLARE_AFTER_ENUM
+#endif
+
 #pragma region const
 namespace const_value {
 
@@ -1418,6 +1426,10 @@ DECLARE_CONST_STRING_EXTENSION
 
 }
 #pragma endregion
+
+#ifdef DECLARE_AFTER_CONST
+DECLARE_AFTER_CONST
+#endif
 
 template<class T>
 struct is_optional : std::false_type {};
@@ -4293,5 +4305,9 @@ template <typename T> typename std::enable_if<fb::model::is_range<T>::value, T>:
 #pragma endregion
 
 } }
+
+#ifdef END_PREPROCESSOR
+END_PREPROCESSOR
+#endif
 
 #endif

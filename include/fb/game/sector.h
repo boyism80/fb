@@ -49,15 +49,15 @@ public:
     using unique_sectors = std::vector<std::unique_ptr<sector>>;
 
 private:
-    const size<uint16_t>            _map_size = size<uint16_t>(0, 0);
-    const size<uint16_t>            _size     = size<uint16_t>(0, 0);
+    const size16_t                  _map_size = size16_t(0, 0);
+    const size16_t                  _size     = size16_t(0, 0);
     const uint32_t                  _rows = 0, _columns = 0;
     const uint32_t                  _count = 0;
     unique_sectors                  _pool;
     std::map<uint32_t, sector*>     _activated_cache;
 
 public:
-    sectors(const size<uint16_t>& map_size, const size<uint16_t>& size);
+    sectors(const size16_t& map_size, const size16_t& size);
     sectors(const sectors&) = delete;
     sectors(sectors&&) = delete;
     ~sectors() = default;
@@ -67,18 +67,18 @@ public:
     sectors& operator = (const sectors&) = delete;
 
 private:
-    uint32_t                        index(const point<uint16_t>& position) const;
+    uint32_t                        index(const point16_t& position) const;
     std::set<sector*>               activated_sectors() const;
 
 public:
-    sector*                         at(const point<uint16_t>& position) const;
+    sector*                         at(const point16_t& position) const;
     sector*                         at(uint32_t index) const;
     uint32_t                        push(fb::game::object& object);
 
 public:
     std::vector<sector*>            nears(uint32_t index) const;
-    std::vector<sector*>            nears(const point<uint16_t>& pivot) const;
-    std::vector<object*>            objects(const point<uint16_t>& pivot, OBJECT_TYPE type) const;
+    std::vector<sector*>            nears(const point16_t& pivot) const;
+    std::vector<object*>            objects(const point16_t& pivot, OBJECT_TYPE type) const;
     std::vector<object*>            activated_objects(OBJECT_TYPE type) const;
     bool                            activated() const;
 };

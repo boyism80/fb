@@ -47,12 +47,12 @@ class update : public fb::protocol::base::header
 {
 public:
     const fb::game::map&            map;
-    const point<uint16_t>           position;
-    const fb::model::size<uint8_t>  size;
+    const point16_t                 position;
+    const size8_t                   size;
     const uint16_t                  crc;
 
 public:
-    update(const fb::game::map& map, const point<uint16_t>& position, const fb::model::size<uint8_t>& size, uint16_t crc = 0) : fb::protocol::base::header(0x06),
+    update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) : fb::protocol::base::header(0x06),
         map(map), position(position), size(size), crc(crc)
     { }
 
@@ -132,7 +132,7 @@ public:
     const fb::game::map&            map;
 #else
     uint16_t                        id;
-    size<uint16_t>                  size;
+    size16_t                        size;
     bool                            building;
     std::string                     name;
 #endif

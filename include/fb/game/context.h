@@ -66,7 +66,7 @@ private:
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
 private:
-    fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point<uint16_t>& position, fb::awaiter<bool>* awaiter);
+    fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter);
 
 public:
     bool                    exists(const fb::game::object& object) const;
@@ -202,7 +202,7 @@ public:
     void                    on_show(fb::game::object& me, fb::game::object& you, bool light) final;
     void                    on_hide(fb::game::object& me) final;
     void                    on_hide(fb::game::object& me, fb::game::object& you) final;
-    void                    on_move(fb::game::object& me, const point<uint16_t>& before) final;
+    void                    on_move(fb::game::object& me, const point16_t& before) final;
     void                    on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
     void                    on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) final;
 
@@ -231,7 +231,7 @@ public:
     void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type) final;
     void                    on_option(session& me, CUSTOM_SETTING option, bool enabled) final;
     void                    on_level_up(session& me) final;
-    void                    on_transfer(session& me, fb::game::map& map, const point<uint16_t>& position, fb::awaiter<bool>* awaiter = nullptr) final;
+    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) final;
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) final;
@@ -250,7 +250,7 @@ public:
     void                    on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts) final;
     void                    on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index) final;
     void                    on_item_active(session& me, item& item) final;
-    void                    on_item_throws(session& me, item& item, const point<uint16_t>& to) final;
+    void                    on_item_throws(session& me, item& item, const point16_t& to) final;
 
     // listener : spell
     void                    on_spell_update(life& me, uint8_t index) final;

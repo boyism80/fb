@@ -45,7 +45,7 @@ protected:
     const fb::model::object&            _model;
     bool                                _map_lock   = false;
 
-    point<uint16_t>                     _position   = point<uint16_t>(0, 0);
+    point16_t                           _position   = point16_t(0, 0);
     DIRECTION                           _direction  = DIRECTION::BOTTOM;
     fb::game::map*                      _map        = nullptr;
 
@@ -60,9 +60,9 @@ public:
     virtual ~object();
 
 private:
-    fb::task<bool>                      __map(fb::game::map* map, const point<uint16_t> position, fb::awaiter<bool>* awaiter = nullptr);
+    fb::task<bool>                      __map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter = nullptr);
     void                                leave();
-    static bool                         sight(const point<uint16_t> me, const point<uint16_t> you, const fb::game::map* map);
+    static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 
 public:
     template <typename T>
@@ -85,11 +85,11 @@ public:
     virtual OBJECT_TYPE                 what() const;
 
     void                                chat(const std::string& message, bool shout = false);
-    const point<uint16_t>&              position() const;
-    const point<uint16_t>               position_forward() const;
-    const point<uint16_t>               position_forward(DIRECTION direction) const;
+    const point16_t&                    position() const;
+    const point16_t                     position_forward() const;
+    const point16_t                     position_forward(DIRECTION direction) const;
     virtual bool                        position(uint16_t x, uint16_t y, bool refresh = false);
-    virtual bool                        position(const point<uint16_t> position, bool refresh = false);
+    virtual bool                        position(const point16_t position, bool refresh = false);
     bool                                move();
     bool                                move(DIRECTION direction);
 
@@ -102,16 +102,16 @@ public:
     DIRECTION                           direction() const;
     bool                                direction(DIRECTION value);
 
-    virtual fb::awaiter<bool>           co_map(fb::game::map* map, const point<uint16_t>& position);
+    virtual fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position);
     virtual fb::awaiter<bool>           co_map(fb::game::map* map);
-    virtual bool                        map(fb::game::map* map, const point<uint16_t>& position);
+    virtual bool                        map(fb::game::map* map, const point16_t& position);
     virtual bool                        map(fb::game::map* map);
     fb::game::map*                      map() const;
 
     bool                                sector(fb::game::sector* sector);
     fb::game::sector*                   sector();
 
-    bool                                sight(const point<uint16_t>& position) const;
+    bool                                sight(const point16_t& position) const;
     bool                                sight(const fb::game::object& object) const;
 
     object*                             side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
@@ -121,11 +121,11 @@ public:
 
     // 내 시야에서 보여지는 오브젝트들
     std::vector<object*>                showings(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*>                showings(const std::vector<object*>& source, const point<uint16_t>& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     // 자기 시야에 내가 있는 오브젝트들
     std::vector<object*>                showns(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*>                showns(const std::vector<object*>& source, const point<uint16_t>& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*>                showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     bool                                visible() const;
     void                                visible(bool value);
@@ -180,7 +180,7 @@ interface object::listener
     virtual void                        on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
     virtual void                        on_hide(fb::game::object& me) = 0;
     virtual void                        on_hide(fb::game::object& me, fb::game::object& you) = 0;
-    virtual void                        on_move(fb::game::object& me, const point<uint16_t>& before) = 0;
+    virtual void                        on_move(fb::game::object& me, const point16_t& before) = 0;
     virtual void                        on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
     virtual void                        on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
     virtual void                        on_create(fb::game::object& me) = 0;
@@ -191,7 +191,7 @@ struct object::config
 {
 public:
     uint32_t                            id          = 0xFFFFFFFF;
-    const point<uint16_t>               position    = point<uint16_t>();
+    const point16_t                     position    = point16_t();
     DIRECTION                           direction   = DIRECTION::BOTTOM;
     fb::game::map*                      map         = nullptr;
 };

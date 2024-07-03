@@ -138,9 +138,9 @@ public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     OBJECT_TYPE                 what() const final;
-    fb::awaiter<bool>           co_map(fb::game::map* map, const point<uint16_t>& position) final;
+    fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position) final;
     fb::awaiter<bool>           co_map(fb::game::map* map) final;
-    bool                        map(fb::game::map* map, const point<uint16_t>& position) final;
+    bool                        map(fb::game::map* map, const point16_t& position) final;
     bool                        map(fb::game::map* map) final;
 
 public:
@@ -277,8 +277,8 @@ public:
     void                        assert_state(STATE value) const;
     void                        assert_state(const std::vector<STATE>& values) const;
 
-    bool                        move(const point<uint16_t>& before);
-    bool                        move(DIRECTION direction, const point<uint16_t>& before);
+    bool                        move(const point16_t& before);
+    bool                        move(DIRECTION direction, const point16_t& before);
 
     void                        ride(fb::game::mob& horse);
     void                        ride();
@@ -354,7 +354,7 @@ public:
     virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
     virtual void                on_option(session& me, CUSTOM_SETTING option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
-    virtual void                on_transfer(session& me, fb::game::map& map, const point<uint16_t>& position, fb::awaiter<bool>* awaiter = nullptr) = 0;
+    virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;
