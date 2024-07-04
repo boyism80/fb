@@ -4221,7 +4221,18 @@ template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Jso
     auto hours = std::stoi(what["hour"].str());
     auto mins = std::stoi(what["min"].str());
     auto secs = std::stoi(what["sec"].str());
-    auto ms = what["ms"].matched ? std::stoi(what["ms"].str()) : 0;
+    auto ms = 0;
+    if(what["ms"].matched)
+    {
+        auto in = what["ms"].str();
+        auto step = 100;
+        for (int i = 0; i < std::min<uint32_t>(3, in.size()); i++)
+        {
+            auto v = in.at(i) - '0';
+            ms += v * step;
+            step /= 10;
+        }
+    }
 
     auto count = day;
     count = count * 24 + hours;

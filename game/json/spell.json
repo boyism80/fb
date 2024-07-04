@@ -1880,6 +1880,24 @@
     "concast": "scripts/spell/청의태자포획.lua",
     "message": null
   },
+  "7012": {
+    "id": 7012,
+    "name": "토깽이포획",
+    "type": "NORMAL",
+    "cast": null,
+    "uncast": null,
+    "concast": "scripts/spell/토깽이포획.lua",
+    "message": null
+  },
+  "7013": {
+    "id": 7013,
+    "name": "청룡마령참",
+    "type": "TARGET",
+    "cast": "scripts/spell/청룡마령참.lua",
+    "uncast": null,
+    "concast": null,
+    "message": null
+  },
   "10000": {
     "id": 10000,
     "name": "강제이동(상)",
