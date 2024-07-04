@@ -10,6 +10,7 @@ import shutil
 import zipfile
 import time
 import copy
+import pathlib
 
 env.timeout = 60
 CONFIGURATION = None
@@ -39,6 +40,28 @@ def optimize():
     with open('host.json', 'w', encoding='utf8') as f:
         f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
 
+    zfile = zipfile.ZipFile('resources.zip', 'w')
+    zfile.write('resources/maps/maps.zip', 'maps.zip')
+    for (path, dir, files) in os.walk('game/scripts'):
+        for file in files:
+            if not file.endswith('.lua'):
+                continue
+
+            src = os.path.join(path, file)
+            dst = os.path.join(*pathlib.Path(path).parts[1:], file)
+            zfile.write(src, dst)
+
+    for (path, dir, files) in os.walk('game/json'):
+        for file in files:
+            if not file.endswith('.json'):
+                continue
+
+            src = os.path.join(path, file)
+            dst = os.path.join(*pathlib.Path(path).parts[1:], file)
+            zfile.write(src, dst)
+
+    zfile.close()
+
 @task
 @parallel
 def setup():
@@ -46,26 +69,26 @@ def setup():
     if 'internal' in configs['deploy']:
         sudo('rm -rf internal', quiet=True)
         sudo('mkdir -p internal/table', quiet=True)
-        with cd('internal/table'):
-            put(f'host.json', '.', use_sudo=True)
+        put(f'host.json', 'internal/table/host.json', use_sudo=True)
 
     if 'game' in configs['deploy']:
         sudo('rm -rf game', quiet=True)
         sudo('mkdir -p game', quiet=True)
 
-        with lcd('resources/maps'):
-            with cd('resources/maps'):
-                put('maps.zip', '.', use_sudo=True)
+        put('resources.zip', 'game/resources.zip', use_sudo=True)
+        with cd('game'):
+            sudo('unzip -qq resources.zip', quiet=True)
+            sudo('rm -f resources.zip', quiet=True)
+            sudo('mkdir -p maps', quiet=True)
+            sudo('mv maps.zip maps', quiet=True)
+            with cd('maps'):
                 sudo('unzip -qq maps.zip', quiet=True)
-
-        with lcd('game'):
-            with cd('game'):
-                put('scripts', '.', use_sudo=True)
-                put('json', '.', use_sudo=True)
+                sudo('rm -f maps.zip', quiet=True)
 
 @task
 def clean():
     local('rm -f host.json')
+    local('rm -f resources.json')
 
 @task
 def build(service):
